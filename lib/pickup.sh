@@ -200,6 +200,85 @@ pickup_dedup_triple_check() {
     return 1
 }
 
+# T-2072: walk auto-deferred/, promote envelopes whose blocker has shipped.
+# Closes the L-441-class asymmetry on G-059: defer is one-way without this.
+# For each <env>.yaml that has a sibling <env>.yaml.breadcrumb.yaml: read
+# `blocking_task:` from the breadcrumb; if that T-XXX exists in
+# .tasks/completed/ → mv envelope back to inbox/ + rm the breadcrumb.
+# Otherwise leave both in place. Orphan envelopes (no breadcrumb) are reported
+# and skipped — we never blindly promote without a recorded reason.
+#
+# Sets globals `last_promoted`, `last_skipped`, `last_orphan` for the caller.
+# Returns 0 on clean run (including no-op); 1 only on hard errors.
+#
+# Args:
+#   $1 — "--dry-run" (optional): prints WOULD lines, no disk mutation.
+pickup_promote_deferred() {
+    local dry_run=false
+    if [ "${1:-}" = "--dry-run" ]; then
+        dry_run=true
+    fi
+
+    pickup_ensure_dirs
+    mkdir -p "$PICKUP_AUTO_DEFERRED" 2>/dev/null
+    last_promoted=0
+    last_skipped=0
+    last_orphan=0
+
+    local f basename_f
+    for f in "$PICKUP_AUTO_DEFERRED"/*.yaml "$PICKUP_AUTO_DEFERRED"/*.yml; do
+        [ -f "$f" ] || continue
+        # Skip breadcrumb sidecars — they're metadata, not envelopes
+        case "$(basename "$f")" in *.breadcrumb.yaml) continue ;; esac
+
+        basename_f=$(basename "$f")
+        local crumb="${f}.breadcrumb.yaml"
+
+        if [ ! -f "$crumb" ]; then
+            echo -e "${YELLOW}ORPHAN${NC}  $basename_f — no breadcrumb sidecar; leaving in place"
+            last_orphan=$((last_orphan + 1))
+            continue
+        fi
+
+        local blocking
+        blocking=$({ grep "^blocking_task:" "$crumb" 2>/dev/null || true; } \
+            | head -1 | sed 's/^blocking_task:[[:space:]]*//' | tr -d '"' | tr -d "'" | tr -d '[:space:]')
+
+        if [ -z "$blocking" ]; then
+            echo -e "${YELLOW}ORPHAN${NC}  $basename_f — breadcrumb has no blocking_task; leaving in place"
+            last_orphan=$((last_orphan + 1))
+            continue
+        fi
+
+        # Check if the blocker has reached completed/
+        if compgen -G "${PROJECT_ROOT:-.}/.tasks/completed/${blocking}-"*.md >/dev/null 2>&1 \
+            || [ -f "${PROJECT_ROOT:-.}/.tasks/completed/${blocking}.md" ]; then
+            if [ "$dry_run" = true ]; then
+                echo -e "${CYAN}WOULD PROMOTE${NC}  $basename_f — blocker $blocking is complete"
+            else
+                if mv "$f" "$PICKUP_INBOX/" 2>/dev/null; then
+                    rm -f "$crumb"
+                    echo -e "${GREEN}PROMOTE${NC} $basename_f — blocker $blocking shipped; back to inbox"
+                else
+                    echo -e "${RED}FAIL${NC}    $basename_f — mv to inbox failed" >&2
+                    last_skipped=$((last_skipped + 1))
+                    continue
+                fi
+            fi
+            last_promoted=$((last_promoted + 1))
+        else
+            if [ "$dry_run" = true ]; then
+                echo -e "${YELLOW}WOULD SKIP${NC}    $basename_f — blocker $blocking still active"
+            else
+                echo -e "${YELLOW}STILL-BLOCKED${NC} $basename_f — blocker $blocking still active"
+            fi
+            last_skipped=$((last_skipped + 1))
+        fi
+    done
+
+    return 0
+}
+
 # T-1425: Write a breadcrumb next to an auto-deferred envelope pointing at
 # the blocking local inception task. Lets operators (and `fw pickup auto-deferred list`)
 # trace why the envelope was deferred instead of processed.
@@ -530,6 +609,7 @@ do_pickup() {
             echo "  status          Show inbox/processed/rejected/auto-deferred counts"
             echo "  list            List inbox contents"
             echo "  auto-deferred   List auto-deferred envelopes with their blocking tasks (G-059)"
+            echo "  promote-deferred  Move auto-deferred envelopes back to inbox when their blocker has shipped (T-2072)"
             echo ""
             echo "Options:"
             echo "  --dry-run   Show what would be processed without acting"
@@ -549,6 +629,15 @@ do_pickup() {
             done
 
             pickup_ensure_dirs
+
+            # T-2072: re-evaluate auto-deferred envelopes before each process tick.
+            # Promoted envelopes land in inbox the same tick → processed below.
+            # One-cron pattern (T-1112): no separate cron registration.
+            if [ "$dry_run" = true ]; then
+                pickup_promote_deferred --dry-run
+            else
+                pickup_promote_deferred
+            fi
 
             local count=0 processed=0 rejected=0
             local f
@@ -647,6 +736,41 @@ do_pickup() {
                     return 1
                     ;;
             esac
+            ;;
+        promote-deferred)
+            # T-2072: re-evaluate auto-deferred envelopes; promote any whose
+            # blocker has shipped. Default is real mutation; --dry-run prints
+            # WOULD lines only.
+            local dry_run=false
+            while [[ $# -gt 0 ]]; do
+                case $1 in
+                    --dry-run) dry_run=true; shift ;;
+                    -h|--help)
+                        echo -e "${BOLD}fw pickup promote-deferred${NC} — Promote auto-deferred envelopes when their blocker has shipped"
+                        echo ""
+                        echo "Usage: fw pickup promote-deferred [--dry-run]"
+                        echo ""
+                        echo "Walks .context/pickup/auto-deferred/*.yaml, reads each sibling"
+                        echo "*.breadcrumb.yaml's blocking_task: field, and if that T-XXX exists"
+                        echo "in .tasks/completed/ moves the envelope back to inbox/ and removes"
+                        echo "the breadcrumb. Otherwise leaves both in place. Orphan envelopes"
+                        echo "(no breadcrumb) are reported and skipped."
+                        echo ""
+                        echo "Also runs automatically at the start of 'fw pickup process'."
+                        echo "Closes the L-441 asymmetry on G-059 auto-defer (T-2071 RCA)."
+                        return 0
+                        ;;
+                    *) echo -e "${RED}Unknown option: $1${NC}" >&2; return 1 ;;
+                esac
+            done
+
+            if [ "$dry_run" = true ]; then
+                pickup_promote_deferred --dry-run
+            else
+                pickup_promote_deferred
+            fi
+            echo ""
+            echo -e "${BOLD}Promote summary:${NC} ${last_promoted:-0} promoted, ${last_skipped:-0} still blocked, ${last_orphan:-0} orphan"
             ;;
         *)
             echo -e "${RED}Unknown pickup command: $subcmd${NC}" >&2

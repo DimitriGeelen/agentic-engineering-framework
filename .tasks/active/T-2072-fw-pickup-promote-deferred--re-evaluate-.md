@@ -1,13 +1,23 @@
 ---
 id: T-2072
-name: "fw pickup promote-deferred — re-evaluate auto-deferred envelopes when blockers ship"
+name: "fw pickup promote-deferred — re-evaluate auto-deferred envelopes when blockers
+  ship"
 description: >
-  Follow-up to T-2071 RCA. Pickup pipeline's G-059 triple-dedup auto-defer is one-way: envelopes route to .context/pickup/auto-deferred/ with a breadcrumb naming the blocking task, but no mechanism promotes them back when the blocker reaches work-completed. Manual cleanup (T-2071) showed P-009 + P-041 sat 1+ month after their blockers shipped. Build: 'fw pickup promote-deferred' verb that scans auto-deferred/*.breadcrumb.yaml, reads blocking_task: field, checks .tasks/completed/ for that ID, and relocates the envelope + breadcrumb to processed/ (or inbox/ for fresh reprocessing). Wire into existing pickup-pipeline cron (15-min cadence matches mirror sync). L-441 symmetry rule: asymmetric guards manufacture stale state. Same class as T-1912 closing T-1839's half-fix. See T-2071 RCA for detail.
+  Follow-up to T-2071 RCA. Pickup pipeline's G-059 triple-dedup auto-defer is one-way:
+  envelopes route to .context/pickup/auto-deferred/ with a breadcrumb naming the blocking
+  task, but no mechanism promotes them back when the blocker reaches work-completed.
+  Manual cleanup (T-2071) showed P-009 + P-041 sat 1+ month after their blockers shipped.
+  Build: 'fw pickup promote-deferred' verb that scans auto-deferred/*.breadcrumb.yaml,
+  reads blocking_task: field, checks .tasks/completed/ for that ID, and relocates
+  the envelope + breadcrumb to processed/ (or inbox/ for fresh reprocessing). Wire
+  into existing pickup-pipeline cron (15-min cadence matches mirror sync). L-441 symmetry
+  rule: asymmetric guards manufacture stale state. Same class as T-1912 closing T-1839's
+  half-fix. See T-2071 RCA for detail.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +26,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T17:43:53Z
-last_update: 2026-05-28T17:43:53Z
-date_finished: null
+last_update: 2026-05-28T19:34:20Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +38,43 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-05-28T17:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-28T17:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2072: fw pickup promote-deferred — re-evaluate auto-deferred envelopes when blockers ship
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Closes the L-441-class asymmetry on the pickup pipeline: G-059 auto-defers a triple-collision envelope to `.context/pickup/auto-deferred/` and drops a `.breadcrumb.yaml` naming the blocking local task, but there is no inverse — when the blocking task reaches `.tasks/completed/` nothing promotes the deferred envelope back onto the inbox. T-2071 RCA found P-009 + P-041 sat for 30+ days post-blocker-completion. This adds a `fw pickup promote-deferred` verb that walks each breadcrumb, checks `.tasks/completed/` for the named blocker, and moves the envelope back to `inbox/` for normal re-processing on the next 1-min `pickup process` cron. Same shape as T-1912 closing T-1839's half-fix.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw pickup promote-deferred` verb exists in `lib/pickup.sh` (alongside `process`/`status`/`list`/`auto-deferred`). Default action: scan `auto-deferred/*.yaml` (skipping `*.breadcrumb.yaml`), read sibling breadcrumb's `blocking_task:`, if that T-ID exists in `.tasks/completed/T-XXX-*.md` → `mv` envelope to `inbox/`, `rm` the breadcrumb, print one PROMOTE line per envelope. If still blocked: STILL-BLOCKED line. If breadcrumb missing: ORPHAN line.
+- [x] `--dry-run` flag prints `WOULD PROMOTE`/`WOULD SKIP` without mutating disk.
+- [x] `fw pickup process` auto-fires `pickup_promote_deferred` at the start (before scanning inbox). One-cron pattern (T-1112): no separate cron job. Promoted envelopes land in inbox the same tick and get processed in the same run.
+- [x] `bats tests/unit/pickup_promote_deferred.bats` covers: (a) empty auto-deferred → no-op; (b) deferred envelope + completed blocker → promoted to inbox, breadcrumb removed; (c) deferred envelope + still-active blocker → untouched; (d) deferred envelope + orphan (no breadcrumb) → ORPHAN line, untouched; (e) `--dry-run` mutates nothing; (f) integration via `fw pickup process` auto-fires promote then processes promoted envelope in the same tick. 8/8 green.
+- [x] `fw pickup` help text mentions `promote-deferred` alongside the existing subcommands; `fw pickup promote-deferred -h` prints its own usage block.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -79,6 +112,12 @@ date_finished: null
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+bash -n lib/pickup.sh
+bash -n bin/fw
+bats tests/unit/pickup_promote_deferred.bats
+out=$(bin/fw pickup 2>&1); echo "$out" | grep -q "promote-deferred"
+out=$(bin/fw pickup promote-deferred -h 2>&1); echo "$out" | grep -q "promote-deferred"
+out=$(bin/fw pickup promote-deferred --dry-run 2>&1); echo "$?" | grep -q "^0$"
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -152,6 +191,19 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+**Recommendation:** GO (complete)
+
+**Rationale:** L-441 symmetry restored on the pickup pipeline. G-059's auto-defer is no longer one-way — when a blocking task reaches `completed/`, the deferred envelope is promoted back to `inbox/` automatically on the next `pickup process` cron tick (1-min cadence). No new cron registration: the verb auto-fires from `pickup process`, matching the T-1112 single-cron pattern. Same shape as T-1912's closure of T-1839's half-fix.
+
+**Evidence:**
+- `lib/pickup.sh`: new `pickup_promote_deferred()` function (~75 lines) walks `auto-deferred/`, reads sibling breadcrumb's `blocking_task:`, checks `.tasks/completed/`, moves envelope + removes breadcrumb on match. Sets `last_promoted`/`last_skipped`/`last_orphan` globals.
+- `lib/pickup.sh`: `process` case auto-fires `pickup_promote_deferred` before scanning inbox (same `--dry-run` propagation).
+- `lib/pickup.sh`: `promote-deferred` subcommand case with `--dry-run` + `-h/--help`; help text wired into `fw pickup` usage.
+- `tests/unit/pickup_promote_deferred.bats`: 8 scenarios, all green in ~0.4s. Covers empty / promote / still-blocked / orphan / dry-run / dry-run-still-active / integration-via-process / mixed-batch.
+- Live smoke: `fw pickup promote-deferred` on real empty auto-deferred → `0 promoted, 0 still blocked, 0 orphan`. `fw pickup process --dry-run` auto-fires promote silently then scans empty inbox.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -168,3 +220,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2072-fw-pickup-promote-deferred--re-evaluate-.md
 - **Context:** Initial task creation
+
+### 2026-05-28T19:33:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
