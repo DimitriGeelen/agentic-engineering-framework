@@ -1731,3 +1731,17 @@ decisions:
     date: 2026-05-28
     task: T-2061
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-250
+    decision: "`detection_confidence: heuristic`."
+    scope: project
+    date: 2026-05-28
+    task: T-2059
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-251
+    decision: "The `update-task.sh` advisory inlines a Python heredoc that walks `sys.argv[0]`'s parents to find `lib/reviewer/static_scan.py`."
+    scope: project
+    date: 2026-05-28
+    task: T-2059
+    rationale: "Auto-captured from task file on completion"

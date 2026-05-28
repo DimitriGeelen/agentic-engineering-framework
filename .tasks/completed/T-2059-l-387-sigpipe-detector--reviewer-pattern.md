@@ -9,12 +9,12 @@ description: >
   Verification block contains the risky form. Bats coverage against the 15 historical
   positives + 26 safe-form negatives from the T-2057 spike corpus. Pinned by docs/reports/T-2057-l-387-detector-spike.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [reviewer, detector, l387, sigpipe, antifragility]
-components: [lib/reviewer/static_scan.py, agents/task-create/update-task.sh, 
+components: [agents/task-create/update-task.sh, lib/reviewer/static_scan.py]
       policy/anti-patterns.yaml]
 related_tasks: [T-2057, T-1716, T-1838, T-1862, T-1863, T-2036]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -22,8 +22,8 @@ related_tasks: [T-2057, T-1716, T-1838, T-1862, T-1863, T-2036]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T07:43:29Z
-last_update: '2026-05-28T07:45:02Z'
-date_finished:
+last_update: 2026-05-28T12:19:50Z
+date_finished: 2026-05-28T12:19:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -215,3 +215,22 @@ bash -n agents/task-create/update-task.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2059-l-387-sigpipe-detector--reviewer-pattern.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bcd6460c
+- **Timestamp:** 2026-05-28T12:19:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1); echo "$out" | grep -qE "^[0-9]+ passed"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 28
+     - evidence: `out=$(python3 -c "import sys; sys.path.insert(0,'.'); from lib.reviewer import static_scan as ss; f=ss.detect_l387_sigpipe_risk('bin/fw doctor 2>&1 | grep -q OK\n'); print(len(f), f[0].pattern_id if f`
+
+### 2026-05-28T12:19:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
