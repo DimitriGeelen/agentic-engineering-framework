@@ -3364,3 +3364,10 @@ X'` returning empty group."
   date: 2026-05-28
   context: Added via context agent
   application: TBD
+- id: L-439
+  learning: "P-011 Verification block parses commands LINE-BY-LINE: any multi-line shell construct (heredoc, multi-line bash -c '...' with embedded newlines, EOF-bounded body) is split per-physical-line and each line becomes its own (broken) command. Symptom: \"unexpected EOF while looking for matching\", \"id: T-PROBE: command not found\", \"EOF: command not found\". Safe pattern: one logical command per physical line, OR use existing in-repo task files as fixtures (no synthetic heredocs). Discovered ticking T-2061 Verification gate after writing render-surface predicate fix."
+  source: P-001
+  task: T-2061
+  date: 2026-05-28
+  context: Added via context agent
+  application: TBD
