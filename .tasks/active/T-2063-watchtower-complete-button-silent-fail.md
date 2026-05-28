@@ -137,18 +137,42 @@ curl -s -X POST -o /dev/null -w "%{http_code}\n" http://192.168.10.107:3000/api/
 
 ## Recommendation
 
-**Recommendation:** GO — candidate (c) both: fix CSRF shim wiring on this form AND defensive `htmx:responseError` toast.
+**Recommendation:** GO — sharpened candidate (b)' — extract toast handlers to `web/static/htmx-toast.js` and load from /review pages (close the silent-swallow class first); file (a)' as sibling for the residual CSRF-flow proximate cause.
 
-**Rationale:** The CSRF wiring is the proximate cause (403); fixing it makes the button work. But the silent-swallow class is broader than this one form — every htmx-driven POST in the codebase has the same exposure if CSRF expiry, network blip, or backend hiccup ever returns non-2xx. The toast handler exists at base.html:970 already — fix whatever is preventing it from firing, AND ensure every non-2xx surfaces user-visible feedback. Cost is small; prevention dividend is large (closes the silent-fail class system-wide, not just for Complete).
+**Rationale:** Empirical exploration (see Decisions block) narrowed root cause to a STANDALONE-TEMPLATE class: `review.html` does NOT extend `base.html`, so the `htmx:responseError` + `htmx:sendError` toast handlers at `base.html:970-978` are never loaded on /review pages. csrf-htmx.js was already extracted (T-1453); the toast handler was not — that's the structural asymmetry. Cause-A (the 403 itself) needs browser-side evidence we don't have yet; closing cause-B first means the user can SEE the next 4xx instead of guessing why "nothing happens". This is the right ordering: visibility before diagnosis.
 
 **Evidence:**
-- The 403 is reproducible via curl; the shim is the missing link.
-- The toast listener already exists in the template — fixing it costs less than building a new one.
-- Class precedent: T-2060 itself was a silent-swap bug (polling containers inherited body hx-target=#content destroying innerHTML). Adding the toast closes a parallel class for non-2xx responses.
+- `web/templates/review.html:4` opens with its own `<meta charset>` — standalone template, doesn't extend base.html.
+- `web/static/csrf-htmx.js` exists (39 lines) — precedent for static-file extraction of shared htmx wiring.
+- `web/templates/base.html:970-978` contains the toast handlers that should fire on non-2xx but don't reach /review.
+- `<meta name="csrf-token">` IS rendered on /review/T-2058 (curl confirmed: `content="49b417aa…"`) — so the wiring SHOULD work for a fresh-session browser; the 403 the user hit is a different layer.
+- Class precedent: T-2060 itself was a render-fidelity silent class (htmx polling chrome destruction). T-2063 extends the same lesson to error-handling silent class. T-1453 extracted the CSRF shim; this extracts the toast handler with the same shape.
 
 ## Decisions
 
-<!-- Filled when GO/NO-GO/DEFER chosen. -->
+### 2026-05-28 — empirical exploration narrowed root cause
+
+**Findings (verified via curl + file reads, no browser session needed):**
+
+1. **CSRF shim IS loaded on /review pages** — `web/templates/review.html:` includes `<script src="/static/csrf-htmx.js"></script>`. Curl of `/review/T-2058` confirms the script tag in the served HTML.
+2. **`<meta name="csrf-token">` IS present on /review** — curl returns `<meta name="csrf-token" content="49b417aa…">` (a real token, not empty). Both `review.html:7` and `base.html:11` set it from `csrf_token()`.
+3. **csrf-htmx.js attaches `htmx:configRequest` listener correctly** — `web/static/csrf-htmx.js:13-19` reads meta token and sets `X-CSRF-Token` header on every htmx-issued request. This SHOULD make the CSRF flow work for any real-browser session.
+4. **The smoking gun: `review.html` does NOT extend `base.html`.** It's a standalone template (its own `<meta charset>`, `<head>`, etc., line 4). `base.html:970-978` carries the `htmx:responseError` + `htmx:sendError` listeners that toast on non-2xx — those listeners are **NEVER LOADED on /review pages**. Only the CSRF shim is shared (because it was extracted to a static file in T-1453); the error-toast handler stayed inline in base.html.
+
+**Implication:** The user's 403 symptom has two compounding causes:
+- (cause-A) Something in the user's specific browser session caused CSRF rejection — proximate cause unknown without browser-side evidence (stale cookie? session reset? hx-boost form-swap path?). For a fresh browser session loading /review/T-2060, the CSRF wiring should work end-to-end.
+- (cause-B) Regardless of cause-A, /review pages have NO toast handler — so ANY non-2xx (CSRF 403, server 500, network error) silently swallows. The user sees nothing. This is the broader silent-fail class.
+
+**Refined recommendation:** GO with revised shape — extract `htmx:responseError` and `htmx:sendError` handlers (base.html:970-978) into a static file `web/static/htmx-toast.js` and load it from BOTH base.html AND review.html (parallel to the csrf-htmx.js pattern from T-1453). The (cause-A) CSRF investigation becomes a follow-up sibling that's easier to scope once cause-B is closed (because the user can now SEE the 403 instead of guessing why "nothing happened").
+
+**Reject:** "Just fix cause-A" only — doesn't close the silent-fail class for /review pages on ANY future non-2xx.
+
+### 2026-05-28 — choice of fix layer
+
+- **Chose:** extract toast handlers to `web/static/htmx-toast.js` + load on review.html via `<script src>` tag.
+- **Why:** Parallel to T-1453's pattern (csrf-htmx.js extraction). Static-file extraction is idiomatic for "things standalone templates also need". No template-engine changes.
+- **Rejected:** Inline-duplicate the handlers in review.html — works but creates two source-of-truth copies; future handler edits drift.
+- **Rejected:** Make review.html extend base.html — broader refactor; review.html has structural differences (no nav.site-nav, different page chrome) that justify standalone status; this isn't the right task to relitigate that.
 
 ## Decision
 
