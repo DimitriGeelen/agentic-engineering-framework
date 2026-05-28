@@ -13,20 +13,20 @@ description: >
   gate T-1766 — touches web/templates/inception_detail.html), Playwright test covers
   presence/absence cases for each section.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T18:04:21Z
-last_update: 2026-05-28T18:40:02Z
-date_finished:
+last_update: 2026-05-28T22:43:07Z
+date_finished: 2026-05-28T22:43:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,6 +117,17 @@ out=$(python3 -m pytest tests/playwright/test_inception_detail_sections.py -q 2>
 
 ## RCA
 
+**Symptom:** `/inception/<id>` Watchtower page rendered only Problem Statement, Exploration Plan, and Recommendation — silently dropped Context, RCA, Acceptance Criteria, Verification, and Decisions sections even when the task body contained them. Headers + content visible in the raw `.md` file but absent from the rendered page.
+
+**Root cause:** `web/blueprints/inception.py` extracted body sections into `all_raw_sections` and tagged 5 of them as `KNOWN_SECTIONS` (excluding them from the generic "everything else" render loop), but the `sections` dict passed to `inception_detail.html` was never populated with those keys. The template only renders what's in `sections`. Tagged-but-not-populated → invisible.
+
+**Why structurally allowed:** No structural test asserting that every `KNOWN_SECTIONS` entry has a matching `sections[key] = _md(all_raw_sections.get(key))` line. Jinja's `{% if sections.X %}` gracefully renders nothing when the key is missing — failure mode is silent absence, not crash. The classic "exclusion list grew, population list didn't" drift. Visible to the human only when they opened an inception and noticed "I wrote a Context section, where is it?" — which is what triggered T-2066.
+
+**Prevention:**
+1. `tests/playwright/test_inception_detail_sections.py` (this task) is the regression net — asserts both positive (populated → rendered) and negative (empty → skipped) for all 5 sections.
+2. Related class: the same "tagged-but-not-passed-through" drift could exist on other surface pages with KNOWN_SECTIONS-style exclusion lists. Worth a one-shot grep at audit-time — captured as a follow-up consideration in the T-2066 → T-2077 chain.
+3. Symmetric shape with `task_detail.html` makes future drift more obvious — when a section ships on /tasks/T-XXX, the symmetric expectation on /inception/T-XXX is now visible.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -196,3 +207,25 @@ out=$(python3 -m pytest tests/playwright/test_inception_detail_sections.py -q 2>
 
 ### 2026-05-28T18:40:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2c0e29b9
+- **Timestamp:** 2026-05-28T22:43:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `web/templates/inception_detail.html` renders 5 new `<article class="section-card">` blocks gated by `{% if sections.<key> %}` — placement: Context after Problem Statement, Acceptance Criteria + Verif
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/inception_detail.html in: `web/templates/inception_detail.html` renders 5 new `<article class="section-card">` blocks gated by `{% if sections.<key> %}` — placement: Context af`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `out=$(python3 -m pytest tests/playwright/test_inception_detail_sections.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed"`
+
+### 2026-05-28T22:43:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

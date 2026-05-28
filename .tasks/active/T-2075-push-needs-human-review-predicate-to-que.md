@@ -12,20 +12,20 @@ description: >
   case, no behavioural regression on the 20+ arc-007 partial-completes currently queued
   for human review.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, web/blueprints/approvals.py, web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T18:03:55Z
-last_update: 2026-05-28T18:51:17Z
-date_finished:
+last_update: 2026-05-28T22:41:58Z
+date_finished: 2026-05-28T22:41:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -198,3 +198,20 @@ out=$(bin/fw review-queue 2>&1 | head -5); echo "$out" | grep -q "VERDICT\|DECIS
 
 ### 2026-05-28T18:51:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f1757218
+- **Timestamp:** 2026-05-28T22:41:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `out=$(python3 -m pytest tests/unit/test_count_unchecked_human_acs.py -q 2>&1); echo "$out" | tail -3 | grep -q "passed"`
+
+### 2026-05-28T22:41:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
