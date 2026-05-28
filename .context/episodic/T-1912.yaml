@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1912: fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T15:28:34Z
+# ============================================================================
+
+task_id: T-1912
+task_name: "fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T22:08:27Z
+completed: 2026-05-28T15:28:19Z
+duration_days: 10
+updates_count: 1
+first_commit: 2026-05-19T00:10:36+02:00
+last_commit: 2026-05-28T17:28:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file structural fix — do_vendor step 4b runs before T-1839 version-ahead check. close runtime side of T-1839's half-guard — version-ahead precheck before step 1. add Evolution entry (L-441 symmetry rule generalisation)
+
+# Key outcomes
+outcomes:
+  - 'Version-ahead precheck added to `do_upgrade()` (lib/upgrade.sh:370-396) BEFORE step 1, mirroring the step-9 T-1839 sort-V direction check — fires for ahead direction with same REFUSED + T-1828 reference + `--force-downgrade` advice'
+  - 'Precheck honors the same `--force-downgrade` escape hatch as T-1839 — verified via bats test "precheck honours --force-downgrade escape hatch"'
+  - 'Bats test in `tests/unit/test_upgrade_runtime_downgrade_guard.bats` (sibling to T-1839''s): consumer at v1.6.260 against framework at v1.6.225, `do_upgrade` refuses with non-zero status AND the marker file inside `.agentic-framework/lib/` is unchanged (no step 4b mutation)'
+  - 'Bats test: with `--force-downgrade`, the T-1912 REFUSED block does NOT fire (precheck bypassed; downstream steps may still fail in the stub consumer but the runtime+pin downgrade is permitted together)'
+  - '`fw doctor` post-fix: existing T-1839 guard tests (9/9 pass) and fresh-machine simulation (3/3 pass) confirm no regression on healthy upgrade paths'
+  - 'Learning entry filed: L-441 — "Half-guards manufacture split-brain instead of clean refusal" (see `fw learnings` or `.context/project/learnings.yaml`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file structural fix — do_vendor step 4b runs before T-1839 version-ahead check'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-1912-fw-upgrade-dovendor-step-4b-runs-before-.md'
+  - 'tests/unit/test_upgrade_runtime_downgrade_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T00:10:36"
+    action: "T-1912: file structural fix — do_vendor step 4b runs before T-1839 version-ahead check"
+  - time: "2026-05-28T17:27:33"
+    action: "T-1912: close runtime side of T-1839's half-guard — version-ahead precheck before step 1"
+  - time: "2026-05-28T17:28:18"
+    action: "T-1912: add Evolution entry (L-441 symmetry rule generalisation)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 13999 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, version-skew, structural-fix, T-1839-sibling]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13999
+  commits: 3
+  files_changed: 4
+  lines_added: 418
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1912-fw-upgrade-dovendor-step-4b-runs-before-.md
+generated_by: context-agent-hybrid

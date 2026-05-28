@@ -6,12 +6,12 @@ description: >
   fw upgrade do_vendor step 4b runs BEFORE step 9 version-ahead check — runtime downgrade
   slips past T-1839 guard, creates split-brain (runtime older, pin newer)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bug, upgrade, version-skew, structural-fix, T-1839-sibling]
-components: [lib/upgrade.sh, bin/fw]
+components: [lib/upgrade.sh]
 related_tasks: [T-1838, T-1839, T-1828, T-1542]
 arc_id: arc-004
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ arc_id: arc-004
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T22:08:27Z
-last_update: '2026-05-19T21:45:02Z'
-date_finished:
+last_update: 2026-05-28T15:28:19Z
+date_finished: 2026-05-28T15:28:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -246,3 +246,20 @@ bats tests/unit/upgrade_fresh_machine_simulation.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1912-fw-upgrade-dovendor-step-4b-runs-before-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fafc8e3a
+- **Timestamp:** 2026-05-28T15:28:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — Learning entry filed: L-441 — "Half-guards manufacture split-brain instead of clean refusal" (see `fw learnings` or `.context/project/learnings.yaml`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/learnings.yaml in: Learning entry filed: L-441 — "Half-guards manufacture split-brain instead of clean refusal" (see `fw learnings` or `.context/project/learnings.yaml`)`
+
+### 2026-05-28T15:28:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
