@@ -6,7 +6,7 @@ description: >
   Inception: Watchtower /arcs kanban — feature parity with /tasks (more fields, inline
   editing, filters)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,7 +15,7 @@ components: []
 related_tasks: []
 created: 2026-05-18T19:42:03Z
 last_update: '2026-05-19T21:45:04Z'
-date_finished:
+date_finished: '2026-05-18T21:09:38Z'
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 cost_estimate_proposed:

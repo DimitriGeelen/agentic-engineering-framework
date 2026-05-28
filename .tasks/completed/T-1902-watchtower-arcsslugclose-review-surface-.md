@@ -4,7 +4,7 @@ name: "Watchtower /arcs/<slug>/close review surface for human arc closure"
 description: >
   Inception: Watchtower /arcs/<slug>/close review surface for human arc closure
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -13,7 +13,7 @@ components: []
 related_tasks: [T-1671, T-679, T-1626, T-1633, T-1641, T-1667, T-1670]
 created: 2026-05-18T18:33:39Z
 last_update: '2026-05-19T21:45:04Z'
-date_finished:
+date_finished: '2026-05-18T20:15:17Z'
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 cost_estimate_proposed:

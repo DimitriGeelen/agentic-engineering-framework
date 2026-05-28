@@ -6,7 +6,7 @@ description: >
   Inception: value-prioritisation: Business Value Points — directive-weighted prioritisation
   for tasks and arcs (HANDOFF-value-prioritisation-2026-05-15)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -18,7 +18,7 @@ related_tasks: [T-1641, T-1653, T-1668, T-1816, T-1846, T-1849, T-1852, T-1854]
 arc_id: value-prioritisation
 created: 2026-05-18T22:55:05Z
 last_update: '2026-05-20T12:30:23Z'
-date_finished:
+date_finished: '2026-05-19T06:52:17Z'
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 cost_estimate_proposed:
