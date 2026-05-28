@@ -218,10 +218,14 @@
     <h1>Approvals {% if total_count %}<small>({{ total_count }} pending)</small>{% endif %}</h1>
 </div>
 
-<!-- Polling container: auto-refreshes every 10s (T-669) -->
+<!-- Polling container: auto-refreshes every 10s (T-669)
+     hx-target="this" override required — base.html sets body-level hx-target="#content",
+     which would otherwise swap the polling response into the whole page area, destroying
+     the page-header and surrounding chrome (T-2060). -->
 <div id="approvals-content"
      hx-get="/approvals/content"
      hx-trigger="every 10s"
+     hx-target="this"
      hx-swap="innerHTML">
 {% include '_approvals_content.html' %}
 </div><!-- /approvals-content polling container (T-669) -->

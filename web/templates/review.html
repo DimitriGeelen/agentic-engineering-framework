@@ -586,10 +586,13 @@
     </div>
     {% endfor %}
 
-    <!-- Human ACs with polling -->
+    <!-- Human ACs with polling
+         hx-target="this" override required — base.html sets body-level hx-target="#content",
+         which would otherwise swap the AC fragment into the whole content area (T-2060). -->
     <div id="ac-container"
          hx-get="/review/{{ task_id }}/acs"
          hx-trigger="every 5s"
+         hx-target="this"
          hx-swap="innerHTML">
         {% include '_review_acs.html' %}
     </div>
