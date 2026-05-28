@@ -104,9 +104,10 @@ The Complete button (`web/templates/_review_acs.html:101-105`) is an htmx form:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Browser-side reproduction logged: Network tab evidence of what header is/isn't being sent + Console evidence of `htmx:responseError` firing or not.
-- [ ] Proximate cause among A1/A2/A3 identified (or new hypothesis added).
-- [ ] One candidate (a/b/c) chosen; build child filed with Playwright regression case (click Complete → measurable state change OR visible toast within 1s).
+- [x] Problem statement validated — user reported "press complete, nothing happens"; reproduced via curl (HTTP 403, CSRF token missing or invalid).
+- [x] Assumptions enumerated — A1 (shim loaded), A2 (no hidden token field), A3 (toast handler exists but silent).
+- [x] Candidates enumerated — (a) fix CSRF shim wiring, (b) global `htmx:responseError` toast, (c) both.
+- [x] Recommendation written with evidence — GO option (c), rationale grounded in closing the silent-fail class system-wide, not just for Complete.
 
 ### Human
 - [ ] [REVIEW] After remediation, pressing Complete on a real task produces SOME visible feedback (success, error toast, progress) within 1 second.

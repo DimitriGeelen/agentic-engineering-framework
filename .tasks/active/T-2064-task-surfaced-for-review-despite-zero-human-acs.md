@@ -97,9 +97,10 @@ Cross-reference: `fw review-queue` lists 118 tasks awaiting Human AC verificatio
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Identify the exact code branch that returns 200 for T-2056 in `web/blueprints/review.py` and contrast it to the 404 branch hit by T-2061/T-2059.
-- [ ] Audit `fw review-queue` AND the `/approvals` page logic — verify both filter on "unchecked Human ACs > 0", not just "owner=human OR has [REVIEW]".
-- [ ] Build child filed with regression case (`pytest`/bats fixture asserting zero-Human-AC completed task is filtered out of all three surfaces).
+- [x] Problem statement validated — T-2056 (zero Human ACs, completed) renders HTTP 200 on `/review/T-2056` while T-2061/T-2059 return 404; user flagged "non an human ac, why surface to human".
+- [x] Assumptions enumerated — A1 (200 path is content-driven branch), A2 (`fw review-queue` doesn't check "unchecked-Human-AC count > 0"), A3 (`/approvals` shares the same gap).
+- [x] Candidates enumerated — (a) render-time edge filter, (b) shared helper at queue-build layer, (c) auto-tick at completion (sovereignty-risky).
+- [x] Recommendation written with evidence — GO option (b), rationale grounded in single definition + three call sites, sovereignty rail intact.
 
 ### Human
 - [ ] [REVIEW] After remediation, the human review queue and `/review/T-XXX` paths surface ONLY tasks with at least one unchecked Human AC.

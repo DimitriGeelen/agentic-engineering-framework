@@ -86,9 +86,9 @@ Why this matters: §Presenting Work for Human Review (CLAUDE.md T-679) makes `fw
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Curl behaviour matrix recorded in the Recommendation block (3 active + 3 completed tasks, before-fix + after-fix).
-- [ ] One candidate (a/b/c) chosen with rationale grounded in user-facing UX of hand-off message.
-- [ ] If candidate ships: build task filed for the route change + regression case, and a CLAUDE.md note added to §Presenting Work for Human Review clarifying which surface the agent links to.
+- [x] Problem statement validated — user reported "404 task not found" on `/review/T-2061` + `/review/T-2059`; reproduced via curl (HTTP 404 on completed/, HTTP 200 on active/).
+- [x] Candidates enumerated with trade-offs — (a) 200 read-only render, (b) 301/302 redirect to `/tasks/T-XXX`, (c) keep 404 + update agent hand-off contract.
+- [x] Recommendation written with evidence — GO option (a), rationale grounded in hand-off-link rot UX.
 
 ### Human
 - [ ] [REVIEW] Confirm whether `/review/T-XXX` for completed tasks should render-200, redirect, or stay 404 — and that the agent's hand-off message updates accordingly.

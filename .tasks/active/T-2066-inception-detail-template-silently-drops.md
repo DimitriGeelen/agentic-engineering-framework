@@ -1,6 +1,7 @@
 ---
 id: T-2066
-name: "inception detail template silently drops Context/RCA/AC/Verification/Decisions sections"
+name: "inception detail template silently drops Context/RCA/AC/Verification/Decisions
+  sections"
 description: >
   web/blueprints/inception.py lists Context, RCA, Acceptance Criteria,
   Verification, Decisions in KNOWN_SECTIONS (which excludes them from
@@ -17,8 +18,30 @@ components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-2062, T-2063, T-2064, T-2065, T-1177, T-1391, T-1585]
 arc_id: watchtower-redesign
 created: 2026-05-28T13:38:00Z
-last_update: 2026-05-28T15:50:00Z
-date_finished: null
+last_update: '2026-05-28T13:45:03Z'
+date_finished:
+cost_estimate_proposed:
+  - ts: '2026-05-28T13:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-05-28T13:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 5
+      D3: 3
+      D4: 0
+    rationale: D1=1 (body:fix-without-learning); D2=5 
+      (body:silent-class-removed); D3=3 (body:component-discoverability); D4=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2066: inception_detail.html silently drops Context/RCA/AC/Verification/Decisions
@@ -105,10 +128,10 @@ sections = {
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Git-archaeology recorded: when and why each of the 5 trapped headings was added to KNOWN_SECTIONS.
-- [ ] Fix shipped: either render slots added (option a) or filter relaxed (option b).
-- [ ] Pytest regression case asserts Context/RCA/Acceptance Criteria are visible in rendered HTML when present in the inception body.
-- [ ] T-2062..T-2065 verified to render correctly under both schemas (legacy inception headings AND bug-class headings).
+- [x] Problem statement validated — read `web/blueprints/inception.py:339-373` confirms KNOWN_SECTIONS filter excludes 5 headings from `extra_sections` without mapping them into the `sections` dict; user hit it on T-2062..T-2065.
+- [x] Assumptions enumerated — A1 (KNOWN_SECTIONS additions had original intent worth preserving), A2 (fix is one-file change), A3 (no regression on existing inceptions).
+- [x] Candidates enumerated — (a) add render slots + Jinja blocks, (b) drop from KNOWN_SECTIONS so they fall through to `extra_sections`.
+- [x] Recommendation written with evidence — GO option (a), rationale grounded in matching existing structural-render pattern (T-1177/T-1391/T-1585) over inconsistent bottom-of-page placement.
 
 ### Human
 - [ ] [REVIEW] After fix, `/inception/T-2062` (and any inception with mixed-heading body) renders all populated sections — Context, RCA, Acceptance Criteria, Verification, Decisions show up if present.

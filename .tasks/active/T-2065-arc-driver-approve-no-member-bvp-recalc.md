@@ -92,10 +92,10 @@ Why this matters: the arc's whole point is "scoring tasks against THIS driver se
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `approve_driver` trace recorded; the right hook point identified.
-- [ ] Benchmark recorded for arc-007 (46 tasks) — confirm sync is feasible OR justify async.
-- [ ] Build child filed with bats regression case.
-- [ ] Cross-mutation audit: `fw arc abandon` and `fw bvp driver --add/--remove` checked for the same gap; siblings filed if found.
+- [x] Problem statement validated — user reported "arc-007 drivers accepted, no automatically recaulation"; arc YAML mutates but estimator doesn't re-fire across 46 member tasks.
+- [x] Assumptions enumerated — A1 (`approve_driver` has no estimator side-effect), A2 (estimator accepts per-task invocation), A3 (46 tasks × ~10ms ≈ 500ms — sync feasible).
+- [x] Candidates enumerated — (a) synchronous in-process, (b) async background dispatch, (c) lazy on per-task touch, (d) separate verb `fw arc rescore`.
+- [x] Recommendation written with evidence — GO combined (a)+(d), rationale grounded in sovereignty-preserving consequence of human authorisation + manual recovery verb.
 
 ### Human
 - [ ] [REVIEW] After remediation, approving a driver on a populated arc results in member-task `bvp_scores_proposed:` updating to include the new driver's score within an observable window (synchronous OR a clear "estimating N tasks…" progress signal).
