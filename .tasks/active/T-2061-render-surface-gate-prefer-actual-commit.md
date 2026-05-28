@@ -107,19 +107,12 @@ Affected files:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# Full bats suite for the gate stays green
-bash -c 'bats tests/unit/test_render_surface_gate.bats 2>&1 | tail -3 | head -1 | grep -qE "^ok |passed"' || bats tests/unit/test_render_surface_gate.bats
-# Predicate now rejects body-text-only mention (L-435 false-positive class)
-out=$(bash -c 'source lib/render_surface.sh; tf=$(mktemp); cat > "$tf" <<EOF
----
-id: T-PROBE
-components: []
----
-The whole point of this task is that web/blueprints/settings.py is UNTOUCHED.
-EOF
-task_touches_render_surface "$tf" && echo TOUCHES || echo NO-TOUCH; rm -f "$tf"'); echo "$out" | grep -q "NO-TOUCH"
-# Predicate still detects a real git-touched render path (T-2060 regression check)
+# Full bats suite for the gate stays green (15/15 cases: 12 original + 3 new T-2061)
+out=$(bats tests/unit/test_render_surface_gate.bats 2>&1); echo "$out" | tail -1 | grep -qE "^ok 15"
+# Predicate still detects a real git-touched render path (T-2060 regression check — committed templates)
 out=$(bash -c 'source lib/render_surface.sh; task_touches_render_surface .tasks/active/T-2060-polling-containers-inherit-body-hx-targe.md && echo TOUCHES || echo NO-TOUCH'); echo "$out" | grep -q "TOUCHES"
+# Predicate rejects body-text-only mention (L-435 false-positive class — T-2056 was canonical, now in completed/)
+out=$(bash -c 'source lib/render_surface.sh; task_touches_render_surface .tasks/completed/T-2056-fix-stale-preset-nav-unit-tests--t-2011-.md && echo TOUCHES || echo NO-TOUCH'); echo "$out" | grep -q "NO-TOUCH"
 
 ## RCA
 
