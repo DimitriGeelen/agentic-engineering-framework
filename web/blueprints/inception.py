@@ -359,6 +359,14 @@ def inception_detail(task_id):
         "structural_upgrade": _md(all_raw_sections.get("Structural Upgrade", "")),
         "decision": _md(all_raw_sections.get("Decision", "")),
         "updates": _md(all_raw_sections.get("Updates", "")),
+        # T-2077 (T-2066 GO): 5 sections previously extracted but dropped on
+        # the floor. /inception/<id> now mirrors task_detail.html section set
+        # so Context/RCA/AC/Verification/Decisions surface when present.
+        "context": _md(all_raw_sections.get("Context", "")),
+        "acceptance_criteria": _md(all_raw_sections.get("Acceptance Criteria", "")),
+        "verification": _md(all_raw_sections.get("Verification", "")),
+        "decisions": _md(all_raw_sections.get("Decisions", "")),
+        "rca": _md(all_raw_sections.get("RCA", "")),
     }
 
     # Extra sections not in the known set — rendered generically (G-036 fix)

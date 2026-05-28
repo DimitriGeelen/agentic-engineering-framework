@@ -236,6 +236,14 @@
 </article>
 {% endif %}
 
+<!-- Context (T-2077: T-2066 GO scope) -->
+{% if sections.context %}
+<article class="section-card">
+    <header>Context</header>
+    <div class="section-content">{{ sections.context }}</div>
+</article>
+{% endif %}
+
 <!-- Linked Assumptions -->
 <article class="section-card">
     <header>Assumptions ({{ linked_assumptions | length }})</header>
@@ -309,6 +317,30 @@
 </article>
 {% endif %}
 
+<!-- Acceptance Criteria (T-2077: T-2066 GO scope) -->
+{% if sections.acceptance_criteria %}
+<article class="section-card">
+    <header>Acceptance Criteria</header>
+    <div class="section-content">{{ sections.acceptance_criteria }}</div>
+</article>
+{% endif %}
+
+<!-- Verification (T-2077: T-2066 GO scope) -->
+{% if sections.verification %}
+<article class="section-card">
+    <header>Verification</header>
+    <div class="section-content">{{ sections.verification }}</div>
+</article>
+{% endif %}
+
+<!-- Decisions (T-2077: T-2066 GO scope) — distinct from singular "Decision" (GO/NO-GO/DEFER) -->
+{% if sections.decisions %}
+<article class="section-card">
+    <header>Decisions</header>
+    <div class="section-content">{{ sections.decisions }}</div>
+</article>
+{% endif %}
+
 <!-- Agent Recommendation (T-679, T-1391 F3 dedupe) -->
 {% if sections.recommendation %}
     {% if dec == 'pending' %}
@@ -359,6 +391,14 @@
 <article class="section-card">
     <header>Structural Upgrade</header>
     <div class="section-content">{{ sections.structural_upgrade }}</div>
+</article>
+{% endif %}
+
+<!-- RCA (T-2077: T-2066 GO scope) — bug-class incidents that triggered the inception -->
+{% if sections.rca %}
+<article class="section-card">
+    <header>RCA</header>
+    <div class="section-content">{{ sections.rca }}</div>
 </article>
 {% endif %}
 
