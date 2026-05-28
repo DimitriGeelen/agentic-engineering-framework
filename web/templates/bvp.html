@@ -19,7 +19,14 @@
       <tbody>
         {% for d_id, w in weights.items() %}
         <tr data-driver="{{ d_id }}">
-          <td><code>{{ d_id }}</code></td>
+          {#- T-2080: show driver name next to the id for at-a-glance reading.
+              Falls back to id-only when the name field is missing. -#}
+          <td>
+            <code>{{ d_id }}</code>
+            {% if driver_names and driver_names[d_id] %}
+              <span class="muted" style="margin-left: 0.4rem; font-size: 0.85rem;">{{ driver_names[d_id] }}</span>
+            {% endif %}
+          </td>
           <td class="server-weight" data-server-weight="{{ w }}">{{ w }}</td>
           <td>
             <input type="range" name="slider-{{ d_id }}" min="0" max="9" value="{{ w }}"
@@ -126,7 +133,7 @@
               <option value="">— select existing free driver to drop —</option>
               {% for d_id in weights.keys() %}
                 {% if not d_id.startswith('D') %}
-                <option value="{{ d_id }}">{{ d_id }}</option>
+                <option value="{{ d_id }}">{{ d_id }}{% if driver_names and driver_names[d_id] %} — {{ driver_names[d_id] }}{% endif %}</option>
                 {% endif %}
               {% endfor %}
             </select>

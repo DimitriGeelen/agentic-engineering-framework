@@ -56,6 +56,21 @@ def _driver_weights(policy: dict) -> dict[str, int]:
     return out
 
 
+def _driver_names(policy: dict) -> dict[str, str]:
+    """T-2080: sister to _driver_weights — return {id: name} so the /bvp
+    sliders table can render the human-readable name next to the code.
+    Falls back silently when a driver is missing a name field (id stays the
+    sole identifier, the template's `|default(...)` handles the absence)."""
+    out: dict[str, str] = {}
+    for d in (policy.get("protected_drivers") or []):
+        if d.get("id"):
+            out[d["id"]] = str(d.get("name") or "")
+    for d in (policy.get("free_drivers") or []):
+        if d.get("id"):
+            out[d["id"]] = str(d.get("name") or "")
+    return out
+
+
 def _compute_bvp(scores: dict, weights: dict[str, int]) -> tuple[int, float]:
     raw = 0
     weight_sum = 0
@@ -604,6 +619,7 @@ def bvp_driver_remove():
 def bvp_scatter():
     policy = _load_policy()
     weights = _driver_weights(policy)
+    driver_names = _driver_names(policy)
     task_points = _collect_task_points(weights)
     arc_points = _collect_arc_points(weights)
     return render_template(
@@ -613,5 +629,6 @@ def bvp_scatter():
         task_points=task_points,
         arc_points=arc_points,
         weights=weights,
+        driver_names=driver_names,
         empty=(not task_points and not arc_points),
     )
