@@ -11,15 +11,15 @@ description: >
   derive filename robustly from full path (e.g. agentic-framework-lib-hook-telemetry.yaml).
   Not orchestrator-arc; framework hygiene.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-05-01T17:09:56Z
-last_update: '2026-05-19T21:45:02Z'
+last_update: 2026-05-28T19:40:43Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -55,9 +55,10 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `agents/fabric/lib/register.sh:_do_register_file()` rejects any `rel_path` beginning with `.agentic-framework/` with a hint to register the upstream framework file instead. Exit non-zero; print the upstream path the agent should register. (Bug 1 — vendored-copy detection.)
+- [x] Slug derivation replaces the greedy `s|\..*$||` with `s|\.[^./-]*$||` (strip ONLY the trailing extension), so paths with dots earlier in the slugified name no longer collapse to an empty string. (Bug 2 — multi-slash + leading-dot.)
+- [x] The same slug derivation pattern in `_register_directory()` (in the same file) is fixed in lockstep — both call sites use the identical sed. (L-441 symmetry — don't fix half.)
+- [x] `bats tests/unit/fabric_register_slug.bats` pins: (a) `.context/project/workflows/foo.yaml` → slug `context-project-workflows-foo`; (b) `.agentic-framework/lib/hook-telemetry.sh` → REJECT exit non-zero with "register the upstream"; (c) `lib/pickup.sh` → slug `lib-pickup` (regression guard for normal path); (d) `bin/fw` (no extension) → slug `bin-fw` (no-extension regression guard). 6/6 green (2 extra regression cases also pinned).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -79,11 +80,27 @@ cost_estimate_proposed:
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+bash -n agents/fabric/lib/register.sh
+bats tests/unit/fabric_register_slug.bats
+out=$(bin/fw fabric register .agentic-framework/lib/hook-telemetry.sh 2>&1 || true); echo "$out" | grep -qi "register the upstream"
+[ ! -f .fabric/components/.yaml ]
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+
+## Recommendation
+
+**Recommendation:** GO (complete)
+
+**Rationale:** Two real bugs in `fw fabric register` closed at root. (1) Vendored `.agentic-framework/*` paths now refuse cleanly with a hint at the upstream path the agent should register instead — eliminates the duplicate-card/split-identity class. (2) Slug derivation no longer collapses to an empty string on any path with a dot earlier than the basename — six regression cases pinned by `tests/unit/fabric_register_slug.bats`. Fix applied to both `_do_register_file()` and the directory-walker's inline derivation in `_register_directory()` (L-441 symmetry — both call sites updated).
+
+**Evidence:**
+- `agents/fabric/lib/register.sh:_do_register_file()`: vendored prefix check at the top of the function, REJECTs with `Register the upstream framework file instead: fw fabric register <upstream-path>`. Non-zero exit.
+- `agents/fabric/lib/register.sh`: both slug-derivation sites (`_do_register_file` line 187 and `_register_directory` line 109) now use `s|\.[^./-]*$||` (strip last extension only).
+- `tests/unit/fabric_register_slug.bats`: 6 scenarios green. Covers (a) dot-prefix multi-slash, (b) vendored REJECT + no malformed card, (c) normal path, (d) no-extension path, (e) `.claude/settings.json`, (f) deep dot-prefix.
+- Live smoke: `bin/fw fabric register .agentic-framework/lib/hook-telemetry.sh` → REJECT with upstream hint; `.fabric/components/.yaml` still absent (no malformed cards remain).
 
 ## RCA
 
@@ -122,3 +139,7 @@ cost_estimate_proposed:
 ### 2026-05-01T17:10:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-05-28T19:40:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now

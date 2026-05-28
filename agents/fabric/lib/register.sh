@@ -106,7 +106,10 @@ for ss, count in sorted(data['subsystems'].items(), key=lambda x: -x[1]):
         rel=$(python3 -c "import os; print(os.path.relpath('$file', os.path.abspath('$PROJECT_ROOT')))" 2>/dev/null || echo "$file")
 
         local slug
-        slug=$(echo "$rel" | sed 's|/|-|g; s|\..*$||; s|^\.||')
+        # T-1659: strip ONLY the trailing extension (last `.<ext>` after the
+        # final separator), not greedy-from-first-dot which collapsed dot-prefix
+        # paths to empty (e.g. `.context/project/workflows/foo.yaml`).
+        slug=$(echo "$rel" | sed 's|/|-|g; s|\.[^./-]*$||; s|^\.||')
         if [ -f "$COMPONENTS_DIR/${slug}.yaml" ]; then
             continue
         fi
@@ -171,9 +174,29 @@ _do_register_file() {
         return 1
     fi
 
+    # T-1659 (bug 1): reject vendored-copy paths. A `.agentic-framework/...`
+    # path is a consumer-side copy of a framework file that already has its
+    # canonical card upstream — registering here would duplicate the card and
+    # split deps_on/depended_by across two slugs. Point the agent at the
+    # upstream path.
+    case "$rel_path" in
+        .agentic-framework/*)
+            local upstream="${rel_path#.agentic-framework/}"
+            echo -e "${RED}REJECT:${NC} vendored framework copy — $rel_path" >&2
+            echo "  Register the upstream framework file instead:" >&2
+            echo "  fw fabric register $upstream" >&2
+            return 1
+            ;;
+    esac
+
     # Generate component slug from path
+    # T-1659 (bug 2): the second sed strips ONLY the trailing extension (last
+    # `.<ext>`, no slashes/dashes/dots in it), not greedy-from-first-dot. The
+    # greedy form collapsed any path that contained a `.` before the basename
+    # to an empty slug — produced `.fabric/components/.yaml` (single shared
+    # file silently overwritten on every register).
     local slug
-    slug=$(echo "$rel_path" | sed 's|/|-|g; s|\..*$||; s|^\.||')
+    slug=$(echo "$rel_path" | sed 's|/|-|g; s|\.[^./-]*$||; s|^\.||')
 
     local card_file="$COMPONENTS_DIR/${slug}.yaml"
     if [ -f "$card_file" ]; then
