@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2056: Fix stale preset-nav unit tests + T-2011 verification after T-2033 human-decided
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T11:47:10Z
+# ============================================================================
+
+task_id: T-2056
+task_name: "Fix stale preset-nav unit tests + T-2011 verification after T-2033 human-decided"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T22:50:42Z
+completed: 2026-05-28T11:47:03Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-05-26T00:53:10+02:00
+last_commit: 2026-05-26T00:55:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reconcile stale preset-nav tests + T-2011 verification to T-2033 decouple. capture L-435 — P-013 render-gate body-mention false-positive class
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/test_nav_layouts.py` is green — the 3 stale preset↔nav tests are replaced with decoupled-contract assertions (presets do NOT carry `nav`; preset selection leaves nav at its default/explicit value). (11 passed)'
+  - 'The test-module docstring guarantee #2 describes the T-2033 decoupled contract, not the dead "presets bind nav" coupling.'
+  - 'T-2011''s `## Verification` block no longer asserts `all(''nav'' in preset)` or `preset→nav` binding — it matches the decoupled contract so T-2011 can complete.'
+  - 'No production behaviour change — `web/blueprints/settings.py` is untouched (this is a test/contract-doc drift fix only); the decouple itself shipped in T-2033. (`git diff --quiet` confirms)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-2011-arc-007-s2d--sidebar--icon-rail-nav-layo.md'
+  - '.tasks/active/T-2056-fix-stale-preset-nav-unit-tests--t-2011-.md'
+  - 'tests/unit/test_nav_layouts.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-26T00:53:10"
+    action: "T-2056: reconcile stale preset-nav tests + T-2011 verification to T-2033 decouple"
+  - time: "2026-05-26T00:55:21"
+    action: "T-2056: capture L-435 — P-013 render-gate body-mention false-positive class"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3656 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, redesign, ui, nav, test-drift]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3656
+  commits: 2
+  files_changed: 4
+  lines_added: 237
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2056-fix-stale-preset-nav-unit-tests--t-2011-.md
+generated_by: context-agent-hybrid
