@@ -2,42 +2,22 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-05-06T09:56:45Z'
-baseline_count: 154
-current_count: 168
+last_run: '2026-05-28T17:51:14Z'
+baseline_count: 246
+current_count: 246
 gated_baseline: 4
 gated_current: 4
-mutators_ungated_baseline: 42
-readonly_exempt_baseline: 108
-status: warn
-exit_code: 1
+mutators_ungated_baseline: 57
+readonly_exempt_baseline: 185
+status: pass
+exit_code: 0
 findings:
-  new_unclassified_tools:
-  - termlink_agent_age_distribution
-  - termlink_agent_burst_detect
-  - termlink_agent_idle_threads
-  - termlink_agent_post_streak
-  - termlink_agent_presence_now
-  - termlink_agent_reaction_rate
-  - termlink_agent_recent_threads
-  - termlink_agent_response_received
-  - termlink_agent_silence_gap
-  - termlink_agent_thread_size_dist
-  - termlink_agent_top_pinners
-  - termlink_agent_top_starrers
-  - termlink_agent_top_thread_starters
-  - termlink_agent_topic_summary
+  new_unclassified_tools: []
   gate_drop_outs: []
   gate_added_ratchet_candidates: []
   removed_tools: []
   tag_format_warnings: []
-sessions_scanned: 2
+sessions_scanned: 22
 sessions_probe_error: null
-warnings:
-- 'NEW: 14 unclassified tool(s) (manual review needed): termlink_agent_age_distribution,
-  termlink_agent_burst_detect, termlink_agent_idle_threads, termlink_agent_post_streak,
-  termlink_agent_presence_now, termlink_agent_reaction_rate, termlink_agent_recent_threads,
-  termlink_agent_response_received, termlink_agent_silence_gap, termlink_agent_thread_size_dist,
-  termlink_agent_top_pinners, termlink_agent_top_starrers, termlink_agent_top_thread_starters,
-  termlink_agent_topic_summary'
+warnings: []
 errors: []

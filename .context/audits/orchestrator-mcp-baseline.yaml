@@ -25,9 +25,22 @@
 # Update 2026-05-15 (T-1867): added 14 more termlink_agent_* analytics primitives
 # (presence/streaks/silences/top-N — all read-shaped names). Same convention-based
 # classification rule. Baseline 154 → 168.
+# Update 2026-05-28 (T-2073): added 74 more tools spanning termlink_agent_*,
+# termlink_channel_*, termlink_fleet_*, termlink_hub_*, termlink_tofu_*.
+# 14 mutators (action-verb names: channel_ack/edit/forward/pin/poll_start/poll_end/
+# poll_vote/quote/react/redact/reply/star/typing_emit; fleet_reauth) classified
+# to mutators_ungated. 60 read-shape tools (analytics, snapshots, threads, members,
+# probes, verifications) to readonly_exempt. Same convention-based classification;
+# handler-level verification deferred (/opt/termlink outside PROJECT_ROOT, strict
+# path isolation). Baseline 168 → 242.
+# Update 2026-05-28 (T-2073 follow-on): re-run revealed 4 additional listener/
+# auto-discover primitives (cadence issue — same one T-1761 inception captured).
+# agent_send_auto_discover → mutator (verb "send"); listener_heartbeat /
+# agent_listeners / agent_listeners_fleet → readonly (status/list shapes).
+# Baseline 242 → 246.
 
-baseline_count: 168
-last_verified: 2026-05-15
+baseline_count: 246
+last_verified: 2026-05-28
 
 gated:
   description: "Enforces check_task_governance() — TERMLINK_TASK_GOVERNANCE=1 requires task_id"
@@ -89,6 +102,25 @@ mutators_ungated:
     - termlink_agent_reply         # creates reply message
     - termlink_agent_star          # stars message
     - termlink_agent_typing        # ephemeral but observable side effect
+    # T-2073: channel_* + fleet_* mutators surfaced 2026-05-28. 11 channel-mutators
+    # mirror their agent_* counterparts (T-1755). poll_start/poll_end create/terminate
+    # poll lifecycle. fleet_reauth rotates credentials. Naming-convention
+    # classification; handler-level review deferred.
+    - termlink_channel_ack             # creates ack message
+    - termlink_channel_edit            # edits an existing message
+    - termlink_channel_forward         # creates forwarded message
+    - termlink_channel_pin             # pins message
+    - termlink_channel_poll_start      # creates poll
+    - termlink_channel_poll_end        # ends poll
+    - termlink_channel_poll_vote       # casts vote
+    - termlink_channel_quote           # creates quoted message
+    - termlink_channel_react           # adds reaction
+    - termlink_channel_redact          # redacts message
+    - termlink_channel_reply           # creates reply message
+    - termlink_channel_star            # stars message
+    - termlink_channel_typing_emit     # emits typing notification (side effect)
+    - termlink_fleet_reauth            # rotates fleet credentials
+    - termlink_agent_send_auto_discover  # T-2073 follow-on: sends discovery msg
 
 readonly_exempt:
   description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
@@ -229,3 +261,75 @@ readonly_exempt:
     - termlink_agent_top_starrers
     - termlink_agent_top_thread_starters
     - termlink_agent_topic_summary
+    # T-2073: 60 read-shape tools surfaced 2026-05-28 across agent_*, channel_*,
+    # fleet_*, hub_*, tofu_* surfaces. All passive — analytics, snapshots, thread
+    # ancestry, presence reads, fingerprints, audits, identity lookups, probes.
+    # Naming-convention classification; handler-level review deferred (/opt/termlink
+    # outside PROJECT_ROOT). Same rule as T-1755/T-1760/T-1867 batches.
+    # agent_* read-shapes (15)
+    - termlink_agent_contact
+    - termlink_agent_dms
+    - termlink_agent_forwards_of
+    - termlink_agent_identity
+    - termlink_agent_inbox
+    - termlink_agent_listen
+    - termlink_agent_mentions
+    - termlink_agent_overview
+    - termlink_agent_ping
+    - termlink_agent_reactions_of
+    - termlink_agent_relations
+    - termlink_agent_replies_of
+    - termlink_agent_snippet
+    - termlink_agent_stats
+    - termlink_agent_thread
+    - termlink_agent_timeline
+    - termlink_agent_typers
+    # channel_* read-shapes (33)
+    - termlink_channel_ack_history
+    - termlink_channel_ack_status
+    - termlink_channel_ancestors
+    - termlink_channel_describe
+    - termlink_channel_digest
+    - termlink_channel_edit_stats
+    - termlink_channel_edits_of
+    - termlink_channel_emoji_stats
+    - termlink_channel_forwards_of
+    - termlink_channel_info
+    - termlink_channel_members
+    - termlink_channel_mentions
+    - termlink_channel_mentions_of
+    - termlink_channel_pin_history
+    - termlink_channel_pinned
+    - termlink_channel_poll_results
+    - termlink_channel_quote_stats
+    - termlink_channel_reactions_of
+    - termlink_channel_reactions_on
+    - termlink_channel_receipts
+    - termlink_channel_redactions
+    - termlink_channel_relations
+    - termlink_channel_replies_of
+    - termlink_channel_search
+    - termlink_channel_snapshot
+    - termlink_channel_snapshot_diff
+    - termlink_channel_snippet
+    - termlink_channel_starred
+    - termlink_channel_state
+    - termlink_channel_state_since
+    - termlink_channel_thread
+    - termlink_channel_threads
+    - termlink_channel_topic_stats
+    - termlink_channel_typing_list
+    - termlink_channel_unread
+    # fleet_* / hub_* / tofu_* read-shapes (8)
+    - termlink_fleet_bootstrap_check
+    - termlink_fleet_history
+    - termlink_fleet_secrets_audit
+    - termlink_fleet_verify
+    - termlink_hub_export_secret
+    - termlink_hub_fingerprint
+    - termlink_hub_probe
+    - termlink_tofu_verify
+    # T-2073 follow-on: listener/auto-discover primitives surfaced on re-run.
+    - termlink_agent_listeners
+    - termlink_agent_listeners_fleet
+    - termlink_listener_heartbeat
