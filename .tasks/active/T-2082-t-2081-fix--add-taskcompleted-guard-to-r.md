@@ -4,20 +4,20 @@ name: "T-2081 fix — add task_completed guard to review_acs_fragment polling en
 description: >
   T-2081 fix — add task_completed guard to review_acs_fragment polling endpoint (L-441 sibling of T-1575)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/review.py, web/templates/_review_acs.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T21:21:11Z
-last_update: 2026-05-28T21:21:11Z
-date_finished: null
+last_update: 2026-05-28T21:28:36Z
+date_finished: 2026-05-28T21:28:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -203,3 +203,22 @@ Empirically verified: pre-fix curl on T-2079's poll endpoint returned `Complete 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2082-t-2081-fix--add-taskcompleted-guard-to-r.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-05f34451
+- **Timestamp:** 2026-05-28T21:28:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/review.py:review_acs_fragment` — `task_completed = status in ('work-completed', 'completed')` computed and passed to template (review.py:285-294).
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/review.py in: `web/blueprints/review.py:review_acs_fragment` — `task_completed = status in ('work-completed', 'completed')` computed and passed to template (review.`
+- **AC#2 (Agent)** — `web/templates/_review_acs.html` — `{% elif task_completed %}` branch added between `decision_recorded` and `all_checked` blocks; renders "✓ Task completed" panel with id `task-completed-marker` (mirr
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/_review_acs.html in: `web/templates/_review_acs.html` — `{% elif task_completed %}` branch added between `decision_recorded` and `all_checked` blocks; renders "✓ Task comp`
+
+### 2026-05-28T21:28:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
