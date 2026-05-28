@@ -3357,3 +3357,10 @@ X'` returning empty group."
   date: 2026-05-27
   context: Added via context agent
   application: TBD
+- id: L-438
+  learning: "htmx hx-boost on <body> with hx-target=#content silently breaks any descendant polling container (hx-trigger='every'...) that does not override hx-target. Inheritance makes the periodic swap target #content (whole page area) instead of the polling div, destroying page-header + breadcrumbs + chrome at the first poll. Always set hx-target='this' on hx-trigger='every' divs in any template that extends a base with body-level hx-target. Two surfaces hit (approvals.html, review.html); both fixed T-2060. Prevention candidate: a Jinja template lint that flags hx-trigger='every' without hx-target on the same element."
+  source: P-001
+  task: T-2060
+  date: 2026-05-28
+  context: Added via context agent
+  application: TBD
