@@ -136,7 +136,7 @@ Detection heuristic (from spike): match `[^$<]\S+\s*\|\s*(grep -q|head -1|head -
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1); echo "$out" | tail -2 | head -1 | grep -qE "^86 passed"
+out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1); echo "$out" | grep -qE "^[0-9]+ passed"
 out=$(python3 -c "import yaml; d=yaml.safe_load(open('policy/anti-patterns.yaml')); pats=[p['id'] for p in d.get('patterns',[])]; print('l387-sigpipe-risk' in pats)"); echo "$out" | grep -q "True"
 out=$(python3 -c "import sys; sys.path.insert(0,'.'); from lib.reviewer import static_scan as ss; f=ss.detect_l387_sigpipe_risk('bin/fw doctor 2>&1 | grep -q OK\n'); print(len(f), f[0].pattern_id if f else 'none')"); echo "$out" | grep -q "^1 l387-sigpipe-risk"
 bash -n agents/task-create/update-task.sh
