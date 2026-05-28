@@ -1311,3 +1311,423 @@ decisions:
     date: 2026-05-25
     task: T-2048
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-190
+    decision: "`_commit_decision` lives in the Flask handler and only the Watchtower path commits."
+    scope: project
+    date: 2026-05-25
+    task: T-2053
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-191
+    decision: "Stage the scoped paths, verify nothing unrelated is pre-staged, then `git commit` the index."
+    scope: project
+    date: 2026-05-25
+    task: T-2053
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-192
+    decision: "This is a backend git-commit change; complete with `--skip-render-review` (logged Tier-2)."
+    scope: project
+    date: 2026-05-25
+    task: T-2053
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-193
+    decision: "Map status colours to `--wt-success/--wt-warn/--wt-danger/--wt-info` (per-palette semantic tokens), not to `--wt-accent`."
+    scope: project
+    date: 2026-05-25
+    task: T-2023
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-194
+    decision: "Map the DEFER verdict pill background to `--wt-warn` but set its text to"
+    scope: project
+    date: 2026-05-25
+    task: T-2024
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-195
+    decision: "Render status/confidence badges as `color-mix(in srgb, var(--wt-X) 13%,"
+    scope: project
+    date: 2026-05-25
+    task: T-2025
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-196
+    decision: "Map approve→`--wt-success`, reject→`--wt-danger`, but flag the green/red"
+    scope: project
+    date: 2026-05-25
+    task: T-2025
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-197
+    decision: "Filter buttons stay outline — `border-color` + `color` both `var(--wt-X)` on"
+    scope: project
+    date: 2026-05-25
+    task: T-2026
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-198
+    decision: "`calc(<rem/px value> * var(--wt-density-scale))` on padding/margin/gap; leave em-spacing, border-radius, border, font-size, letter-spacing untouched."
+    scope: project
+    date: 2026-05-25
+    task: T-2029
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-199
+    decision: "htmx polling (`hx-trigger=\"every Ns\"`) over a Server-Sent-Events stream."
+    scope: project
+    date: 2026-05-25
+    task: T-2020
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-200
+    decision: "Render the feed as a \"Recent activity\" card on the Cockpit, not a strip injected into the base shell on every page."
+    scope: project
+    date: 2026-05-25
+    task: T-2020
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-201
+    decision: "Render-side fix in `cockpit.html` (Jinja `is mapping` branch → percent), leaving the scan's `project_health.traceability` dict shape unchanged."
+    scope: project
+    date: 2026-05-25
+    task: T-2021
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-202
+    decision: "Display the `score` as \"Traceability: N%\" as-labelled; do NOT re-label or re-source the metric in this task."
+    scope: project
+    date: 2026-05-25
+    task: T-2021
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-203
+    decision: "Pass `knowledge_counts` + `pattern_summary` into the cockpit context and read them in the template, exactly as `index.html` does."
+    scope: project
+    date: 2026-05-25
+    task: T-2022
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-204
+    decision: "Breadcrumb partial rendered inside `#content` via `_wrapper.html` (full load) +"
+    scope: project
+    date: 2026-05-25
+    task: T-2009
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-205
+    decision: "Map the URL's first path segment → (group, section) using actual `url_for(leaf)` URLs."
+    scope: project
+    date: 2026-05-25
+    task: T-2009
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-206
+    decision: "Extract `_load_prefs`/`_save_prefs` (whole-dict) and route both `appearance:` and"
+    scope: project
+    date: 2026-05-25
+    task: T-2010
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-207
+    decision: "Render the pin toggle inside `_breadcrumb.html` (already inside `#content`), and"
+    scope: project
+    date: 2026-05-25
+    task: T-2010
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-208
+    decision: "Only endpoints in `NAV_ITEMS` are pinnable; detail pages are not."
+    scope: project
+    date: 2026-05-25
+    task: T-2010
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-209
+    decision: "Render all 3 layouts from the *same* DOM, switching only via `html[data-wt-nav=...]`"
+    scope: project
+    date: 2026-05-25
+    task: T-2011
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-210
+    decision: "Inject the modal markup + a document-level keydown listener once, in `base.html` (the shell that wraps `#content`). A static `web/static/command-palette.js` holds the logic."
+    scope: project
+    date: 2026-05-26
+    task: T-2012
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-211
+    decision: "Render `web.shared.NAV_ITEMS` (already in render_page context as `nav_items`) into a `<script type=\"application/json\" id=\"wt-nav-items\">` as `[{label, url, group}]`, resolving `url_for` server-side. The palette JS reads + fuzzy-matches it client-side."
+    scope: project
+    date: 2026-05-26
+    task: T-2012
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-212
+    decision: "Hard-code the shortcut rows in the `base.html` overlay markup (a small `<dl>` of key→description), separate from `command-palette.js`."
+    scope: project
+    date: 2026-05-26
+    task: T-2013
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-213
+    decision: "A minimal `web/static/shortcuts-overlay.js` that, on open, first closes the palette if open (and the palette listener already toggles itself). Both check \"is a text input focused?\" before acting on a bare key."
+    scope: project
+    date: 2026-05-26
+    task: T-2013
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-214
+    decision: "Persist the dock choice in the per-browser prefs YAML (`panel.dock`) via a CSRF-guarded `/settings/panel-dock/save`, applied server-side as the panel's initial class."
+    scope: project
+    date: 2026-05-26
+    task: T-2015
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-215
+    decision: "`_save_panel_dock` whitelists against `PANEL_DOCKS`; any unknown value silently falls back to the default before touching storage."
+    scope: project
+    date: 2026-05-26
+    task: T-2015
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-216
+    decision: "Build the chip list (label + per-chip clear-URL) in `_build_active_filter_chips` (Python), passed to the template as `active_filter_chips`."
+    scope: project
+    date: 2026-05-26
+    task: T-2016
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-217
+    decision: "Render the panel meta cells with the shared `inline_select` macro, POSTing to the already-existing `/api/task/<id>/{status,owner,horizon,type}` endpoints; add no new JS."
+    scope: project
+    date: 2026-05-26
+    task: T-2017
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-218
+    decision: "After an in-panel edit, show inline confirmation only; the board card behind the panel refreshes on next board load, not live."
+    scope: project
+    date: 2026-05-26
+    task: T-2017
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-219
+    decision: "Apply bulk horizon by fanning out N client-side `fetchWithCsrf` POSTs to the existing `/api/task/<id>/horizon` endpoint, aggregating success/failure in JS."
+    scope: project
+    date: 2026-05-26
+    task: T-2018
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-220
+    decision: "Ship cross-column drag (status change via existing endpoint) only; do not implement within-column card reordering in S4d."
+    scope: project
+    date: 2026-05-26
+    task: T-2019
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-221
+    decision: "Treat the per-card inline status `<select>` as the keyboard-accessible equivalent of cross-column drag, rather than building a separate keyboard drag affordance."
+    scope: project
+    date: 2026-05-26
+    task: T-2019
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-222
+    decision: "Re-declare the foundations.css pico-bridge so its selector beats Pico v2's"
+    scope: project
+    date: 2026-05-26
+    task: T-2003
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-223
+    decision: "Darken `--wt-accent` `#c4623f → #b35636` (closest-hue shade clearing AA at 4.60:1)."
+    scope: project
+    date: 2026-05-26
+    task: T-2006
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-224
+    decision: "Convert only semantic status colours (success/warn/danger) to `--wt-*`; leave neutral pico vars (`--pico-secondary` draft, `--pico-card-sectioning-background-color` draft badge) untouched."
+    scope: project
+    date: 2026-05-26
+    task: T-2027
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-225
+    decision: "Touch only the verdict/banner background colour on the closure/review templates."
+    scope: project
+    date: 2026-05-26
+    task: T-2027
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-226
+    decision: "Keep the 8-type fabric colour map and the cytoscape graph's dark canvas fixed; convert only the semantic coupling-note (`#e53e3e` → `--wt-danger`)."
+    scope: project
+    date: 2026-05-26
+    task: T-2028
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-227
+    decision: "Presets set palette/type/density/mode only; nav layout is an independent control."
+    scope: project
+    date: 2026-05-26
+    task: T-2033
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-228
+    decision: "Move Arcs back to the **Work** nav group (between Tasks and BVP)."
+    scope: project
+    date: 2026-05-26
+    task: T-2034
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-229
+    decision: "Render the first 15 most-actionable verification cards (list is server-sorted by `(sort_priority, age)`), wrap cards 16..N in a collapsed `<details class=\"ac-overflow\">`. Collapsed `<details>` content is `display:none` → excluded from `scrollHeight` and from `full_page` screenshots, yet stays in the DOM (reachable in one click). `filterACs()` auto-opens the overflow when a filter is active so a filtered match in the overflow still shows."
+    scope: project
+    date: 2026-05-26
+    task: T-2038
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-230
+    decision: "Wrap the 758-row component `<table>` in `<div class=\"fabric-table-scroll\">` with `max-height: calc(100vh - 320px)` + `overflow-y:auto`, and make `thead th` `position:sticky; top:0`. Page `scrollHeight` is bounded by the container; all rows stay in the DOM and are reached by scrolling the container; the sticky header keeps columns labelled."
+    scope: project
+    date: 2026-05-26
+    task: T-2039
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-231
+    decision: "Render the first 20 inception `<article>` cards, wrap the rest in a collapsed `<details class=\"inc-overflow\">` (\"Show N more inceptions\"). Collapsed content is display:none → excluded from scrollHeight and full_page screenshots, still in the DOM and one click away."
+    scope: project
+    date: 2026-05-26
+    task: T-2040
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-232
+    decision: "Partition active-first (`rejectattr('status','equalto','closed')` ++"
+    scope: project
+    date: 2026-05-26
+    task: T-2043
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-233
+    decision: "Wrap the learnings table in `.learnings-table-scroll` (max-height scroll"
+    scope: project
+    date: 2026-05-26
+    task: T-2044
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-234
+    decision: "Wrap the table in a `max-height` scroll container with sticky `thead`."
+    scope: project
+    date: 2026-05-26
+    task: T-2045
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-235
+    decision: "Wrap the pipeline table in `.graduation-table-scroll` (`max-height: calc(100vh - 380px)`, sticky `thead`). The 380px subtrahend (vs 220-280px on sibling pages) accounts for /graduation's taller header block (pipeline-flow viz + 6-stat summary + filter row)."
+    scope: project
+    date: 2026-05-26
+    task: T-2046
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-236
+    decision: "Remove `open` from the subsystem `<details>` (collapse by default) AND wrap each table in a `max-height: 70vh` scroll container with sticky `thead`."
+    scope: project
+    date: 2026-05-26
+    task: T-2047
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-237
+    decision: "Split Govern's 16 items into 4 labelled subsections —"
+    scope: project
+    date: 2026-05-26
+    task: T-2008
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-238
+    decision: "Make a group's items polymorphic — a leaf `(label, endpoint, icon)` (3-tuple, unchanged)"
+    scope: project
+    date: 2026-05-26
+    task: T-2008
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-239
+    decision: "Allowlist only `git add` in `is_bash_safe_command`; handle `git commit`'s null-focus allow inside `check-active-task.sh` (focus-aware), excluding `--no-verify`/`-n`."
+    scope: project
+    date: 2026-05-26
+    task: T-2054
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-240
+    decision: "`git commit --no-verify`/`-n` is NOT allowed with null focus — it falls through to the standard \"no active task\" block."
+    scope: project
+    date: 2026-05-26
+    task: T-2054
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-241
+    decision: "Fix the 500 / no-inline-error defect here (T-2051); file the \"decision left uncommitted on success\" defect separately as **T-2053**."
+    scope: project
+    date: 2026-05-26
+    task: T-2051
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-242
+    decision: "Return HTTP 200 with a swappable `.go-decision` error fragment."
+    scope: project
+    date: 2026-05-26
+    task: T-2051
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-243
+    decision: "Fix the worker_kind validator in the same commit"
+    scope: project
+    date: 2026-05-27
+    task: T-1707
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-244
+    decision: "Only host findings get a tag; project findings unchanged."
+    scope: project
+    date: 2026-05-27
+    task: T-1707
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-245
+    decision: "Fix the worker_kind validator in the same commit"
+    scope: project
+    date: 2026-05-27
+    task: T-1707
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-246
+    decision: "Only host findings get a tag; project findings unchanged."
+    scope: project
+    date: 2026-05-27
+    task: T-1707
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-247
+    decision: "Refuse with actionable recovery (option A from the AC menu)."
+    scope: project
+    date: 2026-05-27
+    task: T-2036
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-248
+    decision: "Git evidence is the **sole** signal when present (commits matching task id). Body scan is fallback **only** when git evidence is empty."
+    scope: project
+    date: 2026-05-28
+    task: T-2061
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-249
+    decision: "Fall back to body+components scan when `git log --grep` returns no lines."
+    scope: project
+    date: 2026-05-28
+    task: T-2061
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2061: render-surface gate: prefer actual commit diffs over body-text path tokens
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T11:50:07Z
+# ============================================================================
+
+task_id: T-2061
+task_name: "render-surface gate: prefer actual commit diffs over body-text path tokens"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T11:37:38Z
+completed: 2026-05-28T11:49:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-28T13:40:37+02:00
+last_commit: 2026-05-28T13:49:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file build task — fix L-435 render-surface gate body-text false-positive class. fix L-435 — render-surface gate prefers git evidence over body-text tokens. tick ACs + Evolution + Decisions + Recommendation. re-line Verification block — heredoc-on-one-command-line
+
+# Key outcomes
+outcomes:
+  - '`lib/render_surface.sh:task_touches_render_surface()` prefers git evidence (`git log --all --pretty=format: --name-only --grep TASK_ID`) over body-text path tokens. When git evidence exists, body-text scan is ignored. When git evidence is empty (brand-new task, no commits), body-text scan still runs as a fallback (preserves first-close behaviour for tasks where the very first commit IS the close). Implemented via two helpers `_render_surface_extract_task_id` + `_render_surface_git_touched_paths`; both `task_touches_render_surface` and `render_surface_files_in` use the same source-selection.'
+  - 'T-2056 predicate now returns NO-TOUCH (false positive fixed) — verified via `bash -c ''source lib/render_surface.sh; task_touches_render_surface .tasks/active/T-2056-fix-stale-preset-nav-unit-tests--t-2011-.md && echo TOUCHES || echo NO-TOUCH''` returning `NO-TOUCH`. Full close to be exercised after this commit (separate AC verifies end-to-end).'
+  - 'T-2060 (which genuinely touches `web/templates/approvals.html` + `web/templates/review.html`) still trips the gate — verified via `task_touches_render_surface .tasks/active/T-2060-polling-containers-inherit-body-hx-targe.md` returning TOUCHES. `render_surface_files_in` reports both committed templates. No regression.'
+  - '`tests/unit/test_render_surface_gate.bats` extended: 3 new T-2061 cases (false-positive rejection, true-positive preservation, files-in correctness) + 12 original cases all green (15/15 pass). The original "body verification block returns 0" case (line 70) still passes because its fixture has no matching git history → falls back to body scan (which still detects the body-mentioned render path).'
+  - '`bin/fw doctor` shows 0 failures (19 warnings, all pre-existing). No new doctor regression introduced by this fix.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix L-435 — render-surface gate prefers git evidence over body-text tokens'
+    source: git-mined
+  - description: 'file build task — fix L-435 render-surface gate body-text false-positive class'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-28 — git-evidence as PRIMARY vs. supplement'
+    chose: 'Git evidence is the **sole** signal when present (commits matching task id). Body scan is fallback **only** when git evidence is empty.'
+    rationale: 'Halfway designs ("git AND body, with body filtered") still let body-text false-positives leak through whenever the agent''s prose happens to mention a render path. Commits are unambiguous proof of modification — there is no honest false-positive case for a path that appears in the commit diff.'
+    alternatives_rejected: ['']
+  - decision: '2026-05-28 — fallback when git evidence is empty'
+    chose: 'Fall back to body+components scan when `git log --grep` returns no lines.'
+    rationale: 'Preserves backward-compatible behaviour for the test fixtures (synthetic ids not in git log) and for the legitimate first-close case (task being closed in its first commit, where the close itself isn''t yet logged). Without this fallback, the 12 existing bats cases would all fail and the predicate would always return NO-TOUCH for any first-close task.'
+    alternatives_rejected: ['"Hard error if git evidence empty" — would force a per-call double-commit cadence (commit work, then commit close). Friction without value.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/focus.yaml'
+  - 'lib/render_surface.sh'
+  - '.tasks/active/T-2061-render-surface-gate-prefer-actual-commit.md'
+  - 'tests/unit/test_render_surface_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T13:40:37"
+    action: "T-2061: file build task — fix L-435 render-surface gate body-text false-positive class"
+  - time: "2026-05-28T13:46:43"
+    action: "T-2061: fix L-435 — render-surface gate prefers git evidence over body-text tokens"
+  - time: "2026-05-28T13:49:21"
+    action: "T-2061: tick ACs + Evolution + Decisions + Recommendation"
+  - time: "2026-05-28T13:49:53"
+    action: "T-2061: re-line Verification block — heredoc-on-one-command-line"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, render-surface, governance, false-positive, p-013, l-435]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 4
+  files_changed: 4
+  lines_added: 443
+  lines_removed: 133
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2061-render-surface-gate-prefer-actual-commit.md
+generated_by: context-agent-hybrid

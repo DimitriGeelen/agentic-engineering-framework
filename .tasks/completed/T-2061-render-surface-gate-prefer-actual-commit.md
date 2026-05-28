@@ -6,12 +6,12 @@ description: >
   render-surface gate: prefer actual commit diffs over body-text path tokens — fix
   L-435 false-positive class
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [bug, render-surface, governance, false-positive, p-013, l-435]
-components: [lib/render_surface.sh, agents/task-create/update-task.sh, 
+components: [lib/render_surface.sh, tests/unit/test_render_surface_gate.bats]
       tests/unit/test_render_surface_gate.bats]
 related_tasks: [T-1766, T-2056, T-2060, T-1763, T-1764, T-1765]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -19,8 +19,8 @@ related_tasks: [T-1766, T-2056, T-2060, T-1763, T-1764, T-1765]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T11:37:38Z
-last_update: '2026-05-28T11:45:02Z'
-date_finished:
+last_update: 2026-05-28T11:49:58Z
+date_finished: 2026-05-28T11:49:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -177,3 +177,25 @@ out=$(bash -c 'source lib/render_surface.sh; task_touches_render_surface .tasks/
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2061-render-surface-gate-prefer-actual-commit.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-10b5014f
+- **Timestamp:** 2026-05-28T11:50:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — T-2060 (which genuinely touches `web/templates/approvals.html` + `web/templates/review.html`) still trips the gate — verified via `task_touches_render_surface .tasks/active/T-2060-polling-containers-i
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/approvals.html in: T-2060 (which genuinely touches `web/templates/approvals.html` + `web/templates/review.html`) still trips the gate — verified via `task_touches_render`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats tests/unit/test_render_surface_gate.bats 2>&1); echo "$out" | tail -1 | grep -qE "^ok 15"`
+
+### 2026-05-28T11:49:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
