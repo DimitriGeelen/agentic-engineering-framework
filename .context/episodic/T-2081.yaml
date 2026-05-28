@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2081: RCA: complete button reappears for 1-2s after successful task complete on /review/T-XXX
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-28T21:32:27Z
+# ============================================================================
+
+task_id: T-2081
+task_name: "RCA: complete button reappears for 1-2s after successful task complete on /review/T-XXX"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T20:48:44Z
+completed: 2026-05-28T21:32:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-28T22:50:48+02:00
+last_commit: 2026-05-28T23:04:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — RCA Complete-button transient reappear on /review/T-XXX. spike done — H3 confirmed, Recommendation → GO
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2081-review-complete-button-render-race.md'
+  - '.tasks/active/T-2081-rca-complete-button-reappears-for-1-2s-a.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T22:50:48"
+    action: "T-2081: file inception — RCA Complete-button transient reappear on /review/T-XXX"
+  - time: "2026-05-28T23:04:49"
+    action: "T-2081: spike done — H3 confirmed, Recommendation → GO"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 2
+  files_changed: 2
+  lines_added: 390
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2081-rca-complete-button-reappears-for-1-2s-a.md
+generated_by: context-agent-hybrid
