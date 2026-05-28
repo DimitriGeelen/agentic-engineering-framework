@@ -72,6 +72,17 @@
         <span style="color: {{ _dec_color }}; font-weight: 700;">{{ _dec_upper }}</span>
     </div>
 </div>
+{% elif task_completed %}
+{# T-2081 / T-2082 (L-441 sibling of T-1575): non-inception sibling guard.
+   Without this, the 5-second poll on #ac-container wipes the POST-swap
+   response and re-renders the Complete button for a task that has ALREADY
+   been work-completed. Surface the completion state instead. #}
+<div class="complete-section" id="task-completed-marker">
+    <div style="border-left: 4px solid #10b981; padding: 0.75rem 1rem; background: rgba(0,0,0,0.02); border-radius: 4px;">
+        <strong style="color: #10b981;">✓ Task completed.</strong>
+        <a href="/review/{{ task_id }}" style="margin-left: 0.5rem; font-size: 0.85rem;">Reload page</a> for fresh view.
+    </div>
+</div>
 {% elif all_checked and total_count > 0 %}
 {% if workflow_type == 'inception' %}
 <div class="decide-section" id="inception-decide-form">

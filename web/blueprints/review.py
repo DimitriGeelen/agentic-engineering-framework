@@ -283,6 +283,16 @@ def review_acs_fragment(task_id):
     decision_state = _extract_decision(body)
     decision_recorded = decision_state.lower() not in ("pending", "")
 
+    # T-2081 / T-2082 (L-441 sibling of T-1575): the same poll wipes the Complete
+    # button's POST-swap response on non-inception build tasks. The template falls
+    # through to the Complete-button branch whenever all_checked + total_count > 0
+    # + workflow_type != 'inception', regardless of completion status. Empirical:
+    # GET /review/T-2079/acs (T-2079 in completed/ with status: work-completed)
+    # returned the Complete button. This guard short-circuits the branch so the
+    # poll renders a "✓ Task completed" panel instead.
+    status = (fm.get("status") or "").strip().lower()
+    task_completed = status in ("work-completed", "completed")
+
     return render_template(
         "_review_acs.html",
         task_id=task_id,
@@ -295,4 +305,5 @@ def review_acs_fragment(task_id):
         rec_rationale_text=rec["rationale"],
         decision_recorded=decision_recorded,
         decision_value=decision_state,
+        task_completed=task_completed,
     )
