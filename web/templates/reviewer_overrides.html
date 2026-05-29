@@ -16,10 +16,14 @@
     </p>
   </header>
 
-  <h3>Active Overrides</h3>
+  <h3>Active Overrides{% if overrides %} <small class="muted" style="font-weight:normal;">({{ overrides|length }})</small>{% endif %}</h3>
   {% if overrides %}
-  <table>
-    <thead>
+  {#- T-2089: max-height scroll container + sticky thead so growing overrides list
+      (8628px on first measurement) stays within the 8000px guard. Same fix shape as
+      T-2038/T-2044/T-2045/T-2087 used for unbounded tables. -#}
+  <div class="overrides-scroll" style="max-height:60vh; overflow-y:auto; border:1px solid var(--pico-muted-border-color, #444); border-radius:0.3rem;">
+  <table style="margin-bottom:0;">
+    <thead style="position:sticky; top:0; background:var(--pico-card-background-color, #1a1a1a); z-index:1;">
       <tr>
         <th>ID</th>
         <th>Task</th>
@@ -50,11 +54,12 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>{#- /overrides-scroll (T-2089) -#}
   {% else %}
   <p><em>No active overrides.</em></p>
   {% endif %}
 
-  <h3>Recent feedback-stream events</h3>
+  <h3>Recent feedback-stream events{% if events %} <small class="muted" style="font-weight:normal;">({{ events|length }})</small>{% endif %}</h3>
   {% if event_counts %}
   <p>
     {% for k, v in event_counts.items() %}
@@ -63,8 +68,10 @@
   </p>
   {% endif %}
   {% if events %}
-  <table>
-    <thead>
+  {#- T-2089: same scroll-container shape — events table grew to 77 rows (8628px) at filing. -#}
+  <div class="events-scroll" style="max-height:60vh; overflow-y:auto; border:1px solid var(--pico-muted-border-color, #444); border-radius:0.3rem;">
+  <table style="margin-bottom:0;">
+    <thead style="position:sticky; top:0; background:var(--pico-card-background-color, #1a1a1a); z-index:1;">
       <tr>
         <th>Kind</th>
         <th>Timestamp</th>
@@ -85,6 +92,7 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>{#- /events-scroll (T-2089) -#}
   {% else %}
   <p><em>No feedback events yet — run <code>fw reviewer T-XXX</code> on a completed task.</em></p>
   {% endif %}
