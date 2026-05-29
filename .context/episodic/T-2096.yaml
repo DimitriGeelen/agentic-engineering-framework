@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2096: OBS-036: GO-scope-not-propagated audit detector (L-417 sibling)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-29T13:41:19Z
+# ============================================================================
+
+task_id: T-2096
+task_name: "OBS-036: GO-scope-not-propagated audit detector (L-417 sibling)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T12:36:37Z
+completed: 2026-05-29T13:31:13Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` contains a detector block (after the L-417 stale-slice scan, before fabric drift) that flags completed inceptions matching the GO-scope-not-propagated pattern'
+  - 'Detector logic: `workflow_type: inception` AND propagation-claim phrasing in body AND (`related_tasks: []` OR field absent) AND no active/completed task has the inception''s id in their `related_tasks:`'
+  - 'Detector emits WARN (not FAIL); PASS line when no matches; cites origin (T-2078, T-2091, sibling to L-417/T-1975) in the mitigation guidance'
+  - '`bin/fw audit` runs clean on current corpus (T-2078 already backfilled by T-2091 sweep, so 0 matches expected)'
+  - 'Detector 4-clause logic verified against a synthetic minimal fixture in /tmp (inception + propagation phrase + empty related_tasks + zero back-refs) — proves the WARN path without mutating real corpus. (Note: round-trip on T-2078 itself can''t trigger because T-2092..T-2095 back-reference it — correct detector behaviour, but invalidates that simulation strategy.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-29 — Verification strategy'
+    chose: 'Synthetic-fixture (constructed `/tmp/.fake-tasks-T2096/`) rather than round-trip on T-2078'
+    rationale: 'Blanking T-2078''s own `related_tasks:` does NOT trigger the WARN because T-2092..T-2095 back-reference it — that''s correct detector behaviour (propagation evidence wins regardless of inception-side field state). Round-trip would require also stripping T-2078 from each sibling''s `related_tasks:`, mutating 5 real files. Synthetic fixture is single-purpose, reproducible, and isolates each of the 4 detector clauses.'
+    alternatives_rejected: ['Round-trip mutation of T-2078 + siblings — destructive, easy to leave in inconsistent state if interrupted.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, prevention, antifragility, l-417-sibling]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 54
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2096-obs-036-go-scope-not-propagated-audit-de.md
+generated_by: context-agent-hybrid

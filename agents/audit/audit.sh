@@ -970,6 +970,58 @@ else
          "Update the satellite to describe the live behaviour (origin: L-417, T-1971/T-1972/T-1973/T-1974)"
 fi
 
+# T-2096 (OBS-036, sibling to L-417/T-1975): GO-scope-not-propagated scan.
+# Forwards-pointing companion to the L-417 detector above. L-417 catches
+# satellite text claiming "ships in T-NNNN" where T-NNNN is already
+# completed (backwards staleness). This detector catches the inverse:
+# completed inceptions whose Recommendation/Decision claim sub-tasks
+# were filed, but related_tasks: [] AND no other task back-references
+# the inception in their own related_tasks. The GO scope was promised
+# but never actually propagated — humans following the breadcrumbs
+# find a dead-end.
+# Origin: T-2078 (May-29) — Recommendation said "V1 build slices (filed on GO)"
+# but related_tasks: [] and the V1-a/b/c/d slices did not exist until T-2091's
+# G-052 sweep backfilled them as T-2092..T-2095. WARN (not FAIL) until
+# FP rate is measured.
+go_scope_unprop_count=0
+go_scope_unprop_evidence=""
+for task_file in "$PROJECT_ROOT"/.tasks/completed/T-*.md; do
+    [ -f "$task_file" ] || continue
+    # Filter: must be inception
+    grep -qE "^workflow_type: inception$" "$task_file" || continue
+    # Body must contain a propagation-claim phrase
+    grep -qiE "filed on GO|sub-tasks (filed|created)|build slices (filed|created)|child tasks (filed|spun off)" \
+         "$task_file" || continue
+    # related_tasks must be empty (`[]`) or absent
+    if grep -qE "^related_tasks: \[\]" "$task_file"; then
+        :
+    elif ! grep -qE "^related_tasks:" "$task_file"; then
+        :
+    else
+        continue
+    fi
+    # Reverse check: if any other task back-references this inception's id
+    # in its own related_tasks:, propagation happened despite the empty
+    # inception-side field. Skip.
+    t_id=$(basename "$task_file" | grep -oE '^T-[0-9]+')
+    [ -z "$t_id" ] && continue
+    back_refs=$(grep -lE "related_tasks:.*\b${t_id}\b" \
+                     "$PROJECT_ROOT"/.tasks/active/T-*.md \
+                     "$PROJECT_ROOT"/.tasks/completed/T-*.md 2>/dev/null | wc -l)
+    if [ "$back_refs" -gt 0 ]; then
+        continue
+    fi
+    go_scope_unprop_count=$((go_scope_unprop_count + 1))
+    go_scope_unprop_evidence="$go_scope_unprop_evidence$task_file\n"
+done
+if [ "$go_scope_unprop_count" -eq 0 ]; then
+    pass "No GO-scope-not-propagated inception(s) (sibling to L-417)"
+else
+    warn "Found $go_scope_unprop_count GO-scope-not-propagated inception(s) — Recommendation claims sub-tasks were filed but related_tasks:[] and no task back-references" \
+         "$(printf '%b' "$go_scope_unprop_evidence" | head -5)" \
+         "Backfill related_tasks: in the inception OR file the promised siblings (origin: T-2078, T-2091; sibling to L-417/T-1975)"
+fi
+
 # Fabric drift detection (T-212 — component topology integrity)
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
