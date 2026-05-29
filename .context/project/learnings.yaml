@@ -3392,3 +3392,10 @@ X'` returning empty group."
   date: 2026-05-28
   context: Added via context agent
   application: TBD
+- id: L-443
+  learning: "Perf measurements must be steady-state, not contention-amplified. /inception page measured 12.2s during a broken-link scanner sweep run concurrently with 'fw bvp estimate all --limit 200' + Watchtower cron. Back-to-back re-measurement on idle: cold-hit 3.84s, warm-hit 0.117s (cache already present). Rule: before filing a perf task, re-measure 3x under steady-state (no concurrent estimator/audit/scanner). If any single hit doesn't reproduce, the symptom is contention, not bug — file with promotion criterion, don't ship."
+  source: P-006
+  task: T-2083
+  date: 2026-05-29
+  context: Added via context agent
+  application: TBD
