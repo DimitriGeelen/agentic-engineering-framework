@@ -3406,3 +3406,10 @@ X'` returning empty group."
   date: 2026-05-29
   context: Added via context agent
   application: TBD
+- id: L-445
+  learning: "When parsing source syntax that encodes a range (e.g. '1–2 — desc' meaning 'one row covering scores 1 and 2'), do NOT expand the range into N duplicate dict entries indexed by score. Preserve the range as a single (label, desc) entry where label is '1–2'. Otherwise consumer renderers emit N identical rows and the source intent is lost. Mirror class to L-444: source-intent-vs-render mismatch passes grep tests (still has N entries) and only an eyes-on view catches it."
+  source: P-001
+  task: T-2086
+  date: 2026-05-29
+  context: Added via context agent
+  application: TBD
