@@ -34,11 +34,15 @@
             {% if driver_rubrics and driver_rubrics[d_id] %}
               <details class="driver-rubric" style="display:inline-block; margin-left:0.4rem; vertical-align:middle;">
                 <summary style="cursor:help; font-size:0.8rem; color:var(--pico-muted-color); list-style:none;" title="Show 0-5 scoring guidance for {{ d_id }}">(?)</summary>
-                <ol start="0" style="margin:0.4rem 0 0; padding-left:1.6rem; font-size:0.82rem; line-height:1.4; max-width:42rem;">
+                {#- T-2085: list-style:none — the explicit <strong>N</strong> below
+                    is the only number; without this the <ol start="0"> auto-marker
+                    rendered "0. 0 — …" double-numbering. Source rubric.md uses one
+                    bold number per row, this matches. -#}
+                <ul class="driver-rubric-list" style="list-style:none; margin:0.4rem 0 0; padding-left:0.2rem; font-size:0.82rem; line-height:1.4; max-width:42rem;">
                   {% for level in driver_rubrics[d_id] %}
                   <li><strong>{{ loop.index0 }}</strong> — {{ level }}</li>
                   {% endfor %}
-                </ol>
+                </ul>
               </details>
             {% endif %}
           </td>
