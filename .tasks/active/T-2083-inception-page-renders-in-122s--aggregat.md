@@ -34,14 +34,26 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Empirical re-measurement post-filing (same session):** the original 12.2s symptom turned out to be contention-amplified, not steady-state. Back-to-back `curl /inception`:
+
+| hit | time |
+|---|---|
+| 1 (cold cache) | 3.84s |
+| 2 (warm) | 0.117s |
+| 3 (warm) | 0.115s |
+
+`web/blueprints/inception.py` already has a 30s TTL cache (`_inception_cache`, `_INCEPTION_CACHE_TTL = 30`). Cold-hit cost is dominated by `_load_all_tasks()` reading 2049 task frontmatter files (~3.4s in isolated profile). Warm-hit is acceptable (~100ms).
+
+The 12s curl during the broken-link scanner sweep happened concurrently with `fw bvp estimate all --limit 200` and the Watchtower cron load — that contention is what amplified the cold-hit. The cache itself is sound.
+
+**Recommendation:** downgrade horizon to `later` (already there) and watch. If a future cold-cache hit (post-cache-TTL-expiry under steady-state load) exceeds 5s reproducibly without contention, promote and ship the same `_collect_*` per-blueprint cache pattern T-1954 used on `/bvp`. Not actionable now.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce a >5s cold-hit on `/inception` under steady-state (no concurrent estimator / cron) before promoting this task to `started-work`.
+- [ ] If promotion criterion is met: apply T-1954's per-blueprint cache shape (cache the *enriched* `inception_tasks` list, mtime-invalidate on `.tasks/active/` + `.tasks/completed/` directory mtime).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
