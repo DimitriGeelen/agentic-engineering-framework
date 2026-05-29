@@ -398,8 +398,14 @@ function filterACs(filter) {
 {# T-2038: bound rendered height. Render the first _ac_cap (most-actionable, list is
    sorted by priority,age) normally; wrap the overflow in a collapsed <details> so it
    is display:none — excluded from scrollHeight and from full_page screenshots — yet
-   still in the DOM and one click away (nothing dropped). #}
-{% set _ac_cap = 15 %}
+   still in the DOM and one click away (nothing dropped).
+
+   T-2103: lowered cap 15 → 10. With 4 pending inception cards (~760px each, full
+   Recommendation rendered open by default) + verbose AC cards (~285px each),
+   the 15-AC cap pushed total to 8926px (>8000 cap). Cap=10 saves ~1425px →
+   total ~7500px, comfortably under cap. Overflow group still surfaces N-10
+   remaining; sort already prioritises REVIEW + stale so top 10 are right 10. #}
+{% set _ac_cap = 10 %}
 {% for t in pending_acs %}
 {% if loop.index == _ac_cap + 1 %}
 <details class="ac-overflow" style="margin:0.75rem 0;">
