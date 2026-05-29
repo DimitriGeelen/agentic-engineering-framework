@@ -1,0 +1,30 @@
+id: arc-008
+slug: inception-review-loop
+name: "Inception review loop \u2014 frictionless operator decide + feedback capture"
+description: "Inception review surface today carries generic boilerplate Human ACs (168 inceptions\
+  \ shipped with same template text), no structured feedback channel, no reviewer\
+  \ pre-flight. Four independent questions decomposed into sibling inceptions: T-2101\
+  \ (feedback field, Q4), Q1 (template philosophy), Q2 (frictionless operator instructions),\
+  \ Q3 (reviewer pre-flight)."
+status: draft
+anchor_task: T-2101
+headline_mechanic: "operator decides an inception in Watchtower in two clicks and leaves structured feedback\
+  \ that the agent reads on next session"
+demo_evidence: null
+created: 2026-05-29T21:20:57Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers:
+  - name: feedback-loop-completeness
+    rationale: "distinguishes from D2 (reliability): D2 covers framework-internal observability (no silent failures in agent processes). This driver scores how much a task closes the chat-to-file gap — operator intent surviving the agent-handoff round-trip and landing back in next session. Same antifragile arc-008 goal."
+    source: agent
+    ts: 2026-05-29T21:35:00Z
+  # NOTE: agent considered two further candidates (decision-surface-friction, review-noise-ratio)
+  # and rejected both as too D3-adjacent to justify separate scoring (R5 verbatim: manufacturing
+  # drivers to look thorough is worse than proposing zero). Operator may add via fw arc approve-driver
+  # if they disagree.
+
