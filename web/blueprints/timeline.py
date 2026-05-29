@@ -2,11 +2,46 @@
 
 import logging
 import re as re_mod
+from pathlib import Path
 
 import yaml
 from flask import Blueprint, abort, render_template
 
 from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, get_task_names
+
+
+# T-2106: per-file frontmatter cache keyed on (path, mtime_ns).
+# The session cache (_session_cache, 30s TTL) flushes the entire list every TTL,
+# forcing a full re-walk of 1000+ handover files (parse_frontmatter @ ~4ms ea =
+# 4-5s steady-state cost). This cache survives the TTL — unchanged files return
+# instantly from memory; only added/modified files pay parse cost.
+# Same shape as web/blueprints/bvp.py:_FM_CACHE (T-1954) and
+# web/blueprints/approvals.py:_BODY_CACHE (T-2102).
+_FM_CACHE: dict[str, tuple[int, tuple[dict, str]]] = {}
+
+
+def _get_frontmatter_cached(path: Path | str) -> tuple[dict, str]:
+    """Return (frontmatter_dict, body) for path, mtime-invalidated.
+
+    Mirrors parse_frontmatter(content) semantics — empty dict + full content
+    on parse failure or no-frontmatter file.
+    """
+    p = Path(path)
+    try:
+        mtime_ns = p.stat().st_mtime_ns
+    except OSError:
+        return {}, ""
+    cached = _FM_CACHE.get(str(p))
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+    try:
+        content = p.read_text()
+    except OSError:
+        _FM_CACHE[str(p)] = (mtime_ns, ({}, ""))
+        return {}, ""
+    fm, body = parse_frontmatter(content)
+    _FM_CACHE[str(p)] = (mtime_ns, (fm, body))
+    return fm, body
 
 logger = logging.getLogger(__name__)
 
@@ -117,13 +152,13 @@ def _build_sessions():
         return sessions
 
     for f in sorted(handovers_dir.glob("S-*.md"), reverse=True):
-        content = f.read_text()
-        fm, _ = parse_frontmatter(content)
+        # T-2106: cached (frontmatter, body) — survives _SESSION_CACHE_TTL on unchanged files.
+        fm, body = _get_frontmatter_cached(f)
         if not fm:
             continue
 
         where_match = re_mod.search(
-            r"## Where We Are\n\n(.*?)(?=\n## |\Z)", content, re_mod.DOTALL
+            r"## Where We Are\n\n(.*?)(?=\n## |\Z)", body, re_mod.DOTALL
         )
         narrative = fm.get("session_narrative", "")
         if not narrative and where_match:
