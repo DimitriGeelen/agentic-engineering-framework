@@ -71,6 +71,75 @@ def _driver_names(policy: dict) -> dict[str, str]:
     return out
 
 
+# T-2084: per-driver 0-5 scoring rubric for inline hover/expand on /bvp.
+# Source: policy/bvp-scoring-rubric.md (D1-D4 formal tables); free drivers
+# (F1+) parsed from policy/value-drivers.yaml `rationale` field which embeds
+# the 0-5 levels inline. Missing rubric → empty list; template renders no
+# expand block for that driver (graceful degrade).
+RUBRIC_PATH = PROJECT_ROOT / "policy" / "bvp-scoring-rubric.md"
+
+
+def _driver_rubrics(policy: dict) -> dict[str, list[str]]:
+    """Return {driver_id: [str_for_score_0, ..., str_for_score_5]}.
+
+    Protected drivers (D1-D4): parsed from `policy/bvp-scoring-rubric.md`'s
+    per-driver `### Score criteria` markdown table.
+    Free drivers (F1+):        parsed from each driver's `rationale` in
+                               value-drivers.yaml, which embeds 0-5 levels
+                               inline as "<n> — <desc>" or "<n>-<n> — <desc>".
+    Drivers without parseable rubric → omitted; the template `{% if rubric %}`
+    gate skips them silently.
+    """
+    import re as _re
+
+    out: dict[str, list[str]] = {}
+
+    # Protected — rubric.md per-driver tables
+    if RUBRIC_PATH.exists():
+        try:
+            text = RUBRIC_PATH.read_text()
+        except OSError:
+            text = ""
+        # `## <id> — <name>` … `### Score criteria` … `| **<n>** | <desc> |`
+        section_pat = _re.compile(
+            r"^## ([DF]\d+) — [^\n]+?$.*?### Score criteria\s*\n\n"
+            r"(\|.*?(?=\n##|\Z))",
+            _re.M | _re.DOTALL,
+        )
+        row_pat = _re.compile(r"\| \*\*(\d)\*\* \| (.+?) \|")
+        for m in section_pat.finditer(text):
+            did = m.group(1)
+            rows = row_pat.findall(m.group(2))
+            scored = {int(s): d.strip() for s, d in rows}
+            if all(i in scored for i in range(6)):
+                out[did] = [scored[i] for i in range(6)]
+
+    # Free drivers — parse `rationale` field's inline 0-5 enumeration.
+    # Accepts: "0 — desc", "1–2 — desc" (en-dash range), "1-2 — desc" (ascii).
+    line_pat = _re.compile(
+        r"^\s*(\d)(?:\s*[–\-]\s*(\d))?\s*—\s*(.+?)\s*$", _re.M
+    )
+    for d in (policy.get("free_drivers") or []):
+        did = d.get("id")
+        if not did or did in out:
+            continue
+        rationale = str(d.get("rationale") or "")
+        if not rationale:
+            continue
+        levels: dict[int, str] = {}
+        for m in line_pat.finditer(rationale):
+            lo = int(m.group(1))
+            hi = int(m.group(2)) if m.group(2) else lo
+            desc = m.group(3).strip()
+            for s in range(lo, hi + 1):
+                if 0 <= s <= 5 and s not in levels:
+                    levels[s] = desc
+        if all(i in levels for i in range(6)):
+            out[did] = [levels[i] for i in range(6)]
+
+    return out
+
+
 def _compute_bvp(scores: dict, weights: dict[str, int]) -> tuple[int, float]:
     raw = 0
     weight_sum = 0
@@ -620,6 +689,7 @@ def bvp_scatter():
     policy = _load_policy()
     weights = _driver_weights(policy)
     driver_names = _driver_names(policy)
+    driver_rubrics = _driver_rubrics(policy)
     task_points = _collect_task_points(weights)
     arc_points = _collect_arc_points(weights)
     return render_template(
@@ -630,5 +700,6 @@ def bvp_scatter():
         arc_points=arc_points,
         weights=weights,
         driver_names=driver_names,
+        driver_rubrics=driver_rubrics,
         empty=(not task_points and not arc_points),
     )
