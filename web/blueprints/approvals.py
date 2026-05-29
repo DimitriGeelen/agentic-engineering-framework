@@ -39,6 +39,42 @@ APPROVAL_FILE = PROJECT_ROOT / ".context" / "working" / ".tier0-approval"
 # Approvals older than this are considered expired (seconds)
 EXPIRY_SECONDS = 3600  # 1 hour
 
+# T-2102: per-file body cache keyed on path -> (mtime_ns, body).
+# /approvals scans ~170 active task bodies per request through three hot loaders
+# (_load_pending_go_decisions, _load_pending_human_acs, _load_close_ready_arcs).
+# Profile (S-2026-0529): disk read all = 9ms; parse_frontmatter all = 571ms;
+# section extracts on already-parsed body = 48-85ms. The yaml.safe_load on the
+# frontmatter chunk is the dominant cost. Caching the body (after frontmatter
+# strip) keyed by (path, mtime_ns) eliminates the repeat yaml parse and brings
+# /approvals from 14.8s → <3s on warm cache. Memory cost: ~170 body strings
+# (a few MB) in the long-running Flask process — amortises across requests.
+# Same shape as T-1954 _FM_CACHE in web/blueprints/bvp.py.
+_BODY_CACHE: dict[str, tuple[int, str]] = {}
+
+
+def _get_body_cached(path: Path | str) -> str:
+    """Return task body (after frontmatter strip), mtime-invalidated.
+
+    Returns "" on any read or parse failure (matches existing callers'
+    behaviour of skipping the task on continue).
+    """
+    p = Path(path)
+    try:
+        mtime_ns = p.stat().st_mtime_ns
+    except OSError:
+        return ""
+    cached = _BODY_CACHE.get(str(p))
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+    try:
+        content = p.read_text()
+    except OSError:
+        _BODY_CACHE[str(p)] = (mtime_ns, "")
+        return ""
+    _, body = parse_frontmatter(content)
+    _BODY_CACHE[str(p)] = (mtime_ns, body)
+    return body
+
 
 def _load_pending_approvals():
     """Load all pending approval YAML files. Returns list of dicts."""
@@ -130,11 +166,10 @@ def _load_pending_go_decisions():
         path = fm.get("_path")
         if not path:
             continue
-        try:
-            content = Path(path).read_text()
-        except OSError:
+        # T-2102: use mtime-keyed body cache (was: re-read + parse_frontmatter per request).
+        body = _get_body_cached(path)
+        if not body:
             continue
-        _, body = parse_frontmatter(content)
         if _extract_decision(body) != "pending":
             continue
 
@@ -268,11 +303,10 @@ def _load_pending_human_acs():
         path = fm.get("_path")
         if not path:
             continue
-        try:
-            content = Path(path).read_text()
-        except OSError:
+        # T-2102: use mtime-keyed body cache (was: re-read + parse_frontmatter per request).
+        body = _get_body_cached(path)
+        if not body:
             continue
-        _, body = parse_frontmatter(content)
 
         # T-2075 (T-2064 GO): canonical predicate — shared with `fw review-queue`.
         # Gate FIRST on the cheap predicate, then run the full per-AC parse for
