@@ -9,10 +9,10 @@ description: >
   end-to-end in <=5min. Spec: docs/reports/T-2078-fw-upgrade-reliability-review.md
   F3.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: [fw-upgrade, reliability, v1, T-2078-slice]
 components: []
 related_tasks: [T-2078, T-1633]
@@ -21,7 +21,7 @@ related_tasks: [T-2078, T-1633]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:58:17Z
-last_update: 2026-05-29T12:00:38Z
+last_update: 2026-05-29T12:10:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -208,3 +208,7 @@ Scope refinement and per-AC implementation detail land progressively as the buil
 ### 2026-05-29T12:00:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-05-29T12:10:20Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
