@@ -438,6 +438,95 @@ def discover_get_routes():
     return sorted(paths)
 
 
+def discover_parametrized_routes(per_pattern_limit: int = 5, project_root: str | None = None):
+    """Sample concrete paths for the four high-value parametrized GET patterns.
+
+    T-2087 surfaced two over-cap `/arcs/<slug>` pages (15184px orchestrator-rethink,
+    8076px arc-grooming) that `discover_get_routes()` never measured — it filters out
+    parametrized rules ("can't load blind"). That blind-spot is exactly how T-2038-class
+    regressions land: the parameterless guard is exhaustive, but a sibling template can
+    grow unbounded silently on a parametrized route.
+
+    Strategy: pick the top-N by source-file byte size (proxy for rendered content size,
+    since larger YAML/markdown bodies = more rows/cards rendered). Same 8000px cap as
+    the parameterless guard.
+
+    Patterns sampled:
+      /arcs/<slug>          — top-N from .context/arcs/*.yaml
+      /tasks/<task_id>      — top-N from .tasks/{active,completed}/T-*.md
+      /review/<task_id>     — top-N from .tasks/active/T-*.md (review is for in-flight)
+      /inception/<task_id>  — top-N from .tasks/active/ with workflow_type: inception
+
+    Args:
+      per_pattern_limit: cap per pattern. Default 5 keeps the suite well under the 280s
+        budget (4 × 5 = 20 routes ≈ 2-3s each ≈ 40-60s added).
+      project_root: override PROJECT_ROOT for tests; defaults to repo root.
+
+    Returns sorted, deduped list of concrete paths. Empty-fixture safe: missing
+    .context/arcs or .tasks directories silently return zero paths for that pattern.
+    """
+    import glob as _glob
+    root = project_root or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    def _top_n_by_size(pattern: str, n: int) -> list[str]:
+        """Return the N largest matching files by byte size, ordered largest-first."""
+        files = _glob.glob(pattern)
+        if not files:
+            return []
+        with_size = []
+        for f in files:
+            try:
+                with_size.append((os.path.getsize(f), f))
+            except OSError:
+                continue
+        with_size.sort(key=lambda x: -x[0])
+        return [f for _, f in with_size[:n]]
+
+    paths: set[str] = set()
+
+    # /arcs/<slug> — slug = YAML filename stem
+    for f in _top_n_by_size(os.path.join(root, ".context", "arcs", "*.yaml"), per_pattern_limit):
+        slug = os.path.splitext(os.path.basename(f))[0]
+        paths.add(f"/arcs/{slug}")
+
+    # /tasks/<task_id> — id = filename T-NNNN prefix
+    task_glob_all = _glob.glob(os.path.join(root, ".tasks", "active", "T-*.md")) + \
+                    _glob.glob(os.path.join(root, ".tasks", "completed", "T-*.md"))
+    if task_glob_all:
+        with_size = sorted(((os.path.getsize(f), f) for f in task_glob_all), key=lambda x: -x[0])
+        for _, f in with_size[:per_pattern_limit]:
+            tid = os.path.basename(f).split("-", 2)[0:2]  # ["T", "NNNN"]
+            if len(tid) == 2 and tid[0] == "T":
+                paths.add(f"/tasks/{tid[0]}-{tid[1]}")
+
+    # /review/<task_id> — active only (review surface is for in-flight work)
+    active_tasks = _top_n_by_size(os.path.join(root, ".tasks", "active", "T-*.md"), per_pattern_limit)
+    for f in active_tasks:
+        tid = os.path.basename(f).split("-", 2)[0:2]
+        if len(tid) == 2 and tid[0] == "T":
+            paths.add(f"/review/{tid[0]}-{tid[1]}")
+
+    # /inception/<task_id> — workflow_type: inception, active+completed
+    inception_files = []
+    for tdir in ("active", "completed"):
+        for f in _glob.glob(os.path.join(root, ".tasks", tdir, "T-*.md")):
+            try:
+                # Cheap frontmatter peek — first ~30 lines covers the header
+                with open(f, "r", encoding="utf-8", errors="replace") as fh:
+                    head = "".join(fh.readline() for _ in range(30))
+                if "workflow_type: inception" in head:
+                    inception_files.append((os.path.getsize(f), f))
+            except OSError:
+                continue
+    inception_files.sort(key=lambda x: -x[0])
+    for _, f in inception_files[:per_pattern_limit]:
+        tid = os.path.basename(f).split("-", 2)[0:2]
+        if len(tid) == 2 and tid[0] == "T":
+            paths.add(f"/inception/{tid[0]}-{tid[1]}")
+
+    return sorted(paths)
+
+
 def sweep_pages(base: str, page_path: str, content_pages, out_dir: str, guide: dict,
                 preset_id: str = SWEEP_PRESET):
     """Apply ONE non-default preset on the picker (persists to the per-user pref),

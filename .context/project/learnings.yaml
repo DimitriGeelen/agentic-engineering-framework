@@ -3413,3 +3413,10 @@ X'` returning empty group."
   date: 2026-05-29
   context: Added via context agent
   application: TBD
+- id: L-446
+  learning: "T-2048's all-routes height guard uses discover_get_routes() which returns ONLY parameterless GET routes (Flask url_map filter). Parametrized routes (/arcs/<id>, /tasks/T-XXX, /review/T-XXX, /inception/T-XXX) are not measured, so a bloated /arcs/orchestrator-rethink (15184px) shipped silently. When extending route guards, sample N parametrized routes per blueprint with synthetic or top-N-by-size inputs. Parameterless-only coverage is a false-success signal: page-class fixes (T-2038..T-2047) can mask sibling-route regressions on the same template family."
+  source: P-001
+  task: T-2087
+  date: 2026-05-29
+  context: Added via context agent
+  application: TBD

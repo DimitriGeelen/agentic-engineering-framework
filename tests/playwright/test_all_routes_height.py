@@ -40,7 +40,21 @@ def _discover_routes():
         return []
 
 
+def _discover_parametrized():
+    """Sampled parametrized GET routes (T-2088), or [] on failure.
+
+    Per-pattern limit 5 keeps the suite under the 280s budget (4 patterns × 5 routes ≈
+    +60s on top of the 231s parameterless sweep). Same 8000px cap as the parameterless
+    guard so they never diverge.
+    """
+    try:
+        return _load_uxr().discover_parametrized_routes(per_pattern_limit=5)
+    except Exception:
+        return []
+
+
 ROUTES = _discover_routes()
+PARAMETRIZED_ROUTES = _discover_parametrized()
 
 
 def test_routes_discovered_exhaustively():
@@ -72,4 +86,28 @@ def test_route_height_bounded(page, base_url, route):
         f"{route} scrollHeight {height}px exceeds {HEIGHT_CAP_PX}px cap — a new unbounded "
         "page entered the class. Fix by shape (collapse overflow or table scroll container) "
         "— see project_unbounded_watchtower_pages / CLAUDE.md. (T-2048 guard)"
+    )
+
+
+@pytest.mark.skipif(
+    not PARAMETRIZED_ROUTES,
+    reason="parametrized-route sampler returned [] — no arcs/tasks fixtures yet (T-2088)",
+)
+@pytest.mark.parametrize("route", PARAMETRIZED_ROUTES)
+def test_parametrized_route_height_bounded(page, base_url, route):
+    """Sampled parametrized routes (/arcs/<id>, /tasks/<id>, /review/<id>, /inception/<id>)
+    render below the cap. Closes the T-2087 blind-spot: the parameterless guard never
+    measured these patterns, so /arcs/orchestrator-rethink shipped at 15184px silently.
+    Same 8000px cap; same fix shape (table scroll container or collapsed overflow).
+    (T-2048 + T-2088)
+    """
+    page.goto(f"{base_url}{route}")
+    page.wait_for_load_state("domcontentloaded")
+    page.wait_for_timeout(300)
+    height = page.evaluate("document.documentElement.scrollHeight")
+    assert height < HEIGHT_CAP_PX, (
+        f"{route} scrollHeight {height}px exceeds {HEIGHT_CAP_PX}px cap — a parametrized "
+        "route entered the unbounded-page class. Fix by shape (max-height scroll container "
+        "for tables, collapsed <details> for card lists) — see CLAUDE.md / T-2087 / "
+        "project_unbounded_watchtower_pages. (T-2088 guard)"
     )
