@@ -8,20 +8,20 @@ description: >
   Currently held under 10000ms KNOWN_SLOW elevated cap in test_all_routes_load_time.py
   — fix closes that exemption.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower]
-components: []
+components: [web/blueprints/timeline.py]
 related_tasks: [T-2105, T-1954, T-2102]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T22:59:54Z
-last_update: 2026-05-29T23:07:35Z
-date_finished:
+last_update: 2026-05-29T23:15:40Z
+date_finished: 2026-05-29T23:15:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -267,9 +267,12 @@ echo "$out" | grep -q "\"/timeline\":" && exit 1 || true
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e41afa3c
-- **Timestamp:** 2026-05-29T23:14:40Z
+- **Scan ID:** R-e7dce0ab
+- **Timestamp:** 2026-05-29T23:15:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-29T23:15:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
