@@ -10,16 +10,16 @@ description: >
   (weight on arc-rollup only)? Related: T-1956 (arc rollup), T-1980 (per-task BVP
   block), T-1925 (driver workflow).
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-05-21T14:56:35Z
-last_update: 2026-05-22T06:58:56Z
-date_finished:
+last_update: 2026-05-22T18:37:00Z
+date_finished: 2026-05-22T18:37:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 cost_estimate_proposed:
@@ -30,6 +30,15 @@ cost_estimate_proposed:
       tier: 4
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-22T15:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -133,15 +142,15 @@ is chosen). UI changes beyond explanatory text (T-1980 sibling).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -223,9 +232,67 @@ the `/tasks/T-XXX` per-task BVP block explaining the separation.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Scoped drivers are arc-distinguishing by design (T-1925 framing —
+"what distinguishes this arc from global D1-D4"). Per-task scoring on an
+arc-distinguishing axis is semantically muddled: every member task of arc-006
+would get the same scoped score from the estimator (no per-task signal in
+arc-006's scoped drivers without per-arc rubrics). Model B preserves the
+separation cleanly: D1-D4 = per-task fingerprint, scoped = arc-level axis,
+visible via `/arcs/<id>` rollup (already implemented in T-1956).
+
+Model A would require ~3 hours per scoped driver for rubric design +
+estimator extension + tests, with poor signal-to-noise for arc-006's
+specifically arc-level drivers (estimator-fidelity is *about* the estimator,
+not *of* the task). Model C adds compute-time arc-YAML reads to `_compute_bvp`
+with no marginal signal benefit. Model D leaves estimator and adds manual
+UI burden for a UX that's not been requested.
+
+The minimum-cost path to closing the visible asymmetry: ship a one-liner in
+the `/tasks/T-XXX` per-task BVP block explaining the separation.
+
+**Date**: 2026-05-22T18:37:00Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-22T18:37:00Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Scoped drivers are arc-distinguishing by design (T-1925 framing —
+"what distinguishes this arc from global D1-D4"). Per-task scoring on an
+arc-distinguishing axis is semantically muddled: every member task of arc-006
+would get the same scoped score from the estimator (no per-task signal in
+arc-006's scoped drivers without per-arc rubrics). Model B preserves the
+separation cleanly: D1-D4 = per-task fingerprint, scoped = arc-level axis,
+visible via `/arcs/<id>` rollup (already implemented in T-1956).
+
+Model A would require ~3 hours per scoped driver for rubric design +
+estimator extension + tests, with poor signal-to-noise for arc-006's
+specifically arc-level drivers (estimator-fidelity is *about* the estimator,
+not *of* the task). Model C adds compute-time arc-YAML reads to `_compute_bvp`
+with no marginal signal benefit. Model D leaves estimator and adds manual
+UI burden for a UX that's not been requested.
+
+The minimum-cost path to closing the visible asymmetry: ship a one-liner in
+the `/tasks/T-XXX` per-task BVP block explaining the separation.
+
+### 2026-05-22T18:37:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a77f8c9d
+- **Timestamp:** 2026-05-22T18:37:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-22T18:37:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
