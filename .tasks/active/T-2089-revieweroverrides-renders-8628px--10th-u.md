@@ -121,8 +121,9 @@ Template: `web/templates/reviewer_overrides.html` (lines 21-52 active, 66-87 eve
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
 #
 # T-2089 verification: the targeted height-guard test must pass on the live page.
-# L-387-safe pattern: capture pytest output, then grep the capture (not pipe-grep).
-out=$(timeout 90 python3 -m pytest "tests/playwright/test_all_routes_height.py::test_route_height_bounded[/reviewer/overrides]" -q 2>&1); echo "$out" | tail -3 | grep -qE "1 passed"
+# L-387-safe pattern: capture pytest output, then SINGLE pipe to grep (no intermediate
+# tail/awk/sed stages — T-2090; the middle pipe re-introduces SIGPIPE risk).
+out=$(timeout 90 python3 -m pytest "tests/playwright/test_all_routes_height.py::test_route_height_bounded[/reviewer/overrides]" -q 2>&1); echo "$out" | grep -qE "1 passed"
 
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -227,17 +228,11 @@ Same shape as T-2087 (max-height scroll container + sticky thead + row-count hin
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-70b2650b
-- **Timestamp:** 2026-05-29T10:17:47Z
+- **Scan ID:** R-f69fab10
+- **Timestamp:** 2026-05-29T10:22:58Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 21
-     - evidence: `out=$(timeout 90 python3 -m pytest "tests/playwright/test_all_routes_height.py::test_route_height_bounded[/reviewer/overrides]" -q 2>&1); echo "$out" | tail -3 | grep -qE "1 passed"`
-
+- **Findings:** none
 ### 2026-05-29T10:17:27Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

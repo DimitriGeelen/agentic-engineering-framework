@@ -165,8 +165,8 @@ T-2087's narrow fix didn't sweep.
 # (10th instance of the parameterless unbounded class, filed as T-2089) — that pre-exists
 # T-2088 and is not regressed by it. Scoping verification to the new contracts avoids
 # hostage-taking by unrelated failures (L-387 safe pattern: capture-then-grep).
-out=$(python3 -m pytest tests/unit/test_parametrized_route_sampler.py -q 2>&1); echo "$out" | tail -3 | grep -qE "9 passed"
-out=$(python3 -m pytest tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded -q --tb=no 2>&1); echo "$out" | tail -3 | grep -qE "20 passed"
+out=$(python3 -m pytest tests/unit/test_parametrized_route_sampler.py -q 2>&1); echo "$out" | grep -qE "9 passed"
+out=$(python3 -m pytest tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded -q --tb=no 2>&1); echo "$out" | grep -qE "20 passed"
 
 ## RCA
 
@@ -255,24 +255,16 @@ live 20-route playwright suite passes (178s).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-38cbc3db
-- **Timestamp:** 2026-05-29T10:12:36Z
+- **Scan ID:** R-62c3aeee
+- **Timestamp:** 2026-05-29T10:22:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 1
 
 **Per-AC findings:**
 
 - **AC#1 (Agent)** — **A1** `agents/ux-review/ux-review.py` exposes
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/ux-review/ux-review.py in: **A1** `agents/ux-review/ux-review.py` exposes`
-
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 31
-     - evidence: `out=$(python3 -m pytest tests/unit/test_parametrized_route_sampler.py -q 2>&1); echo "$out" | tail -3 | grep -qE "9 passed"`
-  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 32
-     - evidence: `out=$(python3 -m pytest tests/playwright/test_all_routes_height.py::test_parametrized_route_height_bounded -q --tb=no 2>&1); echo "$out" | tail -3 | grep -qE "20 passed"`
-
 ### 2026-05-29T10:11:09Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

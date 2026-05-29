@@ -1,22 +1,29 @@
 ---
-id: T-XXX
-name:
+id: T-2090
+name: "L-387 SIGPIPE pattern follow-up: drop tail-3 middle pipe from verification"
 description: >
+  Reviewer (T-1443) flagged 4 l387-sigpipe-risk CONCERN findings on T-2088 + T-2089
+  Verification: the pattern 'out=$(cmd); echo "$out" | tail -3 | grep -qE PAT' re-introduces
+  SIGPIPE risk via the middle pipe even though the capture-first part was correct.
+  Safe pattern from L-387 hint is single-pipe: 'echo "$out" | grep -qE PAT' (grep
+  scans whole captured string; tail-3 was cosmetic). Fix: amend Verification in both
+  closed tasks, update task default template hint to call out 'single pipe only —
+  no intermediate tail/awk/sed stages'.
 
-status: captured
-workflow_type:
-owner:
+status: work-completed
+workflow_type: build
+owner: agent
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-2088, T-2089, T-2057]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created:
-last_update:
-date_finished: null
+created: 2026-05-29T10:20:36Z
+last_update: 2026-05-29T10:24:01Z
+date_finished: 2026-05-29T10:24:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -27,20 +34,48 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-29T10:20:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-XXX: [Task Name]
+# T-2090: L-387 SIGPIPE pattern follow-up: drop tail-3 middle pipe from verification
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reviewer agent flagged 4 `l387-sigpipe-risk` CONCERN findings across T-2088 (2) and T-2089 (2),
+plus surfaced a wider authoring gap: the L-387 hint in the task default template documents the
+safe single-pipe pattern but doesn't explicitly forbid the `out=$(cmd); echo "$out" | tail -3 | grep -qE`
+shape, which I just shipped twice. The middle `tail -3` re-introduces pipe-SIGPIPE risk under
+`set -eo pipefail` even though the `$(cmd)` capture closed off the original stdin race.
+
+Smallest fix: amend the four Verification lines in T-2088 + T-2089 to drop the middle pipe
+(`echo "$out" | grep -qE ...`) and update the L-387 hint to call out "single pipe only — no
+intermediate tail/awk/sed stages between capture and grep".
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] **A1** T-2088 Verification: two `out=$(...); echo "$out" | tail -3 | grep -qE ...` lines
+  converted to `out=$(...); echo "$out" | grep -qE ...` (single-pipe safe variant). Verified:
+  both `T-2088 v1 OK` and `T-2089 v1 OK` print on direct run.
+- [x] **A2** T-2089 Verification: same conversion applied to its one verification line plus
+  inline comment noting the single-pipe rule and T-2090 origin.
+- [x] **A3** Reviewer re-scan: T-2088 CONCERN(3)→CONCERN(1) (remaining finding is unrelated
+  AC-verify-mismatch advisory, not L-387); T-2089 CONCERN(1)→**PASS** (no findings).
+  L-387 SIGPIPE risk cleared on both Verification blocks.
+- [x] **A4** `.tasks/templates/default.md` L-387 hint extended with verbatim block: "Single pipe
+  only — no intermediate tail/awk/sed stages between capture and grep (T-2090): \`echo \"\$out\"
+  | tail -3 | grep -q PAT\` re-introduces the SIGPIPE risk the capture step closed off …".
+  Future tasks created from this template will see the warning at authoring time.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -93,18 +128,20 @@ date_finished: null
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
 #
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# T-2090 verification — single-pipe pattern itself; meta-test that the fix uses
+# the very pattern it's documenting.
+# Both task files must have ZERO `tail -3 | grep` occurrences after the cleanup.
+out=$(grep -c "tail -3 | grep" .tasks/active/T-2088-parametrized-route-height-guard-sample-a.md 2>&1); echo "$out" | grep -qE "^0$"
+out=$(grep -c "tail -3 | grep" .tasks/active/T-2089-revieweroverrides-renders-8628px--10th-u.md 2>&1); echo "$out" | grep -qE "^0$"
+# Template hint must contain the new "Single pipe only" warning line.
+out=$(grep -c "Single pipe only" .tasks/templates/default.md 2>&1); echo "$out" | grep -qE "^1$"
 
 ## RCA
 
@@ -146,6 +183,25 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO — close at Agent-AC boundary; no Human ACs (mechanical text fix
+plus template hint update; nothing visual or subjective).
+
+**Rationale:** Reviewer surfaced 4 `l387-sigpipe-risk` CONCERNs across T-2088 + T-2089 the
+moment they shipped. Closing them clears the immediate concerns and updates the template
+hint so the next agent authoring Verification doesn't repeat the pattern. Antifragility loop:
+reviewer (T-1443) catches, agent fixes, template prevents recurrence.
+
+**Evidence:**
+- `.tasks/templates/default.md` L-387 hint extended with "Single pipe only" warning block
+- T-2088 Verification single-pipe: `out=$(...); echo "$out" | grep -qE "9 passed"` (was `... | tail -3 | grep ...`)
+- T-2089 Verification single-pipe: same shape (was `... | tail -3 | grep ...`)
+- `bin/fw reviewer T-2089` post-fix: PASS (0 findings, was CONCERN/1)
+- `bin/fw reviewer T-2088` post-fix: CONCERN(1) — single remaining finding is unrelated
+  `AC-verify-mismatch` advisory on the AC text path mention (not L-387)
+- `grep -c "tail -3 | grep" .tasks/active/T-208[89]-*.md` → 0 (both)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -169,5 +225,22 @@ date_finished: null
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
+### 2026-05-29T10:20:36Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2090-l-387-sigpipe-pattern-follow-up-drop-tai.md
+- **Context:** Initial task creation
+
+### 2026-05-29T10:20:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7b65fe94
+- **Timestamp:** 2026-05-29T10:24:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-29T10:24:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
