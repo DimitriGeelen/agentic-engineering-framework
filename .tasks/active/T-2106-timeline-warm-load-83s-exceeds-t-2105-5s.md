@@ -187,6 +187,20 @@ echo "$out" | grep -q "\"/timeline\":" && exit 1 || true
 - **Plan impact:** None — the exact T-1954 / T-2102 cache shape applied cleanly. `_FM_CACHE` keyed on `(path, mtime_ns)` returning `(fm, body)` so the "Where We Are" regex on the body keeps working. Replaced `f.read_text() + parse_frontmatter(content)` with `_get_frontmatter_cached(f)` and the `## Where We Are` regex's input `content` with `body`.
 - **Triggered:** Sibling thought (deferred, not filed): promote `_FM_CACHE` + `_get_frontmatter_cached(path)` to `web/shared.py` so the fourth consumer (next slow-aggregation page after `/search` T-2107 and `/` T-2108) doesn't re-implement it. Not under "one bug = one task" rule — first promote-to-shared comes after a 3rd consumer needs it; we now have 3 (`bvp.py:_FM_CACHE`, `approvals.py:_BODY_CACHE`, `timeline.py:_FM_CACHE`). One observation in T-2106 RCA → file as OBS-NNN at session end.
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Mechanical perf fix, proven cache shape (third application of T-1954). 12× warm-load speedup on `/timeline` (590ms vs 8279ms). No semantic change — `_build_sessions()` returns identical session list shape (1064 entries, narrative + token-usage fields populated, emergency-collapse logic untouched). Reviewer PASS, no findings. Verification 7/7 commands pass on live Watchtower. Only the visual sanity check remains for you — confirming the sessions look right in the browser.
+
+**Evidence:**
+- `web/blueprints/timeline.py:18-50` — `_FM_CACHE` + `_get_frontmatter_cached` helper
+- `web/blueprints/timeline.py:120-126` — `_build_sessions()` routed through cache
+- `tests/playwright/test_all_routes_load_time.py` — `/timeline` removed from `KNOWN_SLOW`; closure comment present
+- Live curl: `curl -sf -w '%{time_total}' http://192.168.10.107:3000/timeline` returns 0.59-0.71s warm
+- Playwright `test_route_load_time_bounded[/timeline]` PASSES at global 5000ms cap (was failing at 5000, passed at 10000 KNOWN_SLOW pre-fix)
+- Profile: cold 5225ms (one-time), warm 70ms (74× over previous re-parse loop)
+
 ## Decisions
 
 ### 2026-05-30 — cache the read+parse together, not just the parse
