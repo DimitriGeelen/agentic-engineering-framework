@@ -238,3 +238,31 @@ observations:
     tags: [bug]
     status: dismissed
     promoted_to: null
+  - id: OBS-034
+    text: "Orphan stash 254e9028 ('WIP on master: 8a8a7b0a T-2086') contains .agentic-framework/<consumer-layout>/ paths inside the framework repo's own git — likely created by a session whose cwd was confused. Stash was the source of the G-052 active/T-1981 + active/T-1987 duplicates (T-2091 fix). Investigation needed: (1) drop the stash if safely orphan, OR (2) re-apply selectively if it has real work content, OR (3) leave for human inspection. Risk: this is a 600+ file stash referencing consumer paths that don't belong in this repo — dropping unknown stashes is destructive. Reference: docs/reports/T-2091 (not yet written; data in .tasks/completed/T-2091-*.md RCA section)."
+    captured: 2026-05-29T11:56:18Z
+    context_task: T-2091
+    tags: [housekeeping]
+    status: pending
+    promoted_to: null
+  - id: OBS-035
+    text: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent."
+    captured: 2026-05-29T11:56:27Z
+    context_task: T-2091
+    tags: [prevention]
+    status: pending
+    promoted_to: null
+  - id: OBS-036
+    text: "Audit detector idea (sibling to L-417): Completed inception with workflow_type:inception + Recommendation/Decision text matching '(filed on GO|sub-tasks (filed|created)|build slices (filed)' + 'related_tasks: []' + no completed/active task with related_tasks pointing back → WARN as 'GO-scope-not-propagated'. T-2078 (discovered 2026-05-29 via T-2091 sweep) was the first known instance; the V1 slices T-2092..T-2095 were filed retroactively. Existing L-417 detector covers the inverse (templates/source claim 'will ship in T-XXX' but T-XXX already completed) — this would catch the OUTGOING propagation gap. Scope: .tasks/completed/T-*.md filtered by workflow_type. Fix shape: ~30 lines extending audit.sh structure section, follows the L-417 detector pattern."
+    captured: 2026-05-29T12:06:35Z
+    context_task: T-2078
+    tags: [audit]
+    status: dismissed
+    promoted_to: null
+  - id: OBS-037
+    text: "resolve"
+    captured: 2026-05-29T13:50:46Z
+    context_task: T-1062
+    tags: []
+    status: dismissed
+    promoted_to: null
