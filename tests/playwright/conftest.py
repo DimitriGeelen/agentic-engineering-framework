@@ -18,15 +18,27 @@ TEST_PORT = int(os.environ.get("FW_TEST_PORT", "3099"))
 TEST_URL = f"http://localhost:{TEST_PORT}"
 
 
+def _warm_slow_routes():
+    """T-2104: pre-hit slow-aggregation routes so subsequent page.goto calls
+    don't time out on cold-start latency. See T-2104 task body for rationale."""
+    for route in ("/approvals", "/inception", "/tasks", "/timeline", "/bvp"):
+        try:
+            urllib.request.urlopen(f"{TEST_URL}{route}", timeout=30)
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError):
+            pass
+
+
 @pytest.fixture(scope="session")
 def watchtower_server():
     """Start Watchtower in a subprocess for the test session."""
     # Check if already running on test port
     try:
         urllib.request.urlopen(f"{TEST_URL}/health", timeout=5)
+        _warm_slow_routes()  # T-2104: warm even if reusing an existing server
         yield None  # Server already running, don't manage it
         return
     except urllib.error.HTTPError:
+        _warm_slow_routes()  # T-2104
         yield None  # Server is up (503 = Ollama unreachable but app healthy)
         return
     except (urllib.error.URLError, ConnectionRefusedError, OSError):
@@ -72,6 +84,14 @@ def watchtower_server():
             f"Watchtower failed to start on port {TEST_PORT}.\n"
             f"stderr: {stderr_content}"
         )
+
+    # T-2104: warm up slow-aggregation routes before tests run.
+    # Cold-start latency on /approvals (6-15s), /timeline (~8s), /tasks (~7s)
+    # otherwise exceeds the 15s page.goto navigation timeout (set on the page
+    # fixture) and masks real height/content regressions as TimeoutError. The
+    # body / frontmatter / episodic caches (T-1954, T-2083, T-2102) are
+    # process-local; a fresh subprocess starts cold every test session.
+    _warm_slow_routes()
 
     yield proc
 
