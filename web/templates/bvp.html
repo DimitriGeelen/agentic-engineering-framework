@@ -39,8 +39,11 @@
                     rendered "0. 0 — …" double-numbering. Source rubric.md uses one
                     bold number per row, this matches. -#}
                 <ul class="driver-rubric-list" style="list-style:none; margin:0.4rem 0 0; padding-left:0.2rem; font-size:0.82rem; line-height:1.4; max-width:42rem;">
-                  {% for level in driver_rubrics[d_id] %}
-                  <li><strong>{{ loop.index0 }}</strong> — {{ level }}</li>
+                  {#- T-2086: rubric entries are (label, desc) tuples. Label is
+                      a single score ("3") or a range ("1–2") — keeps source
+                      semantics where one rationale row spans two scores. -#}
+                  {% for label, desc in driver_rubrics[d_id] %}
+                  <li><strong>{{ label }}</strong> — {{ desc }}</li>
                   {% endfor %}
                 </ul>
               </details>

@@ -79,22 +79,28 @@ def _driver_names(policy: dict) -> dict[str, str]:
 RUBRIC_PATH = PROJECT_ROOT / "policy" / "bvp-scoring-rubric.md"
 
 
-def _driver_rubrics(policy: dict) -> dict[str, list[str]]:
-    """Return {driver_id: [str_for_score_0, ..., str_for_score_5]}.
+def _driver_rubrics(policy: dict) -> dict[str, list[tuple[str, str]]]:
+    """Return {driver_id: [(label, desc), …]}.
+
+    `label` is a single score (`"3"`) or an inclusive range (`"1–2"`) — the
+    template renders it as `**<label>** — <desc>`. Range labels collapse
+    adjacent rows that share a description; T-2086 source intent of the
+    `1–2 — desc` syntax in value-drivers.yaml is "one row covering two scores",
+    not "two identical rows".
 
     Protected drivers (D1-D4): parsed from `policy/bvp-scoring-rubric.md`'s
-    per-driver `### Score criteria` markdown table.
+    per-driver `### Score criteria` markdown table — one row per score.
     Free drivers (F1+):        parsed from each driver's `rationale` in
-                               value-drivers.yaml, which embeds 0-5 levels
-                               inline as "<n> — <desc>" or "<n>-<n> — <desc>".
+                               value-drivers.yaml, which embeds the levels
+                               inline as "<n> — <desc>" or "<lo>–<hi> — <desc>".
     Drivers without parseable rubric → omitted; the template `{% if rubric %}`
     gate skips them silently.
     """
     import re as _re
 
-    out: dict[str, list[str]] = {}
+    out: dict[str, list[tuple[str, str]]] = {}
 
-    # Protected — rubric.md per-driver tables
+    # Protected — rubric.md per-driver tables. Always single-score labels.
     if RUBRIC_PATH.exists():
         try:
             text = RUBRIC_PATH.read_text()
@@ -112,10 +118,12 @@ def _driver_rubrics(policy: dict) -> dict[str, list[str]]:
             rows = row_pat.findall(m.group(2))
             scored = {int(s): d.strip() for s, d in rows}
             if all(i in scored for i in range(6)):
-                out[did] = [scored[i] for i in range(6)]
+                out[did] = [(str(i), scored[i]) for i in range(6)]
 
-    # Free drivers — parse `rationale` field's inline 0-5 enumeration.
+    # Free drivers — parse `rationale` field's inline level enumeration.
     # Accepts: "0 — desc", "1–2 — desc" (en-dash range), "1-2 — desc" (ascii).
+    # Source order preserved; a range stays one entry (not expanded into N
+    # duplicate rows — T-2086).
     line_pat = _re.compile(
         r"^\s*(\d)(?:\s*[–\-]\s*(\d))?\s*—\s*(.+?)\s*$", _re.M
     )
@@ -126,16 +134,28 @@ def _driver_rubrics(policy: dict) -> dict[str, list[str]]:
         rationale = str(d.get("rationale") or "")
         if not rationale:
             continue
-        levels: dict[int, str] = {}
+        ranges: list[tuple[int, int, str]] = []  # (lo, hi, desc), source order
         for m in line_pat.finditer(rationale):
             lo = int(m.group(1))
             hi = int(m.group(2)) if m.group(2) else lo
-            desc = m.group(3).strip()
+            if 0 <= lo <= hi <= 5:
+                ranges.append((lo, hi, m.group(3).strip()))
+        # Validate exact 0-5 coverage with no overlap; otherwise skip (graceful).
+        covered: set[int] = set()
+        ok = True
+        for lo, hi, _desc in ranges:
             for s in range(lo, hi + 1):
-                if 0 <= s <= 5 and s not in levels:
-                    levels[s] = desc
-        if all(i in levels for i in range(6)):
-            out[did] = [levels[i] for i in range(6)]
+                if s in covered:
+                    ok = False
+                    break
+                covered.add(s)
+            if not ok:
+                break
+        if ok and covered == set(range(6)):
+            out[did] = [
+                (str(lo) if lo == hi else f"{lo}–{hi}", desc)
+                for lo, hi, desc in ranges
+            ]
 
     return out
 
