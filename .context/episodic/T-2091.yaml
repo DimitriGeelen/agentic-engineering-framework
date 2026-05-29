@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2091: G-052 cleanup: orphaned May-22 completion work for T-1981 + T-1987 — duplicate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-29T11:51:53Z
+# ============================================================================
+
+task_id: T-2091
+task_name: "G-052 cleanup: orphaned May-22 completion work for T-1981 + T-1987 — duplicate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T11:43:37Z
+completed: 2026-05-29T11:51:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-29T13:50:24+02:00
+last_commit: 2026-05-29T13:50:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-052 cleanup — recover orphaned May-22 completion of T-1981 + T-1987
+
+# Key outcomes
+outcomes:
+  - 'May-22 canonical completion content (currently untracked in `.tasks/completed/T-1981-*.md` and `.tasks/completed/T-1987-*.md`) is staged and committed'
+  - 'Tracked stale active/ copies are removed via `git rm`'
+  - '`bin/fw audit` STRUCTURE checks pass (no duplicate-task-IDs FAIL)'
+  - 'T-1981 and T-1987 inception decisions remain recorded (status `work-completed`, Decision section filled)'
+  - 'Pending handover commit `e1a6fd50` plus this cleanup commit land on origin/master'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2091-g-052-cleanup-orphaned-may-22-completion.md'
+  - '.tasks/completed/T-1981-inception-how-should-arc-scoped-drivers-.md'
+  - '.tasks/completed/T-1987-watchtower-redesign--apply-claude-design.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-29T13:50:24"
+    action: "T-2091: G-052 cleanup — recover orphaned May-22 completion of T-1981 + T-1987"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, cleanup, g-052]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 2
+  lines_added: 357
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2091-g-052-cleanup-orphaned-may-22-completion.md
+generated_by: context-agent-hybrid

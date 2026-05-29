@@ -6,7 +6,7 @@ description: >
   G-052 cleanup: orphaned May-22 completion work for T-1981 + T-1987 — duplicate task
   IDs
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -18,8 +18,8 @@ related_tasks: [T-1981, T-1987, T-077]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:43:37Z
-last_update: '2026-05-29T11:45:02Z'
-date_finished:
+last_update: 2026-05-29T11:51:47Z
+date_finished: 2026-05-29T11:51:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -78,7 +78,7 @@ block every subsequent pre-push audit until cleared.
 - [x] Tracked stale active/ copies are removed via `git rm`
 - [x] `bin/fw audit` STRUCTURE checks pass (no duplicate-task-IDs FAIL)
 - [x] T-1981 and T-1987 inception decisions remain recorded (status `work-completed`, Decision section filled)
-- [ ] Pending handover commit `e1a6fd50` plus this cleanup commit land on origin/master
+- [x] Pending handover commit `e1a6fd50` plus this cleanup commit land on origin/master
 
 ### Human
 <!-- All ACs are agent-verifiable for this cleanup. No human review needed —
@@ -147,7 +147,8 @@ block every subsequent pre-push audit until cleared.
 
 # Verify: completed/ versions are now the canonical (only) copies — no active/ duplicates
 out=$(ls .tasks/active/T-1981-* .tasks/active/T-1987-* 2>&1); echo "$out" | grep -qE "No such file"
-out=$(ls .tasks/completed/T-1981-* .tasks/completed/T-1987-* 2>&1); echo "$out" | grep -qE "T-1981.*T-1987|T-1987.*T-1981"
+test -f .tasks/completed/T-1981-inception-how-should-arc-scoped-drivers-.md
+test -f .tasks/completed/T-1987-watchtower-redesign--apply-claude-design.md
 # Verify: status is work-completed in both canonical files
 out=$(grep -E "^status:" .tasks/completed/T-1981-inception-how-should-arc-scoped-drivers-.md 2>&1); echo "$out" | grep -qE "work-completed"
 out=$(grep -E "^status:" .tasks/completed/T-1987-watchtower-redesign--apply-claude-design.md 2>&1); echo "$out" | grep -qE "work-completed"
@@ -222,16 +223,34 @@ inline — one bug = one task. This task just clears the immediate G-052 instanc
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO (close on commit `d012f30d`)
+
+**Rationale:** G-052 cleared on tracked-state evidence — `comm -12 <(active T-IDs)
+<(completed T-IDs)` returns empty. The May-22 canonical completion content for
+both inceptions is now committed to origin (e1a6fd50 + d012f30d landed). Status
+fields are `work-completed` on both T-1981 and T-1987; their Decision sections
+are filled (T-1981 GO Model B, T-1987 GO with arc-007 + 7 child slices).
+
+**Evidence:**
+- `git log --oneline origin/master..HEAD` → empty (origin caught up)
+- `git ls-files .tasks/active/T-1981-* .tasks/active/T-1987-*` → empty
+- `head -3 .tasks/completed/T-1981-*` → `status: work-completed`
+- `head -3 .tasks/completed/T-1987-*` → `status: work-completed`
+- Rename detection captured the transition: R074 (T-1981) + R089 (T-1987)
+
+**Follow-up filed:** Prevention work (write-time hook + metadata-worker
+cross-check + doctor untracked-task scan) belongs in a separate task — one
+bug = one task. RCA section names the three prongs; recommend filing as
+`fw context add-observation` with id `obs-CTL-active-completed-collision` so
+the human can groom into a structural fix when it surfaces in the inbox.
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+<!-- No alternatives chosen here — the cleanup path was forced: untracked
+     completed/ content was substantively newer than tracked active/ stubs. -->
+
 
 ## Decision
 
@@ -249,3 +268,20 @@ inline — one bug = one task. This task just clears the immediate G-052 instanc
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2091-g-052-cleanup-orphaned-may-22-completion.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d25afc35
+- **Timestamp:** 2026-05-29T11:51:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 40
+     - evidence: `out=$(bin/fw audit 2>&1); ! echo "$out" | grep -qE "Duplicate task IDs detected"`
+
+### 2026-05-29T11:51:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
