@@ -343,11 +343,15 @@
 </ul>
 {% endif %}
 
-<h2>Constituent tasks</h2>
+<h2>Constituent tasks{% if constituents %} <small class="muted" style="font-weight:normal;">({{ constituents|length }})</small>{% endif %}</h2>
 {% if constituents %}
 <p class="muted"><small>BVP_norm = score weighted by drivers / max-possible, [0,1]. BVP_raw = unscaled sum. Cost = composite F8. Italic + <code>*</code> = estimator-proposed (not yet human-confirmed). <code>—</code> = no score data yet. Numbers match <a href="/bvp">/bvp</a> scatter (same compute helpers). [T-1978]</small></p>
-<table>
-    <thead>
+{#- T-2087: max-height scroll container + sticky thead so growing arcs
+    (121-task orchestrator-rethink hit 15kpx) stay within the 8000px guard.
+    Same fix shape as T-2038/T-2044/T-2045 used for unbounded tables. -#}
+<div class="constituents-scroll" style="max-height:60vh; overflow-y:auto; border:1px solid var(--pico-muted-border-color, #444); border-radius:0.3rem;">
+<table style="margin-bottom:0;">
+    <thead style="position:sticky; top:0; background:var(--pico-card-background-color, #1a1a1a); z-index:1;">
         <tr>
             <th>ID</th>
             <th>Arc</th>
@@ -394,6 +398,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div>{#- /constituents-scroll (T-2087) -#}
 {% else %}
 <p class="muted">No constituent tasks. Tag tasks with <code>arc:{{ arc_id }}</code> or run <code>fw arc tag {{ arc_id }} T-XXXX</code>.</p>
 {% endif %}
