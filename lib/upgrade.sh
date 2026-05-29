@@ -170,6 +170,8 @@ do_upgrade() {
                 echo "  - Git hooks"
                 echo "  - .claude/settings.json (hook config)"
                 echo "  - .claude/commands/resume.md"
+                echo "  - .claude/commands/doorbell+mail toolkit (be-reachable, peers, recent-chat, recent-dm, broadcast-chat, pulse, conversations, check-arc, agent-handoff) — T-1867"
+                echo "  - scripts/doorbell+mail supporting toolkit (11 .sh) — T-1867"
                 echo "  - lib/*.sh (fw subcommands: inception, upgrade, init, etc.)"
                 echo "  - Agent scripts (task-create, handover, git, healing, fabric, etc.)"
                 echo "  - bin/fw (CLI entry point)"
@@ -1087,6 +1089,86 @@ MCPJSON
             cp "$resume_tmpl" "$resume_file"
             echo -e "  ${GREEN}CREATED${NC}  .claude/commands/resume.md from template"
         fi
+    fi
+
+    # ── 7b. Doorbell+mail toolkit propagation (T-1867) ──
+    # Propagates skills + supporting scripts from upstream lib/templates/
+    # to project-root .claude/commands/ and scripts/. Mirrors the resume.md
+    # drift-detection pattern: per-file compare, .bak backup on drift, update.
+    # PL-124-safe by construction: only touches files explicitly enumerated
+    # under lib/templates/{skills,scripts}/. Consumer-local files in the same
+    # directories survive untouched.
+    echo -e "${YELLOW}[7b/10] Doorbell+mail toolkit (T-1867)${NC}"
+
+    local _t1867_skills_src="$FRAMEWORK_ROOT/lib/templates/skills"
+    local _t1867_scripts_src="$FRAMEWORK_ROOT/lib/templates/scripts"
+    local _t1867_changes=0
+
+    if [ -d "$_t1867_skills_src" ]; then
+        mkdir -p "$target_dir/.claude/commands"
+        local _t1867_src _t1867_base _t1867_dst
+        for _t1867_src in "$_t1867_skills_src"/*.md; do
+            [ -f "$_t1867_src" ] || continue
+            _t1867_base=$(basename "$_t1867_src")
+            _t1867_dst="$target_dir/.claude/commands/$_t1867_base"
+            if [ -f "$_t1867_dst" ] && diff -q "$_t1867_src" "$_t1867_dst" >/dev/null 2>&1; then
+                :  # in sync
+            elif [ -f "$_t1867_dst" ]; then
+                _t1867_changes=$((_t1867_changes + 1))
+                if [ "$dry_run" = true ]; then
+                    echo -e "  ${CYAN}WOULD UPDATE${NC}  .claude/commands/$_t1867_base (drift)"
+                else
+                    cp "$_t1867_dst" "$_t1867_dst.bak"
+                    cp "$_t1867_src" "$_t1867_dst"
+                    echo -e "  ${GREEN}UPDATED${NC}  .claude/commands/$_t1867_base (backup: .bak)"
+                fi
+            else
+                _t1867_changes=$((_t1867_changes + 1))
+                if [ "$dry_run" = true ]; then
+                    echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/commands/$_t1867_base"
+                else
+                    cp "$_t1867_src" "$_t1867_dst"
+                    echo -e "  ${GREEN}CREATED${NC}  .claude/commands/$_t1867_base"
+                fi
+            fi
+        done
+    fi
+
+    if [ -d "$_t1867_scripts_src" ]; then
+        mkdir -p "$target_dir/scripts"
+        for _t1867_src in "$_t1867_scripts_src"/*.sh; do
+            [ -f "$_t1867_src" ] || continue
+            _t1867_base=$(basename "$_t1867_src")
+            _t1867_dst="$target_dir/scripts/$_t1867_base"
+            if [ -f "$_t1867_dst" ] && diff -q "$_t1867_src" "$_t1867_dst" >/dev/null 2>&1; then
+                :  # in sync
+            elif [ -f "$_t1867_dst" ]; then
+                _t1867_changes=$((_t1867_changes + 1))
+                if [ "$dry_run" = true ]; then
+                    echo -e "  ${CYAN}WOULD UPDATE${NC}  scripts/$_t1867_base (drift)"
+                else
+                    cp "$_t1867_dst" "$_t1867_dst.bak"
+                    cp "$_t1867_src" "$_t1867_dst"
+                    chmod +x "$_t1867_dst"
+                    echo -e "  ${GREEN}UPDATED${NC}  scripts/$_t1867_base (backup: .bak)"
+                fi
+            else
+                _t1867_changes=$((_t1867_changes + 1))
+                if [ "$dry_run" = true ]; then
+                    echo -e "  ${CYAN}WOULD CREATE${NC}  scripts/$_t1867_base"
+                else
+                    cp "$_t1867_src" "$_t1867_dst"
+                    chmod +x "$_t1867_dst"
+                    echo -e "  ${GREEN}CREATED${NC}  scripts/$_t1867_base"
+                fi
+            fi
+        done
+    fi
+
+    if [ "$_t1867_changes" -eq 0 ]; then
+        echo -e "  ${GREEN}OK${NC}  doorbell+mail toolkit in sync (0 changes)"
+    else
+        changes=$((changes + _t1867_changes))
     fi
 
     # ── 8. Context subdirectories (create missing) ──
