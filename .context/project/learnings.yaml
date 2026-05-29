@@ -3399,3 +3399,10 @@ X'` returning empty group."
   date: 2026-05-29
   context: Added via context agent
   application: TBD
+- id: L-444
+  learning: "When rendering a numbered/marker list in a Jinja template, pick ONE number source: either the <ol>/<ul> auto-marker OR an explicit {{ loop.index0 }}/<strong>N</strong> prefix. Both together produce double-numbering ('0. 0 — desc'). Grep-only Verification ('contains <details>') passes either way — only eyes-on render catches it. Same class as L-403 (T-1575): UI verification needs Playwright/screenshot + human review, not just markup presence."
+  source: P-001
+  task: T-2085
+  date: 2026-05-29
+  context: Added via context agent
+  application: TBD
