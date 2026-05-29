@@ -307,7 +307,15 @@ do_upgrade() {
 
         echo -e "  ${GREEN}Handing off to upstream's bin/fw:${NC} ${_replay_args[*]}"
         echo ""
-        "$_tmpd/fw/bin/fw" "${_replay_args[@]}"
+        # T-2099 (fork-bomb fix, SEV-1): explicitly scope FRAMEWORK_ROOT + PROJECT_ROOT
+        # for the cloned upstream's bin/fw. Without this, the cloned fw re-runs
+        # resolve_framework which (per T-498 preference) picks the CONSUMER's vendored
+        # copy again → infinite recursion → fork bomb. The companion fix in bin/fw
+        # makes resolve_framework honour a caller-supplied FRAMEWORK_ROOT.
+        # Origin: /opt/termlink ran fw upgrade twice in one hour, fork-bombed both
+        # times. Forensic evidence + recipe via framework.upgrade.report TermLink topic.
+        env FRAMEWORK_ROOT="$_tmpd/fw" PROJECT_ROOT="$target_dir" \
+            "$_tmpd/fw/bin/fw" "${_replay_args[@]}"
         local _rc=$?
         # trap fires on return — tempdir cleaned up
         return $_rc

@@ -495,7 +495,15 @@ if [ -z "$PROJECT_ROOT" ]; then
 fi
 
 # Resolve FRAMEWORK_ROOT
-FRAMEWORK_ROOT=$(resolve_framework) || true
+# T-2099 (fork-bomb fix, SEV-1): respect a caller-supplied FRAMEWORK_ROOT instead
+# of unconditionally re-resolving. Without this, `fw upgrade` from a consumer
+# auto-clones upstream, hands off to the cloned bin/fw, and the cloned fw
+# re-resolves back to the CONSUMER's vendored copy (T-498 preference) → infinite
+# recursion → fork bomb. lib/upgrade.sh now passes env-scoped FRAMEWORK_ROOT to
+# the handoff; this branch lets the cloned fw honour it.
+if [ -z "${FRAMEWORK_ROOT:-}" ]; then
+    FRAMEWORK_ROOT=$(resolve_framework) || true
+fi
 
 # Validate we have what we need
 if [ -z "$FRAMEWORK_ROOT" ]; then

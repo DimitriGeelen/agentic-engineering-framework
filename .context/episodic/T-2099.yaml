@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2099: fork-bomb fix: lib/upgrade.sh handoff + bin/fw resolve_framework FRAMEWORK_ROOT pass-through (SEV-1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-29T14:25:22Z
+# ============================================================================
+
+task_id: T-2099
+task_name: "fork-bomb fix: lib/upgrade.sh handoff + bin/fw resolve_framework FRAMEWORK_ROOT pass-through (SEV-1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T14:22:00Z
+completed: 2026-05-29T14:25:16Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/upgrade.sh` handoff line uses `env FRAMEWORK_ROOT=... PROJECT_ROOT=... "$_tmpd/fw/bin/fw"` instead of bare invocation'
+  - '`bin/fw` resolve_framework site is gated on `[ -z "${FRAMEWORK_ROOT:-}" ]` (caller-supplied root wins)'
+  - '`bash -n` clean on both `bin/fw` and `lib/upgrade.sh`'
+  - '`bin/fw version` runs without recursion (smoke test exits in <1s)'
+  - '`FRAMEWORK_ROOT=/some/path bin/fw version` honours the caller-supplied root (verifiable via output)'
+  - 'Both files cite T-2099 in inline comments at the modified site'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-29 — Single-site fix in bin/fw (line 498), not all 3 resolve_framework call sites'
+    chose: 'Apply the `[ -z "${FRAMEWORK_ROOT:-}" ]` gate ONLY at bin/fw:498 (universal entry point).'
+    rationale: 'That''s where the recursion takes hold. Lines 391 and 479 are inside conditional init branches (non-TTY auto-init, explicit `fw init`) — different code path, not in the fork-bomb chain. Minimal-blast-radius fix.'
+    alternatives_rejected: ['Gate all 3 sites. Premature; only line 498 is in the failing path; adding env-respect to init paths risks behavioural surprises.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-upgrade, reliability, sev-1, fork-bomb, T-2078-cluster]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2099-fork-bomb-fix-libupgradesh-handoff--binf.md
+generated_by: context-agent-hybrid
