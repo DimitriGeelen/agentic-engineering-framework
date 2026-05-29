@@ -91,9 +91,10 @@ Implements T-2066 GO scope: `/inception/<id>` was extracting Context, RCA, Accep
 ### Human
 - [ ] [REVIEW] The 5 new sections (Context / Acceptance Criteria / Verification / Decisions / RCA) sit cleanly in the page rhythm — no jarring layout breaks, headers visually match the existing section-card headers (Problem Statement / Exploration Plan / etc.).
   **Steps:**
-  1. Open http://192.168.10.107:3000/inception/T-2077 (this very task — note the body has all 5 sections populated)
-  2. Scroll through the page. Confirm Context appears right after Problem Statement; Acceptance Criteria / Verification / Decisions appear after Go/No-Go Criteria; RCA appears after Structural Upgrade (or at end if no Structural Upgrade).
-  3. For comparison, open http://192.168.10.107:3000/inception/T-2066 — sections that aren't filled (Context / RCA / Decisions on that task) should NOT render headers (empty sections are skipped, not displayed as blank).
+  1. Open http://192.168.10.107:3000/inception/T-1950 (positive case — 4/5 sections populated: Context, Acceptance Criteria, Verification, Decisions; RCA absent).
+  2. Scroll through the page. Confirm Context appears right after Problem Statement; Acceptance Criteria / Verification / Decisions appear after Go/No-Go Criteria; the RCA section is **absent** (conditional `{% if sections.rca %}` correctly hides empty sections).
+  3. For comparison, open http://192.168.10.107:3000/inception/T-2066 — has only Acceptance Criteria + Verification populated; Context / RCA / Decisions should be **absent** there too.
+  4. (Do NOT open http://192.168.10.107:3000/inception/T-2077 — T-2077 is `workflow_type: build`, so that URL returns 404 by design. The originally-written step pointed there in error; corrected post-close to use T-1950/T-2066 as real-inception fixtures.)
 
   **Expected:** Section ordering reads naturally — early framing (Context) up top, gating/verification mid-page, post-mortem (RCA) near end. Header typography and spacing match existing section-cards.
 
