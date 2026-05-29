@@ -10,7 +10,7 @@ description: >
   parametrize-over-every-route mechanism. Closes the leg of the prevention
   ladder where T-1954, T-2102, and T-2083 each shipped silently for days
   before someone noticed the page felt slow.
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +22,8 @@ related_tasks: [T-1954, T-2102, T-2083, T-2104, T-2048, T-2106, T-2107, T-2108]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T22:45:05Z
-last_update: '2026-05-29T23:00:03Z'
-date_finished:
+last_update: 2026-05-29T23:06:23Z
+date_finished: 2026-05-29T23:06:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -252,9 +252,12 @@ out=$(cat /tmp/.t2105b.out); echo "$out" | grep -q "1 passed"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d13df585
-- **Timestamp:** 2026-05-29T23:05:50Z
+- **Scan ID:** R-0deb1b96
+- **Timestamp:** 2026-05-29T23:06:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-29T23:06:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

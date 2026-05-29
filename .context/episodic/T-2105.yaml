@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2105: per-route load-time playwright guard — catch next T-1954/T-2102/T-2083-class
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-29T23:06:32Z
+# ============================================================================
+
+task_id: T-2105
+task_name: "per-route load-time playwright guard — catch next T-1954/T-2102/T-2083-class"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T22:45:05Z
+completed: 2026-05-29T23:06:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-30T01:06:14+02:00
+last_commit: 2026-05-30T01:06:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  per-route Playwright load-time guard — class-level T-1954/T-2102/T-2083 prevention
+
+# Key outcomes
+outcomes:
+  - '`tests/playwright/test_all_routes_load_time.py` exists and mirrors `test_all_routes_height.py` shape — exhaustive route discovery via `_load_uxr().discover_get_routes()`, parametrize over every route (47 routes discovered, asserted >5 by `test_routes_discovered_exhaustively`).'
+  - 'Test uses **prime + measure** pattern (first goto warms blueprint caches, second goto is timed); asserts measured wall-clock under `LOAD_CAP_MS = 5000` (5s — matches T-2102 RCA''s suggested cap). Prime+measure avoids cache-TTL-expiry noise during the 4-minute parametric run (47 routes × ~3s each ≫ 30s `_TASK_CACHE_TTL`).'
+  - 'Test passes on every currently-discovered route on a warm server: 49 passed / 0 failed in 267s. Three pre-existing slow routes (`/timeline` 8.3s, `/search` 6.7s, `/` 5.1s) are gated through `KNOWN_SLOW` with elevated caps + tracking tasks (T-2106/T-2107/T-2108 filed). Fixing each closes its KNOWN_SLOW exemption — the dict is a TODO list, not a forever-list.'
+  - 'A guardrail test (`test_load_cap_is_documented`) asserts `LOAD_CAP_MS` provenance comment (T-2102 RCA reference) is present in source so future bumps stay auditable.'
+  - 'No regression on the existing height guard (`test_all_routes_height.py::test_routes_discovered_exhaustively` still passes).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-30 — prime + measure over conftest warm-up extension'
+    chose: 'per-test prime hit before measurement, no expansion to conftest `_warm_slow_routes()`.'
+    rationale: 'conftest warm-up runs once at suite start; with 30s `_TASK_CACHE_TTL` and a 4-minute suite, every route past the first ~10 measures a cold cache. Prime+measure isolates the steady-state UX metric per-route, making the test independent of suite walk order and TTL.'
+    alternatives_rejected: ['']
+  - decision: '2026-05-30 — KNOWN_SLOW dict over xfail markers'
+    chose: '`KNOWN_SLOW: dict[str, tuple[int, str]]` — per-route elevated cap + tracking task ID.'
+    rationale: 'xfail would let the route silently regress further (xfail expects failure; doesn''t measure degree). Elevated-cap-with-task makes the exemption load-bearing: each KNOWN_SLOW entry is a TODO with an owner, and the test still enforces "don''t get worse than today''s measured baseline + headroom". Fixing the underlying perf issue (per the linked task) lets you DELETE the entry, dropping back to the strict 5000ms cap.'
+    alternatives_rejected: ['']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2105-per-route-load-time-playwright-guard--ca.md'
+  - '.tasks/active/T-2106-timeline-warm-load-83s-exceeds-t-2105-5s.md'
+  - '.tasks/active/T-2107-search-warm-load-67s-exceeds-t-2105-5s-c.md'
+  - '.tasks/active/T-2108--cockpit-warm-load-51s-exceeds-t-2105-5s.md'
+  - 'tests/playwright/test_all_routes_load_time.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T01:06:14"
+    action: "T-2105: per-route Playwright load-time guard — class-level T-1954/T-2102/T-2083 prevention"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 21
+  commits: 1
+  files_changed: 5
+  lines_added: 943
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2105-per-route-load-time-playwright-guard--ca.md
+generated_by: context-agent-hybrid
