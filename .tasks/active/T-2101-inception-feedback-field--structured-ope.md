@@ -1,11 +1,12 @@
 ---
 id: T-2101
-name: "Inception feedback field — structured operator feedback channel on fw inception decide + Watchtower form"
+name: "Inception feedback field — structured operator feedback channel on fw inception
+  decide + Watchtower form"
 description: >
   fw inception decide accepts only GO|NO-GO|DEFER + free-text rationale. Operator
   nuance (split E5 out, defer until T-2092 lands, ship upstream instead) dies in
   chat. Add additive --feedback field that lands on task body and is read by next
-  session. Arc-008 anchor; sibling of T-2102/T-2103/T-2104.
+  session. Arc-008 anchor; three documented sibling questions Q1/Q2/Q3 (filed-when-ready).
 
 status: started-work
 workflow_type: inception
@@ -16,10 +17,31 @@ tags: [inception, review-loop, operator-feedback, arc-008]
 components: []
 related_tasks: [T-2097, T-2098, T-2100]
 created: 2026-05-29T21:20:30Z
-last_update: 2026-05-29T21:25:00Z
-date_finished: null
+last_update: '2026-05-29T21:30:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD
 # revisit_evidence_needed:
+bvp_scores_proposed:
+  - ts: '2026-05-29T21:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-29T21:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2101: Inception feedback field — structured operator feedback channel on fw inception decide + Watchtower form
