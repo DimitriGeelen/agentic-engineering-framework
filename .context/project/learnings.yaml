@@ -3427,3 +3427,10 @@ X'` returning empty group."
   date: 2026-05-30
   context: Added via context agent
   application: TBD
+- id: L-448
+  learning: "When extracting an inline JS handler / helper to a shared script file (parallel to T-1453/csrf-htmx.js, T-2074/htmx-toast.js), the extracting task MUST include an AC of the form 'no remaining inline call sites in any consumer template' (grep-zero). Origin: T-2074→T-2119 — extraction landed an additional <script src=…> next to a still-present inline addEventListener pair in review.html, every htmx error then fired the toast twice for ~one commit. T-1453 (csrf-htmx) succeeded only because the extractor remembered to grep — codify as protocol, not luck."
+  source: P-001
+  task: T-1687
+  date: 2026-05-30
+  context: Added via context agent
+  application: TBD
