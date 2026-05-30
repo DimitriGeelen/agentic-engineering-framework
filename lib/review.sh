@@ -190,6 +190,13 @@ except ImportError:
     print('  (install python3-qrcode for QR code)')
 " 2>/dev/null
 
+    # T-2127 (T-2126 slice A): repeat URL below QR — on terminals <37 visible
+    # rows (typical 24-30), the URL at the top scrolls off-screen while the
+    # 16-row QR is still in the visible frame. Repeating it here keeps the
+    # URL reachable from the bottom of the output.
+    echo ""
+    echo -e "  ${BOLD}Open:${NC} ${review_url}"
+
     # Research artifacts (T-633, T-1201: show filename only)
     local artifacts_found=false
     local tid_lower
@@ -248,5 +255,12 @@ except ImportError:
     # gate with no discoverable unblock path.
     echo -e "  ${CYAN}Review marker created:${NC} .context/working/.reviewed-${task_id}"
     echo -e "  ${CYAN}(unblocks${NC} fw inception decide ${task_id}${CYAN} — T-973 gate)${NC}"
+    echo ""
+
+    # T-2127 (T-2126 slice C): single-line footer guaranteed visible because
+    # terminals scroll to end of output. Even on a 24-row terminal where the
+    # header + URL + QR + everything else has scrolled off, this final line
+    # is the last thing in the visible frame.
+    echo -e "  → ${BOLD}Decide:${NC} ${review_url}"
     echo ""
 }
