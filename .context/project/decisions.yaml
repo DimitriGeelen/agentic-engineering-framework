@@ -1808,3 +1808,31 @@ decisions:
     date: 2026-05-30
     task: T-2102
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-261
+    decision: "Humanized title (`Aesthetic Cohesion`) + muted kebab slug (`aesthetic-cohesion`), applied identically to approved + proposed sections."
+    scope: project
+    date: 2026-05-30
+    task: T-2117
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-262
+    decision: "htmx-toast.js's `fallbackShowToast` is only assigned to"
+    scope: project
+    date: 2026-05-30
+    task: T-2074
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-263
+    decision: "Agent chat output (Option B+D) + render-side forgiveness (Option A)"
+    scope: project
+    date: 2026-05-30
+    task: T-2125
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-264
+    decision: "Slice A render-side 302 forgiveness for /review/<inception-id> shipped via T-2131. Detects workflow_type=inception and redirects; build tasks untouched. Closes the URL-class typo bug class via three legs: A (T-2131 redirect), B (T-2129 CLAUDE.md codification), D (T-2125 backlog re-issue)."
+    scope: project
+    date: 2026-05-30
+    task: T-2131
+    rationale: "Not specified"

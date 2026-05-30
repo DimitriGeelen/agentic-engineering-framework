@@ -47,6 +47,15 @@ Idempotent, no behavioural change for legit `/review/<task-id>` partial-complete
 - [x] No Playwright test breakage (existing tests rely on `/review/<id>` for partial-complete tasks; redirects only affect inceptions)
 
 ### Human
+- [ ] [REVIEW] Pasting an inception URL `/review/T-2123` lands on the correct inception decide form
+  **Steps:**
+  1. Open http://192.168.10.107:3000/review/T-2123 in a browser
+  2. Confirm the address bar ends in `/inception/T-2123` after navigation (the 302 redirect)
+  3. Confirm the page shows the inception decide form (Recommendation, Rationale, GO/NO-GO buttons), not the partial-complete review surface
+  **Expected:** URL silently redirects; correct page renders; no broken layout
+  **If not:** Note which URL → which page and reopen for follow-up
+
+### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
