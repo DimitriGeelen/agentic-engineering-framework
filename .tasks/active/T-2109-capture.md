@@ -12,20 +12,21 @@ description: >
   parsed tuple). Promote a single helper to web/shared.py so the next
   consumer doesn't re-implement.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc-007, perf, refactor, T-1954-cluster, watchtower]
-components: [web/shared.py, web/blueprints/bvp.py, web/blueprints/approvals.py, web/blueprints/timeline.py, web/search_utils.py, web/blueprints/cockpit.py]
+components: [web/shared.py, web/blueprints/bvp.py, web/blueprints/approvals.py, 
+      web/blueprints/timeline.py, web/search_utils.py, web/blueprints/cockpit.py]
 related_tasks: [T-1954, T-2102, T-2106, T-2107, T-2108]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-30T07:20:51Z
-last_update: 2026-05-30T07:20:51Z
-date_finished: null
+last_update: 2026-05-30T08:07:13Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,6 +37,28 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-30T07:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-30T07:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2109: Promote per-file mtime cache pattern to web/shared.py
@@ -56,17 +79,30 @@ Why ship this now rather than tolerate drift: T-2107 already shifted shape (stor
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Add `mtime_cached_get(path, parse_fn, cache)` (or equivalent shape) to `web/shared.py` with docstring referencing T-1954/T-2102/T-2106/T-2107/T-2108 as the consumer sites.
-- [ ] Add unit test in `tests/unit/test_shared_mtime_cache.py` covering: (a) cold call → parse runs, (b) warm call same mtime → parse does NOT run, (c) file touched → parse re-runs, (d) OSError on missing file → fallback returned.
-- [ ] Migrate `web/blueprints/bvp.py:_FM_CACHE` to the shared helper — `/bvp` warm-load unchanged (curl-timing).
-- [ ] Migrate `web/blueprints/approvals.py:_BODY_CACHE` to the shared helper — `/approvals` warm-load unchanged.
-- [ ] Migrate `web/blueprints/timeline.py:_FM_CACHE` to the shared helper — `/timeline` warm-load unchanged.
-- [ ] Migrate `web/search_utils.py:_TAG_FM_CACHE` to the shared helper — `/search` warm-load unchanged.
-- [ ] Migrate `web/blueprints/cockpit.py:_HUMAN_VERIFY_CACHE` to the shared helper — `/` warm-load unchanged.
-- [ ] All 47 routes in `tests/playwright/test_all_routes_load_time.py` still PASS (no regression in load-time guard).
+- [x] Add `mtime_cached_get(path, parse_fn, cache)` (or equivalent shape) to `web/shared.py` with docstring referencing T-1954/T-2102/T-2106/T-2107/T-2108 as the consumer sites.
+- [x] Add unit test in `tests/unit/test_shared_mtime_cache.py` covering: (a) cold call → parse runs, (b) warm call same mtime → parse does NOT run, (c) file touched → parse re-runs, (d) OSError on missing file → fallback returned.
+- [x] Migrate `web/blueprints/bvp.py:_FM_CACHE` to the shared helper — `/bvp` warm-load unchanged (curl-timing).
+- [x] Migrate `web/blueprints/approvals.py:_BODY_CACHE` to the shared helper — `/approvals` warm-load unchanged.
+- [x] Migrate `web/blueprints/timeline.py:_FM_CACHE` to the shared helper — `/timeline` warm-load unchanged.
+- [x] Migrate `web/search_utils.py:_TAG_FM_CACHE` to the shared helper — `/search` warm-load unchanged.
+- [x] Migrate `web/blueprints/cockpit.py:_HUMAN_VERIFY_CACHE` to the shared helper — `/` warm-load unchanged.
+- [x] All 47 routes in `tests/playwright/test_all_routes_load_time.py` still PASS (no regression in load-time guard).
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+- [ ] [REVIEW] Five migrated pages render identically to pre-migration (pure refactor — no visual change expected).
+  **Steps:**
+  1. Open each of these in browser (Watchtower URL from `bin/fw watchtower url`):
+     - `/`
+     - `/bvp`
+     - `/approvals`
+     - `/timeline`
+     - `/search`
+  2. Spot-check that the page renders content (not blank, no traceback / 500), and that data looks identical to recent memory.
+  **Expected:** All 5 pages load and look as before — `/bvp` shows scatter, `/approvals` shows queue, `/timeline` shows handover list, `/search` accepts query, `/` shows cockpit panels.
+  **If not:** Capture the broken page + console error and revert via `git revert <commit-sha>`; the migration is a single atomic commit.
+
+<!-- Original template comment, kept for reference:
+     Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
 
@@ -129,6 +165,12 @@ Why ship this now rather than tolerate drift: T-2107 already shifted shape (stor
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-2109 verification commands:
+python3 -m pytest tests/unit/test_shared_mtime_cache.py -q
+python3 -c "from web.shared import mtime_cached_get; assert callable(mtime_cached_get)"
+python3 -c "from web.blueprints.bvp import _parse_frontmatter, _FM_CACHE; from web.blueprints.approvals import _get_body_cached, _BODY_CACHE; from web.blueprints.timeline import _get_frontmatter_cached, _FM_CACHE as _TL; from web.search_utils import _episodic_tags_for, _TAG_FM_CACHE; from web.blueprints.cockpit import _human_verify_for, _HUMAN_VERIFY_CACHE; print('all 5 consumers import')"
+for f in web/blueprints/bvp.py web/blueprints/approvals.py web/blueprints/timeline.py web/search_utils.py web/blueprints/cockpit.py; do grep -q "mtime_cached_get" "$f" || { echo "MISSING mtime_cached_get in $f"; exit 1; }; done; echo "all 5 sites reference mtime_cached_get"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -169,6 +211,18 @@ Why ship this now rather than tolerate drift: T-2107 already shifted shape (stor
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-30 — promotion threshold and contract shape
+
+- **What changed:** Pre-build expectation was a generic `mtime_cached_get(path, parse_fn, cache)` matching all 5 sites verbatim. Build revealed that the **default value differs per site** ({None, "", ({}, ""), [], None}) — a fixed default in the helper would force callers to wrap, defeating the simplification. Added `default: T` as an explicit parameter; the test `test_default_typed_to_consumer` pins this contract directly.
+- **Plan impact:** API expanded to 4 args (path, parse_fn, cache, default) rather than 3. Migration is still mechanical — each site supplies its existing fallback as `default=...`.
+- **Triggered:** Test case `test_default_typed_to_consumer` parametrised over the 3 distinct shape classes ({list, tuple, optional}) the origin sites exhibit. L-362 (helper-vs-consumer drift) pinned: if a 6th site reintroduces a shape variant, the test will not catch it directly — but the docstring + the 5 cross-references make the canonical shape readable in seconds rather than requiring 5 file reads.
+
+### 2026-05-30 — error-handling stays in parse_fn, not the helper
+
+- **What changed:** Original sites had *different* error catching (search_utils + cockpit logged warnings; bvp + approvals + timeline did silent fallback). A generic helper that handles errors would either over-log or under-log relative to each site.
+- **Plan impact:** Helper handles only `OSError` on `stat()` (the "file missing" case, identical across all 5 sites). Read + parse errors stay in the per-site `parse_fn`, which keeps each consumer's existing log behaviour. Trade-off accepted: parse_fn must NOT raise (caller responsibility) — documented in helper docstring.
+- **Triggered:** Nothing new — this is a deliberate scope cut.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -190,9 +244,41 @@ Why ship this now rather than tolerate drift: T-2107 already shifted shape (stor
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Pure refactor — all 8 Agent ACs pass, helper unit tests pass (5/5), the full Playwright load-time guard passes for all 47 routes (49/49 tests, 160.22s, every route under the global 5000ms warm-cache cap). Output is byte-semantically identical: the helper's stat+cache logic mirrors what each origin site already did inline, and the per-site `parse_fn` keeps each site's existing error-handling (warning logs preserved on search_utils + cockpit; silent fallback preserved on bvp + approvals + timeline). The 5th re-implementation (T-2108) had already started shape-drifting; consolidating now prevents the 6th from drifting further.
+
+**Evidence:**
+- Helper: `web/shared.py:412+` — 4-arg signature `mtime_cached_get(path, parse_fn, cache, default)`; T-2109 comment block names the 5 origin sites.
+- Unit test: `tests/unit/test_shared_mtime_cache.py` — 5 cases (cold, warm, touched, missing, default-typing). `5 passed in 0.16s`.
+- Migrations (5):
+  - `web/blueprints/bvp.py:_FM_CACHE` (T-1954) — `default=None`
+  - `web/blueprints/approvals.py:_BODY_CACHE` (T-2102) — `default=""`
+  - `web/blueprints/timeline.py:_FM_CACHE` (T-2106) — `default=({}, "")`
+  - `web/search_utils.py:_TAG_FM_CACHE` (T-2107) — `default=[]`
+  - `web/blueprints/cockpit.py:_HUMAN_VERIFY_CACHE` (T-2108) — `default=None`
+- Playwright: `49 passed in 160.22s` — no route exceeds the 5000ms warm-cache cap (no regression from migration).
+- Curl re-time (warm) — comparable to baseline within sampling noise:
+
+  | Route        | Pre-migration | Post-migration |
+  |--------------|---------------|----------------|
+  | `/`          | 777ms         | 797ms          |
+  | `/bvp`       | 283ms         | 243ms          |
+  | `/approvals` | 1887ms        | ~2068ms median (1989/1972/2068/5245/2789 — outer 30s TTL rebuild visible; same pre-migration) |
+  | `/timeline`  | 690ms         | 641ms          |
+  | `/search`    | 20ms          | 17ms           |
+
+**What's next:** Future blueprints that need per-file mtime caching should `from web.shared import mtime_cached_get` and supply their own `parse_fn` + `cache` dict + `default`. The 5 cross-referenced sites in the docstring serve as worked examples.
+
 ## Updates
 
 ### 2026-05-30T07:20:51Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2109-capture.md
 - **Context:** Initial task creation
+
+### 2026-05-30T08:07:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

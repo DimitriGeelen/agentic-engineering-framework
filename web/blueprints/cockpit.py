@@ -21,7 +21,7 @@ from flask import Blueprint, request, render_template
 
 logger = logging.getLogger(__name__)
 
-from web.shared import PROJECT_ROOT, render_page, load_scan, extract_recommendation_verdict, extract_recommendation_state
+from web.shared import PROJECT_ROOT, render_page, load_scan, extract_recommendation_verdict, extract_recommendation_state, mtime_cached_get
 from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("cockpit", __name__)
@@ -58,24 +58,18 @@ def get_scan_age(scan_data: dict) -> str:
 _HUMAN_VERIFY_CACHE: dict[str, tuple[int, dict | None]] = {}
 
 
-def _human_verify_for(fn: Path) -> dict | None:
-    """Build the verify-task entry for one task file (or None if no unchecked
-    human ACs), mtime-invalidated."""
-    from web.blueprints.tasks import _parse_acceptance_criteria
+def _parse_human_verify_from_path(fn: Path) -> dict | None:
+    """Build the verify-task entry for one task file, or None if no unchecked human ACs.
 
-    try:
-        mtime_ns = fn.stat().st_mtime_ns
-    except OSError:
-        return None
-    key = str(fn)
-    cached = _HUMAN_VERIFY_CACHE.get(key)
-    if cached is not None and cached[0] == mtime_ns:
-        return cached[1]
+    Returns None on read failure, no human ACs, or all-checked (matches the
+    cache-an-absence semantics the original site needed: walking 171 files
+    every render means we must remember "no work here" too).
+    """
+    from web.blueprints.tasks import _parse_acceptance_criteria
 
     try:
         text = fn.read_text(errors="replace")
     except OSError:
-        _HUMAN_VERIFY_CACHE[key] = (mtime_ns, None)
         return None
 
     fm = {}
@@ -91,19 +85,17 @@ def _human_verify_for(fn: Path) -> dict | None:
     all_acs = _parse_acceptance_criteria(body)
     human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
     if not human_acs:
-        _HUMAN_VERIFY_CACHE[key] = (mtime_ns, None)
         return None
 
     total = len(human_acs)
     checked = sum(1 for ac in human_acs if ac["checked"])
     if total == 0 or checked >= total:
-        _HUMAN_VERIFY_CACHE[key] = (mtime_ns, None)
         return None
 
     unchecked = [ac["text"] for ac in human_acs if not ac["checked"]]
     verdict = extract_recommendation_verdict(text)
     state = extract_recommendation_state(text)
-    entry = {
+    return {
         "task_id": fm.get("id", fn.stem),
         "name": fm.get("name", ""),
         "status": fm.get("status", "?"),
@@ -113,8 +105,15 @@ def _human_verify_for(fn: Path) -> dict | None:
         "verdict": verdict,
         "state": state,
     }
-    _HUMAN_VERIFY_CACHE[key] = (mtime_ns, entry)
-    return entry
+
+
+def _human_verify_for(fn: Path) -> dict | None:
+    """Return the verify-task entry for one task file, mtime-invalidated.
+
+    T-2109: migrated to shared.mtime_cached_get; semantics unchanged
+    (None caches "no unchecked human ACs here", same as before).
+    """
+    return mtime_cached_get(fn, _parse_human_verify_from_path, _HUMAN_VERIFY_CACHE, default=None)
 
 
 def get_human_verify_tasks() -> list:

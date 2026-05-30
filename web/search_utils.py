@@ -13,7 +13,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-from web.shared import PROJECT_ROOT
+from web.shared import PROJECT_ROOT, mtime_cached_get
 
 
 def categorize(path_str: str) -> str:
@@ -101,33 +101,22 @@ import time as _time_mod
 _tag_cache = {"data": None, "ts": 0}
 _TAG_CACHE_TTL = 60  # seconds
 
-# T-2107: per-file tag cache keyed on (path, mtime_ns). Survives the outer
+# T-2107/T-2109: per-file tag cache keyed on (path, mtime_ns). Survives the outer
 # _TAG_CACHE_TTL — when the 60s wrapper expires, we only re-parse files whose
 # mtime_ns changed (typically 0-2) instead of re-walking all 1166 episodic
 # files. Cold path still pays 5-6s once; warm rebuild now <100ms.
-# Same shape as web/blueprints/bvp.py:_FM_CACHE (T-1954),
-# web/blueprints/approvals.py:_BODY_CACHE (T-2102),
-# web/blueprints/timeline.py:_FM_CACHE (T-2106).
+# T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
 _TAG_FM_CACHE: dict[str, tuple[int, list[str]]] = {}
 
 
-def _episodic_tags_for(path: Path) -> list[str]:
-    """Return tag list for one episodic file, mtime-invalidated."""
-    try:
-        mtime_ns = path.stat().st_mtime_ns
-    except OSError:
-        return []
-    key = str(path)
-    cached = _TAG_FM_CACHE.get(key)
-    if cached is not None and cached[0] == mtime_ns:
-        return cached[1]
+def _parse_tags_from_path(path: Path) -> list[str]:
+    """Read one episodic YAML and extract its tag list. Empty list on any failure."""
     import yaml as _yaml
     try:
         with open(path) as fh:
             data = _yaml.safe_load(fh)
     except Exception as e:
         logger.warning("Failed to parse episodic file %s: %s", path, e)
-        _TAG_FM_CACHE[key] = (mtime_ns, [])
         return []
     tags: list[str] = []
     if isinstance(data, dict):
@@ -135,8 +124,15 @@ def _episodic_tags_for(path: Path) -> list[str]:
             t = str(tag).strip()
             if t:
                 tags.append(t)
-    _TAG_FM_CACHE[key] = (mtime_ns, tags)
     return tags
+
+
+def _episodic_tags_for(path: Path) -> list[str]:
+    """Return tag list for one episodic file, mtime-invalidated.
+
+    T-2109: migrated to shared.mtime_cached_get; semantics unchanged.
+    """
+    return mtime_cached_get(path, _parse_tags_from_path, _TAG_FM_CACHE, default=[])
 
 
 def aggregate_tags(limit: int = 30) -> list[dict]:

@@ -7,6 +7,7 @@ import re as re_mod
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable, TypeVar
 
 import yaml
 from flask import render_template, request
@@ -406,6 +407,71 @@ def parse_frontmatter(content):
     if not isinstance(fm, dict):
         return {}, content
     return fm, fm_match.group(2)
+
+
+# ---------------------------------------------------------------------------
+# Per-file mtime-keyed cache (T-2109)
+# ---------------------------------------------------------------------------
+# Promoted from 5 re-implementations across the Watchtower blueprints:
+#   T-1954 (web/blueprints/bvp.py:_FM_CACHE)        — frontmatter dict
+#   T-2102 (web/blueprints/approvals.py:_BODY_CACHE) — body string
+#   T-2106 (web/blueprints/timeline.py:_FM_CACHE)    — (fm, body) tuple
+#   T-2107 (web/search_utils.py:_TAG_FM_CACHE)       — tag list
+#   T-2108 (web/blueprints/cockpit.py:_HUMAN_VERIFY_CACHE) — verify entry
+#
+# Each variant kept the same shape — `dict[str, tuple[int_mtime_ns, T]]` keyed
+# on `str(path)` — but with slight drift on what T is (the 5th site stored a
+# dict entry instead of a parsed tuple; the 3rd carried `(fm, body)` not just
+# fm). The next consumer should reach for this helper instead of re-implementing.
+# L-362 (helper-vs-consumer drift) pins the test contract — see
+# tests/unit/test_shared_mtime_cache.py.
+
+T = TypeVar("T")
+
+
+def mtime_cached_get(
+    path: Path,
+    parse_fn: Callable[[Path], T],
+    cache: dict[str, tuple[int, T]],
+    default: T,
+) -> T:
+    """Return parse_fn(path), cached by (path, st_mtime_ns).
+
+    On warm hits with unchanged mtime, returns the cached parsed value
+    without re-invoking `parse_fn`. On cold call, file change, or
+    `stat()` OSError (file missing), falls back to `parse_fn` — except
+    that an OSError on stat short-circuits to `default` without calling
+    `parse_fn` (mirrors all 5 origin sites' behaviour: a missing file is
+    not a parse error, it is "no data").
+
+    `parse_fn` is responsible for its own read/parse error handling — it
+    must NOT raise on malformed content, but return a sensible fallback
+    of the same type T (use `default` for consistency). Raising from
+    parse_fn will propagate and bypass the cache write.
+
+    `cache` is a per-consumer dict; callers keep one per distinct
+    parse_fn / value-type pair to avoid keying clashes.
+
+    Args:
+        path: file whose parsed value to cache.
+        parse_fn: callable(path) -> T. Must handle I/O + parse errors.
+        cache: per-consumer dict[str, tuple[mtime_ns, T]].
+        default: value returned when path.stat() raises OSError.
+
+    Returns:
+        Parsed value of type T (possibly cached).
+    """
+    try:
+        mtime_ns = path.stat().st_mtime_ns
+    except OSError:
+        return default
+    key = str(path)
+    cached = cache.get(key)
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+    value = parse_fn(path)
+    cache[key] = (mtime_ns, value)
+    return value
 
 
 _TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")

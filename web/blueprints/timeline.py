@@ -7,17 +7,26 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, abort, render_template
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, get_task_names
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, get_task_names, mtime_cached_get
 
 
-# T-2106: per-file frontmatter cache keyed on (path, mtime_ns).
+# T-2106/T-2109: per-file frontmatter cache keyed on (path, mtime_ns).
 # The session cache (_session_cache, 30s TTL) flushes the entire list every TTL,
 # forcing a full re-walk of 1000+ handover files (parse_frontmatter @ ~4ms ea =
 # 4-5s steady-state cost). This cache survives the TTL — unchanged files return
 # instantly from memory; only added/modified files pay parse cost.
-# Same shape as web/blueprints/bvp.py:_FM_CACHE (T-1954) and
-# web/blueprints/approvals.py:_BODY_CACHE (T-2102).
+# T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
 _FM_CACHE: dict[str, tuple[int, tuple[dict, str]]] = {}
+
+
+def _parse_fm_body_from_path(p: Path) -> tuple[dict, str]:
+    """Read file and split into (fm_dict, body). Empty pair on read failure."""
+    try:
+        content = p.read_text()
+    except OSError:
+        return ({}, "")
+    fm, body = parse_frontmatter(content)
+    return fm, body
 
 
 def _get_frontmatter_cached(path: Path | str) -> tuple[dict, str]:
@@ -25,23 +34,10 @@ def _get_frontmatter_cached(path: Path | str) -> tuple[dict, str]:
 
     Mirrors parse_frontmatter(content) semantics — empty dict + full content
     on parse failure or no-frontmatter file.
+
+    T-2109: migrated to shared.mtime_cached_get; semantics unchanged.
     """
-    p = Path(path)
-    try:
-        mtime_ns = p.stat().st_mtime_ns
-    except OSError:
-        return {}, ""
-    cached = _FM_CACHE.get(str(p))
-    if cached is not None and cached[0] == mtime_ns:
-        return cached[1]
-    try:
-        content = p.read_text()
-    except OSError:
-        _FM_CACHE[str(p)] = (mtime_ns, ({}, ""))
-        return {}, ""
-    fm, body = parse_frontmatter(content)
-    _FM_CACHE[str(p)] = (mtime_ns, (fm, body))
-    return fm, body
+    return mtime_cached_get(Path(path), _parse_fm_body_from_path, _FM_CACHE, default=({}, ""))
 
 logger = logging.getLogger(__name__)
 

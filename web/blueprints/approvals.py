@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 sys.path.insert(0, str(PROJECT_ROOT / "lib"))
@@ -52,28 +52,25 @@ EXPIRY_SECONDS = 3600  # 1 hour
 _BODY_CACHE: dict[str, tuple[int, str]] = {}
 
 
+def _parse_body_from_path(p: Path) -> str:
+    """Read file, strip frontmatter, return body. Empty string on read failure."""
+    try:
+        content = p.read_text()
+    except OSError:
+        return ""
+    _, body = parse_frontmatter(content)
+    return body
+
+
 def _get_body_cached(path: Path | str) -> str:
     """Return task body (after frontmatter strip), mtime-invalidated.
 
     Returns "" on any read or parse failure (matches existing callers'
     behaviour of skipping the task on continue).
+
+    T-2109: migrated to shared.mtime_cached_get; semantics unchanged.
     """
-    p = Path(path)
-    try:
-        mtime_ns = p.stat().st_mtime_ns
-    except OSError:
-        return ""
-    cached = _BODY_CACHE.get(str(p))
-    if cached is not None and cached[0] == mtime_ns:
-        return cached[1]
-    try:
-        content = p.read_text()
-    except OSError:
-        _BODY_CACHE[str(p)] = (mtime_ns, "")
-        return ""
-    _, body = parse_frontmatter(content)
-    _BODY_CACHE[str(p)] = (mtime_ns, body)
-    return body
+    return mtime_cached_get(Path(path), _parse_body_from_path, _BODY_CACHE, default="")
 
 
 def _load_pending_approvals():
