@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2104: Playwright conftest /approvals warm-up — prevent cold-start timeout masking
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T08:32:18Z
+# ============================================================================
+
+task_id: T-2104
+task_name: "Playwright conftest /approvals warm-up — prevent cold-start timeout masking"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T22:18:00Z
+completed: 2026-05-30T08:30:59Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-30T00:23:17+02:00
+last_commit: 2026-05-30T00:23:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Playwright conftest /approvals warm-up — fix OBS-038 cold-start timeout
+
+# Key outcomes
+outcomes:
+  - '`tests/playwright/conftest.py` warms up `/approvals`, `/tasks`, `/timeline`, `/inception`, `/bvp` after the `/health` ready check, before `yield proc` — via shared `_warm_slow_routes()` helper used by BOTH the spawn path and the already-running-server reuse path.'
+  - 'Warm-up is best-effort — any individual route failure (timeout, 500, …) does NOT abort the fixture; tests run regardless and report their own failures.'
+  - '`test_route_height_bounded[/approvals]` Playwright test passes when the warm-up gets enough wall time before the test fires (confirmed PASS on first run with stale-server killed). The test remains marginal at the 15s navigation timeout boundary because /approvals cold-start can hit ~14-15s on truly cold fixtures; a V2 follow-up will bump `set_default_navigation_timeout(15_000)` to 30s for the height-test suite or split the warm-up into a session-scoped pre-test hook with longer wait. Recording marginal-pass to be honest about the timing-sensitivity.'
+  - 'No regression on `/bvp` height test (passed in same run, 1.23s — well under cap).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'Playwright conftest /approvals warm-up — fix OBS-038 cold-start timeout'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-30 — warm-up vs timeout-bump'
+    chose: 'explicit per-route warm-up GET requests in the fixture after `/health` returns ready.'
+    rationale: 'the test honestly measures what it claims to measure (warm-state height bound, not cold-start race); explicit list documents which routes are known-slow; net startup cost is a few seconds, tests overall run faster because every test sees warm caches.'
+    alternatives_rejected: ['']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2104-playwright-conftest-approvals-warm-up--p.md'
+  - 'tests/playwright/conftest.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T00:23:17"
+    action: "T-2104: Playwright conftest /approvals warm-up — fix OBS-038 cold-start timeout"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 612 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [test-infra, playwright, perf-cold-start, OBS-038, arc-007]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 612
+  commits: 1
+  files_changed: 2
+  lines_added: 96
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2104-playwright-conftest-approvals-warm-up--p.md
+generated_by: context-agent-hybrid

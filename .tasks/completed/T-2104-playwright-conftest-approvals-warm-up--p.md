@@ -1,6 +1,7 @@
 ---
 id: T-2104
-name: "Playwright conftest /approvals warm-up — prevent cold-start timeout masking height regressions (OBS-038 fix)"
+name: "Playwright conftest /approvals warm-up — prevent cold-start timeout masking
+  height regressions (OBS-038 fix)"
 description: >
   conftest.py spawns a fresh Watchtower subprocess but doesn't pre-warm slow-
   aggregation routes. First-request cold-start on /approvals (6-15s) exceeds
@@ -8,17 +9,39 @@ description: >
   to be reported as TimeoutError even when the actual height is fine.
   T-2103 shipped the cap fix; this task ships the conftest warm-up so the
   test reports the right failure mode.
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 arc_id: watchtower-redesign
 tags: [test-infra, playwright, perf-cold-start, OBS-038, arc-007]
-components: []
+components: [tests/playwright/conftest.py]
 related_tasks: [T-2102, T-2103]
 created: 2026-05-29T22:18:00Z
-last_update: 2026-05-29T22:18:00Z
-date_finished: null
+last_update: 2026-05-30T08:30:59Z
+date_finished: 2026-05-30T08:30:59Z
+bvp_scores_proposed:
+  - ts: '2026-05-29T22:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F1: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-29T22:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 5
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=5 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2104: Playwright conftest /approvals warm-up
@@ -59,6 +82,14 @@ grep -q "1 passed" /tmp/.t2104b.out
 
 **Prevention:** This task ships the warm-up. Future slow-aggregation routes added to Watchtower automatically benefit if added to the warm-up list. A more durable prevention would auto-discover slow routes from `app.url_map` and warm all of them, but that's premature — current cold paths are well-known and short list.
 
+## Evolution
+
+### 2026-05-30 — warm-up is durable; T-2103 sibling closes the verification gap
+
+- **What changed:** Verify-time re-run (2026-05-30) shows `test_route_height_bounded[/approvals]` passes in **4.72s** wall-time with `/approvals` measured at well under the 8000px cap. Even better, the sibling `[/bvp]` test still passes (1 passed in ~7s). Both ran against the freshly-restarted server — meaning the warm-up genuinely survives a cold subprocess spawn now.
+- **Plan impact:** The AC #3 "marginal at 15s timeout boundary" note from earlier in the build is no longer accurate post-T-2102/T-2109 — those cache-pattern fixes brought `/approvals` warm-state load well under cap, AND brought cold-start under the 15s navigation timeout. The "V2 follow-up to bump to 30s" hedge is now obsolete; no V2 needed.
+- **Triggered:** Nothing new — the work T-2104 set out to do is durably done.
+
 ## Decisions
 
 ### 2026-05-30 — warm-up vs timeout-bump
@@ -74,3 +105,20 @@ grep -q "1 passed" /tmp/.t2104b.out
 
 ### 2026-05-29T22:18:00Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-14f3b45b
+- **Timestamp:** 2026-05-30T08:32:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `tests/playwright/conftest.py` warms up `/approvals`, `/tasks`, `/timeline`, `/inception`, `/bvp` after the `/health` ready check, before `yield proc` — via shared `_warm_slow_routes()` helper used by
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/conftest.py in: `tests/playwright/conftest.py` warms up `/approvals`, `/tasks`, `/timeline`, `/inception`, `/bvp` after the `/health` ready check, before `yield proc``
+
+### 2026-05-30T08:30:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
