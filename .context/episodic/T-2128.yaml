@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2128: adopt visual-verification hook from 025-WokrshopDesigner (PL-018)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T21:55:58Z
+# ============================================================================
+
+task_id: T-2128
+task_name: "adopt visual-verification hook from 025-WokrshopDesigner (PL-018)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T21:51:42Z
+completed: 2026-05-30T21:55:53Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-visual-verification.sh` exists, is executable, gates `git commit` on .css/.html with no `## Visual Verification` + image ref in active task'
+  - '`agents/context/check-visual-verification.AGENT.md` documents the gate, enable command, bypass, and origin'
+  - '`lib/templates/claude-project.md` has "Visual Verification for UI Changes" section under Agent Behavioral Rules'
+  - '`lib/templates/claude-project.md` "Verification Before Completion" step 4 cross-links to the new section'
+  - '`fw hook check-visual-verification` routes correctly (auto-dispatch by filename — no bin/fw change needed)'
+  - 'Smoke test BLOCK: commit with staged .css + task lacking section → exit 2'
+  - 'Smoke test PASS: same + `## Visual Verification` with image ref → exit 0'
+  - 'Smoke test BYPASS: `--no-verify` → exit 0'
+  - 'Smoke test IMAGE-MISSING: section present but no image ref → exit 2'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2128-adopt-visual-verification-hook-from-025-.md
+generated_by: context-agent-hybrid

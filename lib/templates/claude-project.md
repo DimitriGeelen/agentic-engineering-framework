@@ -672,8 +672,23 @@ Before setting any task to `work-completed`:
 2. Check every `### Agent` acceptance criterion checkbox (or all ACs if no split headers)
 3. If tests exist for the changed code, run them
 4. Report results to user with pass/fail evidence
-5. Do NOT call `fw task update --status work-completed` until all pass
-6. The verification gate (P-011) enforces this structurally — this rule makes you check BEFORE hitting the gate
+5. If the change is visual (CSS, HTML layout, contenteditable, font/density/theme/language modes): see **"Visual Verification for UI Changes"** below — DOM-rect math is not sufficient
+6. Do NOT call `fw task update --status work-completed` until all pass
+7. The verification gate (P-011) enforces this structurally — this rule makes you check BEFORE hitting the gate
+
+### Visual Verification for UI Changes
+DOM measurements (`getBoundingClientRect`, `scrollWidth`, `clientWidth`) confirm geometry — they do NOT confirm rendered output. Font hinting, kerning, ellipsis behaviour, sub-pixel rounding, and contenteditable span spacing can add 3-10px that DOM math misses entirely.
+
+**Before claiming a UI/CSS change is fixed:**
+1. **Take element-level Playwright screenshots** of the affected component using `browser_take_screenshot` with a `target` selector (not full-viewport — too zoomed-out to inspect)
+2. **Screenshot every visual mode the change can affect:** font types (mono/sans/serif), themes (light/dark/contrast), densities (compact/normal/cozy), languages (de/nl/en), widths (narrow/wide if responsive)
+3. **READ each screenshot** with the Read tool — actually look at the rendered output, don't assume
+4. **Verify the symptom is gone AND no new visual regression appeared** — fixing one mode can break another
+5. Only then check the AC box and commit
+
+**The test:** "Did I look at a rendered screenshot of the change, in every mode it can affect?" If no, you haven't verified — you've measured.
+
+**Gate enforcement (opt-in):** `fw hook-enable --event PreToolUse --matcher Bash --name check-visual-verification` blocks `git commit` when `.css`/`.html` files are staged unless the active task has a `## Visual Verification` section with at least one screenshot reference. Enable in projects that do CSS/HTML work.
 
 ### Hypothesis-Driven Debugging
 When encountering errors or unexpected behavior:
