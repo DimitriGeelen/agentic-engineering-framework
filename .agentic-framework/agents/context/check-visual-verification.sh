@@ -71,8 +71,11 @@ VISUAL_FILES=$(echo "$STAGED" | grep -E '\.(css|html)$' || true)
 FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 [ -f "$FOCUS_FILE" ] || exit 0
 
-TASK_ID=$(grep -E '^task_id:' "$FOCUS_FILE" 2>/dev/null | head -1 | sed -E 's/^task_id:[[:space:]]*"?([^"]*)"?$/\1/')
-[ -n "$TASK_ID" ] || exit 0
+# Framework focus.yaml uses `current_task:` (see check-active-task.sh). The
+# original 025-WokrshopDesigner copy grepped `task_id:`; accept both so the gate
+# fires under the framework convention AND legacy consumer focus files (T-2130).
+TASK_ID=$(grep -E '^(current_task|task_id):' "$FOCUS_FILE" 2>/dev/null | head -1 | sed -E 's/^(current_task|task_id):[[:space:]]*"?([^"]*)"?$/\2/')
+[ -n "$TASK_ID" ] && [ "$TASK_ID" != "null" ] || exit 0
 
 # Locate task file
 TASK_FILE=$(find "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" -maxdepth 1 -name "${TASK_ID}-*.md" 2>/dev/null | head -1)
