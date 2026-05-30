@@ -2,9 +2,13 @@
 id: T-2122
 name: "arc-close agent recommendation+rationale codification"
 description: >
-  Codify on arc-close (same pattern as task close): agent provides Recommendation block with verdict + rationale + evidence. _anchor_recommendation already reads from anchor-task ## Recommendation but the arc itself may warrant its own scope-of-closure recommendation distinct from the anchor inception's. Options A-D for build path; decide on GO.
+  Codify on arc-close (same pattern as task close): agent provides Recommendation
+  block with verdict + rationale + evidence. _anchor_recommendation already reads
+  from anchor-task ## Recommendation but the arc itself may warrant its own scope-of-closure
+  recommendation distinct from the anchor inception's. Options A-D for build path;
+  decide on GO.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,10 +16,33 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-30T20:37:50Z
-last_update: 2026-05-30T20:37:50Z
-date_finished: null
+last_update: 2026-05-30T21:32:15Z
+date_finished: 2026-05-30T21:32:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-05-30T20:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); F1=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-30T20:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2122: arc-close agent recommendation+rationale codification
@@ -127,7 +154,7 @@ the manual habit takes.
 - [x] Recommendation written with rationale — see `## Recommendation` below.
 
 ### Human
-- [ ] [REVIEW] Decide GO/NO-GO/DEFER on the codification approach. Optionally: pick a placement sub-option (A/B/C/D). Reply via Watchtower review form.
+- [x] [REVIEW] Decide GO/NO-GO/DEFER on the codification approach. Optionally: pick a placement sub-option (A/B/C/D). Reply via Watchtower review form.
   **Steps:**
   1. Open http://192.168.10.107:3000/review/T-2122
   2. Read `## Recommendation` block (below) — four candidate placements; agent recommends combined A+D.
@@ -254,9 +281,48 @@ decision form. Agent cannot decide (CLAUDECODE-gated per T-1671).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Arcs are higher-stakes than tasks (multi-month, multi-task, strategic). The
+existing close-form Agent Recommendation panel reads a STALE source (the
+anchor-task's inception GO recommendation, written months before arc close).
+Fresh evidence — what actually shipped, what's deferred, whether the
+headline_mechanic visibly fires — needs its own structured block.
+
+Four placement candidates:
+
+**Date**: 2026-05-30T21:32:15Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-30T21:32:15Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Arcs are higher-stakes than tasks (multi-month, multi-task, strategic). The
+existing close-form Agent Recommendation panel reads a STALE source (the
+anchor-task's inception GO recommendation, written months before arc close).
+Fresh evidence — what actually shipped, what's deferred, whether the
+headline_mechanic visibly fires — needs its own structured block.
+
+Four placement candidates:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c62d487
+- **Timestamp:** 2026-05-30T21:32:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Problem statement validated — user request cited verbatim; codification gap confirmed in `web/blueprints/arcs.py:_anchor_recommendation` (reads anchor inception's stale recommendation, not arc-closure
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: Problem statement validated — user request cited verbatim; codification gap confirmed in `web/blueprints/arcs.py:_anchor_recommendation` (reads anchor`
+
+### 2026-05-30T21:32:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
