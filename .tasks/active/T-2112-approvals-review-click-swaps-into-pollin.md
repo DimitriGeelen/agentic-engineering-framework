@@ -15,9 +15,9 @@ description: >
   link) inside the arc-closure cards. Sibling polling containers exist on /review/T-XXX
   and /cockpit — they likely have the same bug class but are 'one bug = one task'.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, approvals, htmx, ui-bug, arc-007]
 components: [web/templates/_approvals_content.html]
@@ -28,8 +28,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-30T15:41:12Z
-last_update: '2026-05-30T15:45:03Z'
-date_finished:
+last_update: 2026-05-30T16:19:43Z
+date_finished: 2026-05-30T16:19:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -97,11 +97,21 @@ The new content lands inside `#approvals-content`, NOT replacing `#content`. The
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_approvals_content.html` Review buttons (`href="/arcs/.../review"`) carry `hx-target="#content" hx-swap="innerHTML" hx-push-url="true"` so they swap into the shell, not the polling div.
-- [ ] `_approvals_content.html` Approve/Override buttons (`href="/arcs/.../close"`) carry the same triplet.
-- [ ] `_approvals_content.html` anchor-task links (`href="/tasks/T-XXX"`) carry the same triplet (otherwise reviewer clicks T-XXX → same bounce-back from polling overwrite).
-- [ ] Forensic comment in `_approvals_content.html` near the first override names T-2112 and explains why the triplet is needed (so the next maintainer doesn't strip them as redundant).
-- [ ] Playwright regression: after clicking Review and waiting >10s, the page URL stays at `/arcs/<slug>/review`, only one `nav.wt-breadcrumb` is in the DOM (not two), and the polling-div's content is NOT the old approvals content.
+- [x] `_approvals_content.html` Review buttons (`href="/arcs/.../review"`) carry `hx-target="#content" hx-swap="innerHTML" hx-push-url="true"` so they swap into the shell, not the polling div.
+- [x] `_approvals_content.html` Approve/Override buttons (`href="/arcs/.../close"`) carry the same triplet.
+- [x] `_approvals_content.html` anchor-task links (`href="/tasks/T-XXX"`) carry the same triplet (otherwise reviewer clicks T-XXX → same bounce-back from polling overwrite).
+- [x] Forensic comment in `_approvals_content.html` near the first override names T-2112 and explains why the triplet is needed (so the next maintainer doesn't strip them as redundant).
+- [x] Playwright regression: after clicking Review and waiting >10s, the page URL stays at `/arcs/<slug>/review`, only one `nav.wt-breadcrumb` is in the DOM (not two), and the polling-div's content is NOT the old approvals content.
+
+### Human
+- [ ] [REVIEW] Click Review on a close-ready arc card on `/approvals`. Wait 15 seconds. The arc-review page must remain on screen (no bounce back to /approvals), and the page header/breadcrumb should look normal — no stacked old shell visible above the new content.
+  **Steps:**
+  1. Open http://192.168.10.107:3000/approvals
+  2. Find any card under "Arc Closure" (e.g. arc-grooming)
+  3. Click "Review"
+  4. Wait at least 15 seconds (one full polling cycle + safety)
+  **Expected:** URL stays at /arcs/<slug>/review; one breadcrumb (Work › Arcs › <name> › review); no stale "Approvals (N pending)" heading visible.
+  **If not:** Reopen T-2112 with the leftover shell screenshot — htmx inheritance leaked through some path we missed.
 
 ## Pickup-Ready Patch (for next session — budget hit ~97% mid-fix)
 
@@ -236,43 +246,39 @@ python3 -m pytest tests/playwright/test_approvals_arc_review_navigation.py -q --
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** User clicks Review on `/approvals` Arc-Closure card. The arc-review page briefly appears, then after ~10 seconds "bounces back" — the approvals page is restored. Visually disorienting; the user described it as "larger screen disappears after no to much time".
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** htmx `hx-target` inheritance. `web/templates/approvals.html:237-243` declares `<div id="approvals-content" hx-target="this" hx-trigger="every 10s">` — correct for the polling cycle itself (T-669 / T-2060 ensured the polling response doesn't blow away the page shell). But htmx propagates `hx-target` downward to descendant elements unless they override. The Review/Approve/anchor anchors live INSIDE `#approvals-content` (via `{% include '_approvals_content.html' %}`), so they inherit `hx-target="this"` — meaning **this == the polling div** at their level. Click → htmx fetches the destination, swaps innerHTML into `#approvals-content`. The page shell above (breadcrumb + heading) is unchanged → stale layout. 10s later the polling cycle fires `/approvals/content` → original content restored → "bounce back".
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** L-438 (T-2060) already documented the body-level `hx-target="#content"` × descendant-polling interaction, but the inverse — polling container × descendant boost-anchors — was not yet captured. The polling override is correct in isolation; the bug only manifests when an anchor lives inside the polling container AND points at a non-polling destination. No lint, no Playwright test, no template-shape audit caught this. The new content rendering successfully (the user briefly sees the right page) suppressed any error signal.
+
+**Prevention:** Three layers landed with this fix:
+1. **Per-instance fix:** explicit `hx-target="#content" hx-swap="innerHTML" hx-push-url="true"` on each cross-page anchor inside the polling container. Documented inline with a long forensic comment naming T-2112 so a future cleanup doesn't strip them as "redundant".
+2. **Playwright regression** (`tests/playwright/test_approvals_arc_review_navigation.py`): asserts URL stability + single-breadcrumb + single-h1 12 s after a Review click. Pins the contract; any future template refactor that loses the triplet trips this test.
+3. **Sibling-class audit** (not in this task per "one bug = one task"): the same pattern likely affects `web/templates/review.html:595` and `web/templates/cockpit.html:282` polling containers. Documented in this task body; should be filed as separate ticket(s) only if a similar bounce-back is reported.
+
+A broader prevention — a template-shape lint that flags any boosted `<a>` inside a `hx-target="this"` polling container without its own override — is a candidate L-438-extension follow-up, not in scope for this single-bug task.
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-30 — htmx inheritance is bidirectional (refines L-438)
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** L-438 (T-2060) documented body-level `hx-target="#content"` × descendant-polling interaction (polling response blew away page shell). The mirror case — polling container × descendant cross-page boost anchors — is the same inheritance mechanism in reverse. Both root in: **`hx-target` propagates to ALL descendants unless they override, regardless of which direction the bug then takes.**
+- **Plan impact:** The fix pattern that landed (4 anchors get the triplet) handles this template. A more durable prevention would be a template-shape lint that walks Jinja-rendered HTML and flags any boosted `<a>` inside a `hx-target="this"` polling container without its own `hx-target` override. Out of scope here ("one bug = one task"); candidate follow-up.
+- **Triggered:** Playwright regression `test_approvals_arc_review_navigation.py` pins the URL+breadcrumb+h1 invariant. Sibling-template audit candidates (`review.html:595`, `cockpit.html:282`) flagged in task body — file only if similar bounce-back is reported.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+## Recommendation
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+**Recommendation:** GO
+
+**Rationale:** The user-flagged annoyance ("larger screen disappears after no to much time") is structurally eliminated. The 5-attribute triplet on 4 anchors makes the htmx swap target explicit, breaking the inheritance chain that pulled clicks into the polling div. Playwright regression test pins the contract — any future refactor that loses the override trips the test before it ships. Forensic inline comment names T-2112 so the override is not mistaken for redundant boilerplate.
+
+**Evidence:**
+- Patch shipped: `web/templates/_approvals_content.html` — 5 `hx-target="#content"` overrides, T-2112 forensic comment block.
+- Rendered HTML carries the overrides (43 occurrences across all arc-closure cards on the live page).
+- Playwright test passes in 17.2 s (`tests/playwright/test_approvals_arc_review_navigation.py::test_approvals_review_does_not_bounce_back`).
+- All 5 Verification commands return OK (V1: triplet pattern present; V2: ≥3 overrides — got 5; V3: T-2112 forensic comment present; V4: served HTML carries the override; V5: Playwright passes).
+- Related context: T-2110, T-2111 (sibling fixes from the same UX-report cluster, all closed partial-complete this session pair); L-438 (T-2060 origin of the inheritance class).
 
 ## Decisions
 
@@ -301,3 +307,20 @@ python3 -m pytest tests/playwright/test_approvals_arc_review_navigation.py -q --
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2112-approvals-review-click-swaps-into-pollin.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-568c1b4c
+- **Timestamp:** 2026-05-30T16:20:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `python3 -m pytest tests/playwright/test_approvals_arc_review_navigation.py -q --no-header > /tmp/.t2112-test.log 2>&1 && tail -1 /tmp/.t2112-test.log | grep -q "passed"`
+
+### 2026-05-30T16:19:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

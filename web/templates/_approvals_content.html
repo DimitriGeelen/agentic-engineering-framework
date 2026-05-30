@@ -216,19 +216,34 @@
                   {% else %}background:var(--wt-muted); color:#fff;
                   {% endif %}"
                   title="Anchor-task agent recommendation: {{ _v }}">{{ _v }}</span>
-            <a href="/arcs/{{ a.slug }}"><strong>{{ a.name }}</strong></a>
+            {# T-2112: explicit hx-target="#content" on every cross-page navigation link
+               inside this template. The wrapping #approvals-content div sets
+               hx-target="this" for its own 10s polling (T-669 / T-2060); htmx INHERITS
+               that to descendant anchors. Without these overrides, clicking Review or
+               an anchor-task link swaps the destination INTO the polling div (so the
+               old approvals shell breadcrumb/heading stays above it) and the next
+               polling cycle (≤10s) overwrites the swapped content with /approvals/content
+               — i.e. "bounces back". Triplet here = target + swap + push-url so the
+               browser URL also updates correctly. #}
+            <a href="/arcs/{{ a.slug }}"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"><strong>{{ a.name }}</strong></a>
             <span style="font-size:0.8rem; color:var(--pico-muted-color);">
                 {{ a.completed }}/{{ a.total }} — {{ "%.0f%%" % (a.completion_ratio * 100) }}
             </span>
             {% if a.anchor %}
             <span style="font-size:0.78rem; color:var(--pico-muted-color);">
-                · anchor <a href="/tasks/{{ a.anchor }}">{{ a.anchor }}</a>
+                · anchor <a href="/tasks/{{ a.anchor }}"
+                            hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ a.anchor }}</a>
             </span>
             {% endif %}
         </div>
         <div style="display:flex; gap:0.4rem;">
-            <a href="/arcs/{{ a.slug }}/review" role="button" class="secondary outline" style="margin:0; font-size:0.78rem;">Review</a>
-            <a href="/arcs/{{ a.slug }}/close" role="button" style="margin:0; font-size:0.78rem;">Approve / Override</a>
+            <a href="/arcs/{{ a.slug }}/review" role="button" class="secondary outline"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="margin:0; font-size:0.78rem;">Review</a>
+            <a href="/arcs/{{ a.slug }}/close" role="button"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="margin:0; font-size:0.78rem;">Approve / Override</a>
         </div>
     </div>
     {% if a.headline_mechanic %}
