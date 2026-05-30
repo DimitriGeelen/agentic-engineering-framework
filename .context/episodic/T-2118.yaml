@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2118: review-handoff palette inception — why agent keeps forgetting to print full
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T21:32:05Z
+# ============================================================================
+
+task_id: T-2118
+task_name: "review-handoff palette inception — why agent keeps forgetting to print full"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-30T18:50:00Z
+completed: 2026-05-30T21:32:00Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-05-30T20:49:51+02:00
+last_commit: 2026-05-30T22:31:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — review-handoff palette structural fix. file research artefact docs/reports/T-2118-*.md (C-001)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated — four prior memory entries cited; current session shipped 6 tasks + 1 inception with no palette until user asked.'
+  - 'Root cause identified — convention is memory-only, not structural. Memory-based prevention has failed N=4 times in the recorded history.'
+  - 'Recommendation written — A+B (close-time + handover-time emit) with config-keyed channel extensibility; defer C (PreCompact block).'
+  - '[REVIEW] Decide GO/NO-GO/DEFER on the recommendation. Optionally: pick a sub-set (A only / A+B / A+B+C). Reply via Watchtower review form.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file inception — review-handoff palette structural fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2118-review-handoff-palette-rca.md'
+  - '.tasks/active/T-2118-review-handoff-palette-inception.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T20:49:51"
+    action: "T-2118: file inception — review-handoff palette structural fix"
+  - time: "2026-05-30T22:31:10"
+    action: "T-2118: file research artefact docs/reports/T-2118-*.md (C-001)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 162 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, handoff, watchtower, inception, ux, antifragility]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 162
+  commits: 2
+  files_changed: 2
+  lines_added: 497
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2118-review-handoff-palette-inception.md
+generated_by: context-agent-hybrid

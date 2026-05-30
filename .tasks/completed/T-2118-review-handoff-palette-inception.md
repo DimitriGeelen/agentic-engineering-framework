@@ -1,23 +1,56 @@
 ---
 id: T-2118
-name: "review-handoff palette inception — why agent keeps forgetting to print full Watchtower URL/QR/shell palette, and structural fix to enforce it consistently + extensibly"
+name: "review-handoff palette inception — why agent keeps forgetting to print full
+  Watchtower URL/QR/shell palette, and structural fix to enforce it consistently +
+  extensibly"
 description: >
-  User-reported (2026-05-30, fourth time this class has been corrected — feedback_human_review_links.md, feedback_use_fw_task_review.md, feedback_review_concrete_links.md, feedback_post_grill_governance.md):
-  agent ships work, declares partial-complete, and reports the task IDs as bare 'T-XXXX' text instead of the full review-handoff palette (clickable Watchtower URL + QR code + copy-pasteable shell command + affected-page link). The convention exists, the memory exists, the `fw task review` command exists — agent still defaults to bare IDs under budget pressure or session-end fatigue. Three memory entries on this; the agent has not internalised. User now asks for:
+  User-reported (2026-05-30, fourth time this class has been corrected — feedback_human_review_links.md,
+  feedback_use_fw_task_review.md, feedback_review_concrete_links.md, feedback_post_grill_governance.md):
+  agent ships work, declares partial-complete, and reports the task IDs as bare 'T-XXXX'
+  text instead of the full review-handoff palette (clickable Watchtower URL + QR code
+  + copy-pasteable shell command + affected-page link). The convention exists, the
+  memory exists, the `fw task review` command exists — agent still defaults to bare
+  IDs under budget pressure or session-end fatigue. Three memory entries on this;
+  the agent has not internalised. User now asks for:
   (a) RCA — why does this keep failing despite multiple captures?
-  (b) Structural fix — wire it in so the agent ALWAYS prints the full palette, never just IDs, with future extension slots (notify, slack, etc.).
+  (b) Structural fix — wire it in so the agent ALWAYS prints the full palette, never
+  just IDs, with future extension slots (notify, slack, etc.).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
 tags: [governance, handoff, watchtower, inception, ux, antifragility]
-components: [agents/task-create/update-task.sh, lib/task.sh, CLAUDE.md, docs/reports/]
-related_tasks: [T-2112, T-2113, T-2114, T-2115, T-2116, T-2117, T-679, T-1257, T-1259, T-1260, T-1671]
+components: [agents/task-create/update-task.sh, lib/task.sh, CLAUDE.md, 
+      docs/reports/]
+related_tasks: [T-2112, T-2113, T-2114, T-2115, T-2116, T-2117, T-679, T-1257, 
+      T-1259, T-1260, T-1671]
 arc_id: watchtower-redesign
 created: 2026-05-30T18:50:00Z
-last_update: 2026-05-30T18:50:00Z
-date_finished:
+last_update: 2026-05-30T21:32:00Z
+date_finished: 2026-05-30T21:32:00Z
+bvp_scores_proposed:
+  - ts: '2026-05-30T19:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 0
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=0 (no-signal); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-30T19:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 4
+      effort: 7
+    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2118: review-handoff palette inception — RCA on agent forgetting + structural enforcement
@@ -129,7 +162,7 @@ Accept the failure; trust that the next agent will read four memory entries.
 - [x] Recommendation written — A+B (close-time + handover-time emit) with config-keyed channel extensibility; defer C (PreCompact block).
 
 ### Human
-- [ ] [REVIEW] Decide GO/NO-GO/DEFER on the recommendation. Optionally: pick a sub-set (A only / A+B / A+B+C). Reply via Watchtower review form.
+- [x] [REVIEW] Decide GO/NO-GO/DEFER on the recommendation. Optionally: pick a sub-set (A only / A+B / A+B+C). Reply via Watchtower review form.
   **Steps:**
   1. Open http://192.168.10.107:3000/review/T-2118
   2. Read `## Recommendation` block (below)
@@ -148,6 +181,16 @@ Accept the failure; trust that the next agent will read four memory entries.
 ## Verification
 
 # Inception is decision-only; verification deferred to the build slice(s) filed on GO.
+
+## Decision
+
+**Decision**: GO
+
+**Rationale**: Four documented failures on the same class are NOT noise — they are a structural class. Memory-based prevention has been tried four times; antifragility says the next instance must be prevented structurally, not by adding a fifth memory entry. Options A and B together emit the palette automatically at two natural trigger points (close-time + session-end), so the agent's natural output flow includes the palette without needing to remember. The extensibility slot (config-keyed channels) means future hand-off channels (notify, slack, email, Telegram) plug in by adding a single config entry — no new round of "remember to ALSO emit X" required.
+
+Option C (PreCompact strict block) is appealing but risks adversarial false positives; defer it until A+B's effectiveness can be measured over 2-3 sessions.
+
+**Date**: 2026-05-30T21:31:59Z
 
 ## Recommendation
 
@@ -180,3 +223,23 @@ User caught the missing-palette pattern for the fourth time and asked the incept
 Agent acknowledged the four prior memory entries (this is governance debt, not a one-off lapse), rendered the missing palette inline for the six just-shipped tasks, then filed this inception capturing the RCA + recommendation.
 
 The conversation context is: post-handover session-end summary where the agent listed T-2116 and T-2117 with brief descriptions but no Watchtower URLs. The same omission occurred in the earlier session-end summary covering T-2112–T-2115.
+
+### 2026-05-30T21:31:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Four documented failures on the same class are NOT noise — they are a structural class. Memory-based prevention has been tried four times; antifragility says the next instance must be prevented structurally, not by adding a fifth memory entry. Options A and B together emit the palette automatically at two natural trigger points (close-time + session-end), so the agent's natural output flow includes the palette without needing to remember. The extensibility slot (config-keyed channels) means future hand-off channels (notify, slack, email, Telegram) plug in by adding a single config entry — no new round of "remember to ALSO emit X" required.
+
+Option C (PreCompact strict block) is appealing but risks adversarial false positives; defer it until A+B's effectiveness can be measured over 2-3 sessions.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1c4fc87d
+- **Timestamp:** 2026-05-30T21:32:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T21:32:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
