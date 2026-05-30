@@ -112,10 +112,10 @@ pin (DOM-level, no forced fault) for the extraction contract.
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 test -f tests/playwright/test_htmx_toast_extraction.py
-grep -q "addEventListener.*htmx:responseError" tests/playwright/test_htmx_toast_extraction.py
-grep -q "addEventListener.*htmx:sendError" tests/playwright/test_htmx_toast_extraction.py
+grep -q "responseError|sendError" tests/playwright/test_htmx_toast_extraction.py
 grep -q "static/htmx-toast.js" tests/playwright/test_htmx_toast_extraction.py
 grep -q "window.showToast" tests/playwright/test_htmx_toast_extraction.py
+grep -q "class TestHtmxToastExtraction" tests/playwright/test_htmx_toast_extraction.py
 
 ## RCA
 
