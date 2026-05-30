@@ -161,6 +161,23 @@ the extraction protocol next time. Filing as a candidate learning rather than
 a detector for now (sample size = 1; the more general "no duplicate listener"
 property is harder to detect mechanically).
 
+## Recommendation
+
+**Recommendation:** GO (close on [REVIEW] tick)
+
+**Rationale:** T-2074 regression cleanly closed. Inline listeners removed,
+inline `showToast` + container kept so htmx-toast.js's `getShowToast()` still
+delegates to the page-styled implementation. Behaviour now matches T-2074's
+original intent: one set of listeners (in htmx-toast.js), one styled
+`showToast` per page context (inline on review, inline on base, fallback for
+any other standalone).
+
+**Evidence:**
+- `web/templates/review.html` — inline listeners gone (`grep -c addEventListener` returns 0 for both events)
+- Inline `function showToast` + `id="toast-container"` retained for delegation
+- HTTP smoke: `/review/T-2119` → 200; `/static/htmx-toast.js` → 200
+- L-448 candidate captured in RCA — extraction tasks need explicit "grep zero remaining inline" AC
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
