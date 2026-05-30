@@ -4,7 +4,7 @@ name: "fw task review output: URL scrolls off-screen above QR — repeat below f
 description: >
   Inception: fw task review output: URL scrolls off-screen above QR — repeat below for terminal-reliable handoff
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -12,8 +12,8 @@ tags: [cli-ux, handoff, terminal-rendering]
 components: [lib/review.sh]
 related_tasks: [T-2125, T-2118, T-2122, T-2123, T-679]
 created: 2026-05-30T21:35:35Z
-last_update: 2026-05-30T21:35:35Z
-date_finished: null
+last_update: 2026-05-30T21:42:43Z
+date_finished: 2026-05-30T21:42:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 ---
@@ -117,15 +117,15 @@ This is the same class of defect as [[T-2125]] (agent typed wrong URL) and the b
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -226,9 +226,31 @@ Estimated effort: 15 minutes. Reversible. Zero blast radius outside `lib/review.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: RCA: emit_review prints header+URL+QR+artifacts+'Scan QR or open link above'+CLI in a 37-line block; QR alone is 16 rows. On any terminal under ~37 visible rows the URL at line 6 scrolls off, but the label still tells the user to look 'above'. Verified by cat -An on bin/fw task review T-2123 output. Structural fix: ~3-line lib/review.sh change repeating the URL below the QR plus a one-line footer after the bottom separator. Bounded, idempotent, print-only blast radius — GO.
+
+**Date**: 2026-05-30T21:42:43Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-30T21:42:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** RCA: emit_review prints header+URL+QR+artifacts+'Scan QR or open link above'+CLI in a 37-line block; QR alone is 16 rows. On any terminal under ~37 visible rows the URL at line 6 scrolls off, but the label still tells the user to look 'above'. Verified by cat -An on bin/fw task review T-2123 output. Structural fix: ~3-line lib/review.sh change repeating the URL below the QR plus a one-line footer after the bottom separator. Bounded, idempotent, print-only blast radius — GO.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5c4f5386
+- **Timestamp:** 2026-05-30T21:42:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T21:42:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
