@@ -101,6 +101,43 @@ import time as _time_mod
 _tag_cache = {"data": None, "ts": 0}
 _TAG_CACHE_TTL = 60  # seconds
 
+# T-2107: per-file tag cache keyed on (path, mtime_ns). Survives the outer
+# _TAG_CACHE_TTL — when the 60s wrapper expires, we only re-parse files whose
+# mtime_ns changed (typically 0-2) instead of re-walking all 1166 episodic
+# files. Cold path still pays 5-6s once; warm rebuild now <100ms.
+# Same shape as web/blueprints/bvp.py:_FM_CACHE (T-1954),
+# web/blueprints/approvals.py:_BODY_CACHE (T-2102),
+# web/blueprints/timeline.py:_FM_CACHE (T-2106).
+_TAG_FM_CACHE: dict[str, tuple[int, list[str]]] = {}
+
+
+def _episodic_tags_for(path: Path) -> list[str]:
+    """Return tag list for one episodic file, mtime-invalidated."""
+    try:
+        mtime_ns = path.stat().st_mtime_ns
+    except OSError:
+        return []
+    key = str(path)
+    cached = _TAG_FM_CACHE.get(key)
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+    import yaml as _yaml
+    try:
+        with open(path) as fh:
+            data = _yaml.safe_load(fh)
+    except Exception as e:
+        logger.warning("Failed to parse episodic file %s: %s", path, e)
+        _TAG_FM_CACHE[key] = (mtime_ns, [])
+        return []
+    tags: list[str] = []
+    if isinstance(data, dict):
+        for tag in data.get("tags", []) or []:
+            t = str(tag).strip()
+            if t:
+                tags.append(t)
+    _TAG_FM_CACHE[key] = (mtime_ns, tags)
+    return tags
+
 
 def aggregate_tags(limit: int = 30) -> list[dict]:
     """Aggregate tags from episodic memory for the tag cloud (T-392).
@@ -108,28 +145,19 @@ def aggregate_tags(limit: int = 30) -> list[dict]:
     Returns a list of {"tag": str, "count": int} sorted by count descending.
     Excludes low-value tags (single-char, pure IDs like D-001, P-001).
     T-1235: Cached for 60s to avoid re-reading 1166 files per request.
+    T-2107: per-file mtime cache (_TAG_FM_CACHE) survives TTL — when the
+    wrapper expires we only re-parse changed files.
     """
     now = _time_mod.monotonic()
     if _tag_cache["data"] is not None and (now - _tag_cache["ts"]) < _TAG_CACHE_TTL:
         return _tag_cache["data"][:limit]
 
-    import yaml as _yaml
-
     counts: dict[str, int] = {}
     ep_dir = PROJECT_ROOT / ".context" / "episodic"
     if ep_dir.exists():
         for f in ep_dir.glob("T-*.yaml"):
-            try:
-                with open(f) as fh:
-                    data = _yaml.safe_load(fh)
-                if isinstance(data, dict):
-                    for tag in data.get("tags", []):
-                        t = str(tag).strip()
-                        if t:
-                            counts[t] = counts.get(t, 0) + 1
-            except Exception as e:
-                logger.warning("Failed to parse episodic file %s: %s", f, e)
-                continue
+            for tag in _episodic_tags_for(f):
+                counts[tag] = counts.get(tag, 0) + 1
 
     # Filter out noise: single-char, pure directive refs (D1, D2), policy refs (P-xxx)
     skip = re.compile(r'^(D\d|P-\d|[A-Z]-\d|.{0,2})$')

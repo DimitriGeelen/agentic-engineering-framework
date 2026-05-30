@@ -76,13 +76,14 @@ def test_load_cap_is_documented():
 # enforces the elevated cap so further regression is caught; the followup task is the
 # path back to the global LOAD_CAP_MS.
 KNOWN_SLOW: dict[str, tuple[int, str]] = {
-    # T-2107: /search exercises embeddings + full task corpus; warm load 6655ms (T-2105 baseline).
-    "/search": (8000, "T-2107"),
     # T-2108: cockpit / home page warm load 5137ms (T-2105 baseline) — aggregates everything.
     "/": (7000, "T-2108"),
     # T-2106 (/timeline) CLOSED 2026-05-30: _FM_CACHE per-file cache landed in
     # web/blueprints/timeline.py — warm load dropped 8279ms → ~700ms. Entry removed;
     # the guard now enforces the global 5000ms cap on /timeline.
+    # T-2107 (/search) CLOSED 2026-05-30: _TAG_FM_CACHE per-file mtime cache landed
+    # in web/search_utils.py:aggregate_tags — post-TTL rebuild 6473ms → 33ms.
+    # Entry removed; guard enforces global 5000ms cap on /search.
 }
 
 
