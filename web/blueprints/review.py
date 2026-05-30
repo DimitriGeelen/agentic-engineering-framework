@@ -147,6 +147,16 @@ def review(task_id):
     if not fm:
         return _render_review_404(task_id, "not_found")
 
+    # T-2131 (T-2125 slice A): render-side forgiveness for the class-mismatched
+    # handoff URL the agent kept typing for inceptions. If the target task is
+    # an inception, redirect to /inception/<id> — the class-correct surface
+    # that exposes the GO/NO-GO/DEFER decide form. /review/<id> is the
+    # partial-complete task-review surface; routing inceptions through it
+    # showed the wrong form. Pairs with the codification in T-2129 and the
+    # CLI hint emitted by `fw task review` (lib/review.sh).
+    if fm.get("workflow_type") == "inception":
+        return redirect(url_for("inception.inception_detail", task_id=task_id), code=302)
+
     human_acs = _parse_human_acs(body)
     checked_count = sum(1 for ac in human_acs if ac["checked"])
     total_count = len(human_acs)
