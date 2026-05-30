@@ -119,6 +119,30 @@ grep -q "class TestHtmxToastExtraction" tests/playwright/test_htmx_toast_extract
 
 ## RCA
 
+**Symptom:** T-2074 + T-2119 closed a real bug (silent toast / double toast on
+htmx errors) but neither task shipped a regression net. The pre-existing
+`tests/playwright/test_htmx_error_toast.py` (T-1600) is broken for unrelated
+reasons (the `/toggle-ac` route shape changed) and did not flag the
+double-listener bug T-2119 had to fix.
+
+**Root cause:** Forced-fault interaction tests are fragile — they couple
+to the server's route shape. When that shape drifts, the test silently
+becomes a no-op for the property it was meant to pin (T-1600 still loads
+the page, still clicks a checkbox, but the intercepted route no longer
+fires). A structural pin (DOM-level + JS body grep) is decoupled from
+route choreography and survives unrelated route renames.
+
+**Why structurally allowed:** No detector required a Playwright test for
+the contract that "extracted shared script + zero remaining inline call
+sites" — the render-surface gate fires `[REVIEW]` for visual confirmation
+but doesn't require a regression pin. T-1600's test was assumed to cover
+the toast contract; nobody re-ran it under the T-2074 extraction.
+
+**Prevention:** This task ships the pin. L-448 (captured under T-1687
+this session) closes the upstream gap by codifying the "grep zero remaining
+inline call sites" AC for the next extraction task; this Playwright pin
+catches the same class of bug at test time.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
