@@ -20,9 +20,15 @@
     .field-row .hint { font-size: 0.8rem; color: var(--pico-muted-color); }
     .form-actions { display: flex; gap: 0.6rem; align-items: center; margin-top: 1.2rem; }
     .form-actions button { margin: 0; }
+    /* T-2116: was color: var(--pico-primary) on background: var(--pico-primary-background) —
+       accent-on-accent-tint = same hue family = unreadable across most palettes
+       (Calm/Editorial/Bone/Paper all failed contrast). Same shape as T-2110 (arc_review.html)
+       and T-2111 (approvals.html). If a 4th consumer lands, promote to shared CSS —
+       T-2102 applied the same "no premature promotion" rule. */
     .headline-mechanic-box {
         padding: 0.6rem 1rem; background: var(--pico-primary-background);
-        color: var(--pico-primary); border-radius: 4px; margin: 0.5rem 0 1rem 0;
+        color: var(--pico-color); border-left: 3px solid var(--pico-primary);
+        border-radius: 4px; margin: 0.5rem 0 1rem 0;
         font-style: italic; line-height: 1.4;
     }
     .anchor-rec {
