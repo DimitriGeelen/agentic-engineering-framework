@@ -3,9 +3,15 @@
         padding: 1rem; border-left: 4px solid var(--pico-primary);
         margin-bottom: 1rem; background: var(--pico-card-background-color);
     }
+    /* T-2110: was color: var(--pico-primary) on background: var(--pico-primary-background) —
+       accent-on-accent-tint = same hue family = unreadable across most palettes
+       (Calm/Editorial/Bone/Paper all failed contrast). Now body text on the tinted
+       primary background, with a left accent stripe to keep the "primary-flavoured"
+       visual signal. Same shape as T-1968 (arc badge dark-on-dark fix). */
     .headline-mechanic-box {
         padding: 0.6rem 1rem; background: var(--pico-primary-background);
-        color: var(--pico-primary); border-radius: 4px; margin: 0.5rem 0 1rem 0;
+        color: var(--pico-color); border-left: 3px solid var(--pico-primary);
+        border-radius: 4px; margin: 0.5rem 0 1rem 0;
         font-style: italic; line-height: 1.4;
     }
     .anchor-rec {

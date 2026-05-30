@@ -73,3 +73,22 @@ def test_arc_review_nonexistent_arc_404(page, base_url):
     assert response is not None and response.status == 404, (
         f"unknown arc must 404, got {response.status if response else None}"
     )
+
+
+def test_arc_review_headline_mechanic_box_visible_with_text(page, base_url):
+    """T-2110: the .headline-mechanic-box must render with the arc's headline_mechanic
+    text inside it. Pins the structural rendering after the contrast fix — if a future
+    refactor accidentally drops the box or detaches it from the headline_mechanic
+    field, this test fails before the human report does.
+
+    arc-grooming has a populated headline_mechanic (verified at filing). If that arc
+    is renamed or archived, switch the test target to any other in-progress arc.
+    """
+    page.goto(f"{base_url}/arcs/arc-grooming/review", wait_until="domcontentloaded")
+    box = page.locator(".headline-mechanic-box")
+    expect(box).to_be_visible()
+    text = (box.text_content() or "").strip()
+    assert len(text) > 20, (
+        f".headline-mechanic-box should contain the arc's headline_mechanic text; "
+        f"got {text!r} ({len(text)} chars)"
+    )
