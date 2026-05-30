@@ -2,12 +2,16 @@
 id: T-2108
 name: "/ cockpit warm-load 5.1s exceeds T-2105 5s cap — T-1954 cache pattern needed"
 description: >
-  Discovered by T-2105 all-routes load-time guard. / (cockpit/home) warm-cache load measured at 5137ms — just over the 5000ms global cap. Cockpit aggregates everything (system health, recent commits, traceability, knowledge counts). Apply T-1954/T-2102 mtime-keyed cache pattern in web/blueprints/cockpit.py. Currently held under 7000ms KNOWN_SLOW elevated cap in test_all_routes_load_time.py — fix closes that exemption.
+  Discovered by T-2105 all-routes load-time guard. / (cockpit/home) warm-cache load
+  measured at 5137ms — just over the 5000ms global cap. Cockpit aggregates everything
+  (system health, recent commits, traceability, knowledge counts). Apply T-1954/T-2102
+  mtime-keyed cache pattern in web/blueprints/cockpit.py. Currently held under 7000ms
+  KNOWN_SLOW elevated cap in test_all_routes_load_time.py — fix closes that exemption.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower, cockpit]
 components: []
 related_tasks: [T-2105, T-1954, T-2102]
@@ -16,8 +20,8 @@ related_tasks: [T-2105, T-1954, T-2102]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T23:00:22Z
-last_update: 2026-05-29T23:00:22Z
-date_finished: null
+last_update: 2026-05-30T06:53:26Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +32,44 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-05-29T23:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-29T23:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2108: / cockpit warm-load 5.1s exceeds T-2105 5s cap — T-1954 cache pattern needed
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Discovered by T-2105 all-routes load-time guard: `/` (cockpit) warm-cache load = 5137ms (exceeds the 5000ms global cap; currently held under a 7000ms KNOWN_SLOW elevated cap with T-2108 as the tracking task). Cockpit aggregates everything — likely multiple slow scans (tasks, approvals, observations, BVP). Apply T-1954/T-2102/T-2106/T-2107 mtime-keyed cache pattern to whichever aggregator is the hot path. After fix `/` should be under the global 5000ms cap and the KNOWN_SLOW entry in `tests/playwright/test_all_routes_load_time.py` is removed.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Profile `/` cockpit to identify the hot aggregator(s) (likely a task/approval/observation walker without an mtime cache).
+- [ ] Apply the T-1954-pattern per-file mtime cache to the hot path(s) — pattern documented in T-1954 / T-2102 / T-2106 / T-2107 RCAs.
+- [ ] `/` warm-cache HTTP load < 5000ms (verified by direct curl-timing on live Watchtower, post-TTL idle).
+- [ ] `KNOWN_SLOW` dict in `tests/playwright/test_all_routes_load_time.py` no longer contains `/`; Playwright `test_route_load_time_bounded[/]` PASSES at global 5000ms cap.
+- [ ] No semantic change — cockpit renders identical task/approval/observation lists pre- and post-fix.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -174,3 +202,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2108--cockpit-warm-load-51s-exceeds-t-2105-5s.md
 - **Context:** Initial task creation
+
+### 2026-05-30T06:53:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
