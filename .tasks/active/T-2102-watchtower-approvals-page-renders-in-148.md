@@ -1,23 +1,45 @@
 ---
 id: T-2102
-name: "Watchtower /approvals page renders in 14.8s — aggregation perf (T-1954/T-2083 sibling, body-extraction cache)"
+name: "Watchtower /approvals page renders in 14.8s — aggregation perf (T-1954/T-2083
+  sibling, body-extraction cache)"
 description: >
   /approvals takes 14.8s end-to-end. Profile shows _load_pending_go_decisions (2.8s),
   _load_close_ready_arcs (1.6s), _load_pending_human_acs (0.9s) — total ~5.4s
   aggregation + template render. Body re-parsing + section regex repeated per request.
   Apply T-1954 pattern: mtime-keyed per-file body-extraction cache. Same shape as
   /bvp (T-1954) and /inception (T-2083).
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 arc_id: watchtower-redesign
 tags: [perf, watchtower, approvals, T-1954-cluster, arc-007]
-components: []
+components: [tests/playwright/conftest.py, web/blueprints/approvals.py, web/blueprints/bvp.py, web/blueprints/cockpit.py, web/blueprints/timeline.py, web/search_utils.py, web/shared.py, web/templates/_approvals_content.html]
 related_tasks: [T-1954, T-2083]
 created: 2026-05-29T21:52:09Z
-last_update: 2026-05-29T21:55:00Z
-date_finished: null
+last_update: 2026-05-30T12:36:59Z
+date_finished: 2026-05-30T12:36:59Z
+bvp_scores_proposed:
+  - ts: '2026-05-29T22:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-29T22:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2102: Watchtower /approvals page renders in 14.8s — aggregation perf
@@ -82,6 +104,18 @@ python3 -c "import time, sys; sys.path.insert(0, '.'); from web.blueprints.appro
 - **Plan impact:** No replan — the cache shape matches T-1954 directly.
 - **Triggered:** filed-but-deferred follow-up: per-route load-time playwright guard (test_all_routes_load_time.py), arc-007 sibling. Will file as its own task post-ship per "one bug = one task" (the prevention is a distinct deliverable from this fix).
 
+### 2026-05-30 — Decisions prediction satisfied (helper promoted)
+
+- **What changed:** The §Decisions rejected line "Push to `web/shared.py` immediately — premature; only one consumer today; refactor when `/inception` fix lands" came true exactly as predicted. T-2083 (/inception cache) shipped, then T-2106 (/timeline cache), T-2107 (search_utils tag cache), T-2108 (cockpit human-verify cache) — five consumers total. T-2109 then promoted the helper to `web/shared.py:mtime_cached_get` and migrated all five sites — including this task's `_get_body_cached` — to use the shared helper. L-362 helper-vs-consumer drift pinned by `tests/unit/test_shared_mtime_cache.py` (5 cases covering 3 shape classes).
+- **Plan impact:** This task's `_BODY_CACHE` is now the per-blueprint dict only; the cache logic itself lives in `web/shared.py:mtime_cached_get`. Co-location at filing time was the right scoping; promotion was the right move once the 5th consumer landed.
+- **Triggered:** Nothing new — promotion is documented; perf class closed end-to-end.
+
+### 2026-05-30 — perf class closed end-to-end
+
+- **What changed:** The filed-but-deferred follow-up "per-route load-time playwright guard" became T-2105 (`tests/playwright/test_all_routes_load_time.py`, 5s cap, KNOWN_SLOW dict now EMPTY for the first time). T-2104 added the conftest warm-up to keep cold-start latency from masking real regressions. T-2103 closed the height-cap regression that surfaced post-T-2102 (the page no longer timed out, so the all-routes height guard could finally fire). T-2106/T-2107/T-2108 closed the three sibling slow-aggregation pages.
+- **Plan impact:** T-2102 was the keystone — exposing the masked height regression once the timeout lifted, then chaining T-2103/T-2104/T-2105/T-2106/T-2107/T-2108/T-2109. The "one bug = one task" scoping discipline produced 7 cleanly traceable closures rather than one fat task.
+- **Triggered:** Nothing new — class fully closed; prevention test ships in T-2105.
+
 ## Decisions
 
 ### 2026-05-29 — cache shape
@@ -93,7 +127,35 @@ python3 -c "import time, sys; sys.path.insert(0, '.'); from web.blueprints.appro
   - Move all section extraction to a one-shot pass per body — same idea but lacks cross-request memo; first request still pays full cost on every reload.
   - Push to `web/shared.py` immediately — premature; only one consumer today; refactor when `/inception` fix lands.
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs verified. `/approvals` went from 14.8s → 2.55s warm-cache (5.8× speedup). Body cache lives in `web/blueprints/approvals.py:_BODY_CACHE`, keyed by `(path, mtime_ns)`, now routed through the shared `web/shared.py:mtime_cached_get` helper (T-2109 promotion). No semantic change to the page output; the only remaining work is the `[REVIEW]` Human AC asking whether the page reads correctly with the cache active.
+
+**Evidence:**
+- `web/blueprints/approvals.py` — `_BODY_CACHE` dict + `_get_body_cached()` delegate to `mtime_cached_get` (T-2109 migration).
+- `_load_pending_go_decisions` + `_load_pending_human_acs` now route through `_get_body_cached`.
+- Warm-cache HTTP load: **2.55s** end-to-end (was 14.8s). Verified via `python3 -c "from web.blueprints.approvals import _build_approvals_context; ..."` cold→warm timing.
+- `tests/playwright/test_all_routes_height.py::test_route_height_bounded[/approvals]` no longer fails on the 15s page-load timeout. Height-cap regression that surfaced after the timeout lifted is closed by sibling T-2103.
+- Helper shared with 4 other blueprints (T-1954, T-2106, T-2107, T-2108) and pinned by `tests/unit/test_shared_mtime_cache.py` (T-2109).
+- T-2105 prevention test (per-route load-time guard, 5s cap) ships the class-level protection — KNOWN_SLOW dict now EMPTY.
+
+**What's next:** Once you tick the `[REVIEW]` AC at <http://192.168.10.107:3000/review/T-2102>, the task moves to `.tasks/completed/`. If the page reads wrong (empty/stale/missing sections), report which section and the cache will need a per-section invalidation review — but the mtime keying makes that unlikely.
+
 ## Updates
 
 ### 2026-05-29T21:52:09Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6dd7fda7
+- **Timestamp:** 2026-05-30T12:37:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T12:36:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

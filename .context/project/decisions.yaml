@@ -1745,3 +1745,66 @@ decisions:
     date: 2026-05-28
     task: T-2059
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-252
+    decision: "Synthetic-fixture (constructed `/tmp/.fake-tasks-T2096/`) rather than round-trip on T-2078"
+    scope: project
+    date: 2026-05-29
+    task: T-2096
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-253
+    decision: "Apply the `[ -z \"${FRAMEWORK_ROOT:-}\" ]` gate ONLY at bin/fw:498 (universal entry point)."
+    scope: project
+    date: 2026-05-29
+    task: T-2099
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-254
+    decision: "per-test prime hit before measurement, no expansion to conftest `_warm_slow_routes()`."
+    scope: project
+    date: 2026-05-29
+    task: T-2105
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-255
+    decision: "`KNOWN_SLOW: dict[str, tuple[int, str]]` — per-route elevated cap + tracking task ID."
+    scope: project
+    date: 2026-05-29
+    task: T-2105
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-256
+    decision: "`_get_frontmatter_cached(path)` returns `(fm, body)` tuple — both products of `parse_frontmatter()` in one cached pair."
+    scope: project
+    date: 2026-05-29
+    task: T-2106
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-257
+    decision: "four-question decomposition under arc-008; file T-2101 (Q4 feedback field, this task) first because it has zero dependencies and highest leverage-per-cost; document Q1 (template philosophy), Q2 (frictionless instructions), Q3 (reviewer pre-flight) as sibling questions in the research artifact + arc description; spin them out as their own inceptions when ready for exploration"
+    scope: project
+    date: 2026-05-30
+    task: T-2101
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-258
+    decision: "lower `_ac_cap` 15 → 10. ~1425px saved; total ~7500px, comfortably under cap."
+    scope: project
+    date: 2026-05-30
+    task: T-2103
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-259
+    decision: "explicit per-route warm-up GET requests in the fixture after `/health` returns ready."
+    scope: project
+    date: 2026-05-30
+    task: T-2104
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-260
+    decision: "per-file body-extraction cache keyed by `(path, mtime_ns)`, holding a dict of pre-computed sections (body, decision, recommendation, problem_statement, go_nogo_criteria, verdict, reviewer, body_assumption_count). Co-located in `web/blueprints/approvals.py` for now; promoted to a shared helper if `/inception` (T-2083) or other pages need the same shape."
+    scope: project
+    date: 2026-05-30
+    task: T-2102
+    rationale: "Auto-captured from task file on completion"
