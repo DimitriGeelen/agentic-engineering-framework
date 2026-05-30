@@ -232,7 +232,10 @@
         </div>
     </div>
     {% if a.headline_mechanic %}
-    <p class="approval-meta" style="margin-top:0.4rem; font-style:italic; line-height:1.4;">{{ a.headline_mechanic }}</p>
+    {# T-2111: headline_mechanic moved out of .approval-meta (0.75rem muted) into
+       the readable .headline-mechanic-box callout — body text + accent stripe on
+       tinted primary bg. Same class as T-2110's arc_review.html. #}
+    <div class="headline-mechanic-box">{{ a.headline_mechanic }}</div>
     {% endif %}
 </div>
 {% endfor %}
