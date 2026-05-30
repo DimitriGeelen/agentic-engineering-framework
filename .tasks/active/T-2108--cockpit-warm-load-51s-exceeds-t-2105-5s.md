@@ -8,20 +8,20 @@ description: >
   mtime-keyed cache pattern in web/blueprints/cockpit.py. Currently held under 7000ms
   KNOWN_SLOW elevated cap in test_all_routes_load_time.py — fix closes that exemption.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower, cockpit]
-components: [web/blueprints/cockpit.py]
+components: [web/blueprints/cockpit.py, web/blueprints/timeline.py]
 related_tasks: [T-2105, T-1954, T-2102, T-2106, T-2107]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T23:00:22Z
-last_update: 2026-05-30T06:53:26Z
-date_finished:
+last_update: 2026-05-30T07:11:17Z
+date_finished: 2026-05-30T07:11:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -236,9 +236,12 @@ Combined: ~1.7s of duplicate work per cockpit render, plus the underlying TTL-on
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-06dfe6dd
-- **Timestamp:** 2026-05-30T07:09:20Z
+- **Scan ID:** R-9d41706e
+- **Timestamp:** 2026-05-30T07:11:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-05-30T07:11:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
