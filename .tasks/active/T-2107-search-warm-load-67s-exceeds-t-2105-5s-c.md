@@ -72,6 +72,15 @@ Discovered by T-2105 all-routes load-time guard: /search warm-cache load = 6655m
 - [x] No semantic change — search results identical pre- and post-fix on a sample query.
 
 ### Human
+
+- [ ] [REVIEW] `/search` empty-state tag cloud renders correctly post-cache-refactor
+  **Steps:**
+  1. Open http://192.168.10.107:3000/search (no query)
+  2. Look at the tag cloud — should show ~24 tags, sized/weighted by count, top tags include common ones (arc:*, build, watchtower, governance, pickup)
+  3. Touch an episodic file: `touch .context/episodic/T-2107.yaml` then reload — tag for arc-007 should still appear (cache invalidation by mtime works)
+  **Expected:** Same visual shape and weighting as before refactor (semantic identity already verified by Agent AC #5; this is the eyes-on confirmation that nothing rendered weirdly).
+  **If not:** Note which tag is missing/extra and reopen with details — likely a yaml-parse path divergence in `_episodic_tags_for()`.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -157,6 +166,23 @@ out=$(grep -A2 "KNOWN_SLOW: dict" tests/playwright/test_all_routes_load_time.py)
 - **What changed:** Filing assumed embeddings init was the hot path. Reality: the empty-state tag cloud (`aggregate_tags(limit=24)`) walks all episodic files on every TTL-driven rebuild. The fix shape T-2106 used (per-file mtime cache surviving outer TTL) applied cleanly here — same shape, fourth blueprint in 30 days.
 - **Plan impact:** None on scope — fix matches the T-1954/T-2102/T-2106 pattern as expected. Reinforces OBS-039 (promote helper to `web/shared.py`).
 - **Triggered:** None new this slice. T-2108 (/) is the remaining `KNOWN_SLOW` entry; same pattern likely applies but cockpit aggregates more sources, may need 2-3 caches.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** /search post-TTL rebuild dropped 6473ms → 33ms (200× speedup) via the same per-file mtime cache pattern proven in T-1954 (/bvp), T-2102 (/approvals), and T-2106 (/timeline). Semantic identity verified — `aggregate_tags(limit=24)` returns bit-identical output pre- and post-refactor (24/24 tags, same order). Reviewer PASS, zero findings. Playwright `test_route_load_time_bounded[/search]` passes at the global 5000ms cap with /search removed from KNOWN_SLOW. Only the visual sanity check on the tag cloud remains.
+
+**Evidence:**
+- Cold load (one-time startup): 6700ms (acceptable — pays once)
+- Warm (TTL valid): 17ms
+- After 65s idle, TTL expired: **33ms** (this was the 6473ms regression)
+- Playwright [/search] PASS at 5000ms cap
+- Reviewer T-2107 PASS, no findings
+- Semantic identity: 24/24 tags identical, same order
+- Same shape: web/blueprints/bvp.py:_FM_CACHE (T-1954), approvals.py:_BODY_CACHE (T-2102), timeline.py:_FM_CACHE (T-2106)
+
+**Review URL:** http://192.168.10.107:3000/review/T-2107
 
 ## Decisions
 
