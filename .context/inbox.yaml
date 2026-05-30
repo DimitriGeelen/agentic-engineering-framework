@@ -250,8 +250,8 @@ observations:
     captured: 2026-05-29T11:56:27Z
     context_task: T-2091
     tags: [prevention]
-    status: pending
-    promoted_to: null
+    status: promoted
+    promoted_to: task
   - id: OBS-036
     text: "Audit detector idea (sibling to L-417): Completed inception with workflow_type:inception + Recommendation/Decision text matching '(filed on GO|sub-tasks (filed|created)|build slices (filed)' + 'related_tasks: []' + no completed/active task with related_tasks pointing back → WARN as 'GO-scope-not-propagated'. T-2078 (discovered 2026-05-29 via T-2091 sweep) was the first known instance; the V1 slices T-2092..T-2095 were filed retroactively. Existing L-417 detector covers the inverse (templates/source claim 'will ship in T-XXX' but T-XXX already completed) — this would catch the OUTGOING propagation gap. Scope: .tasks/completed/T-*.md filtered by workflow_type. Fix shape: ~30 lines extending audit.sh structure section, follows the L-417 detector pattern."
     captured: 2026-05-29T12:06:35Z
@@ -271,7 +271,7 @@ observations:
     captured: 2026-05-29T22:12:48Z
     context_task: T-2103
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-039
     text: "capture"
@@ -292,5 +292,12 @@ observations:
     captured: 2026-05-30T16:50:23Z
     context_task: T-2112
     tags: [housekeeping]
-    status: pending
+    status: dismissed
+    promoted_to: null
+  - id: OBS-042
+    text: "show"
+    captured: 2026-05-30T19:37:50Z
+    context_task: T-1687
+    tags: []
+    status: dismissed
     promoted_to: null

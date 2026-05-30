@@ -3434,3 +3434,10 @@ X'` returning empty group."
   date: 2026-05-30
   context: Added via context agent
   application: TBD
+- id: L-449
+  learning: "When adding a real `### Human` AC to a build task, EDIT the existing template placeholder block in-place — do NOT insert a new `### Human` heading above it. The task-create template emits a placeholder `### Human` section with HTML-comment guidance; if the agent inserts a fresh `### Human` block higher in the file, the result is two `### Human` headings (visual noise for the human reviewer, plus the [REVIEW]-vs-[REVIEWER] routing rule lives in the placeholder comments so the agent loses access to those hints). Origin: OBS-041 — observed in T-2112/T-2113/T-2114 this arc. The same anti-pattern surfaced in T-2119 + T-2120 (corrected by editing the template Human block this time)."
+  source: P-002
+  task: T-1687
+  date: 2026-05-30
+  context: Added via context agent
+  application: TBD
