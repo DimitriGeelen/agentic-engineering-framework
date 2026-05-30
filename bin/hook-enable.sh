@@ -117,7 +117,11 @@ fw_prefix="$project_dir/.agentic-framework/bin/fw"
 if [ -x "$project_dir/bin/fw" ] && [ -f "$project_dir/FRAMEWORK.md" ]; then
     fw_prefix="$project_dir/bin/fw"
 fi
-command_str="$fw_prefix hook $name"
+if [ -n "$script" ]; then
+    command_str="$script"
+else
+    command_str="$fw_prefix hook $name"
+fi
 
 python3 - "$settings_file" "$event" "$matcher" "$command_str" "$dry_run" <<'PY'
 import json, os, sys, tempfile

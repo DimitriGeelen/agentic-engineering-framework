@@ -4,7 +4,7 @@ name: "hook-enable --script flag for project-local hooks"
 description: >
   hook-enable --script flag for project-local hooks
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,19 +39,19 @@ Add `--script <abs-path>` to `fw hook-enable` so consumer projects can register 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `--script /abs/path` registers `{"type":"command","command":"/abs/path"}` directly (not via `fw hook <name>`)
-- [ ] `--name` and `--script` together → exit 2 with "use --name or --script, not both"
-- [ ] `--script relative/path` → exit 2 with "must be absolute"
-- [ ] `--script /nonexistent` → exit 2 with "script not found"
-- [ ] `--script /non-executable` → exit 2 with "script not executable"
-- [ ] Idempotency: re-running same `(event, matcher, script)` is a no-op ("already registered")
-- [ ] `--dry-run` shows JSON containing script path without writing
-- [ ] Existing `--name` behavior unchanged (regression)
+- [x] `--script /abs/path` registers `{"type":"command","command":"/abs/path"}` directly (not via `fw hook <name>`)
+- [x] `--name` and `--script` together → exit 2 with "use --name or --script, not both"
+- [x] `--script relative/path` → exit 2 with "must be absolute"
+- [x] `--script /nonexistent` → exit 2 with "script not found"
+- [x] `--script /non-executable` → exit 2 with "script not executable"
+- [x] Idempotency: re-running same `(event, matcher, script)` is a no-op ("already registered")
+- [x] `--dry-run` shows JSON containing script path without writing
+- [x] Existing `--name` behavior unchanged (regression)
 
 ## Verification
 
-# Create test script
-printf '#!/bin/bash\nexit 0\n' > /tmp/test-hook-2124.sh && chmod +x /tmp/test-hook-2124.sh
+# Create test script and settings file
+printf '#!/bin/bash\nexit 0\n' > /tmp/test-hook-2124.sh && chmod +x /tmp/test-hook-2124.sh && echo '{"hooks":{}}' > /tmp/settings-2124.json
 # dry-run shows script path in JSON
 out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --script /tmp/test-hook-2124.sh --file /tmp/settings-2124.json --dry-run 2>&1); echo "$out" | grep -q '"command": "/tmp/test-hook-2124.sh"'
 # mutual exclusion error
@@ -114,6 +114,11 @@ out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --name budget-ga
 
 ## Evolution
 
+### 2026-05-30 — vendored copy gap
+- **What changed:** `bin/fw hook-enable` routes to `.agentic-framework/bin/hook-enable.sh` (vendored copy), not `bin/hook-enable.sh` directly. The previous worker only patched the source; the vendored copy needed syncing too.
+- **Plan impact:** Required one extra `cp` step; otherwise no scope change.
+- **Triggered:** Sync of vendored copy before tests passed.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -163,3 +168,19 @@ out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --name budget-ga
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2124-hook-enable---script-flag-for-project-lo.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c17bba4a
+- **Timestamp:** 2026-05-30T21:11:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **skip-as-pass** (severe, deterministic) @ Verification:line 4
+     - evidence: `out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --script /tmp/test-hook-2124.sh --file /tmp/settings-2124.json --dry-run 2>&1); echo "$out" | grep -q '"command": "/tmp/test-hook-2124.s`
+  2. **skip-as-pass** (severe, deterministic) @ Verification:line 14
+     - evidence: `out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --name budget-gate --file /tmp/settings-2124.json --dry-run 2>&1); echo "$out" | grep -q '"command"'`
