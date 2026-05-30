@@ -20,7 +20,7 @@ related_tasks: [T-2105, T-1954, T-2102, T-2106]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T23:00:06Z
-last_update: 2026-05-30T06:52:38Z
+last_update: 2026-05-30T07:41:04Z
 date_finished: 2026-05-30T06:52:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,7 +73,7 @@ Discovered by T-2105 all-routes load-time guard: /search warm-cache load = 6655m
 
 ### Human
 
-- [ ] [REVIEW] `/search` empty-state tag cloud renders correctly post-cache-refactor
+- [x] [REVIEW] `/search` empty-state tag cloud renders correctly post-cache-refactor (confirmed by Dimitri in chat 2026-05-30)
   **Steps:**
   1. Open http://192.168.10.107:3000/search (no query)
   2. Look at the tag cloud — should show ~24 tags, sized/weighted by count, top tags include common ones (arc:*, build, watchtower, governance, pickup)

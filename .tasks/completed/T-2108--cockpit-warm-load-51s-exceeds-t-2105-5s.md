@@ -20,7 +20,7 @@ related_tasks: [T-2105, T-1954, T-2102, T-2106, T-2107]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T23:00:22Z
-last_update: 2026-05-30T07:11:17Z
+last_update: 2026-05-30T07:38:38Z
 date_finished: 2026-05-30T07:11:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,7 +73,7 @@ Discovered by T-2105 all-routes load-time guard: `/` (cockpit) warm-cache load =
 
 ### Human
 
-- [ ] [REVIEW] `/` cockpit renders correctly post-cache + dedupe refactor
+- [x] [REVIEW] `/` cockpit renders correctly post-cache + dedupe refactor
   **Steps:**
   1. Open http://192.168.10.107:3000/ in browser
   2. Verify the cockpit shows: Action Required summary (Tier 0/GO/Human AC counts), Needs Decision/Framework Recommends/Opportunities/Work Queue cards, System Health panel, Recent Activity, and Human AC tasks list
