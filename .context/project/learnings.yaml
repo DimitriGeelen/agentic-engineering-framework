@@ -3420,3 +3420,10 @@ X'` returning empty group."
   date: 2026-05-29
   context: Added via context agent
   application: TBD
+- id: L-447
+  learning: "htmx hx-target inheritance is bidirectional — bug class hits both descending (body→polling) AND ascending (polling-container→descendant-anchor). L-438 documented descending; T-2112/T-2113/T-2114 surfaced ascending in one session. Fix patterns: per-anchor triplet (small/static anchor count) OR wrapper-reset div (markdown-rendered URLs / unbounded anchor population). T-2115 inception filed for run-time detector."
+  source: P-013
+  task: T-2115
+  date: 2026-05-30
+  context: Added via context agent
+  application: TBD
