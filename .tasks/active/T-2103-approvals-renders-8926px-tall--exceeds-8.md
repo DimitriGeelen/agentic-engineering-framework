@@ -1,23 +1,46 @@
 ---
 id: T-2103
-name: "/approvals renders 8926px tall — exceeds 8000px cap (T-2038 sibling, lower AC cap)"
+name: "/approvals renders 8926px tall — exceeds 8000px cap (T-2038 sibling, lower
+  AC cap)"
 description: >
   After T-2102 perf fix unblocked the page-load timeout, the all-routes height
   guard surfaces a real height regression — /approvals at 8926px, 8000 cap.
   4 inception cards (~760px each = 3049px) + 15 visible AC cards (~285px each =
   4279px) sum past cap. Same T-2038 unbounded-pages class. Simplest safe fix:
   lower _ac_cap 15 → 10; overflow group already in place since T-2038.
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 arc_id: watchtower-redesign
 tags: [watchtower, approvals, height-regression, T-2038-cluster, arc-007]
-components: []
+components: [tests/playwright/conftest.py, web/templates/_approvals_content.html]
 related_tasks: [T-2038, T-2102]
 created: 2026-05-29T22:04:54Z
-last_update: 2026-05-29T22:10:00Z
-date_finished: null
+last_update: 2026-05-30T08:27:32Z
+date_finished: 2026-05-30T08:27:32Z
+bvp_scores_proposed:
+  - ts: '2026-05-29T22:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 5
+      D2: 0
+      D3: 0
+      D4: 0
+      F1: 0
+    rationale: D1=4-5 (body:new-class); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-29T22:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2103: /approvals renders 8926px tall — exceeds 8000px cap
@@ -64,13 +87,9 @@ Sibling fix candidates considered but rejected:
 curl -sf -o /tmp/.appr.html "$(bin/fw watchtower url)/approvals"
 test $(wc -c < /tmp/.appr.html) -gt 1000
 grep -q '_ac_cap = 10' web/templates/_approvals_content.html
-# Live height check (warm server) — must be < 8000px after the cap change.
-out=$(python3 -c "from playwright.sync_api import sync_playwright; import subprocess; url=subprocess.check_output(['bin/fw','watchtower','url']).decode().strip()
-with sync_playwright() as p:
-    b=p.chromium.launch(headless=True); pg=b.new_page(viewport={'width':1280,'height':800})
-    pg.goto(f'{url}/approvals', wait_until='load', timeout=30000)
-    print(pg.evaluate('document.body.scrollHeight'))
-    b.close()"); test "$out" -lt 8000
+# Live height check (warm server) — must be < 8000px after the cap change. Single-line python -c so the
+# verification-block parser (one-shell-command-per-line) doesn't break the heredoc into orphan stanzas.
+out=$(python3 -c 'import subprocess; from playwright.sync_api import sync_playwright; url=subprocess.check_output(["bin/fw","watchtower","url"]).decode().strip(); p=sync_playwright().start(); b=p.chromium.launch(headless=True); pg=b.new_page(viewport={"width":1280,"height":800}); pg.goto(f"{url}/approvals", wait_until="load", timeout=30000); print(pg.evaluate("document.body.scrollHeight")); b.close(); p.stop()'); test "$out" -lt 8000
 
 ## RCA
 
@@ -81,6 +100,14 @@ with sync_playwright() as p:
 **Why structurally allowed:** The cap was hard-coded as a constant rather than computed against a height budget. The height-guard test only fires on absolute scrollHeight, not on a per-section budget. T-2102's perf fix made the test actionable (was masked by 15s timeout); without T-2102 this regression could have grown silently for weeks. The class-prevention test guards correctness (overflow keeps total bounded eventually) but not stability (the cap goes stale as adjacent content grows).
 
 **Prevention:** This task ships the cap reduction. A more durable prevention — a per-section height budget that adapts as adjacent content (inception cards, arc closure rows) grows — is a sibling thought, NOT filed here (one bug = one task; speculative until we see a third recurrence).
+
+## Evolution
+
+### 2026-05-30 — cap=10 holds at 4264px (much under 7500 prediction)
+
+- **What changed:** Pre-build prediction was ~7500px after the cap=10 reduction (15→10 saves 5 × 285px ≈ 1425px from 8926 = 7501). At work-completed verify-time on 2026-05-30, measured height is **4264px** — 3200px more breathing room than predicted. The discrepancy is unrelated reductions across the page since the original 8926 measurement: T-2102 cache + intervening AC closures (`/approvals` AC pool churns daily — the human ticked several Human ACs between filing and fix shipping). The cap-change still contributes its design ~1425px; the rest is content drift in our favour.
+- **Plan impact:** The "comfortably under cap" rationale was even more comfortable than expected. The per-section height-budget thought stays deferred — a static cap-10 reduction with 47% headroom against the ceiling is genuinely durable, not a near-miss.
+- **Triggered:** Nothing new — the headroom validates the chosen mechanism rather than exposing a gap.
 
 ## Decisions
 
@@ -93,7 +120,35 @@ with sync_playwright() as p:
   - Default-collapse AC card Steps/Expected/If-not — same UX penalty on the verification flow.
   - Per-section height budget (computed cap) — premature optimisation; second recurrence would justify; first one points at a constant adjustment.
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Cap reduction 15→10 lands `/approvals` at 4264px on the warm server — 47% headroom against the 8000px ceiling, well past the "comfortably under" target. All 4 Agent ACs verified; the only remaining work is a `[REVIEW]` Human AC asking whether the top-10 AC selection feels like the right "most actionable" set (subjective taste call only the human can make).
+
+**Evidence:**
+- `web/templates/_approvals_content.html` — `_ac_cap = 10` present (T-2103 comment block).
+- Live `/approvals` warm render: **4264px** (cap: 8000px). Verified 2026-05-30 via Playwright at standard 1280×800 viewport.
+- HTML payload: 710,771 bytes — page renders content (not blank / 500).
+- `Show 130 more verification(s)` overflow expander present — no data dropped from the page; the remaining ACs are one click away.
+- T-2102 perf still holds — `/approvals` warm-cache HTTP load ~2.5s (measured during the T-2109 sibling work earlier this session).
+- Ranking unchanged (sort still prioritises REVIEW/stale) — the top-10 are the highest-signal items by construction.
+
+**What's next:** Once you tick the `[REVIEW]` AC at `/review/T-2103`, the task moves to `.tasks/completed/`. If the top-10 feel wrong, name which ACs you expected and the ranking logic in `lib/approvals.sh` (or whichever the sort helper is) is the lever — but that would be a sibling task, not a revert.
+
 ## Updates
 
 ### 2026-05-29T22:04:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fc504b16
+- **Timestamp:** 2026-05-30T08:27:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T08:27:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
