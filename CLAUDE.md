@@ -759,6 +759,17 @@ When agent ACs are complete and human ACs remain:
 
 **Structural enforcement (T-1259, T-1260):** `lib/inception.sh do_inception_decide` refuses when `$CLAUDECODE=1` and points agents at `fw task review T-XXX`. Override flag `--i-am-human` exists for script/test contexts; `--from-watchtower` is the Flask-backend exemption.
 
+**Per-class URL mapping (T-2125, T-2129):** `fw task review` emits a *class-correct* URL — `/inception/<id>` for inceptions, `/review/<id>` for partial-complete task reviews, etc. When listing handoffs in chat, **never synthesise the handoff URL from memory** — run `fw task review T-XXX` and quote the URL it emits, verbatim. The table below is for awareness; the CLI is the source of truth.
+
+| Decision class | Correct URL |
+|----------------|-------------|
+| Inception go/no-go | `/inception/<id>` (or `/approvals` for the queue view) |
+| Task partial-complete (Human ACs) | `/review/<id>` |
+| Tier-0 approval | `/approvals` |
+| Arc close | `/arcs/<slug>/close` |
+
+**Why this rule exists (T-2125 origin):** the agent typed `/review/T-XXX` for four consecutive inception handoffs in one chat, because the four prior memories ([[feedback_use_fw_task_review]], [[feedback_human_review_links]], [[feedback_review_concrete_links]], [[feedback_post_grill_governance]]) all said "use `fw task review`" without disambiguating that the *URL it emits* is class-dependent. The user feedback was unambiguous: *"inception decisions are not in review, they should be in approval properly filed."* The fix has three legs — render-side 302 forgiveness (build slice A, separate task), this codification (slice B, T-2129), and re-issuing the backlog with class-correct URLs (slice D, done in T-2125 narrative).
+
 ### Hypothesis-Driven Debugging
 When encountering errors or unexpected behavior:
 1. **State the symptom** in one sentence
