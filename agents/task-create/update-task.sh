@@ -324,14 +324,27 @@ check_rca_for_bugfix() {
     task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
     task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
 
+    # Non-bug workflow types never gate on RCA, regardless of title keywords
+    # (T-2132: "fix request" / "feature request" tasks are not bug fixes).
     case "$task_type" in
-        inception|specification|design) return 0 ;;
+        inception|specification|design|request|feature|enhancement|decommission) return 0 ;;
     esac
+
+    # Explicit feature/request tags also suppress bug-class (T-2132).
+    if echo "$task_tags" | grep -qiE '\b(feature|request|enhancement)\b'; then
+        return 0
+    fi
+
+    # Strip request/ask/proposal/feature contexts before keyword classification
+    # so "fix request", "feature request", etc. don't trip the "fix" substring
+    # match (T-2132). Order matters: longer phrases first.
+    local title_for_classify
+    title_for_classify=$(echo "$task_title" | sed -E 's/\b(upstream )?(fix request|request to fix|ask to fix|fix proposal|proposal to fix|feature request|enhancement request|feature[^.]*fix)\b//gi')
 
     is_bug=false
     if echo "$task_tags" | grep -qiE '\b(bug|bugfix|hotfix|rca|incident)\b'; then
         is_bug=true
-    elif echo "$task_title" | grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'; then
+    elif echo "$title_for_classify" | grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'; then
         is_bug=true
     fi
     [ "$is_bug" = true ] || return 0

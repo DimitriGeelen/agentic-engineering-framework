@@ -150,6 +150,74 @@ EOF
     [[ "$output" != *"## RCA section is"* ]]
 }
 
+# --- T-2132: "fix request" / "feature request" false-positive fixes ---
+
+@test "title 'Upstream fix request' build task without RCA → PASSES (not bug-class)" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9010" "Upstream fix request: fw hook-enable --script" "build" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9010 \
+        --status work-completed --skip-acceptance-criteria
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"## RCA section is"* ]]
+}
+
+@test "title 'Feature request' build task without RCA → PASSES (not bug-class)" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9011" "Feature request: add baz support" "build" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9011 \
+        --status work-completed --skip-acceptance-criteria
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"## RCA section is"* ]]
+}
+
+@test "workflow_type 'request' with bug-keyword title → PASSES (type override)" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9012" "Fix the broken widget" "request" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9012 \
+        --status work-completed --skip-acceptance-criteria
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"## RCA section is"* ]]
+}
+
+@test "tags [feature] with bug-keyword title → PASSES (tag override)" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9013" "Fix the broken widget" "build" "[feature]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9013 \
+        --status work-completed --skip-acceptance-criteria
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"## RCA section is"* ]]
+}
+
+@test "regression: genuine bug title 'Fix: crash on empty input' → STILL BLOCKED" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9014" "Fix: crash on empty input" "build" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9014 \
+        --status work-completed --skip-acceptance-criteria
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"## RCA section is missing"* ]]
+}
+
+@test "regression: 'Hotfix for prod CSS regression' → STILL BLOCKED" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9015" "Hotfix for prod CSS regression" "build" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9015 \
+        --status work-completed --skip-acceptance-criteria
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"## RCA section is missing"* ]]
+}
+
 @test "--skip-rca bypasses bug-class block AND logs to gate-bypass-log.yaml" {
     cd "$PROJECT_ROOT"
     local body
