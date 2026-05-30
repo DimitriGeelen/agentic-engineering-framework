@@ -6,16 +6,17 @@ description: >
   Inception: inception decisions routed to /review/<id> not /approvals — RCA + structural
   remediation
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
 tags: [routing, handoff, ux, agent-discipline]
-components: [web/blueprints/inception.py, web/blueprints/approvals.py, web/blueprints/review.py, lib/inception.sh]
+components: [web/blueprints/inception.py, web/blueprints/approvals.py, 
+      web/blueprints/review.py, lib/inception.sh]
 related_tasks: [T-2118, T-2122, T-2123, T-679]
 created: 2026-05-30T21:25:42Z
-last_update: 2026-05-30T21:26:50Z
-date_finished:
+last_update: 2026-05-30T21:30:42Z
+date_finished: 2026-05-30T21:30:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -29,6 +30,16 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-30T21:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 4
+      effort: 3
+    rationale: blast_radius=5 (no-signal); tier=4 (no-signal); effort=3 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -216,7 +227,15 @@ out=$(bin/fw task review T-2123 2>&1); echo "$out" | grep -q "/inception/T-2123"
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-2125 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: - The RCA narrows the defect to one site (agent chat output). The framework's `fw task review` already does the right thing; the user has been clicking through to the *wrong-but-200* surface because I quoted the wrong URL.
+- Option A (render-side 302) is the cheapest structural forgiveness — any historical `/review/T-XXX` chat link for an inception starts redirecting to `/inception/T-XXX` invisibly. ~10 LoC, no behavioural risk.
+- Option B (CLAUDE.md per-class URL table) closes the agent-side gap that produced the bug in the first place. The four existing memories all said "use `fw task review`" — none disambiguated the emitted URL per workflow_type.
+- Option D (always-shell-out discipline) is the behavioural pair to B: never hand-type these URLs from memory; quote the CLI's emitted line.
+- Option C (reviewer detector) is unnecessary once A lands — the typo becomes a no-op.
+
+**Date**: 2026-05-30T21:30:41Z
 
 ## Updates
 
@@ -228,3 +247,25 @@ out=$(bin/fw task review T-2123 2>&1); echo "$out" | grep -q "/inception/T-2123"
 
 ### 2026-05-30 — RCA + structural remediation written
 - **Change:** Problem statement, 4-step investigation, root cause, 4 remediation options, GO recommendation on A+B+D, build slices outlined
+
+### 2026-05-30T21:30:41Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** - The RCA narrows the defect to one site (agent chat output). The framework's `fw task review` already does the right thing; the user has been clicking through to the *wrong-but-200* surface because I quoted the wrong URL.
+- Option A (render-side 302) is the cheapest structural forgiveness — any historical `/review/T-XXX` chat link for an inception starts redirecting to `/inception/T-XXX` invisibly. ~10 LoC, no behavioural risk.
+- Option B (CLAUDE.md per-class URL table) closes the agent-side gap that produced the bug in the first place. The four existing memories all said "use `fw task review`" — none disambiguated the emitted URL per workflow_type.
+- Option D (always-shell-out discipline) is the behavioural pair to B: never hand-type these URLs from memory; quote the CLI's emitted line.
+- Option C (reviewer detector) is unnecessary once A lands — the typo becomes a no-op.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a9626b66
+- **Timestamp:** 2026-05-30T21:30:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T21:30:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

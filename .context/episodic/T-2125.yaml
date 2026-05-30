@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2125: inception decisions routed to /review/<id> not /approvals — RCA + structural
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T21:30:54Z
+# ============================================================================
+
+task_id: T-2125
+task_name: "inception decisions routed to /review/<id> not /approvals — RCA + structural"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-05-30T21:25:42Z
+completed: 2026-05-30T21:30:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-05-30T23:29:53+02:00
+last_commit: 2026-05-30T23:29:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — handoff URL routed to /review not /inception (RCA + GO on A+B+D)
+
+# Key outcomes
+outcomes:
+  - 'Task completed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-30 — Where the fix lives'
+    chose: 'Agent chat output (Option B+D) + render-side forgiveness (Option A)'
+    rationale: 'Defect site is agent-side, but a 10-LoC redirect makes future agent typos harmless without behavioural reliance'
+    alternatives_rejected: ['Option C alone — no chat-ingestion surface exists; Option A makes it moot']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2125-inception-handoff-url-rca.md'
+  - '.tasks/active/T-2125-inception-decisions-routed-to-reviewid-n.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T23:29:53"
+    action: "T-2125: inception — handoff URL routed to /review not /inception (RCA + GO on A+B+D)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [routing, handoff, ux, agent-discipline]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 2
+  lines_added: 426
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2125-inception-decisions-routed-to-reviewid-n.md
+generated_by: context-agent-hybrid
