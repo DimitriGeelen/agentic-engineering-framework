@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2115: L-438 detector inception — htmx hx-target inheritance bounce-back detector
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T21:32:54Z
+# ============================================================================
+
+task_id: T-2115
+task_name: "L-438 detector inception — htmx hx-target inheritance bounce-back detector"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T16:44:31Z
+completed: 2026-05-30T21:32:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-30T18:47:37+02:00
+last_commit: 2026-05-30T18:49:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file L-438 detector inception + research artifact. capture L-447 — htmx hx-target inheritance is bidirectional
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated — 3 instances cited (T-2112/T-2113/T-2114), all in same session pair, all confirmed sharing L-438 ascending-inheritance mechanism.'
+  - 'Assumptions tested — A1 validated via grep enumeration (3 polling surfaces); A2 validated via T-2114 markdown-URL capture; A3 to be validated only on GO (S2 spike).'
+  - 'Recommendation written with rationale — GO on Option B, citing run-time DOM coverage + existing T-2042 infrastructure pattern.'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - 'docs/reports/T-2115-l438-detector-inception.md'
+  - '.tasks/active/T-2115-l-438-detector-inception--htmx-hx-target.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T18:47:37"
+    action: "T-2115: file L-438 detector inception + research artifact"
+  - time: "2026-05-30T18:49:15"
+    action: "T-2115: capture L-447 — htmx hx-target inheritance is bidirectional"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 288 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, watchtower, htmx, arc-007, detector]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 288
+  commits: 2
+  files_changed: 3
+  lines_added: 270
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2115-l-438-detector-inception--htmx-hx-target.md
+generated_by: context-agent-hybrid

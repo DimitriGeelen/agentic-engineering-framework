@@ -10,7 +10,7 @@ description: >
   every polling container; (c) htmx CSP/strict-mode signal. Inception output: GO/NO-GO/DEFER
   on which prevention approach to pursue.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -19,8 +19,8 @@ components: []
 related_tasks: [T-2112, T-2113, T-2114, T-2060]
 arc_id: watchtower-redesign
 created: 2026-05-30T16:44:31Z
-last_update: '2026-05-30T16:45:02Z'
-date_finished:
+last_update: 2026-05-30T21:32:49Z
+date_finished: 2026-05-30T21:32:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -103,7 +103,7 @@ Spike S2 (time-box: 1 h, GO-only) — adapt `test_all_routes_height.py` shape in
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -163,9 +163,31 @@ Spike S2 (time-box: 1 h, GO-only) — adapt `test_all_routes_height.py` shape in
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three instances in one day cross the noise threshold. A static-scan-only detector (Option A) closes ~70% of the class but misses the markdown-rendered URL case (T-2114's specific symptom). The run-time DOM scan covers both static and dynamic anchors, reuses the existing `test_all_routes_height.py` shape (T-2042), and adds bounded cost (3-5 h). Option C (CSP/strict-mode) is unbounded research; defer until B is in place.
+
+**Date**: 2026-05-30T21:32:48Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-30T21:32:48Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three instances in one day cross the noise threshold. A static-scan-only detector (Option A) closes ~70% of the class but misses the markdown-rendered URL case (T-2114's specific symptom). The run-time DOM scan covers both static and dynamic anchors, reuses the existing `test_all_routes_height.py` shape (T-2042), and adds bounded cost (3-5 h). Option C (CSP/strict-mode) is unbounded research; defer until B is in place.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a63fdf67
+- **Timestamp:** 2026-05-30T21:32:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T21:32:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
