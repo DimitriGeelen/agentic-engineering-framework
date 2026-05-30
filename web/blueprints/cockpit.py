@@ -49,6 +49,74 @@ def get_scan_age(scan_data: dict) -> str:
         return "unknown"
 
 
+# T-2108: per-file cache for human-verify scanning.
+# get_human_verify_tasks() walks all 171 active task .md files on every cockpit
+# render, reading + parsing each. Same shape as T-1954/T-2102/T-2106/T-2107.
+# Cache stores the per-task verify entry (or None if no unchecked human ACs);
+# re-walks ALL files but only re-reads + re-parses those whose mtime changed
+# (typically 0). Result: cold ~800ms, warm <10ms.
+_HUMAN_VERIFY_CACHE: dict[str, tuple[int, dict | None]] = {}
+
+
+def _human_verify_for(fn: Path) -> dict | None:
+    """Build the verify-task entry for one task file (or None if no unchecked
+    human ACs), mtime-invalidated."""
+    from web.blueprints.tasks import _parse_acceptance_criteria
+
+    try:
+        mtime_ns = fn.stat().st_mtime_ns
+    except OSError:
+        return None
+    key = str(fn)
+    cached = _HUMAN_VERIFY_CACHE.get(key)
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+
+    try:
+        text = fn.read_text(errors="replace")
+    except OSError:
+        _HUMAN_VERIFY_CACHE[key] = (mtime_ns, None)
+        return None
+
+    fm = {}
+    body = text
+    if text.startswith("---"):
+        try:
+            end = text.index("---", 3)
+            fm = yaml.safe_load(text[3:end]) or {}
+            body = text[end + 3:]
+        except Exception as e:
+            logger.warning("Failed to parse frontmatter in %s: %s", fn, e)
+
+    all_acs = _parse_acceptance_criteria(body)
+    human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
+    if not human_acs:
+        _HUMAN_VERIFY_CACHE[key] = (mtime_ns, None)
+        return None
+
+    total = len(human_acs)
+    checked = sum(1 for ac in human_acs if ac["checked"])
+    if total == 0 or checked >= total:
+        _HUMAN_VERIFY_CACHE[key] = (mtime_ns, None)
+        return None
+
+    unchecked = [ac["text"] for ac in human_acs if not ac["checked"]]
+    verdict = extract_recommendation_verdict(text)
+    state = extract_recommendation_state(text)
+    entry = {
+        "task_id": fm.get("id", fn.stem),
+        "name": fm.get("name", ""),
+        "status": fm.get("status", "?"),
+        "total": total,
+        "checked": checked,
+        "unchecked_items": unchecked,
+        "verdict": verdict,
+        "state": state,
+    }
+    _HUMAN_VERIFY_CACHE[key] = (mtime_ns, entry)
+    return entry
+
+
 def get_human_verify_tasks() -> list:
     """Find active tasks with unchecked ### Human ACs (T-193).
 
@@ -56,9 +124,8 @@ def get_human_verify_tasks() -> list:
     instead of a local regex. The local regex matched checkboxes inside HTML
     template comments, over-counting against /approvals' canonical parser
     (L-298 cross-surface count divergence). One parser, one source of truth.
+    T-2108: per-file mtime cache (_HUMAN_VERIFY_CACHE) — only re-parses changed files.
     """
-    from web.blueprints.tasks import _parse_acceptance_criteria
-
     active_dir = PROJECT_ROOT / ".tasks" / "active"
     results = []
     if not active_dir.is_dir():
@@ -67,58 +134,21 @@ def get_human_verify_tasks() -> list:
     for fn in sorted(active_dir.iterdir()):
         if not fn.name.endswith(".md"):
             continue
-        text = fn.read_text(errors="replace")
-
-        # Parse frontmatter
-        fm = {}
-        if text.startswith("---"):
-            try:
-                end = text.index("---", 3)
-                fm = yaml.safe_load(text[3:end]) or {}
-            except Exception as e:
-                logger.warning("Failed to parse frontmatter in %s: %s", fn, e)
-
-        # Body = text minus frontmatter (canonical parser expects body only)
-        body = text
-        if text.startswith("---"):
-            try:
-                end = text.index("---", 3)
-                body = text[end + 3:]
-            except ValueError:
-                pass
-
-        all_acs = _parse_acceptance_criteria(body)
-        human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
-        if not human_acs:
-            continue
-
-        total = len(human_acs)
-        checked = sum(1 for ac in human_acs if ac["checked"])
-        if total > 0 and checked < total:
-            unchecked = [ac["text"] for ac in human_acs if not ac["checked"]]
-            # T-1533: surface agent recommendation verdict for landing-page widget
-            # T-1577: also surface state to distinguish NO-REC from unparseable `?`
-            verdict = extract_recommendation_verdict(text)
-            state = extract_recommendation_state(text)
-            results.append({
-                "task_id": fm.get("id", fn.stem),
-                "name": fm.get("name", ""),
-                "status": fm.get("status", "?"),
-                "total": total,
-                "checked": checked,
-                "unchecked_items": unchecked,
-                "verdict": verdict,
-                "state": state,
-            })
+        entry = _human_verify_for(fn)
+        if entry is not None:
+            results.append(entry)
     return results
 
 
-def get_action_summary() -> dict:
+def get_action_summary(human_verify: list | None = None) -> dict:
     """Build unified action summary: Tier 0 + GO decisions + Human ACs (T-645).
 
     Returns dict with counts and top tasks for the landing page summary card.
+    T-2108: accept pre-computed `human_verify` from caller to avoid
+    re-walking 171 active tasks twice per cockpit render.
     """
-    human_verify = get_human_verify_tasks()
+    if human_verify is None:
+        human_verify = get_human_verify_tasks()
     human_ac_count = sum(t["total"] - t["checked"] for t in human_verify)
 
     # Count pending Tier 0 approvals
@@ -190,7 +220,12 @@ def _get_test_counts() -> dict:
 
 
 def get_cockpit_context(scan_data: dict) -> dict:
-    """Build template context from scan data."""
+    """Build template context from scan data.
+
+    T-2108: compute `human_verify` once and reuse for `action_summary` — the
+    inner walk over 171 active tasks was running twice per render.
+    """
+    human_verify = get_human_verify_tasks()
     return {
         "scan": scan_data,
         "scan_age": get_scan_age(scan_data),
@@ -208,8 +243,8 @@ def get_cockpit_context(scan_data: dict) -> dict:
         "warnings": scan_data.get("warnings", []),
         "recent_failures": scan_data.get("recent_failures", []),
         "scan_status": scan_data.get("scan_status", "unknown"),
-        "human_verify": get_human_verify_tasks(),
-        "action_summary": get_action_summary(),
+        "human_verify": human_verify,
+        "action_summary": get_action_summary(human_verify=human_verify),
         "test_counts": _get_test_counts(),
     }
 

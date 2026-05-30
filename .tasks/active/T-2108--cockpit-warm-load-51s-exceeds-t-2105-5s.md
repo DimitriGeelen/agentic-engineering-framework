@@ -13,8 +13,8 @@ workflow_type: build
 owner: agent
 horizon: now
 tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower, cockpit]
-components: []
-related_tasks: [T-2105, T-1954, T-2102]
+components: [web/blueprints/cockpit.py]
+related_tasks: [T-2105, T-1954, T-2102, T-2106, T-2107]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -65,13 +65,22 @@ Discovered by T-2105 all-routes load-time guard: `/` (cockpit) warm-cache load =
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Profile `/` cockpit to identify the hot aggregator(s) (likely a task/approval/observation walker without an mtime cache).
-- [ ] Apply the T-1954-pattern per-file mtime cache to the hot path(s) — pattern documented in T-1954 / T-2102 / T-2106 / T-2107 RCAs.
-- [ ] `/` warm-cache HTTP load < 5000ms (verified by direct curl-timing on live Watchtower, post-TTL idle).
-- [ ] `KNOWN_SLOW` dict in `tests/playwright/test_all_routes_load_time.py` no longer contains `/`; Playwright `test_route_load_time_bounded[/]` PASSES at global 5000ms cap.
-- [ ] No semantic change — cockpit renders identical task/approval/observation lists pre- and post-fix.
+- [x] Profile `/` cockpit to identify the hot aggregator(s) (likely a task/approval/observation walker without an mtime cache).
+- [x] Apply the T-1954-pattern per-file mtime cache to the hot path(s) — pattern documented in T-1954 / T-2102 / T-2106 / T-2107 RCAs.
+- [x] `/` warm-cache HTTP load < 5000ms (verified by direct curl-timing on live Watchtower, post-TTL idle).
+- [x] `KNOWN_SLOW` dict in `tests/playwright/test_all_routes_load_time.py` no longer contains `/`; Playwright `test_route_load_time_bounded[/]` PASSES at global 5000ms cap.
+- [x] No semantic change — cockpit renders identical task/approval/observation lists pre- and post-fix.
 
 ### Human
+
+- [ ] [REVIEW] `/` cockpit renders correctly post-cache + dedupe refactor
+  **Steps:**
+  1. Open http://192.168.10.107:3000/ in browser
+  2. Verify the cockpit shows: Action Required summary (Tier 0/GO/Human AC counts), Needs Decision/Framework Recommends/Opportunities/Work Queue cards, System Health panel, Recent Activity, and Human AC tasks list
+  3. Touch an active task: `touch .tasks/active/T-2107-search-warm-load-67s-exceeds-t-2105-5s-c.md` then refresh — that task should appear/update in the Human AC list (cache invalidation by mtime works)
+  **Expected:** Same layout, same counts as before refactor (semantic identity already verified by Agent AC #5 — 146 tasks identical, action_summary identical).
+  **If not:** Note which widget differs and reopen with details — likely a `_HUMAN_VERIFY_CACHE` mtime-key divergence or a missed-pass-through in `get_action_summary`.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -131,11 +140,37 @@ Discovered by T-2105 all-routes load-time guard: `/` (cockpit) warm-cache load =
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
+
+python3 -c "from web.blueprints.cockpit import get_human_verify_tasks, get_action_summary; r1=get_human_verify_tasks(); r2=get_human_verify_tasks(); assert r1 == r2, 'human_verify non-idempotent'; a1=get_action_summary(); a2=get_action_summary(human_verify=r1); assert a1 == a2, 'action_summary diverges between no-arg and pre-computed'"
+grep -q "_HUMAN_VERIFY_CACHE" web/blueprints/cockpit.py
+grep -q "T-2108 (/) CLOSED" tests/playwright/test_all_routes_load_time.py
+out=$(grep -A2 "KNOWN_SLOW: dict" tests/playwright/test_all_routes_load_time.py); echo "$out" | grep -vq '"/"'
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
+
+**Symptom:** T-2105 all-routes load-time guard measured `/` (cockpit) warm-load at 5137ms — exceeded the 5000ms global cap. Held under elevated 7000ms `KNOWN_SLOW` cap with T-2108 as tracker. Profiling showed steady-state warm hit ~2.5s, post-TTL-expiry hit ~5s.
+
+**Root cause:** TWO compounding issues in `web/blueprints/cockpit.py`:
+
+1. **`get_human_verify_tasks()` walked all 171 active task files on every cockpit render** — read text, parsed frontmatter, parsed ACs. Cold cost ~835ms. Uncached.
+2. **`get_action_summary()` called `get_human_verify_tasks()` again** — so the 171-task walk ran *twice* per cockpit render. Cold cost ~857ms (mostly the recursive call).
+
+Combined: ~1.7s of duplicate work per cockpit render, plus the underlying TTL-only outer caches (`_load_all_sessions`, `_get_approval_qr`, `get_all_task_metadata`) that occasionally flushed and added 5-8s rebuild cost.
+
+**Why structurally allowed:** Same class as T-1954/T-2102/T-2106/T-2107 — TTL-only caching design. The duplicate-call leg (`get_action_summary` re-calling `get_human_verify_tasks`) was a pure missing-parameter-passing pattern: each helper independent and pure, but together did the same walk twice. Code review wouldn't catch it; profiling did.
+
+**Prevention:** Already wired by T-2105 (`tests/playwright/test_all_routes_load_time.py`). Removing `/` from `KNOWN_SLOW` closes the elevated cap — the global 5000ms cap now enforces. Any future regression in `_HUMAN_VERIFY_CACHE` invalidation or in the `human_verify` pass-through fails the test. 5th application of T-1954 pattern in 30 days — OBS-039 promotion to `web/shared.py` is now well over the threshold.
+
+## Evolution
+
+### 2026-05-30 — TTL caches AND duplicate walks compound
+
+- **What changed:** Filing assumed a single hot path; reality was a double-walk pattern (get_action_summary calling get_human_verify_tasks recursively) on top of a non-cached walk-all-tasks helper. The dedupe leg was actually a bigger immediate win than the cache leg (50% of warm cost).
+- **Plan impact:** Scope grew slightly — both the cache and the dedupe shipped together. ACs unchanged (just "apply cache pattern" captured both legs).
+- **Triggered:** None new. Confirms OBS-039 threshold crossed (5th consumer). _knowledge_counts (613ms warm) remains uncached but not on the critical path post-fix.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -151,29 +186,21 @@ Discovered by T-2105 all-routes load-time guard: `/` (cockpit) warm-cache load =
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-## Evolution
+## Recommendation
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+**Recommendation:** GO
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+**Rationale:** Cockpit warm load dropped 2.5s → 0.7s (3.6× speedup) and post-TTL load dropped 5.0s → 3.2s — both legs now within the global 5000ms cap. Two compounding wins shipped together: (1) `_HUMAN_VERIFY_CACHE` per-file mtime cache for the 171-task active-walk, (2) dedupe — `get_action_summary` now accepts a pre-computed `human_verify` so the cockpit doesn't run the walk twice per render. Semantic identity verified — 146 tasks identical, `action_summary` identical with or without pre-computed argument. Reviewer PASS, zero findings. Playwright `test_route_load_time_bounded[/]` passes at the global 5000ms cap with `/` removed from KNOWN_SLOW. Only the visual sanity check on cockpit remains.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+**Evidence:**
+- Warm load (steady state): **2522ms → 712ms** (~3.6× speedup, was the steady-state Playwright measurement)
+- Post-TTL idle (was the regression spike): **4964ms → 3234ms** (under 5000ms cap)
+- Playwright `[/]` PASS at 5000ms global cap (was held under 7000ms KNOWN_SLOW)
+- Reviewer T-2108 PASS, no findings
+- Semantic identity: 146 tasks identical, action_summary identical (no-arg vs pre-computed)
+- 5th application of T-1954 pattern in 30 days — OBS-039 promotion threshold strongly crossed
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+**Review URL:** http://192.168.10.107:3000/review/T-2108
 
 ## Decisions
 
@@ -206,3 +233,12 @@ Discovered by T-2105 all-routes load-time guard: `/` (cockpit) warm-cache load =
 ### 2026-05-30T06:53:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-06dfe6dd
+- **Timestamp:** 2026-05-30T07:09:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
