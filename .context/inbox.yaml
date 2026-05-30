@@ -266,3 +266,31 @@ observations:
     tags: []
     status: dismissed
     promoted_to: null
+  - id: OBS-038
+    text: "capture"
+    captured: 2026-05-29T22:12:48Z
+    context_task: T-2103
+    tags: []
+    status: pending
+    promoted_to: null
+  - id: OBS-039
+    text: "capture"
+    captured: 2026-05-29T23:44:25Z
+    context_task: T-2107
+    tags: []
+    status: promoted
+    promoted_to: task
+  - id: OBS-040
+    text: "inbox"
+    captured: 2026-05-30T16:14:41Z
+    context_task: T-1687
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-041
+    text: "task-create template Human-section placeholder coexists with agent-inserted real Human AC block — produces duplicate ### Human headings in 3 tasks this session (T-2112, T-2113, T-2114). Pattern: agent inserts a new ### Human block ABOVE the existing template ### Human placeholder rather than editing in-place. Cosmetic-only (Watchtower reads structured ACs), but creates visual noise for the human reviewer. Convention fix: agent should ALWAYS edit the existing template ### Human block (replacing the descriptive comment) rather than inserting a new ### Human heading."
+    captured: 2026-05-30T16:50:23Z
+    context_task: T-2112
+    tags: [housekeeping]
+    status: pending
+    promoted_to: null
