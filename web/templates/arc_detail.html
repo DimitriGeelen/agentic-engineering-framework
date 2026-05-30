@@ -183,7 +183,14 @@
         <tbody>
             {% for sd in bvp_info.scoped_drivers %}
             <tr>
-                <td><code>{{ sd.get('name', '?') }}</code></td>
+                {# T-2117: humanized title + kebab slug for at-a-glance reading,
+                   consistent with the proposed-drivers section below and T-2080's
+                   /bvp pattern. Arc-scoped drivers have no F-id (they live in
+                   scoped_drivers: with only the kebab name as identifier), so the
+                   /bvp 'F1 — Antifragility' shape is approximated as
+                   'Humanized Name' + muted kebab. Jinja replace+title is cheap. #}
+                <td><strong>{{ sd.get('name', '?')|replace('-', ' ')|title }}</strong>
+                    <code class="muted" style="margin-left: 0.4rem; font-size: 0.85em; opacity: 0.7;">{{ sd.get('name', '?') }}</code></td>
                 <td class="scoped-server-weight" data-server-weight="{{ sd.get('weight', 3) }}">{{ sd.get('weight', '—') }}</td>
                 <td>
                     <input type="range" name="slider-{{ sd.get('name', '') }}"
@@ -300,7 +307,11 @@
     {% for p in bvp_info.proposed_drivers %}
     <article style="margin-bottom: 1rem; padding: 0.8rem;">
         <header style="margin-bottom: 0.5rem;">
-            <strong>{{ p.get('name', '?') }}</strong>
+            {# T-2117: same humanized-title + kebab-slug pair used for approved
+               scoped drivers above. Proposed drivers don't yet have an
+               approved_at timestamp, but the identifier shape is the same. #}
+            <strong>{{ p.get('name', '?')|replace('-', ' ')|title }}</strong>
+            <code class="muted" style="margin-left: 0.4rem; font-size: 0.85em; opacity: 0.7;">{{ p.get('name', '?') }}</code>
             <small class="muted">· proposed {{ p.get('ts', '—') }} by {{ p.get('source', 'agent') }}</small>
         </header>
         {% if p.get('rationale') %}<p>{{ p.rationale }}</p>{% endif %}
