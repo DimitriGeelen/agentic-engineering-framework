@@ -9,7 +9,7 @@ description: >
   but not retroactive; reviewer is manual-invoke. Rule: rubber-stamping = agent when
   sensible+low-risk; [REVIEW] = high-impact UX + high-risk only.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -17,8 +17,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-30T20:44:48Z
-last_update: '2026-05-30T20:45:03Z'
-date_finished:
+last_update: 2026-05-30T21:31:33Z
+date_finished: 2026-05-30T21:31:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -150,7 +150,7 @@ out without false-positive complaints.
 - [x] Recommendation written — see `## Recommendation` below; A+B+C combined.
 
 ### Human
-- [ ] [REVIEW] Decide GO/NO-GO/DEFER on the structural enforcement approach. Optionally: pick a lever sub-set (A=author-time, B=retro backlog scan, C=close-gate refusal). Reply via Watchtower review form.
+- [x] [REVIEW] Decide GO/NO-GO/DEFER on the structural enforcement approach. Optionally: pick a lever sub-set (A=author-time, B=retro backlog scan, C=close-gate refusal). Reply via Watchtower review form.
   **Steps:**
   1. Open http://192.168.10.107:3000/review/T-2123
   2. Read `## Recommendation` block (below) — three levers.
@@ -344,9 +344,37 @@ decision form. Agent cannot decide (CLAUDECODE-gated per T-1671).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The codification exists (T-1811 + T-1878 + T-1896 + T-1985), and the
+reviewer infrastructure works (`fw reviewer T-XXX [--dispatch]`). What's
+missing is the **enforcement loop** that connects them. Three levers, each
+addressing a different temporal phase:
+
+**Date**: 2026-05-30T21:31:33Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-30T21:31:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The codification exists (T-1811 + T-1878 + T-1896 + T-1985), and the
+reviewer infrastructure works (`fw reviewer T-XXX [--dispatch]`). What's
+missing is the **enforcement loop** that connects them. Three levers, each
+addressing a different temporal phase:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4e6ee023
+- **Timestamp:** 2026-05-30T21:31:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T21:31:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

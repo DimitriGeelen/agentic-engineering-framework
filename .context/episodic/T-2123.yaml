@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2123: why [REVIEWER] auto-routing isn't clearing the partial-complete backlog
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T21:31:38Z
+# ============================================================================
+
+task_id: T-2123
+task_name: "why [REVIEWER] auto-routing isn't clearing the partial-complete backlog"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T20:44:48Z
+completed: 2026-05-30T21:31:33Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-30T22:47:40+02:00
+last_commit: 2026-05-30T23:06:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — why [REVIEWER] auto-routing isn't clearing backlog. broaden enforcement to 4-channel routing + C-001 artefact
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated — 152:0:4 prefix ratio confirms agent never uses [REVIEWER] at AC author time despite T-1811/T-1878 codification.'
+  - 'Assumptions A1-A5 enumerated (one of each is testable in a 5-10min spike before build).'
+  - 'Recommendation written — see `## Recommendation` below; A+B+C combined.'
+  - '[REVIEW] Decide GO/NO-GO/DEFER on the structural enforcement approach. Optionally: pick a lever sub-set (A=author-time, B=retro backlog scan, C=close-gate refusal). Reply via Watchtower review form.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2123-ac-routing-debt-rca.md'
+  - '.tasks/active/T-2123-why-reviewer-auto-routing-isnt-clearing-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T22:47:40"
+    action: "T-2123: inception — why [REVIEWER] auto-routing isn't clearing backlog"
+  - time: "2026-05-30T23:06:29"
+    action: "T-2123: broaden enforcement to 4-channel routing + C-001 artefact"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 46
+  commits: 2
+  files_changed: 2
+  lines_added: 590
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2123-why-reviewer-auto-routing-isnt-clearing-.md
+generated_by: context-agent-hybrid
