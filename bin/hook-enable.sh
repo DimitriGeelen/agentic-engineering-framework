@@ -14,6 +14,7 @@ set -euo pipefail
 VALID_EVENTS="PostToolUse PreToolUse SessionStart PreCompact Stop SubagentStop UserPromptSubmit"
 
 name=""
+script=""
 matcher=""
 event=""
 settings_file=""
@@ -21,15 +22,20 @@ dry_run=0
 
 usage() {
     cat <<EOF
-Usage: fw hook-enable --name <hook> --matcher <pat> --event <evt> [--file <path>] [--dry-run]
+Usage: fw hook-enable (--name <hook> | --script <abs-path>) --matcher <pat> --event <evt> [--file <path>] [--dry-run]
 
 Options:
   --name     Hook name (resolved to \$AGENTS_DIR/context/<name>.sh at runtime)
+  --script   Absolute path to a project-local hook script (registered directly, not via fw hook)
   --matcher  Claude Code tool matcher pattern (e.g. "Bash", "Write|Edit", "")
   --event    Claude Code hook event. One of: $VALID_EVENTS
   --file     Settings file path (default: \$PROJECT_ROOT/.claude/settings.json)
   --dry-run  Print resulting JSON to stdout, do not write
   -h, --help Show this help
+
+Use --name for framework-managed hooks under agents/context/.
+Use --script for project-local hook scripts that live outside the framework tree.
+--name and --script are mutually exclusive.
 
 Exit: 0 on success (including idempotent no-op), non-zero on argument or JSON errors.
 EOF
@@ -38,6 +44,7 @@ EOF
 while [ $# -gt 0 ]; do
     case "$1" in
         --name)     name="$2"; shift 2 ;;
+        --script)   script="$2"; shift 2 ;;
         --matcher)  matcher="$2"; shift 2 ;;
         --event)    event="$2"; shift 2 ;;
         --file)     settings_file="$2"; shift 2 ;;
@@ -47,10 +54,37 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ -z "$name" ] || [ -z "$event" ]; then
-    echo "ERROR: --name and --event are required" >&2
+if [ -n "$name" ] && [ -n "$script" ]; then
+    echo "ERROR: use --name or --script, not both" >&2
     usage >&2
     exit 2
+fi
+
+if [ -z "$name" ] && [ -z "$script" ]; then
+    echo "ERROR: --name or --script is required" >&2
+    usage >&2
+    exit 2
+fi
+
+if [ -z "$event" ]; then
+    echo "ERROR: --event is required" >&2
+    usage >&2
+    exit 2
+fi
+
+if [ -n "$script" ]; then
+    case "$script" in
+        /*) ;;
+        *) echo "ERROR: --script must be an absolute path: $script" >&2; exit 2 ;;
+    esac
+    if [ ! -f "$script" ]; then
+        echo "ERROR: script not found: $script" >&2
+        exit 2
+    fi
+    if [ ! -x "$script" ]; then
+        echo "ERROR: script not executable: $script" >&2
+        exit 2
+    fi
 fi
 
 if ! printf '%s\n' $VALID_EVENTS | grep -Fxq "$event"; then

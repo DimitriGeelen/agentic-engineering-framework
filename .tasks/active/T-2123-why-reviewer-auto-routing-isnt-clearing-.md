@@ -181,9 +181,58 @@ scope (none known).
 # matching build command (dotnet build / go build / cargo check / tsc --noEmit /
 # mvn compile) to that build task's ## Verification — P-011 only runs what you write.
 
+## Reframe — 2026-05-30 (user-driven, after T-2074 AC critique)
+
+User pushed back on the original framing: *"maybe you are writing the ACs
+correctly (being for agent, in agent language) but it's being routed to
+human (which is a leftover from work in the beginning where we said route
+to human for verification because output quality was unreliable and we had
+no enforced agentic means to validate; we have evolved in that space and
+have way better enforcement and agentic verification capability in place).
+Maybe this is still the remnant human-AC / rubber-stamping routing
+leftover we need to sanitize."*
+
+**Diagnosis sharpened.** The original wording of this inception ("[REVIEW]
+→ [REVIEWER]") was too narrow. The real gap is broader:
+
+- The framework today has **four** agent-verification channels:
+
+  | Channel | Lands as | Lives in |
+  |---------|----------|----------|
+  | Tier 1 — shell | Agent AC + commands in `## Verification` | P-011 gate |
+  | Tier 2 — static scan | Agent AC + `bin/fw reviewer T-XXX` in Verification | `lib/reviewer/static_scan.py` + `--dispatch` (T-1951) |
+  | Tier 3 — Playwright | Agent AC + `tests/playwright/test_X.py` | `fw test playwright` |
+  | Tier 4 — TermLink-dispatched worker | Agent AC + dispatched verifier | `fw termlink dispatch` |
+
+- The [REVIEW] prefix was the **safe default** before any of these channels
+  existed. It is now technical debt.
+
+- The agent's mental model still defaults to [REVIEW] because the
+  *routing question is never asked at AC author time*. Even when the
+  agent literally writes the Playwright test in the same session (T-2120
+  → T-2074), the AC stays [REVIEW] — the routing decision is invisible.
+
+**Concrete proof in this session:** T-2074's "[REVIEW] toast appears on
+4xx" was pinned structurally by T-2120's
+`tests/playwright/test_htmx_toast_extraction.py` (shipped 40 min before
+the user critique). Agent verification was on disk, passing, ignored.
+Re-routed under T-2074 commit `da6bed7a` (2026-05-30) — proof of the
+principle on one task.
+
+**Reframed backlog narrative.** The 152 [REVIEW] ACs are not *"ACs to
+reclassify [REVIEW]→[REVIEWER]"*. They are *"ACs to **sanitize**: for
+each, ask the routing question against the four current channels."* Most
+will route away from `[REVIEW]`. The genuine taste / high-impact UX /
+high-risk-change ACs that remain are the real ones the user wanted to
+spend attention on.
+
+**Recommendation revised:**
+
 ## Recommendation
 
-**Recommendation:** GO on combined **A + B + C** (three levers, one direction).
+**Recommendation:** GO on combined **A + B + C** with the routing question
+broadened from prefix-conversion to **channel selection across all four
+agent-verification tiers**.
 
 **Rationale:**
 
@@ -192,23 +241,41 @@ reviewer infrastructure works (`fw reviewer T-XXX [--dispatch]`). What's
 missing is the **enforcement loop** that connects them. Three levers, each
 addressing a different temporal phase:
 
-### Lever A — Author-time prefix routing gate
+### Lever A — Author-time **channel-selection** gate (broadened from prefix-routing)
 **PreToolUse hook on Write|Edit to `.tasks/active/T-*.md`:** when the diff
-adds a `### Human` AC with `[REVIEW]` prefix AND the Expected clause matches
-deterministic-test signals (grep-able / file-exists / structural), refuse
-the write with a one-line block message: *"Expected clause looks
-deterministic — use [REVIEWER] prefix and add `fw reviewer T-XXX` to ##
-Verification, or override with FW_ALLOW_REVIEW_PREFIX=1 if human taste
-genuinely required."* Same shape as `check-render-surface.sh`. Catches the
-default-bias **at the moment of authoring** — closes the upstream gap.
+adds a `### Human` AC, run the **routing question** against the AC text:
 
-### Lever B — Backlog reclassification audit
-**Daily cron / `fw audit` check:** scan partial-complete tasks for [REVIEW]
-ACs whose Expected clauses are reviewer-eligible, propose reclassification
-via observation. The agent (or the human via Watchtower) can accept or
-reject per AC. Closes the 152-deep backlog without batch-overwriting taste
-decisions. Output: WARN in `fw audit` + observation entries in
+  1. Does Expected resolve to a shell-checkable assertion (file exists,
+     exit code, grep)? → **Tier 1** — convert to Agent AC + `## Verification`.
+  2. Does Expected resolve to a static-scan pattern the reviewer agent
+     handles (anti-pattern, block-message conformance, naming)? → **Tier 2**
+     — convert to Agent AC + `bin/fw reviewer T-XXX` in `## Verification`.
+  3. Does Expected resolve to a deterministic DOM/UI assertion
+     (element-visible, text-present, URL-stable, count, attribute)? →
+     **Tier 3** — convert to Agent AC + `tests/playwright/test_X.py`.
+  4. Does verification need an isolated worker context (cross-process,
+     E2E CLI, multi-step substrate)? → **Tier 4** — convert to Agent AC
+     + `fw termlink dispatch` invocation in Verification.
+  5. **Only if no tier applies** (genuine taste, layout rhythm, blast-radius
+     judgment, strategic call, irreversible external action) → `[REVIEW]`
+     Human AC.
+
+Block message names the matched tier(s) and offers conversion hint. Override:
+`FW_ALLOW_REVIEW_PREFIX=1` (logged Tier-2) only when the agent has
+genuinely considered all four tiers and rejected each. Same shape as
+`check-render-surface.sh`.
+
+### Lever B — Backlog **sanitization** pass (broadened from reclassification)
+**Daily cron / `fw audit` check:** scan partial-complete tasks for `[REVIEW]`
+ACs and run the **same four-tier routing question** as Lever A. For each
+AC where any of Tier 1-4 applies, emit an observation: *"T-XXXX AC#N looks
+Tier-K-eligible; propose conversion to Agent AC with `<channel command>`
+in `## Verification`."* The agent or the human via Watchtower accepts/
+rejects per AC. Output: WARN in `fw audit` + observation entries in
 `.context/inbox.yaml`.
+
+Critically: this is **sanitization, not bulk reclassification.** Each AC
+gets one observation; taste-decisions survive untouched.
 
 ### Lever C — Close-gate refusal (escalation of T-1896 to BLOCK)
 **`update-task.sh` close gate:** when render-surface or [REVIEW] AC fires,
