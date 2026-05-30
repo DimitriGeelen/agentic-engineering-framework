@@ -50,6 +50,15 @@ inline `showToast()` + `#toast-container` div untouched so `htmx-toast.js`'s
 - [x] `web/static/htmx-toast.js` unchanged (extraction owns wiring).
 
 ### Human
+- [ ] [REVIEW] On `/review/<any-task-with-checkable-AC>`, click a checkbox/Complete action and force/observe a 4xx (DevTools Network → block the POST, or just click against an already-completed task). Confirm exactly **one** red toast appears bottom-right — not two stacked. Before T-2119 a duplicate-listener bug caused two simultaneous toasts.
+  **Steps:**
+  1. Open http://192.168.10.107:3000/review/T-2119 (or any open task with Human ACs).
+  2. Open Chrome DevTools → Network tab.
+  3. Click an action that mutates state (Complete button, AC checkbox).
+  4. If the request succeeds (no toast), use the Network tab's "Block request URL" to force a 4xx, then click again.
+  **Expected:** Exactly one `.wt-toast.error` element appears in `#toast-container` (CSS-styled, bottom-right) — not two.
+  **If not:** Inspect Elements → search for `addEventListener('htmx:` — should be present in `htmx-toast.js` only, not inline in review.html.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
