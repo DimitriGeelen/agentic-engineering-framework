@@ -1,5 +1,25 @@
 <!-- AC fragment for /review/T-XXX — rendered inline and via htmx polling (T-667) -->
 
+{# T-2114 (third sibling of T-2112, T-2113):
+   The wrapping #ac-container DIV (review.html:592-598) declares hx-target="this"
+   for its own 5s polling cycle. htmx INHERITS hx-target to descendants — so the
+   explicit "Reload page" link below, AND every URL emitted by render_markdown_safe
+   inside AC Steps/Expected/If-not text, would otherwise swap their boost-response
+   INTO this small fragment area (cockpit-shell-stays-visible-above-and-bounces-back-
+   in-5s — same bug class as T-2112 /approvals + T-2113 /cockpit).
+
+   Wrapper-reset pattern (chosen over per-anchor triplet because markdown-rendered
+   URLs would otherwise need to be patched at render_markdown_safe level —
+   broader blast radius): a top-level reset div tells all descendants to swap
+   into #content (the page shell). The polling DIV's hx-target="this" resolves
+   on the polling DIV itself, not on this reset wrapper — so the polling cycle
+   continues to target #ac-container correctly. One reset > N per-anchor overrides.
+
+   If a future maintainer thinks this reset is redundant: read T-2112 RCA first.
+   The first hx-boost'ed anchor inside the polling div that loses its override
+   re-introduces the bounce-back. #}
+<div hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+
 <!-- Progress bar -->
 <div class="ac-progress">
     Human ACs: {{ checked_count }}/{{ total_count }}
@@ -116,3 +136,5 @@
 </div>
 {% endif %}
 {% endif %}
+
+</div>{# T-2114: end of hx-target="#content" reset wrapper #}
