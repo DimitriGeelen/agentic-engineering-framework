@@ -6,20 +6,20 @@ description: >
   lib/review.sh — repeat URL below QR + footer after separator (T-2126 build slice
   A+C)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [lib/review.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-30T21:43:29Z
-last_update: '2026-05-30T21:45:03Z'
-date_finished:
+last_update: 2026-05-30T21:46:17Z
+date_finished: 2026-05-30T21:46:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -209,3 +209,22 @@ test -f .context/working/.reviewed-T-2123
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2127-libreviewsh--repeat-url-below-qr--footer.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-01a6d42c
+- **Timestamp:** 2026-05-30T21:46:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Option A: `lib/review.sh:emit_review` emits `Open: <url>` line directly after the QR rendering and before the Artifacts block
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/review.sh in: Option A: `lib/review.sh:emit_review` emits `Open: <url>` line directly after the QR rendering and before the Artifacts block`
+- **AC#2 (Agent)** — Option C: `lib/review.sh:emit_review` emits `→ Decide: <url>` line after the review-marker block (final visible line of output)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/review.sh in: Option C: `lib/review.sh:emit_review` emits `→ Decide: <url>` line after the review-marker block (final visible line of output)`
+
+### 2026-05-30T21:46:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
