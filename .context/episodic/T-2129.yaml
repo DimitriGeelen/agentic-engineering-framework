@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2129: CLAUDE.md — codify per-class handoff URL rule + memory write (T-2125 GO build
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T22:01:22Z
+# ============================================================================
+
+task_id: T-2129
+task_name: "CLAUDE.md — codify per-class handoff URL rule + memory write (T-2125 GO build"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T21:56:06Z
+completed: 2026-05-30T22:01:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-31T00:01:07+02:00
+last_commit: 2026-05-31T00:01:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CLAUDE.md per-class handoff URL rule + memory (T-2125 slice B)
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md §Presenting Work for Human Review contains a per-class URL table mapping decision class → correct surface'
+  - 'CLAUDE.md contains the rule "never synthesise the handoff URL from memory" (case-insensitive grep, paired with `fw task review T-XXX`)'
+  - 'Memory file `feedback_handoff_url_per_class.md` exists under `/root/.claude/projects/-opt-999-Agentic-Engineering-Framework/memory/`, with the per-class table inline'
+  - 'MEMORY.md indexes the new memory file'
+  - '`grep -qi "never synthesise" CLAUDE.md` returns 0 (rule is grep-able for future audits)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'CLAUDE.md'
+  - '.tasks/active/T-2129-claudemd--codify-per-class-handoff-url-r.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-31T00:01:07"
+    action: "T-2129: CLAUDE.md per-class handoff URL rule + memory (T-2125 slice B)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 2
+  lines_added: 221
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2129-claudemd--codify-per-class-handoff-url-r.md
+generated_by: context-agent-hybrid
