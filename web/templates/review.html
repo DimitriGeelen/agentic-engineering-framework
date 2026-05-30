@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="/static/pico.min.css">
     <script src="/static/htmx.min.js"></script>
     <script src="/static/csrf-htmx.js"></script>
+    <!-- T-2074: htmx error→toast handler. Standalone template (doesn't extend base.html)
+         needed its own load — origin T-2063 (Complete button silent 4xx fail). -->
+    <script src="/static/htmx-toast.js"></script>
     <style>
         /* Mobile-first: single column, large touch targets */
         * { box-sizing: border-box; }

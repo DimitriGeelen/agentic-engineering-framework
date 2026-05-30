@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T18:03:42Z
-last_update: '2026-05-28T22:54:12Z'
+last_update: '2026-05-29T23:00:03Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -60,6 +60,18 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=3 
       (body:component-silent-failure); D3=3 (body:component-discoverability); 
       D4=2 (body:env-class-handled); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-29T23:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 3
+      D3: 3
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=3 
+      (body:component-silent-failure); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F1=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-28T18:15:02Z'
@@ -101,11 +113,11 @@ Implements T-2063 inception GO **with a scope correction** discovered on first b
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `web/static/htmx-toast.js` created — self-contained: declares its own `showToast()` + injects a `#toast-container` div if missing on DOMContentLoaded, then wires `htmx:responseError` + `htmx:sendError` listeners.
-- [ ] `base.html` updated — uses the new `htmx-toast.js` script instead of the inline handlers (the inline `showToast()` definition stays for non-htmx callers; only the error listeners move).
-- [ ] `review.html` updated — loads `htmx-toast.js` after `csrf-htmx.js` (`<script src="/static/htmx-toast.js"></script>`).
-- [ ] Both pages still pass HTTP smoke test (`curl -sf "$(bin/fw watchtower url)/review/T-2074"` and `curl -sf "$(bin/fw watchtower url)/"`).
-- [ ] Render-surface gate satisfied (Human [REVIEW] AC below covers visual confirmation that toast renders on intentional 4xx).
+- [x] `web/static/htmx-toast.js` created — self-contained: declares its own `showToast()` + injects a `#toast-container` div if missing on DOMContentLoaded, then wires `htmx:responseError` + `htmx:sendError` listeners.
+- [x] `base.html` updated — uses the new `htmx-toast.js` script instead of the inline handlers (the inline `showToast()` definition stays for non-htmx callers; only the error listeners move).
+- [x] `review.html` updated — loads `htmx-toast.js` after `csrf-htmx.js` (`<script src="/static/htmx-toast.js"></script>`).
+- [x] Both pages still pass HTTP smoke test (`curl -sf "$(bin/fw watchtower url)/review/T-2074"` and `curl -sf "$(bin/fw watchtower url)/"`).
+- [x] Render-surface gate satisfied (Human [REVIEW] AC below covers visual confirmation that toast renders on intentional 4xx).
 
 ### Human
 - [ ] [REVIEW] On /review/T-XXX, an intentional 4xx (e.g. clicking a stale Complete button) surfaces a red toast bottom-right with the error message — no longer silent.
@@ -174,6 +186,17 @@ Implements T-2063 inception GO **with a scope correction** discovered on first b
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+node -c web/static/htmx-toast.js
+# L-387 safe pattern — capture once, grep the file (no pipe under pipefail).
+curl -sf "$(bin/fw watchtower url)/static/htmx-toast.js" > /tmp/.t2074-js.out
+test -s /tmp/.t2074-js.out
+grep -q "htmx:responseError" /tmp/.t2074-js.out
+grep -q "htmx:sendError" /tmp/.t2074-js.out
+curl -sf "$(bin/fw watchtower url)/review/T-2074" > /tmp/.t2074-rv.out
+grep -q "/static/htmx-toast.js" /tmp/.t2074-rv.out
+curl -sf "$(bin/fw watchtower url)/" > /tmp/.t2074-base.out
+grep -q "htmx-toast.js" /tmp/.t2074-base.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -192,29 +215,52 @@ Implements T-2063 inception GO **with a scope correction** discovered on first b
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-05-30 — pre-existing playwright test failure is unrelated
+- **What changed:** `tests/playwright/test_htmx_error_toast.py` (T-1600) was already failing
+  BEFORE T-2074 — verified by stashing my changes, running the test (same exact assertion
+  error: `assert 0 > 0` on `toasts_after > toasts_before`), then restoring. The test mocks
+  a `/toggle-ac` POST that no longer fires from the click path it intercepts; the failure
+  predates this extraction.
+- **Plan impact:** AC #4 (smoke test) replaces a "Playwright passes" gate that would have
+  conflated two unrelated regressions. Smoke now asserts the load path explicitly via
+  `curl + grep` against the served HTML + JS.
+- **Triggered:** No new task yet — `test_htmx_error_toast.py` repair is a separate concern;
+  I'm leaving it as-is rather than fixing-by-bundle (one bug = one task, T-1717 §ACD).
+  If the human wants it fixed, file as T-2074-followup. The fix here doesn't introduce
+  the failure and the [REVIEW] Human AC covers actual visual verification.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+## Recommendation
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+**Recommendation:** GO (close on [REVIEW] tick)
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+**Rationale:** T-2063 inception GO scope satisfied. The standalone-template gap
+(L-269/L-316) that left review.html with no toast handler is closed — same extraction
+pattern as csrf-htmx.js (T-1453), reviewed and proven. base.html keeps its richer
+inline `showToast()`; the module gracefully defers to it when present, falls back to
+its own minimal styled implementation on standalone pages.
+
+**Evidence:**
+- `web/static/htmx-toast.js` (4346 bytes, `node -c` syntax-clean)
+- HTTP smoke: `/static/htmx-toast.js` → 200, `/review/T-2074` → 200 (script tag present),
+  `/` → 200 (script tag present)
+- `htmx:responseError` + `htmx:sendError` handlers grep-verified in served JS
+- Pre-existing `test_htmx_error_toast.py` failure verified as unrelated (passed test
+  reverse-stash test — see Evolution)
+- Pattern parity with T-1453 (csrf-htmx.js) — same extraction shape, same load order
 
 ## Decisions
+
+### 2026-05-30 — module self-publishes window.showToast only when undefined
+- **Chose:** htmx-toast.js's `fallbackShowToast` is only assigned to
+  `window.showToast` when none exists (i.e. on standalone pages). base.html's inline
+  `showToast` keeps priority.
+- **Why:** AC #2 mandates "inline `showToast()` definition stays for non-htmx callers".
+  A naive module that always overwrites would break that contract and lose base.html's
+  CSS-styled implementation.
+- **Rejected:** "Make htmx-toast.js the only definition" — would force every base-extending
+  template to either restyle or accept the minimal fallback. Smaller blast radius to
+  keep the inline showToast as the canonical implementation and treat the module as
+  a portability shim for standalone surfaces.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

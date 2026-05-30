@@ -26,6 +26,7 @@
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
     <script src="{{ url_for('static', filename='csrf-htmx.js') }}"></script>
+    <script src="{{ url_for('static', filename='htmx-toast.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='highlight-github-dark.min.css') }}">
     <script src="{{ url_for('static', filename='highlight.min.js') }}"></script>
     <script src="{{ url_for('static', filename='marked.min.js') }}"></script>
@@ -968,14 +969,10 @@
         }
 
         /* ── htmx error handling → toast ─────────────────────── */
-        document.body.addEventListener('htmx:responseError', function(evt) {
-            var msg = 'Save failed';
-            try { msg = evt.detail.xhr.responseText.replace(/<[^>]*>/g, '').trim().substring(0, 100) || msg; } catch(e) {}
-            showToast(msg, 'error');
-        });
-        document.body.addEventListener('htmx:sendError', function() {
-            showToast('Network error — check server', 'error');
-        });
+        // Listeners moved to web/static/htmx-toast.js (T-2074) so standalone
+        // templates (review.html — see L-269/L-316) get the same handlers.
+        // The inline showToast() above stays for non-htmx callers; htmx-toast.js
+        // detects window.showToast and re-uses it rather than redefining.
 
         /* ── Loading state on htmx forms ─────────────────────── */
         document.body.addEventListener('htmx:beforeRequest', function(evt) {
