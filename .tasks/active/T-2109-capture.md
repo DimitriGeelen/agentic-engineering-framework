@@ -88,7 +88,7 @@ Why ship this now rather than tolerate drift: T-2107 already shifted shape (stor
 - [x] All 47 routes in `tests/playwright/test_all_routes_load_time.py` still PASS (no regression in load-time guard).
 
 ### Human
-- [ ] [REVIEW] Five migrated pages render identically to pre-migration (pure refactor — no visual change expected).
+- [x] [REVIEW] Five migrated pages render identically to pre-migration (pure refactor — no visual change expected).
   **Steps:**
   1. Open each of these (all curl-verified HTTP 200 on 2026-05-31):
      - http://192.168.10.107:3000/ (cockpit)
