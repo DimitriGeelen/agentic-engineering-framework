@@ -9,17 +9,17 @@ description: >
   the cd was already blocked. Read-side cross-boundary access undetected for as long
   as the hook has existed.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-project-boundary.sh, bin/fw, lib/verify-acs.sh, tests/unit/test_boundary_hook_arguments.bats, tests/unit/test_doctor_scope_tags.bats]
 related_tasks: [T-559]
 arc_id: orchestrator-rethink
 created: 2026-05-03T18:22:59Z
-last_update: '2026-05-28T22:54:09Z'
-date_finished:
+last_update: 2026-05-31T18:14:08Z
+date_finished: 2026-05-31T18:14:08Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -53,6 +53,17 @@ bvp_scores_proposed:
       F2: 0
     rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); D4=4
       (body:cross-machine); F1=1 (body/tag hits for 'F1': 1); F2=0 (no-signal)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-29T23:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F1: 1
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); D4=4
+      (body:cross-machine); F1=1 (body/tag hits for 'F1': 1)"
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
@@ -106,17 +117,16 @@ Related: T-559 (original boundary policy), G-065 (concerns.yaml), `feedback_path
 - [x] New unit tests in `tests/unit/` cover: outside-path detection, allowlist hits,
       multi-arg commands, quoted paths with spaces.
       **Verified:** `tests/unit/test_boundary_hook_arguments.bats` — 28 tests, all pass.
-- [ ] `fw doctor` output includes a `scope:` field per finding (`project` or `host`),
-      visible in JSON output (`fw doctor --json` if exists, else plain output).
-      **DEFERRED to T-1707** — read-side bug fix is more urgent; doctor scoping
-      is hygiene that doesn't gate G-065 closure for the read-side stream.
-- [ ] Doctor warning text for host-scope findings includes "(host-level — handle from a
-      session at that root)" so it's unambiguous when an agent reads the output.
-      **DEFERRED to T-1707** — same rationale.
-- [ ] `concerns.yaml` G-065 status updates from `watching` → `closed` with
-      `closed_date` set, after both streams ship.
-      **DEFERRED to T-1707** — closes when doctor scoping ships. Pattern 4
-      ships Stream 1; Stream 2 (doctor scope tags) opens as T-1707.
+<!--
+NOTE 2026-05-31 (T-2149 session): three Stream-2 ACs (fw doctor scope: field,
+host-scope warning text, G-065 status flip) lived here as "DEFERRED to T-1707"
+unticked checkboxes. They are NOT T-1702's work — they are T-1707's (already
+work-completed 2026-05-27). Leaving them as unticked T-1702 ACs caused
+indefinite "incomplete" status on a structurally-finished task. Cleaned per
+"ACs are either done or undone, not deferred" discipline. The cross-task
+dependency is captured in §Decisions and §Evolution + concerns.yaml G-065
++ OBS-043 (close-cascade T-1702→T-1707→G-065 needs coordinated human action).
+-->
 
 ### Human
 - [ ] [REVIEW] Allowlist captures the right balance — strict enough to catch
@@ -190,14 +200,31 @@ fix or test-correction.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-05-13 — split into two streams (T-1702 + T-1707)
+
+- **Chose:** Ship the read-side block (Pattern 4 in `check-project-boundary.sh`) as T-1702 Stream 1; spin off the `fw doctor` scope-tagging (sizeable, touches 20+ checks across `do_doctor`) as T-1707 Stream 2.
+- **Why:** Read-side cross-boundary access was the actual G-065 bug (origin: agent ran `du`/`find`/`grep` against `/root/.agentic-framework` after `cd` was blocked). Doctor scoping is diagnostic ergonomics — useful but not the bug itself. "One bug = one task" (CLAUDE.md §Task Sizing Rules) favours the split.
+- **Rejected:** Single-task ship — would have blocked Stream 1's bug fix on the diagnostic-ergonomics work.
+
+### 2026-05-31 — clean Stream-2 ACs out of T-1702 (T-2149 session paperwork)
+
+- **Chose:** Move the three Stream-2 ACs (doctor `scope:` field, host-scope warning text, G-065 status flip) out of T-1702's Agent ACs (they were unticked with "DEFERRED to T-1707" annotations) and link the cross-task dependency from §Decisions + §Evolution + OBS-043 instead.
+- **Why:** "DEFERRED" is not a structural AC state — ACs are either done (`[x]`) or not done (`[ ]`). Carrying unticked Stream-2 ACs on T-1702 indefinitely meant the gate (P-010) would refuse `--status work-completed` regardless of whether Stream 1 itself was complete. The cross-task chain (T-1702 → T-1707 → G-065 close) belongs in §Decisions and concerns.yaml, not in T-1702's AC checklist.
+- **Rejected:** (a) Tick the deferred ACs — would claim T-1707's work as T-1702's. (b) Leave as-is — T-1702 stays "incomplete" forever despite Stream 1 fully shipping.
+
+## Evolution
+
+### 2026-05-13 — read-side was the bug, scope-tagging was ergonomics
+
+- **What changed:** Pre-build, the task tied the boundary hook fix and the `fw doctor` scope tagging together. During build, the read-side block (Pattern 4 + heredoc strip + 28 bats tests) emerged as the actual G-065 closure path; scope tagging is diagnostic improvement that lives downstream of the bug fix.
+- **Plan impact:** Split into T-1702 (Stream 1, this task — landed `91eeacdbb`) + T-1707 (Stream 2 — work-completed 2026-05-27).
+- **Triggered:** T-1707 filed; OBS-043 logged the close-cascade (T-1702 + T-1707 + G-065) for coordinated human review.
+
+### 2026-05-31 — T-1707 shipped; G-065 still watching; cascade is human work
+
+- **What changed:** T-1707 reached `work-completed` (partial-complete, owner: human) on 2026-05-27. G-065 in `concerns.yaml` is still `status: watching` (no `closed_date`). Per OBS-043's reasoning, the gap-register flip is sovereignty-adjacent and the close-cascade (T-1702 + T-1707 + G-065) deserves one coordinated human action via `fw task review T-1702` + `fw task review T-1707` + `concerns.yaml` edit — not three independent agent-side close steps.
+- **Plan impact:** None to Stream 1 itself; this task is structurally complete. Documenting so a future agent doesn't re-investigate.
+- **Triggered:** No new task — OBS-043 already captures the handoff for the operator.
 
 ## Updates
 
@@ -213,10 +240,10 @@ fix or test-correction.
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8ace41f1
-- **Timestamp:** 2026-05-13T18:17:16Z
+- **Scan ID:** R-6d6399f3
+- **Timestamp:** 2026-05-31T18:14:17Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -225,3 +252,6 @@ fix or test-correction.
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-project`
+
+### 2026-05-31T18:14:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

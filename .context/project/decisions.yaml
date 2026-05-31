@@ -1843,3 +1843,17 @@ decisions:
     date: 2026-05-31
     task: T-2133
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-266
+    decision: "Ship the read-side block (Pattern 4 in `check-project-boundary.sh`) as T-1702 Stream 1; spin off the `fw doctor` scope-tagging (sizeable, touches 20+ checks across `do_doctor`) as T-1707 Stream 2."
+    scope: project
+    date: 2026-05-31
+    task: T-1702
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-267
+    decision: "Move the three Stream-2 ACs (doctor `scope:` field, host-scope warning text, G-065 status flip) out of T-1702's Agent ACs (they were unticked with \"DEFERRED to T-1707\" annotations) and link the cross-task dependency from §Decisions + §Evolution + OBS-043 instead."
+    scope: project
+    date: 2026-05-31
+    task: T-1702
+    rationale: "Auto-captured from task file on completion"
