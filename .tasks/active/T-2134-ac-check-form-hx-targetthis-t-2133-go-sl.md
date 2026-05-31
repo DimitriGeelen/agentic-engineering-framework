@@ -140,8 +140,10 @@ See `docs/reports/T-2133-review-checkbox-htmx-target-error-rca.md` for full RCA 
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 # T-2134 verification — running watchtower URL, sanity + contract checks.
+# Multi-line aware: ac-check form's hx-target attribute is on a separate line
+# from the class declaration (template formats one attribute per line).
 url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" | grep -c 'class="ac-check"' | grep -qE '^[1-9]'
-url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" | grep -E 'class="ac-check"' | grep -q 'hx-target="this"'
+url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" | grep -A3 'class="ac-check"' | grep -q 'hx-target="this"'
 
 ## RCA
 
