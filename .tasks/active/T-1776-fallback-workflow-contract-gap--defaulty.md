@@ -15,7 +15,7 @@ components: []
 related_tasks: [T-1773, T-1775]
 arc_id: orchestrator-rethink
 created: 2026-05-09T21:18:59Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: '2026-05-29T23:00:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -50,6 +50,17 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-29T23:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F1=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
@@ -101,10 +112,13 @@ below capture the discovery + recommendation matrix.
       - Recommendation for human decision
 
 **2. No code change**
-- [ ] No edits to lib/spawn.py, lib/resolver.py, or default.yaml in this task.
+- [x] No edits to lib/spawn.py, lib/resolver.py, or default.yaml in this task.
       The current NotImplementedError path is the safest state — it surfaces
       the gap loudly rather than silently producing garbage. Resolution lands
       in a follow-up task once the human picks a direction.
+      Verified: `git log --all --oneline --grep "T-1776" -- lib/spawn.py lib/resolver.py .context/project/workflows/default.yaml`
+      returns zero commits — the discipline held; lib/spawn.py was edited under T-1797
+      (option A), not under T-1776.
 
 ### Human
 
@@ -125,17 +139,24 @@ grep -q "worker_kind: TermLink" .context/project/workflows/default.yaml
 
 ## Recommendation
 
-**Recommendation:** DEFER (filing only) — architectural choice belongs to human.
+**Recommendation:** GO (close as resolved) — option A was picked and shipped; the filing has served its purpose.
 
-**Rationale:** The default-fallback path through `fw resolver run` is currently a NotImplementedError trap. This is loud (not silent), so latent risk is bounded — but it should be resolved before the substrate is treated as production-ready. Three options exist (TermLink Python primitive / shell adapter / change default.yaml worker_kind), each with different trade-offs around code surface, runtime dependencies, and architectural cleanliness. The agent's leaning is Option C (`ollama-loop` as default) for its smallest blast radius, but this is a workflow design call the human should weigh in on.
+**Rationale:** Recommendation evolved from DEFER (2026-05-09 filing) to GO-resolved (2026-05-31 verification). Between filing and now, the human picked **option A** (TermLink Python primitive) and the follow-up shipped via **T-1797** (`df468c2f`: "TermLink worker primitive — closes T-1776 default-fallback contract gap") with audit-time prevention via **T-1798** (`cf480359`: "workflow-dispatcher coverage check — audit-time T-1776 prevention"). The default-fallback NotImplementedError trap that motivated this filing no longer exists in the substrate; `lib/spawn.py` now routes `worker_kind: TermLink` via the new primitive. T-1776's filing job (surface options, recommend, defer to human, then close once direction chosen) is complete by event — the human's choice was expressed through shipping T-1797, not through ticking #H1 on this task. This task is a textbook CTL-029 (T-2055) case: completable-but-not-completed, sitting in `active/` ~22 days past the moment its purpose was served.
 
 **Evidence:**
-- `.context/project/workflows/default.yaml:2` declares `worker_kind: TermLink`
-- `lib/spawn.py` raises NotImplementedError for worker_kind=TermLink (and Task)
-- `bin/fw resolver dispatch T-1775 ollama-research --dry-run` confirms ollama-loop path resolves cleanly (sanity check)
-- `docs/reports/T-1776-default-workflow-termlink-gap.md` — full options matrix
+- `git log --all --oneline --grep "T-1776"` returns 4 commits:
+  - `703f3d34 T-1776: file substrate gap` (the filing itself)
+  - `e134578d T-1687: fabric scan/enrich` (incidental T-1776 mention in fabric metadata)
+  - `df468c2f T-1797: TermLink worker primitive — closes T-1776 default-fallback contract gap`
+  - `cf480359 T-1798: workflow-dispatcher coverage check — audit-time T-1776 prevention`
+- T-1797 is `status: work-completed` (date_finished `2026-05-12T21:57:27Z`), partial-complete with 1 [REVIEW] Human AC pending — orthogonal to this task's closure
+- T-1798 is `status: work-completed` and moved to `.tasks/completed/`
+- `docs/reports/T-1776-default-workflow-termlink-gap.md` (103 lines) preserved as historical filing
+- Verification commands still pass (the loud-failure description is now historical context, not a live trap)
 
-**Headline mechanic:** None — this is a discovery filing, not a build. Resolution is a follow-up task after human picks a direction.
+**Headline mechanic:** None — discovery filing. The downstream mechanic landed under T-1797 (TermLinkWorker primitive wraps `fw termlink dispatch`); see `lib/termlink_worker.py` for the actual route.
+
+**Human action required:** Tick #H1 (option A confirmed via T-1797 commits) and close. The agent surfaces this evidence at `fw task review T-1776`; no rework of the original filing is intended.
 
 ## Evolution
 
@@ -144,6 +165,12 @@ grep -q "worker_kind: TermLink" .context/project/workflows/default.yaml
 - **What changed:** While picking the next on-arc move post-T-1775, planned to investigate whether TermLink should be a Python primitive, shell adapter, or removed from VALID_WORKER_KINDS. Grep of workflows revealed `default.yaml` already declares `worker_kind: TermLink` — meaning the gap isn't just "what about TermLink", it's "the most-default path through the substrate currently breaks at spawn time". This is more critical than the architectural curiosity it started as.
 - **Plan impact:** Pivoted from "build TermLink route" to "file discovery for human decision". The build is well-scoped if/when the human picks direction A or B; direction C is a 1-line workflow edit.
 - **Triggered:** This task, T-1776. No further sub-tasks pending direction.
+
+### 2026-05-31 — close-by-event: option A shipped under T-1797, T-1776 left stale
+
+- **What changed:** S-2026-0531 sweep of orchestrator-arc started-work tasks found T-1776 sitting completable-but-not-completed. The human picked option A within days of filing; T-1797 (`df468c2f`, 2026-05-12) shipped the TermLink Python primitive that closes the default-fallback NotImplementedError trap, and T-1798 (`cf480359`) added the workflow-dispatcher coverage audit check so this exact class can't reappear silently. T-1776's filing-only mandate is complete by event — the recommendation pivots from DEFER to GO-resolved.
+- **Plan impact:** Recommendation rewritten; Agent AC #2 ticked (discipline held — no spawn.py/resolver.py/default.yaml edits under T-1776's own commits, confirmed via `git log --all --oneline --grep "T-1776" -- <files>`). Human #H1 remains the only outstanding criterion and is surfaced via `fw task review T-1776`.
+- **Triggered:** CTL-029 instance — this is exactly the "completable-but-not-completed" pattern T-2055 was filed to detect. The detector should flag T-1776 too; if it doesn't, that's a follow-up scope worth noting separately (out of scope for this transition).
 
 ## RCA
 
