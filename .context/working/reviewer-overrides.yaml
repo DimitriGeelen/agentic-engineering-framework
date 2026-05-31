@@ -261,3 +261,27 @@ overrides:
   expires_at: '2026-08-20T07:40:18Z'
   added_by: unknown
   added_at: '2026-05-22T07:40:18Z'
+- id: OV-abb404fc
+  task_id: T-2139
+  pattern_id: skip-as-pass
+  ac_index: null
+  reason: AC11 verification command greps FOR the literal string '--skip-review-link-check'
+    in docs/reports/T-2139-evidence/ to confirm the block message names the CLI-flag
+    bypass to operators. It is not invoking --skip-* to bypass anything. The grep-for-presence
+    pattern is the inverse of skip-as-pass.
+  expires_at: '2027-05-31T15:36:37Z'
+  added_by: root
+  added_at: '2026-05-31T15:36:37Z'
+- id: OV-46655926
+  task_id: T-2139
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "T-2139 ships real integration: tests/unit/review_link_blocking_gate.bats\
+    \ covers emit_review end-to-end (gate \u2192 block \u2192 bypass \u2192 Tier-2\
+    \ log) and is in ## Verification. The four grep-against-evidence-file commands\
+    \ (AC8-AC11) also exercise real captured artifacts under docs/reports/T-2139-evidence/.\
+    \ The heuristic mis-classifies these as 'unit-test only' because pytest is listed\
+    \ first."
+  expires_at: '2027-05-31T15:36:37Z'
+  added_by: root
+  added_at: '2026-05-31T15:36:37Z'
