@@ -301,3 +301,10 @@ observations:
     tags: []
     status: dismissed
     promoted_to: null
+  - id: OBS-043
+    text: "CTL-029 chain on orchestrator arc: T-1702 has 3 Agent ACs (#5/#6/#7) explicitly DEFERRED to T-1707, T-1707 shipped (work-completed 2026-05-27) and ALSO claims 'Closes G-065', but G-065 in .context/project/concerns.yaml is still status: watching (not closed_date'd). Chain: T-1702 close-by-event waits on T-1707 [REVIEW] Human AC + G-065 status flip. Agent declined to flip G-065 mechanically because (a) T-1707's own Recommendation says 'closes when human reviews', (b) it touches the gap register which is sovereignty-adjacent, (c) the close-cascade T-1702→T-1707→G-065 deserves one coordinated human action via fw task review T-1702 + T-1707 + concerns.yaml edit. Tagged for orchestrator-arc pre-close hygiene. Pattern is identical to T-1776 just closed under 625557f1/9f08aa42."
+    captured: 2026-05-31T09:36:39Z
+    context_task: T-1702
+    tags: [orchestrator-arc]
+    status: pending
+    promoted_to: null
