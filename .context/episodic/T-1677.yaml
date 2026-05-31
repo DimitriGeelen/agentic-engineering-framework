@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1677: tag-format drift: 21 legacy TermLink sessions carry task=/role= prefixes —
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T18:50:44Z
+# ============================================================================
+
+task_id: T-1677
+task_name: "tag-format drift: 21 legacy TermLink sessions carry task=/role= prefixes —"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T11:05:49Z
+completed: 2026-05-31T18:50:39Z
+duration_days: 29
+updates_count: 2
+first_commit: 2026-05-02T13:07:50+02:00
+last_commit: 2026-05-02T13:07:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture tag-format drift follow-up + 2026-05-02 audit
+
+# Key outcomes
+outcomes:
+  - 'Live-session drift count is 0 (zero sessions with non-canonical tag prefixes — anything outside CANONICAL_PREFIXES in `agents/audit/orchestrator-mcp-scan.sh:101-104`)'
+  - '`orchestrator-mcp-scan` does not emit `TAG-FORMAT-DRIFT` in its current report (`.context/audits/orchestrator-LATEST.yaml`)'
+  - 'Framework-side structural fixes shipped — T-1649 (validator + invariant) and T-1654 (framework dispatch fix) both in `.tasks/completed/`'
+  - 'Cross-repo validator half is owned by `/opt/termlink` (per body); no framework-side action remaining'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-05-02.yaml'
+  - '.tasks/active/T-1677-tag-format-drift-21-legacy-termlink-sess.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T13:07:50"
+    action: "T-1677: capture tag-format drift follow-up + 2026-05-02 audit"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 42224 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cross-repo, termlink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 42224
+  commits: 1
+  files_changed: 2
+  lines_added: 859
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1677-tag-format-drift-21-legacy-termlink-sess.md
+generated_by: context-agent-hybrid

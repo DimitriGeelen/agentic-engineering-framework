@@ -9,17 +9,17 @@ description: >
   half (validator in /opt/termlink) is the structural close per audit mitigation.
   Framework-side optional: sweep retag for live sessions before arc close.
 
-status: captured
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: later
+horizon: now
 tags: [cross-repo, termlink]
 components: []
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-02T11:05:49Z
-last_update: '2026-05-28T22:54:09Z'
-date_finished:
+last_update: 2026-05-31T18:50:39Z
+date_finished: 2026-05-31T18:50:39Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -54,6 +54,17 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-29T23:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -70,14 +81,21 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-1654 (framework-side dispatch fix) and T-1649 (validator + invariant) both shipped.
+21 legacy `task=`/`role=` sessions cited at filing have since aged out of the TermLink
+hub (sessions reap on idle; the canonical-prefix audit lint has been live since
+T-1649). Reality check today (2026-05-31, S-2026-0531-2025+1): 28 live sessions,
+0 non-canonical prefixes, `orchestrator-mcp-scan` emits no TAG-FORMAT-DRIFT WARN.
+The "Framework-side optional: sweep retag for live sessions before arc close" clause
+is moot — there is nothing left to sweep. Closing as drift-extinct + structural-fix-shipped.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Live-session drift count is 0 (zero sessions with non-canonical tag prefixes — anything outside CANONICAL_PREFIXES in `agents/audit/orchestrator-mcp-scan.sh:101-104`)
+- [x] `orchestrator-mcp-scan` does not emit `TAG-FORMAT-DRIFT` in its current report (`.context/audits/orchestrator-LATEST.yaml`)
+- [x] Framework-side structural fixes shipped — T-1649 (validator + invariant) and T-1654 (framework dispatch fix) both in `.tasks/completed/`
+- [x] Cross-repo validator half is owned by `/opt/termlink` (per body); no framework-side action remaining
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -105,6 +123,8 @@ cost_estimate_proposed:
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
+python3 tools/check_termlink_tag_drift.py
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -120,6 +140,37 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+## Evolution
+
+### 2026-05-31 — drift extinct before sweep was needed
+
+- **What changed:** The 21 cited `task=`/`role=` sessions all aged out of the
+  TermLink hub between 2026-05-02 (filing) and 2026-05-31 (reality check) via
+  natural session idle-reap. Today 28 live sessions = 0 non-canonical prefixes.
+- **Plan impact:** The "framework-side optional: sweep retag for live sessions
+  before arc close" clause is moot — there is nothing left to sweep. The
+  structural fix (T-1649 validator + T-1654 framework dispatch) shipped weeks ago
+  and the audit lint kept the new drift rate at zero. Time + structural fix did
+  the job; no sweep needed.
+- **Triggered:** New invariant-direct verifier `tools/check_termlink_tag_drift.py`
+  added (mirrors the audit's CANONICAL_PREFIXES set; one-line P-011-friendly
+  command) so future tag-format-hygiene tasks can express the invariant as a
+  single verification line.
+
+## Recommendation
+
+**Recommendation:** GO (close as work-completed)
+
+**Rationale:** All four Agent ACs satisfied with concrete evidence (drift count
+0, audit silent on TAG-FORMAT-DRIFT, T-1649 + T-1654 in completed/, cross-repo
+half explicitly out of framework scope per body). The sweep mentioned in the
+body was optional, and population for it is zero.
+
+**Evidence:**
+- `python3 tools/check_termlink_tag_drift.py` → `OK: 0 non-canonical tags across 28 live session(s).`
+- `bash agents/audit/orchestrator-mcp-scan.sh` → only WARN is unrelated (5 unclassified tools)
+- `ls .tasks/completed/T-1649-* .tasks/completed/T-1654-*` → both present
 
 ## Decisions
 
@@ -138,3 +189,30 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1677-tag-format-drift-21-legacy-termlink-sess.md
 - **Context:** Initial task creation
+
+### 2026-05-31T18:48:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dd78c095
+- **Timestamp:** 2026-05-31T18:50:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Live-session drift count is 0 (zero sessions with non-canonical tag prefixes — anything outside CANONICAL_PREFIXES in `agents/audit/orchestrator-mcp-scan.sh:101-104`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/orchestrator-mcp-scan.sh in: Live-session drift count is 0 (zero sessions with non-canonical tag prefixes — anything outside CANONICAL_PREFIXES in `agents/audit/orchestrator-mcp-s`
+- **AC#2 (Agent)** — `orchestrator-mcp-scan` does not emit `TAG-FORMAT-DRIFT` in its current report (`.context/audits/orchestrator-LATEST.yaml`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/orchestrator-LATEST.yaml in: `orchestrator-mcp-scan` does not emit `TAG-FORMAT-DRIFT` in its current report (`.context/audits/orchestrator-LATEST.yaml`)`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `Cross-repo`
+
+### 2026-05-31T18:50:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
