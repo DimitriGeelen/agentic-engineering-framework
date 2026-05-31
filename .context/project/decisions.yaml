@@ -1836,3 +1836,10 @@ decisions:
     date: 2026-05-30
     task: T-2131
     rationale: "Not specified"
+
+  - id: D-265
+    decision: "Surgical fix (add hx-target=\"this\" on ac-check form)"
+    scope: project
+    date: 2026-05-31
+    task: T-2133
+    rationale: "Auto-captured from task file on completion"

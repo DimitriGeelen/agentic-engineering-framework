@@ -6,7 +6,7 @@ description: >
   Inception: RCA: review-handoff homework pattern recurs despite T-2030 GO — author-time
   gap
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,8 +15,8 @@ components: [lib/review_link_validator.py, lib/review.sh, agents/audit/reviewer/
 related_tasks: [T-2030, T-2050, T-2109, T-2113, T-2137, T-2101, T-2055]
 arc_id: inception-review-loop
 created: 2026-05-31T11:13:58Z
-last_update: '2026-05-31T11:15:02Z'
-date_finished:
+last_update: 2026-05-31T13:09:18Z
+date_finished: 2026-05-31T13:09:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -95,15 +95,15 @@ This task is operator-dialogue-bound, not spike-bound. Per Inception Discipline 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -135,13 +135,19 @@ This task is operator-dialogue-bound, not spike-bound. Per Inception Discipline 
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — Candidate **E + B**, with Q3 answer **both** (block-message teaching + separate doc cleanup). Selected by operator 2026-05-31.
 
 **Rationale:**
 
-The recurring pattern has crossed the systemic threshold (≥3 captures: T-2027 / T-2013 / T-1991 / T-2012 / T-2118 / T-1853 / T-2030 / T-2109 + the `/inbox` chat slip + 2× discipline failure in one session). T-2030's GO decision identified the right *direction* (structural validation at handoff) but T-2050's shipping shape (advisory WARN, review-time, presence-only) cannot catch the dominant failure mode (absence-of-URL). Remediation needs an author-time or template-side fix, and the four candidates (A author-time hook / B reviewer static-scan / C template+docs / D render-time substitution) trade off blast-radius vs strictness vs migration-cost differently. Operator dialogue must validate the scope before a recommendation hardens.
+The recurring pattern has crossed the systemic threshold (≥3 captures: T-2027 / T-2013 / T-1991 / T-2012 / T-2118 / T-1853 / T-2030 / T-2109 + the `/inbox` chat slip + 2× discipline failure in one session). T-2030's earlier GO decision identified the right *direction* (structural validation at handoff) but T-2050's shipping shape (advisory WARN, review-time, presence-only) cannot catch the dominant failure mode (absence-of-URL). Operator dialogue 2026-05-31 (see Dialogue Log in research artifact) selected:
 
-Agent's tentative lean (updated 2026-05-31 post-operator-dialogue): **E + B** — transition-time blocking gate (Candidate E, refinement of A — fires at `fw task review` / `--status work-completed`, NOT every Write|Edit; class-aware block message that teaches the review-vs-inception distinction) as the structural fix, reviewer static-scan (B) as the catch-before-handoff backstop. Skip C (discipline-only proven insufficient — 2× failure this session). Skip D (rewriting source-of-truth text creates downstream trust issues). V-slices NOT pre-filed — T-2101's stalled V1..V5 is the cautionary tale.
+- **Candidate E** — transition-time blocking gate. Fires at three handoff moments: `bin/fw task review T-XXX`, `update-task.sh --status work-completed` on a partial-complete build, `update-task.sh --status work-completed` on an inception. NOT every Write|Edit — WIP drafting stays unblocked. Reuses T-2050's `lib/review_link_validator.py` integration point (`lib/review.sh:emit_review`) — upgrade from `|| true` advisory to blocking exit, plus extended detection for absence-of-URL homework patterns. Class-aware URL resolution: inception → `/inception/<id>`, partial-complete build → `/review/<id>`. 7 legacy sites stay valid until their next handoff (natural retro-fit; no upfront sweep).
+- **Candidate B** — reviewer static-scan companion. Add `review-link-homework` pattern to `agents/audit/reviewer/static_scan.py` catalogue. Emits CONCERN during normal completion review (before handoff) so the agent self-corrects before E fires. Cost: one regex entry; benefit: no agent-frustration round-trips when E eventually blocks.
+- **Q3 = both** — the gate's block message names the review-vs-inception class explicitly ("this task is an inception, handoffs go to /inception/T-XXX") AND a separate sibling task sweeps surface text (CLAUDE.md §Presenting Work for Human Review, agents/task-create/AGENT.md, hook block messages, prompt preambles) to teach the distinction proactively.
+
+Skip Candidate C (template + CLAUDE.md prose discipline) — proven insufficient by 2× same-session failure with the memory freshly updated. Skip Candidate D (render-time substitution) — rewriting source-of-truth text creates downstream trust issues and only papers over the symptom.
+
+V-slices **NOT pre-filed** — T-2101's stalled V1..V5 is the cautionary tale. After operator records the structural GO via Watchtower, agent files ONE build slice (the E gate keystone) and parks B + Q3-cleanup as siblings to follow.
 
 **Evidence:**
 - T-2030 (parent inception, GO 2026-05-25): `docs/reports/T-2030-review-link-generation.md`
@@ -152,9 +158,16 @@ Agent's tentative lean (updated 2026-05-31 post-operator-dialogue): **E + B** �
 - `/inbox` chat slip (this session, no commit): same class, chat surface
 - `[[feedback_review_concrete_links]]` updated *during* this session, violated 60 min later on T-2109 → discipline-only path proven insufficient
 - 7 active+completed sites: `grep -rlE "URL from .bin/fw watchtower url" .tasks/`
-- Full RCA + 4 candidate shapes + Dialogue Log: `docs/reports/T-2138-review-handoff-author-time-gap.md`
+- Full RCA + 5 candidate shapes + Dialogue Log (with operator's E+B+Q3-both decision): `docs/reports/T-2138-review-handoff-author-time-gap.md`
 
-**Operator action requested:** read the research artifact, pick one of Candidates A/B/C/D (or hybrid), answer the three open scope questions, then decide via Watchtower at http://192.168.10.107:3000/inception/T-2138. Recommendation will be re-written from DEFER to GO|NO-GO|DEFER on the picked candidate before the decision lands.
+**Proposed build slices (file AFTER operator records the structural GO):**
+- **V1 (keystone):** Candidate E — `lib/review_link_validator.py` extension + `lib/review.sh:emit_review` upgrade from `|| true` to blocking exit + class-aware block message + bats coverage. Also integrate at `agents/task-create/update-task.sh` `--status work-completed` for the build-partial-complete + inception-body-finalisation legs.
+- **V2 (companion):** Candidate B — `agents/audit/reviewer/static_scan.py` catalogue entry `review-link-homework` with pattern matchers + unit tests.
+- **V3 (Q3 cleanup):** sweep CLAUDE.md / AGENT.md / hook block messages / prompt preambles to teach review-vs-inception distinction proactively. Bounded — name the surfaces, rewrite three or four sentences each.
+
+Ship V1 first (structural keystone). V2 + V3 can ship in parallel once V1 lands. None of the three is pre-filed yet — agent files them only after `fw inception decide T-2138 go` is recorded.
+
+**Operator action requested:** record the structural GO via Watchtower at http://192.168.10.107:3000/inception/T-2138.
 
 ## Decisions
 
@@ -169,7 +182,11 @@ Agent's tentative lean (updated 2026-05-31 post-operator-dialogue): **E + B** �
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The recurring pattern has crossed the systemic threshold (≥3 captures: T-2027 / T-2013 / T-1991 / T-2012 / T-2118 / T-1853 / T-2030 / T-2109 + the `/inbox` chat slip + 2× discipline failure in one session). T-2030's earlier GO decision identified the right *direction* (structural validation at handoff) but T-2050's shipping shape (advisory WARN, review-time, presence-only) cannot catch the dominant failure mode (absence-of-URL). Operator dialogue 2026-05-31 (see Dialogue Log in research artifact) selected:
+
+**Date**: 2026-05-31T13:09:18Z
 
 ## Updates
 
@@ -178,3 +195,21 @@ Agent's tentative lean (updated 2026-05-31 post-operator-dialogue): **E + B** �
 
 ### 2026-05-31T11:14:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-31T13:09:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The recurring pattern has crossed the systemic threshold (≥3 captures: T-2027 / T-2013 / T-1991 / T-2012 / T-2118 / T-1853 / T-2030 / T-2109 + the `/inbox` chat slip + 2× discipline failure in one session). T-2030's earlier GO decision identified the right *direction* (structural validation at handoff) but T-2050's shipping shape (advisory WARN, review-time, presence-only) cannot catch the dominant failure mode (absence-of-URL). Operator dialogue 2026-05-31 (see Dialogue Log in research artifact) selected:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-328717e0
+- **Timestamp:** 2026-05-31T13:09:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-31T13:09:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

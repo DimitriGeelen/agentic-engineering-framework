@@ -194,6 +194,14 @@ Per CLAUDE.md §Inception Discipline C-001 extension — record questions, answe
 - Q2: Is Candidate **B** (reviewer static-scan as `[REVIEWER]` AC) a good companion for catch-before-handoff (so the agent self-corrects before E fires)? Or skip B and rely on E alone?
 - Q3: On the review-vs-inception distinction — do you want it taught **inside the block message** (E's plan), in a separate CLAUDE.md clean-up task, or both?
 
+### 2026-05-31 — Operator decision (verbatim)
+
+> *"go with E + B, both for Q3"*
+
+**Parsed:** Candidate E (transition-time blocking gate, class-aware, reusing T-2050's integration point) + Candidate B (reviewer static-scan companion) + Q3-both (block-message teaching + separate doc cleanup sibling task).
+
+**Recommendation hardened from DEFER → GO.** Next action: operator records structural GO via Watchtower at http://192.168.10.107:3000/inception/T-2138 (sovereignty-gated under `$CLAUDECODE=1` — agent cannot self-record). Once recorded, agent files V1 build slice (E keystone) and parks V2 (B catalogue entry) + V3 (Q3 doc sweep) as siblings.
+
 ## Recommendation
 
 **Recommendation:** **DEFER** — operator must pick direction + answer the three open scope questions before any build slice is filed. V-slices NOT pre-filed (T-2101 V1..V5 stalled-list is the cautionary tale — `grep -lE "T-2101-V" .tasks/` returns empty after 1 day GO'd).
