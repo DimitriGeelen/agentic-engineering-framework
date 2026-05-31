@@ -141,6 +141,14 @@ out=$(grep -E "T-(2112|2113|2114|2134|L-450)" tests/playwright/test_review_htmx_
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** Four htmx-target-inheritance regressions in the last fortnight (T-2112 /approvals, T-2113 cockpit, T-2114 review.html anchors, T-2134 ac-check form). The most recent (T-2134) caused the /review checkbox to silently no-op — user reported "i tick the box nothing happens !!! regression sht ??".
+
+**Root cause (this task is regression-net, not bug-fix):** The class root cause is documented in `docs/reports/T-2133-review-checkbox-htmx-target-error-rca.md` — a wrapper sets `hx-target="#X"`; descendants without their own override inherit it; if `#X` is absent from the rendered DOM (standalone template, no base.html), htmx fires `htmx:targetError` and aborts the request pre-configRequest, so CSRF / before-request / response-handling never run. This task does NOT fix that class — T-2114 + T-2134 already did. It pins the contract so the *next* removal of an override or addition of a new wrapper-reset is caught by `fw test playwright` instead of by a human user.
+
+**Why structurally allowed:** Until this test landed, the contract was a comment in a template (`_review_acs.html:35-44`) plus a memory entry (L-450) — no machine enforcement. A template edit that drops `hx-target="this"` (e.g. during a refactor that collapses the form attributes) passed every existing test: HTML still rendered, route still returned 200, polling still worked, the only visible failure was a missed POST in a real browser. That failure mode was invisible to curl, grep, and the existing test suite — by design, because htmx aborts client-side before any server-side signal exists.
+
+**Prevention (what this task ships):** `tests/playwright/test_review_htmx_target_inheritance.py` — two assertions, both fail in `fw test playwright` the moment the override is dropped or a sibling form is added without its own `hx-target`. Verified by pass → mutate → fail → restore → pass cycle. Future similar regressions on other surfaces (e.g. `/inception/<id>`, `/arcs/<slug>/close`) need their own sibling pins; the assertion logic in the test is generic enough to copy.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
