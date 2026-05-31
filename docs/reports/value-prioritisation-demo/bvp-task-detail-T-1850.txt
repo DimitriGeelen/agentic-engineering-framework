@@ -1,0 +1,17 @@
+Task:  T-1850
+Name:  tags:[arc:*] → arc_id one-shot migration (T-NEW-3)
+File:  .tasks/completed/T-1850-tagsarc--arcid-one-shot-migration-t-new-.md
+
+PROPOSED (advisory)
+DRIVER NAME           WEIGHT SCORE CONTRIB
+--------------------------------------------------
+D1     Antifragility       9     4      36
+D2     Reliability         7     4      28
+D3     Usability           5     4      20
+D4     Portability         3     2       6
+F1     t2079probe          3     -       -
+--------------------------------------------------
+TOTAL                          90   (norm: 0.75)
+
+Cost components (CONFIRMED):
+  cost_estimate: absent. Set in task frontmatter to enable ranking.

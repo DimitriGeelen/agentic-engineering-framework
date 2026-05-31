@@ -1,0 +1,40 @@
+id: arc-006
+slug: value-prioritisation
+name: "Value prioritisation — Business Value Points + directive-weighted scoring"
+description: "HANDOFF-value-prioritisation-2026-05-15. Inception T-1915 (recommendation GO; arc-grooming dependency satisfied). Build slices T-NEW-2..15 filed after decide-go."
+status: in-progress
+anchor_task: T-1915
+headline_mechanic: "agent runs fw bvp → sees directive-weighted scores (D1/D2/D3/D4 weights 9/7/5/3) + composite cost (blast_radius × 0.6 + tier × 0.3 + effort × 0.1); fw bvp arcs ranks arcs by global drivers;
+  fw arc approve-driver flips draft → in-progress; fw bvp confirm moves proposed → confirmed; Watchtower /bvp shows quadrant scatter with live weight sliders; auto-promote off by default"
+demo_evidence:
+created: 2026-05-18T22:58:05Z
+closed_at:
+decision:
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields backfilled to align
+# with new arc-creation defaults. Semantics in docs/reports/T-1915-bvp-inception.md.
+bvp_scores: {}
+scoped_drivers:
+  - name: estimator-fidelity
+    weight: 3
+    approved_at: '2026-05-21T12:42:38Z'
+    rationale: Distinguishes from global D2 (Reliability) by measuring how well the BVP heuristic estimator's scores agree with human-confirmed scores. D2 cares "the estimator runs without crashing 
+      and writes audit rows"; this driver cares "the numbers it produces would not embarrass a human reviewer". The arc encodes a v2-delta semantic (M3) where ≥2 driver-delta between proposed and 
+      confirmed signals a needs-split — that is fidelity measurement made operational. Without this driver, the estimator could be perfectly reliable AND systematically wrong, and the global drivers 
+      would never surface the divergence.
+# T-1957: arc-006 self-application. Primary-agent driver proposal per T-1925
+# workflow (5-step). Three candidates; human approves ≤3 via `fw arc approve-driver
+# value-prioritisation "<name>" --weight N --i-am-human|--from-watchtower` or
+# rejects all with `fw arc approve-driver value-prioritisation --none --justification "..."`.
+# Each rationale articulates what the driver distinguishes that global D1-D4 do not (D6).
+proposed_scoped_drivers:
+  - name: sovereignty-preservation
+    weight: 5
+    source: agent
+    ts: '2026-05-20T12:30:00Z'
+    rationale: >-
+      Distinguishes from global D1-D4 by measuring how robustly each unit of
+      arc-006 work preserves the human's score-confirmation and weight-adjustment
+      boundary. The arc already encodes §ACD gates at `fw bvp confirm` (T-1924)
+      and `fw bvp weight` (M6) precisely because Goodhart's-law risk is acute
+      in a prioritisation system — agent-estimated scores trend toward becoming
+      de-facto authority via convenience. D2 (Reliability) asks "is the gate

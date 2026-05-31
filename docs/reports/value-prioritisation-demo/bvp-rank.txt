@@ -1,0 +1,30 @@
+TASK         BVP   NORM  COST   QUAD  SOURCE     NAME
+------------------------------------------------------------------------------------------------
+T-1850        90   0.75     -      -  proposed   tags:[arc:*] → arc_id one-shot migration (T-NEW-3)
+T-1983        85   0.71   1.9  hv-hc  proposed   GO-scope traceability — inception decisions machin
+T-1943        80   0.67   2.0  hv-hc  proposed   fw audit registry→generated cron drift FAIL (T-194
+T-1944        80   0.67     -      -  proposed   extract cron drift python heredoc to lib helper L-
+T-2091        80   0.67   3.2  hv-hc  proposed   G-052 cleanup: orphaned May-22 completion work for
+T-2096        80   0.67   2.0  hv-hc  proposed   OBS-036: GO-scope-not-propagated audit detector (L
+T-679         79   0.66     -      -  proposed   Path C workflow refinement — document TermLink-bas
+T-1719        85   0.63   1.4  hv-lc  proposed   Embeddings strategy V1 — Slice 1 (post-write hook 
+T-2122        85   0.63   2.0  hv-hc  proposed   arc-close agent recommendation+rationale codificat
+T-1701        84   0.62   1.4  hv-lc  proposed   v1 build: install + integrate pi RPC backend for w
+T-1799        83   0.61     -      -  proposed   Watchtower /orchestrator: add Workflow coverage pa
+T-2053        73   0.61   2.0  hv-hc  proposed   Watchtower decide handler leaves recorded decision
+T-2111        80   0.59   3.2  hv-hc  proposed   /approvals arc-closure headline_mechanic uses .app
+T-1915        70   0.58   6.1  hv-hc  proposed   value-prioritisation: Business Value Points — dire
+T-2057        70   0.58   1.8  hv-hc  proposed   L-387 SIGPIPE detector — static scan of ## Verific
+T-2074        78   0.58   1.4  hv-lc  proposed   extract htmx toast handlers to web/static/htmx-toa
+T-1914        66   0.55   3.5  hv-hc  proposed   lib/arc.sh consolidate _arc_tasks_* to delegate to
+T-2018        73   0.54   3.2  hv-hc  proposed   arc-007 S4e/S6c -- bulk multi-select + floating ac
+T-1771        64   0.53     -      -  proposed   make cron drift actionable: audit-summary visibili
+T-2002        71   0.53   1.4  hv-lc  proposed   UX-review TermLink agent preloaded with design sty
+T-2051        71   0.53   2.0  hv-hc  proposed   Watchtower POST /inception/<id>/decide returns 500
+T-1803        70   0.52     -      -  proposed   Workflow coverage audit: stale-workflow WARN class
+T-1977        66   0.49   1.2  hv-lc  proposed   arc-scoped driver weight sliders — T-1929 parity a
+T-1808        65   0.48     -      -  proposed   Paused-dispatch surface — fw review-queue + Watcht
+T-1940        57   0.47   2.0  hv-hc  proposed   BVP T-1939 sibling — Playwright pin for /arcs/<slu
+T-1941        57   0.47   3.2  hv-hc  proposed   BVP T-1940 sibling — emit bvp_mode in /bvp scatter
+T-2000        57   0.47   1.9  hv-hc  proposed   Specialised UX-review TermLink agent + enforce exe
+T-2060        57   0.47   3.2  hv-hc  proposed   polling containers inherit body hx-target=#content
