@@ -1315,8 +1315,18 @@ EOF
         # below. wc -l always exits 0 — and prints 0 on empty input — so a
         # single newline-free integer is captured.
         local pyc_count
+        # T-2092: trailing `|| true` is critical. `set -euo pipefail` is in
+        # effect (bin/fw line 12); when no tracked pyc files exist (a clean
+        # consumer — the common field state, NOT the framework dev tree
+        # which has tracked .pyc files in .agentic-framework/), grep -E exits
+        # 1, pipefail propagates to the pipeline, set -e then kills do_upgrade
+        # silently BEFORE the "Upgrade Complete" summary prints. The consumer
+        # sees all 10 steps "OK" but `fw upgrade` returns 1 with no error
+        # message. T-1824 fixed the *output* shape but the *pipeline exit*
+        # remained pipefail-unsafe. Found by T-2092 docker live-sim gate on
+        # first run — exactly the class T-2078 F3 said was untested.
         pyc_count=$(cd "$target_dir" && git ls-files .agentic-framework/ 2>/dev/null \
-            | grep -E '__pycache__|\.pyc$' | wc -l)
+            | grep -E '__pycache__|\.pyc$' | wc -l || true)
         if [ "$pyc_count" -gt 0 ]; then
             echo ""
             echo -e "${YELLOW}WARN${NC}  Vendored framework has $pyc_count tracked __pycache__/.pyc file(s)"
