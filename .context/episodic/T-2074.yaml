@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2074: extract htmx toast handlers to web/static/htmx-toast.js — load from /review
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T19:55:49Z
+# ============================================================================
+
+task_id: T-2074
+task_name: "extract htmx toast handlers to web/static/htmx-toast.js — load from /review"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T18:03:42Z
+completed: 2026-05-30T20:00:40Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-05-28T20:07:36+02:00
+last_commit: 2026-05-30T23:04:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  HOLD — empirical finding contradicts T-2063 GO framing. extract htmx toast handlers to web/static/htmx-toast.js. reroute [REVIEW] Human AC → Agent AC + Playwright pin (T-2123 principle)
+
+# Key outcomes
+outcomes:
+  - '`web/static/htmx-toast.js` created — self-contained: declares its own `showToast()` + injects a `#toast-container` div if missing on DOMContentLoaded, then wires `htmx:responseError` + `htmx:sendError` listeners.'
+  - '`base.html` updated — uses the new `htmx-toast.js` script instead of the inline handlers (the inline `showToast()` definition stays for non-htmx callers; only the error listeners move).'
+  - '`review.html` updated — loads `htmx-toast.js` after `csrf-htmx.js` (`<script src="/static/htmx-toast.js"></script>`).'
+  - 'Both pages still pass HTTP smoke test (`curl -sf "$(bin/fw watchtower url)/review/T-2074"` and `curl -sf "$(bin/fw watchtower url)/"`).'
+  - '**Toast-on-4xx contract pinned structurally** (rerouted from a [REVIEW] Human AC — T-2123/T-2074-fix routing decision). `tests/playwright/test_htmx_toast_extraction.py` (T-2120, 4 assertions) covers: (a) `/review/<id>` loads `static/htmx-toast.js`; (b) no inline `addEventListener(''htmx:…)` listeners on review.html (double-toast regression net, T-2119); (c) `window.showToast` is defined (delegation contract); (d) served `htmx-toast.js` body wires both `htmx:responseError` + `htmx:sendError`. Verification gate runs this test.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-30 — module self-publishes window.showToast only when undefined'
+    chose: 'htmx-toast.js''s `fallbackShowToast` is only assigned to'
+    rationale: 'AC #2 mandates "inline `showToast()` definition stays for non-htmx callers".'
+    alternatives_rejected: ['"Make htmx-toast.js the only definition" — would force every base-extending']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2074-extract-htmx-toast-handlers-to-webstatic.md'
+  - 'web/static/htmx-toast.js'
+  - 'web/templates/base.html'
+  - 'web/templates/review.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T20:07:36"
+    action: "T-2074: HOLD — empirical finding contradicts T-2063 GO framing"
+  - time: "2026-05-30T22:00:25"
+    action: "T-2074: extract htmx toast handlers to web/static/htmx-toast.js"
+  - time: "2026-05-30T23:04:19"
+    action: "T-2074: reroute [REVIEW] Human AC → Agent AC + Playwright pin (T-2123 principle)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2996 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2996
+  commits: 3
+  files_changed: 4
+  lines_added: 284
+  lines_removed: 58
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2074-extract-htmx-toast-handlers-to-webstatic.md
+generated_by: context-agent-hybrid
