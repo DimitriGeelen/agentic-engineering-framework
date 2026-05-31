@@ -1,0 +1,20 @@
+id: tools/check_task_yamls.py
+name: check_task_yamls
+type: script
+subsystem: unknown
+location: tools/check_task_yamls.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-05-31
+created_by: unknown

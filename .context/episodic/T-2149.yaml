@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2149: Repair T-2116 frontmatter duplicate components key — unblocks BVP estimator
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T18:04:57Z
+# ============================================================================
+
+task_id: T-2149
+task_name: "Repair T-2116 frontmatter duplicate components key — unblocks BVP estimator"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T17:57:24Z
+completed: 2026-05-31T18:04:48Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'T-2116 frontmatter has a single `components:` key (the populated one); the empty duplicate is removed.'
+  - 'T-2116 frontmatter parses cleanly with `python3 -c "import yaml; yaml.safe_load(open(''.tasks/active/T-2116-*.md'').read().split(''---'',2)[1])"` (no DuplicateKeyError).'
+  - '`bin/fw bvp estimate all --dry-run` returns `0 errored` across all 2115 tasks (was 2114 estimated / 1 errored; now 2115 estimated / 0 errored; T-2149 itself adds the +1).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [frontmatter-repair, bvp-estimator, arc-006]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2149-repair-t-2116-frontmatter-duplicate-comp.md
+generated_by: context-agent-hybrid

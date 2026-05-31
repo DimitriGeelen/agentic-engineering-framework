@@ -1556,3 +1556,620 @@ BVP arc HV-LC batch:
   caller: 'check-active-task focus-drift'
   target: 'T-1985'
   command: 'git add .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md .context/working/feedback-stream.yaml .context/working/.gate-bypass-log.yaml 2>&1; FW_SWITCH_FOCUS=1 git commit -m "T-1985: wor'
+- timestamp: '2026-05-29T09:46:56Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2087'
+  command: 'git add -- web/templates/arc_detail.html ".tasks/active/T-2087-fix-arcsslug-constituent-table-unbounded.md" ".tasks/active/T-2088-parametrized-route-height-guard-sample-a.md"
+FW_SWITCH_FOCUS=1 git com'
+- timestamp: '2026-05-29T09:49:19Z'
+  task: 'T-1062'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2087'
+  command: 'bin/fw context add-learning "T-2048s all-routes height guard uses discover_get_routes() which returns ONLY parameterless GET routes (Flask url_map filter). Parametrized routes (/arcs/<id>, /tasks/T-X'
+- timestamp: '2026-05-29T10:13:21Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2088'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2088: parametrized-route height-guard sampler — close blind-spot in T-2048
+
+T-2087 found two /arcs/<slug> pages (15184px, 8076px) over the 8000px cap'
+- timestamp: '2026-05-29T10:18:50Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2089'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2089: cap /reviewer/overrides via 60vh scroll containers (8628px → 1811px)
+
+10th instance of the unbounded-table class on a Watchtower page. Caught
+e'
+- timestamp: '2026-05-29T10:24:37Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2090'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2090: L-387 single-pipe hardening — drop tail-3 middle pipe + template hint
+
+Reviewer (T-1443) flagged 4 l387-sigpipe-risk CONCERNs on T-2088 (2) + T'
+- timestamp: '2026-05-29T11:52:41Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2091'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2091: close — G-052 cleared, completed/ canonical, episodic
+
+5/5 ACs ticked; Verification gate passed (4 commands + 1 fixed inline two-file-existence'
+- timestamp: '2026-05-29T12:11:44Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2092'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2092: demote to captured/horizon:next — V1-a queued, not in-progress
+
+T-2092 was set to started-work to ship its filing commit (61d693be). The
+honest'
+- timestamp: '2026-05-29T12:12:03Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2092'
+  command: 'git add .tasks/active/T-2092-v1-a-fw-upgrade-docker-based-live-upgrad.md && FW_SWITCH_FOCUS=1 git commit -m "T-2092: demote to captured/horizon:next — V1-a queued, not in-progress
+
+Was set started-w'
+- timestamp: '2026-05-29T13:51:14Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2096'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2096: dismiss OBS-036 (shipped) + OBS-037 (typo)
+
+OBS-036 → resolved by T-2096 0bfb3ba7 (detector live in agents/audit/audit.sh).
+OBS-037 was a typo artifact of \`'
+- timestamp: '2026-05-29T14:25:45Z'
+  task: 'T-2100'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2099'
+  command: 'git add bin/fw lib/upgrade.sh .context/episodic/T-2099.yaml .tasks/completed/T-2099-fork-bomb-fix-libupgradesh-handoff--binf.md
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2099: SEV-1 fork-bomb f'
+- timestamp: '2026-05-29T22:38:54Z'
+  task: 'T-2104'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-077: Session handover S-2026-0530-0028
+
+Pre-compact regeneration. Continues into post-compact session.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>" 2>&1'
+- timestamp: '2026-05-29T22:39:02Z'
+  task: 'T-2104'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/handovers/LATEST.md .context/handovers/S-2026-0530-0028.md && FW_SWITCH_FOCUS=1 git commit -m "T-077: Session handover S-2026-0530-0028
+
+Pre-compact regeneration. Co'
+- timestamp: '2026-05-29T23:16:43Z'
+  task: 'T-2107'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2106'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2106: partial-complete metadata (owner→human, status→work-completed)
+
+[REVIEW] Human AC pending: visual sanity check on /timeline.
+Auto-captured D-256.
+
+Co-Autho'
+- timestamp: '2026-05-29T23:17:11Z'
+  task: 'T-2107'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2106'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2106: partial-complete metadata (owner→human, status→work-completed)
+
+[REVIEW] Human AC pending: visual sanity check on /timeline.
+Auto-captured D-256.
+
+Co-Autho'
+- timestamp: '2026-05-29T23:17:27Z'
+  task: 'T-2107'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2106'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2106*.md && FW_SWITCH_FOCUS=1 git commit -m "T-2106: partial-complete metadata (owner→human, status→work-completed)
+
+[REVIEW] Human AC pending: visual san'
+- timestamp: '2026-05-30T06:53:50Z'
+  task: 'T-2108'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2107'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2107: partial-complete metadata (owner→human, status→work-completed)
+
+All 5 Agent ACs ticked, Verification 4/4 pass, reviewer PASS.
+1 [REVIEW] Human AC pending: '
+- timestamp: '2026-05-30T06:54:20Z'
+  task: 'T-2108'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2107'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2107-search-warm-load-67s-exceeds-t-2105-5s-c.md .tasks/active/T-2108--cockpit-warm-load-51s-exceeds-t-2105-5s.md && FW_SWITCH_FOCUS=1 git commit -m "T-2107: '
+- timestamp: '2026-05-30T07:11:54Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2108'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2108--cockpit-warm-load-51s-exceeds-t-2105-5s.md && FW_SWITCH_FOCUS=1 git commit -m "T-2108: partial-complete metadata (owner→human, status→work-completed'
+- timestamp: '2026-05-30T07:21:40Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2109'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2109-capture.md && FW_SWITCH_FOCUS=1 git commit -m "T-2109: file mtime-cache pattern promotion task (real ACs)
+
+Promoted from OBS-039 with placeholder \"captu'
+- timestamp: '2026-05-30T07:41:04Z'
+  task: 'T-1062'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2107'
+  command: 'bin/fw task update T-2107 --status work-completed --switch-focus 2>&1 | tail -10'
+- timestamp: '2026-05-30T07:42:06Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2107'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2107: work-completed — move to completed/ + episodic (human-confirmed [REVIEW])
+
+T-2107 /search _TAG_FM_CACHE: Dimitri confirmed [REVIEW] AC in chat;
+applied via F'
+- timestamp: '2026-05-30T08:22:18Z'
+  task: 'T-2103'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2109'
+  command: 'git add .tasks/active/T-2109-capture.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2109: partial-complete metadata (owner→human, status→work-completed)
+
+8/8 Agent ACs ticked; 1 [REVIEW] Human AC pending v'
+- timestamp: '2026-05-30T08:28:13Z'
+  task: 'T-2104'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2103'
+  command: 'git add .tasks/active/T-2103-approvals-renders-8926px-tall--exceeds-8.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2103: partial-complete metadata + Evolution + Recommendation
+
+8/8 Agent ACs already done in '
+- timestamp: '2026-05-30T08:33:03Z'
+  task: 'T-1062'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2104'
+  command: 'git add .tasks/completed/T-2104-playwright-conftest-approvals-warm-up--p.md .context/episodic/T-2104.yaml
+git update-index --remove .tasks/active/T-2104-playwright-conftest-approvals-warm-up--p.md 2>&'
+- timestamp: '2026-05-30T12:38:01Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2102'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2102: partial-complete metadata + Evolution + Recommendation
+
+All 5 Agent ACs ticked. /approvals warm-cache HTTP load: 2.55s (was 14.8s).
+Body cache shared via web/s'
+- timestamp: '2026-05-30T14:37:17Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2110'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2110: headline-mechanic-box contrast fix on /arcs/<slug>/review
+
+User report: /arcs/arc-grooming/review headline mechanic unreadable.
+
+Root cause: .headline-mechan'
+- timestamp: '2026-05-30T14:46:52Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2111'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2111: /approvals arc-closure headline_mechanic readable
+
+User screenshot 2026-05-30 showed /approvals Arcs ready for review
+section rendering the arc headline_mech'
+- timestamp: '2026-05-30T16:21:33Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2112'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2112: fix /approvals Review bounce-back — hx-target inheritance override
+
+Add explicit hx-target=#content hx-swap=innerHTML hx-push-url=true to
+4 anchors ins'
+- timestamp: '2026-05-30T16:21:51Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2112'
+  command: 'git add .fabric/components/tests-playwright-test_approvals_arc_review_navigation.yaml
+FW_SWITCH_FOCUS=1 git commit -m "T-2112: register fabric card for new Playwright regression test
+
+Co-Authored-By: '
+- timestamp: '2026-05-30T16:30:59Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2113'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2113: fix cockpit Recent Activity task-link bounce-back
+
+Sibling of T-2112. Same htmx hx-target-inheritance class, different surface:
+#wt-activity polling container '
+- timestamp: '2026-05-30T16:31:08Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2113'
+  command: 'bin/fw fabric register tests/playwright/test_cockpit_activity_navigation.py 2>&1 | tail -3
+git add .fabric/components/tests-playwright-test_cockpit_activity_navigation.yaml 2>/dev/null && FW_SWITCH_FO'
+- timestamp: '2026-05-30T16:42:02Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2114'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2114: fix /review AC fragment bounce-back via wrapper-reset
+
+Third sibling of T-2112. The #ac-container polling div (5s polling, T-667)
+inherits hx-target=this to '
+- timestamp: '2026-05-30T16:51:28Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-077: housekeeping OBS-041 — task-create duplicate ### Human heading pattern
+
+Captured during arc-007 work. Three tasks this session shipped with
+duplicate ### Huma'
+- timestamp: '2026-05-30T18:29:34Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2116'
+  command: 'git add web/templates/arc_close.html .tasks/active/T-2116-arcsslugclose-headline-mechanic-box-cont.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2116: fix /arcs/<slug>/close headline-mechanic-box contrast
+
+Th'
+- timestamp: '2026-05-30T18:40:16Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2117'
+  command: 'git add web/templates/arc_detail.html .tasks/active/T-2117-arcsslug-scoped-driver-display-consisten.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2117: arc-driver display consistency — humanized title + keb'
+- timestamp: '2026-05-30T18:49:51Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2118'
+  command: 'git add .tasks/active/T-2118-review-handoff-palette-inception.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2118: file inception — review-handoff palette structural fix
+
+User caught the missing-Watchtower-p'
+- timestamp: '2026-05-30T21:05:49Z'
+  task: 'T-2124'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2123'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2123-why-reviewer-auto-routing-isnt-clearing-.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2123: broaden enforcement from prefix-conversion to 4-channel routing
+
+Use'
+- timestamp: '2026-05-30T21:06:12Z'
+  task: 'T-2124'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2123'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2123: broaden enforcement to 4-channel routing question (user reframe)
+
+User: ACs may be agent-correct but routed to human as legacy default.
+Framework now has 4 ver'
+- timestamp: '2026-05-30T21:06:29Z'
+  task: 'T-2124'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2123'
+  command: '# Mirror T-2123 body to docs/reports/ to satisfy C-001
+sed -n /^# T-2123/,$p .tasks/active/T-2123*.md > docs/reports/T-2123-ac-routing-debt-rca.md
+wc -l docs/reports/T-2123-ac-routing-debt-rca.md
+FW'
+- timestamp: '2026-05-30T21:12:00Z'
+  task: 'T-332'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2124'
+  command: 'git add bin/hook-enable.sh .agentic-framework/bin/hook-enable.sh VERSION .tasks/completed/T-2124-hook-enable---script-flag-for-project-lo.md --switch-focus
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EO'
+- timestamp: '2026-05-30T21:30:42Z'
+  task: 'T-2125'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-30T21:42:43Z'
+  task: 'T-2126'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-30T21:55:34Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2128'
+  command: 'bin/fw task update T-2128 --status work-completed --switch-focus 2>&1 | tail -20'
+- timestamp: '2026-05-30T21:55:53Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2128'
+  command: 'bin/fw task update T-2128 --status work-completed --switch-focus 2>&1 | tail -20'
+- timestamp: '2026-05-30T21:57:07Z'
+  task: 'T-2129'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2128'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2128: adopt visual-verification hook from 025-WokrshopDesigner (PL-018)
+
+Adds check-visual-verification.sh as an opt-in PreToolUse gate that blocks
+git'
+- timestamp: '2026-05-30T22:02:32Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2130'
+  command: 'bin/fw task update T-2130 --horizon later --status captured --switch-focus 2>&1 | tail -3
+./agents/context/checkpoint.sh status 2>&1 | tail -3'
+- timestamp: '2026-05-30T22:05:19Z'
+  task: 'T-2131'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2130'
+  command: 'bin/fw task update T-2130 --status started-work --switch-focus 2>&1 | tail -4; echo "FOCUS NOW:"; grep current_task .context/working/focus.yaml'
+- timestamp: '2026-05-30T22:40:45Z'
+  task: 'T-2130'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2132'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -q -m "T-2132: close + episodic (classifier false-positive fix)
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>" 2>&1 | '
+- timestamp: '2026-05-31T07:15:34Z'
+  task: 'T-2133'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-31T07:23:24Z'
+  task: 'T-2131'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2134'
+  command: 'git add .tasks/active/T-2134-ac-check-form-hx-targetthis-t-2133-go-sl.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2134: transition to partial-complete (4/4 Agent ACs, [REVIEW] Human AC awaits real-browser c'
+- timestamp: '2026-05-31T07:23:40Z'
+  task: 'T-2131'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2134'
+  command: 'bin/fw context add-learning "htmx hx-target inheritance silently aborts forms in standalone templates: an outer wrapper with hx-target=#content (e.g. T-2114 wrapper-reset for bounce-back fix) is inher'
+- timestamp: '2026-05-31T08:28:16Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2135'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/episodic/T-2135.yaml && FW_SWITCH_FOCUS=1 git commit -m "T-2135: episodic capture
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>" 2>&1 | tail -4'
+- timestamp: '2026-05-31T09:10:12Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2136'
+  command: 'git add -- .tasks/active/T-2136-arc-006-demoevidence-capture--wire-level.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2136: transition to partial-complete (9/9 Agent ACs, [REVIEW] Human AC pending)
+
+Co-Autho'
+- timestamp: '2026-05-31T09:27:29Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1776'
+  command: 'git add .tasks/active/T-1776-fallback-workflow-contract-gap--defaulty.md
+FW_SWITCH_FOCUS=1 git commit -m "T-1776: transition to partial-complete (status work-completed, owner→human, [REVIEW] #H1 pen'
+- timestamp: '2026-05-31T10:01:35Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2113'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2113-cockpit-recent-activity-task-links-bounc.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2113: fix broken Human-Steps URL — /cockpit 404s, cockpit is at /
+
+Human'
+- timestamp: '2026-05-31T11:12:27Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2109'
+  command: 'git add .tasks/active/T-2109-capture.md && FW_SWITCH_FOCUS=1 git commit -m "T-2109: fix Human AC Steps — full clickable URLs (was URL from bin/fw watchtower url)
+
+The Human AC told the reviewer to'
+- timestamp: '2026-05-31T13:09:18Z'
+  task: 'T-2138'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-31T13:11:05Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2138'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2138: GO decision — Candidate E+B+Q3-both (recorded via Watchtower)
+
+Operator selected via Watchtower 2026-05-31:
+- Candidate E: transition-time blocking gate (fw '
+- timestamp: '2026-05-31T13:11:30Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2138'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2138: GO decision — Candidate E+B+Q3-both (recorded via Watchtower)
+
+Operator selected via Watchtower 2026-05-31:
+- Candidate E: transition-time blocking gate (fw '
+- ts: '2026-05-31T13:22:15Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- ts: '2026-05-31T13:23:12Z'
+  gate: review-link-homework
+  task: T-9995
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- ts: '2026-05-31T13:23:34Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- ts: '2026-05-31T13:25:10Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- ts: '2026-05-31T13:25:45Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- ts: '2026-05-31T13:28:31Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- timestamp: '2026-05-31T13:29:55Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2139-transition-time-blocking-gate--review-li.md .fabric/components/tests-unit-review_link_blocking_gate.yaml
+FW_SWITCH_FOCUS=1 git commit -m "T-2139: transit'
+- timestamp: '2026-05-31T13:31:37Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2141'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/active/T-2140-*.md .tasks/active/T-2141-*.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2140 + T-2141: file V2/V3 siblings of T-2138 (captured, horizon: next)
+
+V2 (T-2140): re'
+- ts: '2026-05-31T13:35:33Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- ts: '2026-05-31T13:36:12Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- timestamp: '2026-05-31T13:38:35Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'FW_SWITCH_FOCUS=1 git add lib/review_link_validator.py tests/unit/test_review_link_validator.py .tasks/active/T-2139-transition-time-blocking-gate--review-li.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2139'
+- timestamp: '2026-05-31T14:27:54Z'
+  task: 'T-2137'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'bin/fw task update T-2139 --status started-work --switch-focus --note "restructure Human AC per operator feedback — 4 sub-clauses are structural, only tone is human" 2>&1 | tail -8'
+- timestamp: '2026-05-31T14:27:58Z'
+  task: 'T-2137'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'bin/fw task update T-2139 --status started-work --switch-focus 2>&1 | tail -5'
+- timestamp: '2026-05-31T14:28:02Z'
+  task: 'T-2137'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'bin/fw task update T-2139 --status issues --switch-focus 2>&1 | tail -8'
+- timestamp: '2026-05-31T14:28:34Z'
+  task: 'T-2137'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'bin/fw task update T-2139 --status issues --force --switch-focus 2>&1 | tail -10'
+- ts: '2026-05-31T14:34:10Z'
+  gate: review-link-homework
+  task: T-9999
+  mechanism: FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+  rationale: unspecified
+- timestamp: '2026-05-31T14:35:46Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2142'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2142: work-completed — close + episodic
+
+Restructure of T-2139 Human AC complete. 4 structural sub-clauses '
+- timestamp: '2026-05-31T15:32:55Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2139: rewrite Human AC as self-contained brief (operator pushback round 2)
+
+Operator pushback: "ok is not rea'
+- timestamp: '2026-05-31T15:37:32Z'
+  task: 'T-2137'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2139'
+  command: 'cd /opt/999-Agentic-Engineering-Framework
+git add .tasks/active/T-2139-transition-time-blocking-gate--review-li.md .context/working/reviewer-overrides.yaml
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EO'
+- timestamp: '2026-05-31T17:09:34Z'
+  task: 'T-2144'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-31T17:25:06Z'
+  task: 'T-2143'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-05-31T18:04:21Z'
+  task: 'T-2149'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-2149 only edits .tasks/active/T-2116-...md frontmatter (removes duplicate components: [] line). Zero edits to web/templates/, web/static/, web/blueprints/, web/shared.py, or web/app.py. The render-surface detector matches arc_close.html because T-2116''s own components: field lists it — that path appears in this task''s body as context-only. No human visual review applies.'
+  reason: ''
+- timestamp: '2026-05-31T18:04:51Z'
+  task: 'T-2149'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: T-2149 only edits .tasks/active/T-2116-...md frontmatter (removes duplicate components: [] line). Zero edits to render surfaces. arc_close.html appears in body as context-only (T-2116''s own components: field).'
+  reason: ''

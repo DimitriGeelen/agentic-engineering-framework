@@ -11,7 +11,6 @@ horizon: now
 tags: [watchtower, ui-bug, contrast, arc-007]
 arc_id: watchtower-redesign
 components: [web/templates/arc_close.html]
-components: []
 related_tasks: [T-2110, T-2111, T-1968, T-1970, T-2006]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
