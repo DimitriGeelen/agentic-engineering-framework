@@ -103,17 +103,18 @@ Each clause needs one artefact in the demo directory. README documents which fil
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 # T-2136 verification commands:
-DEST=docs/reports/value-prioritisation-demo; test -d "$DEST"
-test -s "$DEST/README.md"
-out=$(grep -E "^# arc-006|headline_mechanic|--demo" "$DEST/README.md"); echo "$out" | grep -q "headline_mechanic"
-test -s "$DEST/bvp-rank.txt" && grep -q "TASK.*BVP.*COST" "$DEST/bvp-rank.txt"
-test -s "$DEST/bvp-arcs.txt" && grep -q "value-prioritisation" "$DEST/bvp-arcs.txt"
-test -s "$DEST/bvp-task-detail-T-1850.txt" && grep -q "Antifragility" "$DEST/bvp-task-detail-T-1850.txt"
-test -s "$DEST/bvp-arc-show.txt" && grep -q "estimator-fidelity" "$DEST/bvp-arc-show.txt"
-test -s "$DEST/bvp-weight-history-excerpt.yaml" && head -1 "$DEST/bvp-weight-history-excerpt.yaml" | grep -q "entries:"
-test -s "$DEST/bvp-confirm-sovereignty-refusal.txt" && grep -q "§ACD" "$DEST/bvp-confirm-sovereignty-refusal.txt"
-test -s "$DEST/screenshot-bvp.png"
-test -s "$DEST/screenshot-arcs-value-prioritisation.png"
+# Each line runs in its own subshell — paths must be inlined (no shared $DEST var).
+test -d docs/reports/value-prioritisation-demo
+test -s docs/reports/value-prioritisation-demo/README.md
+out=$(grep -E "^# arc-006|headline_mechanic|--demo" docs/reports/value-prioritisation-demo/README.md); echo "$out" | grep -q "headline_mechanic"
+test -s docs/reports/value-prioritisation-demo/bvp-rank.txt && grep -q "TASK.*BVP.*COST" docs/reports/value-prioritisation-demo/bvp-rank.txt
+test -s docs/reports/value-prioritisation-demo/bvp-arcs.txt && grep -q "value-prioritisation" docs/reports/value-prioritisation-demo/bvp-arcs.txt
+test -s docs/reports/value-prioritisation-demo/bvp-task-detail-T-1850.txt && grep -q "Antifragility" docs/reports/value-prioritisation-demo/bvp-task-detail-T-1850.txt
+test -s docs/reports/value-prioritisation-demo/bvp-arc-show.txt && grep -q "estimator-fidelity" docs/reports/value-prioritisation-demo/bvp-arc-show.txt
+test -s docs/reports/value-prioritisation-demo/bvp-weight-history-excerpt.yaml && out=$(head -1 docs/reports/value-prioritisation-demo/bvp-weight-history-excerpt.yaml); echo "$out" | grep -q "entries:"
+test -s docs/reports/value-prioritisation-demo/bvp-confirm-sovereignty-refusal.txt && grep -q "§ACD" docs/reports/value-prioritisation-demo/bvp-confirm-sovereignty-refusal.txt
+test -s docs/reports/value-prioritisation-demo/screenshot-bvp.png
+test -s docs/reports/value-prioritisation-demo/screenshot-arcs-value-prioritisation.png
 
 ## RCA
 
