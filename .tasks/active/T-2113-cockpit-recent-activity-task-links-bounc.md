@@ -69,7 +69,7 @@ Same bug class as T-2112, distinct surface ("one bug = one task").
 ### Human
 - [ ] [REVIEW] Open the cockpit and click any task ID in the Recent Activity card. Wait 20 seconds. The task page must remain on screen with a normal single-breadcrumb layout — no stale cockpit shell above and no bounce back to /cockpit after the polling cycle fires.
   **Steps:**
-  1. Open http://192.168.10.107:3000/cockpit
+  1. Open http://192.168.10.107:3000/ (the cockpit is the root page; `/cockpit` returns 404 — only `/cockpit/activity` exists as the htmx fragment route)
   2. Scroll to the "Recent Activity" card
   3. Click any task ID (e.g. T-2113)
   4. Wait at least 20 seconds (one cockpit-activity polling cycle + safety)
