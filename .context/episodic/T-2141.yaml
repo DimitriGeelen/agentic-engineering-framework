@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2141: CLAUDE.md/AGENT.md/block-message review-vs-inception class distinction sweep
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T23:17:11Z
+# ============================================================================
+
+task_id: T-2141
+task_name: "CLAUDE.md/AGENT.md/block-message review-vs-inception class distinction sweep"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T13:30:33Z
+completed: 2026-05-31T23:17:04Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md §Presenting Work for Human Review gains one explicit "two decision classes" framing sentence near the per-class URL table — name the inception-vs-partial-complete distinction in plain English before the table lands, so readers don''t treat the table as URL trivia.'
+  - '`lib/inception.sh` agent-block message (the `$CLAUDECODE=1` refusal at L425) names the class — current text says "Inception decisions belong to the human" without distinguishing from review decisions; updated text disambiguates from `/review/<id>` decisions explicitly.'
+  - '`agents/task-create/AGENT.md` gains a brief "Handoff classes" subsection naming the two routes (inception → `/inception/<id>`, partial-complete → `/review/<id>`) so task-creation-time agents know which gate they''re authoring toward.'
+  - '`agents/dispatch/preamble.md` reviewed for handoff routing references; updated only if it mentions handoff URLs/classes (otherwise the absence is captured in Evolution). *(Survey: zero matches for `review|partial-complete|/inception|/review|fw task review|fw inception decide` — preamble is about Task-tool dispatch I/O, not handoff routing. Documented in Evolution.)*'
+  - 'No existing test fails (run `python3 -m pytest tests/unit/test_reviewer_*.py -q` to confirm the 285-test reviewer suite still passes; CLAUDE.md/AGENT.md prose changes shouldn''t affect tests but the run is the proof). *(285 passed in 2.95s — confirmed.)*'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 586 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-008, review-handoff, T-2138-followup]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 586
+  commits: 1
+  files_changed: 2
+  lines_added: 358
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2141-claudemdagentmdblock-message-review-vs-i.md
+generated_by: context-agent-hybrid

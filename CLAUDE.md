@@ -783,6 +783,8 @@ When agent ACs are complete and human ACs remain:
 
 **Structural enforcement (T-1259, T-1260):** `lib/inception.sh do_inception_decide` refuses when `$CLAUDECODE=1` and points agents at `fw task review T-XXX`. Override flag `--i-am-human` exists for script/test contexts; `--from-watchtower` is the Flask-backend exemption.
 
+**Two decision classes, one CLI verb (T-2141):** `fw task review` looks like one handoff but is two structurally distinct decisions. **Inception go/no-go** decides whether a `workflow_type: inception` task should produce build slices — recorded via `fw inception decide` (agent-blocked under `$CLAUDECODE=1`, see Structural enforcement below); the human GOes/NO-GOes/DEFERs the candidate. **Partial-complete review** decides whether a build task's unchecked `### Human` ACs are satisfied — recorded by the human ticking the box(es) and running `fw task update --status work-completed`. The two classes route to different Watchtower pages (`/inception/<id>` vs `/review/<id>`), produce different audit records, and answer different operator questions. Conflating them in chat handoffs ("review T-2143's inception decision at /review/T-2143") was the T-2125 origin slip.
+
 **Per-class URL mapping (T-2125, T-2129):** `fw task review` emits a *class-correct* URL — `/inception/<id>` for inceptions, `/review/<id>` for partial-complete task reviews, etc. When listing handoffs in chat, **never synthesise the handoff URL from memory** — run `fw task review T-XXX` and quote the URL it emits, verbatim. The table below is for awareness; the CLI is the source of truth.
 
 | Decision class | Correct URL |

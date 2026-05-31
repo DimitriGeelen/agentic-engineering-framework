@@ -44,6 +44,17 @@ Guide the creation of properly structured tasks with:
 - Status starts as `captured` or `started-work` (if work begins immediately)
 - File must be valid YAML + Markdown
 
+## Handoff classes (T-2125, T-2141)
+
+A task created here will eventually route to ONE of two Watchtower handoff classes at completion. Know which one *while* authoring the ACs so the right shape of Human criteria lands:
+
+| Class | Trigger | Route | Decision verb |
+|-------|---------|-------|---------------|
+| **Inception go/no-go** | `workflow_type: inception` | `/inception/<id>` | `fw inception decide T-XXX go\|no-go\|defer --rationale "..."` (agent-blocked under `$CLAUDECODE=1`, T-1259) |
+| **Partial-complete review** | `workflow_type: build` with `### Human` ACs | `/review/<id>` | Human ticks `[x]` on Human ACs + `fw task update --status work-completed` |
+
+The two are NOT interchangeable — they route to different pages, produce different audit records, and answer different operator questions. The CLI verb `fw task review T-XXX` is the same for both (and emits the class-correct URL automatically — T-2125), but the decision-flow downstream of that URL diverges. Inceptions get a GO/NO-GO/DEFER recommendation block; partial-completes get the Human ACs evidenced and ticked. See CLAUDE.md §Presenting Work for Human Review.
+
 ## Integration
 
 - **AI Agents:** Can invoke via natural language (e.g., "create a new task for X")
