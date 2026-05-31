@@ -64,76 +64,49 @@ OUT of scope (separate slices):
 - [x] Bats integration test in `tests/unit/review_link_blocking_gate.bats` (new file) covers: (a) `emit_review` blocks on homework, (b) bypass env var unblocks + logs, (c) clean task passes.
 - [x] T-2109 (post-fix) and a synthetic clean inception both pass `python3 lib/review_link_validator.py <file> <url> --enforce` (regression pin for the fix that started this).
 
+<!-- ── T-2142 decomposition (2026-05-31) ── operator pushback after /resume: original
+     `[REVIEW]` AC bundled 5 sub-clauses, 4 of them grep-checkable. Those 4 are now
+     ACs 8-11 below with Verification commands pinned against captured renderings
+     under docs/reports/T-2139-evidence/. The Human `[REVIEW]` AC keeps only the
+     tone judgment. Self-instance of T-1878 / T-1947 mis-routing the T-2138 → T-2139
+     chain exists to close. See T-2142 for the restructure trail. -->
+
+- [x] AC8 (T-2142 decomp — class name): The validator's block message names the task's class explicitly. Evidence: `docs/reports/T-2139-evidence/block-message-inception.txt` contains "This task is an inception"; `block-message-build.txt` contains "This is a build task". Verification in `## Verification` below.
+- [x] AC9 (T-2142 decomp — URL pattern): The block message gives the correct route per class. Inception → "Inception handoffs go to /inception/T-…"; build → "Review handoffs go to /review/T-…". Verification in `## Verification` below.
+- [x] AC10 (T-2142 decomp — env-var bypass): The block message names the `FW_ALLOW_REVIEW_LINK_HOMEWORK=1` env-var bypass on both renderings. Verification in `## Verification` below.
+- [x] AC11 (T-2142 decomp — CLI-flag bypass): The block message names the `--skip-review-link-check "rationale"` flag on both renderings. Verification in `## Verification` below.
+
 ### Human
-- [ ] [REVIEW] Block message text reads clearly when the gate fires — names the class, the correct URL pattern, both bypass mechanisms, and reads as coaching not punishment.
+- [ ] [REVIEW] Block message **tone** reads as coaching, not punishment.
   **Steps:**
-  1. Read the two real block-message renderings reproduced inline under "Expected:" below (captured by running `python3 lib/review_link_validator.py <task> <url> --enforce` against synthetic inception and build bodies). No hunting in the file.
-  2. For each rendering, tick ✔ or ✘ against the five clauses also listed under "Expected:".
-  3. Return a verdict: all ✔ → AC passes. Any ✘ → name which clause failed.
+  1. Read the two real renderings below (also persisted at `docs/reports/T-2139-evidence/block-message-{inception,build}.txt`). AC8-AC11 already pre-verified the four structural clauses (class name present, correct URL pattern, env-var bypass named, CLI-flag bypass named) — you don't need to re-check those.
+  2. The remaining judgment is rhythm / voice. Ask: does this read like a peer correcting a teammate ("here's the right URL pattern, here's how to bypass if you need to") — or like a CI system slamming the door ("BLOCKED — wrong — error")?
 
-  **Expected:** Below are the two real renderings. Read them, then tick the five clauses.
+  **Expected:** Both renderings read coaching. Verbs are instructional ("Replace…", "go to…", "Bypass: …"), not punitive ("ERROR", "REFUSED", "INVALID"). The reader leaves knowing what to do next.
 
-  Rendering 1 — inception task. Validator output:
+  Rendering 1 — inception task:
   ```
     ✗ Review-link check (T-2139) — BLOCK — review-handoff homework in this task:
         homework pattern in Steps: `URL from bin/fw watchtower url`
         bare-path bullet in Steps (no http:// prefix): - `/bvp`
-        This task is an inception. Inception handoffs go to /inception/T-9999, NOT /review/T-9999.
-        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/inception/T-9999).
+        This task is an inception. Inception handoffs go to /inception/T-XXXX, NOT /review/T-XXXX.
+        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/inception/T-XXXX).
         Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 <command>  (logged Tier-2)
         Or:     bin/fw task review T-XXX --skip-review-link-check "rationale"
   ```
 
-  Rendering 2 — build task (partial-complete). Validator output:
+  Rendering 2 — build task (partial-complete):
   ```
     ✗ Review-link check (T-2139) — BLOCK — review-handoff homework in this task:
         homework pattern in Steps: `URL from bin/fw watchtower url`
         bare-path bullet in Steps (no http:// prefix): - `/bvp`
-        This is a build task with unticked Human ACs (partial-complete). Review handoffs go to /review/T-9999.
-        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/review/T-9999).
+        This is a build task with unticked Human ACs (partial-complete). Review handoffs go to /review/T-XXXX.
+        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/review/T-XXXX).
         Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 <command>  (logged Tier-2)
         Or:     bin/fw task review T-XXX --skip-review-link-check "rationale"
   ```
 
-  Tick each:
-  - ✔/✘ — names the class explicitly (Rendering 1 says "inception"; Rendering 2 says "build task")
-  - ✔/✘ — gives the correct URL pattern (Rendering 1 → `/inception/T-9999`; Rendering 2 → `/review/T-9999`)
-  - ✔/✘ — names the env-var bypass (`FW_ALLOW_REVIEW_LINK_HOMEWORK=1`)
-  - ✔/✘ — names the CLI-flag bypass (`bin/fw task review T-XXX --skip-review-link-check "rationale"`)
-  - ✔/✘ — tone reads as coaching ("here's what to do next") rather than opaque error
-
-  All five ✔ → AC passes.
-
-  **If not:** Note which mark is ✘ and which clause reads punitive. The agent reworks the validator's block-message text and re-renders the examples here.
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+  **If not:** Note which phrase reads punitive (e.g. "BLOCK" at the top might land harsh). Agent reworks the validator's string and re-runs the renderings.
 
 ## Verification
 
@@ -174,6 +147,12 @@ bats tests/unit/review_link_blocking_gate.bats
 python3 lib/review_link_validator.py .tasks/active/T-2109-capture.md "http://192.168.10.107:3000" --enforce
 python3 -c "import re; src = open('lib/review_link_validator.py').read(); assert 'detect_homework_patterns' in src and '--enforce' in src and 'workflow_type' in src, 'V1 contract missing'; print('contract present')"
 out=$(grep -n 'review_link_validator' lib/review.sh); echo "$out" | grep -q '|| true' && { echo "leak: review.sh still swallows validator exit with || true"; exit 1; }; echo "validator exit propagates"
+# AC8-AC11 (T-2142 decomp) — pin the four structural clauses against captured renderings.
+# Evidence files are committed; if validator output drifts, these grep tests fail loudly.
+grep -q "This task is an inception" docs/reports/T-2139-evidence/block-message-inception.txt && grep -q "This is a build task" docs/reports/T-2139-evidence/block-message-build.txt
+grep -q "Inception handoffs go to /inception/T-" docs/reports/T-2139-evidence/block-message-inception.txt && grep -q "Review handoffs go to /review/T-" docs/reports/T-2139-evidence/block-message-build.txt
+grep -q "FW_ALLOW_REVIEW_LINK_HOMEWORK=1" docs/reports/T-2139-evidence/block-message-inception.txt && grep -q "FW_ALLOW_REVIEW_LINK_HOMEWORK=1" docs/reports/T-2139-evidence/block-message-build.txt
+grep -q -- "--skip-review-link-check" docs/reports/T-2139-evidence/block-message-inception.txt && grep -q -- "--skip-review-link-check" docs/reports/T-2139-evidence/block-message-build.txt
 
 ## RCA
 
