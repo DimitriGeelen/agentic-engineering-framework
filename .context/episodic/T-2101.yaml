@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2101: Inception feedback field — structured operator feedback channel on fw inception
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T07:38:17Z
+# ============================================================================
+
+task_id: T-2101
+task_name: "Inception feedback field — structured operator feedback channel on fw inception"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T21:20:30Z
+completed: 2026-05-30T07:38:12Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-29T23:27:01+02:00
+last_commit: 2026-05-29T23:39:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-008 inception-review-loop + Q4 feedback-field inception. fix description (no T-2102/T-2103/T-2104 — documented siblings only)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Decide GO / NO-GO / DEFER on Candidate A (--feedback flag)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix description (no T-2102/T-2103/T-2104 — documented siblings only)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-29 — Sibling decomposition under arc-008'
+    chose: 'four-question decomposition under arc-008; file T-2101 (Q4 feedback field, this task) first because it has zero dependencies and highest leverage-per-cost; document Q1 (template philosophy), Q2 (frictionless instructions), Q3 (reviewer pre-flight) as sibling questions in the research artifact + arc description; spin them out as their own inceptions when ready for exploration'
+    rationale: 'operator caught umbrella anti-pattern in agent''s first framing; CLAUDE.md §Task Sizing requires one-inception-one-question; each Q has different fix surface, blast radius, and dependency profile; pre-filing Q1/Q2/Q3 as DEFER stubs would add review-queue noise without informational gain (the decomposition is preserved in T-2101 + arc-008)'
+    alternatives_rejected: ['single mega-inception bundling all four (umbrella, all-or-nothing decide, coarse rationale, scope-creep risk in build slices); pre-filing all 4 sibling inceptions now (premature DEFER recommendations, review-queue noise)']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/inception-review-loop.yaml'
+  - 'docs/reports/T-2101-inception-feedback-field.md'
+  - '.tasks/active/T-2101-inception-feedback-field--structured-ope.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-29T23:27:01"
+    action: "T-2101: arc-008 inception-review-loop + Q4 feedback-field inception"
+  - time: "2026-05-29T23:39:13"
+    action: "T-2101: fix description (no T-2102/T-2103/T-2104 — documented siblings only)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 617 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, review-loop, operator-feedback, arc-008]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 617
+  commits: 2
+  files_changed: 3
+  lines_added: 334
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2101-inception-feedback-field--structured-ope.md
+generated_by: context-agent-hybrid

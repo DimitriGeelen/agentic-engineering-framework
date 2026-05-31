@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2120: T-2074/T-2119 follow-up: Playwright regression pinning htmx-toast.js extraction (single-listener, script loads, delegation to inline showToast)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-30T20:13:19Z
+# ============================================================================
+
+task_id: T-2120
+task_name: "T-2074/T-2119 follow-up: Playwright regression pinning htmx-toast.js extraction (single-listener, script loads, delegation to inline showToast)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T20:08:54Z
+completed: 2026-05-30T20:13:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-30T22:12:20+02:00
+last_commit: 2026-05-30T22:13:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Playwright regression pin for T-2074 + T-2119 htmx-toast.js extraction. fix Verification grep patterns (test uses regex alternation). RCA block for completion gate
+
+# Key outcomes
+outcomes:
+  - '`tests/playwright/test_htmx_toast_extraction.py` exists and asserts: (a) `/review/<id>` HTML contains `static/htmx-toast.js` script tag; (b) `/review/<id>` HTML contains zero inline `addEventListener(''htmx:responseError''` or `addEventListener(''htmx:sendError''` substrings; (c) `window.showToast` is defined on the loaded page (delegation contract); (d) served `/static/htmx-toast.js` body contains both `htmx:responseError` and `htmx:sendError`.'
+  - 'Test PASSES via `bin/fw test playwright tests/playwright/test_htmx_toast_extraction.py` — 4 passed in 48.48s on a freshly spawned test server (port 3099).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix Verification grep patterns (test uses regex alternation)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2120-t-2074t-2119-follow-up-playwright-regres.md'
+  - 'tests/playwright/test_htmx_toast_extraction.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T22:12:20"
+    action: "T-2120: Playwright regression pin for T-2074 + T-2119 htmx-toast.js extraction"
+  - time: "2026-05-30T22:12:48"
+    action: "T-2120: fix Verification grep patterns (test uses regex alternation)"
+  - time: "2026-05-30T22:13:13"
+    action: "T-2120: RCA block for completion gate"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 3
+  files_changed: 2
+  lines_added: 357
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2120-t-2074t-2119-follow-up-playwright-regres.md
+generated_by: context-agent-hybrid
