@@ -629,6 +629,7 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 3. **Irreversible external action** — publishing, deploying to production, sending communications
 4. **Cross-project blast radius** — changes affecting multiple consumer projects or external users
 5. **Touches a rendering surface** — `web/templates/`, `web/static/` (CSS/JS), `web/blueprints/`, `web/shared.py`, `web/app.py`. Visual layout/typography/spacing cannot be settled by curl/grep; the render-surface gate (T-1766, P-013) refuses `--status work-completed` on a render-touching build task without at least one `[REVIEW]` Human AC. Bypass: `--skip-render-review "rationale"` (logged Tier-2). Origin: T-1763/T-1764/T-1765 — three render fixes shipped with zero Human ACs.
+6. **Subject of the judgment is human experience** — the AC's question is asked *about* the operator's perception (does the layout read clean for the human, does the docs section flow right for the operator, does the handover URL make sense to someone reading it cold). If the AC's audience is agents (stderr prose targeted at agents, internal CLI output read by agents, framework gate wording that agents trip and re-read) — route to `### Agent` (self-eval) instead, regardless of how subjective the judgment sounds. Test: read the AC's wording and ask "who is the answer for?" If "the operator" — Human AC. If "the agent that trips this gate" / "the agent that reads this output" — Agent AC. Origin: T-2143 RCA (T-2139's V1 keystone gate-message recursed 4 rounds because tone-of-stderr was routed `[REVIEW]` even though the audience was agents, not the operator).
 
 **Make it an Agent AC (with verification command) if ALL apply:**
 1. **Deterministic outcome** — binary pass/fail with clear expected result
@@ -650,6 +651,8 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 | `[REVIEWER]` | Pattern / wording / convention check that the static-scan reviewer agent handles (anti-pattern detection, block-message conformance, naming consistency) | `fw reviewer T-XXX` — convert to Agent AC + Verification command `bin/fw reviewer T-XXX 2>&1 \| grep -q "Overall:.*PASS"` |
 | `[REVIEW]` | Genuine human judgment — quality, tone, UX feel, strategic call, blast-radius assessment | Human only |
 
+**Audience axis (T-2143):** `[REVIEW]` and `[REVIEWER]` both presume the **operator** is the verifier. If the AC subject is *agent* experience — the tone of stderr prose agents read, the wording of an internal CLI output, the rhythm of a framework gate message that agents trip and re-read — the audience is wrong for any Human prefix. Route to `### Agent` (self-eval) instead. Author-time test before reaching for a Human prefix: "If I read this AC as an operator I have never seen the system before, am I the one who can answer it?" If the answer requires having tripped an agent gate / read framework stderr / been mid-handoff — that's the agent's job, not the operator's. Origin: T-2143 RCA (T-2139's V1 keystone task recursed the same Human AC four rounds because the agent's single-axis routing heuristic — *is the answer subjective? → Human* — has no audience check; subjective + agent-audience routes wrong every time).
+
 **REVIEWER conversion rule (T-1811):** If a Human AC has `[REVIEW]` prefix but its check would be satisfied by `fw reviewer T-XXX` returning PASS + needs_human=no, it SHOULD be re-classified as `[REVIEWER]` and converted to an Agent AC with the reviewer command in `## Verification`. The reviewer agent (T-1443) is a static-scan surface — pattern conformance, anti-pattern detection, block-message presence — that complements but does not replace `[REVIEW]` for taste/judgment calls.
 
 **Test:** "Could a deterministic static scan of the task file (or referenced source) answer the AC's yes/no?" If yes → `[REVIEWER]`. If no → `[REVIEW]`.
@@ -661,6 +664,23 @@ When writing acceptance criteria, use this risk matrix to decide Human vs Agent:
 The detector `reviewer-prose-mismatch` (T-1947) flags `[REVIEWER]` ACs that contain this vocabulary and emits CONCERN at task close.
 
 **Worked example (origin: T-1811):** The Human AC *"Confirm focus-drift block message is actionable"* on T-1730 was filed as `[REVIEW]`. The Reviewer agent's static scan (`fw reviewer T-1730`) returned CONCERN on `mock-only-integration` — a finding the AC text would never have caught. The AC should have been `[REVIEWER]` with `fw reviewer T-1730` in Verification, *plus* a separate `[REVIEW]` AC only if the wording's *feel* genuinely needed human judgment.
+
+**Worked example — audience mismatch (origin: T-2143 / T-2139 round 4):** T-2139 (the V1 keystone blocking gate) recursed the same Human AC across 4 author rounds. Round 4 reached:
+
+> `- [ ] [REVIEW] Block-message stderr reads cleanly to a tripping agent` (paraphrased)
+>
+> **Steps:** Trigger the gate. Read stderr. Verify wording reads clear, actionable, names the bypass mechanisms.
+> **Expected:** stderr makes the agent unblock itself without operator help.
+
+The agent reflexively reached for `[REVIEW]` because the question (*is the wording good?*) is subjective. The static-scan T-1947 prose-mismatch detector would have agreed — its job is to push prose-tone questions *toward* `[REVIEW]`. But the **audience disqualifies any Human prefix at all** — the operator has no operational context for what reading framework stderr feels like mid-handoff. The correct routing was `### Agent` (agent self-eval against the prose) — *not* any Human prefix. The fix (T-2143 leg A) deleted the AC entirely, since the gate's effectiveness is verifiable by integration test, not by reading stderr.
+
+**Routing-discipline ladder (T-2143):** Four rules now compose into the author-time discipline:
+- **T-1878** — default-bias for grep-able Expected → `[REVIEWER]` not `[REVIEW]`
+- **T-1947** — prose vocabulary in Expected (*reads clearly, tone, voice, rhythm*) → `[REVIEW]` not `[REVIEWER]`
+- **T-2143 (this rule)** — agent-audience subject → `### Agent` not any Human prefix
+- **T-2147** — reviewer detector flags `[REVIEW]`/`[REVIEWER]` ACs whose subject is agent experience
+
+Read together: T-1878 routes *between* Human prefixes by check-shape; T-1947 routes *between* `[REVIEW]` and `[REVIEWER]` by Expected vocabulary; T-2143 routes *out of* Human prefixes entirely when the audience is agents; T-2147 catches author-time misses. The first three are author-time; T-2147 is reviewer-time backstop.
 
 **Reviewer auto-tick (v1.5, T-1985):** `[REVIEWER]`-prefixed Agent ACs are automatically ticked by the reviewer scanner when all five evidence conditions hold: (1) overall verdict PASS, (2) zero per-AC findings for that AC's index, (3) AC is currently unticked, (4) no active suppress override targets that AC index, (5) `[REVIEWER]` prefix present. The tick and verdict block are written in a single atomic `os.replace` pass. **Sovereignty rail:** every auto-tick writes a digest-keyed entry `auto_tick:<task_id>:<ac_index>:<digest>` to `.context/working/feedback-stream.yaml`. If a human manually un-ticks the AC (changes `[x]` back to `[ ]`), the feedback-stream entry blocks re-ticking — the reviewer will NOT re-tick it unless the AC text itself changes (new digest = fresh consent). Note: wildcard pattern overrides (`ac_index=None`) suppress findings for a pattern but do NOT block auto-tick of unrelated ACs. Auto-tick only runs on `active/` tasks; `completed/` files are never mutated.
 

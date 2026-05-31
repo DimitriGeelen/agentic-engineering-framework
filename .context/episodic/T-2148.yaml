@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2148: CLAUDE.md update — add audience axis to three-prefix table (T-2143 leg C)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T20:06:43Z
+# ============================================================================
+
+task_id: T-2148
+task_name: "CLAUDE.md update — add audience axis to three-prefix table (T-2143 leg C)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T17:28:02Z
+completed: 2026-05-31T20:06:37Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md §AC Classification Guidance gains an explicit fourth question to the "Make it a Human AC if ANY apply" list: **"6. Subject of the judgment is *human experience*** — not an agent''s experience. If the AC''s wording reads ''agent who…'' / ''agent reads…'' / ''for an agent…'', the audience is agents, not the operator; route to Agent AC (self-eval) instead, regardless of how subjective the judgment is." — added as item #6 with full operator-seat test and T-2143 origin reference. Verbatim opening: "Subject of the judgment is human experience".'
+  - 'CLAUDE.md §Three Human-AC Prefixes table gains a new column or post-table note: "Audience axis — `[REVIEW]` and `[REVIEWER]` both presume the *human* is the verifier. If the AC subject is agent experience (stderr prose, internal CLI output, framework gate wording), it belongs in `### Agent`, not under any Human prefix." — added as post-table paragraph `**Audience axis (T-2143):**` immediately after the table, before the REVIEWER conversion rule. Author-time test included.'
+  - 'Worked example added to §AC Classification Guidance using T-2139''s recursion (4 rounds, RCA in T-2143, leg A deleted the offending AC). Concrete example shows what the audience-mismatched AC looked like and what the correct routing was. — `**Worked example — audience mismatch (origin: T-2143 / T-2139 round 4):**` paragraph with paraphrased Round-4 AC and the diagnosis that the audience disqualifies any Human prefix entirely.'
+  - 'Cross-reference paragraph linking T-2143 (RCA), T-2147 (reviewer detector), T-1878 (default-bias rule), T-1947 (prose-mismatch detector). The four together form the routing-discipline ladder. — `**Routing-discipline ladder (T-2143):**` paragraph at the end of the §AC Classification Guidance section reads the four as a composed sequence (check-shape → vocabulary → audience → reviewer-time backstop).'
+  - 'Memory file written: `feedback_audience_axis_for_ac_routing.md` with the principle ("Check audience before subjectivity. Subjective + agent-audience = Agent self-eval, not Human review.") + link chain. MEMORY.md index updated. — file at `/root/.claude/projects/-opt-999-Agentic-Engineering-Framework/memory/feedback_audience_axis_for_ac_routing.md`; MEMORY.md gained the entry pointing at it as the 2nd CRITICAL block.'
+  - 'Existing §AC Classification Guidance + §Three Human-AC Prefixes paragraphs are **kept** (not replaced); the new axis appends as additional rules. — verified by diff: items 1-5 of the Human-AC trigger list unchanged, three-prefix table rows unchanged, T-1811 worked example unchanged, T-1947 prose vocabulary paragraph unchanged. Audience-axis content is purely additive.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 158 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-008, claudemd, audience-mismatch, ac-routing]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 158
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2148-claudemd-update--add-audience-axis-to-th.md
+generated_by: context-agent-hybrid
