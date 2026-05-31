@@ -38,9 +38,16 @@
 # agent_send_auto_discover → mutator (verb "send"); listener_heartbeat /
 # agent_listeners / agent_listeners_fleet → readonly (status/list shapes).
 # Baseline 242 → 246.
+# Update 2026-05-31 (T-2150): 5 more primitives surfaced — chat_arc / fleet_doorbell
+# / fleet_adoption / recent_dm primitives. 1 mutator (chat_arc_broadcast — action verb
+# "broadcast" → sends a message to all subscribers) + 4 readonly (chat_arc_recent /
+# check_fleet_doorbell_mail_health / fleet_adoption_snapshot / recent_dm — all read-
+# shape suffixes). Same convention-based classification; handler-level review deferred.
+# Baseline 246 → 251. T-2150 Evolution captures 5th-batch cadence as updated evidence
+# for T-1761 inception (the marginal-leverage assumption is increasingly tenuous).
 
-baseline_count: 246
-last_verified: 2026-05-28
+baseline_count: 251
+last_verified: 2026-05-31
 
 gated:
   description: "Enforces check_task_governance() — TERMLINK_TASK_GOVERNANCE=1 requires task_id"
@@ -121,6 +128,9 @@ mutators_ungated:
     - termlink_channel_typing_emit     # emits typing notification (side effect)
     - termlink_fleet_reauth            # rotates fleet credentials
     - termlink_agent_send_auto_discover  # T-2073 follow-on: sends discovery msg
+    # T-2150: chat_arc broadcast primitive surfaced 2026-05-31. Action verb
+    # "broadcast" → mutator (sends a message to all subscribers in the arc channel).
+    - termlink_chat_arc_broadcast      # broadcasts a message to chat-arc subscribers
 
 readonly_exempt:
   description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
@@ -333,3 +343,10 @@ readonly_exempt:
     - termlink_agent_listeners
     - termlink_agent_listeners_fleet
     - termlink_listener_heartbeat
+    # T-2150: chat_arc / fleet_doorbell / fleet_adoption / recent_dm read-shape
+    # primitives surfaced 2026-05-31. All return data; suffixes "_recent" /
+    # "check_*_health" / "_snapshot" / "_recent_dm" are canonical read shapes.
+    - termlink_agent_chat_arc_recent              # recent posts in chat-arc
+    - termlink_check_fleet_doorbell_mail_health   # health probe (status read)
+    - termlink_fleet_adoption_snapshot            # point-in-time adoption read
+    - termlink_recent_dm                          # recent DM list

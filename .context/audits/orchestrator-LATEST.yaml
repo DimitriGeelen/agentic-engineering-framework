@@ -2,13 +2,13 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-05-28T17:51:14Z'
-baseline_count: 246
-current_count: 246
+last_run: '2026-05-31T18:57:07Z'
+baseline_count: 251
+current_count: 251
 gated_baseline: 4
 gated_current: 4
-mutators_ungated_baseline: 57
-readonly_exempt_baseline: 185
+mutators_ungated_baseline: 58
+readonly_exempt_baseline: 189
 status: pass
 exit_code: 0
 findings:
@@ -17,7 +17,7 @@ findings:
   gate_added_ratchet_candidates: []
   removed_tools: []
   tag_format_warnings: []
-sessions_scanned: 22
+sessions_scanned: 28
 sessions_probe_error: null
 warnings: []
 errors: []

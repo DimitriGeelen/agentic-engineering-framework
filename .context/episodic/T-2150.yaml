@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2150: classify 5 new MCP tools via naming convention (T-1755 batch pattern)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T18:57:21Z
+# ============================================================================
+
+task_id: T-2150
+task_name: "classify 5 new MCP tools via naming convention (T-1755 batch pattern)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T18:53:51Z
+completed: 2026-05-31T18:57:16Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`termlink_chat_arc_broadcast` added to `mutators_ungated:` (action verb `broadcast` → mutator)'
+  - '`termlink_agent_chat_arc_recent`, `termlink_check_fleet_doorbell_mail_health`, `termlink_fleet_adoption_snapshot`, `termlink_recent_dm` added to `readonly_exempt:` (read-shape suffixes)'
+  - '`baseline_count` bumped 246 → 251 (+5)'
+  - '`last_verified` bumped to 2026-05-31'
+  - 'Header comment block updated with T-2150 entry documenting this batch'
+  - '`orchestrator-mcp-scan.sh` no longer emits `NEW: ... unclassified tool(s)` on this set (audit re-run clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [drift-defense, mcp-classification, orchestrator-arc]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2150-classify-5-new-mcp-tools-via-naming-conv.md
+generated_by: context-agent-hybrid
