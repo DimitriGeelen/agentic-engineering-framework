@@ -2488,12 +2488,40 @@ PYTASK_VERIFY
             ;;
         review)
             # T-631/T-634: Print clickable URL + QR code for Human AC review
-            local task_id="${1:-}"
-            local poll_flag="${2:-}"
+            # T-2139: --skip-review-link-check "rationale" Tier-2 bypass for the
+            # review-link homework gate (per T-2138 GO, Candidate E + Q3-both).
+            local task_id=""
+            local poll_flag=""
+            local skip_link_check_rationale=""
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    --skip-review-link-check)
+                        skip_link_check_rationale="${2:-unspecified}"
+                        shift 2
+                        ;;
+                    --poll)
+                        poll_flag="--poll"
+                        shift
+                        ;;
+                    *)
+                        if [ -z "$task_id" ]; then
+                            task_id="$1"
+                        fi
+                        shift
+                        ;;
+                esac
+            done
 
             if [ -z "$task_id" ]; then
-                echo -e "${RED}Usage: fw task review T-XXX [--poll]${NC}" >&2
+                echo -e "${RED}Usage: fw task review T-XXX [--poll] [--skip-review-link-check \"rationale\"]${NC}" >&2
                 exit 1
+            fi
+
+            # T-2139 bypass: propagate to emit_review via env + record rationale
+            # for the validator's Tier-2 log.
+            if [ -n "$skip_link_check_rationale" ]; then
+                export FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+                export FW_BYPASS_RATIONALE="$skip_link_check_rationale"
             fi
 
             # Find task file

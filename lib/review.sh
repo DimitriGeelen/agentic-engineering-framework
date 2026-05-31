@@ -162,11 +162,20 @@ emit_review() {
     fi
 
     # T-2050: validate Watchtower links the agent wrote in this task body against
-    # app.url_map (advisory). WARNs to stderr on unresolvable paths (e.g. the
-    # /appearance vs /settings/appearance class) so a dead link is surfaced before
-    # the human opens it. Never blocks — the validator always exits 0.
+    # app.url_map. WARNs on unresolvable paths (/appearance vs /settings/appearance).
+    # T-2139 (V1 keystone, T-2138 GO): --enforce mode adds blocking absence-of-URL
+    # homework detection. Non-zero exit refuses the handoff; bypass via
+    # FW_ALLOW_REVIEW_LINK_HOMEWORK=1 (logged Tier-2). The `|| true` swallow that
+    # made T-2050 silent is gone — exit code now propagates.
     if [ -f "${FRAMEWORK_ROOT:-.}/lib/review_link_validator.py" ]; then
-        python3 "${FRAMEWORK_ROOT:-.}/lib/review_link_validator.py" "$task_file" "$base_url" || true
+        if ! python3 "${FRAMEWORK_ROOT:-.}/lib/review_link_validator.py" "$task_file" "$base_url" --enforce; then
+            echo "" >&2
+            echo -e "  ${YELLOW}══════════════════════════════════════════${NC}" >&2
+            echo -e "  ${YELLOW}BLOCKED: Review-handoff homework detected (T-2139)${NC}" >&2
+            echo -e "  ${YELLOW}══════════════════════════════════════════${NC}" >&2
+            echo "" >&2
+            return 2
+        fi
     fi
 
     echo ""
