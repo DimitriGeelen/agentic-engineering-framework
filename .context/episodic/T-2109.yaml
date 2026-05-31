@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2109: Promote per-file mtime cache pattern to web/shared.py — 5th consumer crossed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T19:27:50Z
+# ============================================================================
+
+task_id: T-2109
+task_name: "Promote per-file mtime cache pattern to web/shared.py — 5th consumer crossed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T07:20:51Z
+completed: 2026-05-30T08:21:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-30T09:21:41+02:00
+last_commit: 2026-05-31T13:12:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file mtime-cache pattern promotion task (real ACs). promote per-file mtime cache pattern to web/shared.py — 5 consumers migrated. partial-complete metadata (owner→human, status→work-completed). fix Human AC Steps — full clickable URLs (was 'URL from bin/fw watchtower url')
+
+# Key outcomes
+outcomes:
+  - 'Add `mtime_cached_get(path, parse_fn, cache)` (or equivalent shape) to `web/shared.py` with docstring referencing T-1954/T-2102/T-2106/T-2107/T-2108 as the consumer sites.'
+  - 'Add unit test in `tests/unit/test_shared_mtime_cache.py` covering: (a) cold call → parse runs, (b) warm call same mtime → parse does NOT run, (c) file touched → parse re-runs, (d) OSError on missing file → fallback returned.'
+  - 'Migrate `web/blueprints/bvp.py:_FM_CACHE` to the shared helper — `/bvp` warm-load unchanged (curl-timing).'
+  - 'Migrate `web/blueprints/approvals.py:_BODY_CACHE` to the shared helper — `/approvals` warm-load unchanged.'
+  - 'Migrate `web/blueprints/timeline.py:_FM_CACHE` to the shared helper — `/timeline` warm-load unchanged.'
+  - 'Migrate `web/search_utils.py:_TAG_FM_CACHE` to the shared helper — `/search` warm-load unchanged.'
+  - 'Migrate `web/blueprints/cockpit.py:_HUMAN_VERIFY_CACHE` to the shared helper — `/` warm-load unchanged.'
+  - 'All 47 routes in `tests/playwright/test_all_routes_load_time.py` still PASS (no regression in load-time guard).'
+  - '[REVIEW] Five migrated pages render identically to pre-migration (pure refactor — no visual change expected).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix Human AC Steps — full clickable URLs (was ''URL from bin/fw watchtower url'')'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2109-capture.md'
+  - 'tests/unit/test_shared_mtime_cache.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/blueprints/bvp.py'
+  - 'web/blueprints/cockpit.py'
+  - 'web/blueprints/timeline.py'
+  - 'web/search_utils.py'
+  - 'web/shared.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-30T09:21:41"
+    action: "T-2109: file mtime-cache pattern promotion task (real ACs)"
+  - time: "2026-05-30T10:20:56"
+    action: "T-2109: promote per-file mtime cache pattern to web/shared.py — 5 consumers migrated"
+  - time: "2026-05-30T10:22:18"
+    action: "T-2109: partial-complete metadata (owner→human, status→work-completed)"
+  - time: "2026-05-31T13:12:27"
+    action: "T-2109: fix Human AC Steps — full clickable URLs (was 'URL from bin/fw watchtower url')"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 60 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-007, perf, refactor, T-1954-cluster, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 60
+  commits: 5
+  files_changed: 10
+  lines_added: 730
+  lines_removed: 118
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2109-capture.md
+generated_by: context-agent-hybrid
