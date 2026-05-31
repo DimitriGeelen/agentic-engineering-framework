@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2139: Transition-time blocking gate — review-link homework detection (T-2138 V1 keystone)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T19:48:53Z
+# ============================================================================
+
+task_id: T-2139
+task_name: "Transition-time blocking gate — review-link homework detection (T-2138 V1 keystone)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T13:16:25Z
+completed: 2026-05-31T13:28:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-31T15:28:07+02:00
+last_commit: 2026-05-31T17:37:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  V1 keystone — transition-time blocking gate for review-link homework. transition to work-completed + register new bats fabric card. fence-block exemption + inline examples in Human AC (user feedback). rewrite Human AC as self-contained brief (operator pushback round 2). trim Human AC + clear reviewer false-positives
+
+# Key outcomes
+outcomes:
+  - '`lib/review_link_validator.py` gains `detect_homework_patterns(body) -> list[(level, message)]` that catches: `URL from .bin/fw watchtower url`, `base from .bin/fw watchtower url`, `\(Watchtower URL from`, and bare-path bulleted lines inside `### Human` Steps without a preceding `http://` or `https://`. Returns at level `block` for each anti-pattern found.'
+  - 'Validator gains `--enforce` CLI flag (default off for backward-compat). When `--enforce` is set, `main()` returns non-zero on any `block` finding; without it, behaviour is the existing advisory-WARN (T-2050 contract preserved).'
+  - 'Validator reads `workflow_type:` frontmatter and emits class-aware block messages: inception → "this task is an inception, handoffs go to /inception/T-XXX"; other → "this is a build/refactor, partial-complete handoffs go to /review/T-XXX".'
+  - '`lib/review.sh:emit_review` passes `--enforce` to the validator and propagates its exit code (no more `|| true` swallow). Bypass: `FW_ALLOW_REVIEW_LINK_HOMEWORK=1` env var skips the block and logs Tier-2 to `.context/working/.gate-bypass-log.yaml`.'
+  - '`fw task review` CLI gains `--skip-review-link-check "rationale"` flag — sets `FW_ALLOW_REVIEW_LINK_HOMEWORK=1` for that invocation and logs Tier-2 with the rationale.'
+  - 'Unit test in `tests/unit/test_review_link_validator.py` covers: (a) each homework pattern detected, (b) clean task passes both modes, (c) advisory mode (default) returns 0 even on findings, (d) enforce mode returns non-zero on findings, (e) class-aware message names inception vs review correctly, (f) bypass env var skips block.'
+  - 'Bats integration test in `tests/unit/review_link_blocking_gate.bats` (new file) covers: (a) `emit_review` blocks on homework, (b) bypass env var unblocks + logs, (c) clean task passes.'
+  - 'T-2109 (post-fix) and a synthetic clean inception both pass `python3 lib/review_link_validator.py <file> <url> --enforce` (regression pin for the fix that started this).'
+  - 'AC8 (T-2142 decomp — class name): The validator''s block message names the task''s class explicitly. Evidence: `docs/reports/T-2139-evidence/block-message-inception.txt` contains "This task is an inception"; `block-message-build.txt` contains "This is a build task". Verification in `## Verification` below.'
+  - 'AC9 (T-2142 decomp — URL pattern): The block message gives the correct route per class. Inception → "Inception handoffs go to /inception/T-…"; build → "Review handoffs go to /review/T-…". Verification in `## Verification` below.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/working/reviewer-overrides.yaml'
+  - '.fabric/components/tests-unit-review_link_blocking_gate.yaml'
+  - 'lib/review_link_validator.py'
+  - 'lib/review.sh'
+  - '.tasks/active/T-2139-transition-time-blocking-gate--review-li.md'
+  - 'tests/unit/review_link_blocking_gate.bats'
+  - 'tests/unit/test_review_link_validator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-31T15:28:07"
+    action: "T-2139: V1 keystone — transition-time blocking gate for review-link homework"
+  - time: "2026-05-31T15:29:55"
+    action: "T-2139: transition to work-completed + register new bats fabric card"
+  - time: "2026-05-31T15:38:35"
+    action: "T-2139: fence-block exemption + inline examples in Human AC (user feedback)"
+  - time: "2026-05-31T17:32:56"
+    action: "T-2139: rewrite Human AC as self-contained brief (operator pushback round 2)"
+  - time: "2026-05-31T17:37:33"
+    action: "T-2139: trim Human AC + clear reviewer false-positives"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-008, review-handoff, watchtower, blocking-gate, T-2138-V1, keystone]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 5
+  files_changed: 8
+  lines_added: 1035
+  lines_removed: 92
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2139-transition-time-blocking-gate--review-li.md
+generated_by: context-agent-hybrid
