@@ -4,9 +4,9 @@ name: "arc-006 demo_evidence capture — wire-level artefact for value-prioritis
 description: >
   arc-006 demo_evidence capture — wire-level artefact for value-prioritisation headline_mechanic
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc-006, demo-evidence, value-prioritisation, arc-closure-prep, G-062-prevention]
 components: [docs/reports/value-prioritisation-demo/README.md]
@@ -17,8 +17,8 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-31T09:00:49Z
-last_update: 2026-05-31T09:00:49Z
-date_finished: null
+last_update: 2026-05-31T09:09:15Z
+date_finished: 2026-05-31T09:09:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -215,3 +215,20 @@ Or via Watchtower: open `/arcs/value-prioritisation/close` (which sets `--from-w
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2136-arc-006-demoevidence-capture--wire-level.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b3a2c560
+- **Timestamp:** 2026-05-31T09:09:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — `bvp-weight-history-excerpt.yaml` — first 30 lines of `.context/bvp-weight-history.yaml` showing one or more audit rows. Proves the slider / weight-change audit trail exists (sovereignty/M6 gate visib
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/bvp-weight-history.yaml in: `bvp-weight-history-excerpt.yaml` — first 30 lines of `.context/bvp-weight-history.yaml` showing one or more audit rows. Proves the slider / weight-ch`
+
+### 2026-05-31T09:09:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
