@@ -141,7 +141,7 @@ This task is operator-dialogue-bound, not spike-bound. Per Inception Discipline 
 
 The recurring pattern has crossed the systemic threshold (≥3 captures: T-2027 / T-2013 / T-1991 / T-2012 / T-2118 / T-1853 / T-2030 / T-2109 + the `/inbox` chat slip + 2× discipline failure in one session). T-2030's GO decision identified the right *direction* (structural validation at handoff) but T-2050's shipping shape (advisory WARN, review-time, presence-only) cannot catch the dominant failure mode (absence-of-URL). Remediation needs an author-time or template-side fix, and the four candidates (A author-time hook / B reviewer static-scan / C template+docs / D render-time substitution) trade off blast-radius vs strictness vs migration-cost differently. Operator dialogue must validate the scope before a recommendation hardens.
 
-Agent's tentative lean: **C + A** with **B** as audit backstop; skip **D** (render-rewriting source-of-truth text creates downstream trust issues). V-slices NOT pre-filed — T-2101's stalled V1..V5 is the cautionary tale.
+Agent's tentative lean (updated 2026-05-31 post-operator-dialogue): **E + B** — transition-time blocking gate (Candidate E, refinement of A — fires at `fw task review` / `--status work-completed`, NOT every Write|Edit; class-aware block message that teaches the review-vs-inception distinction) as the structural fix, reviewer static-scan (B) as the catch-before-handoff backstop. Skip C (discipline-only proven insufficient — 2× failure this session). Skip D (rewriting source-of-truth text creates downstream trust issues). V-slices NOT pre-filed — T-2101's stalled V1..V5 is the cautionary tale.
 
 **Evidence:**
 - T-2030 (parent inception, GO 2026-05-25): `docs/reports/T-2030-review-link-generation.md`

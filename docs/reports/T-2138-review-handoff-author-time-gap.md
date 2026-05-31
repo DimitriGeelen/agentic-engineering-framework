@@ -105,6 +105,33 @@ The validator already runs at review time. Extend it: when it spots `URL from .b
 - **Pros:** the human never sees homework, ever. Tolerates legacy patterns without migration. No author-time friction.
 - **Cons:** the source file still carries the anti-pattern → next reader (post-completion archive readers, audit tools) still hits it. Doesn't fix the cause, only the user-facing symptom. Asymmetric: CLI-only `fw task review` output may still show the homework if it doesn't go through the same render layer.
 
+### Candidate E — Transition-time blocking gate (refinement of A, operator-proposed 2026-05-31)
+
+Operator pushback on A: *"this is at the start of a taks, and it should ounly be invoked when surfacing a task for reveiw or incpetion approval right"*.
+
+That's correct. PreToolUse on Write|Edit fires at *every* save — including WIP drafts where the agent hasn't finished writing the AC yet. The gate should fire at the **handoff transition** — the moment the task crosses from agent-owned to human-owned. The three structural moments where that happens:
+
+1. `bin/fw task review T-XXX` is invoked (agent explicitly hands over)
+2. `update-task.sh --status work-completed` runs on a build task with **unchecked Human ACs** (auto-handoff to partial-complete state)
+3. `update-task.sh --status work-completed` runs on an **inception task** (agent finalises body before `fw inception decide`)
+
+At each of those moments — and ONLY at those moments — the validator runs as a **blocking** gate (not the current `|| true` advisory). Detection logic:
+
+- Class-aware URL resolution: inception tasks (`workflow_type: inception`) expect `/inception/<id>`; partial-complete builds expect `/review/<id>`. Other paths (`/cockpit` vs `/`, `/inbox` vs none, etc.) validated against `app.url_map` regardless of class.
+- Class-agnostic homework-pattern detection: any Steps section under `### Human` containing `URL from .bin/fw watchtower url`, `base from .bin/fw watchtower url`, `(Watchtower URL from`, OR a bare-path-in-bulleted-list inside Steps without a preceding `http://` or `https://` → BLOCK.
+- Block message **explicitly names the review-vs-inception distinction**: "This task is being surfaced for [review/inception approval]. The expected URL pattern is `[/review or /inception]/T-XXX`. Found: [homework pattern]. Replace with: [resolved absolute URL]." The block message answers the operator's "is the differentiation clear enough?" question structurally — every block message teaches the distinction.
+- Bypass: `--skip-review-link-check "rationale"` flag on `fw task review`, `FW_ALLOW_REVIEW_LINK_HOMEWORK=1` env var on update-task.sh — both log Tier-2 to `.gate-bypass-log.yaml`.
+
+**Pros over A:**
+- WIP saves are unblocked — agent can scaffold a task with TODO Steps and fix them before handoff
+- Maps to a single integration point: `lib/review.sh:emit_review` (already exists, already wired at all three handoff moments) — change is upgrading `|| true` to a blocking exit + extending detection to absence-of-URL patterns
+- Class-aware block message turns each violation into a teaching moment for the review-vs-inception distinction
+- 7 legacy sites stay valid until they're next surfaced for handoff — natural retro-fit cadence, no upfront sweep needed
+
+**Cons:**
+- Doesn't prevent the chat-message slip (`/inbox` class) — that fires from agent prose, not from a task file edit. Need a separate detection surface (reviewer agent passive scan, or a chat-output linter — neither exists yet)
+- Slightly later than author-time: an agent can write a homework Step and not discover it until handoff. Mitigated by Candidate B (reviewer static-scan as `[REVIEWER]` AC) running BEFORE handoff during normal task completion review.
+
 ### A hybrid is likely correct
 
 The candidates aren't mutually exclusive:
@@ -147,9 +174,25 @@ Per CLAUDE.md §Inception Discipline C-001 extension — record questions, answe
 
 **Open scope questions awaiting operator answer before recommendation hardens:**
 
-1. **Candidate direction (A/B/C/D or hybrid).** Agent's tentative: **C + A** with **B** as audit backstop.
-2. **T-2050 status.** Should the new structural slice supersede T-2050 (close as "superseded by T-2138 build") or layer on top? T-2050's `app.url_map` validation IS still useful for the wrong-URL class; it just doesn't catch absence-of-URL.
-3. **Migration of 7 legacy sites.** If Candidate A blocks at author time, do we (a) skip-scan the legacy sites and fix them in a sweep before enabling the gate, (b) bypass-flag them with one-off Tier-2 logged exceptions, or (c) accept that legacy completed/ tasks stay as-is and only enforce on writes from now on?
+1. **Candidate direction (A/B/C/D/E or hybrid).** Agent's tentative (updated 2026-05-31 post-dialogue): **E + B** — transition-time blocking gate as the structural fix, reviewer static-scan as the catch-before-handoff backstop. Skip C (discipline-only proven insufficient). Skip D (source-of-truth rewriting).
+2. **T-2050 status.** Should the new structural slice supersede T-2050 (close as "superseded by T-2138 build") or layer on top? T-2050's `app.url_map` validation IS still useful for the wrong-URL class; it just doesn't catch absence-of-URL. Candidate E reuses T-2050's `lib/review_link_validator.py` integration point (`lib/review.sh:emit_review`) — strongest argument for "layer on top, not supersede".
+3. **Migration of 7 legacy sites.** Candidate E's natural retro-fit cadence (gate fires only at next handoff) sidesteps the upfront sweep. Confirm operator is happy with that, OR opt for an explicit one-time sweep before enabling the gate. Bypass-flag exists either way.
+
+### 2026-05-31 — Operator response on candidates (verbatim)
+
+> *"not sure i want the reliable process / workflow steps oriented one. so pretoooshook sound solid on teh otherhand it also looks this is at the start of a taks, and it should ounly be invoked when surfacing a task for reveiw or incpetion approval right, not sure if there is an differientiation between reviwew and incpetion (gues there is maybe that oen is also not clear enough?)"*
+
+**Parsed:**
+- "not sure i want the reliable process / workflow steps oriented one" → **leaning away from Candidate C** (template + CLAUDE.md prose discipline).
+- "pretoooshook sound solid" → **Candidate A is on the table** in principle.
+- "this is at the start of a taks, and it should ounly be invoked when surfacing a task for reveiw or incpetion approval right" → **refined to handoff-transition time, not every Write|Edit**. Captured as new Candidate E above.
+- "not sure if there is an differientiation between reviwew and incpetion (gues there is maybe that oen is also not clear enough?)" → **sub-question: is the review (`/review/T-XXX`) vs inception (`/inception/T-XXX`) distinction surfaced clearly enough?** Candidate E's class-aware block message turns each violation into a teaching moment for the distinction. Worth confirming the operator wants that, OR wants a separate task to clean up surface text (CLAUDE.md, AGENT.md, block messages) where the distinction is currently muddled.
+
+**Agent confirmation requested before recommendation hardens:**
+
+- Q1: Is Candidate **E** (transition-time blocking gate, class-aware, reusing T-2050's integration point) the right shape? Or do you want a stricter version that fires at Write|Edit too (full Candidate A)?
+- Q2: Is Candidate **B** (reviewer static-scan as `[REVIEWER]` AC) a good companion for catch-before-handoff (so the agent self-corrects before E fires)? Or skip B and rely on E alone?
+- Q3: On the review-vs-inception distinction — do you want it taught **inside the block message** (E's plan), in a separate CLAUDE.md clean-up task, or both?
 
 ## Recommendation
 
