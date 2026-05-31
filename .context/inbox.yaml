@@ -315,3 +315,17 @@ observations:
     tags: [deployment-lag]
     status: pending
     promoted_to: null
+  - id: OBS-045
+    text: "add"
+    captured: 2026-05-31T19:57:00Z
+    context_task: T-2074
+    tags: [housekeeping]
+    status: dismissed
+    promoted_to: null
+  - id: OBS-046
+    text: "Stuck-partial detector gap: T-2074 was owner=human + status=work-completed but had ZERO Human ACs in body (rerouted to Agent via T-2123 retro-fix). File sat in active/ since 2026-05-30 (~2 days) unfinalisable. Existing coverage: T-2055/CTL-029 catches 'Agent ACs ticked, status=started-work' (active-side mirror of CTL-028). active-task-scan.py Loop 10 (D2 review queue) lists owner=human/status=work-completed tasks but doesn't distinguish 'has Human ACs to verify' from 'zero Human ACs = unfinalisable'. Missing detector: 'owner=human + status=work-completed + 0 Human ACs in body' = stuck-partial. Origin: T-2074 retro-fix routing — Human AC re-routed to Agent can leave the partial-complete state dangling."
+    captured: 2026-05-31T19:57:21Z
+    context_task: T-2074
+    tags: [housekeeping]
+    status: pending
+    promoted_to: null
