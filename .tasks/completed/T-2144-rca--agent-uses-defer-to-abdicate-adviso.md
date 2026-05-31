@@ -6,7 +6,7 @@ description: >
   Inception: RCA — agent uses DEFER to abdicate advisory duty when evidence is complete
   (T-2143 meta-failure, T-679 same family)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,8 +15,8 @@ components: []
 related_tasks: [T-2143, T-2139, T-2138, T-679, T-1878, T-1947]
 arc_id: inception-review-loop
 created: 2026-05-31T15:50:04Z
-last_update: 2026-05-31T15:50:29Z
-date_finished:
+last_update: 2026-05-31T17:09:34Z
+date_finished: 2026-05-31T17:09:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -30,6 +30,16 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-31T16:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -88,15 +98,15 @@ The hedge phrase that gave it away: *"The structural decision is an operator cal
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -167,7 +177,13 @@ Why D over A alone: A is local-fix; the class is now structurally documented, tr
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: T-2144 names a second-layer recursion of T-679 (blank-decision pattern): T-679 = agent leaves decision blank; T-2144 = agent fills with DEFER-as-hedge that *looks* like a recommendation. Both violate "you are the advisory" but at different surfaces. The class is now documented at 2 incidents (T-679 + this) which by `inception-review-loop` arc precedent (T-1878, T-1947, T-2138 each shipped at 1-2 incidents) warrants a structural rail.
+
+Three-leg remediation matches the proven shape of T-2138's GO (Candidate E + B + Q3-both) and T-2143's proposed Candidate D:
+
+**Date**: 2026-05-31T17:09:34Z
 
 ## Updates
 
@@ -176,3 +192,23 @@ Why D over A alone: A is local-fix; the class is now structurally documented, tr
 
 ### 2026-05-31T15:50:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-31T17:09:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** T-2144 names a second-layer recursion of T-679 (blank-decision pattern): T-679 = agent leaves decision blank; T-2144 = agent fills with DEFER-as-hedge that *looks* like a recommendation. Both violate "you are the advisory" but at different surfaces. The class is now documented at 2 incidents (T-679 + this) which by `inception-review-loop` arc precedent (T-1878, T-1947, T-2138 each shipped at 1-2 incidents) warrants a structural rail.
+
+Three-leg remediation matches the proven shape of T-2138's GO (Candidate E + B + Q3-both) and T-2143's proposed Candidate D:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b01c55ab
+- **Timestamp:** 2026-05-31T17:09:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-31T17:09:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
