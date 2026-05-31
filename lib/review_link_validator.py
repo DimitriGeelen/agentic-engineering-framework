@@ -96,9 +96,15 @@ def extract_internal_paths(body: str, base_url: str) -> list[str]:
 
     Internal = same host:port as base_url. External URLs are ignored (out of scope).
     Query strings and fragments are dropped — only the path is validated.
+
+    Fenced ```code blocks``` are stripped before scanning — URLs inside a fence
+    are documentation/examples (e.g. synthetic /inception/T-9999 in an inlined
+    block-message rendering), not live links the human should be clicking.
     """
     base = urlparse(base_url)
-    text = extract_section(body, "Recommendation") + "\n" + extract_human_steps(body)
+    rec = _strip_fenced_code(extract_section(body, "Recommendation"))
+    steps = _strip_fenced_code(extract_human_steps(body))
+    text = rec + "\n" + steps
     paths: set[str] = set()
     for raw in _URL_RE.findall(text):
         raw = raw.rstrip(".,;:")  # trailing prose punctuation
@@ -190,6 +196,19 @@ def detect_workflow_type(body: str) -> str:
     return m.group(1) if m else "build"
 
 
+def _strip_fenced_code(text: str) -> str:
+    """Remove ```...``` fenced code blocks from text.
+
+    T-2139 self-trap fix: when an AC quotes the homework pattern verbatim
+    inside a fenced code block (to document the anti-pattern, e.g. an
+    inlined example block-message), that's documentation, not instruction.
+    The detector should not fire on it. Plain `inline` backticks are
+    intentionally NOT stripped — single-token quoting still counts as
+    instructional content surrounding it.
+    """
+    return re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+
+
 def detect_homework_patterns(body: str):
     """Return a list of (level, message) for absence-of-URL homework anti-patterns
     found in the `### Human` Steps subsection.
@@ -197,11 +216,16 @@ def detect_homework_patterns(body: str):
     Each finding is level='block' — these patterns are always bugs at handoff
     time. `main()` emits them at advisory severity by default; `--enforce` mode
     propagates them to a non-zero exit code.
+
+    Fenced ```code blocks``` are stripped before scanning: they exist to
+    document examples (block-message renderings, anti-pattern catalogues),
+    not to instruct the reviewer.
     """
-    steps = extract_human_steps(body)
+    steps_raw = extract_human_steps(body)
     findings: list[tuple[str, str]] = []
-    if not steps:
+    if not steps_raw:
         return findings
+    steps = _strip_fenced_code(steps_raw)
     for regex, label in _HOMEWORK_PATTERNS:
         if regex.search(steps):
             findings.append(("block", f"homework pattern in Steps: {label}"))

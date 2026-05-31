@@ -304,3 +304,53 @@ def test_main_build_block_message_names_review_class(tmp_path, capsys):
     captured = capsys.readouterr()
     assert rc == 2
     assert "/review/T-9999" in captured.err
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-2139 self-trap fix — fenced code blocks are documentation, not instructions
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_homework_in_fenced_code_block_is_not_flagged():
+    """An AC may quote the anti-pattern inside ```...``` to document it —
+    that's the example block-message, not real homework. Detector must skip."""
+    body = """## Acceptance Criteria
+### Human
+- [ ] [REVIEW] confirm block message reads coaching
+  **Steps:** read the captured example below and tick each clause.
+
+  ```
+  ✗ Review-link check — BLOCK — review-handoff homework:
+      homework pattern in Steps: `URL from bin/fw watchtower url`
+      bare-path bullet in Steps (no http:// prefix): - `/bvp`
+  ```
+
+  Confirm the rendering names the class.
+"""
+    findings = V.detect_homework_patterns(body)
+    assert findings == [], f"fenced code block should be ignored, got {findings}"
+
+
+def test_homework_outside_fenced_code_block_still_flagged():
+    """Sanity: the fenced-code carve-out doesn't break detection of real homework
+    OUTSIDE the fence."""
+    body = """## Acceptance Criteria
+### Human
+- [ ] [REVIEW] open the page
+  **Steps:**
+  1. Use the URL from `bin/fw watchtower url`/foo
+
+  ```
+  example documentation: URL from bin/fw watchtower url is the anti-pattern
+  ```
+
+  2. Done.
+"""
+    findings = V.detect_homework_patterns(body)
+    # The Step on line 1 (outside fence) is still flagged; the fence-quoted one is not.
+    assert any("URL from bin/fw watchtower url" in msg for _, msg in findings), findings
+    # Only one finding for this pattern (not two — fence stripped).
+    url_from_count = sum(
+        1 for _, msg in findings if "URL from bin/fw watchtower url" in msg
+    )
+    assert url_from_count == 1, f"expected 1 finding, got {url_from_count}: {findings}"

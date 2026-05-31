@@ -65,13 +65,46 @@ OUT of scope (separate slices):
 - [x] T-2109 (post-fix) and a synthetic clean inception both pass `python3 lib/review_link_validator.py <file> <url> --enforce` (regression pin for the fix that started this).
 
 ### Human
-- [ ] [REVIEW] Block message text reads clearly when the gate fires — names the class (inception vs review), gives the correct URL pattern, names both bypass mechanisms.
+- [ ] [REVIEW] Block message text reads clearly when the gate fires — names the class, the correct URL pattern, both bypass mechanisms, and reads as coaching not punishment.
   **Steps:**
-  1. Inspect the example block-message output captured at the end of this task's Evolution section (smoke test against a synthetic inception body with the homework pattern injected).
-  2. Confirm the block names: (a) the class — "inception" or "review/build" — (b) the correct URL pattern for that class, (c) the env-var bypass mechanism, (d) the CLI-flag bypass mechanism.
-  3. Confirm the rendered tone reads as a coaching message (what to do next) rather than an opaque error.
-  **Expected:** All four clauses present, tone reads coaching not punitive.
-  **If not:** Note which clause is missing and which clause reads punitive.
+  1. Read the two real block-message renderings reproduced inline under "Expected:" below (captured by running `python3 lib/review_link_validator.py <task> <url> --enforce` against synthetic inception and build bodies). No hunting in the file.
+  2. For each rendering, tick ✔ or ✘ against the five clauses also listed under "Expected:".
+  3. Return a verdict: all ✔ → AC passes. Any ✘ → name which clause failed.
+
+  **Expected:** Below are the two real renderings. Read them, then tick the five clauses.
+
+  Rendering 1 — inception task. Validator output:
+  ```
+    ✗ Review-link check (T-2139) — BLOCK — review-handoff homework in this task:
+        homework pattern in Steps: `URL from bin/fw watchtower url`
+        bare-path bullet in Steps (no http:// prefix): - `/bvp`
+        This task is an inception. Inception handoffs go to /inception/T-9999, NOT /review/T-9999.
+        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/inception/T-9999).
+        Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 <command>  (logged Tier-2)
+        Or:     bin/fw task review T-XXX --skip-review-link-check "rationale"
+  ```
+
+  Rendering 2 — build task (partial-complete). Validator output:
+  ```
+    ✗ Review-link check (T-2139) — BLOCK — review-handoff homework in this task:
+        homework pattern in Steps: `URL from bin/fw watchtower url`
+        bare-path bullet in Steps (no http:// prefix): - `/bvp`
+        This is a build task with unticked Human ACs (partial-complete). Review handoffs go to /review/T-9999.
+        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/review/T-9999).
+        Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 <command>  (logged Tier-2)
+        Or:     bin/fw task review T-XXX --skip-review-link-check "rationale"
+  ```
+
+  Tick each:
+  - ✔/✘ — names the class explicitly (Rendering 1 says "inception"; Rendering 2 says "build task")
+  - ✔/✘ — gives the correct URL pattern (Rendering 1 → `/inception/T-9999`; Rendering 2 → `/review/T-9999`)
+  - ✔/✘ — names the env-var bypass (`FW_ALLOW_REVIEW_LINK_HOMEWORK=1`)
+  - ✔/✘ — names the CLI-flag bypass (`bin/fw task review T-XXX --skip-review-link-check "rationale"`)
+  - ✔/✘ — tone reads as coaching ("here's what to do next") rather than opaque error
+
+  All five ✔ → AC passes.
+
+  **If not:** Note which mark is ✘ and which clause reads punitive. The agent reworks the validator's block-message text and re-renders the examples here.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
