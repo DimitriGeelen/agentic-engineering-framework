@@ -138,22 +138,32 @@ The agent reflexively routes "subjective judgment" → `[REVIEW]` (Human AC) wit
 
 ## Recommendation
 
-**Recommendation:** DEFER — pending operator candidate pick.
+**Recommendation:** GO — Candidate D (A + B + C combo).
+
+> **Self-correction note (2026-05-31, post-T-2144 GO):** This Recommendation was originally filed as DEFER — a hedge, not a knowledge gap, since the research artifact was already complete. Operator caught it in one question ("why do you reccomed defer ??"), I made the real call in chat (GO Candidate D), and we filed T-2144 to RCA the hedging-as-antipattern class. T-2144's GO decision was recorded 2026-05-31T17:09:34Z. Leg A of T-2144's three-leg remediation is exactly this edit: bringing T-2143's on-disk advisory in line with the real recommendation. See `docs/reports/T-2144-defer-as-hedge-rca.md`.
 
 **Rationale:**
 
-Evidence-gathering round complete (research artifact `docs/reports/T-2143-routing-recursion-rca.md`). Root cause identified: the agent's AC-routing heuristic is **single-axis** (does the *check* demand subjective judgment? → Human). The axis it misses is **audience** (is the question being asked *about* the human's experience, or about another agent's?). The class is one layer deeper than T-1878 (default-bias) and T-1947 (prose-mismatch detector); both fire on the predicate (does Expected need human taste), neither reads the subject (whose experience is being judged). T-2143 surfaces a gap in Candidate E's scope from T-2138 — E targets URL-construction homework; it doesn't generalise to audience-mismatched ACs.
+Evidence-gathering round complete (research artifact `docs/reports/T-2143-routing-recursion-rca.md`). Root cause: the agent's AC-routing heuristic is **single-axis** (does the *check* demand subjective judgment? → Human). The missing axis is **audience** (whose experience is being judged?). The class is one layer deeper than T-1878 (default-bias) and T-1947 (prose-mismatch detector); both fire on the predicate, neither reads the subject. T-2143 surfaces a gap in T-2138's Candidate E scope — E targets URL-construction homework; it doesn't generalise to audience-mismatched ACs.
 
-Four remediation candidates with effort/coverage trade-offs (full analysis in research artifact):
+Three-leg remediation (Candidate D) — each leg closes a different leak:
 
-| | What | Effort | Coverage |
-|---|---|---|---|
-| **A** | Delete T-2139's Human AC; close on agent side | ~2 min | Local (this task only) |
-| **B** | Static-scan rule for `[REVIEW]` ACs with agent-as-subject phrasing | 2-3h spike + ship | Future authoring across corpus |
-| **C** | Extend CLAUDE.md three-prefix table with audience axis + worked examples | ~30 min | Awareness/governance layer |
-| **D** | Combination A + B + C (mirrors T-2138's GO shape: E + B + Q3-both) | 3-4h total | Local fix + future prevention + governance |
+| Leg | What it closes | Why non-negotiable |
+|---|---|---|
+| **A — Delete T-2139's Human AC** (~2 min) | The **current** routing violation, sitting unfixed on /review/T-2139 | Operator pushed back 4× on this AC in one thread. Leaving it after the diagnosis is operational rudeness; the symptom must not outlive the RCA. |
+| **B — Static-scan rule for `[REVIEW]` ACs with agent-as-subject phrasing** (~2-3h) | The **next** routing violation (this session or future) | T-1878's 412:7 mis-routing gap proved that author-time routing failure is structural, not discipline. Audience-mismatch is the dimension neither T-1878 nor T-1947 covers. Backstop at the class level. |
+| **C — Extend CLAUDE.md three-prefix table with audience axis** (~30 min) | The **author-time awareness** layer | B catches at scan-time; C teaches at write-time. Co-fix mirrors how T-1878 + T-1947 close their dimension. |
 
-The structural decision (how aggressively to gate this class) is an operator call, not an agent call. **D** is the analogue of T-2138's GO. **A** alone is defensible if the class is judged rare. NO-GO if operator wants to settle T-2139's AC by sovereignty (tick or leave regardless).
+**Why D over A alone:** A is local-fix. The class is now 5-incident catalogued (4 rounds in T-2139 thread + T-2144's meta-incident on this very recommendation), warranting a rail. Treating D as overkill bets the class is unique — same bet I declined to make.
+
+**Why D over NO-GO:** NO-GO leaves the class undocumented and unfenced. The recursion's existence is itself evidence the class isn't self-correcting via agent discipline.
+
+**Cost:** ~3-4h total across three child tasks. Same shape as T-2138 GO (E + B + Q3-both) and T-2144 GO (A + B + C).
+
+Alternative picks remain valid as your sovereignty:
+- **A only** if you judge the class rare enough not to warrant another rail.
+- **B + C** (no A) if you'd rather close T-2139 by separate sovereignty rather than as part of this remediation.
+- **NO-GO** to settle by precedent / chat pushback alone.
 
 **Evidence:**
 
