@@ -1434,6 +1434,148 @@ def detect_defer_as_hedge(
     return findings
 
 
+# ───────── review-link-homework detector (T-2140, T-2138 V2) ─────────
+#
+# Catches the review-handoff homework pattern in `### Human` ACs: Steps
+# that ask the reviewer to construct a URL themselves (`URL from bin/fw
+# watchtower url`, `base from bin/fw watchtower url`, `(Watchtower URL from`)
+# instead of emitting a full clickable URL. Origin: T-2109 surfaced the
+# pattern; T-2138 RCA documented 7 historical sites + same-session
+# self-demonstration; T-2139 ships the transition-time blocking gate;
+# this detector is the catch-before-handoff backstop (Candidate B in
+# T-2138's matrix).
+#
+# Scope rules (corpus-tuned):
+#   - Only fires under `### Human` subhead — Agent ACs and Verification
+#     legitimately reference paths
+#   - Three named patterns; opt-out marker for documentation-meta tasks
+#     (the catalogue + RCA + V1 gate task themselves use the literals)
+#   - Per-AC granularity so overrides can target a specific AC
+
+# Three named homework-pattern literals from T-2138 §Symptom + 5-Whys.
+# Case-insensitive; backtick around `bin/fw watchtower url` is optional
+# (markdown rendering doesn't always preserve them across edits).
+_REVIEW_LINK_HOMEWORK_RE = re.compile(
+    r"""(?ix)
+    (
+        URL\s+from\s+`?bin/fw\s+watchtower\s+url`?      |
+        base\s+from\s+`?bin/fw\s+watchtower\s+url`?     |
+        \(\s*Watchtower\s+URL\s+from
+    )
+    """
+)
+
+# Author opt-out: documentation/RCA/gate-build tasks that legitimately
+# discuss the pattern itself need a marker to avoid self-flagging.
+# Mirror the audience-mismatch shape (T-2147).
+_REVIEW_LINK_OPT_OUT_RE = re.compile(
+    r"""(?ix)
+    (
+        review-link-homework-ok                |
+        meta:\s*review-link-homework-discussed |
+        documents\s+the\s+homework\s+pattern
+    )
+    """
+)
+
+
+def detect_review_link_homework(ac_section: str) -> list[Finding]:
+    """`### Human` AC whose Steps/body contain review-handoff homework patterns.
+
+    Three gates, all must hold per AC:
+      1. AC sits under `### Human` subhead
+      2. AC body or trailing Steps/Expected/If-not lines contain one of
+         the three named homework patterns (`_REVIEW_LINK_HOMEWORK_RE`)
+      3. AC has NO author opt-out marker (`_REVIEW_LINK_OPT_OUT_RE`) —
+         for the documentation-meta task class (T-2138 RCA, T-2139
+         gate-build, T-2140 catalogue, T-2030 origin all reference the
+         literal strings in their own bodies)
+
+    Heuristic, partial lie-severity → CONCERN, needs_human=no.
+
+    Class lineage:
+      T-2030 — origin inception (`/appearance` vs `/settings/appearance`,
+               the wrong-URL class)
+      T-2050 — Candidate C build (advisory app.url_map validation; left
+               the absence-of-URL class unhandled, CTL-027)
+      T-2109 — recurrence that prompted T-2138 RCA
+      T-2138 — RCA + candidate matrix (DEFER until operator pick)
+      T-2139 — V1 keystone: transition-time blocking gate (shipped)
+      T-2140 — V2 companion: this detector (catch-before-handoff backstop)
+
+    Origin diagnosis: docs/reports/T-2138-review-handoff-author-time-gap.md.
+    """
+    findings: list[Finding] = []
+    if not ac_section:
+        return findings
+
+    current_subhead = "ACs"
+    counter = 0
+    cur_ac_body: list[str] = []
+    cur_ac_state: dict | None = None
+
+    def _check_and_emit(ac_state: dict, body_lines: list[str]):
+        if not ac_state:
+            return
+        if "human" not in current_subhead.lower():
+            return
+        ac_body_text = ac_state["body_text"]
+        joined = "\n".join(body_lines)
+        haystack = ac_body_text + "\n" + joined
+
+        # Gate 3: author opt-out (documentation-meta class)
+        if _REVIEW_LINK_OPT_OUT_RE.search(haystack):
+            return
+
+        # Gate 2: homework pattern present
+        match = _REVIEW_LINK_HOMEWORK_RE.search(haystack)
+        if not match:
+            return
+
+        snippet = match.group(0).strip().replace("\n", " ")
+        findings.append(
+            Finding(
+                pattern_id="review-link-homework",
+                pattern_name="`### Human` AC Steps require constructing URL instead of clickable link (T-2138)",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location=f"AC#{ac_state['counter']} ({current_subhead})",
+                evidence=f"homework-pattern={snippet!r}",
+                ac_index=ac_state["counter"],
+                ac_subhead=current_subhead,
+                ac_text=ac_body_text[:200],
+            )
+        )
+
+    for raw in ac_section.splitlines():
+        stripped = raw.strip()
+        if re.match(r"^#{2,}\s+\S", stripped):
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            current_subhead = stripped.lstrip("# ").strip()
+            counter = 0
+            cur_ac_state = None
+            cur_ac_body = []
+            continue
+        m = _AC_LINE_RE.match(raw)
+        if m:
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            counter += 1
+            body = m.group("body")
+            cur_ac_state = {
+                "counter": counter,
+                "body_text": body,
+            }
+            cur_ac_body = []
+            continue
+        if cur_ac_state is not None:
+            cur_ac_body.append(raw)
+    if cur_ac_state is not None:
+        _check_and_emit(cur_ac_state, cur_ac_body)
+    return findings
+
+
 # ───────────────── L-387 SIGPIPE detector (T-2059) ─────────────────
 #
 # Catches the verification anti-pattern `<streaming-cmd> | grep -q "PATTERN"`
@@ -1681,6 +1823,9 @@ def scan_task(
     # v1.6 +2: T-2145 — defer-as-hedge (T-2144 leg B); inception with
     # complete evidence but recommendation hedged to DEFER.
     findings.extend(detect_defer_as_hedge(meta, body, task_path))
+    # v1.6 +3: T-2140 — review-link-homework (T-2138 V2); catch-before-handoff
+    # backstop for Human AC Steps that ask the reviewer to construct a URL.
+    findings.extend(detect_review_link_homework(ac_section))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

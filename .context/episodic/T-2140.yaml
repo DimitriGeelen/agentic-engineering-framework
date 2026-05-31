@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2140: Reviewer static-scan catalogue entry — review-link-homework (T-2138 V2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T21:28:47Z
+# ============================================================================
+
+task_id: T-2140
+task_name: "Reviewer static-scan catalogue entry — review-link-homework (T-2138 V2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T13:30:17Z
+completed: 2026-05-31T21:28:40Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Detector function `detect_review_link_homework(ac_section, verification_section)` lives in `lib/reviewer/static_scan.py`. Returns `list[Finding]` with `pattern_id="review-link-homework"`, `lie_severity="partial"`, `detection_confidence="heuristic"`. *(Function signature simplified to `(ac_section)` only — `verification_section` was specified but unneeded since the detector is scoped to AC section by design — see Evolution.)*'
+  - 'Fires CONCERN when an AC body or its `**Steps:**` block contains any of: `URL from ... bin/fw watchtower url`, `base from ... bin/fw watchtower url`, or `(Watchtower URL from` — case-insensitive. Pattern detection scoped to `### Human` subhead ACs only (Verification block paths are legitimate and must not trip).'
+  - 'Silent on author opt-out marker `<!-- review-link-homework-ok: ... -->` <!-- review-link-homework-ok: AC documents the opt-out marker syntax --> anywhere in the AC body (mirrors `[[audience-mismatch-ok]]` shape used by T-2147).'
+  - 'Detector wired into `scan_task` so `fw reviewer T-XXX` surfaces findings in `## Reviewer Verdict` block and exit-code semantics. Same plumbing as T-2147/T-2145.'
+  - 'Catalogue entry `id: review-link-homework` exists in `policy/anti-patterns.yaml` with lie_severity=partial, description, positive example, negative example, opt-out marker syntax, override syntax (`fw reviewer override add T-XXX --pattern review-link-homework`).'
+  - 'Unit tests in `tests/unit/test_reviewer_review_link_homework.py` cover: (a) positive: Human AC Steps with `URL from bin/fw watchtower url` → finding; (b) positive: `(Watchtower URL from` literal → finding; (c) negative: same pattern under `### Agent` → silent; (d) negative: `## Verification` block containing `/path` → silent; (e) negative: AC with full `http://192.168.10.107:3000/path` URLs → silent; (f) negative: opt-out marker present → silent; (g) `scan_task` integration. *(12 tests written, all green.)*'
+  - 'Bats integration tests in `tests/unit/test_reviewer_review_link_homework.bats` cover: (a) synthetic fixture T-99XX with homework Steps → `bin/fw reviewer T-99XX` emits the pattern id; (b) negative fixture with full URLs → silent; (c) catalogue + detect-fn-export sanity checks. *(5 bats tests, all green.)*'
+  - 'Corpus walk artifact `docs/reports/T-2140-corpus-walk.md` documents: scan of `.tasks/{active,completed}/T-*.md`, hit count, sample sites, any false-positives that drove regex refinement. *(2119 files scanned, 5 true-positives matching T-2138 prior grep, 0 false-positives on first attempt.)*'
+  - 'All existing 273 reviewer tests still pass — no regression in the 13-detector catalogue. *(285 total now pass: 273 prior + 12 new for this detector.)*'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 478 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-008, review-handoff, T-2138-followup]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 478
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2140-reviewer-static-scan-catalogue-entry--re.md
+generated_by: context-agent-hybrid

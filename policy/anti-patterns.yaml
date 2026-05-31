@@ -369,6 +369,65 @@ patterns:
       - "Inception with **Recommendation:** DEFER (historical — superseded by 2026-05-31 re-evaluation) (revisit-trigger marker)"
       - "Build task (not inception) with DEFER in body somewhere"
 
+  - id: review-link-homework
+    name: "`### Human` AC Steps require constructing URL instead of clickable link (T-2138)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_review_link_homework"
+    description: >
+      A `### Human` acceptance criterion's Steps/body contains a review-handoff
+      homework pattern — text that asks the reviewer to construct the Watchtower
+      URL themselves (e.g. "URL from `bin/fw watchtower url`", "base from
+      `bin/fw watchtower url`", "(Watchtower URL from `bin/fw watchtower url`)")
+      instead of emitting a full clickable URL. The reviewer can't click; they
+      have to run a command, mentally concatenate, and paste — multiplied across
+      every path the AC asks them to open.
+
+      Gates (all must hold per AC):
+        1. AC sits under `### Human` subhead (Agent ACs and `## Verification`
+           legitimately reference paths and must not trip)
+        2. AC body OR its trailing Steps/Expected/If-not lines contain one of
+           the three named homework patterns:
+             - `URL from `bin/fw watchtower url``
+             - `base from `bin/fw watchtower url``
+             - `(Watchtower URL from`
+        3. NO author opt-out marker present
+           (`<!-- review-link-homework-ok: ... -->`,
+            `<!-- meta: review-link-homework-discussed -->`, or text saying
+           "documents the homework pattern" — for the documentation-meta task
+           class that necessarily quotes the literal strings: T-2138 RCA,
+           T-2139 gate-build, T-2140 catalogue, T-2030 origin)
+
+      Class lineage:
+        T-2030  — origin inception (wrong-URL class: /appearance vs /settings/appearance)
+        T-2050  — Candidate C build (advisory app.url_map validation; left
+                  absence-of-URL class unhandled, CTL-027)
+        T-2109  — recurrence that prompted the RCA
+        T-2138  — RCA + 5 candidate shapes + Dialogue Log
+        T-2139  — V1 keystone: transition-time blocking gate (`bin/fw task review`)
+        T-2140  — V2 companion: THIS detector (catch-before-handoff backstop)
+
+      Why this is a structural backstop, not a redundancy: T-2139 fires at
+      handoff transition (when the agent runs `bin/fw task review T-XXX`).
+      This detector fires DURING pre-completion review (`bin/fw reviewer
+      T-XXX`) so the agent self-corrects BEFORE handoff. Same shape as the
+      author-time + reviewer-time pair on the audience-mismatch (T-2147) and
+      defer-as-hedge (T-2145) detectors shipped earlier in arc-008.
+
+      Origin diagnosis: docs/reports/T-2138-review-handoff-author-time-gap.md
+      and docs/reports/T-2140-corpus-walk.md (this detector's corpus walk).
+
+      Override: `fw reviewer override add T-XXX --pattern review-link-homework
+      [--ac N] --reason "..." --ttl 90` for any legitimate exceptions.
+    examples_positive:
+      - "Human AC Steps: 'Open each of these (Watchtower URL from `bin/fw watchtower url`): - /bvp - /approvals' (homework, 0 clickable URLs)"
+      - "Human AC: 'base from `bin/fw watchtower url`' + bullets of bare paths"
+    examples_negative:
+      - "Human AC Steps: 'Open http://192.168.10.107:3000/bvp' (full URL, clickable)"
+      - "Agent AC referencing `/bvp` path (not a Human AC — out of scope)"
+      - "`## Verification` block with `curl -sf \"$(bin/fw watchtower url)/bvp\"` (legitimate shell, not a human-readable Step)"
+      - "Task body containing the literal pattern but with `<!-- review-link-homework-ok: this task documents the pattern -->` opt-out marker"
+
   - id: AC-verify-mismatch
     name: "Checked AC names a file path the verification never touches"
     detection_confidence: heuristic
