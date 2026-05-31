@@ -308,3 +308,10 @@ observations:
     tags: [orchestrator-arc]
     status: pending
     promoted_to: null
+  - id: OBS-044
+    text: "Production Watchtower deployment lag: 3 Human-Steps URLs on T-1990 and T-1994 point at watchtower.docker.ring20.geelenandcompany.com/{approvals,arcs,docs/generated/components/hook-config} which all 404 on prod but 200 on local (192.168.10.107:3000). Prod tracks tagged releases (/opt/watchtower-prod via systemd watchtower :5050); these routes live on master and would need a tag+deploy to surface. Two options: (a) re-tag + deploy current master to prod, or (b) edit those Human Steps to point at https://watchtower-dev.docker.ring20.geelenandcompany.com which tracks master. Not auto-fixing because the choice is operational (deploy cadence) rather than mechanical. Discovered during arc-007 partial-complete URL sweep S-2026-0531-1116+1; the 4th broken URL (T-2113 local /cockpit) was a class-distinct one-off and got fixed under cb815bae."
+    captured: 2026-05-31T10:03:53Z
+    context_task: T-1687
+    tags: [deployment-lag]
+    status: pending
+    promoted_to: null
