@@ -6,7 +6,7 @@ description: >
   Inception: RCA — agent reflexively routes prose-tone judgment to Human AC even when
   audience disqualifies (4-round recursion in T-2139 thread)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -15,8 +15,8 @@ components: []
 related_tasks: [T-2138, T-2139, T-2140, T-2141, T-2142, T-1878, T-1947, T-1811]
 arc_id: inception-review-loop
 created: 2026-05-31T15:41:46Z
-last_update: '2026-05-31T15:45:02Z'
-date_finished:
+last_update: 2026-05-31T17:25:06Z
+date_finished: 2026-05-31T17:25:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -95,15 +95,15 @@ The agent reflexively routes "subjective judgment" → `[REVIEW]` (Human AC) wit
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -186,7 +186,19 @@ Alternative picks remain valid as your sovereignty:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Evidence-gathering round complete (research artifact `docs/reports/T-2143-routing-recursion-rca.md`). Root cause: the agent's AC-routing heuristic is **single-axis** (does the *check* demand subjective judgment? → Human). The missing axis is **audience** (whose experience is being judged?). The class is one layer deeper than T-1878 (default-bias) and T-1947 (prose-mismatch detector); both fire on the predicate, neither reads the subject. T-2143 surfaces a gap in T-2138's Candidate E scope — E targets URL-construction homework; it doesn't generalise to audience-mismatched ACs.
+
+Three-leg remediation (Candidate D) — each leg closes a different leak:
+
+| Leg | What it closes | Why non-negotiable |
+|---|---|---|
+| **A — Delete T-2139's Human AC** (~2 min) | The **current** routing violation, sitting unfixed on /review/T-2139 | Operator pushed back 4× on this AC in one thread. Leaving it after the diagnosis is operational rudeness; the symptom must not outlive the RCA. |
+| **B — Static-scan rule for `[REVIEW]` ACs with agent-as-subject phrasing** (~2-3h) | The **next** routing violation (this session or future) | T-1878's 412:7 mis-routing gap proved that author-time routing failure is structural, not discipline. Audience-mismatch is the dimension neither T-1878 nor T-1947 covers. Backstop at the class level. |
+| **C — Extend CLAUDE.md three-prefix table with audience axis** (~30 min) | The **author-time awareness** layer | B catches at scan-time; C teaches at write-time. Co-fix mirrors how T-1878 + T-1947 close their dimension. |
+
+**Date**: 2026-05-31T17:25:06Z
 
 ## Updates
 
@@ -195,3 +207,29 @@ Alternative picks remain valid as your sovereignty:
 
 ### 2026-05-31T15:42:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-31T17:25:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Evidence-gathering round complete (research artifact `docs/reports/T-2143-routing-recursion-rca.md`). Root cause: the agent's AC-routing heuristic is **single-axis** (does the *check* demand subjective judgment? → Human). The missing axis is **audience** (whose experience is being judged?). The class is one layer deeper than T-1878 (default-bias) and T-1947 (prose-mismatch detector); both fire on the predicate, neither reads the subject. T-2143 surfaces a gap in T-2138's Candidate E scope — E targets URL-construction homework; it doesn't generalise to audience-mismatched ACs.
+
+Three-leg remediation (Candidate D) — each leg closes a different leak:
+
+| Leg | What it closes | Why non-negotiable |
+|---|---|---|
+| **A — Delete T-2139's Human AC** (~2 min) | The **current** routing violation, sitting unfixed on /review/T-2139 | Operator pushed back 4× on this AC in one thread. Leaving it after the diagnosis is operational rudeness; the symptom must not outlive the RCA. |
+| **B — Static-scan rule for `[REVIEW]` ACs with agent-as-subject phrasing** (~2-3h) | The **next** routing violation (this session or future) | T-1878's 412:7 mis-routing gap proved that author-time routing failure is structural, not discipline. Audience-mismatch is the dimension neither T-1878 nor T-1947 covers. Backstop at the class level. |
+| **C — Extend CLAUDE.md three-prefix table with audience axis** (~30 min) | The **author-time awareness** layer | B catches at scan-time; C teaches at write-time. Co-fix mirrors how T-1878 + T-1947 close their dimension. |
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d307e96
+- **Timestamp:** 2026-05-31T17:25:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-31T17:25:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
