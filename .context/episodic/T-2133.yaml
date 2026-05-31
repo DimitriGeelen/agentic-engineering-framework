@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2133: T-2131 /review checkbox click silently no-ops — htmx:targetError on inherited
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T07:15:39Z
+# ============================================================================
+
+task_id: T-2133
+task_name: "T-2131 /review checkbox click silently no-ops — htmx:targetError on inherited"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T07:11:38Z
+completed: 2026-05-31T07:15:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-31T09:13:52+02:00
+last_commit: 2026-05-31T09:13:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — /review checkbox click silently no-ops (htmx:targetError on inherited hx-target)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated (spike A-D evidence above)'
+  - 'Assumptions tested (5/5 validated this session)'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file inception — /review checkbox click silently no-ops (htmx:targetError on inherited hx-target)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-31 — Surgical fix vs wrapper removal'
+    chose: 'Surgical fix (add hx-target="this" on ac-check form)'
+    rationale: 'T-2114 wrapper solves a real bounce-back on markdown-rendered URLs inside AC body (see T-2114 RCA). Removing the wrapper would re-introduce that bug. The wrapper''s "every form must set hx-target explicitly" contract is already honoured by the other two forms; the ac-check form is the only sibling missing it.'
+    alternatives_rejected: ['(a) Remove T-2114 wrapper (re-opens the bounce-back); (b) Change wrapper target to something that exists like `body` (semantically wrong — body isn''t a swap target); (c) Use `hx-disinherit="hx-target"` on the wrapper (would also disable target inheritance for legitimate descendants like AC body links).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2133-review-checkbox-htmx-target-error-rca.md'
+  - '.tasks/active/T-2133-t-2131-review-checkbox-click-silently-no.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-31T09:13:52"
+    action: "T-2133: file inception — /review checkbox click silently no-ops (htmx:targetError on inherited hx-target)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, regression, htmx, review-surface, sovereignty-adjacent]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 273
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2133-t-2131-review-checkbox-click-silently-no.md
+generated_by: context-agent-hybrid

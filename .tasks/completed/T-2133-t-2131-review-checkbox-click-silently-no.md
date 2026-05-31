@@ -6,7 +6,7 @@ description: >
   Inception: T-2131 /review checkbox click silently no-ops — htmx:targetError on inherited
   hx-target=#content from T-2114 wrapper-reset in standalone template
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,8 +14,8 @@ tags: [bug, regression, htmx, review-surface, sovereignty-adjacent]
 components: [web/templates/_review_acs.html, web/templates/review.html]
 related_tasks: [T-2131, T-2114, T-2112, T-2113, T-2119, T-2074, T-1597, T-1600]
 created: 2026-05-31T07:11:38Z
-last_update: 2026-05-31T07:13:22Z
-date_finished:
+last_update: 2026-05-31T07:15:34Z
+date_finished: 2026-05-31T07:15:34Z
 bvp_scores_proposed:
   - ts: '2026-05-31T07:13:22Z'
     estimator: bvp-estimator-v1-heuristic
@@ -27,6 +27,16 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
       (no-signal); D4=0 (no-signal); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-31T07:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -80,7 +90,7 @@ The toggle-ac endpoint is correct and works (verified by curl test below). The b
 - [x] Recommendation written with rationale
 
 ### Human
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-2133` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -142,7 +152,11 @@ Root cause is conclusive from live Playwright observation. The fix is a one-line
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-2133 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Root cause is conclusive from live Playwright observation. The fix is a one-line attribute addition with a clear test pin. The bug is high-impact (any user trying to check a Human AC on /review hits it) and the fix path is surgical with zero blast radius outside /review.
+
+**Date**: 2026-05-31T07:15:34Z
 
 ## Updates
 
@@ -150,3 +164,21 @@ Root cause is conclusive from live Playwright observation. The fix is a one-line
 
 ### 2026-05-31T07:13:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-05-31T07:15:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Root cause is conclusive from live Playwright observation. The fix is a one-line attribute addition with a clear test pin. The bug is high-impact (any user trying to check a Human AC on /review hits it) and the fix path is surgical with zero blast radius outside /review.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4709b762
+- **Timestamp:** 2026-05-31T07:15:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-31T07:15:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
