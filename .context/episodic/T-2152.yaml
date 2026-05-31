@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2152: audit hygiene: add missing ## Updates header to T-2075/T-2077
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T19:15:07Z
+# ============================================================================
+
+task_id: T-2152
+task_name: "audit hygiene: add missing ## Updates header to T-2075/T-2077"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T19:12:14Z
+completed: 2026-05-31T19:15:00Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'T-2075 body contains the `## Updates` heading on its own line preceding the first `### 2026-` timestamped entry'
+  - 'T-2077 body contains the `## Updates` heading on its own line preceding the first `### 2026-` timestamped entry'
+  - 'No content other than the header insertion is modified in either file (verified by inspecting the diff)'
+  - '`fw audit` no longer emits the two `missing Updates section` WARN entries for these task IDs'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-hygiene, structural]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2152-audit-hygiene-add-missing--updates-heade.md
+generated_by: context-agent-hybrid

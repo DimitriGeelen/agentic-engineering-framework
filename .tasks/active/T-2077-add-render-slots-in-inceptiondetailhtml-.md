@@ -214,6 +214,8 @@ out=$(python3 -m pytest tests/playwright/test_inception_detail_sections.py -q 2>
 - Live smoke: `/inception/T-2066` (this very inception's parent) renders **Acceptance Criteria** + **Verification** headers (the only 2 of the 5 it has populated). Context / RCA / Decisions are absent because T-2066's body has no non-stub content for them — correct conditional behaviour.
 - All 4 verification commands pass.
 
+## Updates
+
 ### 2026-05-28T18:04:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2077-add-render-slots-in-inceptiondetailhtml-.md

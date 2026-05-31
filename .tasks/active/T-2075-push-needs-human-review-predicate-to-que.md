@@ -203,6 +203,8 @@ out=$(bin/fw review-queue 2>&1 | head -5); echo "$out" | grep -q "VERDICT\|DECIS
 - `tests/unit/test_count_unchecked_human_acs.py`: 6 tests covering the five inception fixtures (a-e) + an all-checked partial-complete case. All green in 0.16s.
 - Live smoke: `fw review-queue` renders 124 VERDICT rows; `/approvals` renders cleanly. Bash + Python syntax checks both pass.
 
+## Updates
+
 ### 2026-05-28T18:03:55Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2075-push-needs-human-review-predicate-to-que.md
