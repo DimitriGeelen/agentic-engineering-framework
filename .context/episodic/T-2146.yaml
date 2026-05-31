@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2146: CLAUDE.md update — DEFER-as-no-evidence vs DEFER-as-hedge anti-pattern paragraph
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T21:18:51Z
+# ============================================================================
+
+task_id: T-2146
+task_name: "CLAUDE.md update — DEFER-as-no-evidence vs DEFER-as-hedge anti-pattern paragraph"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T17:12:49Z
+completed: 2026-05-31T21:18:45Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md §Presenting Work for Human Review (T-679) gains an explicit anti-pattern paragraph distinguishing the two DEFER scenarios. Suggested text (in `docs/reports/T-2144-defer-as-hedge-rca.md`, leg C section): "DEFER is for evidence gaps, NOT for confidence gaps. Use DEFER if you genuinely don''t yet have evidence — e.g. a spike is needed, a dependency is unresolved, an external party must respond. Do NOT use DEFER as a hedge when your research artifact is complete (5-Whys done, candidates analysed, dialogue logged). If you have walked the evidence and still don''t want to commit, that''s a confidence-calibration failure, not a knowledge gap — recommend GO or NO-GO with the rationale you actually have. The operator needs your advisory weight, not a placeholder."'
+  - 'Paragraph cross-references T-2144 (RCA), T-2145 (reviewer detector), and T-679 (origin) so future readers can trace the lineage.'
+  - 'At least one worked example included: T-2143''s filed DEFER + operator pushback + corrected GO Candidate D, as a concrete illustration of the anti-pattern in action.'
+  - 'Existing T-679 paragraph in CLAUDE.md is **kept** (not replaced); the new paragraph appends to / refines it.'
+  - 'Memory file written: `feedback_defer_for_evidence_not_confidence.md` with the principle + link to T-2144 / T-2145 / T-2146. MEMORY.md index updated.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 245 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-008, claudemd, advisory-model, defer-as-hedge]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 245
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2146-claudemd-update--defer-as-no-evidence-vs.md
+generated_by: context-agent-hybrid
