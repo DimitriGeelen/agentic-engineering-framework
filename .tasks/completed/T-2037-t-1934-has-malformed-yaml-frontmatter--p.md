@@ -6,7 +6,7 @@ description: >
   path leaking into frontmatter). Logged on every get_all_task_metadata call. Quick
   data fix in the T-1934 file.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -19,7 +19,7 @@ related_tasks: []
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-25T08:12:39Z
 last_update: '2026-05-25T08:15:02Z'
-date_finished:
+date_finished: 2026-05-25T10:16:40+02:00
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──

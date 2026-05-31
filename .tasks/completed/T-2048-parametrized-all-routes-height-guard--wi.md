@@ -11,7 +11,7 @@ description: >
   suite, no cron/screenshots, catches the next instance the moment a new page is added.
   Closes the G-019 automation leg of the unbounded-page class.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -21,7 +21,7 @@ related_tasks: [T-2042, T-2046]
 arc_id: watchtower-redesign
 created: 2026-05-25T15:43:02Z
 last_update: '2026-05-25T15:45:02Z'
-date_finished:
+date_finished: 2026-05-25T17:53:31+02:00
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──

@@ -1,30 +1,23 @@
 ---
-id: T-1996
-name: "G-069 regression: _discover_project_root climbs past FRAMEWORK_ROOT to stray
-  .framework.yaml"
+id: T-2151
+name: "CTL-028 cleanup: 11 completed/ tasks with status=started-work — backfill frontmatter"
 description: >
-  test_project_root_discovery::test_g069_stray_filesystem_root_marker_does_not_capture_framework
-  FAILS on master. _discover_project_root(fake_framework) returns the tmp dir above
-  FRAMEWORK_ROOT when a stray .framework.yaml is planted there, instead of stopping
-  at the FRAMEWORK_ROOT bound. This defeats the G-069 path-isolation safety mechanism
-  (the bound that prevents discovery returning Path('/') or capturing a higher project).
-  Source bug in web/shared.py _discover_project_root walk. Found during T-1995 full-suite
-  triage; pre-existing, source change needed.
+  CTL-028 cleanup: 11 completed/ tasks with status=started-work — backfill frontmatter
 
 status: work-completed
-workflow_type: build
+workflow_type: refactor
 owner: agent
 horizon: now
-tags: []
-components: []
-related_tasks: []
+tags: [corpus-hygiene, ctl-028, silent-drift]
+components: [.tasks/completed/]
+related_tasks: [T-2055, T-2091, T-2121]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-05-22T19:35:47Z
-last_update: '2026-05-29T09:45:04Z'
-date_finished: 2026-05-22T21:51:02+02:00
+created: 2026-05-31T19:06:20Z
+last_update: 2026-05-31T19:09:45Z
+date_finished: 2026-05-31T19:09:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,47 +28,31 @@ date_finished: 2026-05-22T21:51:02+02:00
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-05-22T19:37:16Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-05-29T09:45:04Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-1996: G-069 regression: _discover_project_root climbs past FRAMEWORK_ROOT to stray .framework.yaml
+# T-2151: CTL-028 cleanup: 11 completed/ tasks with status=started-work — backfill frontmatter
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+CTL-028 (audit detector — T-2055 sibling) reports 11 task files in `.tasks/completed/`
+whose frontmatter still says `status: started-work` with empty `date_finished:`.
+These tasks were moved via Watchtower's "decide GO / decide work-completed" surface
+which doesn't pass through `update-task.sh --status work-completed` — so file
+location and frontmatter status diverge silently.
+
+Reactive cleanup only — the structural fix lives in Watchtower's decide-flow
+(out of session scope). For each victim, backfill `status: work-completed` and
+set `date_finished:` to the file's most recent git commit timestamp.
+
+Victims (2026-05-31 audit): T-2000, T-2007, T-2053, T-2050, T-2048, T-1996,
+T-2032, T-1995, T-1997, T-2037, T-2005.
 
 ## Acceptance Criteria
 
-<!-- RE-SCOPED after investigation (see ## RCA): the G-069 bound is NOT broken.
-     _discover_project_root returns None correctly in isolation. The failure is
-     test-isolation pollution — same class as T-1995's render-path fix. -->
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause written to `## RCA`: `test_orchestrator_workflow_coverage.py` does `del sys.modules["web.shared"]` + reimport, REPLACING the module object. The G-069 test's import-time-bound `_discover_project_root` then reads the orphaned old module while `patch("web.shared.FRAMEWORK_ROOT")` targets the new one — they desync, so the bound's `cur == framework_root` never matches and the walk climbs to the stray marker
-- [x] Fix the polluter: `test_orchestrator_workflow_coverage.py` uses `importlib.reload` (reuses the module object, like every sibling reload test) instead of `del sys.modules` (which replaces it)
-- [x] `tests/unit/test_project_root_discovery.py::test_g069_stray_filesystem_root_marker_does_not_capture_framework` passes in the full `bin/fw test unit` run, not just isolation (full suite: 2 failed, 1079 passed — was 3; G-069 now green)
-- [x] No regression: `test_orchestrator_workflow_coverage.py` itself stays green (10 passed), and the rest of `test_project_root_discovery.py` stays green (7 passed)
-- [x] Confirmed this is a test-harness fix, NOT a source change to `web/shared.py` — the G-069 safety bound works correctly (verified in isolation: `_discover_project_root` returns `None`)
+- [x] All 11 task files in completed/ have `status: work-completed`
+- [x] All 11 task files have non-empty `date_finished:` (backfilled from each file's last-commit timestamp via `git log -1 --format=%aI`)
+- [x] CTL-028 corpus re-scan clean: zero non-work-completed tasks remain in `.tasks/completed/`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -110,8 +87,6 @@ cost_estimate_proposed:
 
 ## Verification
 
-python3 -m pytest tests/unit/test_orchestrator_workflow_coverage.py "tests/unit/test_project_root_discovery.py::test_g069_stray_filesystem_root_marker_does_not_capture_framework" -q 2>&1 | tail -1 | grep -q "11 passed"
-
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -130,12 +105,40 @@ python3 -m pytest tests/unit/test_orchestrator_workflow_coverage.py "tests/unit/
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
 #
+# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
+# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
+# the capture step closed off — the middle stage is what `grep -q` slams its
+# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
+# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -c "import yaml; from pathlib import Path; bad=[f for f in Path('.tasks/completed').glob('T-*.md') if (lambda fm: isinstance(fm, dict) and fm.get('status') and fm.get('status')!='work-completed')(yaml.safe_load(f.read_text().split('---',2)[1]))]; assert not bad, [f.name for f in bad]"
+
+## Recommendation
+
+**Recommendation:** GO (close as work-completed)
+
+**Rationale:** Reactive backfill of 11 silent-corpus drift victims. Each file now
+has `status: work-completed` + `date_finished:` set to its own last-commit
+timestamp (preserving the actual completion date rather than rewriting history
+to "today"). CTL-028 corpus re-scan is clean: zero non-work-completed tasks in
+`.tasks/completed/` corpus-wide.
+
+**Evidence:**
+- 11 file modifications under `.tasks/completed/T-{2000,2007,2053,2050,2048,1996,2032,1995,1997,2037,2005}-*.md`
+- `python3 -c "...CTL-028 invariant..."` returns 0 (assertion passes)
+- All 3 Agent ACs ticked
+
+**Note on structural fix:** The root cause is Watchtower's decide-flow not
+passing transitions through `update-task.sh`. Out of session scope; tracked as
+the general CTL-028 class for future structural work (consider T-2121 sibling
+detector + a CTL-XXX detector for Watchtower decide-path desync).
 
 ## RCA
 
@@ -152,34 +155,6 @@ python3 -m pytest tests/unit/test_orchestrator_workflow_coverage.py "tests/unit/
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `test_project_root_discovery.py::test_g069_stray_filesystem_root_marker_does_not_capture_framework`
-red in the full `bin/fw test unit` run; green in isolation. Filed (wrongly) as a
-G-069 *source* regression in `_discover_project_root`.
-
-**Root cause:** NOT a source bug — the G-069 bound is correct (`_discover_project_root`
-returns `None` in isolation; traced live). The failure is test-isolation pollution.
-`test_orchestrator_workflow_coverage.py` (sorts alphabetically before
-`test_project_root_discovery`) refreshed its constants with
-`del sys.modules["web.shared"]` + reimport. Unlike `importlib.reload` (which
-re-executes the module body in the *same* module object), `del`+reimport creates a
-**new** module object. The discovery test binds `_discover_project_root` at its own
-import time (from the *old* module). After the polluter ran, `patch("web.shared.FRAMEWORK_ROOT", …)`
-patched the *new* module in `sys.modules`, but the test called the old function whose
-`__globals__` is the old module dict — so it read the real unpatched `FRAMEWORK_ROOT`,
-`in_framework`/`cur == framework_root` never matched, and the walk climbed to the
-stray marker.
-
-**Why structurally allowed:** `del sys.modules[mod]` is invisible to both pytest's
-fixture teardown and `monkeypatch` restore; nothing flags a test that swaps out a
-widely-imported module object. Victims only surface under full-suite ordering and look
-like flakes. Same family as T-1995's render-path pollution (there: a dangling module
-*global*; here: a swapped module *object*).
-
-**Prevention:** the polluter now uses `importlib.reload` (module identity preserved),
-matching every sibling reload test (`test_arcs_routes`, `test_orchestrator_dispatch_substrate`).
-Broader class — `del sys.modules["web.*"]` in a test fixture — is a candidate for a
-future lint/grep guard ([[L-420]] candidate); deferred, single instance found.
 
 ## Evolution
 
@@ -228,11 +203,19 @@ future lint/grep guard ([[L-420]] candidate); deferred, single instance found.
 
 ## Updates
 
-### 2026-05-22T19:35:47Z — task-created [task-create-agent]
+### 2026-05-31T19:06:20Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1996-g-069-regression-discoverprojectroot-cli.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2151-ctl-028-cleanup-11-completed-tasks-with-.md
 - **Context:** Initial task creation
 
-### 2026-05-22T19:37:16Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-28060fda
+- **Timestamp:** 2026-05-31T19:09:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-31T19:09:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

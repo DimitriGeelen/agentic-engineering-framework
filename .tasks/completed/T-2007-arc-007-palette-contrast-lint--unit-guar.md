@@ -6,7 +6,7 @@ description: >
   arc-007 palette-contrast lint — unit guard so no preset ships accent-ink/accent
   below WCAG AA (T-2006 prevention)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
 horizon: now
@@ -19,8 +19,8 @@ arc_id: watchtower-redesign
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T15:29:53Z
-last_update: '2026-05-23T15:30:02Z'
-date_finished:
+last_update: '2026-05-29T09:45:04Z'
+date_finished: 2026-05-23T17:43:43+02:00
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,6 +39,15 @@ cost_estimate_proposed:
       tier: 1
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=1 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-29T09:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 1
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=1 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:

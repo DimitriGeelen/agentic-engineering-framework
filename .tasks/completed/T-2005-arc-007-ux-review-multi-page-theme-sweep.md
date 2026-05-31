@@ -6,7 +6,7 @@ description: >
   arc-007 ux-review multi-page theme sweep — verify headline mechanic across Cockpit
   Tasks Approvals Fabric Arcs
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -20,7 +20,7 @@ arc_id: watchtower-redesign
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-23T15:14:04Z
 last_update: 2026-05-25T09:28:37Z
-date_finished:
+date_finished: 2026-05-25T14:52:39+02:00
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
