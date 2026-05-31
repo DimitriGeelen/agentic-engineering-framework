@@ -15,7 +15,7 @@ components: ["agents/audit/orchestrator-mcp-scan.sh"]
 related_tasks: ["T-1755", "T-1760", "T-1646"]
 arc_id: orchestrator-rethink
 created: 2026-05-06T06:08:25Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: 2026-05-31T19:02:07Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -50,6 +50,17 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=3 (body:portability-abstraction); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-05-29T23:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F1: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F1=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
@@ -142,24 +153,32 @@ Captured from T-1760 Evolution: a heuristic that auto-classifies new `termlink_a
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO (revised 2026-05-31 — DEFER triggers fired)
 
-**Rationale:** Marginal leverage at current cadence. Implementation cost roughly equals 3 batches of manual toil; misclassification risk is asymmetric (a mutator silently classified as readonly bypasses governance). Status quo provides per-batch human review at low cost. See research artifact for full analysis and re-evaluation triggers.
+**Rationale:** Both re-evaluation triggers from the original DEFER have crossed:
+- **Cadence:** T-2073 was the 4th batch (13 days after T-1867 — under the 14-day trigger); T-2150 was the 5th batch (3 days after T-2073). Filing-time "pulse" assumption was wrong; cadence is sustained.
+- **Cost ratio:** 7 batches × ~15 min ≈ **105 min** cumulative toil, vs ~30-45 min implementation. We have spent 2.3× the implementation cost on the toil.
+- **Misclassification record:** 196 tools classified across 7 batches, zero `_typing`-style misclassifications. The naming convention is robust enough that manual review is mostly rubber-stamping.
+
+See `docs/reports/T-1761-auto-classify-heuristic.md` §Re-evaluation for full analysis and three implementation shapes (auto-classify with `--apply` opt-in, ratchet command, hybrid namespace-scoped auto).
 
 **Evidence:**
-- Research artifact: `docs/reports/T-1761-auto-classify-heuristic.md`
-- T-1755 (59 tools), T-1755 follow-up (2 tools), T-1760 (18 tools) — cumulative ~35 min effort across 3 commits in one day
-- Re-evaluation triggers documented: 4th batch in <14 days, misclassification incident, or generic cross-MCP convention classifier emerges
+- Research artifact: `docs/reports/T-1761-auto-classify-heuristic.md` (§Re-evaluation appended 2026-05-31)
+- Batches catalogued: T-1755, T-1755 f/u, T-1760, T-1867, T-2073, T-2073 f/u, T-2150 — 7 in 25 days
+- Cumulative toil ≈ 105 min vs implementation estimate ≈ 30-45 min
+- Audit just flipped WARN → PASS in T-2150's commit `b2f69e89` (most recent batch)
+
+**Handoff:** Use `fw task review T-1761` for the human decision.
 
 ## Decision
 
-**Decision:** DEFER
+**Decision:** DEFER (historical — superseded by 2026-05-31 re-evaluation; new decision pending human via `fw inception decide T-1761 go|no-go|defer`)
 
-**Rationale:** See `## Recommendation` above and `docs/reports/T-1761-auto-classify-heuristic.md` for full analysis. Marginal leverage at current cadence; misclassification risk is asymmetric. Re-evaluate on triggers documented in research artifact.
+**Rationale:** Original DEFER captured 2026-05-06 with explicit re-evaluation triggers. Trigger #1 (4th batch in <14 days) fired twice: T-2073 was batch #4 at 13d; T-2150 was batch #5 at 3d. Updated Recommendation above proposes GO; the gate (T-1259) prevents agent from running `fw inception decide` under $CLAUDECODE=1.
 
-**Decided by:** agent (autonomous filing per inception authority — DEFER is not GO/NO-GO; structural gate `fw inception decide` allows agents to capture DEFER without human signoff per T-1259/T-1716 contract).
+**Decided by:** agent (original DEFER); pending human (revised GO recommendation).
 
-**Decided at:** 2026-05-06T07:00Z
+**Decided at:** 2026-05-06T07:00Z (original DEFER); pending (revised).
 
 ## Decisions
 
