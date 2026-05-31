@@ -4,9 +4,9 @@ name: "ac-check form hx-target=this (T-2133 GO slice A+B — surgical fix + test
 description: >
   ac-check form hx-target=this (T-2133 GO slice A+B — surgical fix + test pin)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, regression, htmx, review-surface, fix, T-2133-implementation]
 components: [web/templates/_review_acs.html]
@@ -16,8 +16,8 @@ related_tasks: [T-2133, T-2131, T-2114]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-31T07:16:22Z
-last_update: 2026-05-31T07:16:22Z
-date_finished: null
+last_update: 2026-05-31T07:22:33Z
+date_finished: 2026-05-31T07:22:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -223,3 +223,29 @@ url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" |
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2134-ac-check-form-hx-targetthis-t-2133-go-sl.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e5b8779d
+- **Timestamp:** 2026-05-31T07:22:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/templates/_review_acs.html` `<form class="ac-check">` declares explicit `hx-target="this"` (the form element itself — always resolves, makes the inherited #content moot)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/_review_acs.html in: `web/templates/_review_acs.html` `<form class="ac-check">` declares explicit `hx-target="this"` (the form element itself — always resolves, makes the `
+- **AC#4 (Agent)** — Playwright pin: `tests/playwright/test_review_interaction.py::TestACCheckboxClickFlow::test_ac_checkbox_click_posts_to_toggle_endpoint` passes against running watchtower (the test route-intercepts the
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_review_interaction.py in: Playwright pin: `tests/playwright/test_review_interaction.py::TestACCheckboxClickFlow::test_ac_checkbox_click_posts_to_toggle_endpoint` passes against`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+     - evidence: `url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" | grep -c 'class="ac-check"' | grep -qE '^[1-9]'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
+     - evidence: `url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" | grep -A3 'class="ac-check"' | grep -q 'hx-target="this"'`
+
+### 2026-05-31T07:22:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
