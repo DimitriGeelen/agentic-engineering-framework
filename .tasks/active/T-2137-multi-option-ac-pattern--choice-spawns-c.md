@@ -6,16 +6,16 @@ description: >
   Inception: Multi-option AC pattern — choice spawns child inception (T-1776 surfaces
   the gap)
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: [inception-spawn, arc-008, multi-option-ac, review-loop, ac-classification]
 components: []
 related_tasks: [T-1776, T-2101, T-2097, T-2098, T-2100]
 arc_id: inception-review-loop
 created: 2026-05-31T10:28:56Z
-last_update: '2026-05-31T10:30:02Z'
+last_update: 2026-05-31T14:20:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,15 +94,15 @@ Research artifact is the exploration substrate; this task is operator-dialogue-b
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -169,7 +169,11 @@ This inception captures a structural gap surfaced by T-1776's close: Human AC #H
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: This inception captures a structural gap surfaced by T-1776's close: Human AC #H1 presented three options (A/B/C — TermLink primitive vs shell adapter vs change default.yaml) but the operator's choice was never structurally captured — it lived in chat, the build (T-1797) referenced T-1776 by commit text, and T-1776 sat completable-but-not-completed for 22 days (cleaned up under 625557f1+9f08aa42 this session). The pattern recurs: any AC asking 'pick A or B or C' is doing the work of an inception inside a checkbox. Filed under arc-008 (inception-review-loop) as a sibling to T-2101 (operator-feedback channel) and the listed Q1/Q2/Q3 questions. Recommendation is DEFER because the dialogue must validate the scope before any design space exploration — verbatim operator ask: 'we want an inline method to provide feedback for the review … in this case we just need to give an option a,b,c which actually should surface with an inception'.
+
+**Date**: 2026-05-31T14:20:52Z
 
 ## Updates
 
@@ -181,3 +185,13 @@ This inception captures a structural gap surfaced by T-1776's close: Human AC #H
 
 ### 2026-05-31T10:29:51Z — status-update [task-update-agent]
 - **Change:** tags: +inception-spawn
+
+### 2026-05-31T14:20:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** This inception captures a structural gap surfaced by T-1776's close: Human AC #H1 presented three options (A/B/C — TermLink primitive vs shell adapter vs change default.yaml) but the operator's choice was never structurally captured — it lived in chat, the build (T-1797) referenced T-1776 by commit text, and T-1776 sat completable-but-not-completed for 22 days (cleaned up under 625557f1+9f08aa42 this session). The pattern recurs: any AC asking 'pick A or B or C' is doing the work of an inception inside a checkbox. Filed under arc-008 (inception-review-loop) as a sibling to T-2101 (operator-feedback channel) and the listed Q1/Q2/Q3 questions. Recommendation is DEFER because the dialogue must validate the scope before any design space exploration — verbatim operator ask: 'we want an inline method to provide feedback for the review … in this case we just need to give an option a,b,c which actually should surface with an inception'.
+
+### 2026-05-31T14:20:52Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** Inception decision: DEFER — parking task
