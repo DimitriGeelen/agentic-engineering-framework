@@ -32,8 +32,19 @@
 {% for ac in human_acs %}
 <div class="ac-card {% if ac.checked %}checked{% endif %}">
     <div class="ac-card-header">
+        {# T-2134 (T-2133 GO slice A): explicit hx-target="this" overrides the
+           outer wrapper's hx-target="#content" (T-2114). Standalone review.html
+           has no #content element; without this override, htmx fires
+           htmx:targetError and ABORTS the POST before any of configRequest /
+           beforeRequest, so CSRF never runs and the click silently no-ops.
+           hx-swap="none" makes the actual target irrelevant for response
+           handling — `this` (the form) always resolves and satisfies htmx's
+           target-must-exist precondition. The two sibling forms below
+           (inception decide, build complete) already declare their own
+           hx-target; this restores that contract for ac-check. #}
         <form class="ac-check" hx-post="/api/task/{{ task_id }}/toggle-ac"
               hx-vals='{"line": "{{ ac.line_idx }}"}'
+              hx-target="this"
               hx-swap="none"
               hx-on::after-request="htmx.ajax('GET', '/review/{{ task_id }}/acs', {target:'#ac-container', swap:'innerHTML'})">
             <input type="checkbox" {% if ac.checked %}checked{% endif %}
