@@ -1038,6 +1038,217 @@ def detect_reviewer_prose_mismatch(ac_section: str) -> list[Finding]:
     return findings
 
 
+# ───────────── audience-mismatch detector (T-2147, T-2143 leg B) ─────────────
+#
+# Catches `[REVIEW]` Human ACs whose subject is *agent* experience (stderr the
+# agent reads, gate prose the agent trips, CLI output the agent sees). The
+# operator has no operational context for those — answering "does this read
+# cleanly" requires being the system that hit the gate. The correct routing is
+# `### Agent` self-eval, not any Human prefix.
+#
+# Origin: T-2143 RCA — T-2139 V1 keystone gate-message AC recursed 4 rounds
+# because the agent's single-axis routing heuristic (subjective → Human) has
+# no audience check. CLAUDE.md §AC Classification Guidance item #6 (T-2148
+# shipped 2026-05-31) introduced the audience axis at author-time; this
+# detector is the reviewer-time backstop for that rule.
+
+# Agent-as-subject phrasing. Each alt is a *receptive* verb form a `[REVIEW]`
+# AC uses when asking about the agent's experience of reading/processing/
+# encountering something. The receptive class is the audience-mismatch class
+# — only "what the agent *receives*" puts the operator in the wrong seat.
+#
+# Note (T-2147 corpus walk): "agent files <task|build|child|report|ticket>"
+# is architectural NARRATIVE (the agent producing artefacts after a human
+# decision), not an audience question. Corpus walk hit 4/5 false-positives
+# on `agent files`; the verb was dropped from the regex. The task spec
+# listed it; we deviate based on corpus evidence — see Evolution.
+_AGENT_AS_SUBJECT_RE = re.compile(
+    r"""(?ix)
+    \b(
+        agent\s+who                            |   # "agent who trips the gate"
+        agent\s+(?:reads?|read)                |   # "agent reads stderr"
+        agent\s+trips?                         |   # "agent trips"
+        agent\s+sees?                          |   # "agent sees the prose"
+        agent\s+gets?                          |   # "agent gets the message"
+        agent\s+handles?                       |   # "agent handles the bypass"
+        agent\s+(?:encounters?|hits?|receives?) |  # "agent encounters / hits / receives X"
+        for\s+an\s+agent                       |   # "actionable for an agent"
+        # "the agent will <receptive-verb>" — receptive only. "the agent will
+        # adjust/fix/file" is architectural narrative (corpus FP class).
+        the\s+agent\s+will\s+(?:see|read|get|receive|unblock|encounter|hit|trip) |
+        # singular noun + receptive verb within 3 tokens
+        \bthe\s+agent\s+\w+\s+(?:reads?|sees?|gets?|trips?|handles?|unblocks?|reading|seeing) |
+        # tripping/reading agent — the actor as participial subject
+        tripping\s+agent                       |
+        reading\s+agent                        |
+        # operator-seat phrasing inverted
+        "?(?:to|by)\s+(?:a|an|the)\s+agent\s+(?:reading|tripping|seeing|handling)
+    )
+    """
+)
+
+# Human-subject phrasing in the Expected clause. If present, the AC has
+# already re-anchored on the operator and audience is *not* mismatched even
+# if the body describes the agent-side mechanic.
+#
+# Discriminator: operator/user/human/you must be the SUBJECT of a verb
+# (indicative or passive), not just incidentally named. "stderr makes the
+# agent unblock itself without operator help" — operator is a possessive
+# modifier of `help`, not a verb subject; agent-audience stays mismatched.
+# "you (the operator) confirm the message" — `you` is subject of `confirm`,
+# re-anchor satisfied.
+_HUMAN_SUBJECT_RE = re.compile(
+    r"""(?ix)
+    (
+        # Subject + verb, with optional parenthetical between:
+        \b(?:the\s+)?(?:operator|user|human|reviewer)(?:\s*\([^)]+\))?\s+
+            (?:can|should|will|would|must|may|might|sees?|reads?|confirms?|decides?|judges?|approves?|reviews?|checks?|gets?|finds?|notices?|spots?|verifies?|inspects?) |
+        # 2nd-person pronoun as subject:
+        \byou(?:\s*\([^)]+\))?\s+
+            (?:can|should|will|would|must|may|might|see|read|confirm|decide|judge|approve|review|check|get|find|notice|spot|verify|inspect) |
+        # Question framing — "does the operator …" / "is the operator able to …"
+        (?:does|is|are|can)\s+(?:the\s+)?(?:operator|user|human|you)\b |
+        # Explicit audience marker
+        audience:\s*operator
+    )
+    """
+)
+
+# Author opt-out markers. Allow the author to say "I know the body looks
+# agent-shaped, but I've re-framed it as a question for the operator".
+_AUDIENCE_OPT_OUT_RE = re.compile(
+    r"""(?ix)
+    (
+        rewritten\s+to\s+ask\s+(?:the\s+)?human   |
+        rewritten\s+to\s+ask\s+(?:the\s+)?operator |
+        audience:\s*operator                       |
+        framing[- ]question                        |
+        meta:\s*audience-rechecked
+    )
+    """
+)
+
+
+def detect_audience_mismatch(ac_section: str) -> list[Finding]:
+    """`[REVIEW]` Human AC whose subject is *agent* experience.
+
+    Five gates, all must hold:
+      1. AC sits under `### Human` subhead
+      2. AC body starts with `[REVIEW]` (NOT `[REVIEWER]` — that's prose-mismatch's
+         territory; the routing-discipline ladder routes `[REVIEWER]` first by
+         prose vocabulary, then `[REVIEW]` here by subject audience)
+      3. AC body or Expected contains agent-as-subject phrasing
+         (`_AGENT_AS_SUBJECT_RE`)
+      4. AC's `**Expected:**` clause does NOT describe a human-experience
+         question (`_HUMAN_SUBJECT_RE` absent — operator/user/you/human
+         haven't been used as subjects to re-anchor the question)
+      5. Body has NO author opt-out marker (`_AUDIENCE_OPT_OUT_RE`)
+
+    Heuristic, partial lie-severity → CONCERN, needs_human=no.
+
+    Routing-discipline ladder (CLAUDE.md, T-2143):
+      T-1878 — between Human prefixes by check-shape (grep-able → `[REVIEWER]`)
+      T-1947 — between [REVIEW] and [REVIEWER] by Expected vocabulary
+      T-2143 — out of Human prefixes entirely by audience (this detector)
+      T-2147 — reviewer-time backstop (this code)
+
+    Origin: T-2139 V1 keystone gate-message AC. 4 author rounds before the
+    audience mismatch was named. Full diagnosis:
+      docs/reports/T-2143-routing-recursion-rca.md
+    """
+    findings: list[Finding] = []
+    if not ac_section:
+        return findings
+
+    current_subhead = "ACs"
+    counter = 0
+    cur_ac_body: list[str] = []
+    cur_ac_state: dict | None = None
+
+    def _check_and_emit(ac_state: dict, body_lines: list[str]):
+        if not ac_state or not ac_state.get("is_review"):
+            return
+        if "human" not in current_subhead.lower():
+            return
+        ac_body_text = ac_state["body_text"]
+        joined = "\n".join(body_lines)
+        haystack = ac_body_text + "\n" + joined
+
+        # Gate 5: author opt-out
+        if _AUDIENCE_OPT_OUT_RE.search(haystack):
+            return
+
+        # Gate 3: agent-as-subject phrasing present somewhere
+        agent_match = _AGENT_AS_SUBJECT_RE.search(haystack)
+        if not agent_match:
+            return
+
+        # Gate 4: Expected clause does NOT have operator/human subject.
+        # Pull the Expected text out separately because the body may describe
+        # the agent-side mechanic legitimately as context while the Expected
+        # re-anchors on the operator.
+        expected_match = re.search(
+            r"\*\*Expected:?\*\*\s*(.*?)(?=\n\s*\*\*(?:If\s+not|Steps|Why|Origin)|\Z)",
+            joined,
+            re.DOTALL | re.IGNORECASE,
+        )
+        expected_text = expected_match.group(1) if expected_match else ""
+        # If Expected re-anchors on a human subject, the AC is correctly framed
+        # as an operator question even though the body talks about the agent.
+        if expected_text and _HUMAN_SUBJECT_RE.search(expected_text):
+            return
+
+        snippet_src = (
+            expected_text.strip()[:140] if expected_text else ac_body_text[:140]
+        ).replace("\n", " ")
+        findings.append(
+            Finding(
+                pattern_id="audience-mismatch",
+                pattern_name="[REVIEW] Human AC asks about agent experience (should be Agent self-eval)",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location=f"AC#{ac_state['counter']} ({current_subhead})",
+                evidence=f"agent-subject={agent_match.group(0)!r} in: {snippet_src}",
+                ac_index=ac_state["counter"],
+                ac_subhead=current_subhead,
+                ac_text=ac_body_text[:200],
+            )
+        )
+
+    for raw in ac_section.splitlines():
+        stripped = raw.strip()
+        if re.match(r"^#{2,}\s+\S", stripped):
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            current_subhead = stripped.lstrip("# ").strip()
+            counter = 0
+            cur_ac_state = None
+            cur_ac_body = []
+            continue
+        m = _AC_LINE_RE.match(raw)
+        if m:
+            if cur_ac_state is not None:
+                _check_and_emit(cur_ac_state, cur_ac_body)
+            counter += 1
+            body = m.group("body")
+            # [REVIEW] but NOT [REVIEWER] — prose-mismatch handles the latter.
+            # Anchor on word boundary so `[REVIEWER]` doesn't match `[REVIEW]`.
+            stripped_body = body.strip()
+            is_review = bool(re.match(r"^\[REVIEW\](?!\w)", stripped_body, re.IGNORECASE))
+            cur_ac_state = {
+                "counter": counter,
+                "body_text": body,
+                "is_review": is_review,
+            }
+            cur_ac_body = []
+            continue
+        if cur_ac_state is not None:
+            cur_ac_body.append(raw)
+    if cur_ac_state is not None:
+        _check_and_emit(cur_ac_state, cur_ac_body)
+    return findings
+
+
 # ───────────────── L-387 SIGPIPE detector (T-2059) ─────────────────
 #
 # Catches the verification anti-pattern `<streaming-cmd> | grep -q "PATTERN"`
@@ -1279,6 +1490,9 @@ def scan_task(
     findings.extend(detect_reviewer_prose_mismatch(ac_section))
     # v1.5 +1: T-2059 — L-387 SIGPIPE detector (closes 7+ historical captures)
     findings.extend(detect_l387_sigpipe_risk(verif_section))
+    # v1.6 +1: T-2147 — audience-mismatch (T-2143 leg B); reviewer-time
+    # backstop for CLAUDE.md §AC Classification audience axis (T-2148).
+    findings.extend(detect_audience_mismatch(ac_section))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

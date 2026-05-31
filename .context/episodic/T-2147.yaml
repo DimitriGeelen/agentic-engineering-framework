@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2147: Reviewer detector — audience-mismatch in [REVIEW] ACs (T-2143 leg B): agent-as-subject
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T20:36:14Z
+# ============================================================================
+
+task_id: T-2147
+task_name: "Reviewer detector — audience-mismatch in [REVIEW] ACs (T-2143 leg B): agent-as-subject"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T17:26:30Z
+completed: 2026-05-31T20:36:06Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/reviewer/static_scan.py` gains a new detector `audience-mismatch` that fires when ALL of these hold on a task body:'
+  - 'Detector emits CONCERN with message: "audience-mismatch: [REVIEW] AC asks about an *agent''s* experience; agent-audience prose-tone judgment should be Agent self-eval, not Human review. Consider deleting the AC OR re-framing as governance question (does this match how YOU want framework gates to address agents?)."'
+  - 'Detector entry added to reviewer catalogue alongside T-2145''s `defer-as-hedge` entry, same default-on / TTL-overridable contract.'
+  - 'Unit tests cover: (a) AC with "agent who trips" + REVIEW prefix triggers CONCERN, (b) AC with "you (operator)" + REVIEW does NOT trigger, (c) Agent-section AC with same phrasing does NOT trigger, (d) AC with framing question ("does this match how YOU want…") does NOT trigger, (e) AC describing rendered-content-for-human (e.g. UI/dashboard) with verb subject "user" does NOT trigger.'
+  - 'Bats integration test pinning `fw reviewer T-XXX` end-to-end against a synthetic audience-mismatch fixture.'
+  - 'Corpus walk: `grep -lE "agent (who|reads|trips|files|sees)" .tasks/{active,completed}/T-*.md` enumerated within `### Human` sections; each result classified as (a) genuine audience-mismatch (file override or rewrite), or (b) false positive (file TTL''d override with rationale). Walk size + result counts logged in `docs/reports/T-2147-corpus-walk.md`.'
+  - 'False-positive guard: detector skips ACs whose body explicitly says "rewritten to ask <human>" or "audience: operator" — a documented opt-out marker the author can include.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 189 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-008, reviewer, audience-mismatch, ac-routing]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 189
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2147-reviewer-detector--audience-mismatch-in-.md
+generated_by: context-agent-hybrid

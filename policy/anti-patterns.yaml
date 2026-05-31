@@ -261,6 +261,58 @@ patterns:
       - 'echo "yes" | grep -q "yes"'
       - 'printf "ok\n" | grep -q "ok"'
 
+  - id: audience-mismatch
+    name: "[REVIEW] Human AC asks about agent experience (should be Agent self-eval)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_audience_mismatch"
+    description: >
+      A `[REVIEW]`-prefixed Human acceptance criterion whose subject is *agent*
+      experience — stderr the agent reads, gate prose the agent trips, CLI
+      output the agent sees while mid-session. The operator has no operational
+      context for those — answering "does this read cleanly" requires being the
+      system that hit the gate. Routing such ACs to a human asks the wrong
+      audience.
+
+      Correct routing: `### Agent` (self-eval against the prose), not any Human
+      prefix. The integration test that proves the gate works is the structural
+      proof; tone-of-stderr is the agent's judgment to make.
+
+      Gates (all must hold):
+        1. AC sits under `### Human` subhead with `[REVIEW]` prefix
+        2. AC body or Expected contains agent-as-subject phrasing
+           (`agent who`, `agent reads`, `agent trips`, `the agent will`,
+           `tripping agent`, `for an agent`, …)
+        3. AC's `**Expected:**` clause does NOT re-anchor on a human subject
+           (operator/user/human/you used as the question's subject)
+        4. Body has no author opt-out marker (`rewritten to ask the operator`,
+           `audience: operator`, etc.)
+
+      Routing-discipline ladder (CLAUDE.md §AC Classification Guidance):
+        T-1878 — between Human prefixes by check-shape (grep-able → [REVIEWER])
+        T-1947 — between [REVIEW]/[REVIEWER] by Expected vocabulary (prose → [REVIEW])
+        T-2143 — out of Human prefixes entirely by audience (agent-audience → ### Agent)
+        T-2147 — this reviewer-time backstop catches author-time misses on T-2143
+
+      Origin: T-2143 RCA — T-2139 V1 keystone gate-message AC recursed 4
+      author rounds because the agent's single-axis routing heuristic
+      (subjective → Human) had no audience check. CLAUDE.md §AC Classification
+      Guidance item #6 (T-2148, shipped 2026-05-31) introduced the audience
+      axis at author-time; this detector is the reviewer-time backstop.
+
+      Override: `fw reviewer override add T-XXX --pattern audience-mismatch
+      --ac N --reason "..." --ttl 90` when the AC is genuinely framed as an
+      operator question even though the body uses agent vocabulary.
+    examples_positive:
+      - "[REVIEW] Block-message stderr reads cleanly to a tripping agent — Expected: stderr makes the agent unblock itself"
+      - "[REVIEW] CLI output for the agent feels clean — Expected: agent reading the help text gets the right next step"
+      - "[REVIEW] Gate refusal prose is clear for the agent that trips it"
+    examples_negative:
+      - "[REVIEW] Dashboard renders agent activity panel — Expected: the user sees agent rows highlighted in green"
+      - "[REVIEW] Agent's stderr re-read (rewritten to ask the operator) — Expected: operator confirms readability"
+      - "[REVIEWER] Agent reads stderr — Expected: Reviewer PASS (prose-mismatch's territory, not audience)"
+      - "### Agent AC: [REVIEW] Agent self-checks readability (correct routing — not Human-subhead)"
+
   - id: AC-verify-mismatch
     name: "Checked AC names a file path the verification never touches"
     detection_confidence: heuristic
