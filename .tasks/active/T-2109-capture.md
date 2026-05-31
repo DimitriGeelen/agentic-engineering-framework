@@ -90,13 +90,13 @@ Why ship this now rather than tolerate drift: T-2107 already shifted shape (stor
 ### Human
 - [ ] [REVIEW] Five migrated pages render identically to pre-migration (pure refactor — no visual change expected).
   **Steps:**
-  1. Open each of these in browser (Watchtower URL from `bin/fw watchtower url`):
-     - `/`
-     - `/bvp`
-     - `/approvals`
-     - `/timeline`
-     - `/search`
-  2. Spot-check that the page renders content (not blank, no traceback / 500), and that data looks identical to recent memory.
+  1. Open each of these (all curl-verified HTTP 200 on 2026-05-31):
+     - http://192.168.10.107:3000/ (cockpit)
+     - http://192.168.10.107:3000/bvp (scatter)
+     - http://192.168.10.107:3000/approvals (queue)
+     - http://192.168.10.107:3000/timeline (handovers)
+     - http://192.168.10.107:3000/search (search input)
+  2. Spot-check that each page renders content (not blank, no traceback / 500), and that data looks identical to recent memory.
   **Expected:** All 5 pages load and look as before — `/bvp` shows scatter, `/approvals` shows queue, `/timeline` shows handover list, `/search` accepts query, `/` shows cockpit panels.
   **If not:** Capture the broken page + console error and revert via `git revert <commit-sha>`; the migration is a single atomic commit.
 
