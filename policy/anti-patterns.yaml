@@ -313,6 +313,62 @@ patterns:
       - "[REVIEWER] Agent reads stderr — Expected: Reviewer PASS (prose-mismatch's territory, not audience)"
       - "### Agent AC: [REVIEW] Agent self-checks readability (correct routing — not Human-subhead)"
 
+  - id: defer-as-hedge
+    name: "Inception DEFER despite complete evidence trail (T-2144)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_defer_as_hedge"
+    description: >
+      An inception task filed with `Recommendation: DEFER` while its research
+      artifact carries substantive evidence — 5-Whys, Dialogue Log, candidate
+      matrix — AND the Rationale block is substantive (>300 chars). The
+      structural fingerprint: evidence-complete + recommendation-hedged.
+
+      DEFER is a legitimate recommendation when (a) evidence is incomplete
+      and more research is needed, OR (b) the operator has been asked to
+      pick from a candidate set the agent has no preference between. It is
+      a *failure mode* when the agent has done the research, the evidence
+      points clearly toward GO or NO-GO, but the agent hedges to limit
+      downside on a confidence-calibration concern. Loss-aversion masquerading
+      as discipline. Operator caught this in T-2143 ("why do you recommend
+      defer ???") — the real GO recommendation surfaced in chat in three
+      paragraphs once asked directly. The on-disk advisory and the in-chat
+      advisory diverged.
+
+      Gates (all must hold):
+        1. `workflow_type: inception` in frontmatter
+        2. `## Recommendation` section contains `Recommendation: DEFER`
+           (case-insensitive; "DEFER (historical)" / "DEFER (superseded)"
+           shapes are exempt as legitimate revisit-trigger markers)
+        3. Recommendation references a `docs/reports/T-NNNN-*.md` artifact
+        4. Artifact exists on disk and contains ≥2 of these indicators:
+           - `## 5-Whys` heading
+           - `## Dialogue Log` heading
+           - A Markdown table headed `| Candidate` or `| Option` with ≥3 rows
+        5. `**Rationale:**` block inside Recommendation is >300 chars
+
+      Note (T-2145 corpus walk): the task spec called for ≥1 evidence
+      indicator. The 2119-file corpus walk found 4 false-positives at
+      that threshold — all sovereignty-pending or sequence-planning DEFERs
+      with a Dialogue Log alone. T-2143's origin had 2+ indicators. The
+      threshold was raised to ≥2 based on corpus evidence.
+
+      Origin: T-2144 RCA — T-2143 was filed `DEFER` with full evidence
+      trail. Same family as T-679 (blank decision); one layer deeper
+      (decision-shaped placeholder).
+
+      Override: `fw reviewer override add T-XXX --pattern defer-as-hedge
+      --reason "operator pick pending — not a hedge" --ttl 90` when the
+      DEFER is genuinely sovereignty-pending despite the evidence shape.
+    examples_positive:
+      - "Inception with **Recommendation:** DEFER, artifact has 5-Whys + Dialogue Log + candidate matrix, Rationale >300 chars"
+      - "Inception with full evidence + Rationale that conflates 'decision is operator's' with 'I have no recommendation'"
+    examples_negative:
+      - "Inception with **Recommendation:** GO Candidate D (no hedge)"
+      - "Inception with **Recommendation:** DEFER, only Dialogue Log present (incomplete evidence, legitimate DEFER)"
+      - "Inception with **Recommendation:** DEFER (historical — superseded by 2026-05-31 re-evaluation) (revisit-trigger marker)"
+      - "Build task (not inception) with DEFER in body somewhere"
+
   - id: AC-verify-mismatch
     name: "Checked AC names a file path the verification never touches"
     detection_confidence: heuristic

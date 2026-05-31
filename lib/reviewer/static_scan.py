@@ -1249,6 +1249,191 @@ def detect_audience_mismatch(ac_section: str) -> list[Finding]:
     return findings
 
 
+# ───────── defer-as-hedge detector (T-2145, T-2144 leg B) ─────────
+#
+# Catches inception tasks filed with `Recommendation: DEFER` despite the
+# research artifact carrying substantive evidence (5-Whys, candidate matrix,
+# dialogue log) and the Rationale block being >300 chars. The structural
+# fingerprint: evidence-complete + recommendation-hedged. Operator caught
+# this in T-2143 ("why do you recommend defer ???"); same family as T-679
+# (blank decision) one layer deeper — decision-shaped placeholder.
+
+# Recommendation values to flag. Case-insensitive match of `DEFER` after
+# the `**Recommendation:**` marker (with optional bold/colon variations).
+_RECOMMENDATION_LINE_RE = re.compile(
+    r"\*\*Recommendation:?\*\*\s*[`*]*\s*([A-Za-z][A-Za-z/\- ]+)",
+    re.IGNORECASE,
+)
+
+# Artifact path inside the Recommendation block — `docs/reports/T-NNNN-*.md`.
+_ARTIFACT_PATH_RE = re.compile(
+    r"(docs/reports/T-\d+[A-Za-z0-9_\-./]*\.md)",
+)
+
+# Evidence indicators inside the research artifact body.
+_EVIDENCE_FIVE_WHYS_RE = re.compile(r"^#{1,3}\s*5[- ]Whys?\b", re.IGNORECASE | re.MULTILINE)
+_EVIDENCE_DIALOGUE_LOG_RE = re.compile(r"^#{1,3}\s*Dialogue\s+Log\b", re.IGNORECASE | re.MULTILINE)
+# Candidate matrix: a Markdown table with header `| Candidate` or
+# `| Option` followed by at least 3 row-rule lines. Counted lazily —
+# any markdown table with ≥4 rows (1 header + ≥3 data) qualifies.
+
+# Rationale block inside Recommendation. Same lazy delimiter — ends at next
+# **Foo:** marker or the section's end.
+_RATIONALE_BLOCK_RE = re.compile(
+    r"\*\*Rationale:?\*\*\s*(.*?)(?=\n\s*\*\*(?:Evidence|Handoff|Decision|Recommendation|Origin):|\Z)",
+    re.DOTALL | re.IGNORECASE,
+)
+
+
+def _count_candidate_matrix_rows(text: str) -> int:
+    """Return the largest count of data rows under any candidate/option table.
+
+    A candidate matrix is a Markdown table whose header row mentions
+    `Candidate` or `Option` (case-insensitive). Returns the maximum
+    data-row count across all such tables in the file.
+    """
+    max_rows = 0
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        is_table_header = (
+            "|" in line
+            and re.search(r"\b(candidate|option)\b", line, re.IGNORECASE)
+        )
+        if is_table_header:
+            # Next line should be the markdown rule line `|---|---|...`
+            if i + 1 < len(lines) and re.match(r"^\s*\|\s*:?-+", lines[i + 1]):
+                # Count consecutive data rows below
+                j = i + 2
+                rows = 0
+                while j < len(lines) and lines[j].lstrip().startswith("|"):
+                    rows += 1
+                    j += 1
+                if rows > max_rows:
+                    max_rows = rows
+                i = j
+                continue
+        i += 1
+    return max_rows
+
+
+def detect_defer_as_hedge(
+    meta: dict | None,
+    body: str,
+    task_path: Path,
+) -> list[Finding]:
+    """Inception filed `DEFER` despite the evidence trail being complete.
+
+    Five gates (all must hold):
+      1. `workflow_type: inception` in frontmatter
+      2. `## Recommendation` section exists and contains `DEFER` (case-insensitive)
+         on the `**Recommendation:**` line
+      3. Recommendation section references a `docs/reports/T-NNNN-*.md` artifact
+      4. That artifact exists on disk AND contains ≥1 of:
+         - `## 5-Whys` heading
+         - `## Dialogue Log` heading
+         - A candidate/option matrix with ≥3 data rows
+      5. The `**Rationale:**` block inside Recommendation is >300 chars
+         (substantive evidence-supported reasoning, not a one-line punt)
+
+    Heuristic, partial lie-severity → CONCERN, needs_human=no.
+
+    Origin: T-2144 RCA — T-2143 filed `DEFER` with full evidence (5-Whys,
+    4-candidate matrix, dialogue log); operator caught in one question.
+    Full diagnosis: `docs/reports/T-2144-defer-as-hedge-rca.md`.
+    """
+    findings: list[Finding] = []
+    if not meta or meta.get("workflow_type") != "inception":
+        return findings
+
+    rec_section = extract_section(body, "Recommendation")
+    if not rec_section:
+        return findings
+
+    # Gate 2: DEFER on the Recommendation line
+    rec_match = _RECOMMENDATION_LINE_RE.search(rec_section)
+    if not rec_match:
+        return findings
+    rec_value = rec_match.group(1).strip().upper()
+    # "DEFER" or "DEFERRED" — anything that starts with DEFER. Exclude
+    # forms like "DEFER (historical — …)" that explicitly mark themselves
+    # as superseded; that pattern is the legitimate revisit-trigger shape.
+    if not rec_value.startswith("DEFER"):
+        return findings
+    # Exempt "DEFER (historical" / "DEFER (superseded" / "DEFER — historical"
+    rec_line_full = rec_match.group(0) + rec_section[rec_match.end():rec_match.end() + 120]
+    if re.search(r"DEFER[^\n]{0,30}(historical|superseded)", rec_line_full, re.IGNORECASE):
+        return findings
+
+    # Gate 3: artifact path present
+    artifact_match = _ARTIFACT_PATH_RE.search(rec_section)
+    if not artifact_match:
+        return findings
+    artifact_rel = artifact_match.group(1)
+
+    # Gate 4: artifact exists and contains ≥1 evidence indicator
+    # Resolve relative to PROJECT_ROOT (task_path's repo root).
+    repo_root = task_path.parent
+    while repo_root != repo_root.parent and not (repo_root / "policy").is_dir():
+        repo_root = repo_root.parent
+    artifact_path = repo_root / artifact_rel
+    if not artifact_path.is_file():
+        return findings
+    try:
+        artifact_text = artifact_path.read_text()
+    except OSError:
+        return findings
+
+    has_5whys = bool(_EVIDENCE_FIVE_WHYS_RE.search(artifact_text))
+    has_dialogue = bool(_EVIDENCE_DIALOGUE_LOG_RE.search(artifact_text))
+    candidate_rows = _count_candidate_matrix_rows(artifact_text)
+    has_candidate_matrix = candidate_rows >= 3
+    # Corpus walk (T-2147 lesson): the task spec said ≥1 indicator, but the
+    # 2119-file walk found 4 false-positives at that threshold — all legitimate
+    # DEFER-with-sequence-planning or sovereignty-pending cases that happened
+    # to have a Dialogue Log. The T-2143 origin pattern had ≥2 indicators
+    # (5-Whys + Dialogue Log + a matrix-shaped table). Require ≥2 to weed out
+    # the false-positives. Deviation from task spec documented in Evolution.
+    indicator_count = sum([has_5whys, has_dialogue, has_candidate_matrix])
+    if indicator_count < 2:
+        return findings
+
+    # Gate 5: Rationale block >300 chars
+    rationale_match = _RATIONALE_BLOCK_RE.search(rec_section)
+    rationale_text = rationale_match.group(1).strip() if rationale_match else ""
+    if len(rationale_text) <= 300:
+        return findings
+
+    evidence_parts = []
+    if has_5whys:
+        evidence_parts.append("5-Whys")
+    if has_dialogue:
+        evidence_parts.append("Dialogue Log")
+    if has_candidate_matrix:
+        evidence_parts.append(f"candidate matrix ({candidate_rows} rows)")
+    evidence_summary = ", ".join(evidence_parts)
+
+    findings.append(
+        Finding(
+            pattern_id="defer-as-hedge",
+            pattern_name="Inception DEFER despite complete evidence trail (T-2144)",
+            detection_confidence="heuristic",
+            lie_severity="partial",
+            location="## Recommendation",
+            evidence=(
+                f"artifact={artifact_rel}; "
+                f"indicators=[{evidence_summary}]; "
+                f"rationale={len(rationale_text)} chars"
+            ),
+            ac_index=None,
+            ac_subhead=None,
+            ac_text=None,
+        )
+    )
+    return findings
+
+
 # ───────────────── L-387 SIGPIPE detector (T-2059) ─────────────────
 #
 # Catches the verification anti-pattern `<streaming-cmd> | grep -q "PATTERN"`
@@ -1493,6 +1678,9 @@ def scan_task(
     # v1.6 +1: T-2147 — audience-mismatch (T-2143 leg B); reviewer-time
     # backstop for CLAUDE.md §AC Classification audience axis (T-2148).
     findings.extend(detect_audience_mismatch(ac_section))
+    # v1.6 +2: T-2145 — defer-as-hedge (T-2144 leg B); inception with
+    # complete evidence but recommendation hedged to DEFER.
+    findings.extend(detect_defer_as_hedge(meta, body, task_path))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

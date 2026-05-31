@@ -14,8 +14,12 @@ tags: [arc-008, rca, advisory-model, defer-as-hedge, inception]
 components: []
 related_tasks: [T-2143, T-2139, T-2138, T-679, T-1878, T-1947]
 arc_id: inception-review-loop
+inception_decisions:
+  - id: defer-as-hedge-detector
+    text: defer-as-hedge reviewer detector backstop (Candidate D leg B)
+    ships_in: T-2145
 created: 2026-05-31T15:50:04Z
-last_update: 2026-05-31T17:09:34Z
+last_update: 2026-05-31T20:55:00Z
 date_finished: 2026-05-31T17:09:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable

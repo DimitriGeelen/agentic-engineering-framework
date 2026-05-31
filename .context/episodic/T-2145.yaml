@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2145: Reviewer detector — defer-as-hedge (T-2144 leg B): flag inception tasks with
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T20:50:36Z
+# ============================================================================
+
+task_id: T-2145
+task_name: "Reviewer detector — defer-as-hedge (T-2144 leg B): flag inception tasks with"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-31T17:11:15Z
+completed: 2026-05-31T20:50:25Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/reviewer/static_scan.py` gains a new detector `defer-as-hedge` that fires when ALL of these hold on a task body:'
+  - 'Detector emits CONCERN (not FAIL) with message naming the gap: "DEFER-with-evidence-complete: rationale + candidates + dialogue log present; recommend promoting to GO/NO-GO with the existing rationale."'
+  - 'Detector entry added to the reviewer catalogue config (likely YAML/JSON wherever T-1947''s `reviewer-prose-mismatch` lives — same format) with default-on, TTL-overridable.'
+  - 'Unit test in `tests/unit/test_reviewer_static_scan.py` (or whichever test file covers the existing reviewer detectors) covers: (a) DEFER+full-evidence task triggers CONCERN, (b) DEFER+no-evidence (legitimate no-evidence-yet DEFER) does NOT trigger, (c) GO+full-evidence does NOT trigger, (d) NO-GO+full-evidence does NOT trigger, (e) non-inception workflow_type does NOT trigger.'
+  - 'Bats integration test pinning `fw reviewer T-XXX` end-to-end against a synthetic DEFER-as-hedge fixture.'
+  - 'T-2143 (currently a legitimate sovereignty-pending DEFER-equivalent state — operator may still pick NO-GO) covered by an explicit override entry with rationale "operator pick pending, not a hedge". *(Resolved: T-2143 self-corrected to GO post-T-2144; detector returns 0 findings against current T-2143 body — no override needed. Override SHAPE documented in catalogue entry''s description for future use. See `docs/reports/T-2145-corpus-walk.md` §AC #7.)*'
+  - 'Corpus walk: `grep -lE "Recommendation:\*\* DEFER" .tasks/completed/T-*-inception-*.md` enumerated, each result either (a) confirmed legitimate-DEFER + override entry filed, or (b) flagged as historical DEFER-as-hedge instance + concern logged. *(Walk: 2119 files, 180 inceptions with DEFER, 4 hits at spec threshold all classified as false-positives, threshold raised to ≥2 indicators → 0 findings. See `docs/reports/T-2145-corpus-walk.md`.)*'
+  - 'T-2144 `inception_decisions:` field populated retrospectively with `B: defer-as-hedge detector ships in T-2145` so the `unlocks_inception_decision: [T-2144:B]` link on T-2145 itself becomes valid (resolves the gate that fired when filing this task). *(Field added to T-2144 with id `defer-as-hedge-detector` (B→kebab); link added to T-2145 frontmatter as `unlocks_inception_decision: ["T-2144:defer-as-hedge-detector"]`.)*'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 219 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-008, reviewer, defer-as-hedge, advisory-model]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 219
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2145-reviewer-detector--defer-as-hedge-t-2144.md
+generated_by: context-agent-hybrid
