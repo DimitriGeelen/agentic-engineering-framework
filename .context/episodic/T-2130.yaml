@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2130: release T-2128 visual-verification hook adoption (version bump + push + smoke
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-05-31T07:02:59Z
+# ============================================================================
+
+task_id: T-2130
+task_name: "release T-2128 visual-verification hook adoption (version bump + push + smoke"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T22:01:40Z
+completed: 2026-05-31T07:02:53Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-05-31T00:11:49+02:00
+last_commit: 2026-05-31T00:11:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix visual-verification hook focus field (task_id → current_task)
+
+# Key outcomes
+outcomes:
+  - 'Hook script present + executable at `agents/context/check-visual-verification.sh` (faithful framework adaptation of the 025 reference: `lib/paths.sh` PROJECT_ROOT + `git -C`, not byte-identical)'
+  - '`agents/context/check-visual-verification.AGENT.md` documents what it gates, why, how to enable, how to bypass'
+  - '`fw hook check-visual-verification` dispatcher route resolves (generic filesystem-driven dispatcher in bin/fw — verified exit 0)'
+  - 'CLAUDE.md template (`lib/templates/claude-project.md`) has the "Visual Verification for UI Changes" section + cross-link from Verification-Before-Completion step 4'
+  - 'Smoke test (isolated scratch dir, PROJECT_ROOT override): staged `.css` + no `## Visual Verification` → exit 2; section+image → exit 0; `--no-verify` → exit 0'
+  - 'BUGFIX: hook focus field corrected `task_id:` → `current_task:` (framework convention) in top-level + vendored copies — without this the gate never fired (invisible-hook antipattern, T-1626)'
+  - 'VERSION bump decision recorded: framework does not bump per-task (T-2128 itself did not, neither does this bugfix sibling). T-2128 + this fix reach consumers via `fw upgrade` (git pull), not via VERSION-pinned release. Decision made, no action needed.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix visual-verification hook focus field (task_id → current_task)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-visual-verification.sh'
+  - 'agents/context/check-visual-verification.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-31T00:11:49"
+    action: "T-2130: fix visual-verification hook focus field (task_id → current_task)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 541 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 541
+  commits: 1
+  files_changed: 2
+  lines_added: 10
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2130-release-t-2128-visual-verification-hook-.md
+generated_by: context-agent-hybrid
