@@ -6,17 +6,17 @@ description: >
   fallback-workflow contract gap — default.yaml declares worker_kind: TermLink which
   spawn driver does not route
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: next
 tags: [spawn, contract-gap]
-components: []
+components: [C-004, lib/spawn.py, lib/termlink_worker.py, lib/workflow_coverage.py, tests/unit/test_spawn.py, tests/unit/test_termlink_worker.py, tests/unit/test_workflow_coverage.py]
 related_tasks: [T-1773, T-1775]
 arc_id: orchestrator-rethink
 created: 2026-05-09T21:18:59Z
-last_update: '2026-05-29T23:00:02Z'
-date_finished:
+last_update: 2026-05-31T09:26:42Z
+date_finished: 2026-05-31T09:26:42Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -229,3 +229,20 @@ grep -q "worker_kind: TermLink" .context/project/workflows/default.yaml
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1776-fallback-workflow-contract-gap--defaulty.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e2c65f90
+- **Timestamp:** 2026-05-31T09:26:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — No edits to lib/spawn.py, lib/resolver.py, or default.yaml in this task.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/spawn.py in: No edits to lib/spawn.py, lib/resolver.py, or default.yaml in this task.`
+
+### 2026-05-31T09:26:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
