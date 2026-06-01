@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2165: T-2157 continuation: complete the deferred consumer-code blast radius walk + open questions 1-10 for value-drivers.yaml v3
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T17:00:02Z
+# ============================================================================
+
+task_id: T-2165
+task_name: "T-2157 continuation: complete the deferred consumer-code blast radius walk + open questions 1-10 for value-drivers.yaml v3"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T16:48:09Z
+completed: 2026-06-01T16:59:54Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/T-2157-value-drivers-v3-redesign.md` "Consumer-code blast radius walk" section is no longer marked DEFERRED — concrete findings replace the placeholder. Each of the 5 readers (`lib/bvp.sh`, `lib/bvp.sh auto-promote`, `lib/arc.sh approve-driver`, `web/blueprints/bvp.py`, `web/blueprints/arcs.py`) has a Q1-Q6 walk with file:line evidence (or "not present in this reader" with grep-rationale).'
+  - 'Each of the 10 open questions has a concrete answer recorded in the artifact, with evidence cited (file path / line / `T-XXXX` reference). "Defer to build phase" is allowed for Q4/Q6/Q8 type tooling-additions, but the question must explain why.'
+  - 'Semantic critique sections (F-RECALL, F-ORCH, F-AUTONOMY) are revisited and finalised — each driver gets a single line: "**Verdict:** keep / refine / drop" with one-paragraph rationale grounded in the CLAUDE.md "new meaning, not louder D1-D4" criterion and the consumer-code walk findings.'
+  - 'The artifact''s "Next steps" checklist (lines ~338-352) has items 2-9 ticked `[x]` matching what landed in this pass.'
+  - 'The artifact''s final `## Recommendation` block (line ~353) flips from `DEFER` to one of: `GO`, `NO-GO`, `GO with refinements`. Evidence section lists the concrete findings that justify the flip.'
+  - 'If `GO` or `GO with refinements`, follow-up build tasks are pre-scoped (T-NEW-A estimator extension, T-NEW-B band 0-2 calibration, T-NEW-C retire_when audit, T-NEW-D per-driver display, T-NEW-E F-AUTONOMY activation gate) in the artifact''s Refinements table. Filing the v3 schema-rename build task itself is left to operator review — the artifact recommends it but doesn''t pre-file the implementation slice.'
+  - 'Five-condition self-check before close: artifact is up-to-date (no DEFERRED markers in body), all reader walks have file:line citations, all 10 open questions answered, semantic verdicts present, Recommendation flipped.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, value-drivers, bvp, research]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2165-t-2157-continuation-complete-the-deferre.md
+generated_by: context-agent-hybrid

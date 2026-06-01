@@ -229,24 +229,31 @@ auto_promote:
 
 ---
 
-## Consumer-code blast radius walk (DEFERRED — to be filled before GO recommendation)
+## Consumer-code blast radius walk (T-2165 — completed 2026-06-01)
 
-**Files that read `policy/value-drivers.yaml`** (per the v1 header docstring):
-1. `lib/bvp.sh` (read paths T-1919, mutating T-1920)
-2. `lib/bvp.sh auto-promote` logic (T-1931 logic, T-1932 enabling)
-3. `lib/arc.sh approve-driver` (T-1926 arc-scoped drivers)
-4. `web/blueprints/bvp.py` (T-1928/T-1929)
-5. `web/blueprints/arcs.py` (T-1930)
+Walked the 5 readers identified in the v1 docstring. Detailed findings: see `/tmp/fw-agent-T-2165-walk.md` (Explore agent output). Summary table:
 
-Each call site needs a walk:
-- **Q1:** Does it read `schema_version` for version-gating? If yes, rename breaks it silently (no error — just falls through default branch).
-- **Q2:** Does it read `protected: true` to refuse removal? If absent on v3, M1's "refuse to remove D1-D4" path may collapse.
-- **Q3:** Does it consume `rationale:` strings (Watchtower display)? The rename to `note:` for D1-D4 vs. retained `rationale:` for free drivers is shape-asymmetric.
-- **Q4:** Does the estimator / BVP-compute code read `rubric:`? If absent, the new in-policy rubric is purely human-facing — fine. If present, it shifts the rubric source-of-truth from `policy/bvp-scoring-rubric.md` (T-1921) to per-driver YAML, creating a cross-file-duplication concern.
-- **Q5:** Does anything enforce `polarity: positive`? If not, the field is descriptive; if yes, dual-polarity drivers stop working.
-- **Q6:** Does `retire_when:` need lint / audit support? Currently free-text; adding a cron or audit-time staleness check (M1 says "NOT auto-enforced") could land separately.
+| Reader | Q1 schema_version | Q2 protected | Q3 rationale | Q4 rubric | Q5 polarity | Q6 retire_when |
+|---|---|---|---|---|---|---|
+| `lib/bvp.sh` | not-read | name-pattern only (line 837 — refuses `^D` prefix; doesn't consult `protected: true` field) | read at lines 97 (CLI), 604 (history), 837 (write-new free driver only) | not-read | not-read | not-read |
+| `lib/bvp.sh` auto-promote | not-read (same engine, no version gate) | inherits ID-prefix protection | inherits | not-read | not-read | not-read |
+| `lib/arc.sh approve-driver` | not-read | not-read (arc-scoped, not policy) | read 1124/1260/1305/1398/1418/1453/1540 (all writes to arc YAML `scoped_drivers[].rationale`, not policy) | not-read | not-read | not-read |
+| `web/blueprints/bvp.py` | not-read | read by **list membership** (`protected_drivers` vs `free_drivers`), NOT by `protected: true` field value (lines 52, 67) | read at 78/136/140 — FREE drivers only (line 132-161 loop) | read at 84/105-161 but **only from `policy/bvp-scoring-rubric.md`** (line 106-123); free drivers' inline rubric parsed from `rationale:` text | not-read | not-read |
+| `web/blueprints/arcs.py` | not-read | not-read | read 934/980/1026/1067 (HTTP form input → shell, not YAML reads) | not-read | not-read | not-read |
 
-**Provisional sizing** (pre-walk): 6 readers × 6 questions = ~10-20 LoC changes likely, plus migration logic for the version field. Could be 1 small build slice (rename + ignore-new-fields) or a larger one (consume rubric/guardrails/retire_when from YAML, deprecate the cross-file rubric MD).
+**Q1 verdict (schema_version → version rename):** **ZERO read sites.** Rename is silent-no-op on every reader. No transition support needed. L-329 alignment trivially satisfied.
+
+**Q2 verdict (protected field):** **NOT read as a YAML field value** by any reader. D1-D4 protection is enforced via two unrelated mechanisms: (a) `lib/bvp.sh:837` name-pattern `if drop_id.startswith('D')` refuses removal of any `D*` id; (b) `web/blueprints/bvp.py:52,67` reads the LIST NAME (`protected_drivers` vs `free_drivers`) to extract section contents — not the per-driver `protected: true` boolean. **v3 keeps `protected: true` in the YAML** (per proposal) — so this is irrelevant for v3 but worth noting: if a future v4 drops the boolean entirely, no reader breaks.
+
+**Q3 verdict (rationale → note rename, D1-D4 only):** **ONE reader site** reads `rationale:` from policy YAML: `web/blueprints/bvp.py:136` inside the FREE-DRIVERS loop. v3 keeps `rationale:` for free drivers. D1-D4 rename to `note:` does NOT affect this reader. All other `rationale` reads (`lib/bvp.sh:97/604/837`, `lib/arc.sh:1124+...`, `web/blueprints/arcs.py:934+...`) are either CLI input, history-log writes, or arc-scoped YAML writes — none read D1-D4's policy YAML `rationale:` field. **Hard rename SAFE.**
+
+**Q4 verdict (new `rubric: {0..5}` field on D1-D4):** **NOT read** by any consumer in v3. `web/blueprints/bvp.py:106-123` reads D1-D4 rubrics from `policy/bvp-scoring-rubric.md` (T-1921) — that markdown stays canonical. The new YAML `rubric:` field is **descriptive/informational only**. Open Question 3 resolves: the .md file is the source-of-truth for v3; the YAML field is duplicative documentation, useful for human readers viewing the policy file directly but not consulted by any code path. If a future redesign wants to flip source-of-truth to YAML, that's a separate inception touching `_driver_rubrics()` (lines 84-163).
+
+**Q5 verdict (polarity):** **NOT read.** Descriptive only. v3 ships the field; no consumer change.
+
+**Q6 verdict (retire_when):** **NOT read.** Free-text reminder. A `fw doctor` advisory check (audit-time staleness warning when retire_when condition recognisably met) is a separate slice — see Open Question 4 below.
+
+**Cross-cutting verdict — silent regression count: ZERO.** v3 can ship in ONE hard-rename slice. No transition support, no deprecation phase, no `version:` AS WELL AS `schema_version:`. **Sizing revised:** the rename is ~5 LoC of YAML edits + maybe 1-2 LoC in `lib/bvp.sh` if any history-log uses the literal string "schema_version" (none found). The new fields (rubric/guardrails/retire_when/polarity on D1-D4, full free-driver shape on F-RECALL/F-ORCH) are pure additions — readers are forward-compatible because they use `dict.get()` patterns that ignore unknown keys.
 
 ---
 
@@ -271,6 +278,10 @@ Each call site needs a walk:
 
 **Provisional verdict (subject to revisit during inception):** F-RECALL probably earns its slot at band ≥3 (retrievable across sessions) but bands 0-2 risk double-counting with D2. Consider tightening F-RECALL to only score 3-5 (with 0-2 as "below threshold, no score").
 
+**Verdict:** keep (ship as proposed; calibrate bands 0-2 in v3.1).
+
+**Final verdict (T-2165, 2026-06-01):** **KEEP — ship as proposed.** F-RECALL passes the CLAUDE.md "new meaning, not louder D1-D4" test on band ≥3 (positive accumulation that improves future sessions is genuinely orthogonal to D1's failure-driven loop). The bands 0-2 vs D2 double-count concern is real but **does not block v3 landing** — the estimator (T-1922) currently scores only D1-D4, so bands 0-2 calibration matters only for human-confirmed scores, where the band rubric guides the human's judgment. A v3.1 band-calibration pass after the estimator gains F-RECALL heuristics (separate task, see §Follow-up below) is the right place to tighten 0-2 vs collapse them. Shipping the full 0-5 scale in v3 preserves expressiveness for the human's confirmed scores until the estimator's behavior tells us whether 0-2 collapse or stay.
+
 ### F-ORCH — Orchestration Leverage
 
 **Claim:** No existing driver rewards expanding the surface that can be routed to non-primary executors.
@@ -288,6 +299,10 @@ Each call site needs a walk:
 
 **Provisional verdict:** F-ORCH probably earns its slot. The guardrail is doing real work and must be enforced at estimator-time. Weight 5 below D3 is a conservative choice.
 
+**Verdict:** keep (ship as proposed; estimator guardrail enforcement is a follow-up slice).
+
+**Final verdict (T-2165, 2026-06-01):** **KEEP — ship as proposed.** F-ORCH passes the "new meaning" test: routable-surface expansion is structurally distinct from D2's execution reliability (D2 measures *what runs*; F-ORCH measures *what could run elsewhere*). The guardrail ("score CAPABILITY UPLIFT, not ease-of-delegating-this-task") is essential and must be encoded in the estimator's F-ORCH heuristic as a refuse-rule when the task signature matches "wrap existing function in dispatch" / "add `--remote` flag to existing CLI". That guardrail enforcement is a separate slice (estimator extension, see §Follow-up) — not blocking v3 schema landing. Weight 5 below D3 is correct: F-ORCH is a meta-axis (structure-of-work) and should rank below the operator-facing axes D1-D3.
+
 ### F-AUTONOMY (carved, not active)
 
 **Claim:** Distinct from Orchestration (executor-surface expansion) — F-AUTONOMY is gate-reduction (human-checkpoint count).
@@ -303,23 +318,24 @@ Each call site needs a walk:
 
 **Provisional verdict:** Keep F-AUTONOMY as candidate. The carve documentation is valuable; activation should follow a separate inception when broad gate-reduction becomes the active focus.
 
+**Verdict:** keep carved (do not activate in v3; activation gate is T-2158-driven).
+
+**Final verdict (T-2165, 2026-06-01):** **KEEP CARVED — do not activate.** The carve passes "new meaning" cleanly (gate-reduction is structurally distinct from F-ORCH's executor-surface-expansion and from D1-D4), so the carve documentation has value as a placeholder. But activation in v3 would compete with F-ORCH (weight 5) for ranking weight without a clear focus signal, and the proposal's own framing — "the concrete continuous unattended run capability is being handled as an ARC (T-2158), not this driver" — argues for letting that arc's findings (continuous-run-arc evidence walk, deferred from prior session) inform whether broad gate-reduction is an active priority before activating. Activation gate: when ≥1 arc-active task is recognisably about gate-reduction *broadly* (not a single unattended-run case), file an activation inception and bring F-AUTONOMY live. Until then, ship as commented carve.
+
 ---
 
-## Open Questions (to resolve before GO recommendation)
+## Open Questions — resolutions (T-2165, 2026-06-01)
 
-1. **Why version: 3, not 2?** Skipping a number signals a deliberate major-shape break. If iterative, `2` is more honest. If major, `3` is fine but the migration cost is higher. Human intent?
-2. **Schema field rename — backward compat or hard cut?** Two options:
-   - (a) Add `version:` AS WELL AS keep `schema_version: 1` during transition; deprecate in v4
-   - (b) Hard rename; consumers updated in same slice
-   Option (a) is L-329-aligned (don't gate propagation of authorised decisions on synchronised consumer rewrites). Option (b) is cleaner but riskier.
-3. **`rubric:` field source-of-truth:** Does this move the rubric from `policy/bvp-scoring-rubric.md` (T-1921) to per-driver YAML? If yes, the markdown becomes generated/derived; if no, the YAML duplicates the markdown.
-4. **`retire_when:` enforcement:** Free-text reminder is fine for v3. Should a `fw doctor` advisory check exist (audit-time staleness warning when retire_when condition is recognisably met)? Separate slice if yes.
-5. **F-RECALL rubric calibration:** Do bands 0-2 risk double-counting with D2? Should F-RECALL only score 3-5?
-6. **F-ORCH guardrail enforcement:** The "score CAPABILITY UPLIFT, not ease-of-delegating-this-task" rule is critical. Does the estimator (T-1922 BVP estimator) get a sub-rule to refuse F-ORCH=5 when the task is just "wrap existing function in dispatch"?
-7. **Estimator impact:** The T-1922 BVP estimator currently scores against D1-D4. Adding F-RECALL + F-ORCH means it needs new heuristics. Is the estimator re-train / re-rule a separate inception or in-scope for this build?
-8. **Watchtower BVP display (T-1928, T-1929):** Does the `/bvp` scatter need new axes for the free drivers? Per-driver radar chart for tasks? Out-of-scope for this slice or required?
-9. **Existing in-flight tasks with `bvp_scores:`:** Any task scored before v3 has no F-RECALL/F-ORCH entries. Migration: leave as null (treated as 0 in compute) or backfill on next scan? Estimator-side question.
-10. **`free_drivers: []` → 2 active:** This is the first non-empty free-drivers config. Does the `fw bvp confirm` mutator (T-1924) support the new shape? Is there a unit test?
+1. **Why version: 3, not 2?** **DEFER to human.** The walk confirms 0 readers gate on schema_version, so the number is **purely symbolic** — no consumer cares. `2` would signal "iterative bump" (rubric/guardrails are additions), `3` signals "major shape break worth a major version" (driver introductions ≥2). The human's intent (review→refine→implement framing) reads as the latter. Defaulting to `3` per the proposal verbatim; if the human wants `2`, it's a one-character edit. **No code impact either way.**
+2. **Schema field rename — backward compat or hard cut?** **RESOLVED: hard cut (option b).** 0 readers check `schema_version`; transition support (option a) would add complexity for zero benefit. Single-slice rename, L-329 trivially satisfied.
+3. **`rubric:` field source-of-truth:** **RESOLVED: `policy/bvp-scoring-rubric.md` stays canonical.** `web/blueprints/bvp.py:106-123` reads D1-D4 rubrics from the .md file. The new YAML `rubric:` field is descriptive/informational — useful for humans viewing the policy file, ignored by code. If a future redesign wants YAML-as-source, that's a separate inception touching `_driver_rubrics()` lines 84-163. **For v3: ship the YAML field as documentation; .md remains operational.**
+4. **`retire_when:` enforcement:** **DEFER to follow-up slice.** Free-text reminder is correct for v3. A `fw doctor` advisory check (recognisably-met staleness warning) is worth filing as a separate slice with a low-priority `horizon: later` — the field has to exist in the corpus before the check has anything to warn on. File as T-NEW-X after v3 lands.
+5. **F-RECALL rubric calibration (bands 0-2 vs D2):** **DEFER to v3.1 calibration pass.** Ship v3 with full 0-5 scale. The double-count concern matters only for human-confirmed scores (estimator doesn't score F-RECALL in v1 heuristic). After ≥10 human-confirmed F-RECALL scores, revisit whether band 0-2 collapses into "below threshold" or stays distinct. File as a calibration-only task (data-driven), not part of v3 schema landing.
+6. **F-ORCH guardrail enforcement:** **DEFER to estimator extension slice.** The "score CAPABILITY UPLIFT, not ease-of-delegating-this-task" guardrail must be encoded in the estimator's F-ORCH heuristic as a refuse-rule when task signature matches "wrap existing in dispatch" / "add `--remote` to existing CLI". This is a separate build task (extends T-1922 estimator with free-driver heuristics) — not blocking v3 schema landing. Until that slice ships, F-ORCH is human-confirmation-only, and the human reads the rubric+guardrail text directly when scoring.
+7. **Estimator impact (T-1922 D1-D4 → +F-RECALL/F-ORCH heuristics):** **RESOLVED: separate build task.** T-1922 estimator currently emits `bvp_scores_proposed: {D1, D2, D3, D4}`. v3 doesn't require the estimator to populate F-RECALL/F-ORCH on day one — the proposed-shape `bvp_scores: {D1..D4, F-RECALL, F-ORCH}` simply leaves the free-driver keys absent when the estimator runs (consumers `dict.get()` ignore absent keys; rank logic treats them as 0). File estimator extension as `T-NEW-A` after v3 schema lands.
+8. **Watchtower BVP display (T-1928, T-1929 /bvp scatter + per-driver radar):** **OUT OF SCOPE for v3 schema.** Existing /bvp scatter renders composite BVP; per-driver radar would be a UI follow-up. The hover-rubric mechanism (`web/blueprints/bvp.py:132-161`) already supports new free drivers because it reads `rationale:` field generically — F-RECALL/F-ORCH rubric bands will render in hover without any UI change. Per-driver display is `T-NEW-B`, low priority, post-v3.
+9. **Existing in-flight tasks with `bvp_scores:`:** **RESOLVED: no migration.** Tasks scored before v3 have `bvp_scores: {D1, D2, D3, D4}` — F-RECALL/F-ORCH keys are absent. Per CLAUDE.md §BVP normalisation rule and F-AUTONOMY's commented note: missing keys are treated as 0 in `compute_bvp()`. New tasks get F-RECALL/F-ORCH only when human runs `fw bvp confirm` with explicit values. Estimator's next pass (after T-NEW-A heuristic extension) can backfill via `fw bvp estimate all`. **No data migration script needed for v3 landing.**
+10. **`free_drivers: []` → 2 active (T-1924 `fw bvp confirm` mutator + unit test):** **RESOLVED.** `lib/bvp.sh:837` `_driver_add()` writes free-driver YAML entries with `{id, name, weight, rationale}`. v3 adds `rubric, guardrails, retire_when, polarity` — these are pure additions, ignored by all readers (forward-compatible via `dict.get()`). `fw bvp confirm` (T-1924) operates on the task file's `bvp_scores:` field, NOT on policy YAML's `free_drivers:` list — the two are independent surfaces. Adding 2 entries vs 0 has no shape implication: readers iterate the list regardless of size. **No code change required in T-1924; no new unit test needed for v3 schema (the existing test on `_driver_add()` covers the additive case).**
 
 ---
 
@@ -335,29 +351,52 @@ Each call site needs a walk:
 
 ---
 
-## Next steps (within this inception, agent-driven)
+## Next steps (within this inception, agent-driven) — completed via T-2165
 
 1. ✅ This artifact filed at `docs/reports/T-2157-value-drivers-v3-redesign.md`
-2. ⬜ Read `lib/bvp.sh` — identify all `schema_version` reads + `protected:` reads + `rationale:` reads
-3. ⬜ Read `web/blueprints/bvp.py` + `web/blueprints/arcs.py` — same walk
-4. ⬜ Read `lib/arc.sh approve-driver` — same walk
-5. ⬜ Read `policy/bvp-scoring-rubric.md` (T-1921) — confirm the rubric source-of-truth question
-6. ⬜ Read T-1915 inception artifact (`docs/reports/T-1915-bvp-inception.md`) — see what semantic carves were considered at first-pass
-7. ⬜ Update this artifact's "Consumer-code blast radius walk" section with concrete findings
-8. ⬜ Answer open questions 1-10 with evidence cited
-9. ⬜ Flip Recommendation from DEFER → GO / NO-GO / GO-with-refinements
-10. ⬜ Hand to human via `fw task review T-2157` → Watchtower `/inception/T-2157`
+2. ✅ Read `lib/bvp.sh` — `schema_version`: 0 reads. `protected:` field: 0 reads (ID-pattern only at :837). `rationale:`: read at :97 (CLI), :604 (history), :837 (write-new free driver only). Walk findings under §Consumer-code blast radius.
+3. ✅ Read `web/blueprints/bvp.py` + `web/blueprints/arcs.py` — bvp.py reads `rationale:` ONLY from free drivers (:136), reads rubrics from .md file (:106-123); arcs.py reads only HTTP form rationale, never policy YAML.
+4. ✅ Read `lib/arc.sh approve-driver` — all `rationale:` writes target arc YAML's `scoped_drivers[]`, never policy/value-drivers.yaml. Zero policy interaction.
+5. ✅ Rubric source-of-truth confirmed: `policy/bvp-scoring-rubric.md` stays canonical for D1-D4 (bvp.py:106-123). The new YAML `rubric:` field is descriptive/informational only.
+6. ⏭ T-1915 first-pass carves NOT re-read — the consumer walk + semantic critique against CLAUDE.md "new meaning" bar produced sufficient evidence to verdict without it. If a future v3.1 calibration needs the first-pass carve history, T-1915's artifact remains available at `docs/reports/T-1915-bvp-inception.md`.
+7. ✅ "Consumer-code blast radius walk" section rewritten with concrete findings (per-reader Q1-Q6 + cross-cutting verdict).
+8. ✅ Open questions 1-10 answered with concrete resolutions (5 RESOLVED, 4 DEFER-to-follow-up with explicit slice naming, 1 DEFER-to-human for symbolic version-number choice).
+9. ✅ Recommendation flipped from DEFER → **GO with refinements** (see §Recommendation below).
+10. ⏭ Hand to human via `fw task review T-2165` → operator's call on whether to also re-review T-2157's GO (already recorded) or treat this artifact update as advisory.
 
 ---
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO with refinements
 
-**Rationale:** Inception is at filing-time. Evidence walk (consumer-code blast radius + semantic critique vs. CLAUDE.md's "new meaning" bar + open questions 1-10) has not yet been conducted. Per T-2144 (defer-as-hedge distinction), this is a genuine evidence gap — the artifact reflects the proposal verbatim and the structural diff, but the cost/risk side requires file-walks the agent has not performed. Recommendation will flip once steps 2-9 above are complete and posted into this artifact. The human's GO / NO-GO is the final decision.
+**Rationale:** Evidence walk complete (T-2165). Three findings drive the GO verdict:
 
-**Evidence (so far):**
-- Proposed YAML captured verbatim (above)
-- Structural diff table populated (12 axes)
-- Provisional semantic critique on F-RECALL / F-ORCH / F-AUTONOMY (each marked "subject to revisit")
-- 10 open questions enumerated with disambiguation criteria
+1. **Zero silent regressions.** The schema rename (`schema_version` → `version`) and field rename (D1-D4 `rationale` → `note`) impact zero consumer read sites. v3 ships in one hard-rename slice, no transition support, no deprecation phase. Sizing revised from "10-20 LoC + migration logic" (pre-walk estimate) down to **~5 LoC YAML edit + zero consumer-code changes**.
+2. **All three driver candidates pass the "new meaning" bar.** F-RECALL is orthogonal to D1's failure-loop on band ≥3 (positive accumulation); F-ORCH is orthogonal to D2's reliability (routable-surface expansion vs. execution-of-what-runs); F-AUTONOMY (carved) is structurally distinct from F-ORCH (gate-reduction vs. executor-surface expansion). Verdicts: KEEP F-RECALL, KEEP F-ORCH, KEEP CARVED F-AUTONOMY.
+3. **The new fields (rubric/guardrails/retire_when/polarity) are forward-compatible.** Pure additions; no reader breaks; `dict.get()` patterns ignore unknown keys. Rubric source-of-truth question resolved: `policy/bvp-scoring-rubric.md` stays canonical; the YAML `rubric:` field is descriptive-only for v3.
+
+**Refinements deferred to follow-up tasks** (filed only after this artifact's review):
+
+| Slice | Scope | Priority |
+|---|---|---|
+| T-NEW-A: estimator extension | Add F-RECALL + F-ORCH heuristics to T-1922 BVP estimator. Encode F-ORCH guardrail as refuse-rule for "wrap-in-dispatch" task signatures. | `next` — needed before F-RECALL/F-ORCH show in estimator-proposed scores |
+| T-NEW-B: F-RECALL band 0-2 calibration | Data-driven pass after ≥10 human-confirmed F-RECALL scores. Decide whether bands 0-2 collapse into "below threshold" or stay distinct. | `later` — needs corpus before signal |
+| T-NEW-C: `retire_when:` audit advisory | `fw doctor` advisory warning when retire_when condition is recognisably met. Free-text-pattern matched. | `later` — field has to exist in corpus first |
+| T-NEW-D: per-driver Watchtower display | /bvp scatter per-driver radar chart for tasks (T-1928/T-1929 extension). | `later` — composite ranking already works |
+| T-NEW-E: F-AUTONOMY activation gate | When ≥1 arc-active task is broadly about gate-reduction, file activation inception. T-2158 (continuous-run-arc) is one candidate but not yet broad. | gated on T-2158 outcome |
+
+**Evidence:**
+- `lib/bvp.sh` walked (1252 LOC) — Q1-Q6 answered with file:line citations.
+- `lib/arc.sh approve-driver` walked (1663 LOC) — no policy-YAML interaction confirmed.
+- `web/blueprints/bvp.py` walked (725 LOC) — single `rationale:` read site identified (`:136`, free drivers only); rubric source-of-truth = `.md` (`:106-123`).
+- `web/blueprints/arcs.py` walked (1367 LOC) — HTTP-form-only, never policy-YAML.
+- Cross-reader summary table populated; risk classification: 0 silent-regression sites, 5 readers safe.
+- Detailed walk preserved at `/tmp/fw-agent-T-2165-walk.md` (Explore agent).
+- 10 open questions answered: 5 RESOLVED, 4 DEFER-to-follow-up with named slices, 1 DEFER-to-human (cosmetic version-number choice).
+- Three driver semantic verdicts written (KEEP / KEEP / KEEP CARVED).
+
+**What the human decides next:** This artifact update is advisory on T-2157 (already GO-decided). The operator may:
+- (a) Treat this as confirmation that the original GO was right (no re-review needed) and file the v3 build task directly.
+- (b) Use this artifact's refinement list to scope the build task before filing it.
+- (c) Push back on any of the three driver verdicts (e.g., reconsider F-RECALL bands 0-2 inline rather than in v3.1 calibration).
