@@ -1,0 +1,26 @@
+id: arc-009
+slug: horizon-axis-hardening
+name: "Horizon axis hardening \u2014 terminal-state coupling + migration + audit"
+description: "Close the missing completion\u2192horizon edge identified in T-2159. Per Q1-Q4 resolved\
+  \ with human: (b) past as derived value from file location in .tasks/completed/,\
+  \ never stored; terminal = directory-based (work-completed alone is NOT terminal\
+  \ \u2014 partial-complete in active/ keeps horizon); migrate completed/ to null\
+  \ stored horizon + report partial-completes; explicit footer surfacing in handover.\
+  \ Three slices: (1) derived past + render-surface integration + invariant guard;\
+  \ (2) idempotent migration + report; (3) fw audit rail to prevent recurrence."
+status: in-progress
+anchor_task: 
+headline_mechanic: "An agent reads the handover 'Work in Progress' section and sees zero work-completed\
+  \ tasks in the now/next buckets \u2014 partial-complete tasks (awaiting human ACs)\
+  \ appear in an explicit 'Partial-Complete \u2014 awaiting human' footer, completed/\
+  \ tasks render horizon=past on Watchtower without any stored horizon field, and\
+  \ re-running the migration reports 0 changes."
+demo_evidence: null
+created: 2026-06-01T10:09:17Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
