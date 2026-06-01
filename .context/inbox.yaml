@@ -327,5 +327,12 @@ observations:
     captured: 2026-05-31T19:57:21Z
     context_task: T-2074
     tags: [housekeeping]
+    status: promoted
+    promoted_to: task
+  - id: OBS-047
+    text: "add"
+    captured: 2026-06-01T09:05:43Z
+    context_task: T-1820
+    tags: [auto-tick-fp]
     status: pending
     promoted_to: null
