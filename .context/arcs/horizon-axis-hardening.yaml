@@ -9,13 +9,13 @@ description: "Close the missing completion\u2192horizon edge identified in T-215
   \ Three slices: (1) derived past + render-surface integration + invariant guard;\
   \ (2) idempotent migration + report; (3) fw audit rail to prevent recurrence."
 status: in-progress
-anchor_task: 
+anchor_task: T-2159
 headline_mechanic: "An agent reads the handover 'Work in Progress' section and sees zero work-completed\
   \ tasks in the now/next buckets \u2014 partial-complete tasks (awaiting human ACs)\
   \ appear in an explicit 'Partial-Complete \u2014 awaiting human' footer, completed/\
   \ tasks render horizon=past on Watchtower without any stored horizon field, and\
   \ re-running the migration reports 0 changes."
-demo_evidence: null
+demo_evidence: docs/reports/arc-009-demo-evidence.md
 created: 2026-06-01T10:09:17Z
 closed_at: null
 decision: null
