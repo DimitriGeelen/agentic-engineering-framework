@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2092: V1-a fw upgrade: docker-based live-upgrade simulation gate (T-2078 GO, closes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T00:03:13Z
+# ============================================================================
+
+task_id: T-2092
+task_name: "V1-a fw upgrade: docker-based live-upgrade simulation gate (T-2078 GO, closes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T11:58:17Z
+completed: 2026-06-01T00:01:34Z
+duration_days: 3
+updates_count: 4
+first_commit: 2026-05-29T14:02:01+02:00
+last_commit: 2026-06-01T01:46:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file T-2078 GO scope — V1-a/b/c/d build slices (L-417 gap close). demote to captured/horizon:next — V1-a queued, not in-progress. docker live-upgrade simulation gate + fix pyc_count pipefail regression
+
+# Key outcomes
+outcomes:
+  - '`tests/integration/upgrade_live_simulation.bats` exists and contains a bats test that (a) builds a minimal docker container with the vendored consumer skeleton, (b) runs `fw upgrade` against it without `--dry-run`, (c) asserts post-upgrade `.agentic-framework/VERSION` advanced (was pre-corrupted to 0.0.1, becomes upstream''s current 1.6.79) and `bin/fw` was rewritten (T-2092-LIVE-SIM-MARKER pre-injected, absent after upgrade)'
+  - 'Test runs in ≤5 min wall-clock on the framework dev host (~19 s measured; timing emitted as `elapsed=Ns budget=300s rc=N` line in test output; budget tunable via `T2092_TIME_BUDGET_SECS` env var)'
+  - 'Test is wired into `fw test integration` — bats path `tests/integration/upgrade_live_simulation.bats` is automatically picked up by `bin/fw test integration` (no additional wiring needed; the integration runner globs `tests/integration/*.bats`)'
+  - 'Failure modes documented: (a) docker binary missing → `skip "docker not available"`, (b) docker daemon unreachable → `skip "docker daemon unreachable"`, (c) apt repos unreachable inside container → sentinel exit 64 → `skip "apt repos unreachable inside container — offline environment"`, (d) live upgrade verification fails → FAIL with full container log preserved via `cat "$out_log"` before `false`'
+  - 'Closes F3 in `docs/reports/T-2078-fw-upgrade-reliability-review.md` — F3 heading now reads `**Status: shipped (T-2092)**` with the dated note appended; verified by grep `grep -q "Status: shipped (T-2092)" docs/reports/T-2078-fw-upgrade-reliability-review.md`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'docker live-upgrade simulation gate + fix pyc_count pipefail regression'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-01 — fix the pyc_count regression under T-2092 vs file a sibling task'
+    chose: 'Fix in the same commit as the gate.'
+    rationale: 'The fix is one character (`|| true`); the gate IS the regression'
+    alternatives_rejected: ['File T-2154 as the bug fix and T-2092 as the gate. Adds']
+  - decision: '2026-06-01 — debian:trixie-slim vs custom Dockerfile'
+    chose: 'Use the pre-pulled `debian:trixie-slim` image directly via'
+    rationale: 'Image is ~30 MB, apt-installs git/rsync/python3/python3-yaml/'
+    alternatives_rejected: ['Custom Dockerfile under `tests/integration/docker/`. Adds']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2092-v1-a-fw-upgrade-docker-based-live-upgrad.md'
+  - '.tasks/active/T-2093-v1-b-fw-upgrade-strict-exit-code-discipl.md'
+  - '.tasks/active/T-2094-v1-c-fw-upgrade-pre-flight-tooling-check.md'
+  - '.tasks/active/T-2095-v1-d-fw-upgrade-self-vendor-extraction-i.md'
+  - '.tasks/completed/T-2078-deep-review-fw-upgrade-reliability-for-f.md'
+  - 'tests/integration/upgrade_live_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-29T14:02:01"
+    action: "T-2092: file T-2078 GO scope — V1-a/b/c/d build slices (L-417 gap close)"
+  - time: "2026-05-29T14:12:03"
+    action: "T-2092: demote to captured/horizon:next — V1-a queued, not in-progress"
+  - time: "2026-06-01T01:46:34"
+    action: "T-2092: docker live-upgrade simulation gate + fix pyc_count pipefail regression"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3603 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-upgrade, reliability, v1, T-2078-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3603
+  commits: 3
+  files_changed: 7
+  lines_added: 985
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2092-v1-a-fw-upgrade-docker-based-live-upgrad.md
+generated_by: context-agent-hybrid

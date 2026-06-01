@@ -66,7 +66,19 @@ Numbered for traceability. Severity = how likely this fails in the field × how 
 
 **Fix shape:** move self-vendor to a separate verb (`fw vendor self` or `fw upgrade --self-vendor`); fire from framework's pre-push only; consumer `fw upgrade` never touches `$FRAMEWORK_ROOT`.
 
-### F3 — Live (non-dry-run) upgrade is NOT covered by the fresh-machine simulation (High)
+### F3 — Live (non-dry-run) upgrade is NOT covered by the fresh-machine simulation (High) — **Status: shipped (T-2092)**
+
+**T-2092 (2026-06-01):** docker-based live-upgrade simulation gate landed at
+`tests/integration/upgrade_live_simulation.bats`. Runs FULL live upgrade
+end-to-end inside isolated `debian:trixie-slim` container in ~19 s (well
+under the 5-min budget). Skips cleanly when docker / docker daemon / apt
+repos unreachable. On first run the gate caught a real pipefail regression
+in `lib/upgrade.sh:1318` (pyc_count grep pipeline exits 1 on clean
+consumers → set -e kills do_upgrade silently before summary) — fixed in
+the same commit. Exactly the class this F finding said was untested.
+
+(Original finding text preserved below for context.)
+
 
 `tests/unit/upgrade_fresh_machine_simulation.bats:112-117`:
 
