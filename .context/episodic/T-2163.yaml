@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2163: horizon write-side prevention: null horizon at close-time in update-task.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T12:27:38Z
+# ============================================================================
+
+task_id: T-2163
+task_name: "horizon write-side prevention: null horizon at close-time in update-task.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T12:21:05Z
+completed: 2026-06-01T12:27:28Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`update-task.sh` nulls the stored horizon field on full close (the branch that moves to `.tasks/completed/`) — not on partial-complete (which keeps the file in active/).'
+  - 'After closing a fresh task via this code path, the just-moved file in `.tasks/completed/` has `horizon: null`. Verified by reading the file post-close in the bats test.'
+  - 'Re-running `bin/migrate-horizon-null-completed.sh` after a fresh full close emits `0 changes` (no new drift candidates).'
+  - 'Bats test pins both branches: (a) full close → file in completed/ with `horizon: null`; (b) partial-complete (1 unchecked Human AC) → file stays in active/ with horizon preserved.'
+  - 'At least one commit references `T-2163` AND `arc-009` (or `horizon-axis-hardening`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-01 — null at move time, not at AC-tick time'
+    chose: 'Inject `_sed_i ''s/^horizon:.*/horizon: null/''` right after the move-to-completed line.'
+    rationale: 'Single-purpose code at the move boundary is easy to reason about — it mirrors `date_finished` assignment which happens right before the move. Any future refactor that changes the close flow will inevitably touch this region; the comment trail makes the intent explicit.'
+    alternatives_rejected: ['Earlier in the AC-tick flow (would null prematurely before the gate checks pass); in a separate function (adds indirection for one sed line).']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:horizon-axis-hardening]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2163-horizon-write-side-prevention-null-horiz.md
+generated_by: context-agent-hybrid

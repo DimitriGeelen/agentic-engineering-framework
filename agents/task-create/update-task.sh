@@ -1657,6 +1657,16 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             fi
             echo -e "${GREEN}Moved to completed/${NC}"
 
+            # T-2163 (arc-009 horizon-axis-hardening, Slice 4): null the stored
+            # horizon now that the file is in .tasks/completed/. Render derives
+            # `past` from _location (T-2160 Q1=(b)) so the stored value is
+            # behaviorally irrelevant — but a non-null value here is a YAML lie
+            # that CTL-030 (T-2162) would catch. Plug the source: write `null`
+            # in the same atomic move so no drift is ever introduced.
+            # Partial-complete branch does NOT touch this — that file stays in
+            # active/ and renders via the stored horizon.
+            _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
+
             # T-709: Push notification — task completed
             if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
                 source "$FRAMEWORK_ROOT/lib/notify.sh"
