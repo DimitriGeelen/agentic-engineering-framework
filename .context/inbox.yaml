@@ -336,3 +336,10 @@ observations:
     tags: [auto-tick-fp]
     status: dismissed
     promoted_to: null
+  - id: OBS-048
+    text: "G-064 closure-readiness gauge VERDICT=READY: 11 cron-firing dates ≥ 3 threshold (gauge: tools/g064-readiness.py 2026-06-01). Status_notes already specify the gauge as the closure mechanism (mechanical threshold, not human-judgment). Recommend closure via Watchtower /gaps. Cascade: closing G-064 also satisfies T-2169 retire_when audit advisory's F-ORCH heuristic (F-ORCH retires when G-064 closed). Cron firings: 2026-05-14, 2026-05-15, 2026-05-18, 2026-05-21, 2026-05-22, 2026-05-23, 2026-05-25, 2026-05-26, 2026-05-29, 2026-05-31, 2026-06-01."
+    captured: 2026-06-01T22:34:22Z
+    context_task: T-2158
+    tags: [gap-readiness]
+    status: pending
+    promoted_to: null
