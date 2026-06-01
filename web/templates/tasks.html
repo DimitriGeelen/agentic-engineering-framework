@@ -438,7 +438,10 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="[name='q'],[name='owner'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Horizons</option>
-        {% for h in ['now','next','later'] %}
+        {# T-2160 (arc-009 Slice 1): render-only list includes 'past' (derived
+           from .tasks/completed/). Storage enum stays now/next/later — past
+           is filter-only, not editable. #}
+        {% for h in enum_render_horizons %}
         <option value="{{ h }}" {% if horizon_filter == h %}selected{% endif %}>{{ h }}</option>
         {% endfor %}
     </select>

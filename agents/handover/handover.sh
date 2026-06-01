@@ -589,7 +589,11 @@ for f in sorted(glob.glob(os.path.join(tasks_dir, '*.md'))):
 
 tasks.sort(key=lambda t: (t[0], t[1]))
 current_horizon = None
-# Collect work-completed tasks to summarize at end of each horizon group
+# T-2160 (arc-009 horizon-axis-hardening, Slice 1, Q4 explicit-filter):
+# Collect ALL work-completed tasks into a single bottom footer rather than
+# flushing per-horizon. Previously each horizon group had its own
+# "Awaiting Human Review" sub-section, interleaving 135+ partial-complete
+# tasks with active WIP. Single bottom footer = primary signal first.
 pending_completed = []
 for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
     # T-1619: DEFER'd inceptions are parked (decision is final, not WIP).
@@ -597,24 +601,15 @@ for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
     # section below (T-1517) which already covers visibility.
     if wf == 'inception' and dec == 'DEFER':
         continue
+    # T-2160: work-completed in active/ = partial-complete (Human ACs pending).
+    # Collect into the single bottom footer; do NOT contribute to horizon buckets.
+    if tstatus == 'work-completed':
+        pending_completed.append((tid, tname, verdict, h))
+        continue
     if h != current_horizon:
-        # Flush any accumulated work-completed tasks from previous horizon
-        if pending_completed:
-            print(f'### Awaiting Human Review ({len(pending_completed)} tasks)')
-            print()
-            print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
-            print()
-            for pc_tid, pc_name, pc_verdict in pending_completed:
-                print(f'- [{pc_verdict}] {review_link(pc_tid, pc_name)}')
-            print()
-            pending_completed = []
         current_horizon = h
         print(f'<!-- horizon: {h} -->')
         print()
-    # Work-completed tasks: just list them (no [TODO] blocks)
-    if tstatus == 'work-completed':
-        pending_completed.append((tid, tname, verdict))
-        continue
     # Auto-fill from git log for this task
     import subprocess
     last_action = 'See git log'
@@ -634,15 +629,28 @@ for _, tid, tname, tstatus, h, verdict, wf, dec in tasks:
     print(f'- **Blockers:** None')
     print()
     print()
-# Flush remaining work-completed tasks
+
+# T-2160: single bottom footer (replaces per-horizon flush above).
+# All work-completed tasks in active/ are partial-complete = Agent done,
+# Human ACs pending. Surfaced explicitly per Q4 (not silent filter).
 if pending_completed:
-    print(f'### Awaiting Human Review ({len(pending_completed)} tasks)')
+    print('<!-- partial-complete-footer -->')
+    print(f'### Partial-Complete — awaiting human ({len(pending_completed)} tasks)')
     print()
     print('Agent ACs done. Human ACs pending — see "Awaiting Your Action" below.')
     print()
-    for pc_tid, pc_name, pc_verdict in pending_completed:
-        print(f'- [{pc_verdict}] {review_link(pc_tid, pc_name)}')
-    print()
+    # Group by horizon so the human can see which were most-recently active.
+    by_h = {'now': [], 'next': [], 'later': []}
+    for pc_tid, pc_name, pc_verdict, pc_h in pending_completed:
+        by_h.setdefault(pc_h, []).append((pc_tid, pc_name, pc_verdict))
+    for hk in ('now', 'next', 'later'):
+        if not by_h.get(hk):
+            continue
+        print(f'**horizon: {hk}** ({len(by_h[hk])})')
+        print()
+        for pc_tid, pc_name, pc_verdict in by_h[hk]:
+            print(f'- [{pc_verdict}] {review_link(pc_tid, pc_name)}')
+        print()
 
 # T-1461: render inception tasks awaiting decision with /inception/T-XXX links
 # T-1517: split into "Awaiting Decision" (no recorded Decision) and "Deferred"

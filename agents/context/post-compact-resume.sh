@@ -135,21 +135,41 @@ if [ -f "$ARC_FOCUS_FILE" ]; then
 fi
 
 # Active tasks summary
+# T-2160 (arc-009 Slice 1): split work-completed (partial-complete = Agent ACs
+# done, Human ACs pending) into a separate listing. Primary "Active Tasks" list
+# carries only in-progress entries (started-work / captured / issues). Mirrors
+# the handover footer split.
 TASK_SUMMARY=""
+PARTIAL_SUMMARY=""
+PARTIAL_COUNT=0
 for f in "$PROJECT_ROOT/.tasks/active"/*.md; do
     [ -f "$f" ] || continue
     tid=$({ grep "^id:" "$f" 2>/dev/null || true; } | head -1 | sed 's/id:[[:space:]]*//')
     tname=$({ grep "^name:" "$f" 2>/dev/null || true; } | head -1 | sed 's/name:[[:space:]]*//')
     tstatus=$({ grep "^status:" "$f" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
     thoriz=$({ grep "^horizon:" "$f" 2>/dev/null || true; } | head -1 | sed 's/horizon:[[:space:]]*//' || echo "now")
-    TASK_SUMMARY="${TASK_SUMMARY}
+    if [ "$tstatus" = "work-completed" ]; then
+        PARTIAL_SUMMARY="${PARTIAL_SUMMARY}
+- ${tid}: ${tname} (horizon: ${thoriz})"
+        PARTIAL_COUNT=$((PARTIAL_COUNT + 1))
+    else
+        TASK_SUMMARY="${TASK_SUMMARY}
 - ${tid}: ${tname} (${tstatus}, horizon: ${thoriz})"
+    fi
 done
 
 if [ -n "$TASK_SUMMARY" ]; then
     CONTEXT="${CONTEXT}
 ## Active Tasks
 ${TASK_SUMMARY}
+"
+fi
+
+if [ "$PARTIAL_COUNT" -gt 0 ]; then
+    CONTEXT="${CONTEXT}
+## Partial-Complete — awaiting human (${PARTIAL_COUNT} tasks)
+Agent ACs done. Human ACs pending — see Watchtower /review/T-XXX or run \`bin/fw task review T-XXX\`.
+${PARTIAL_SUMMARY}
 "
 fi
 

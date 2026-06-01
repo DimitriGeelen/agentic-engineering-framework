@@ -116,6 +116,12 @@ if ! is_valid_type "$WORKFLOW_TYPE"; then
 fi
 
 # Validate horizon
+# T-2160 (arc-009 Slice 1): explicit guard against --horizon past at creation too.
+if [ "$HORIZON" = "past" ]; then
+    error "'--horizon past' rejected — past is a derived render-time value, not settable"
+    error "  Past is computed from file location: .tasks/completed/ → renders as past."
+    die "  Storage enum is now/next/later. Per T-2159 Q1=(b); arc-009."
+fi
 if ! is_valid_horizon "$HORIZON"; then
     error "Invalid horizon '$HORIZON'"
     die "Valid horizons: $VALID_HORIZONS"

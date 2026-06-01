@@ -1,10 +1,18 @@
 ---
 id: T-2160
-name: "horizon: derived past for terminal tasks + render-surface integration + invariant guard"
+name: "horizon: derived past for terminal tasks + render-surface integration + invariant
+  guard"
 description: >
-  Slice 1 of arc-009 horizon-axis-hardening (parent T-2159 inception GO). Add render-time 'past' horizon derived from file location in .tasks/completed/. Update agents/handover/handover.sh, agents/context/post-compact-resume.sh, web/blueprints/tasks.py to compute and honor past. Add invariant guard in agents/task-create/update-task.sh that rejects --horizon past (cannot be set, only derived). Filter status=work-completed entries out of handover's now/next buckets and surface them in an explicit 'Partial-Complete — awaiting human' footer section (Q4 explicit-filter resolution). Closes the third T-1068 invariant (the missing completion edge).
+  Slice 1 of arc-009 horizon-axis-hardening (parent T-2159 inception GO). Add render-time
+  'past' horizon derived from file location in .tasks/completed/. Update agents/handover/handover.sh,
+  agents/context/post-compact-resume.sh, web/blueprints/tasks.py to compute and honor
+  past. Add invariant guard in agents/task-create/update-task.sh that rejects --horizon
+  past (cannot be set, only derived). Filter status=work-completed entries out of
+  handover's now/next buckets and surface them in an explicit 'Partial-Complete —
+  awaiting human' footer section (Q4 explicit-filter resolution). Closes the third
+  T-1068 invariant (the missing completion edge).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: claude-code
 horizon: now
@@ -16,8 +24,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T10:09:58Z
-last_update: 2026-06-01T10:10:31Z
-date_finished: null
+last_update: 2026-06-01T10:25:53Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +36,46 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-01T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-01T10:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2160: horizon: derived past for terminal tasks + render-surface integration + invariant guard
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 1 of arc-009 horizon-axis-hardening. Implements the Q1=(b) derived-past resolution from T-2159 inception: `past` is computed at read-time from file location (`.tasks/completed/`), never stored in YAML. Implements Q4 explicit-filter resolution: status=work-completed entries are removed from handover's now/next buckets and surfaced in an explicit "Partial-Complete — awaiting human" footer. Adds the missing third T-1068 invariant: rejects `--horizon past` because past has no write-path.
+
+Research artifact: `docs/reports/T-2158-continuous-run.md` is a different arc (unrelated). The Step-0 verification + Q1-Q4 resolution lives in this session's chat log; design decisions captured in §Decisions below.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] AC1 — `handover.sh` Work-in-Progress section emits zero `status: work-completed` entries under any `<!-- horizon: now -->` or `<!-- horizon: next -->` bucket
+- [x] AC2 — `handover.sh` emits a `<!-- partial-complete-footer -->` section (or equivalent named anchor) listing every active task with status=work-completed (verifiable: count matches active/+work-completed task count)
+- [x] AC3 — `web/blueprints/tasks.py` `/tasks?horizon=past` returns HTTP 200 and includes at least one task from `.tasks/completed/`
+- [x] AC4 — `bin/fw task update T-XXX --horizon past` exits non-zero with stderr containing `past` and `derived` (clear error)
+- [x] AC5 — `post-compact-resume.sh` Active Tasks block emits zero `status: work-completed` entries (Partial-Complete tasks surfaced separately or suppressed per §Decisions)
+- [x] AC6 — `lib/enums.sh` `is_valid_horizon()` still returns true for now/next/later and false for past (storage enum unchanged; only render layer knows about past)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -107,6 +141,19 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# AC1: zero work-completed under now/next buckets in handover Work-in-Progress
+n=$(awk '/^## Work in Progress/{w=1;next} /^<!-- partial-complete-footer -->/{w=0} /^## /&&w&&!/Work in Progress/{w=0} w&&/<!-- horizon: (now|next) -->/{b=1;next} w&&/<!-- horizon: later -->/{b=0} w&&b&&/\*\*Status:\*\* work-completed/{c++} END{print c+0}' .context/handovers/LATEST.md); [ "$n" = "0" ]
+# AC2: partial-complete footer present + count matches active/work-completed count
+fc=$(grep -E "^### Partial-Complete — awaiting human \(([0-9]+) tasks\)" .context/handovers/LATEST.md | sed -E 's/.*\(([0-9]+).*/\1/' | head -1); ac=$(grep -lE "^status: work-completed" .tasks/active/T-*.md 2>/dev/null | wc -l); [ "$fc" = "$ac" ] && [ "$fc" -gt 0 ]
+# AC3: /tasks?horizon=past returns 200 with completed tasks (list view — board view is paginated)
+url=$(bin/fw watchtower url 2>/dev/null); curl -sf "$url/tasks?horizon=past&view=list" -o /tmp/t2160-past.html && grep -qE "T-(2155|2156|2159|111)" /tmp/t2160-past.html
+# AC4: --horizon past rejected with derived+past in stderr
+out=$(bin/fw task update T-2160 --horizon past 2>&1 || true); echo "$out" | grep -qE "(past.*derived|derived.*past)"
+# AC5: post-compact-resume Active Tasks excludes work-completed; Partial-Complete section present
+po=$(bash agents/context/post-compact-resume.sh 2>/dev/null); echo "$po" | grep -q "Partial-Complete .. awaiting human" && ! echo "$po" | grep -B 0 -A 60 '"## Active Tasks' | head -200 | grep -q "(work-completed,"
+# AC6: storage enum unchanged
+bash -c 'source lib/enums.sh; is_valid_horizon now && is_valid_horizon next && is_valid_horizon later && ! is_valid_horizon past' >/dev/null 2>&1
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -125,29 +172,37 @@ date_finished: null
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-06-01 — handover.sh already had partial-complete consolidation
+- **What changed:** During implementation, found that `handover.sh:601-610` *already* consolidated work-completed tasks into "Awaiting Human Review" sub-sections — flushed per-horizon as a transition marker. The pollution wasn't that work-completed tasks rendered as full `### T-XXX:` WIP blocks; the pollution was that each horizon bucket got its own consolidation section (3 sub-sections for now/next/later) interleaved with active WIP, and the section header "Awaiting Human Review" buried the partial-complete framing.
+- **Plan impact:** Simpler refactor than expected. The fix is two changes, not a rewrite:
+  1. Move flush from per-horizon to single bottom footer
+  2. Rename section: "Awaiting Human Review" → "Partial-Complete — awaiting human"
+  Group inside footer by horizon (now/next/later) for the human's context, but as sub-headings under one footer, not as separate sections.
+- **Triggered:** No new sub-tasks. The pre-existing code path made AC1 (zero work-completed in WIP buckets) trivially satisfiable — work-completed was already filtered out of full `### T-XXX:` rendering. Only the per-horizon-flush pattern needed restructuring.
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+### 2026-06-01 — `_location` field already exists on cached task metadata
+- **What changed:** `web/shared.py:get_all_task_metadata()` already sets `_location: 'active'|'completed'` on every task dict (T-1244). Made AC3 (derived past on Watchtower) a two-line filter change.
+- **Plan impact:** No template-side rendering changes needed for the kanban — the existing kanban groups by stored horizon, and completed tasks at stored horizon:now still appear under the "now" column in kanban view when filter=past is applied. List view (`view=list`) shows them flat. Acceptable; kanban semantics for past would need a follow-up.
+- **Triggered:** Possible follow-up — kanban-mode rendering for `horizon=past` could either (a) hide the kanban grid + show a list, or (b) add a "Past" column. Not needed for arc-009 close; capture as observation if it matters.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+### 2026-06-01 — create-task.sh also needed the guard
+- **What changed:** Initial scope was just `update-task.sh`. Realised `create-task.sh` accepts `--horizon` too — without the guard, `bin/fw task create --horizon past` would succeed since `is_valid_horizon` doesn't know about the derived-past semantics (past isn't in the enum, but the error message would say "Invalid horizon" not "derived value, not settable").
+- **Plan impact:** Added matching guard to `create-task.sh:118-125`. Both write-paths now reject past with the same explicit message.
+- **Triggered:** No new sub-task. Single-line scope expansion within this slice.
 
 ## Decisions
+
+### 2026-06-01 — Single bottom footer (Q4 explicit-filter execution)
+- **Chose:** Move all partial-complete entries into ONE bottom footer (post-WIP, pre-Inceptions), grouped internally by horizon
+- **Why:** The user resolved Q4 as "explicit filter" (not silent). Per-horizon sub-sections (the previous behavior) hid the framing — humans saw 136 tasks across 3 sub-sections labeled "Awaiting Human Review" and didn't connect them as one class. Single footer with the explicit name "Partial-Complete — awaiting human" makes the framing legible.
+- **Rejected:** (a) Silent filter — violates Q4. (b) Per-horizon sub-sections — current behavior, the thing we're fixing. (c) Top-of-WIP footer — buries the actual WIP signal.
+
+### 2026-06-01 — `enum_render_horizons` separate from `enum_horizons` (storage vs render)
+- **Chose:** Storage enum (`enum_horizons`: now/next/later) stays the source of truth for write-paths (kanban-drag, inline edits, create form). New `enum_render_horizons` (storage + past) is for filter dropdowns only.
+- **Why:** Per Q1=(b) past is derived from `_location`, not stored. If past appeared in write-path dropdowns, a user could set it and the storage layer would either accept it (breaking invariant) or reject silently (breaking UX). Two enums = clean separation: write-paths see only writable values, render-paths see past.
+- **Rejected:** Single enum with past included — would require write-side validation in 4+ places. Two-enum split is the standard "storage vs render" pattern.
+
+## Decision
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -177,3 +232,6 @@ date_finished: null
 
 ### 2026-06-01T10:10:31Z — status-update [task-update-agent]
 - **Change:** tags: +arc:horizon-axis-hardening
+
+### 2026-06-01T10:25:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

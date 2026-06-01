@@ -681,8 +681,16 @@ def tasks():
         all_tasks = [t for t in all_tasks if task_dict_in_arc(t, arc_filter)]
     if owner_filter:
         all_tasks = [t for t in all_tasks if t.get("owner") == owner_filter]
+    # T-2160 (arc-009 horizon-axis-hardening, Slice 1): horizon='past' is a
+    # derived render-time value computed from file location, per T-2159 Q1=(b).
+    # Storage enum stays {now, next, later}; past matches _location == 'completed'.
+    # Past is never stored in YAML, only derived at read-time.
     if horizon_filter:
-        all_tasks = [t for t in all_tasks if t.get("horizon") == horizon_filter]
+        if horizon_filter == "past":
+            all_tasks = [t for t in all_tasks if t.get("_location") == "completed"]
+        else:
+            all_tasks = [t for t in all_tasks if t.get("horizon") == horizon_filter
+                         and t.get("_location") != "completed"]
     if search_query:
         q_lower = search_query.lower()
         all_tasks = [t for t in all_tasks if q_lower in t.get("id", "").lower()
@@ -746,6 +754,10 @@ def tasks():
         view=view,
         enum_types=enums["workflow_types"],
         enum_horizons=enums["horizons"],
+        # T-2160 (arc-009 Slice 1): render-only horizon list includes 'past'
+        # (derived from .tasks/completed/). Edit endpoints use enum_horizons
+        # (storage enum: now/next/later); past has no write-path.
+        enum_render_horizons=enums["horizons"] + ["past"],
         enum_owners=enums["owners"],
         enum_statuses=enums["statuses"],
     )

@@ -1437,6 +1437,19 @@ fi
 
 # Update horizon
 if [ -n "$NEW_HORIZON" ]; then
+    # T-2160 (arc-009 horizon-axis-hardening, Slice 1): explicit guard against
+    # --horizon past. 'past' is a derived render-time value (computed from file
+    # location in .tasks/completed/) per T-2159 Q1=(b). It has no write-path:
+    # storing past in YAML would let task be horizon: past + status: started-work
+    # — the exact coherence failure §ACD warns about (status and horizon
+    # contradict each other on "is work done"). Storage enum stays now/next/later.
+    if [ "$NEW_HORIZON" = "past" ]; then
+        echo -e "${RED}ERROR: '--horizon past' rejected — past is a derived render-time value, not settable${NC}" >&2
+        echo "  Past is computed from file location: .tasks/completed/ → renders as past." >&2
+        echo "  Storage enum is now/next/later. To mark a task done: --status work-completed" >&2
+        echo "  (Per T-2159 inception Q1=(b); arc-009 horizon-axis-hardening.)" >&2
+        exit 1
+    fi
     if ! is_valid_horizon "$NEW_HORIZON"; then
         echo -e "${RED}ERROR: Invalid horizon '$NEW_HORIZON'${NC}" >&2
         echo "Valid horizons: $VALID_HORIZONS" >&2
