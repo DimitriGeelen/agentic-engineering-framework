@@ -1,8 +1,15 @@
 ---
 id: T-2170
-name: "BVP T-NEW-D: per-driver Watchtower display — extend /bvp scatter with F-RECALL + F-ORCH radar facets"
+name: "BVP T-NEW-D: per-driver Watchtower display — extend /bvp scatter with F-RECALL
+  + F-ORCH radar facets"
 description: >
-  Extension of T-1928 (static scatter) and T-1929 (live sliders) to surface per-free-driver scoring on /bvp. v3 schema now ships 2 active free drivers (F-RECALL w6 + F-ORCH w5) plus D1-D4 globals; current /bvp scatter only renders composite norm-bvp on 1-axis-per-driver. T-NEW-D adds: (a) per-driver score column in the scatter table, (b) F-RECALL/F-ORCH facet toggles to filter scatter by driver-significance, (c) inline rubric hover for each driver (rubric_sha-keyed cache, source = policy/value-drivers.yaml lines 95-149 + policy/bvp-scoring-rubric.md for D1-D4).
+  Extension of T-1928 (static scatter) and T-1929 (live sliders) to surface per-free-driver
+  scoring on /bvp. v3 schema now ships 2 active free drivers (F-RECALL w6 + F-ORCH
+  w5) plus D1-D4 globals; current /bvp scatter only renders composite norm-bvp on
+  1-axis-per-driver. T-NEW-D adds: (a) per-driver score column in the scatter table,
+  (b) F-RECALL/F-ORCH facet toggles to filter scatter by driver-significance, (c)
+  inline rubric hover for each driver (rubric_sha-keyed cache, source = policy/value-drivers.yaml
+  lines 95-149 + policy/bvp-scoring-rubric.md for D1-D4).
 
 status: captured
 workflow_type: build
@@ -13,8 +20,8 @@ components: []
 related_tasks: [T-1928, T-1929, T-2166, T-2168, T-2169]
 arc_id: value-prioritisation
 created: 2026-06-01T22:20:01Z
-last_update: 2026-06-01T22:20:01Z
-date_finished: null
+last_update: '2026-06-01T22:30:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -25,6 +32,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-01T22:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 1
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 (body:default-change);
+      D4=2 (body:env-class-handled); F-RECALL=1 (body/tag hits for 'F-RECALL': 1);
+      F-ORCH=1 (body/tag hits for 'F-ORCH': 1)"
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-01T22:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2170: BVP T-NEW-D: per-driver Watchtower display — extend /bvp scatter with F-RECALL + F-ORCH radar facets
@@ -59,37 +90,6 @@ Out of scope: arc-level rollup (T-1936 covers that). Auto-promote (still OFF per
   4. Compare visual density to the prior version (pre-T-2170)
   **Expected:** Layout reads clean; tooltip readable; facet behaviour matches expectation.
   **If not:** Note which interaction felt off and re-scope the build slice.
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 

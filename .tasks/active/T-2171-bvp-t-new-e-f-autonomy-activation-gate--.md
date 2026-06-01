@@ -1,20 +1,27 @@
 ---
 id: T-2171
-name: "BVP T-NEW-E: F-AUTONOMY activation gate — uncomment carve when continuous-run arc lands"
+name: "BVP T-NEW-E: F-AUTONOMY activation gate — uncomment carve when continuous-run
+  arc lands"
 description: >
-  v3 schema (T-2166) ships F-AUTONOMY carved (commented) in policy/value-drivers.yaml lines ~171-200. Activation requires (a) T-2158 continuous-run arc demonstrating mechanical compact→resume autonomy AND (b) L5/L6 autonomy criteria green (auto-issue gen, auto-merge, closed production-feedback loop). When both conditions hold, T-NEW-E uncomments the carve, sets weight=4, and validates the rubric ZERO-NEGATIVE guardrail (autonomy that removes Tier-0 gates scores ≤0).
+  v3 schema (T-2166) ships F-AUTONOMY carved (commented) in policy/value-drivers.yaml
+  lines ~171-200. Activation requires (a) T-2158 continuous-run arc demonstrating
+  mechanical compact→resume autonomy AND (b) L5/L6 autonomy criteria green (auto-issue
+  gen, auto-merge, closed production-feedback loop). When both conditions hold, T-NEW-E
+  uncomments the carve, sets weight=4, and validates the rubric ZERO-NEGATIVE guardrail
+  (autonomy that removes Tier-0 gates scores ≤0).
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: [v3-followup-E, f-autonomy-activation, arc:value-prioritisation, blocked-on-T-2158]
+tags: [v3-followup-E, f-autonomy-activation, arc:value-prioritisation, 
+      blocked-on-T-2158]
 components: []
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: 2026-06-01T22:22:20Z
-date_finished: null
+last_update: '2026-06-01T22:30:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -25,6 +32,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-01T22:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 1
+    rationale: "D1=4 (body:structural-gate); D2=2 (body:telemetry-or-audit-entry);
+      D3=2 (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 (body/tag
+      hits for 'F-RECALL': 1); F-ORCH=1 (body/tag hits for 'F-ORCH': 1)"
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-01T22:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2171: BVP T-NEW-E: F-AUTONOMY activation gate — uncomment carve when continuous-run arc lands
@@ -63,37 +94,6 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
   3. Confirm the L5/L6 milestone cited is operational, not just shipped-code
   **Expected:** Both preconditions are real; activating now adds signal without inviting Sovereignty erosion.
   **If not:** Set this task back to `captured` and document which precondition is unmet.
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
