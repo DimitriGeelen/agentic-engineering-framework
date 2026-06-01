@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [arc-grooming, T-NEW-14, build, migration-blindness]
 components: [agents/handover/handover.sh, agents/task-create/update-task.sh, lib/evolution_log.sh, tests/unit/arc_membership_agent_surfaces.bats, tests/unit/test_arc_membership_web_surfaces.py, web/blueprints/core.py, web/blueprints/tasks.py]
 related_tasks: [T-1846, T-1850, T-1874, T-1875, T-1876, T-1877]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer-agent, watchtower-ui, override-mechanism, v1.5a]
 components: [web/blueprints/__init__.py, web/blueprints/reviewer.py, web/shared.py, web/templates/reviewer_overrides.html]
 related_tasks: [T-1443, T-1449]

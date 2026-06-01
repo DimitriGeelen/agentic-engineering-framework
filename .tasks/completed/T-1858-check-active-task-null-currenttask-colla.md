@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, fix, hook, governance-gate, focus-state, structural-fix]
 components: [agents/context/check-active-task.sh]
 related_tasks: [T-1730, T-560, T-1729]

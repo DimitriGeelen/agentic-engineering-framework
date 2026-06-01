@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:value-prioritisation, parity]
 components: [lib/bvp.sh, tests/playwright/test_arc_detail_bvp.py, tests/unit/test_bvp_scatter_arc_mode.py, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1937, T-1936, T-1934, T-1935, T-1919]

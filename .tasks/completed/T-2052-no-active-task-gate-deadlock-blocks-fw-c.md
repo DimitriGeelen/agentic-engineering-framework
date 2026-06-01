@@ -16,7 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/context/check-active-task.sh, agents/context/lib/safe-commands.sh]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-grooming, prevention, governance, hooks]
 components: [agents/context/check-settings-edit.sh, .claude/settings.json, .context/project/enforcement-baseline.sha256, tests/unit/hook_check_settings_edit.bats]
 related_tasks: [T-1886, T-1887, T-1849, T-1730, T-1731, T-1687]

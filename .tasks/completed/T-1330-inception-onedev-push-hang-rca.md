@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [rca, infrastructure, onedev, push-hang]
 components: []
 related_tasks: [T-1277]

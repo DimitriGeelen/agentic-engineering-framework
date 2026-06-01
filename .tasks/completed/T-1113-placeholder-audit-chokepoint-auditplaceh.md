@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, lib/inception.sh, lib/task-audit.sh, tests/integration/audit_blocks_review_and_decide.bats, tests/unit/lib_task_audit.bats]
 related_tasks: []

@@ -11,7 +11,7 @@ description: |
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [governance, inception, obs-019, level-d]
 components: [lib/inception.sh, tests/unit/inception_tick_marker.bats]
 related_tasks: [T-1466, T-1455, T-1444]

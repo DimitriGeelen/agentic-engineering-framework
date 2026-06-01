@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [ntfy, notifications]
 components: [C-004, agents/context/check-tier0.sh, agents/handover/handover.sh, agents/task-create/update-task.sh]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, lib/init.sh, lib/upstream.sh, web/templates/base.html]
 related_tasks: []

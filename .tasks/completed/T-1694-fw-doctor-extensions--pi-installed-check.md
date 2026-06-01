@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [doctor]
 components: [bin/fw]
 related_tasks: [T-1687]

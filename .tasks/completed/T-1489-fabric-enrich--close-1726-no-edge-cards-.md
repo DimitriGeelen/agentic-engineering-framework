@@ -8,7 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [fabric, enrichment, audit-warn]
 components: [.fabric/components/]
 related_tasks: []

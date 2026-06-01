@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [pickup, bug-report]
 components: [bin/hook-enable.sh, tests/unit/hook_enable_absolute_path.bats]
 related_tasks: []

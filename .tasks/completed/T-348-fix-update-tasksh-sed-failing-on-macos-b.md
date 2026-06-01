@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [cli, macos, portability]
 components: [C-001, agents/context/lib/decision.sh, agents/context/lib/focus.sh, C-002, agents/context/lib/pattern.sh, agents/git/git.sh, agents/git/lib/common.sh, agents/observe/observe.sh, agents/resume/resume.sh, agents/task-create/update-task.sh, bin/fw, lib/init.sh, lib/setup.sh, lib/upgrade.sh]
 related_tasks: []

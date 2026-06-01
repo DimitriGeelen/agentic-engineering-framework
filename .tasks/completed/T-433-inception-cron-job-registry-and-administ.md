@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [watchtower, cron, ux, administration, observability]
 components: []
 related_tasks: [T-398]

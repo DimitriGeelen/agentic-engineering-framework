@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [from-T-1641, t-1061-followup, drift-defense, audit, termlink]
 components: []
 related_tasks: [T-1641, T-1644, T-1063]

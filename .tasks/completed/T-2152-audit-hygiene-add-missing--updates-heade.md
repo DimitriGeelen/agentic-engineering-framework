@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [audit-hygiene, structural]
 components: [.tasks/active/T-2075-push-needs-human-review-predicate-to-que.md, .tasks/active/T-2077-add-render-slots-in-inceptiondetailhtml-.md]
 related_tasks: [T-2075, T-2077]

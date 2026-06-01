@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["bug", "cron-deploy", "G-064-blocker", "registry-vs-deployment"]
 components: [".context/cron-registry.yaml", ".context/cron/agentic-audit.crontab", "/etc/cron.d/agentic-audit-999-agentic-engineering-framework"]
 related_tasks: ["T-1727", "T-1750", "T-1720", "T-1684"]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [orchestrator]
 components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, bin/fw, lib/arc.sh, tests/unit/test_arc_system.py, web/blueprints/core.py, web/blueprints/tasks.py, web/templates/cockpit.html, web/templates/index.html, web/templates/tasks.html]
 related_tasks: []

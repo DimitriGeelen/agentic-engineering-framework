@@ -5,7 +5,7 @@ description: >
   create-task.sh generates tasks with placeholder AC and Verification sections that the agent never fills in. Sprechloop cycle 2: 11 tasks created as stubs, all completed without AC or Verification. Change: (1) create-task.sh should include a real AC section with at least one placeholder checkbox that must be edited, (2) include a Verification section with a comment explaining what to add, (3) update-task.sh should WARN (not block) when transitioning to started-work if AC section still has only placeholder text. Blocking is too aggressive — but warning makes the obligation visible.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: human
 tags: []
 related_tasks: []

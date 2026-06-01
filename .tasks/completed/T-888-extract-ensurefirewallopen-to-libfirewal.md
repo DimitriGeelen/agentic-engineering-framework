@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [bin/watchtower.sh, lib/firewall.sh]
 related_tasks: []

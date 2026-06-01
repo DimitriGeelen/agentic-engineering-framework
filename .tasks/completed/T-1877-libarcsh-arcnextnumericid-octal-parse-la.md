@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude
-horizon: now
+horizon: null
 tags: [arc, arc-grooming, lib-arc, bug, T-NEW-13]
 components: [lib/arc.sh, tests/unit/arc_next_numeric_id_octal.bats]
 related_tasks: [T-1687, T-1848, T-1851]

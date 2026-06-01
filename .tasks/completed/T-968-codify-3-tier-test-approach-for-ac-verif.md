@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: [testing, governance, infrastructure]
 components: []
 related_tasks: [T-954, T-823, T-516, T-158]

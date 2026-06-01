@@ -10,7 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, build, slice-7b, termlink, cron]
 components: [agents/resume/resume.sh, agents/task-create/update-task.sh, agents/termlink/bvp-estimator/AGENT.md, agents/termlink/bvp-estimator/bvp-estimator.sh, agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1915, T-1916, T-1922]

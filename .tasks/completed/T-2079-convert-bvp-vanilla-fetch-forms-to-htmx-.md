@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: []

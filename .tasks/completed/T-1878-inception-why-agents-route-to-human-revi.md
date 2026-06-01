@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: claude
-horizon: now
+horizon: null
 tags: [arc, arc-grooming, routing, reviewer-agent, governance, recurrence]
 components: []
 related_tasks: [T-954, T-1811, T-1687, T-1730, T-1731, T-1854, T-1855]

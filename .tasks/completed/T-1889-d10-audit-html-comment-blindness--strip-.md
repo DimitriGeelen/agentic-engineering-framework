@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-grooming, audit, false-positive, prevention]
 components: [agents/audit/audit.sh, tests/unit/audit_d10_html_comment_blindness.bats]
 related_tasks: [T-248, T-1455, T-1846, T-1687]

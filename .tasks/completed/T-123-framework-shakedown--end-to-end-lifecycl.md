@@ -5,7 +5,7 @@ description: >
   Framework shakedown — end-to-end lifecycle validation on throwaway project
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

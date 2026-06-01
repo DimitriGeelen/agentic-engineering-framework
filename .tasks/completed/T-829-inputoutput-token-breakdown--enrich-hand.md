@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [agents/handover/handover.sh, web/blueprints/timeline.py, web/templates/timeline.html]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [observability, cli]
 components: [bin/fw, lib/outcome.py, tests/unit/test_orchestrator_status_terminal_events.py, tests/unit/test_outcome.py]
 related_tasks: [T-1699, T-1777, T-1778]

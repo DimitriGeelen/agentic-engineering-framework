@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [governance, enforcement, D2]
 components: [agents/context/check-fabric-new-file.sh]
 related_tasks: []

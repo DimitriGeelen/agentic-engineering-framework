@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [init, hooks, bug]
 components: [agents/git/lib/hooks.sh]
 related_tasks: []

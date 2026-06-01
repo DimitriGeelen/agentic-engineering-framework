@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [pickup, bug-report]
 components: [C-004, lib/inception.sh, lib/task-audit.sh]
 related_tasks: []

@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [T-1726-implementation, G-064-closure-pilot, ready-on-t-1744-go]
 components: [prompts/default.md, prompts/escalation-triage.md, tests/playwright/test_escalation_v05.py, tests/unit/escalation_scan_v05.bats, tools/escalation-scan-v0.5.py, web/blueprints/escalation.py, web/templates/escalation_drift.html]
 related_tasks: [T-1688, T-1726, T-1741, T-1743, T-1744, T-1737]

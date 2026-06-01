@@ -8,7 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [docs, install]
 components: [README.md]
 related_tasks: [T-329, T-330]

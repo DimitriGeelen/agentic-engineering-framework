@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, tests/integration/cron_install.bats]
 related_tasks: []

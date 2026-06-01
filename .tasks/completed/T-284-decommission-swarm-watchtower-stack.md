@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: decommission
 owner: human
-horizon: now
+horizon: null
 tags: [deployment, decommission, swarm]
 components: []
 related_tasks: []

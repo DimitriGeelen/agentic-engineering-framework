@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [bugfix, csrf, watchtower, mobile-review, regression]
 components: []
 related_tasks: [T-667, T-1343, T-1450]

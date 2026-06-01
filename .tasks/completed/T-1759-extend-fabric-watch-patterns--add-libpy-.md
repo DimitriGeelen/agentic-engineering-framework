@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["fabric", "drift-defense"]
 components: [".fabric/watch-patterns.yaml"]
 related_tasks: ["T-1758"]

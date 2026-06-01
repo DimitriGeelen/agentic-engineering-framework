@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [governance, ac-validation, friction-reduction, orchestrator-routing]
 components: []
 related_tasks: [T-1443, T-954, T-1064]

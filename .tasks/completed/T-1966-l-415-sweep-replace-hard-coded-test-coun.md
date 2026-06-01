@@ -8,7 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [verification, brittle-test, L-415-followup, arc:bvp]
 components: []
 related_tasks: []

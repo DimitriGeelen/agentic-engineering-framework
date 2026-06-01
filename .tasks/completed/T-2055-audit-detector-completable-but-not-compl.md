@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [C-004, tests/unit/test_audit_completable_not_completed.bats]
 related_tasks: []

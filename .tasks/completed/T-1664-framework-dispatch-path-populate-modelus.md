@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/termlink/termlink.sh, tests/unit/test_termlink_dispatch_task_type.py]
 related_tasks: []

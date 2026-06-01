@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [fw-upgrade-incident-2026-05-14, cosmetic, bug]
 components: [lib/upgrade.sh]
 related_tasks: []

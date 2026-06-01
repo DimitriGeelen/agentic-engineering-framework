@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [qa, knowledge, search]
 components: [C-003, web/embeddings.py, web/search.py, web/templates/search.html]
 related_tasks: []

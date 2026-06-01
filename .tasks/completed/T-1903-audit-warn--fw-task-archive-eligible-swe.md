@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [C-004, bin/fw, tests/unit/task_archive_eligible.bats]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [cli, learning, ux]
 components: [C-004, bin/fw]
 related_tasks: []

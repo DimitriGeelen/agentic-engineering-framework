@@ -17,7 +17,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: claude
-horizon: now
+horizon: null
 tags: [L-387, reviewer, structural-detector, level-D]
 components: [bin/fw, tests/unit/test_doctor_scope_tags.bats, tests/unit/test_work_on_completed_task.bats]
 related_tasks: []

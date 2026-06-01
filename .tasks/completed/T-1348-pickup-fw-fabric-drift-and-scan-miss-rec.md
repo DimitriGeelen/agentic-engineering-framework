@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [pickup, bug-report]
 components: [C-004, agents/task-create/create-task.sh, tests/unit/task_id_race.bats]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [enrichment, build, bvp, handoff-followup]
 components: [docs/reports/T-1915-bvp-inception.md, .tasks/active/]
 related_tasks: [T-1915, T-1846, T-1849, T-1668]

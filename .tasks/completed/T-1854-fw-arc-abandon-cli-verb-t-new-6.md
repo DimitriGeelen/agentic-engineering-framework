@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [build, lifecycle, cli, governance-gate, T-NEW-6]
 components: [lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats]
 related_tasks: [T-1846, T-1847, T-1668, T-1671]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [prompt-triage, resolver]
 components: [lib/resolver.py]
 related_tasks: [T-1737, T-1733, T-1689]

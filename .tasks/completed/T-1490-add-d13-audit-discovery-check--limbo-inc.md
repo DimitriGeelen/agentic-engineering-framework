@@ -10,7 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [audit, discovery, obs-025, inception, limbo]
 components: [C-004]
 related_tasks: [T-1346, T-1372, T-1376, T-1388]

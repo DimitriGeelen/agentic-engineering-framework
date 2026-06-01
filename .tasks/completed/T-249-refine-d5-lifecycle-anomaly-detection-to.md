@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner:
-horizon: later
+horizon: null
 tags: []
 components: [C-004]
 related_tasks: []

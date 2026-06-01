@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [fabric, enforcement, awareness]
 components: [agents/context/check-active-task.sh]
 related_tasks: []

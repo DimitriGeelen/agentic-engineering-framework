@@ -10,7 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [discovery, surfacing, watchtower]
 components: [C-004, agents/context/post-compact-resume.sh, agents/resume/resume.sh, web/app.py, web/shared.py]
 related_tasks: [T-200, T-194, T-238, T-239, T-240]

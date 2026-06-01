@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [governance, observability]
 components: [bin/fw, tests/unit/test_fw_gaps_closure_check.bats]
 related_tasks: [T-1750, T-1687]

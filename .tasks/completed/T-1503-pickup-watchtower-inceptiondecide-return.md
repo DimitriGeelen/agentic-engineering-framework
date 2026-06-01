@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [pickup, bug-report]
 components: [lib/inception.sh, tests/unit/inception_decide_atomicity.bats]
 related_tasks: []

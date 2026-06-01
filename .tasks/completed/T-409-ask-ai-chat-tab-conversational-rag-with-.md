@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [watchtower, search, llm, rag]
 components: [web/app.py, C-003, web/embeddings.py, web/static/js/chat.js, web/templates/_partials/chat_tab.html, web/templates/search.html]
 related_tasks: []

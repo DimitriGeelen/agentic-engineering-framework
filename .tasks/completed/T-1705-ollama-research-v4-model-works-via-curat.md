@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [v4-inception]
 components: [tools/t1704-hermes3-probe.sh]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/handover/handover.sh, tests/lint/no-bare-fw-in-gate-scripts.bats]
 related_tasks: []

@@ -14,7 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/unit/test_g064_readiness.py, tools/g064-readiness.py]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [qa, frontend, chat]
 components: [C-003, web/templates/search.html]
 related_tasks: [T-256, T-257, T-261]

@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [test, a11y, css, arc-007, prevention]
 components: []
 related_tasks: [T-2006, T-2005, T-2002, T-1991]

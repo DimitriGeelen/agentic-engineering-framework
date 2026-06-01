@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [dispatch, preamble, governance]
 components: [agents/dispatch/preamble.md]
 related_tasks: [T-1951, T-1985]

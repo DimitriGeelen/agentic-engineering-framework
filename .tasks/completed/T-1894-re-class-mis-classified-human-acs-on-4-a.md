@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [hygiene, ac-classification, arc-grooming-cleanup]
 components: []
 related_tasks: [T-1851, T-1857, T-1890, T-1893, T-954, T-1811]

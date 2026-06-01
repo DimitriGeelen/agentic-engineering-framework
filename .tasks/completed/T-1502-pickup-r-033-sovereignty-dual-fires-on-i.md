@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [pickup, feature-proposal]
 components: [C-004, lib/inception.sh, lib/task-audit.sh]
 related_tasks: []

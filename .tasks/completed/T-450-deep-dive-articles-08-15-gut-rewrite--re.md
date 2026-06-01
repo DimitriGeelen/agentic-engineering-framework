@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [content, deep-dives]
 components: [docs/articles/deep-dives/08-watchtower.md, docs/articles/deep-dives/09-context-fabric.md, docs/articles/deep-dives/10-framework-core.md, docs/articles/deep-dives/11-git-traceability.md, docs/articles/deep-dives/12-learnings-pipeline.md, docs/articles/deep-dives/13-audit.md, docs/articles/deep-dives/14-handover.md, docs/articles/deep-dives/15-enforcement.md]
 related_tasks: [T-449, T-338, T-446]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [refactoring, shell, reliability]
 components: [agents/task-create/create-task.sh, agents/task-create/update-task.sh, lib/enums.sh]
 related_tasks: [T-411]

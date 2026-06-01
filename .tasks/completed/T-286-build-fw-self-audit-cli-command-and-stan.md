@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [audit, deployment, cli]
 components: [agents/audit/self-audit.sh, bin/fw]
 related_tasks: []

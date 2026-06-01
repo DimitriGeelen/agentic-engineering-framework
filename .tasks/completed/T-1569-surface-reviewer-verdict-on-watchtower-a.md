@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [web/blueprints/approvals.py, web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []

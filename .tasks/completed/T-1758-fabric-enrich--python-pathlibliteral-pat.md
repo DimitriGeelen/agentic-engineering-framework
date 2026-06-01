@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["fabric", "drift-defense"]
 components: ["agents/fabric/lib/enrich.py"]
 related_tasks: ["T-1753", "T-1754"]

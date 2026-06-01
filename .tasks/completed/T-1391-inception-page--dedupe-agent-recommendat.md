@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/playwright/test_inception.py, web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []

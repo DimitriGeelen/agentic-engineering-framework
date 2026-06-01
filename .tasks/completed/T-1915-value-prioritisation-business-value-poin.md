@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [inception, value-drivers, bvp, prioritisation, handoff-ingested]
 components: [lib/arc.sh, web/blueprints/arcs.py, agents/audit/audit.sh, 
       CLAUDE.md, FRAMEWORK.md, 005-DesignDirectives.md, 

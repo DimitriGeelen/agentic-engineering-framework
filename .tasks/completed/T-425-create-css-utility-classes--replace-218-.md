@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: next
+horizon: null
 tags: [refactoring, css, watchtower, usability]
 components: []
 related_tasks: [T-411]

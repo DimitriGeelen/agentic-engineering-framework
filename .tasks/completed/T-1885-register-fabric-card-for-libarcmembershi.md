@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-grooming, fabric, hygiene]
 components: [lib/arc_membership.sh, lib/arc_membership.py]
 related_tasks: [T-1880, T-1687]

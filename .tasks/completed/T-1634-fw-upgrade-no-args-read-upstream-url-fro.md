@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [from-T-1633, upgrade, upstream]
 components: [lib/paths.sh, lib/upgrade.sh, tests/unit/lib_paths.bats]
 related_tasks: [T-1633, T-1542]

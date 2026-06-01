@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
 components: [agents/context/check-active-task.sh, C-009, lib/init.sh, 
       tests/unit/focus_drift_gate.bats]

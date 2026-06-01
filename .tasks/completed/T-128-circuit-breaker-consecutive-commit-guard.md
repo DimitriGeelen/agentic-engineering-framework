@@ -5,7 +5,7 @@ description: >
   Addresses O-008. PostToolUse hook counts consecutive agent commits without user input. Warns after N.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

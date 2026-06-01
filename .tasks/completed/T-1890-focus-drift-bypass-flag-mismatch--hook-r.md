@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [bug, hook-ux, focus-drift, meta-rca:T-1729, structural-gate, governance-bypass-prevention]
 components: [agents/context/check-active-task.sh, agents/context/lib/decision.sh, C-002, agents/context/lib/pattern.sh, agents/task-create/update-task.sh, tests/unit/check_active_task_switch_focus.bats]
 related_tasks: [T-1730, T-1731, T-1729]

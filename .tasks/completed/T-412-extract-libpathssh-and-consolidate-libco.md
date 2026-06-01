@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: now
+horizon: null
 tags: [refactoring, shell, reliability, portability]
 components: [C-004, agents/audit/plugin-audit.sh, agents/audit/self-audit.sh, C-007, agents/context/bus-handler.sh, agents/context/check-active-task.sh, C-008, agents/context/check-tier0.sh, C-001, agents/context/post-compact-resume.sh, agents/context/pre-compact.sh, agents/docgen/generate-article.sh, agents/docgen/generate-component.sh, agents/fabric/fabric.sh, agents/git/git.sh, agents/handover/handover.sh, agents/healing/healing.sh, agents/observe/observe.sh, agents/onboarding-test/test-onboarding.sh, agents/resume/resume.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh, bin/watchtower.sh, lib/ask.sh, lib/paths.sh]
 related_tasks: [T-406, T-411]

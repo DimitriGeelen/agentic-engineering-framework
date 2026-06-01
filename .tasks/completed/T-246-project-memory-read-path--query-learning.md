@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [context-fabric, knowledge, read-path]
 components: [agents/context/lib/focus.sh, bin/fw]
 related_tasks: []

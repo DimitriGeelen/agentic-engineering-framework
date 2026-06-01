@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/unit/docgen_article.bats, tests/unit/docgen_component.bats]
 related_tasks: []

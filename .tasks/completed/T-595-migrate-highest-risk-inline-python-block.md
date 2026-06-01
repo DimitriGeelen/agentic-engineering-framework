@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [security, typescript, T-586]
 components: [agents/audit/self-audit.sh, agents/context/check-tier0.sh, agents/handover/handover.sh, agents/task-create/create-task.sh, lib/assumption.sh, lib/upgrade.sh, lib/validate-init.sh]
 related_tasks: [T-586, T-593, T-592]

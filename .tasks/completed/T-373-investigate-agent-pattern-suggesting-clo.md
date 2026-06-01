@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [governance, meta]
 components: [C-004, agents/handover/handover.sh, agents/resume/resume.sh]
 related_tasks: []

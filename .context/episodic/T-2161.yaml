@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2161: horizon migration: null stored horizon on completed/ + report partial-completes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T11:11:36Z
+# ============================================================================
+
+task_id: T-2161
+task_name: "horizon migration: null stored horizon on completed/ + report partial-completes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T10:10:13Z
+completed: 2026-06-01T11:11:29Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Migration script exists at `bin/migrate-horizon-null-completed.sh` (or equivalent), idempotent, walks `.tasks/completed/` and nulls non-null/non-absent horizon fields in YAML frontmatter (preserving file ordering & all other fields).'
+  - 'After first migration run, re-running it emits `0 changes` to stdout and exits 0.'
+  - 'Report `docs/reports/T-2161-horizon-migration.md` exists, lists every active/ task with `status: work-completed` (id + name + last_update + stored horizon), and is committed in the same chain as the migration.'
+  - 'After migration, zero files under `.tasks/completed/` have a non-null/non-empty horizon value. Verified by structural scan.'
+  - 'At least one commit on this slice references `T-2161` AND `arc-009` (or `horizon-axis-hardening`) in its message.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-01 — null vs delete for stored horizon'
+    chose: 'Replace `horizon: <value>` with `horizon: null`'
+    rationale: 'Preserves frontmatter shape (line count, key ordering), parses cleanly as YAML, is a positive assertion of "no stored horizon" rather than ambiguous absence. Round-trip-safe under existing tooling.'
+    alternatives_rejected: ['Delete the `horizon:` line entirely — would mix "absent because pre-template-era" with "absent because migrated", losing forensic distinction.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:horizon-axis-hardening]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 61
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2161-horizon-migration-null-stored-horizon-on.md
+generated_by: context-agent-hybrid

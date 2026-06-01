@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [orchestrator, arc-c, governance, claude-md, framework-blindness]
 components: [CLAUDE.md]
 related_tasks: [T-1641, T-1644, T-1626, T-1633, T-1654]

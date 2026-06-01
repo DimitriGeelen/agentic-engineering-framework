@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["ui", "fabric", "race-condition", "regression-fix", "watchtower"]
 components: [tests/playwright/test_fabric_graph_cold_load.py, web/templates/fabric_explorer.html]
 related_tasks: ["T-849", "T-865"]

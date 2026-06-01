@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [architecture, language, constitutional]
 components: [agents/termlink/termlink.sh]
 related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585, T-592, T-593, T-594, T-595]

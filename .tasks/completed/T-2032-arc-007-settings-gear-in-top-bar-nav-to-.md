@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 arc_id: watchtower-redesign
 tags: [arc:watchtower-redesign, ui, watchtower, nav, bug]
 components: []

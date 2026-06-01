@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["bug", "render", "governance-render", "human-review-surface", "T-1722-followup"]
 components: [lib/render_surface.sh, tests/unit/test_file_route_extensions.py, web/blueprints/docs.py, web/shared.py]
 related_tasks: ["T-632", "T-633", "T-1575", "T-1722", "T-1762", "T-1763"]

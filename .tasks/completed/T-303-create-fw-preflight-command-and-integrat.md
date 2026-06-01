@@ -15,7 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: []
 components: [bin/fw, lib/init.sh]
 related_tasks: [T-294]

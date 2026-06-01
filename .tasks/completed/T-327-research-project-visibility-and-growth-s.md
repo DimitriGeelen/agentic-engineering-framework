@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: claude
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []

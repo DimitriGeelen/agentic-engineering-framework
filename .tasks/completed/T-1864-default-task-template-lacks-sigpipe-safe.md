@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [template, hardening]
 components: [.tasks/templates/default.md]
 related_tasks: [T-1862, T-1863, T-1838]

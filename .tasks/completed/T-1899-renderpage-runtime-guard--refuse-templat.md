@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [tests/unit/test_render_page_guard.py, web/shared.py]
 related_tasks: []

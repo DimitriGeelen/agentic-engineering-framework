@@ -10,7 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: [cost, tokens, efficiency, context-budget]
 components: [budget-gate, checkpoint, bin-fw, hook-config]
 related_tasks: [T-799, T-596, T-701, T-699, T-136, T-073]

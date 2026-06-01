@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [pickup, bug-report]
 components: [agents/termlink/termlink.sh]
 related_tasks: []

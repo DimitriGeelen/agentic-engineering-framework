@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [portability, bugfix]
 components: [web/embeddings.py, web/search.py, web/search_utils.py, web/shared.py, web/subprocess_utils.py]
 related_tasks: []

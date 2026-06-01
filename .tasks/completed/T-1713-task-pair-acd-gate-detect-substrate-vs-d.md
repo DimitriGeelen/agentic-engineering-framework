@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [ACD, G-062-family, governance-gate]
 components: []
 related_tasks: [T-1442, T-1443, T-1668, T-1671, T-1709, T-1711]

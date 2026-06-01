@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [bug, regression, htmx, review-surface, fix, T-2133-implementation]
 components: [web/templates/_review_acs.html]
 related_tasks: [T-2133, T-2131, T-2114]
@@ -16,7 +16,7 @@ related_tasks: [T-2133, T-2131, T-2114]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-31T07:16:22Z
-last_update: 2026-05-31T07:22:33Z
+last_update: 2026-05-31T19:52:09Z
 date_finished: 2026-05-31T07:22:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,7 +65,7 @@ See `docs/reports/T-2133-review-checkbox-htmx-target-error-rca.md` for full RCA 
 - T-2131 Human AC remained `[ ]` after click (verified by `grep "^- \[" .tasks/active/T-2131-*.md` + zero POST entries in `watchtower.log`)
 
 ### Human
-- [ ] [REVIEW] Real-browser click verification — the regression is gone
+- [x] [REVIEW] Real-browser click verification — the regression is gone
   **Steps:**
   1. Open http://192.168.10.107:3000/review/T-2131 in your actual browser (the one you used when you reported the bug)
   2. Click the checkbox next to "Pasting an inception URL `/review/T-2123` lands on the correct inception decide form"

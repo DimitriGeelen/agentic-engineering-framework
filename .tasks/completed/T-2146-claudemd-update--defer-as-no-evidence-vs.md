@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-008, claudemd, advisory-model, defer-as-hedge]
 components: [CLAUDE.md]
 related_tasks: [T-2144, T-2143, T-2145, T-679, T-1811, T-1878]

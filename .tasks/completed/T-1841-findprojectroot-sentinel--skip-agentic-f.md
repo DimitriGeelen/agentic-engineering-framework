@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [consumer-fleet, bug, fw-cli]
 components: [bin/fw, lib/update.sh]
 related_tasks: [T-1838, T-1839, T-1840, T-559]

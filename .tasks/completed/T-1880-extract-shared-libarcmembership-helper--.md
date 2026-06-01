@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [arc-grooming, future-prevention, refactor]
 components: [agents/handover/handover.sh, lib/arc_membership.py, lib/evolution_log.sh, tests/unit/arc_membership_shared.bats, tests/unit/test_arc_membership_shared.py, web/blueprints/arcs.py, web/blueprints/core.py, web/blueprints/tasks.py]
 related_tasks: [T-1850, T-1874, T-1875, T-1876, T-1877, T-1879, T-1881]

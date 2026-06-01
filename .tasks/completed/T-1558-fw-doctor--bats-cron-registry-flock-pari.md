@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, tests/unit/cron_flock_parity.bats]
 related_tasks: []

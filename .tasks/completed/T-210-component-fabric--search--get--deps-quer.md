@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [component-fabric, query]
 related_tasks: []
 created: 2026-02-20T07:14:08Z

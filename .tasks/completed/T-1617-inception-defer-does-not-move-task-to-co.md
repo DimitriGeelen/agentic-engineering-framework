@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [inception, lifecycle, semantics, governance-noise]
 components: []
 related_tasks: [T-1611]

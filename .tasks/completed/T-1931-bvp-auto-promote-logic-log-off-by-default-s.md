@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, build, slice-14a, novel-mechanism]
 components: [012-ArcSystem.md, lib/arc.sh, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1917, T-1924]

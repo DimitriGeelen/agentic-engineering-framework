@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: [T-097, T-503, T-879, T-914, T-916, T-1025, T-1026]

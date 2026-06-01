@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, framework-tooling, yaml, frontmatter, regex, task-create]
 components: [agents/task-create/update-task.sh]
 related_tasks: [T-2062, T-2018, T-2059, T-2060, T-2061]

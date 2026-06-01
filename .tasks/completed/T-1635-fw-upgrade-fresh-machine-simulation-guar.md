@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [from-T-1633, simulation, release-gate, outward-guard]
 components: []
 related_tasks: [T-1633, T-1634]

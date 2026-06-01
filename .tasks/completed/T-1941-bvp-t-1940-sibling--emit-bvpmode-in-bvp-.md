@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:value-prioritisation, render-surface, parity, drift]
 components: [bin/fw, tests/playwright/test_bvp_scatter.py, tests/unit/test_bvp_scatter_arc_mode.py, tests/unit/test_cron_registry_generated_drift.bats, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1940, T-1939, T-1937, T-1938, T-1936, T-1934, T-1928]

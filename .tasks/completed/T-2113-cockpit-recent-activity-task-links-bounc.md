@@ -9,13 +9,13 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [watchtower, cockpit, htmx, ui-bug, arc-007]
 components: [web/templates/_cockpit_activity.html]
 related_tasks: [T-2112, T-2060, T-669, T-2020]
 arc_id: watchtower-redesign
 created: 2026-05-30T16:23:09Z
-last_update: 2026-05-30T16:29:31Z
+last_update: 2026-05-31T19:52:02Z
 date_finished: 2026-05-30T16:29:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,7 +67,7 @@ Same bug class as T-2112, distinct surface ("one bug = one task").
 - [x] Playwright regression: navigate to cockpit, click any `wt-activity-task` anchor, wait >15s (one polling cycle + safety), assert URL stays on the task page, breadcrumb count = 1, and the activity polling did not overwrite the page.
 
 ### Human
-- [ ] [REVIEW] Open the cockpit and click any task ID in the Recent Activity card. Wait 20 seconds. The task page must remain on screen with a normal single-breadcrumb layout — no stale cockpit shell above and no bounce back to /cockpit after the polling cycle fires.
+- [x] [REVIEW] Open the cockpit and click any task ID in the Recent Activity card. Wait 20 seconds. The task page must remain on screen with a normal single-breadcrumb layout — no stale cockpit shell above and no bounce back to /cockpit after the polling cycle fires.
   **Steps:**
   1. Open http://192.168.10.107:3000/ (the cockpit is the root page; `/cockpit` returns 404 — only `/cockpit/activity` exists as the htmx fragment route)
   2. Scroll to the "Recent Activity" card

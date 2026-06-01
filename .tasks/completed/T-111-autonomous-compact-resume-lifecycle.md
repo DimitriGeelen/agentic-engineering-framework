@@ -5,7 +5,7 @@ description: >
   Spike: Can the compact-handover-resume cycle be fully automated? Map mechanical vs judgment steps. Prototype checkpoint-triggered auto-handover. Go/no-go: one automated compact-resume cycle completes without losing context. Spawned from T-109 decomposition. Research: docs/reports/2026-02-17-agent-communication-bus-research.md Part 4.
 
 status: work-completed
-horizon: now
+horizon: null
 workflow_type: inception
 owner: human
 tags: []

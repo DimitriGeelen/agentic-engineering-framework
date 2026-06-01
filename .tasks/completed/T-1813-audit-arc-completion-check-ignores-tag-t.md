@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [audit, bug, framework-blindness]
 components: [C-004]
 related_tasks: [T-1812, T-1811, T-1805, T-1806, T-1807, T-1808, T-1809, T-1810]

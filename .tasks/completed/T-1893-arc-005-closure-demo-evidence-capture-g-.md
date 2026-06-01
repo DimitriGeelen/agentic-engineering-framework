@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [arc-closure-prep, demo-evidence, G-062, headline-mechanic]
 components: [docs/reports/arc-005-headline-mechanic-demo.md]
 related_tasks: [T-1846, T-1848, T-1849, T-1854, T-1855, T-1856, T-1857]

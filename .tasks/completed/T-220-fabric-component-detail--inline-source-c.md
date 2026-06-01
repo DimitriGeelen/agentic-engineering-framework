@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [web/blueprints/fabric.py, web/templates/base.html, web/templates/fabric_detail.html]
 related_tasks: []

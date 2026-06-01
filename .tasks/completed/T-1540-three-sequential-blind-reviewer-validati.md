@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, web/blueprints/cockpit.py, web/templates/_approvals_content.html, web/templates/cockpit.html]
 related_tasks: []

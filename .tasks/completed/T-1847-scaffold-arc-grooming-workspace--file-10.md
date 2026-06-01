@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [governance, scaffold, post-decide-go]
 components: [".context/arcs/"]
 related_tasks: ["T-1846"]

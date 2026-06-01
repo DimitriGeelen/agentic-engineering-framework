@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, build, slice-2, policy]
 components: [policy/, policy/value-drivers.yaml]
 related_tasks: [T-1915, T-1916]

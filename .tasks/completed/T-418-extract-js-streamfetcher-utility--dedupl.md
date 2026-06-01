@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: now
+horizon: null
 tags: [refactoring, javascript, watchtower, reliability]
 components: [web/static/js/chat.js]
 related_tasks: [T-409, T-411]

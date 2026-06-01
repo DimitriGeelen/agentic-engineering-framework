@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower, cockpit]
 components: [web/blueprints/cockpit.py, web/blueprints/timeline.py]
 related_tasks: [T-2105, T-1954, T-2102, T-2106, T-2107]

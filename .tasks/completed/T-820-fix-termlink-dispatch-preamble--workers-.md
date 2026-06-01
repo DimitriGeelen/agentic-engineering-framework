@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/dispatch/preamble.md, agents/handover/handover.sh]
 related_tasks: []

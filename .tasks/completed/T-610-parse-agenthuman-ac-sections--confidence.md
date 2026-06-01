@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: []
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: [T-608, T-611, T-612]

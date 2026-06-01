@@ -5,7 +5,7 @@ description: >
   Audit passes tasks with no acceptance criteria, no verification section, placeholder context, and descriptions that just say 'see plan Task X'. Add checks: (1) AC section exists with >=1 checkbox, (2) Verification section exists, (3) Context is not template placeholder, (4) Description is self-contained. Discovered in T-124 cycle 2: sprechloop agent created 11 stub tasks that all passed audit.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: human
 tags: []
 related_tasks: []

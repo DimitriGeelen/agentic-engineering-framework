@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [termlink, integration, phase-0]
 components: [bin/fw]
 related_tasks: [T-502]

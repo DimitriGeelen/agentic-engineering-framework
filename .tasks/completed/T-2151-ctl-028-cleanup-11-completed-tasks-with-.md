@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [corpus-hygiene, ctl-028, silent-drift]
 components: [.tasks/completed/]
 related_tasks: [T-2055, T-2091, T-2121]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/playwright/conftest.py, tests/playwright/test_response_times.py]
 related_tasks: []

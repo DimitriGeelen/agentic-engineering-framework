@@ -16,7 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude
-horizon: now
+horizon: null
 tags: [audit, housekeeping, structural-detector]
 components: [C-004, tests/unit/test_audit_revert_chain.bats]
 related_tasks: []

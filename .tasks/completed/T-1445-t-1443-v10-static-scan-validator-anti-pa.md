@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [reviewer-agent, ac-validation, anti-patterns, v1.0, static-scan]
 components: [agents/task-create/update-task.sh, bin/fw]
 related_tasks: [T-1442, T-1443, T-954, T-1064]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/handover/handover.sh, tests/unit/handover_t012_active_only.bats]
 related_tasks: []

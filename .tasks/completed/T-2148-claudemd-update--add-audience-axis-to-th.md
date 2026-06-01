@@ -4,10 +4,10 @@ name: "CLAUDE.md update — add audience axis to three-prefix table (T-2143 leg 
 description: >
   CLAUDE.md update — add audience axis to three-prefix table (T-2143 leg C)
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [arc-008, claudemd, audience-mismatch, ac-routing]
 components: [CLAUDE.md]
 related_tasks: [T-2143, T-2139, T-2147, T-1811, T-1878, T-1947]
@@ -17,8 +17,8 @@ arc_id: inception-review-loop
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-31T17:28:02Z
-last_update: '2026-05-31T17:30:03Z'
-date_finished:
+last_update: 2026-05-31T20:06:37Z
+date_finished: 2026-05-31T20:06:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -64,12 +64,12 @@ Full diagnosis + suggested table revision in `docs/reports/T-2143-routing-recurs
 ## Acceptance Criteria
 
 ### Agent
-- [ ] CLAUDE.md §AC Classification Guidance gains an explicit fourth question to the "Make it a Human AC if ANY apply" list: **"6. Subject of the judgment is *human experience*** — not an agent's experience. If the AC's wording reads 'agent who…' / 'agent reads…' / 'for an agent…', the audience is agents, not the operator; route to Agent AC (self-eval) instead, regardless of how subjective the judgment is."
-- [ ] CLAUDE.md §Three Human-AC Prefixes table gains a new column or post-table note: "Audience axis — `[REVIEW]` and `[REVIEWER]` both presume the *human* is the verifier. If the AC subject is agent experience (stderr prose, internal CLI output, framework gate wording), it belongs in `### Agent`, not under any Human prefix."
-- [ ] Worked example added to §AC Classification Guidance using T-2139's recursion (4 rounds, RCA in T-2143, leg A deleted the offending AC). Concrete example shows what the audience-mismatched AC looked like and what the correct routing was.
-- [ ] Cross-reference paragraph linking T-2143 (RCA), T-2147 (reviewer detector), T-1878 (default-bias rule), T-1947 (prose-mismatch detector). The four together form the routing-discipline ladder.
-- [ ] Memory file written: `feedback_audience_axis_for_ac_routing.md` with the principle ("Check audience before subjectivity. Subjective + agent-audience = Agent self-eval, not Human review.") + link chain. MEMORY.md index updated.
-- [ ] Existing §AC Classification Guidance + §Three Human-AC Prefixes paragraphs are **kept** (not replaced); the new axis appends as additional rules.
+- [x] CLAUDE.md §AC Classification Guidance gains an explicit fourth question to the "Make it a Human AC if ANY apply" list: **"6. Subject of the judgment is *human experience*** — not an agent's experience. If the AC's wording reads 'agent who…' / 'agent reads…' / 'for an agent…', the audience is agents, not the operator; route to Agent AC (self-eval) instead, regardless of how subjective the judgment is." — added as item #6 with full operator-seat test and T-2143 origin reference. Verbatim opening: "Subject of the judgment is human experience".
+- [x] CLAUDE.md §Three Human-AC Prefixes table gains a new column or post-table note: "Audience axis — `[REVIEW]` and `[REVIEWER]` both presume the *human* is the verifier. If the AC subject is agent experience (stderr prose, internal CLI output, framework gate wording), it belongs in `### Agent`, not under any Human prefix." — added as post-table paragraph `**Audience axis (T-2143):**` immediately after the table, before the REVIEWER conversion rule. Author-time test included.
+- [x] Worked example added to §AC Classification Guidance using T-2139's recursion (4 rounds, RCA in T-2143, leg A deleted the offending AC). Concrete example shows what the audience-mismatched AC looked like and what the correct routing was. — `**Worked example — audience mismatch (origin: T-2143 / T-2139 round 4):**` paragraph with paraphrased Round-4 AC and the diagnosis that the audience disqualifies any Human prefix entirely.
+- [x] Cross-reference paragraph linking T-2143 (RCA), T-2147 (reviewer detector), T-1878 (default-bias rule), T-1947 (prose-mismatch detector). The four together form the routing-discipline ladder. — `**Routing-discipline ladder (T-2143):**` paragraph at the end of the §AC Classification Guidance section reads the four as a composed sequence (check-shape → vocabulary → audience → reviewer-time backstop).
+- [x] Memory file written: `feedback_audience_axis_for_ac_routing.md` with the principle ("Check audience before subjectivity. Subjective + agent-audience = Agent self-eval, not Human review.") + link chain. MEMORY.md index updated. — file at `/root/.claude/projects/-opt-999-Agentic-Engineering-Framework/memory/feedback_audience_axis_for_ac_routing.md`; MEMORY.md gained the entry pointing at it as the 2nd CRITICAL block.
+- [x] Existing §AC Classification Guidance + §Three Human-AC Prefixes paragraphs are **kept** (not replaced); the new axis appends as additional rules. — verified by diff: items 1-5 of the Human-AC trigger list unchanged, three-prefix table rows unchanged, T-1811 worked example unchanged, T-1947 prose vocabulary paragraph unchanged. Audience-axis content is purely additive.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -135,6 +135,21 @@ Full diagnosis + suggested table revision in `docs/reports/T-2143-routing-recurs
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-2148 verification commands:
+# AC #1 — item 6 added to the "Make it a Human AC" list
+grep -q "Subject of the judgment is human experience" CLAUDE.md
+# AC #2 — audience-axis post-table paragraph
+grep -q "Audience axis (T-2143)" CLAUDE.md
+# AC #3 — worked example header present
+grep -q "Worked example — audience mismatch (origin: T-2143 / T-2139 round 4)" CLAUDE.md
+# AC #4 — routing-discipline ladder paragraph
+grep -q "Routing-discipline ladder (T-2143)" CLAUDE.md
+# AC #5 — memory file exists and MEMORY.md indexes it
+test -f /root/.claude/projects/-opt-999-Agentic-Engineering-Framework/memory/feedback_audience_axis_for_ac_routing.md
+grep -q "feedback_audience_axis_for_ac_routing" /root/.claude/projects/-opt-999-Agentic-Engineering-Framework/memory/MEMORY.md
+# AC #6 — existing T-1811 worked example untouched (purely additive change)
+grep -q "Confirm focus-drift block message is actionable" CLAUDE.md
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -175,6 +190,18 @@ Full diagnosis + suggested table revision in `docs/reports/T-2143-routing-recurs
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-05-31 — routing ladder reads cleanly as a composition, not a flat list
+
+- **What changed:** Filing assumed the audience axis was a *fourth bullet* added to a flat list. Build revealed it's a *layered ladder*: T-1878 (check-shape) routes between Human prefixes, T-1947 (vocabulary) routes between `[REVIEW]` and `[REVIEWER]`, T-2143 (audience) routes *out of* Human prefixes entirely, T-2147 catches what slips through. The four compose in a fixed sequence; presenting them as a flat list under-sells the composition.
+- **Plan impact:** Added a dedicated `**Routing-discipline ladder (T-2143):**` paragraph instead of just bullets — surfaces the *order* of axes as the design rule (audience-check is the hardest cut and runs before subjectivity). The flat list approach would have read like four unrelated rules.
+- **Triggered:** Nothing new — bounded scope shift. The composition framing is also reflected in the memory file's "Routing-discipline ladder" section.
+
+### 2026-05-31 — worked example uses paraphrase, not verbatim AC text
+
+- **What changed:** T-2139's Round-4 AC was deleted in T-2143 leg A. Verbatim quoting would require digging into git history. Paraphrasing the AC shape preserves the teaching value without the archeology cost.
+- **Plan impact:** Worked example uses `(paraphrased)` annotation. Steps/Expected use deliberately archetypal wording ("stderr makes the agent unblock itself without operator help") rather than reconstructing the exact prose.
+- **Triggered:** Nothing — accepted scope cut.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -185,6 +212,23 @@ Full diagnosis + suggested table revision in `docs/reports/T-2143-routing-recurs
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs ticked with content in place; CLAUDE.md edits are purely additive (no existing prose deleted); the routing-discipline ladder reads cleanly as a composition rather than a flat list; memory file + MEMORY.md index updated; the audience axis now sits both as a Human-AC trigger (item #6) and as a post-table paragraph in the Three-Prefix section, with a worked example anchoring it to T-2139's actual recursion. The sibling tasks (T-2147 reviewer detector, T-2141 sweep) can build on this rule.
+
+**Evidence:**
+- CLAUDE.md item 6 in "Make it a Human AC" list — operator-seat test, T-2143 origin reference
+- CLAUDE.md `**Audience axis (T-2143):**` paragraph after the three-prefix table
+- CLAUDE.md `**Worked example — audience mismatch (origin: T-2143 / T-2139 round 4):**` paragraph
+- CLAUDE.md `**Routing-discipline ladder (T-2143):**` paragraph composing T-1878 / T-1947 / T-2143 / T-2147
+- `/root/.claude/projects/-opt-999-Agentic-Engineering-Framework/memory/feedback_audience_axis_for_ac_routing.md`
+- MEMORY.md gains `## CRITICAL: AC Routing — Check AUDIENCE Before Subjectivity (T-2143 origin)` block
+- All 7 Verification commands pass (grep-able audit on every added paragraph)
+
+**What's next:** T-2147 (reviewer detector) will scan against the new rule at task close. T-2141 (sweep of existing AGENT.md and block messages for the same routing trap) is the broader-corpus sibling.
 
 ## Decision
 
@@ -206,3 +250,19 @@ Full diagnosis + suggested table revision in `docs/reports/T-2143-routing-recurs
 ### 2026-05-31T17:29:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-05-31T20:02:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5311b1c1
+- **Timestamp:** 2026-05-31T20:06:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-31T20:06:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

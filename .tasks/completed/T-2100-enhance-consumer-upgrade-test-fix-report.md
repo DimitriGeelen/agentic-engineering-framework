@@ -7,16 +7,16 @@ description: >
   after the SEV-1 fork-bomb incident on /opt/termlink. The prompt is shape-aware but
   did not CONTAIN the fork-bomb when it fired. 6 enhancement candidates identified.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [prompt-library, fw-upgrade, reliability, T-2078-cluster]
-components: []
+components: [bin/fw, lib/upgrade.sh]
 related_tasks: [T-2078, T-2099, T-2097, T-2098]
 created: 2026-05-29T14:22:31Z
-last_update: '2026-05-29T14:30:02Z'
-date_finished:
+last_update: 2026-05-30T07:38:15Z
+date_finished: 2026-05-30T07:38:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -76,15 +76,15 @@ Research complete in `docs/reports/T-2100-prompt-fork-bomb-containment.md`. Six 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -147,9 +147,63 @@ Research complete in `docs/reports/T-2100-prompt-fork-bomb-containment.md`. Six 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — land all six enhancements (E1–E6) as a single PR.
+
+Rationale: Each closes a containment gap exposed by T-2099. They are pure prompt-text additions with no framework behavioural impact. Cost is bounded (~80 lines). Benefit is structural: every future consumer that receives this prompt has containment inline, even if the underlying recursion ever regresses. Same G-019 silent-quality-decay class as T-2097/T-2098.
+
+Evidence:
+- T-2099 fork-bomb incident: 2 hits in 1 hour on /opt/termlink, no consumer-side panic-stop available → required dispatcher intervention.
+- Prompt is well-structured (shape-detect → upgrade → doctor → test → fix → report) but failure-silent.
+- T-2099 fix (`be72baa5`) shipped to GitHub; but the prompt should not assume every consumer pulls before running.
+- Pattern is established in the library — `prompts/escalation-triage.md` already has panic-stop guidance.
+- Full research: `docs/reports/T-2100-prompt-fork-bomb-containment.md`
+
+Suggested follow-ups (on GO):
+- T-2100-V1: apply E1–E6 to `prompts/consumer-upgrade-test-fix-report.md`.
+- T-2100-V2: mirror E1/E2/E6 to other upgrade-relevant prompts.
+- T-2100-V3: bats coverage for prompt-library structural guarantees.
+
+Rejected: piecemeal landing (review overhead, no benefit), minimal set E3/E6 only (leaves E1/E2 gaps in agent panic-stop awareness).
+
+**Date**: 2026-05-30T07:38:15Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-30T07:38:15Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — land all six enhancements (E1–E6) as a single PR.
+
+Rationale: Each closes a containment gap exposed by T-2099. They are pure prompt-text additions with no framework behavioural impact. Cost is bounded (~80 lines). Benefit is structural: every future consumer that receives this prompt has containment inline, even if the underlying recursion ever regresses. Same G-019 silent-quality-decay class as T-2097/T-2098.
+
+Evidence:
+- T-2099 fork-bomb incident: 2 hits in 1 hour on /opt/termlink, no consumer-side panic-stop available → required dispatcher intervention.
+- Prompt is well-structured (shape-detect → upgrade → doctor → test → fix → report) but failure-silent.
+- T-2099 fix (`be72baa5`) shipped to GitHub; but the prompt should not assume every consumer pulls before running.
+- Pattern is established in the library — `prompts/escalation-triage.md` already has panic-stop guidance.
+- Full research: `docs/reports/T-2100-prompt-fork-bomb-containment.md`
+
+Suggested follow-ups (on GO):
+- T-2100-V1: apply E1–E6 to `prompts/consumer-upgrade-test-fix-report.md`.
+- T-2100-V2: mirror E1/E2/E6 to other upgrade-relevant prompts.
+- T-2100-V3: bats coverage for prompt-library structural guarantees.
+
+Rejected: piecemeal landing (review overhead, no benefit), minimal set E3/E6 only (leaves E1/E2 gaps in agent panic-stop awareness).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-00d68dc9
+- **Timestamp:** 2026-05-30T07:38:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T07:38:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

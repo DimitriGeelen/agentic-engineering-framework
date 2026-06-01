@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [ac-parser, bug, L-414-rootcause, update-task, arc:bvp]
 components: []
 related_tasks: []

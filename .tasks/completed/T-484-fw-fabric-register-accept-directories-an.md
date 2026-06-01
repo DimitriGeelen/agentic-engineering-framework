@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [usability, fabric]
 components: [agents/fabric/lib/register.sh]
 related_tasks: []

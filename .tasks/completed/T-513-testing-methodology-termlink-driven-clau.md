@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [testing, termlink, e2e, quality, D2]
 components: [agents/termlink/termlink.sh, bin/fw]
 related_tasks: [T-491, T-492, T-502, T-503, T-473, T-476]

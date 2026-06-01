@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [rca, inception, governance, silent-failure, g-019]
 components: [lib/inception.sh]
 related_tasks: [T-1346, T-1388, T-1466, T-1472, T-1490, T-1423]

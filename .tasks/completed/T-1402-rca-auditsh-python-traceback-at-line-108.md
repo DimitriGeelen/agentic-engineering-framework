@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [C-004, tests/unit/audit_null_timestamp.bats]
 related_tasks: []

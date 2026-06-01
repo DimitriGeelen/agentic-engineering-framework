@@ -16,7 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, htmx, polling, watchtower, render-fidelity, arc-007]
 components: [lib/render_surface.sh, tests/unit/test_render_surface_gate.bats, web/templates/approvals.html, web/templates/review.html, web/templates/base.html]
 related_tasks: [T-669, T-2038, T-2039, T-2040, T-2041]

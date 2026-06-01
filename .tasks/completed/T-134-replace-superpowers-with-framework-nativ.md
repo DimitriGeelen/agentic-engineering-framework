@@ -5,7 +5,7 @@ description: >
   Strip superpowers/feature-dev plugin references. Add two behavioral rules to CLAUDE.md (verification before completion, hypothesis-driven debugging). Create two lightweight framework-native skills (/explore, /plan). Update template. Clean up start-work skill references.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: human
 tags: []
 related_tasks: []

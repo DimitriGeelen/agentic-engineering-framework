@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [deployment, production, ring20]
 components: [web/app.py]
 related_tasks: [T-272, T-273, T-274, T-275, T-276]

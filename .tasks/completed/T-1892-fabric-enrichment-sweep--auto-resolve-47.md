@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [maintenance, fabric, audit-warn-close]
 components: []
 related_tasks: [T-1890, T-1891]

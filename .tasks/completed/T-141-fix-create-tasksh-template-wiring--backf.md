@@ -5,7 +5,7 @@ description: >
   Fix create-task.sh template wiring + backfill sprechloop knowledge + add tests
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

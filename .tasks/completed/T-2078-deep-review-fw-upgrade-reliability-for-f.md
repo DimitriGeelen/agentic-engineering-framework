@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-2092, T-2093, T-2094, T-2095]  # V1-a/b/c/d slices filed retroactively per Recommendation's "filed on GO" line (origin: T-2091 sweep)

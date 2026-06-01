@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/playwright/test_graduation.py, tests/playwright/test_patterns.py]
 related_tasks: []

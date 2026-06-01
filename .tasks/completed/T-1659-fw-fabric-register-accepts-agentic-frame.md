@@ -14,7 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/fabric/lib/register.sh, lib/review.sh, prompts/default.md, tests/unit/test_arc_parent_review_gate.py]
 related_tasks: []

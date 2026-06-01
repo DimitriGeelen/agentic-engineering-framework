@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [from-T-1626, B-3c, watchtower, ui]
 components: [agents/context/post-compact-resume.sh, bin/fw, lib/doctor-hook-exercise.py, tests/playwright/test_hooks_page.py, tests/unit/doctor_hook_exercise.bats, tests/unit/session_start_hook_warning.bats, web/blueprints/hooks.py, web/blueprints/__init__.py, web/shared.py, web/templates/hooks.html]
 related_tasks: [T-1626, T-1628, T-1629]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, lib/init.sh, lib/validate-init.sh]
 related_tasks: [T-356]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [from-T-1061, termlink, orchestrator, integration, verification]
 components: []
 related_tasks: [T-1061, T-1641]

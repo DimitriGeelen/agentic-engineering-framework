@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [agents/context/check-project-boundary.sh, bin/fw]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/playwright/test_approvals.py, tests/playwright/test_assumptions.py, tests/playwright/test_cockpit.py, tests/playwright/test_config.py, tests/playwright/test_core.py, tests/playwright/test_costs.py, tests/playwright/test_cron.py, tests/playwright/test_directives.py, tests/playwright/test_discoveries.py, tests/playwright/test_discovery.py, tests/playwright/test_docs.py, tests/playwright/test_enforcement.py, tests/playwright/test_fabric.py, tests/playwright/test_inception.py, tests/playwright/test_metrics.py, tests/playwright/test_patterns.py, tests/playwright/test_project.py, tests/playwright/test_quality.py, tests/playwright/test_review.py, tests/playwright/test_risks.py, tests/playwright/test_search.py, tests/playwright/test_sessions.py, tests/playwright/test_smoke.py, tests/playwright/test_tasks.py, tests/playwright/test_terminal.py, tests/playwright/test_timeline.py]
 related_tasks: []

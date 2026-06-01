@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [audit, ctl-013, rca, heisenbug, obs-022]
 components: [agents/audit/audit.sh]
 related_tasks: [T-1472, T-1475, T-1395, T-1484]

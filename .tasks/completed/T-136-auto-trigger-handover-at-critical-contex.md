@@ -5,7 +5,7 @@ description: >
   checkpoint.sh fires warnings at 150K tokens but the agent ignores them. Sprechloop cycle 2 reached 152K with no handover. Change: at CRITICAL threshold, checkpoint.sh should auto-run 'fw handover --emergency --commit' instead of just printing a warning. The agent cannot be trusted to act on warnings — structural enforcement is required (L-013, L-038).
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: human
 tags: []
 related_tasks: []

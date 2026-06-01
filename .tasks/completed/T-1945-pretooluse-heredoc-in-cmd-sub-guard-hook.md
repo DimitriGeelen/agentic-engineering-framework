@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:value-prioritisation, future-prevention, L-332, L-408, hooks]
 components: [agents/context/check-heredoc-cmd-sub.sh, C-009, lib/heredoc_guard.py, tests/unit/test_heredoc_cmd_sub_guard.bats]
 related_tasks: [T-1944, T-1942, T-1943, T-1629]

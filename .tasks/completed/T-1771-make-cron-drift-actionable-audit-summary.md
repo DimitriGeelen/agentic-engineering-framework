@@ -16,7 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [governance, cron, audit]
 components: [C-004]
 related_tasks: []

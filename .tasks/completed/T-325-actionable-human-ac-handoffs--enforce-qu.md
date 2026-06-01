@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [governance, ux, handoff]
 components: [agents/task-create/update-task.sh, agents/handover/handover.sh, agents/task-create/create-task.sh]
 related_tasks: [T-193, T-285, T-289]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/unit/test_worker_kind_drift.bats]
 related_tasks: [T-1706, T-1707]

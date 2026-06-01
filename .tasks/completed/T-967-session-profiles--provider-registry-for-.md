@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [agents/task-create/update-task.sh, tests/playwright/test_cross_surface_parity.py, tests/playwright/test_session_api.py, tests/unit/update_task.bats, web/blueprints/review.py, web/blueprints/tasks.py, web/blueprints/terminal.py, web/templates/review.html, web/templates/task_detail.html, web/terminal/adapters/base.py, web/terminal/adapters/claude_code.py, web/terminal/adapters/local_shell.py, web/terminal/__init__.py, web/terminal/profiles.py, web/terminal/registry.py, web/terminal/session.py]
 related_tasks: []

@@ -13,7 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 arc_id: watchtower-redesign
 tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower]
 components: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, lib/pending.sh, web/blueprints/__init__.py, web/blueprints/pending.py, web/shared.py, web/templates/pending.html]
 related_tasks: []

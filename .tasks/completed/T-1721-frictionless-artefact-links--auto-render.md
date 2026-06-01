@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [ux, watchtower]
 components: [web/shared.py, web/blueprints/tasks.py]
 related_tasks: [T-1575, T-1257, T-885, T-1287, T-1376]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/playwright/test_review.py, tests/playwright/test_timeline.py]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/context/lib/episodic.sh, tests/unit/episodic_yaml_decision_escape.bats]
 related_tasks: []

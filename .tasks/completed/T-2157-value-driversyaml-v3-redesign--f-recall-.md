@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [priority, arc-006, bvp, value-drivers]
 components: []
 related_tasks: []

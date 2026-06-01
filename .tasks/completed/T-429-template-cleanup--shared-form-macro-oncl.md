@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: next
+horizon: null
 tags: [refactoring, html, watchtower, usability]
 components: [web/templates/base.html, web/templates/cockpit.html, web/templates/inception_detail.html, web/templates/project.html, web/templates/task_detail.html, web/templates/tasks.html]
 related_tasks: [T-411]

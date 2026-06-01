@@ -8,7 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [git, ci-cd]
 components: [.onedev-buildspec.yml, .gitignore]
 related_tasks: [T-292, T-289]

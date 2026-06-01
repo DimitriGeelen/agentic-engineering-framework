@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, arc-membership, silent-corpus, CLI-Watchtower-parity, T-1880-sibling]
 components: [lib/arc_membership.sh, lib/arc.sh, tests/unit/arc_membership_dual_id.bats]
 related_tasks: [T-1880, T-1874, T-1875, T-1876, T-1879, T-1881]

@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [arc-008, rca, routing, audience-mismatch, inception]
 components: []
 related_tasks: [T-2138, T-2139, T-2140, T-2141, T-2142, T-1878, T-1947, T-1811]

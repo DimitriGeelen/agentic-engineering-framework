@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:value-prioritisation, future-prevention, L-332, L-408, refactor, lint]
 components: [bin/fw, lib/worker_kinds_parity.py, tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats]
 related_tasks: [T-1944, T-1945, T-1735, T-1734, T-1629]

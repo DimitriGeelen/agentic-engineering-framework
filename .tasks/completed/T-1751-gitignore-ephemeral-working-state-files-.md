@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [hygiene, governance]
 components: []
 related_tasks: [T-1750, T-1727, T-1749]

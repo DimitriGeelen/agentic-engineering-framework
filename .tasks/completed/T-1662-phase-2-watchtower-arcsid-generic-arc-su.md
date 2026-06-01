@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [watchtower, arcs, phase-2, from-T-1653]
 components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/shared.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
 related_tasks: [T-1647, T-1661, T-1653]

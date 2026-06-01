@@ -13,7 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-18T21:32:01Z

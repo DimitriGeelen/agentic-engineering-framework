@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [deployment, infrastructure, lxc]
 components: []
 related_tasks: []

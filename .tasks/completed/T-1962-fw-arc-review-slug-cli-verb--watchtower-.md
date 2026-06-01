@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: now
+horizon: null
 tags: [approval-ux, arc, T-1959-followup, arc:arc-grooming]
 components: []
 related_tasks: [T-1959, T-1960, T-1671]

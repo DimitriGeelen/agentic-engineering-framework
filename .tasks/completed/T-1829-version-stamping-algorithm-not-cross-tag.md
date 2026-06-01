@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: [version-monotonicity, mirror-sync, fw-upgrade-incident-2026-05-14]
 components: [agents-git-lib-hooks, lib-mirror, VERSION]
 related_tasks: [T-1602, T-1603, T-1828]

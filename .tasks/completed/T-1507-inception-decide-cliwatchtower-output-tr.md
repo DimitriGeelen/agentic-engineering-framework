@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [C-004, lib/inception.sh, lib/review.sh, lib/task-audit.sh]
 related_tasks: []

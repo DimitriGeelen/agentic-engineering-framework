@@ -10,7 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [bug, tooling, shim, regression]
 components: [C-004, agents/task-create/create-task.sh, lib/upgrade.sh, tests/unit/task_id_race.bats, bin/fw, bin/fw-shim]
 related_tasks: [T-664, T-1256, T-1277]

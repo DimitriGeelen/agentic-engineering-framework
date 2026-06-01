@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [build, lifecycle, ui, watchtower, T-NEW-5b]
 components: [C-004, lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats, tests/unit/audit_stale_arc_warning.bats]
 related_tasks: [T-1846, T-1847]

@@ -8,7 +8,7 @@ description: >
   Tutorial documentation is a downstream task, spawned only on GO decision.
 status: work-completed
 workflow_type: inception
-horizon: now
+horizon: null
 owner: human
 tags: [onboarding, validation, sprechloop]
 related_tasks: [T-125, T-126, T-127, T-128, T-129]

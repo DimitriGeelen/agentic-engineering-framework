@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["bug", "yaml", "watchtower"]
 components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py]
 related_tasks: ["T-1812", "T-1813", "T-1815"]

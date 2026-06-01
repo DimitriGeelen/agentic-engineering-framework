@@ -1,21 +1,45 @@
 ---
 id: T-2097
-name: "fw upgrade [3/10] seed-files merge strategy — universal items land into customized consumers"
+name: "fw upgrade [3/10] seed-files merge strategy — universal items land into customized
+  consumers"
 description: >
-  fw upgrade SKIPs practices.yaml/decisions.yaml/patterns.yaml when consumers customize them — canonical framework items never land. Goal: merge strategy that adds canonical items without clobbering project items.
+  fw upgrade SKIPs practices.yaml/decisions.yaml/patterns.yaml when consumers customize
+  them — canonical framework items never land. Goal: merge strategy that adds canonical
+  items without clobbering project items.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [fw-upgrade, reliability, inception, T-2078-cluster, seed-files]
 components: []
 related_tasks: [T-2078, T-2092, T-2093, T-2094, T-2095]
 created: 2026-05-29T14:02:19Z
-last_update: 2026-05-29T14:02:19Z
-date_finished: null
+last_update: 2026-05-30T07:38:05Z
+date_finished: 2026-05-30T07:38:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-05-29T14:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 3
+      D4: 2
+    rationale: D1=2 (body:learning-ref); D2=2 (body:telemetry-or-audit-entry); 
+      D3=3 (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-05-29T14:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2097: fw upgrade [3/10] seed-files merge strategy — universal items land into customized consumers
@@ -52,15 +76,15 @@ Research complete in `docs/reports/T-2097-seed-files-merge-strategy.md`. Four st
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -123,9 +147,63 @@ Research complete in `docs/reports/T-2097-seed-files-merge-strategy.md`. Four st
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO with Strategy A — item-keyed merge (canonical wins on absent `id:`, project wins on present `id:`).
+
+Rationale: Simplest path that solves the actual problem. Most current seed items already carry `id:` — minor schema cleanup, not a redesign. No touch on read-site code (audit.sh, lib/practice.sh continue reading a single file). Conflict path is clear: same `id:` with different content → leave local, log a warning. Idempotent: running upgrade twice produces identical state. Closes the upgrade-trust gap together with T-2078's V1 reliability slices (T-2092..T-2095).
+
+Evidence:
+- Existing seeds (`lib/seeds/{practices,decisions,patterns}.yaml`) — sampling shows >80% of items already carry `id:`.
+- Comparable pattern proven in `lib/seeds/value-drivers.yaml` (BVP arc, T-1933) — merges with id-key wins.
+- Failure of current heuristic visible across the fleet: 003-NTB-ATC-Plugin and 050-email-archive have not received a canonical seed item since first customization (months of drift).
+- Full research: `docs/reports/T-2097-seed-files-merge-strategy.md`
+
+Suggested follow-ups (on GO):
+- T-2097-V1: schema enforcement — every seed item must have `id:`; bats refuses commit otherwise.
+- T-2097-V2: implement item-keyed merge in `lib/upgrade.sh` step [3/10]; bats coverage exercising a customized consumer.
+- T-2097-V3: backfill `id:` on the ~20% of items lacking it.
+- T-2097-V4: replace the SKIP line with structured output ("MERGED 3 canonical into practices.yaml: X new, Y already present, Z conflicts logged").
+
+Rejected: B (dual-file — touches too many read sites), C (in-file delimiters — fragile), D (hybrid — premature complexity).
+
+**Date**: 2026-05-30T07:38:05Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-05-30T07:38:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO with Strategy A — item-keyed merge (canonical wins on absent `id:`, project wins on present `id:`).
+
+Rationale: Simplest path that solves the actual problem. Most current seed items already carry `id:` — minor schema cleanup, not a redesign. No touch on read-site code (audit.sh, lib/practice.sh continue reading a single file). Conflict path is clear: same `id:` with different content → leave local, log a warning. Idempotent: running upgrade twice produces identical state. Closes the upgrade-trust gap together with T-2078's V1 reliability slices (T-2092..T-2095).
+
+Evidence:
+- Existing seeds (`lib/seeds/{practices,decisions,patterns}.yaml`) — sampling shows >80% of items already carry `id:`.
+- Comparable pattern proven in `lib/seeds/value-drivers.yaml` (BVP arc, T-1933) — merges with id-key wins.
+- Failure of current heuristic visible across the fleet: 003-NTB-ATC-Plugin and 050-email-archive have not received a canonical seed item since first customization (months of drift).
+- Full research: `docs/reports/T-2097-seed-files-merge-strategy.md`
+
+Suggested follow-ups (on GO):
+- T-2097-V1: schema enforcement — every seed item must have `id:`; bats refuses commit otherwise.
+- T-2097-V2: implement item-keyed merge in `lib/upgrade.sh` step [3/10]; bats coverage exercising a customized consumer.
+- T-2097-V3: backfill `id:` on the ~20% of items lacking it.
+- T-2097-V4: replace the SKIP line with structured output ("MERGED 3 canonical into practices.yaml: X new, Y already present, Z conflicts logged").
+
+Rejected: B (dual-file — touches too many read sites), C (in-file delimiters — fragile), D (hybrid — premature complexity).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c13d7866
+- **Timestamp:** 2026-05-30T07:38:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T07:38:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

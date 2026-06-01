@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [portability, macos, bash, D4]
 components: [C-004, agents/healing/lib/diagnose.sh, agents/task-create/update-task.sh]
 related_tasks: []

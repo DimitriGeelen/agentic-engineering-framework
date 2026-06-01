@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer-agent, drift-detection, isolation-strategy, sandbox, v1.5]
 components: []
 related_tasks: [T-1442, T-1443, T-1445, T-1448, T-1449, T-1450]

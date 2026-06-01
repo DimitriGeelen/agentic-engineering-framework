@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [T-679-family, structural-gate, T-1715-implementation]
 components: [C-004, agents/task-create/update-task.sh, bin/fw, lib/evolution_log.sh, lib/inception_recommendation.sh, lib/inception.sh, tests/unit/evolution_log_gate.bats]
 related_tasks: [T-679, T-1259, T-1260, T-1715, T-1668, T-1671]

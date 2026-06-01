@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-grooming, future-prevention, audit-check]
 components: [C-004, tests/unit/audit_ctl_arc_tag_only_pattern.bats]
 related_tasks: [T-1879, T-1880]

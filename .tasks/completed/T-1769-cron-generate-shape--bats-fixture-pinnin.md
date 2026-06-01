@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["cron", "T-1720-followup", "regression-test", "structural-fix"]
 components: [tests/unit/test_cron_generate_shape.bats]
 related_tasks: ["T-1720", "T-1767", "T-1687"]

@@ -4,7 +4,7 @@ name: Add horizon field to task lifecycle
 description: >
   Add horizon: now|next|later field to task frontmatter. Distinguishes "ready to work on" from "backlog/deferred" tasks. Handover agent filters by horizon so deferred tasks don't appear as suggested actions.
 status: work-completed
-horizon: now
+horizon: null
 workflow_type: build
 owner: agent
 tags: []

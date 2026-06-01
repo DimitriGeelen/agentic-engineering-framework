@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, peer-consult, cross-repo]
 components: [tests/unit/test_peer_subscribe.py]
 related_tasks: [T-1818, T-1804, T-1797]

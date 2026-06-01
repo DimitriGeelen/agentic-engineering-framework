@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [C-009, lib/init.sh, tests/unit/hook_absolute_paths.bats]
 related_tasks: []

@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [from-T-1641, t-1061-followup, fabric, cross-repo]
 components: []
 related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1066, T-1648]

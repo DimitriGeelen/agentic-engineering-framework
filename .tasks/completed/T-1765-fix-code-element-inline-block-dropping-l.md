@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["bug", "render", "css", "human-review-surface", "ui-visual"]
 components: [lib/render_surface.sh, tests/playwright/test_review_code_inline.py, web/templates/base.html, web/templates/review.html]
 related_tasks: ["T-1575", "T-1722", "T-1762", "T-1763", "T-1764"]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: human
-horizon: now
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-19T21:43:44Z

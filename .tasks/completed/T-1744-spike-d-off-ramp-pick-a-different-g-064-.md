@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [inception, follow-up]
 components: [lib/inception_recommendation.sh, lib/task-audit.sh, web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-1741, T-1737, T-1688, T-1727]

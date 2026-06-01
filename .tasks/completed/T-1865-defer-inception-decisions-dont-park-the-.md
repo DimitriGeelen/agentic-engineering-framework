@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, inception, audit]
 components: [agents/task-create/update-task.sh, lib/inception.sh, tests/unit/inception_defer_park.bats]
 related_tasks: [T-1265, T-1309, T-1611, T-1685, T-682, T-704, T-1068, T-1514, T-1515, T-1589]

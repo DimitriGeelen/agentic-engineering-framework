@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: specification
 owner: human
-horizon: later
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-18T12:05:00Z

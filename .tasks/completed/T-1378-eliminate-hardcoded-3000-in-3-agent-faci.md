@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/monitor/liveness-check.sh, lib/init.sh]
 related_tasks: []

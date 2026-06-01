@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [multi-provider, ollama]
 components: []
 related_tasks: [T-1687]

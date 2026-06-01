@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:value-prioritisation, bvp, watchtower, bugfix]
 components: [lib/arc.sh, tests/unit/arc_remove_driver_verb.bats]
 related_tasks: [T-1976, T-1926, T-1958]

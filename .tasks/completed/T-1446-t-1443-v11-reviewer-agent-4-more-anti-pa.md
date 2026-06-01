@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer-agent, ac-validation, anti-patterns, v1.1, escalation]
 components: [bin/fw]
 related_tasks: [T-1442, T-1443, T-1445, T-954]

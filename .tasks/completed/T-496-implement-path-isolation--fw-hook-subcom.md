@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [portability, enforcement, P0]
 components: [bin/fw, C-009, lib/init.sh, lib/upgrade.sh]
 related_tasks: []

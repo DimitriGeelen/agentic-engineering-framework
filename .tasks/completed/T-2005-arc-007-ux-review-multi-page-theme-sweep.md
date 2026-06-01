@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [ux, css, arc-007, tooling]
 components: []
 related_tasks: [T-2002, T-2003, T-2004, T-1991, T-1988, T-1987]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: []
 components: [C-004, agents/handover/handover.sh, lib/init.sh, C-003, web/blueprints/risks.py, web/templates/risks.html]
 related_tasks: []

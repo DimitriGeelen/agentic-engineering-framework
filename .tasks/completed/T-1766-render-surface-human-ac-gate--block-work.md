@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: ["bug", "governance-gate", "human-review-surface", "T-1575-followup", "T-1763-T-1764-T-1765-meta"]
 components: [agents/task-create/update-task.sh, lib/render_surface.sh, tests/unit/test_render_surface_gate.bats]
 related_tasks: ["T-193", "T-954", "T-1575", "T-1763", "T-1764", "T-1765"]

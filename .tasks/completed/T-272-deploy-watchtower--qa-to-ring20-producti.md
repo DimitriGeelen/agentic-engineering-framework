@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [deployment, inception, ring20, production]
 components: [web/app.py, bin/fw, agents/audit/audit.sh]
 related_tasks: [T-273, T-274, T-275, T-276, T-277, T-278, T-254, T-077]

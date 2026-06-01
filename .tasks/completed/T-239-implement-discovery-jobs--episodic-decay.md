@@ -10,7 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [discovery, omission]
 components: [C-004]
 related_tasks: [T-200, T-194, T-238]

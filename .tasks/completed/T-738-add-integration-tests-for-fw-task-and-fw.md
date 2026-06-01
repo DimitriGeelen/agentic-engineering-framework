@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/integration/fw_context.bats, tests/integration/fw_task.bats]
 related_tasks: []

@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [audit, diagnostic, ctl-013, observability]
 components: [C-004]
 related_tasks: [T-1395, T-1472]

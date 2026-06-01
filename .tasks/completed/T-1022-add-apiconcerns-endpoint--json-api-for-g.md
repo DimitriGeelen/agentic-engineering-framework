@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/playwright/test_quality.py, web/blueprints/quality.py]
 related_tasks: []

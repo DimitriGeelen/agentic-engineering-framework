@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-003, reviewer, auto-tick-fp, t-2155-followup]
 components: []
 related_tasks: []

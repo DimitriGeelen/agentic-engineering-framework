@@ -8,17 +8,17 @@ description: >
   chat. Add additive --feedback field that lands on task body and is read by next
   session. Arc-008 anchor; three documented sibling questions Q1/Q2/Q3 (filed-when-ready).
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 arc_id: inception-review-loop
 tags: [inception, review-loop, operator-feedback, arc-008]
 components: []
 related_tasks: [T-2097, T-2098, T-2100]
 created: 2026-05-29T21:20:30Z
-last_update: '2026-05-29T21:30:03Z'
-date_finished:
+last_update: 2026-05-30T07:38:12Z
+date_finished: 2026-05-30T07:38:12Z
 # revisit_at: YYYY-MM-DD
 # revisit_evidence_needed:
 bvp_scores_proposed:
@@ -84,15 +84,15 @@ Research complete (`docs/reports/T-2101-inception-feedback-field.md`). Four cand
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Decide GO / NO-GO / DEFER on Candidate A (--feedback flag)
+- [x] [REVIEW] Decide GO / NO-GO / DEFER on Candidate A (--feedback flag)
   **Steps:**
   1. Open <http://192.168.10.107:3000/review/T-2101> in your browser
   2. Read the Recommendation block + the four candidates in `docs/reports/T-2101-inception-feedback-field.md`
@@ -151,8 +151,72 @@ Research complete (`docs/reports/T-2101-inception-feedback-field.md`). Four cand
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-2101 go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — Candidate A (`--feedback <text>` flag on `fw inception decide` + Watchtower form textarea).
+
+Rationale: Pure additive change; zero migration cost across 168 existing inceptions; backwards-compatible. Separates two genuinely distinct concepts (decision reason vs requested change). Surfaces operator intent on the task body — read by next agent, rendered on `/tasks/T-XXX`, captured by `fw reviewer`. Closes the learning leak that motivated this inception. Lowest-coupling sibling in arc-008 — ships independently of the three documented sibling questions (Q1 template philosophy, Q2 frictionless instructions, Q3 reviewer pre-flight) which remain filed-when-ready.
+
+Evidence:
+- `lib/inception.sh:79-85` — current decide envelope schema (rationale-only)
+- Operator challenge (2026-05-29) — verbatim ask for feedback field
+- 168 inceptions ship with same boilerplate Human AC
+- L-329 symmetry — don't drop operator intent the moment authorisation completes
+- Full research: `docs/reports/T-2101-inception-feedback-field.md`
+
+Suggested follow-ups (on GO):
+- T-2101-V1: `lib/inception.sh` — accept `--feedback`; inject `## Operator Feedback` section
+- T-2101-V2: Watchtower `/review/T-XXX` form — labelled textarea + POST handler
+- T-2101-V3: `fw resume status` — surface `## Operator Feedback` when present
+- T-2101-V4: `/tasks/T-XXX` + `/inception/T-XXX` render
+- T-2101-V5: bats coverage — additive field semantics + rationale unchanged
+
+Rejected:
+- B (repurpose `--rationale`) — ambiguity by construction; doesn't address chat-session leak.
+- C (Watchtower-only) — breaks CLI/web parity (T-1259, T-1671 precedent).
+- D (status quo) — the bug being filed.
+
+**Date**: 2026-05-30T07:38:12Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion. -->
+
+### 2026-05-30T07:38:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Candidate A (`--feedback <text>` flag on `fw inception decide` + Watchtower form textarea).
+
+Rationale: Pure additive change; zero migration cost across 168 existing inceptions; backwards-compatible. Separates two genuinely distinct concepts (decision reason vs requested change). Surfaces operator intent on the task body — read by next agent, rendered on `/tasks/T-XXX`, captured by `fw reviewer`. Closes the learning leak that motivated this inception. Lowest-coupling sibling in arc-008 — ships independently of the three documented sibling questions (Q1 template philosophy, Q2 frictionless instructions, Q3 reviewer pre-flight) which remain filed-when-ready.
+
+Evidence:
+- `lib/inception.sh:79-85` — current decide envelope schema (rationale-only)
+- Operator challenge (2026-05-29) — verbatim ask for feedback field
+- 168 inceptions ship with same boilerplate Human AC
+- L-329 symmetry — don't drop operator intent the moment authorisation completes
+- Full research: `docs/reports/T-2101-inception-feedback-field.md`
+
+Suggested follow-ups (on GO):
+- T-2101-V1: `lib/inception.sh` — accept `--feedback`; inject `## Operator Feedback` section
+- T-2101-V2: Watchtower `/review/T-XXX` form — labelled textarea + POST handler
+- T-2101-V3: `fw resume status` — surface `## Operator Feedback` when present
+- T-2101-V4: `/tasks/T-XXX` + `/inception/T-XXX` render
+- T-2101-V5: bats coverage — additive field semantics + rationale unchanged
+
+Rejected:
+- B (repurpose `--rationale`) — ambiguity by construction; doesn't address chat-session leak.
+- C (Watchtower-only) — breaks CLI/web parity (T-1259, T-1671 precedent).
+- D (status quo) — the bug being filed.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b1b011f6
+- **Timestamp:** 2026-05-30T07:38:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-05-30T07:38:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [web/blueprints/tasks.py, web/templates/tasks.html]
 related_tasks: []

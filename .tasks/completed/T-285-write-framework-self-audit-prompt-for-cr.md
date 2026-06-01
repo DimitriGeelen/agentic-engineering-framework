@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [audit, deployment, governance]
 components: [docs/prompts/framework-self-audit.md]
 related_tasks: [T-286]

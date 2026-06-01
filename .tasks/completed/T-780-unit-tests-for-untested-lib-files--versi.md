@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: claude-code
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []

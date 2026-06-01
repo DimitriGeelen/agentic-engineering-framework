@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [watchtower, testing, reliability]
 components: [bin/fw]
 related_tasks: []

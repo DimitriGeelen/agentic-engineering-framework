@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [test, invariant, regression, cross-surface, no-rec]
 components: [tests/playwright/test_cross_surface_parity.py]
 related_tasks: [T-1576, T-1577, T-1578, T-1586]

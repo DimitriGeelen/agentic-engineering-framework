@@ -9,7 +9,7 @@ Replaces static Choose your path menu with auto-detection: existing projects get
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [onedev, pr]
 components: []
 related_tasks: []

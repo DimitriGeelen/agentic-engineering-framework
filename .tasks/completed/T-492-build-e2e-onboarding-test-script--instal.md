@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [testing, onboarding, ci]
 components: [bin/fw, web/context_loader.py, web/templates/index.html]
 related_tasks: []

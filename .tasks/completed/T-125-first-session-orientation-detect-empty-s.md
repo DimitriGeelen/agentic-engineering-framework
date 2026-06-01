@@ -5,7 +5,7 @@ description: >
   Addresses O-001, O-004. Add first-session detection to context.sh init and resume.sh quick.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

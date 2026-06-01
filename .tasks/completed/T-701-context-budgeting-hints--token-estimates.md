@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: [context-budget, kcp-pattern]
 components: []
 related_tasks: []

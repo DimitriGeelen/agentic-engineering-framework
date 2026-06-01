@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [agents/context/check-active-task.sh, bin/fw]
 related_tasks: []

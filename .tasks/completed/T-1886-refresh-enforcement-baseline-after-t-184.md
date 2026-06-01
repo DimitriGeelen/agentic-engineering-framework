@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-grooming, enforcement, hygiene]
 components: [.context/project/enforcement-baseline.sha256]
 related_tasks: [T-1849, T-1730, T-1731, T-1687]

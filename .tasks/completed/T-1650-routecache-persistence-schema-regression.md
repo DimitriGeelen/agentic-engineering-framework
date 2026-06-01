@@ -14,7 +14,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [from-T-1641, t-1061-followup, drift-defense, termlink, contract]
 components: [tests/fixtures/termlink-route-cache-schema.json, tests/unit/test_termlink_route_cache_schema.py]
 related_tasks: [T-1641, T-1644, T-1064, T-1065, T-1648, T-1651]

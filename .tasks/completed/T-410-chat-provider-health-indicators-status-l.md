@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [watchtower, chat, llm, ux]
 components: [web/static/js/chat.js, web/templates/_partials/chat_tab.html]
 related_tasks: []

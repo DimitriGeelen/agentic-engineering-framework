@@ -5,7 +5,7 @@ description: >
   Build the PreToolUse budget-gate.sh hook that reads token usage and BLOCKS tool calls at critical threshold. Hybrid approach: keep PostToolUse checkpoint.sh as fallback. Deliverables: (1) agents/context/budget-gate.sh — PreToolUse hook, (2) .budget-status file protocol, (3) settings.json update to add PreToolUse hook, (4) deprecate .commit-counter from hooks. Design: docs/T-138-inception-findings.md. Decision: T-138 GO — hybrid.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/playwright/conftest.py, tests/playwright/test_core.py, tests/playwright/test_health.py, web/app.py, web/blueprints/cockpit.py, web/templates/cockpit.html]
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [slice-5]
 components: [bin/fw, lib/pause_cli.py, lib/pause_resolve.py, lib/pause.sh, lib/resolver.py, tests/unit/test_pause_resolve.py]
 related_tasks: [T-1805, T-1806, T-1807, T-1808]

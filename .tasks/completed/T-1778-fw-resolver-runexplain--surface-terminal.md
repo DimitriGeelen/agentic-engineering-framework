@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [cli, observability]
 components: [lib/outcome.py, lib/resolver.py, tests/unit/test_outcome.py, tests/unit/test_resolver_run.py]
 related_tasks: [T-1774, T-1777]

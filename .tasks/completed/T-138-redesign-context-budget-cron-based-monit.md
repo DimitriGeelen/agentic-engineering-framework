@@ -5,7 +5,7 @@ description: >
   Redesign context budget: cron-based monitor + PreToolUse enforcement
 status: work-completed
 workflow_type: inception
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

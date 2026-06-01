@@ -8,7 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:value-prioritisation, future-prevention, drift, cron]
 components: [C-004, bin/fw, tests/unit/test_audit_cron_registry_generated_drift.bats, tests/unit/test_cron_registry_generated_drift.bats]
 related_tasks: [T-1935, T-1941, T-1771, T-1112, T-1114, T-1558]

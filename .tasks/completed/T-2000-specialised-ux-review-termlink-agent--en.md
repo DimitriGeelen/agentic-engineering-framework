@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [watchtower, review, inception, ux]
 components: []
 related_tasks: [T-1988, T-1999, T-1443]

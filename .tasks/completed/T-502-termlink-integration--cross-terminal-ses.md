@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [termlink, integration, cross-terminal]
 components: [bin/fw]
 related_tasks: []

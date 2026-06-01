@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [consumer-fleet, fw-doctor]
 components: [bin/fw, tests/unit/test_doctor_consumer_version_ahead.bats]
 related_tasks: [T-1828, T-1542, T-1834]

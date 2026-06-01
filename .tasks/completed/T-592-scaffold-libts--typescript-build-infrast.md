@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [architecture, typescript, T-586]
 components: []
 related_tasks: [T-586, T-593, T-594]

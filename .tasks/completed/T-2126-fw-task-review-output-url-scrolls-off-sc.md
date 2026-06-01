@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [cli-ux, handoff, terminal-rendering]
 components: [lib/review.sh]
 related_tasks: [T-2125, T-2118, T-2122, T-2123, T-679]

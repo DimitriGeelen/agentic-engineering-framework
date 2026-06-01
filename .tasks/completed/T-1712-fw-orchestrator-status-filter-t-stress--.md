@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [observability]
 components: [bin/fw]
 related_tasks: [T-1689, T-1696]

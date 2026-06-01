@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["bug", "render", "governance-render", "human-review-surface"]
 components: [lib/render_surface.sh, tests/unit/test_ac_body_html_comment.py, tests/unit/test_file_route_extensions.py, web/blueprints/docs.py, web/blueprints/tasks.py, web/shared.py]
 related_tasks: ["T-204", "T-1551", "T-1762"]

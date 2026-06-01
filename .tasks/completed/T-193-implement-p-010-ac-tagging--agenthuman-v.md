@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [gap, p-010, verification, g-010]
 related_tasks: [T-192]
 created: 2026-02-19T14:56:10Z

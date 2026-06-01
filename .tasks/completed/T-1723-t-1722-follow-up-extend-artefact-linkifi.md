@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [ux, watchtower]
 components: [web/blueprints/core.py, web/blueprints/inception.py]
 related_tasks: [T-1722, T-1721, T-1575, T-633]

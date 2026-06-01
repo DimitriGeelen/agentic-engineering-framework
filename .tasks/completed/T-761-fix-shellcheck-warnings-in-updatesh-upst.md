@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [lib/init.sh, lib/notify.sh, lib/setup.sh, lib/update.sh, lib/upstream.sh]
 related_tasks: []

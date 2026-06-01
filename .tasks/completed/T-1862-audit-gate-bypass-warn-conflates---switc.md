@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, fix, audit, signal-noise-ratio, follow-up]
 components: [agents/audit/audit.sh]
 related_tasks: [T-1573, T-1730, T-1861]

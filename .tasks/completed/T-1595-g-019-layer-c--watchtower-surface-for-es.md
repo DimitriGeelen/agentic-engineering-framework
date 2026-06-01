@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [web/blueprints/escalation.py, web/blueprints/__init__.py, web/shared.py, web/templates/escalation_drift.html]
 related_tasks: []

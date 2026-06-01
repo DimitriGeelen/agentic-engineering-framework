@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [escalation-scan, v0.5, parser]
 components: [tests/unit/test_escalation_v05_parser.py, tools/escalation-scan-v0.5.py]
 related_tasks: [T-1727]

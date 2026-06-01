@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [test-infra, fw-upgrade-incident-2026-05-14, bug]
 components: []
 related_tasks: [T-1822, T-1634]

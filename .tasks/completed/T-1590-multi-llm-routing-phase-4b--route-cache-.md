@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [termlink, multi-llm, routing]
 components: []
 related_tasks: [T-1061, T-1065]

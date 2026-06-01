@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [resolver]
 components: [prompts/default.md]
 related_tasks: [T-1687, T-1686]

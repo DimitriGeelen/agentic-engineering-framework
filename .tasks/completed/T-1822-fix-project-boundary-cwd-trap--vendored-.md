@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [project-boundary, fw-upgrade-incident-2026-05-14, T-559, T-1542, bug]
 components: [lib/paths.sh, tests/unit/lib_paths.bats]
 related_tasks: [T-559, T-1542, T-1634]

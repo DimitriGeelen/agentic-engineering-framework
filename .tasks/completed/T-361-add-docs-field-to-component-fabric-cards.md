@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: []
 components: [agents/fabric/lib/traverse.sh, web/templates/fabric_detail.html]
 related_tasks: []

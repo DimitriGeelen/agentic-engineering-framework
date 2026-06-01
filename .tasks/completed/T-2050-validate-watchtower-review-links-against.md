@@ -13,7 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [watchtower, review]
 components: [lib/review.sh, lib/review_link_validator.py]
 related_tasks: [T-2030, T-2042]

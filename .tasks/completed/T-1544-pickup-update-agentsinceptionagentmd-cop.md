@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [pickup, feature-proposal]
 components: [bin/fw, lib/review.sh, tests/unit/cron_flock_parity.bats]
 related_tasks: []

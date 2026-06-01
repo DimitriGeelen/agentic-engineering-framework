@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [meta-RCA, governance-rule-decay, T-679-family, recurring]
 components: []
 related_tasks: [T-679, T-1259, T-1260, T-1713, T-1714]

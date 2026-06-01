@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/task-create/update-task.sh, tests/scripts/yaml_parse_all_tasks.py, tests/unit/update_task_yaml_components_emit.bats]
 related_tasks: []

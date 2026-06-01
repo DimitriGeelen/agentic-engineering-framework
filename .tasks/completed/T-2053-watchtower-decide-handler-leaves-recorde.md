@@ -17,7 +17,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug]
 components: [web/blueprints/inception.py]
 related_tasks: [T-2030, T-2051]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [deployment, audit, quality-gate, governance]
 components: [C-004, bin/fw]
 related_tasks: [T-272, T-274, T-276, T-277]

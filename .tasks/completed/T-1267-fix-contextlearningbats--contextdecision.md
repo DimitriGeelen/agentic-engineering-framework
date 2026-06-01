@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [tests/unit/context_decision.bats, tests/unit/context_learning.bats]
 related_tasks: []

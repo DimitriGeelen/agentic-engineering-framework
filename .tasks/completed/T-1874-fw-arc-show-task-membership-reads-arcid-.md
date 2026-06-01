@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [arc, arc-grooming, lib-arc, T-NEW-10]
 components: [lib/arc.sh, tests/unit/arc_membership_union.bats]
 related_tasks: [T-1687, T-1846, T-1849, T-1850]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: ["bug", "watchtower", "data-source-drift"]
 components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py]
 related_tasks: ["T-1813", "T-1816"]

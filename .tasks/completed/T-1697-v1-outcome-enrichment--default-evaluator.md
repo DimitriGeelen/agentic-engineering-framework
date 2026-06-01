@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/task-create/update-task.sh, bin/fw, lib/outcome.py, lib/resolver.py, tests/unit/test_outcome.py, tests/unit/test_resolver.py]
 related_tasks: []

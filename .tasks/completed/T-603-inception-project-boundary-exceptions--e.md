@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [urgent, security]
 components: []
 related_tasks: [T-559, T-602, T-601]

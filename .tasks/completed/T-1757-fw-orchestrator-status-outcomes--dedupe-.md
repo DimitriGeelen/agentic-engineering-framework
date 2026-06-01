@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, tests/unit/test_orchestrator_outcome_dedup.py]
 related_tasks: []

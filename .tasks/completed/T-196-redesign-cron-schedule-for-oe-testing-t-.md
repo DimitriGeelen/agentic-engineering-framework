@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: now
+horizon: null
 tags: [assurance, cron, t-194-go]
 related_tasks: []
 created: 2026-02-19T19:29:16Z

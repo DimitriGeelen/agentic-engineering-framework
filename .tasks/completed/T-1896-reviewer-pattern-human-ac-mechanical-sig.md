@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [build, ac-routing, governance, reviewer, T-1878-B]
 components: [tests/unit/template_reviewer_prefix_example.bats]
 related_tasks: [T-1878, T-1811, T-1443, T-1894, T-1895]

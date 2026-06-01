@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [refactoring, shell, reliability, usability]
 components: [C-001, agents/handover/handover.sh, agents/healing/healing.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh, lib/errors.sh, lib/paths.sh]
 related_tasks: [T-411, T-412]

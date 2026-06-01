@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: [path-c, deep-dive, external, ntfy, notifications]
 components: []
 related_tasks: [T-696, T-697, T-698]

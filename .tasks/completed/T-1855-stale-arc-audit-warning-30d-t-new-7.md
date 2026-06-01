@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [build, audit, freshness, T-NEW-7]
 components: []
 related_tasks: [T-1846, T-1847]

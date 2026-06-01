@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [fw-upgrade, reliability, sev-1, fork-bomb, T-2078-cluster]
 components: []
 related_tasks: [T-2078, T-2092, T-2093, T-2094, T-2095, T-2097, T-2098]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, validation-drift, resolver]
 components: [bin/fw, lib/resolver.py]
 related_tasks: [T-1733, T-1706, T-1689]

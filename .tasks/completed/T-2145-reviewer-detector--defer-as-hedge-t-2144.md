@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-008, reviewer, defer-as-hedge, advisory-model]
 components: [agents/audit/reviewer/static_scan.py]
 related_tasks: [T-2144, T-2143, T-2140, T-1947, T-679]

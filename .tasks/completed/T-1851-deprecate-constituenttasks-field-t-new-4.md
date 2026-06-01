@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [build, cleanup, deprecation, T-NEW-4]
 components: []
 related_tasks: [T-1846, T-1847, T-1653]

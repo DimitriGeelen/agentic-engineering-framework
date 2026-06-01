@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [routing, handoff, ux, agent-discipline]
 components: [web/blueprints/inception.py, web/blueprints/approvals.py, 
       web/blueprints/review.py, lib/inception.sh]

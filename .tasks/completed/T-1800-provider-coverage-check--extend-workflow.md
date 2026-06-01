@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [audit, prevention, contract-gap]
 components: [lib/workflow_coverage.py, tests/unit/test_orchestrator_workflow_coverage.py, tests/unit/test_workflow_coverage.py]
 related_tasks: [T-1798, T-1797, T-1776]

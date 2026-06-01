@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, cleanup, g-052]
 components: [.tasks/active/, .tasks/completed/]
 related_tasks: [T-1981, T-1987, T-077]

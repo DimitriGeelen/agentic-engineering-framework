@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: next
+horizon: null
 tags: [ntfy, notifications, cli]
 components: [bin/fw, lib/notify.sh]
 related_tasks: []

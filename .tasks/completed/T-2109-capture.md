@@ -15,7 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [arc-007, perf, refactor, T-1954-cluster, watchtower]
 components: [web/blueprints/approvals.py, web/blueprints/bvp.py, web/blueprints/cockpit.py, web/blueprints/timeline.py, web/search_utils.py, web/shared.py]
 related_tasks: [T-1954, T-2102, T-2106, T-2107, T-2108]

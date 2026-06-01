@@ -13,7 +13,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: ["reviewer", "static-scan", "false-positive-precision"]
 components: [lib/reviewer/static_scan.py, tools/audit-swallowed-errors.py]
 related_tasks: ["T-1812", "T-1809", "T-1443"]

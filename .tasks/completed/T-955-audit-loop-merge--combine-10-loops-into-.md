@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: [agents/audit/active-task-scan.py, C-004, agents/audit/completed-task-scan.py]
 related_tasks: []

@@ -5,7 +5,7 @@ description: >
   Addresses O-003, O-005. MOST CRITICAL. Structural gate in commit-msg hook for inception tasks.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

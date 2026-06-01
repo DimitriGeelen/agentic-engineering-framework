@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [web/blueprints/cockpit.py, web/templates/cockpit.html]
 related_tasks: []

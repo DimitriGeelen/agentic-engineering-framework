@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [post-compact, context-recovery, budget-gate]
 components: [agents/context/post-compact-resume.sh]
 related_tasks: [T-1087, T-1088, T-179, T-188, T-111]

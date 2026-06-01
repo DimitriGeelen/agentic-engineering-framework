@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
 components: [agents/context/check-human-ac-tick.sh, C-009, lib/init.sh]
 related_tasks: [T-1729, T-1716, T-1671]

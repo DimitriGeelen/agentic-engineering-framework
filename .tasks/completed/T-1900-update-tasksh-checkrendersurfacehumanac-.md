@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [agents/task-create/update-task.sh, tests/unit/check_render_surface_human_ac_sigpipe.bats]
 related_tasks: []

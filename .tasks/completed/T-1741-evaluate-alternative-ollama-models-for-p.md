@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [spike, follow-up]
 components: [bin/fw]
 related_tasks: [T-1736, T-1740, T-1737]

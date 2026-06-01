@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [fw-upgrade, reliability, v1, T-2078-slice]
 components: [C-004, bin/fw, lib/upgrade.sh]
 related_tasks: [T-2078, T-1633]
@@ -357,12 +357,11 @@ five Agent ACs deterministic.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-33a8e344
-- **Timestamp:** 2026-06-01T00:03:08Z
+- **Scan ID:** R-06a0c8cb
+- **Timestamp:** 2026-06-01T06:51:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-06-01T00:01:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

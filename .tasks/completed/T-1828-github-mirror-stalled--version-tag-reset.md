@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, fw-upgrade-incident-2026-05-14, mirror, version-monotonicity]
 components: [C-004, agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, bin/fw, lib/inception.sh, lib/mirror.sh, lib/upgrade.sh, tests/unit/test_doctor_consumer_version_ahead.bats, tests/unit/test_mirror_stderr_capture.bats, tests/unit/test_pre_push_monotonic_ancestor.bats, tests/unit/test_secret_scan.bats, tests/unit/test_upgrade_downgrade_guard.bats, web/templates/prompt_detail.html]
 related_tasks: [T-1542, T-1594, T-1602, T-1603, T-1822, T-1823, T-1824, T-1825, T-1634, T-1826, T-1827, T-1833, T-1834]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [from-T-1641, t-1061-followup, drift-defense, watchtower, observability]
 components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/shared.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1644, T-1646, T-1063, T-1064, T-1066]

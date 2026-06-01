@@ -5,7 +5,7 @@ description: >
   Addresses O-002, O-006, O-007, O-009. Template partially synced. Add behavioral rules and audit drift check.
 status: work-completed
 workflow_type: build
-horizon: now
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, watchtower, path-discovery]
 components: [bin/fw, tests/unit/test_project_root_discovery.py, web/shared.py]
 related_tasks: [T-1727, T-1310]

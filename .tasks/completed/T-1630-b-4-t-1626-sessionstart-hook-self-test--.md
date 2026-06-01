@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [hooks, self-test, session-start, from-T-1626, B-4]
 components: [bin/fw, lib/doctor-hook-exercise.py, lib/hook-telemetry.sh, lib/upgrade.sh, tests/unit/doctor_hook_exercise.bats, tests/unit/hook_telemetry.bats]
 related_tasks: [T-1626, T-1627, T-1628, T-1629]

@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: [arc-008, review-handoff, watchtower, blocking-gate, T-2138-V1, keystone]
 components: [bin/fw, lib/review_link_validator.py, lib/review.sh, tests/unit/review_link_blocking_gate.bats, tests/unit/test_review_link_validator.py]
 related_tasks: [T-2138, T-2030, T-2050, T-2109, T-2113]
@@ -76,38 +76,16 @@ OUT of scope (separate slices):
 - [x] AC10 (T-2142 decomp — env-var bypass): The block message names the `FW_ALLOW_REVIEW_LINK_HOMEWORK=1` env-var bypass on both renderings. Verification in `## Verification` below.
 - [x] AC11 (T-2142 decomp — CLI-flag bypass): The block message names the `--skip-review-link-check "rationale"` flag on both renderings. Verification in `## Verification` below.
 
-### Human
-- [ ] [REVIEW] The validator's error block reads well enough that an agent who trips it fixes the task instead of fighting the gate.
-
-  **Context:** When an agent files a review with a vague URL in Steps, T-2139's gate refuses and prints the block below on stderr. You're judging the wording of that block.
-
-  **Steps:** Read both renderings (one per task class — they differ only on the URL route in the middle). For each ask: *is it clear what tripped, what to do, and does it sound like a peer not a gatekeeper?*
-
-  **Expected:** Yes to all three on both → tick.
-
-  **If not:** Name the phrase that read wrong (likely candidates: `BLOCK` clinical, `homework` condescending, `NOT /review/T-XXXX` finger-waggy). Leave unticked — agent reworks the strings.
-
-  **Rendering 1 — inception task, stderr:**
-  ```
-    ✗ Review-link check (T-2139) — BLOCK — review-handoff homework in this task:
-        homework pattern in Steps: `URL from bin/fw watchtower url`
-        bare-path bullet in Steps (no http:// prefix): - `/bvp`
-        This task is an inception. Inception handoffs go to /inception/T-XXXX, NOT /review/T-XXXX.
-        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/inception/T-XXXX).
-        Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 <command>  (logged Tier-2)
-        Or:     bin/fw task review T-XXX --skip-review-link-check "rationale"
-  ```
-
-  **Rendering 2 — build task partial-complete, stderr:**
-  ```
-    ✗ Review-link check (T-2139) — BLOCK — review-handoff homework in this task:
-        homework pattern in Steps: `URL from bin/fw watchtower url`
-        bare-path bullet in Steps (no http:// prefix): - `/bvp`
-        This is a build task with unticked Human ACs (partial-complete). Review handoffs go to /review/T-XXXX.
-        Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/review/T-XXXX).
-        Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 <command>  (logged Tier-2)
-        Or:     bin/fw task review T-XXX --skip-review-link-check "rationale"
-  ```
+<!-- ── T-2143 leg A (2026-05-31, operator GO recorded 17:25:06Z) ──
+     The original `[REVIEW]` AC asked the operator to judge tone of stderr text
+     whose audience is agents, not operators. Routing audience-mismatch caught
+     across 4 rounds in the T-2139 thread (T-2142 round 1, then rounds 2-4 in
+     the same session). T-2143 RCA filed; operator picked Candidate D (combo).
+     Leg A = remove this AC entirely (agent self-evaluates tone since agents
+     are the audience). Leg B = T-2147 ships the reviewer detector for the
+     class. Leg C = T-2148 extends CLAUDE.md three-prefix table with audience
+     axis. See docs/reports/T-2143-routing-recursion-rca.md for the full
+     analysis. -->
 
 ## Verification
 

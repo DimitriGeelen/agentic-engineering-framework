@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: [bin/fw, web/templates/task_detail.html]
 related_tasks: []
