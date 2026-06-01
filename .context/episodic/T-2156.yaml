@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2156: T-1985 auto-tick HTML-comment FP: _parse_agent_acs skips bullets inside markdown comments (OBS-047)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T09:11:46Z
+# ============================================================================
+
+task_id: T-2156
+task_name: "T-1985 auto-tick HTML-comment FP: _parse_agent_acs skips bullets inside markdown comments (OBS-047)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T09:06:12Z
+completed: 2026-06-01T09:11:36Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_strip_html_comments(text)` helper added to `lib/reviewer/static_scan.py` using Python `re.sub` with `re.DOTALL` (L-414 protection — sed-range alternative is unsafe for mixed single+multi-line shapes).'
+  - '`_parse_agent_acs(ac_section)` strips HTML comments before line iteration; docstring updated to reference T-2156 + OBS-047.'
+  - 'Unit tests in `tests/unit/test_reviewer_html_comment_strip.py` cover: (a) single-line `<!-- ... -->` containing a bullet, (b) multi-line comment block containing a bullet, (c) mixed real-AC + commented-AC, (d) L-414 cross-class shape (single-line opener directly followed by multi-line block — Python `re.DOTALL` handles correctly), (e) `_strip_html_comments` unit cases, (f) parsing T-2155''s actual file post-fix returns 6 Agent ACs (not 8). 9 tests, all pass.'
+  - 'Full reviewer test suite still green: `python3 -m pytest tests/unit/test_reviewer_*.py -q` → 304 passed in 3.07s.'
+  - 'Smoke: re-parsing T-2155''s body returns exactly 6 entries (verified inline via `python3 -c ... count={len(ss._parse_agent_acs(...))}` → `count=6`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-003, reviewer, auto-tick-fp, t-2155-followup]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2156-t-1985-auto-tick-html-comment-fp-parseag.md
+generated_by: context-agent-hybrid

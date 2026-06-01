@@ -213,12 +213,38 @@ def _should_auto_tick(
     return True
 
 
+# T-2156 (OBS-047): HTML-comment strip used before bullet iteration.
+# Bullets inside `<!-- ... -->` are documentation examples (the default.md
+# template's `### Human` block carries `- [ ] [REVIEWER] Block message …`
+# as a worked example), NOT real ACs. Without this strip, when an author
+# drops the `### Human` heading while editing the section in place (the
+# L-449 anti-pattern), the parser counts the commented bullets as Agent
+# ACs and the T-1985 auto-tick happily ticks them on PASS. 9+ closed tasks
+# already carry that FP — see OBS-047 corpus walk.
+#
+# Implementation: Python `re.DOTALL` across `<!--…-->`. L-414 documents the
+# sed-range alternative's pitfall (single-line opener directly followed
+# by multi-line range can swallow content); Python `re.DOTALL` has no
+# state-machine quirk and handles both shapes correctly.
+def _strip_html_comments(text: str) -> str:
+    """Strip <!-- … --> from text. Handles single-line and multi-line uniformly."""
+    return re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+
+
 def _parse_agent_acs(ac_section: str) -> list[ParsedAC]:
     """Return ParsedAC entries from the `### Agent` subhead only.
 
     Tasks without an explicit `### Agent` subhead yield no results — sovereign
     default: no implicit Agent section means nothing gets auto-ticked.
+
+    HTML-commented bullets are excluded (see `_strip_html_comments` docstring
+    + T-2156 / OBS-047). The template's documentation examples live inside
+    `<!-- … -->` and must never be parsed as real ACs.
     """
+    # T-2156: strip HTML comments FIRST so commented-out bullets don't reach
+    # the line iterator. This also drops any commented-out subhead-mimicking
+    # lines (`<!-- ### Human -->`) so the in_agent flag tracks real structure.
+    ac_section = _strip_html_comments(ac_section)
     results: list[ParsedAC] = []
     current_subhead = ""
     counter = 0
