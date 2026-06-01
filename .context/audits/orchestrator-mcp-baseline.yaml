@@ -45,6 +45,16 @@
 # shape suffixes). Same convention-based classification; handler-level review deferred.
 # Baseline 246 → 251. T-2150 Evolution captures 5th-batch cadence as updated evidence
 # for T-1761 inception (the marginal-leverage assumption is increasingly tenuous).
+# Update 2026-06-01 (T-2154 — T-1761 GO build slice): convention auto-classification
+# now lives in agents/audit/orchestrator-mcp-scan.sh (classify_by_convention). When
+# new termlink_agent_* / termlink_channel_* tools appear, the convention partitions
+# them into mutators_ungated (action-verb suffix) or readonly_exempt (read-shape
+# suffix) automatically. Default mode emits findings.auto_classified as advisory;
+# --apply rewrites this file in-place (with .bak backup) and bumps baseline_count.
+# Verb whitelist canonical: post, send, broadcast, edit, react, pin, quote, redact,
+# reply, star, typing_emit, ack, forward, poll_start, poll_end, poll_vote, reauth.
+# Tools outside the two namespaces still require manual classification (bounded
+# blast radius per T-1761 §Implementation shapes line 89).
 
 baseline_count: 251
 last_verified: 2026-05-31

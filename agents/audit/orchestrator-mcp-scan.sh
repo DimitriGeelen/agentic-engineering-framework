@@ -16,6 +16,21 @@
 
 set -euo pipefail
 
+# T-2154 (T-1761 build): --apply opt-in to auto-classify new tools by convention.
+# Without --apply: classifier runs in advisory mode (auto_classified populated in
+# LATEST.yaml, but baseline.yaml not mutated).
+# With --apply:    if any new tools match the convention (termlink_agent_*,
+# termlink_channel_*), they are written into baseline.yaml in-place with a .bak
+# backup; baseline_count is bumped.
+APPLY_MODE=0
+for arg in "$@"; do
+    case "$arg" in
+        --apply) APPLY_MODE=1 ;;
+        --help|-h) echo "Usage: $0 [--apply]"; exit 0 ;;
+        *) echo "ERROR: unknown arg: $arg (use --apply or --help)" >&2; exit 2 ;;
+    esac
+done
+
 FRAMEWORK_ROOT="${PROJECT_ROOT:-${FW_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}}"
 BASELINE="$FRAMEWORK_ROOT/.context/audits/orchestrator-mcp-baseline.yaml"
 LATEST="$FRAMEWORK_ROOT/.context/audits/orchestrator-LATEST.yaml"
@@ -84,15 +99,65 @@ probe_sessions_json() {
 SESSIONS_JSON=$(probe_sessions_json)
 
 # Run classification in Python (yaml + set ops are easier than bash)
-export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON
+export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON APPLY_MODE
 python3 - <<'PYEOF'
-import yaml, sys, datetime, os, json
+import yaml, sys, datetime, os, json, shutil
 
 baseline_path = os.environ['BASELINE']
 latest_path = os.environ['LATEST']
 current_tools = {t for t in os.environ['CURRENT_TOOLS'].splitlines() if t}
 current_gated = {t for t in os.environ['CURRENT_GATED'].splitlines() if t}
 sessions_json = os.environ.get('SESSIONS_JSON', '') or ''
+apply_mode = os.environ.get('APPLY_MODE', '0') == '1'
+
+# T-2154 (T-1761 build): convention-based auto-classification for the two
+# namespaces (termlink_agent_*, termlink_channel_*) with a 7-batch zero-
+# misclassification track record (T-1755, T-1755 f/u, T-1760, T-1867, T-2073,
+# T-2073 f/u, T-2150 — 196 tools, zero corrections). Convention encoded by
+# all 7 batches: action-verb suffix → mutator; read-shape suffix → readonly.
+# Outside these two namespaces, returns 'unknown' (bounded blast radius).
+CONVENTION_NAMESPACES = ('termlink_agent_', 'termlink_channel_')
+# Verb whitelist sourced from baseline-header annotations across 7 batches.
+# Multi-word verbs (poll_start, poll_end, poll_vote, typing_emit) match the
+# full suffix; single-word verbs match the LAST underscore-segment.
+CONVENTION_MUTATOR_VERBS_SINGLE = frozenset({
+    'post', 'send', 'broadcast', 'edit', 'react', 'pin', 'quote',
+    'redact', 'reply', 'star', 'ack', 'forward', 'reauth',
+})
+CONVENTION_MUTATOR_VERBS_MULTI = frozenset({
+    'poll_start', 'poll_end', 'poll_vote', 'typing_emit',
+})
+
+def classify_by_convention(name: str) -> str:
+    """Return one of {'mutators_ungated', 'readonly_exempt', 'unknown'}.
+
+    'unknown' means the convention does not cover this tool — manual review
+    still required (out of T-1761's GO scope). The two in-scope namespaces
+    are the ones with the verified 7-batch track record; classifying tools
+    in 'termlink_fleet_*' / 'termlink_hub_*' / 'termlink_tofu_*' / etc. by
+    the same verb-list IS sound for the batches we've seen, but T-1761 chose
+    the bounded-blast-radius shape — extending to other namespaces is a
+    separate follow-up decision.
+    """
+    matched_ns = None
+    for ns in CONVENTION_NAMESPACES:
+        if name.startswith(ns):
+            matched_ns = ns
+            break
+    if matched_ns is None:
+        return 'unknown'
+    suffix = name[len(matched_ns):]
+    if not suffix:
+        return 'unknown'
+    # Multi-word verbs first (longest-match wins).
+    for verb in CONVENTION_MUTATOR_VERBS_MULTI:
+        if suffix == verb or suffix.endswith('_' + verb):
+            return 'mutators_ungated'
+    # Single-word verb: match the LAST underscore-delimited segment.
+    last_seg = suffix.rsplit('_', 1)[-1]
+    if last_seg in CONVENTION_MUTATOR_VERBS_SINGLE:
+        return 'mutators_ungated'
+    return 'readonly_exempt'
 
 # T-1649: tag-format lint.
 # Canonical orchestrator routing prefixes (mirrors web/blueprints/orchestrator.py
@@ -166,26 +231,104 @@ bl_mutators_ungated = set(baseline['mutators_ungated']['tools'])
 bl_readonly = set(baseline['readonly_exempt']['tools'])
 bl_known = bl_gated | bl_mutators_ungated | bl_readonly
 
-new_tools = sorted(current_tools - bl_known)
+new_tools_raw = sorted(current_tools - bl_known)
 removed_tools = sorted(bl_known - current_tools)
 gate_drop_outs = sorted(bl_gated - current_gated)
 gate_added = sorted(current_gated - bl_gated)
 ratchet_candidates = sorted(set(gate_added) & bl_mutators_ungated)
 
+# T-2154: partition new_tools via the convention classifier BEFORE the WARN.
+# Only 'still_unclassified' (out-of-namespace or empty-suffix) drives the
+# manual-review WARN; auto-classifiable tools are listed in a separate
+# advisory field (and optionally applied to baseline when --apply is set).
+auto_mutators = []
+auto_readonly = []
+still_unclassified = []
+for t in new_tools_raw:
+    verdict = classify_by_convention(t)
+    if verdict == 'mutators_ungated':
+        auto_mutators.append(t)
+    elif verdict == 'readonly_exempt':
+        auto_readonly.append(t)
+    else:
+        still_unclassified.append(t)
+
 status = "pass"
 exit_code = 0
 warnings = []
 errors = []
+apply_result = None  # populated below if apply_mode and there's something to apply
 
 if gate_drop_outs:
     errors.append(f"REGRESSION: {len(gate_drop_outs)} tool(s) lost their check_task_governance call: {', '.join(gate_drop_outs)}")
     status = "fail"
     exit_code = 2
 
-if new_tools:
-    warnings.append(f"NEW: {len(new_tools)} unclassified tool(s) (manual review needed): {', '.join(new_tools)}")
+# T-2154: --apply rewrites baseline.yaml if any auto-classifiable tools.
+# Done BEFORE the still-unclassified WARN check so the post-apply state is
+# what counts toward the scan exit code on subsequent passes.
+if apply_mode and (auto_mutators or auto_readonly):
+    backup_path = baseline_path + '.bak'
+    shutil.copy2(baseline_path, backup_path)
+    baseline['mutators_ungated']['tools'] = sorted(set(baseline['mutators_ungated']['tools']) | set(auto_mutators))
+    baseline['readonly_exempt']['tools'] = sorted(set(baseline['readonly_exempt']['tools']) | set(auto_readonly))
+    new_count = (
+        len(baseline['gated']['tools'])
+        + len(baseline['mutators_ungated']['tools'])
+        + len(baseline['readonly_exempt']['tools'])
+    )
+    prev_count = baseline['baseline_count']
+    baseline['baseline_count'] = new_count
+    baseline['last_verified'] = datetime.date.today().isoformat()
+    # Re-emit YAML preserving the leading comment header. We can't trivially
+    # round-trip arbitrary YAML comments with yaml.safe_dump — read the header
+    # comment block (everything before the first non-comment non-blank line)
+    # and prepend it back.
+    with open(baseline_path) as f:
+        original = f.read()
+    header_lines = []
+    for line in original.splitlines(True):
+        if line.startswith('#') or line.strip() == '':
+            header_lines.append(line)
+        else:
+            break
+    # Append a fresh T-2154 stamp at the end of the header block.
+    stamp = (
+        f"# Update {datetime.date.today().isoformat()} (T-2154): convention "
+        f"auto-classification applied via --apply. "
+        f"+{len(auto_mutators)} mutators, +{len(auto_readonly)} readonly. "
+        f"Baseline {prev_count} → {new_count}. "
+        f"T-1761 verb whitelist canonical (see orchestrator-mcp-scan.sh classify_by_convention).\n"
+    )
+    header_lines.append(stamp)
+    body = yaml.safe_dump(baseline, default_flow_style=False, sort_keys=False)
+    with open(baseline_path, 'w') as f:
+        f.write(''.join(header_lines))
+        f.write(body)
+    apply_result = {
+        'applied_mutators': auto_mutators,
+        'applied_readonly': auto_readonly,
+        'baseline_prev': prev_count,
+        'baseline_new': new_count,
+        'backup_path': backup_path,
+    }
+    # After applying, these tools are no longer "new" — the next scan will
+    # see them in the baseline. Surface this in the current run's summary.
+    auto_mutators_applied, auto_readonly_applied = auto_mutators, auto_readonly
+    auto_mutators, auto_readonly = [], []
+
+if still_unclassified:
+    warnings.append(f"NEW: {len(still_unclassified)} unclassified tool(s) (manual review needed — outside T-1761 convention scope): {', '.join(still_unclassified)}")
     if exit_code == 0:
         status = "warn"; exit_code = 1
+
+# Auto-classified-but-not-applied is advisory only (NOT a WARN — point of T-1761
+# is to remove this noise). Surface in stdout so an operator running by hand
+# can `--apply` next time if they like the classification.
+if auto_mutators or auto_readonly:
+    # status/exit_code intentionally NOT mutated — this is the "convention
+    # handled it" path; no manual review needed.
+    pass
 
 if ratchet_candidates:
     warnings.append(f"RATCHET: {len(ratchet_candidates)} mutator(s) gained a governance gate — move from mutators_ungated to gated in baseline: {', '.join(ratchet_candidates)}")
@@ -216,12 +359,25 @@ result = {
     'status': status,
     'exit_code': exit_code,
     'findings': {
-        'new_unclassified_tools': new_tools,
+        # T-2154: 'new_unclassified_tools' now means tools the convention does
+        # NOT handle (out-of-namespace or empty suffix). Pre-T-2154 it meant
+        # ALL new tools — the rename is intentional, kept under the original
+        # key for downstream consumer compatibility.
+        'new_unclassified_tools': still_unclassified,
         'gate_drop_outs': gate_drop_outs,
         'gate_added_ratchet_candidates': ratchet_candidates,
         'removed_tools': removed_tools,
         'tag_format_warnings': tag_format_warnings,
+        # T-2154: advisory — auto-classified by convention this run. Empty
+        # after a successful --apply (those tools have been written into the
+        # baseline already; see apply_result for what landed).
+        'auto_classified': {
+            'mutators_ungated': auto_mutators,
+            'readonly_exempt': auto_readonly,
+        },
     },
+    # T-2154: present only when --apply ran AND there was something to apply.
+    'apply_result': apply_result,
     'sessions_scanned': sessions_total,
     'sessions_probe_error': sessions_err,
     'warnings': warnings,
@@ -241,6 +397,13 @@ if sessions_total:
 elif sessions_err:
     print(f"Sessions scanned (tag-lint): SKIPPED ({sessions_err})")
 print()
+# T-2154: surface auto-classification activity even when there are no WARNs.
+if apply_result:
+    am = len(apply_result['applied_mutators'])
+    ar = len(apply_result['applied_readonly'])
+    print(f"  APPLIED: +{am} mutator(s), +{ar} readonly via convention (baseline {apply_result['baseline_prev']} → {apply_result['baseline_new']}, backup: {apply_result['backup_path']})")
+elif auto_mutators or auto_readonly:
+    print(f"  AUTO-CLASSIFIABLE: {len(auto_mutators)} mutator(s), {len(auto_readonly)} readonly by convention (advisory — pass --apply to write into baseline)")
 for w in warnings:
     print(f"  WARN: {w}")
 for e in errors:
