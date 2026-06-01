@@ -6,7 +6,7 @@ description: >
   orchestrator-mcp-scan auto-classify by naming convention (eliminate T-1755/T-1760
   toil)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: later
@@ -15,8 +15,8 @@ components: ["agents/audit/orchestrator-mcp-scan.sh"]
 related_tasks: ["T-1755", "T-1760", "T-1646"]
 arc_id: orchestrator-rethink
 created: 2026-05-06T06:08:25Z
-last_update: 2026-05-31T19:02:07Z
-date_finished:
+last_update: 2026-06-01T08:20:30Z
+date_finished: 2026-06-01T08:20:30Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
@@ -62,6 +62,16 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=3 (body:portability-abstraction); F1=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-01T08:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -83,7 +93,7 @@ Captured from T-1760 Evolution: a heuristic that auto-classifies new `termlink_a
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Inception: evaluate naming-convention heuristic vs marginal status quo; produce go/no-go in research artifact `docs/reports/T-1761-auto-classify-heuristic.md`
+- [x] Inception: evaluate naming-convention heuristic vs marginal status quo; produce go/no-go in research artifact `docs/reports/T-1761-auto-classify-heuristic.md`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -172,13 +182,11 @@ See `docs/reports/T-1761-auto-classify-heuristic.md` §Re-evaluation for full an
 
 ## Decision
 
-**Decision:** DEFER (historical — superseded by 2026-05-31 re-evaluation; new decision pending human via `fw inception decide T-1761 go|no-go|defer`)
+**Decision**: GO
 
-**Rationale:** Original DEFER captured 2026-05-06 with explicit re-evaluation triggers. Trigger #1 (4th batch in <14 days) fired twice: T-2073 was batch #4 at 13d; T-2150 was batch #5 at 3d. Updated Recommendation above proposes GO; the gate (T-1259) prevents agent from running `fw inception decide` under $CLAUDECODE=1.
+**Rationale**: Both re-evaluation triggers from the original DEFER have crossed:
 
-**Decided by:** agent (original DEFER); pending human (revised GO recommendation).
-
-**Decided at:** 2026-05-06T07:00Z (original DEFER); pending (revised).
+**Date**: 2026-06-01T08:20:29Z
 
 ## Decisions
 
@@ -197,3 +205,21 @@ See `docs/reports/T-1761-auto-classify-heuristic.md` §Re-evaluation for full an
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1761-orchestrator-mcp-scan-auto-classify-by-n.md
 - **Context:** Initial task creation
+
+### 2026-06-01T08:20:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Both re-evaluation triggers from the original DEFER have crossed:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fb69c1a9
+- **Timestamp:** 2026-06-01T08:20:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-01T08:20:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
