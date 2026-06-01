@@ -6,7 +6,7 @@ description: >
   Inception: value-drivers.yaml v3 redesign — F-RECALL + F-ORCH active, F-AUTONOMY
   carved, schema_version→version, per-driver rubric+guardrails+retire_when
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,8 +14,8 @@ tags: [priority, arc-006, bvp, value-drivers]
 components: []
 related_tasks: []
 created: 2026-06-01T09:20:09Z
-last_update: 2026-06-01T09:21:09Z
-date_finished:
+last_update: 2026-06-01T09:51:23Z
+date_finished: 2026-06-01T09:51:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -28,6 +28,16 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-01T09:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -93,15 +103,15 @@ All spikes are read-only research — no build artifact created until GO recorde
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -165,7 +175,17 @@ Human-proposed wholesale rewrite filed as priority inception for review→refine
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: DEFER
+
+Rationale:
+
+Human-proposed wholesale rewrite filed as priority inception for review→refine→implement. Genuine evidence gap (T-2144 distinction): the proposal lands an opinionated structure but the agent has not yet walked the consumer-code blast radius (lib/bvp.sh, web/blueprints/bvp.py, lib/arc.sh — all read schema_version: 1; the rename to version: 3 needs verification across each call site), nor critically re-stated the F-RECALL vs D1 + F-ORCH vs D3 distinctions against CLAUDE.md's 'free driver only justified when current focus is an axis D1-D4 do not mean' criterion. Research artifact docs/reports/T-XXXX-value-drivers-v3-redesign.md will host: (a) the proposed YAML verbatim, (b) consumer-code call-site walk + concrete migration concerns, (c) semantic critique of each new field (rubric/guardrails/retire_when) + each new driver, (d) implementation plan if GO. DEFER expires when the artifact is complete and the human picks GO/NO-GO via Watchtower.
+
+Evidence:
+
+**Date**: 2026-06-01T09:51:22Z
 
 ## Updates
 
@@ -190,9 +210,23 @@ Human-proposed wholesale rewrite filed as priority inception for review→refine
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-685ed0dd
-- **Timestamp:** 2026-06-01T09:24:35Z
+- **Scan ID:** R-88d741d0
+- **Timestamp:** 2026-06-01T09:51:23Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+### 2026-06-01T09:51:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: DEFER
+
+Rationale:
+
+Human-proposed wholesale rewrite filed as priority inception for review→refine→implement. Genuine evidence gap (T-2144 distinction): the proposal lands an opinionated structure but the agent has not yet walked the consumer-code blast radius (lib/bvp.sh, web/blueprints/bvp.py, lib/arc.sh — all read schema_version: 1; the rename to version: 3 needs verification across each call site), nor critically re-stated the F-RECALL vs D1 + F-ORCH vs D3 distinctions against CLAUDE.md's 'free driver only justified when current focus is an axis D1-D4 do not mean' criterion. Research artifact docs/reports/T-XXXX-value-drivers-v3-redesign.md will host: (a) the proposed YAML verbatim, (b) consumer-code call-site walk + concrete migration concerns, (c) semantic critique of each new field (rubric/guardrails/retire_when) + each new driver, (d) implementation plan if GO. DEFER expires when the artifact is complete and the human picks GO/NO-GO via Watchtower.
+
+Evidence:
+
+### 2026-06-01T09:51:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
