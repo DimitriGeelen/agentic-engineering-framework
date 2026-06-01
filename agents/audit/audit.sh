@@ -2831,6 +2831,35 @@ for item in data.get('status_desync', []):
 fi
 
 # ============================================
+# CTL-030: horizon-drift on completed/ tasks (T-2162, arc-009 Slice 3)
+# Stored horizon on completed/ is behaviorally irrelevant after T-2160 (render
+# derives `past` from _location), but a non-null value is a YAML lie. T-2161
+# nulled the existing pile; this rail catches future drift — typically each
+# new task that closes carries `horizon: now` until the migration is re-run.
+# Fix: bin/migrate-horizon-null-completed.sh (idempotent).
+# ============================================
+if should_run_section "compliance" || should_run_section "oe-daily"; then
+    horizon_drift_fail=0
+    if [ -n "$COMPLETED_SCAN" ]; then
+        while IFS='|' read -r task_id observed_horizon; do
+            [ -z "$task_id" ] && continue
+            fail "CTL-030: $task_id is in .tasks/completed/ but stored horizon='$observed_horizon' (expected: null/absent — render derives 'past' from _location, T-2160)" \
+                 "Origin: arc-009 horizon-axis-hardening (T-2160 derived-past, T-2161 migration, T-2162 audit rail)" \
+                 "Fix: bin/migrate-horizon-null-completed.sh   (idempotent, only touches completed/ files with non-null horizon)"
+            horizon_drift_fail=$((horizon_drift_fail + 1))
+        done < <(echo "$COMPLETED_SCAN" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for item in data.get('horizon_drift', []):
+    print(f\"{item['id']}|{item['horizon']}\")
+" 2>/dev/null)
+    fi
+    if [ "$horizon_drift_fail" -eq 0 ]; then
+        pass "CTL-030: All completed/ tasks have null/absent stored horizon (arc-009)"
+    fi
+fi
+
+# ============================================
 # CTL-029: completable-but-not-completed detection (T-2055)
 # Active-side mirror of CTL-028. Catches tasks where the agent finished the
 # work (all Agent ACs ticked) but never ran `--status work-completed`, so the

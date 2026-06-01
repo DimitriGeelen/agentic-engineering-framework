@@ -12,12 +12,17 @@ Output (JSON):
     "missing_research": ["T-456", ...],
     "unchecked_ac": [{"id": "T-789", "line": "- [ ] criterion"}],
     "status_desync": [{"id": "T-1846", "status": "started-work"}],
+    "horizon_drift": [{"id": "T-1234", "horizon": "now"}],
     "stats": {"total": N, "inception_count": M}
   }
 
 T-955: Merge loops 3/4/7 into single-pass Python scan.
 T-1870: Add status_desync — completed/ tasks whose frontmatter status != work-completed
         (L-390: git-mv bypasses fw task update --status work-completed → desync).
+T-2162 (arc-009 Slice 3): Add horizon_drift — completed/ tasks whose stored
+        horizon is non-null/non-empty/non-~ (i.e. carries stale "now"/"next"/"later"
+        from before T-2160 derived-past + T-2161 migration). Empty/absent horizon
+        is legitimate (pre-frontmatter-template-era) and NOT flagged.
 """
 
 import json
@@ -29,12 +34,13 @@ import sys
 def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
     completed_dir = os.path.join(tasks_dir, "completed")
     if not os.path.isdir(completed_dir):
-        return {"missing_episodic": [], "missing_research": [], "unchecked_ac": [], "status_desync": [], "stats": {"total": 0, "inception_count": 0}}
+        return {"missing_episodic": [], "missing_research": [], "unchecked_ac": [], "status_desync": [], "horizon_drift": [], "stats": {"total": 0, "inception_count": 0}}
 
     missing_episodic = []
     missing_research = []
     unchecked_ac = []
     status_desync = []
+    horizon_drift = []
     total = 0
     inception_count = 0
 
@@ -64,6 +70,8 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
         task_id = ""
         workflow_type = ""
         status = ""
+        horizon = ""
+        horizon_seen = False
         for line in content.split("\n"):
             if line.startswith("id:"):
                 task_id = line.split(":", 1)[1].strip().strip('"')
@@ -71,6 +79,13 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
                 workflow_type = line.split(":", 1)[1].strip().strip('"')
             elif line.startswith("status:"):
                 status = line.split(":", 1)[1].strip().strip('"')
+            elif line.startswith("horizon:"):
+                horizon_seen = True
+                # Strip inline comment if present
+                raw = line.split(":", 1)[1]
+                if "#" in raw:
+                    raw = raw.split("#", 1)[0]
+                horizon = raw.strip().strip('"').strip("'")
             elif line.startswith("---") and task_id:
                 break  # past frontmatter
 
@@ -81,6 +96,13 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
         # git-mv bypass of `fw task update --status work-completed` state machine.
         if status and status != "work-completed":
             status_desync.append({"id": task_id, "status": status})
+
+        # T-2162 (arc-009 Slice 3): completed/ task with non-null stored horizon.
+        # Empty/absent/null/~ are all legitimate after T-2161 migration. Anything
+        # else is drift — render derives `past` from _location regardless, but a
+        # stored "now"/"next"/"later" on a completed file is a YAML lie.
+        if horizon_seen and horizon and horizon.lower() not in ("null", "~"):
+            horizon_drift.append({"id": task_id, "horizon": horizon})
 
         # Loop 3: Episodic coverage check
         episodic_file = os.path.join(episodic_dir, f"{task_id}.yaml")
@@ -143,6 +165,7 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
         "missing_research": missing_research,
         "unchecked_ac": unchecked_ac,
         "status_desync": status_desync,
+        "horizon_drift": horizon_drift,
         "stats": {"total": total, "inception_count": inception_count},
     }
 

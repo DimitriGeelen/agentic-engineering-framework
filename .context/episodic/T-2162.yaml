@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2162: horizon audit rail: fw audit FAILs when completed/ files have stored horizon
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T11:59:11Z
+# ============================================================================
+
+task_id: T-2162
+task_name: "horizon audit rail: fw audit FAILs when completed/ files have stored horizon"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T10:10:19Z
+completed: 2026-06-01T11:59:00Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/completed-task-scan.py` returns a `horizon_drift` list — task ids whose stored horizon is non-null/non-empty/non-`~`.'
+  - '`agents/audit/audit.sh` consumes `horizon_drift`, emits one FAIL per offender via the `fail` helper with task id + offending value + suggested fix command (run the migration), and PASSes when zero drift.'
+  - 'On the current corpus (post-T-2161), CTL-030 PASSes (0 drift). Confirmed by running `bin/fw audit` and asserting `CTL-030.*PASS` in output.'
+  - 'Bats test pins both behaviors: synthesise a temporary completed/ task with `horizon: now`, run the scan, expect that id in `horizon_drift`. Then null the horizon, re-run, expect empty drift.'
+  - 'At least one commit references `T-2162` AND `arc-009` (or `horizon-axis-hardening`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-01 — read-side rail before write-side fix'
+    chose: 'Ship the audit rail (read-side recurrence detection) without also patching `update-task.sh` to null horizon at close-time (write-side prevention).'
+    rationale: 'arc-009''s headline mechanic is "agent reads handover, sees zero work-completed in now/next, partial-complete footer is explicit, completed/ renders past, re-running migration reports 0 changes". All five conditions are satisfied by Slices 1-3. The write-side fix is a hygiene improvement that prevents one daily-cron migration cycle but adds no functional behaviour. Filed as a candidate Slice 4 idea in Evolution but not blocking arc-009 close.'
+    alternatives_rejected: ['Add `horizon: null` write in `update-task.sh --status work-completed` path — would have widened this slice into write-side update-task.sh changes that need their own bats coverage. Cleaner as a separate slice if it ever proves necessary.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 108 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:horizon-axis-hardening]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 108
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2162-horizon-audit-rail-fw-audit-fails-when-c.md
+generated_by: context-agent-hybrid
