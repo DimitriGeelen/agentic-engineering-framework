@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2154: T-1761 build: hybrid auto-classify in orchestrator-mcp-scan.sh (Option 3, --apply
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T08:37:27Z
+# ============================================================================
+
+task_id: T-2154
+task_name: "T-1761 build: hybrid auto-classify in orchestrator-mcp-scan.sh (Option 3, --apply"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T08:23:36Z
+completed: 2026-06-01T08:37:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-01T10:36:59+02:00
+last_commit: 2026-06-01T10:36:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  hybrid auto-classify in orchestrator-mcp-scan.sh (T-1761 GO build slice)
+
+# Key outcomes
+outcomes:
+  - 'Add `classify_by_convention(name)` helper to `agents/audit/orchestrator-mcp-scan.sh` (inline Python block where the YAML emit lives). Returns one of `{"mutators_ungated", "readonly_exempt", "unknown"}`. Returns `"unknown"` for any tool not matching `termlink_(agent|channel)_*` (blast radius bound).'
+  - 'Verb whitelist is a single source-of-truth Python set inside the script: `{post, send, broadcast, edit, react, pin, quote, redact, reply, star, typing_emit, ack, forward, poll_start, poll_end, poll_vote, reauth}`. Suffix-match (last underscore-delimited segment, OR known multi-word verbs like `poll_start`/`poll_end`/`poll_vote`/`typing_emit`).'
+  - 'Scan''s `new_tools` set is partitioned into `auto_classified_mutators`, `auto_classified_readonly`, `still_unclassified` BEFORE the existing WARN-on-new-tools logic. Existing WARN only fires for `still_unclassified` (not for auto-classified). This is the value delivered: agents stop seeing "NEW: N unclassified" WARN for tools the convention already handles.'
+  - 'LATEST.yaml output gains `auto_classified: {mutators_ungated: [...], readonly_exempt: [...]}` field listing the convention-classified tools per run (advisory, even in default dry-run mode).'
+  - 'Add `--apply` flag handler. When `--apply` is passed AND the scan would otherwise WARN on auto-classifiable tools, rewrite `.context/audits/orchestrator-mcp-baseline.yaml` in-place (with `.bak` backup written first), appending auto-classified tools to the appropriate category and bumping `baseline_count`. Without `--apply`, no mutation.'
+  - 'Unit test `tests/unit/test_orchestrator_mcp_classify.py` covering: (a) `termlink_agent_post` → mutators_ungated; (b) `termlink_agent_status` → readonly_exempt; (c) `termlink_channel_broadcast` → mutators_ungated; (d) `termlink_channel_recent` → readonly_exempt; (e) `termlink_orchestrator_foo` → unknown (out-of-namespace); (f) `termlink_agent_poll_start` (multi-word verb) → mutators_ungated; (g) `termlink_agent_typing_emit` → mutators_ungated.'
+  - 'Existing `agents/audit/orchestrator-mcp-scan.sh` PASSes against current 251-tool baseline post-change (no regression — empty `new_tools` → empty `auto_classified` → same PASS).'
+  - 'Baseline file header (commented block) gains a 2026-06-01 entry pointing at T-2154: "convention auto-classification now applied at scan time; T-1761 verb whitelist canonical."'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/orchestrator-mcp-scan.sh'
+  - '.context/audits/orchestrator-mcp-baseline.yaml'
+  - '.tasks/active/T-2154-t-1761-build-hybrid-auto-classify-in-orc.md'
+  - 'tests/unit/test_orchestrator_mcp_classify.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-01T10:36:59"
+    action: "T-2154: hybrid auto-classify in orchestrator-mcp-scan.sh (T-1761 GO build slice)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [orchestrator-rethink, orchestrator-mcp-scan, T-1761-build]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 1
+  files_changed: 4
+  lines_added: 550
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2154-t-1761-build-hybrid-auto-classify-in-orc.md
+generated_by: context-agent-hybrid

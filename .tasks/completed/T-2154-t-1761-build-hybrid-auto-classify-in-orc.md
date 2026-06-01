@@ -14,14 +14,12 @@ description: >
   baseline.yaml in-place (with .bak backup). Keeps blast radius bounded to the two
   namespaces with 7-batch zero-misclassification track record.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [orchestrator-rethink, orchestrator-mcp-scan, T-1761-build]
-components: [agents/audit/orchestrator-mcp-scan.sh, 
-      .context/audits/orchestrator-mcp-baseline.yaml, 
-      tests/unit/test_orchestrator_mcp_classify.py]
+components: [agents/audit/orchestrator-mcp-scan.sh, tests/unit/test_orchestrator_mcp_classify.py]
 related_tasks: [T-1761, T-1646, T-1755, T-1760, T-1867, T-2073, T-2150]
 arc_id: orchestrator-rethink
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -29,8 +27,8 @@ arc_id: orchestrator-rethink
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T08:23:36Z
-last_update: '2026-06-01T08:30:03Z'
-date_finished:
+last_update: 2026-06-01T08:37:20Z
+date_finished: 2026-06-01T08:37:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -242,8 +240,8 @@ Closes T-1761 GO scope. Future batches of new `termlink_agent_*`/`termlink_chann
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-15ed59bb
-- **Timestamp:** 2026-06-01T08:36:26Z
+- **Scan ID:** R-44068943
+- **Timestamp:** 2026-06-01T08:37:22Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -252,3 +250,6 @@ Closes T-1761 GO scope. Future batches of new `termlink_agent_*`/`termlink_chann
 - **Layer-1 escalations:** 1
   1. **external-publish** (high) — External publish or release
      - matched: `broadcast`
+
+### 2026-06-01T08:37:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
