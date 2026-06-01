@@ -3441,3 +3441,24 @@ X'` returning empty group."
   date: 2026-05-30
   context: Added via context agent
   application: TBD
+- id: PL-012
+  learning: "When adopting a hook from a consumer project, verify its focus.yaml field convention matches the framework: consumers may use 'task_id:' while the framework standard is 'current_task:' (see check-active-task.sh). A field-name mismatch makes the hook silently pass-through (exit 0) and never fire — the invisible-hook antipattern (T-1626). check-visual-verification.sh (T-2128) shipped with this bug; fixed in T-2130."
+  source: T-1626
+  task: T-2130
+  date: 2026-05-30
+  context: Added via context agent
+  application: TBD
+- id: L-450
+  learning: "htmx hx-target inheritance silently aborts forms in standalone templates: an outer wrapper with hx-target=#content (e.g. T-2114 wrapper-reset for bounce-back fix) is inherited by every descendant form. On standalone templates that don't extend base.html (like review.html, T-667 mobile-first), no #content element exists. htmx fires htmx:targetError and ABORTS the request before configRequest/beforeRequest — so CSRF interception never runs, no network call is made, and the user sees a silent no-op. Fix: every form inside such a wrapper MUST declare its own hx-target. 'this' (the form itself) is the safe default when hx-swap=none."
+  source: P-001
+  task: T-2134
+  date: 2026-05-31
+  context: Added via context agent
+  application: TBD
+- id: L-451
+  learning: "Bats wraps each @test under set -e. Capture exit codes of possibly-failing commands with trailing '|| rc=$?' (initialise rc=0 first), NOT '; rc=$?' — the latter never runs because set -e kills the test on the failing command first. Adjacent-but-distinct from L-387 SIGPIPE class (set -e on parent shell, not pipefail on pipeline). Burned 3 iterations on T-2092 chasing phantom 'docker rc 128' because the cat-log fallback was on the line after 'local rc=$?'."
+  source: P-001
+  task: T-2092
+  date: 2026-06-01
+  context: Added via context agent
+  application: TBD

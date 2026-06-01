@@ -2173,3 +2173,212 @@ FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EO'
   flag: '--skip-render-review'
   caller: 'check_render_surface_human_ac: T-2149 only edits .tasks/active/T-2116-...md frontmatter (removes duplicate components: [] line). Zero edits to render surfaces. arc_close.html appears in body as context-only (T-2116''s own components: field).'
   reason: ''
+- timestamp: '2026-05-31T18:05:53Z'
+  task: 'T-1702'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2149'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2149: repair T-2116 duplicate components key + add task-yaml validator
+
+T-2116 frontmatter had two adjacent components: keys (real value +
+empty []), tripping PyYAML'
+- timestamp: '2026-05-31T18:15:23Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1702'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-1702: clean Stream-2 deferred ACs + transition to partial-complete
+
+Three ACs on T-1702 were unticked with \"DEFERRED to T-1707\" annotations —
+not T-1702s work, '
+- timestamp: '2026-05-31T18:51:26Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1677'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-1677: close — tag-format drift extinct, structural fix shipped
+
+Reality check 2026-05-31: 28 live TermLink sessions, 0 non-canonical tag prefixes.
+The 21 legacy ta'
+- timestamp: '2026-05-31T18:57:56Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2150'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2150: classify 5 new MCP tools (chat_arc / fleet_doorbell / adoption / recent_dm)
+
+5th batch in the T-1755 manual-classification pattern. orchestrator-mcp-scan
+flagg'
+- timestamp: '2026-05-31T19:10:27Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2151'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2151: backfill status=work-completed on 11 CTL-028 victims
+
+11 task files in .tasks/completed/ had status=started-work + empty
+date_finished — moved via Watchtow'
+- timestamp: '2026-05-31T19:15:40Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2152'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2152: add missing ## Updates header to T-2075 + T-2077
+
+Audit emitted two missing Updates section WARNs on tasks where timestamped
+\`### YYYY-...\` Update entries '
+- timestamp: '2026-05-31T19:29:01Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2109'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2109: close partial-complete — move to completed/ + episodic
+
+Driven by /loop continuation prompt — human had already ticked the
+[REVIEW] Human AC (commit fa4e49'
+- timestamp: '2026-05-31T19:49:20Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'git add -- .context/episodic/T-2124.yaml .context/episodic/T-2139.yaml 2>&1; git diff --cached --stat; echo "---"; FW_SWITCH_FOCUS=1 git commit -m "T-077: backfill missing episodics for T-2124, T-2139'
+- timestamp: '2026-05-31T19:52:01Z'
+  task: 'T-1820'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2113'
+  command: 'bin/fw task update T-2113 --status work-completed --switch-focus 2>&1 | tail -20'
+- timestamp: '2026-05-31T19:52:08Z'
+  task: 'T-1820'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2134'
+  command: 'bin/fw task update T-2134 --status work-completed --switch-focus 2>&1 | tail -15'
+- timestamp: '2026-05-31T19:52:45Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-077: finalise T-2113 + T-2134 partial-completes (T-2109 pattern)
+
+Both tasks were partial-complete owner=human with their [REVIEW] Human
+ACs already ticked but the f'
+- timestamp: '2026-05-31T19:53:09Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-077: backfill 5 orphan episodics (T-2100/T-2101/T-2120/T-2131/T-2138)
+
+These episodics sat untracked in .context/episodic/ alongside their
+closed task files. Same cl'
+- timestamp: '2026-05-31T19:55:48Z'
+  task: 'T-1820'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2074'
+  command: 'bin/fw task update T-2074 --status work-completed --switch-focus 2>&1 | tail -20'
+- timestamp: '2026-05-31T19:56:11Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2074'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2074: finalise — close the partial-complete-without-Human-AC stall
+
+T-2074 was filed with a [REVIEW] Human AC, partial-completed (owner→human,
+status→work-comp'
+- timestamp: '2026-05-31T19:57:35Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'git add -- .context/inbox.yaml 2>&1; git diff --cached --stat; FW_SWITCH_FOCUS=1 git commit -m "T-077: file OBS-046 (stuck-partial detector gap)
+
+T-2074 retro-fix exposed a missing audit class — par'
+- timestamp: '2026-05-31T19:59:21Z'
+  task: 'T-1820'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1542'
+  command: 'bin/fw task update T-1542 --status work-completed --switch-focus 2>&1 | tail -15'
+- timestamp: '2026-05-31T19:59:26Z'
+  task: 'T-1820'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1542'
+  command: 'bin/fw task update T-1542 --status work-completed --switch-focus 2>&1 | tail -30'
+- timestamp: '2026-05-31T20:36:58Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2147'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2147: reviewer detector audience-mismatch (T-2143 leg B)
+
+Adds `detect_audience_mismatch` to lib/reviewer/static_scan.py: catches
+[REVIEW] Human ACs wh'
+- timestamp: '2026-05-31T20:37:22Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2147'
+  command: '# Rename is clean. Hook is mis-detecting. Try without the active/ path
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2147: reviewer detector audience-mismatch (T-2143 leg B)
+
+Adds `detect_audience_'
+- timestamp: '2026-05-31T20:51:21Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2145'
+  command: 'git add -- lib/reviewer/static_scan.py policy/anti-patterns.yaml tests/unit/test_reviewer_defer_as_hedge.py tests/unit/test_reviewer_defer_as_hedge.bats docs/reports/T-2145-corpus-walk.md .tasks/compl'
+- timestamp: '2026-05-31T21:20:05Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2146'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2146: CLAUDE.md DEFER-as-no-evidence vs DEFER-as-hedge anti-pattern (T-2144 leg C)
+
+§Presenting Work for Human Review (T-679) now carries an explicit anti-pattern p'
+- timestamp: '2026-05-31T21:29:34Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2140'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2140: reviewer detector review-link-homework (T-2138 V2)
+
+Closes the arc-008 review-loop-quality detector triplet shipped this week:
+  T-2147 — audience-mismatch ('
+- timestamp: '2026-05-31T23:17:44Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2141'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2141: review-vs-inception class-distinction prose sweep (T-2138 V3)
+
+Author-time prose teaching across three surfaces where the inception vs.
+partial-complete class '
+- timestamp: '2026-06-01T00:03:59Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2092'
+  command: 'git add .tasks/completed/T-2092-v1-a-fw-upgrade-docker-based-live-upgrad.md docs/reports/T-2078-fw-upgrade-reliability-review.md .context/episodic/T-2092.yaml
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<'
+- timestamp: '2026-06-01T06:30:03Z'
+  task: 'T-1820'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2092'
+  command: 'bin/fw context add-learning "Bats wraps each @test under set -e. Capture exit codes of possibly-failing commands with trailing || rc=\$? (initialise rc=0 first), NOT ; rc=\$? — the latter never '
+- timestamp: '2026-06-01T06:30:22Z'
+  task: 'T-1820'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2092'
+  command: 'git add .context/project/learnings.yaml .context/working/.gate-bypass-log.yaml
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2092: file L-451 learning — bats + set -e exit-code capture pattern
+
+W'
