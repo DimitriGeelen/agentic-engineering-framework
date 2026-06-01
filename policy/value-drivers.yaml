@@ -1,4 +1,20 @@
-# Business Value Points (BVP) — value driver policy
+# policy/value-drivers.yaml
+#
+# Business Value Point (BVP) drivers for AEF task & arc prioritisation.
+#
+# Two layers:
+#   - protected drivers (D1-D4) == the Constitutional Directives. Fixed meaning,
+#     mutable weight, NEVER removable. They are the chassis.
+#   - free drivers          == temporary, focus-setting axes. Add/drop deliberately.
+#     They are the steering wheel: you add one BECAUSE it is the focus this period,
+#     and retire it once the focus passes. Cap of 5 free (9 total); add-one-drop-one
+#     when full. The cap is a forcing function for focus, not a budget to ration.
+#
+# Distinction that earns a free driver its slot:
+#   Re-WEIGHTING a directive changes how LOUD a fixed meaning is.
+#   ADDING a free driver introduces a NEW meaning the directives don't carry.
+#   A free driver is only justified when the current focus is an axis D1-D4
+#   do not *mean* -- not merely an axis you want louder.
 #
 # Source of truth for BVP scoring. Read by:
 #   - lib/bvp.sh                   (T-1919 read-only, T-1920 mutating)
@@ -7,72 +23,184 @@
 #   - web/blueprints/bvp.py        (T-1928/T-1929)
 #   - web/blueprints/arcs.py       (T-1930)
 #
-# Filed under: T-1917 (BVP T-NEW-2)
-# Handoff:     .context/handoffs/HANDOFF-value-prioritisation-2026-05-15.md
-# Artefact:    docs/reports/T-1915-bvp-inception.md
-# Mechanics:   M1 (driver cap + add-one-drop-one), M5 (auto-promote thresholds)
-#
-# Driver model
-# ============
-#   protected_drivers:  The Four Constitutional Directives (CLAUDE.md). Immutable
-#                       in identity, weight may be adjusted via `fw bvp weight`
-#                       (T-1920) under §ACD; `--remove` is refused (protected:
-#                       true).
-#   free_drivers:       Up to 5 additional global drivers. Total drivers
-#                       (protected + free) capped at 9 — adding a 6th free driver
-#                       triggers M1 "add-one-drop-one": the new driver displaces
-#                       one existing free driver, captured as a single audit-
-#                       logged event.
-#
-# Weight semantics
-# ================
-#   Weight is an integer 0-9. Multiplied by the per-task per-driver score 0-5
-#   (rubric in policy/bvp-scoring-rubric.md, T-1921) to produce that driver's
-#   contribution to the task's BVP. Sum across drivers = task BVP; normalized
-#   by max-possible to produce bvp_norm in [0, 1].
+# Filing history:
+#   v1 filed:    T-1917 (BVP T-NEW-2), 2026-05-15
+#   v3 inception: T-2157 (proposal review, Decision: GO 2026-06-01T09:51:22Z)
+#   v3 evidence: T-2165 (consumer-code blast radius walk; Recommendation flipped
+#                DEFER -> GO with refinements; see docs/reports/T-2157-...md)
+#   v3 build:    T-2166 (this schema rename; zero consumer-code changes needed
+#                per T-2165 walk -- all readers forward-compatible via dict.get()
+#                and list-membership semantics)
 #
 # Auto-promote
 # ============
-#   When enabled, tasks with bvp_norm ≥ bvp_norm_min AND cost ≤ cost_max are
-#   promoted captured → started-work without per-event human approval. The
+#   When enabled, tasks with bvp_norm >= bvp_norm_min AND cost <= cost_max are
+#   promoted captured -> started-work without per-event human approval. The
 #   sovereignty boundary is the enabling itself (D8): flipping auto_promote
 #   .enabled to true is §ACD-gated (T-1932). Default ships OFF.
 
-schema_version: 1
+version: 3
 
+# ---------------------------------------------------------------------------
+# PROTECTED DRIVERS  (D1-D4) -- the Constitutional Directives. Not removable.
+# Protection lives in two surfaces: (1) the `protected_drivers:` section name
+# (web/blueprints/bvp.py reads list-membership to extract weights/names);
+# (2) lib/bvp.sh:837 refuses removal of any id matching ^D pattern.
+# The per-entry `protected: true` boolean was removed in v3 (no reader consumed
+# it as a field value -- confirmed by T-2165 consumer-code walk).
+# Rubric for D1-D4 lives in policy/bvp-scoring-rubric.md (T-1921) -- canonical.
+# ---------------------------------------------------------------------------
 protected_drivers:
   - id: D1
     name: Antifragility
     weight: 9
-    protected: true
-    rationale: "System strengthens under stress; failures are learning events. CLAUDE.md
-      Directive 1."
+    note: >
+      Gets stronger from stress/failure. The healing loop is its mechanical
+      expression. Failure-driven by nature -- it cannot reward positive
+      accumulation (that gap is what the Recall Leverage free driver covers).
+
   - id: D2
     name: Reliability
     weight: 7
-    protected: true
-    rationale: "Predictable, observable, auditable execution; no silent failures.
-      CLAUDE.md Directive 2."
+    note: >
+      Fewer repeated mistakes, fewer relitigated decisions. Session continuity
+      and episodic memory are reliability-through-not-forgetting.
+
   - id: D3
     name: Usability
     weight: 5
-    protected: true
-    rationale: "Joy to use/extend/debug; sensible defaults; actionable errors. CLAUDE.md
-      Directive 3."
+    note: Human-in-the-loop ergonomics; not having to repeat yourself.
+
   - id: D4
     name: Portability
     weight: 3
-    protected: true
-    rationale: "No provider/language/environment lock-in; prefer standards. CLAUDE.md
-      Directive 4."
+    note: >
+      File-based, source-controlled memory & policy. Any free driver must
+      preserve this -- learning that lives somewhere non-committed violates D4.
 
-# Up to 5 additional global drivers. Weight integer 0-9. Total drivers (protected +
-# free) capped at 9 — adding a 6th triggers M1 "add-one-drop-one": new driver
-# displaces an existing free driver in one audit-logged event. Removing a free
-# driver is also §ACD-gated (T-1920).
-free_drivers: []
+# ---------------------------------------------------------------------------
+# FREE DRIVERS  -- focus-setting. Cap 5. Weight range 0-9.
+# Each entry SHOULD carry a `rationale` (why this is the focus now) and a
+# `retire_when` (the condition that ends its relevance). retire_when is a
+# free-text reminder, NOT auto-enforced -- it stops a driver quietly outliving
+# its focus and skewing rankings toward work that is already done.
+#
+# v3 activates two: F-RECALL (positive-accumulation gap left by D1's failure-
+# driven loop) and F-ORCH (routable-surface expansion the orchestrator
+# substrate T-1643 makes possible). F-AUTONOMY is carved (commented) -- see
+# §CANDIDATE block below for the activation gate.
+# ---------------------------------------------------------------------------
+free_drivers:
+
+  - id: F-RECALL
+    name: Recall Leverage
+    weight: 6                       # below D2(7); near-top but must not rival D1
+    rationale: >
+      D1 is failure-driven and structurally cannot reward POSITIVE accumulation
+      -- work that builds durable, retrievable knowledge so future sessions stop
+      rediscovering what already worked. This is the dominant remaining axis for
+      the L3 -> L4 maturity jump (preference index, positive-signal capture,
+      CLAUDE.md auto-sync, durable reflection log are all absent today).
+    polarity: positive
+    rubric:
+      0: No durable artifact; knowledge dies with the session.
+      1: Captures something but session-scoped only (episodic, not promoted).
+      2: Captured + lightly promoted, but not retrievable by future sessions.
+      3: Writes a reusable artifact future sessions can find via `fw recall`.
+      4: Closes a loop -- capture -> encode -> synced into instruction files agents read.
+      5: Improves the retrieval/synthesis layer itself (selective recall, condensation),
+         so EVERY future task benefits, not just ones touching the same area.
+    guardrails: >
+      Reward better RETRIEVAL & SYNTHESIS, not raw capture. Naive accumulation
+      competes for the 90% context budget and trades against D2/D3.
+    retire_when: >
+      L4 Reflect criteria (positive reinforcement capture, preference index,
+      CLAUDE.md auto-sync, durable reflection log) are green.
+
+  - id: F-ORCH
+    name: Orchestration Leverage
+    weight: 5                       # strategic/forward bet; sits below Recall by design
+    rationale: >
+      Rewards expanding the surface that can be routed to a NON-primary executor
+      -- how much a piece of work raises the framework's capacity to dispatch,
+      fan out, and run unattended rather than serially through the primary agent.
+      Maps onto the Initiative axis (L4->L5->L6) and the in-flight orchestrator
+      substrate (T-1643). No other driver scores work by how much it raises that
+      ceiling.
+    polarity: positive
+    rubric:
+      0: Inherently primary-agent-only and serial; no routable surface added.
+      1: Runs only via hand-wired dispatch; no reusable routing artifact.
+      2: Minor routing improvement, single-use.
+      3: Adds a clean typed I/O contract or decision gate so the framework can
+         refuse-or-dispatch the step mechanically.
+      4: Converts interpretive primary work into rubric-scored work a TermLink
+         worker can run, OR adds an explicit router decision tree (closes the
+         open router-skills gap).
+      5: Expands the orchestration substrate itself -- new worker class,
+         parallel/multi-perspective dispatch, or advances the orchestrator.
+    guardrails: >
+      Score CAPABILITY UPLIFT (does this expand what the framework can orchestrate?),
+      NOT ease-of-delegating-this-task (that is a cost-side property -- keep it off
+      the value side or you double-count). Anchor on genuine routable-surface
+      expansion to avoid manufactured I/O-block busywork.
+    retire_when: >
+      Multi-agent orchestration criterion goes green / orchestrator substrate
+      (T-1643) lands in production.
+
+  # -------------------------------------------------------------------------
+  # CANDIDATE (INACTIVE) -- not consuming a slot. Documented so the carve is
+  # recorded. Flip to active by moving under free_drivers: and assigning weight.
+  #
+  # Autonomy is carved as HUMAN-GATE REDUCTION (distinct from Orchestration's
+  # executor-surface expansion): the count of human checkpoints work must pass.
+  # You can orchestrate a whole fleet that still reports to a human at every
+  # decision (high orchestration, zero autonomy), or run one agent end-to-end
+  # with no gates (low orchestration, high autonomy). Different axes.
+  #
+  # It is in DIRECT TENSION with Sovereignty (F7) -- which is why agent-gates,
+  # Tier 0 blocks, and `auto_promote.enabled: false` exist on purpose. The rubric
+  # rewards EARNING autonomy, never removing oversight.
+  #
+  # NOTE: the concrete "continuous unattended run" capability is being handled as
+  # an ARC (T-2158), not this driver. Only activate this driver if you want to
+  # PRIORITISE gate-reduction work broadly, not to build one continuous-run feature.
+  # See docs/reports/T-2157-value-drivers-v3-redesign.md §F-AUTONOMY Verdict for
+  # the activation gate (T-NEW-E follow-up).
+  # -------------------------------------------------------------------------
+  # - id: F-AUTONOMY
+  #   name: Autonomy / Unattended Operation
+  #   weight: 4                     # below Orchestration; the most safety-sensitive axis
+  #   rationale: >
+  #     Reduces the number of human checkpoints low-risk work must pass, earning
+  #     autonomy by replacing human gates with at-least-as-safe mechanical ones.
+  #   polarity: positive
+  #   rubric:
+  #     0: Adds nothing, OR would remove a safety-critical human gate
+  #        (that is a Sovereignty violation -- scores ZERO, never high).
+  #     1: Runs unattended only by hand-wiring; no durable reduction in human touch.
+  #     2: Narrow, single-use reduction in human relay.
+  #     3: Closes a feedback loop so a signal reaches ACTION without a human relay
+  #        (e.g. wires observations back into dispatch).
+  #     4: Makes a class of low-risk work safely auto-eligible (bounded
+  #        auto_promote for HV/LC Captured->In Progress), caps intact.
+  #     5: Replaces a REDUNDANT human gate with an at-least-as-safe mechanical one,
+  #        or lands an L6 autonomy criterion. NEVER removes a Tier 0 gate.
+  #   guardrails: >
+  #     Reducing oversight on consequential (Tier 0, irreversible, high-blast-radius)
+  #     actions scores ZERO or NEGATIVE, never positive. Earn autonomy; don't
+  #     remove oversight.
+  #   retire_when: >
+  #     Continuous-run arc lands and L5/L6 autonomy criteria (auto-issue gen,
+  #     auto-merge, closed production-feedback loop) are green.
+
+# ---------------------------------------------------------------------------
+# AUTO-PROMOTION  -- ships OFF. This is the autonomy-IN-OPERATION dial, distinct
+# from any driver (drivers rank autonomy-ENABLING work; this governs whether HV/LC
+# work auto-advances on the kanban without a human).
+# ---------------------------------------------------------------------------
 auto_promote:
   enabled: false
-  bvp_norm_min: 0.85
-  cost_max: 1
-  max_concurrent: 1
+  bvp_norm_min: 0.85    # only top-band value
+  cost_max: 1           # only lowest-cost band
+  max_concurrent: 1     # at most one auto-promoted item in flight
