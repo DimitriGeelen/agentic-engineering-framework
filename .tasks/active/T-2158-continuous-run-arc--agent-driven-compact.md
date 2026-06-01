@@ -1,0 +1,207 @@
+---
+id: T-2158
+name: "continuous-run arc — agent-driven compact→resume loop with bounded-autonomy
+  ceiling"
+description: >
+  Inception: continuous-run arc — agent-driven compact→resume loop with bounded-autonomy
+  ceiling
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: [priority, arc-003, orchestrator, autonomy, continuous-run]
+components: []
+related_tasks: []
+created: 2026-06-01T09:39:33Z
+last_update: 2026-06-01T09:45:09Z
+date_finished:
+# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
+# revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-01T09:42:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-01T09:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+---
+
+# T-2158: continuous-run arc — agent-driven compact→resume loop with bounded-autonomy ceiling
+
+## Problem Statement
+
+Human-filed arc inception draft (`continuous-run`). Today, continuous operation is **operator-gated**: a human runs `/compact` and `fw handover` when the context budget fills, then resumes. This caps how far the agent can run unattended and re-injects a human relay at every budget boundary. The capability gap is the agent **autonomously crossing those boundaries** — self-compacting and self-resuming — **while remaining bounded** by tier/blast-radius ceiling, run-length cap, and a discard-manifest audit trail.
+
+**Critical reframe from prior-art read:** T-111 (completed 2026-02-17) already shipped the *data-preservation* half of this loop (PreCompact + SessionStart:compact hooks; `fw handover --emergency`; auto-restart wrapper). What remains is the **self-triggering + bounded-autonomy machinery + discard audit** — incremental on T-111, not greenfield.
+
+**Research artifact:** `docs/reports/T-2158-continuous-run.md` — proposed arc YAML verbatim, T-111 reframe, 6 assumptions, 10 critical questions, 6 spikes (~125 min).
+
+## Assumptions
+
+- **A1:** T-111's PreCompact + SessionStart:compact hooks remain functional and are the right substrate to extend (vs. clean rebuild). Validate via end-to-end trace of this session's compact event.
+- **A2:** The 90% context-budget gate (criterion 28, `budget-gate.sh`) is the clean trigger surface; self-compaction can hang off it without disabling it.
+- **A3:** Tier 0 + blast-radius primitives (`check-tier0.sh`, `fw fabric blast-radius`) are invocable from the post-resume path. The Sovereignty surface narrows but doesn't disappear.
+- **A4:** A discard manifest can be produced at *category-level* fidelity (not token-level) during emergency handover. The model performs the compaction; the agent enumerates categories.
+- **A5:** Run-length cap is a simple counter in `.context/working/` — same pattern as `.tool-counter`. No new persistence layer.
+- **A6:** F7 Sovereignty is preservable: the human still gates Tier 0 *post-resume*; just doesn't gate compaction *itself*.
+
+## Exploration Plan
+
+| Spike | Time-box | Output |
+|-------|----------|--------|
+| S1: T-111 substrate trace | 25 min | End-to-end map of this session's compact: PreCompact firing, `--emergency` handover contents, SessionStart:compact injection. Concrete file:line refs in artifact. |
+| S2: Self-trigger surface walk | 20 min | Read `budget-gate.sh`, `checkpoint.sh`, `claude-fw` wrapper, T-179 auto-restart. Map "compact now" decision points. Answer Q1 + Q2. |
+| S3: Bounded-autonomy primitives audit | 20 min | Read `check-tier0.sh`, `fw fabric blast-radius`, `policy/value-drivers.yaml` (`auto_promote:` block as precedent). Document Sovereignty surface narrowing. |
+| S4: Scoped-driver critique | 15 min | Apply CLAUDE.md "new meaning, not louder D1-D4" criterion to Loop closure / Bounded-safety integrity / Discard fidelity. Refine or refute. |
+| S5: Arc-field validation + orchestrator-rethink delta | 15 min | Walk `lib/arc.sh` field shapes (Q7). Read `.context/arcs/orchestrator-rethink.yaml`. Decide child/sibling/merge (Q8). |
+| S6: Answer open questions 1-10 | 30 min | Each Q resolved with evidence cited. Flip Recommendation. |
+
+Total: ~125 min read-only research. No source edits, no `fw arc create`, no hook changes until GO recorded.
+
+## Technical Constraints
+
+- **F7 Sovereignty (load-bearing):** continuous self-resume is the strongest test of operator-bypass tension. The mechanic must be **bounded**, not unbounded. Constraints from the user's draft are inviolable:
+  - Hard stop at Tier 0 / irreversible / high-blast-radius actions
+  - Run-length / iteration cap as second backstop
+  - Discard manifest recording WHAT was dropped (post-hoc operator review)
+  - Respects the 90% context-budget gate as trigger AND safety boundary
+- **Non-goals (from draft):** removing/weakening Tier 0 gate; truly unbounded operation; introducing a new scoring driver (lives in `policy/value-drivers.yaml`).
+- **Cross-arc coupling:** T-2157 (value-drivers v3) holds F-AUTONOMY as a *commented-out candidate* — continuous-run going GO may flip F-AUTONOMY activation in tandem. Sequencing matters.
+- **Compaction is model-driven, not agent-driven:** the discard manifest can only enumerate categories ("47 tool-results compressed", "12 turns summarised"), not the literal dropped tokens. Acceptable fidelity question is open (Q4).
+
+## Scope Fence
+
+**IN scope:**
+- All six spikes (read-only research)
+- Cross-reference with T-2157 (F-AUTONOMY tandem question)
+- Cross-reference with T-1643 / `orchestrator-rethink` arc
+- Critique of the three proposed scoped drivers against CLAUDE.md free-driver criterion
+- Recommendation flip from DEFER → GO / NO-GO / GO-with-refinements
+- Hand-off to human via `fw task review T-2158` → Watchtower `/inception/T-2158`
+
+**OUT of scope (separate tasks if GO):**
+- Running `fw arc create continuous-run --headline-mechanic ...`
+- Implementing self-triggering compaction (separate build slice)
+- Discard manifest format design (may need its own inception)
+- Run-length cap counter wiring (separate slice, small)
+- Test harness for multi-cycle autonomous compact (may need its own inception per Q6)
+- F-AUTONOMY activation in `policy/value-drivers.yaml` (sits under T-2157's territory)
+
+## Acceptance Criteria
+
+### Agent
+<!-- @auto-tick-on-decide -->
+- [ ] Problem statement validated
+<!-- @auto-tick-on-decide -->
+- [ ] Assumptions tested
+<!-- @auto-tick-on-decide -->
+- [ ] Recommendation written with rationale
+
+### Human
+<!-- @auto-tick-on-decide -->
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  2. Review the Agent Recommendation section and go/no-go criteria evaluation
+  3. Record decision via the Watchtower form or the command shown alongside the QR code
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
+
+## Go/No-Go Criteria
+
+**GO if:**
+- T-111 substrate is intact and extensible (no rebuild required)
+- A clean trigger surface exists in `budget-gate.sh` or equivalent (Q1 has a single-best answer)
+- Tier 0 + blast-radius gates are invocable from the post-resume path (A3 holds)
+- All three scoped drivers survive the "new meaning, not louder D1-D4" critique (Q9), OR a refined set of ≤3 emerges
+- Discard manifest can be produced at category-level fidelity (Q4)
+- Relation to `orchestrator-rethink` arc is unambiguous (child/sibling/merge decided)
+
+**NO-GO if:**
+- T-111 hooks are broken or have drifted from their 2026-02 baseline
+- Sovereignty pushback (Q3) reveals operator compact-checkpoint is load-bearing oversight that can't be replaced by post-hoc manifest review
+- Discard-manifest fidelity is so low (Q4) that the audit trail is theatre, not substance
+- Scoped drivers all collapse into D1-D4 restatements — arc adds no scoring signal globals can't see
+
+**GO-with-refinements if:**
+- Proposal is structurally sound but specific machinery needs revision (e.g. trigger surface moved, run-length cap shape adjusted)
+- Driver set reduces from 3 to 1-2 (strongest survives, weakest refuted)
+- Arc should ship as a *child* of `orchestrator-rethink` rather than as a sibling
+
+## Verification
+
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# For inception tasks, verification is often not needed (decisions, not code).
+#
+# Toolchain hint (L-291): if a GO decision will mean editing *.vbproj/*.csproj/*.xaml,
+# *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
+# matching build command (dotnet build / go build / cargo check / tsc --noEmit /
+# mvn compile) to that build task's ## Verification — P-011 only runs what you write.
+
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:**
+
+Human-filed arc inception draft. Closes the compact→resume loop so a long-running agent self-compacts and self-resumes at context-budget boundaries, bounded by tier/blast-radius ceiling, run-length cap, and a discard manifest for review. Sits under T-1643 orchestrator-substrate territory. Genuine evidence gap (T-2144): need to walk existing primitives (agents/resume/, fw handover, budget-gate.sh, criterion 28+55), critique the three proposed scoped drivers (Loop closure / Bounded-safety integrity / Discard fidelity) against F-AUTONOMY (T-2157), validate the F7 Sovereignty tension framing, and scope the boundary with T-1643. Research artifact will host the proposed arc YAML verbatim plus the evidence walk.
+
+**Evidence:**
+
+<!-- Add evidence bullets as exploration progresses (file paths,
+     commit hashes, test results). The filing-time recommendation
+     can be revised before fw inception decide. -->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
+
+### 2026-06-01T09:42:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-06-01T09:45:00Z — status-update [task-update-agent]
+- **Change:** tags: +priority
+
+### 2026-06-01T09:45:08Z — status-update [task-update-agent]
+- **Change:** tags: +arc-003
+
+### 2026-06-01T09:45:08Z — status-update [task-update-agent]
+- **Change:** tags: +orchestrator
+
+### 2026-06-01T09:45:09Z — status-update [task-update-agent]
+- **Change:** tags: +autonomy
+
+### 2026-06-01T09:45:09Z — status-update [task-update-agent]
+- **Change:** tags: +continuous-run
