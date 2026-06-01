@@ -1732,6 +1732,169 @@ def detect_ac_verify_mismatch(ac_section: str, verification_section: str) -> lis
     return findings
 
 
+# ───────── ac-evidence-untick detector (T-2155, T-1761 prevention) ─────────
+#
+# Catches the recurring "agent finishes the work, forgets the tick" pattern.
+# T-1761 origin: an `### Agent` AC reading
+#     "[ ] Inception: evaluate ... ; produce go/no-go in research artifact
+#      docs/reports/T-1761-auto-classify-heuristic.md"
+# pointed at an artifact that existed on disk with a complete
+# `**Recommendation:** GO` block — yet the box stayed `[ ]`, and the
+# Watchtower decide flow refused to record the decision. Agent ticked
+# manually post-block (after-the-fact pattern T-1831 C-4 explicitly calls
+# out).
+#
+# Gap analysis: the existing reviewer catalogue covers neighbour classes
+# but not this one. `detect_ac_verify_mismatch` fires on **ticked** ACs
+# whose path verification doesn't touch (opposite direction);
+# `detect_defer_as_hedge` fires on inception `Recommendation:DEFER` with
+# complete evidence; T-1985 auto-tick automatically ticks `[REVIEWER]`-
+# prefix Agent ACs. None of them see an unticked **plain** Agent AC
+# whose deliverable plainly exists.
+#
+# Scope rules (corpus-tuned):
+#   - Only fires under `### Agent` subhead — Human ACs verify by hand
+#   - Skips `[REVIEWER]`-prefix ACs (auto-tick T-1985 owns those)
+#   - Requires a `docs/reports/T-NNNN-*.md` reference in the AC text —
+#     narrows to the explicit-artifact pattern T-1761 exhibited
+#   - Requires the referenced artifact to exist on disk AND show
+#     substantive content (Recommendation marker OR ≥1500 bytes)
+#   - Author opt-out marker `ac-evidence-untick-ok` exempts when the AC
+#     genuinely wants to wait (e.g. the artifact exists but human review
+#     is still in flight)
+
+
+_REVIEWER_PREFIX_RE = re.compile(r"^\s*\[REVIEWER\]", re.IGNORECASE)
+
+# Author opt-out marker — mirror defer-as-hedge / audience-mismatch shape.
+_AC_EVIDENCE_OPT_OUT_RE = re.compile(
+    r"""(?ix)
+    (
+        ac-evidence-untick-ok                  |
+        meta:\s*ac-evidence-pending            |
+        documents\s+the\s+untick\s+pattern
+    )
+    """
+)
+
+# Substantive-content markers inside the referenced artifact.
+_ARTIFACT_RECOMMENDATION_RE = re.compile(
+    r"\*\*Recommendation:?\*\*", re.IGNORECASE
+)
+_ARTIFACT_RECOMMENDATION_HEADING_RE = re.compile(
+    r"^#{1,3}\s+Recommendation\b", re.IGNORECASE | re.MULTILINE
+)
+
+
+def detect_ac_evidence_untick(
+    ac_section: str,
+    task_path: Path,
+) -> list[Finding]:
+    """Unticked `### Agent` AC names an artifact that already carries substantive content.
+
+    Six gates (all must hold per AC):
+      1. AC sits under `### Agent` subhead
+      2. AC line is unticked (`- [ ]`)
+      3. AC text does NOT start with `[REVIEWER]` (T-1985 auto-tick territory)
+      4. AC text references a `docs/reports/T-NNNN-*.md` path
+      5. That artifact exists on disk AND shows substantive content:
+         - contains a `**Recommendation:**` line, OR
+         - contains a `## Recommendation` heading (or `### Recommendation`), OR
+         - file size ≥ 1500 bytes (proxy for "non-skeleton")
+      6. AC body has no opt-out marker (`ac-evidence-untick-ok`)
+
+    Heuristic confidence, partial lie-severity → CONCERN, needs_human=no.
+
+    Origin: T-1761 (S-2026-0601) — manual unblock after Watchtower decide
+    flow refused. Closes the gap between `detect_ac_verify_mismatch`
+    (ticked + path) and `_should_auto_tick` ([REVIEWER]-prefix only).
+    """
+    findings: list[Finding] = []
+    if not ac_section:
+        return findings
+
+    # Resolve repo root once for artifact-path resolution.
+    repo_root = task_path.parent
+    while repo_root != repo_root.parent and not (repo_root / "policy").is_dir():
+        repo_root = repo_root.parent
+
+    counter = 0
+    current_subhead = "ACs"
+    in_agent = False
+    for raw in ac_section.splitlines():
+        # T-1579 subhead detection
+        if re.match(r"^#{2,}\s+\S", raw.strip()):
+            current_subhead = raw.strip().lstrip("# ").strip()
+            in_agent = current_subhead.lower() == "agent"
+            counter = 0
+            continue
+        m = _AC_LINE_RE.match(raw)
+        if not m:
+            continue
+        counter += 1
+        # Gate 1
+        if not in_agent:
+            continue
+        # Gate 2
+        if m.group("state").lower() == "x":
+            continue
+        body_text = m.group("body")
+        # Gate 3
+        if _REVIEWER_PREFIX_RE.match(body_text):
+            continue
+        # Gate 6 (cheap structural check on the AC body)
+        if _AC_EVIDENCE_OPT_OUT_RE.search(body_text):
+            continue
+        # Gate 4
+        art_match = _ARTIFACT_PATH_RE.search(body_text)
+        if not art_match:
+            continue
+        artifact_rel = art_match.group(1)
+        # Gate 5
+        artifact_path = repo_root / artifact_rel
+        if not artifact_path.is_file():
+            continue
+        try:
+            stat_result = artifact_path.stat()
+            artifact_text = artifact_path.read_text()
+        except OSError:
+            continue
+        has_rec_line = bool(_ARTIFACT_RECOMMENDATION_RE.search(artifact_text))
+        has_rec_heading = bool(
+            _ARTIFACT_RECOMMENDATION_HEADING_RE.search(artifact_text)
+        )
+        is_substantive_size = stat_result.st_size >= 1500
+        if not (has_rec_line or has_rec_heading or is_substantive_size):
+            continue
+
+        evidence_markers = []
+        if has_rec_line:
+            evidence_markers.append("Recommendation: line")
+        if has_rec_heading:
+            evidence_markers.append("## Recommendation heading")
+        if is_substantive_size:
+            evidence_markers.append(f"size={stat_result.st_size}B")
+
+        findings.append(
+            Finding(
+                pattern_id="ac-evidence-untick",
+                pattern_name="Agent AC references existing artifact but checkbox unticked (T-2155)",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location=f"AC#{counter} ({current_subhead})",
+                evidence=(
+                    f"artifact={artifact_rel}; "
+                    f"markers=[{', '.join(evidence_markers)}]; "
+                    f"ac={body_text[:140]}"
+                ),
+                ac_index=counter,
+                ac_subhead=current_subhead,
+                ac_text=body_text.strip()[:200],
+            )
+        )
+    return findings
+
+
 # ───────────────────────── Orchestration ─────────────────────────
 
 
@@ -1826,6 +1989,9 @@ def scan_task(
     # v1.6 +3: T-2140 — review-link-homework (T-2138 V2); catch-before-handoff
     # backstop for Human AC Steps that ask the reviewer to construct a URL.
     findings.extend(detect_review_link_homework(ac_section))
+    # v1.6 +4: T-2155 — ac-evidence-untick (T-1761 prevention); Agent AC
+    # plainly references an existing artifact but the checkbox is still `[ ]`.
+    findings.extend(detect_ac_evidence_untick(ac_section, task_path))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 

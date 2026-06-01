@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2155: reviewer detector — Agent AC body-evidence present but checkbox unticked (T-1761 prevention)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-01T08:58:38Z
+# ============================================================================
+
+task_id: T-2155
+task_name: "reviewer detector — Agent AC body-evidence present but checkbox unticked (T-1761 prevention)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T08:50:00Z
+completed: 2026-06-01T08:58:30Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`detect_ac_evidence_untick` function exists in `lib/reviewer/static_scan.py` with the six-gate shape documented in §Context.'
+  - 'Detector is wired into `scan_task()` (sits alongside `detect_defer_as_hedge` / `detect_review_link_homework`).'
+  - 'Pattern id `ac-evidence-untick`; lie_severity `partial`; detection_confidence `heuristic`; CONCERN-level under the standard verdict thresholds.'
+  - 'Unit test file `tests/unit/test_reviewer_ac_evidence_untick.py` with 10 cases (≥7 spec): (a) positive — Agent AC unticked + artifact exists + Recommendation present; (b) negative — AC ticked; (c) negative — no artifact path in AC text; (d) negative — artifact path but file missing; (e) negative — `[REVIEWER]`-prefix (auto-tick territory); (f) negative — opt-out marker present; (g) negative — Human-section AC; (h) positive — substantive-size proxy without Recommendation marker; (i) negative — skeleton artifact; (j) two-AC mixed batch (only unticked fires).'
+  - 'All existing reviewer unit tests still pass (`python3 -m pytest tests/unit/test_reviewer_*.py -q`) — 295 passed in 3.04s.'
+  - 'Detector exits cleanly on every task in `.tasks/completed/` and `.tasks/active/` (no exception spam) — corpus walk: 2121 tasks scanned, 0 exceptions, 0 false positives. Synthesized T-1761 pre-fix state correctly fires one finding (`artifact=docs/reports/T-1761-auto-classify-heuristic.md; markers=[Recommendation: line, size=6340B]`).'
+  - '[REVIEWER] Block message names both bypass mechanisms'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-003, arc-006, reviewer, governance, t-1761-prevention]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2155-reviewer-detector--agent-ac-body-evidenc.md
+generated_by: context-agent-hybrid
