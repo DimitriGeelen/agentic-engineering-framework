@@ -6,8 +6,10 @@ description: "Close the missing completion\u2192horizon edge identified in T-215
   \ never stored; terminal = directory-based (work-completed alone is NOT terminal\
   \ \u2014 partial-complete in active/ keeps horizon); migrate completed/ to null\
   \ stored horizon + report partial-completes; explicit footer surfacing in handover.\
-  \ Three slices: (1) derived past + render-surface integration + invariant guard;\
-  \ (2) idempotent migration + report; (3) fw audit rail to prevent recurrence."
+  \ Four slices: (1) derived past + render-surface integration + invariant guard;\
+  \ (2) idempotent migration + report; (3) fw audit rail (CTL-030) to detect recurrence;\
+  \ (4) write-side prevention nulling horizon at full-close in update-task.sh \u2014\
+  \ closes the loop atomically so the audit rail is a backstop, not primary."
 status: in-progress
 anchor_task: T-2159
 headline_mechanic: "An agent reads the handover 'Work in Progress' section and sees zero work-completed\

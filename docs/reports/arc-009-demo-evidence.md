@@ -3,7 +3,7 @@
 **Arc:** `.context/arcs/horizon-axis-hardening.yaml` (id: arc-009)
 **Captured:** 2026-06-01
 **Captured by:** S-2026-0601-1249 successor session
-**Slices shipped:** T-2160 (Slice 1 — partial-complete, awaiting human), T-2161 (Slice 2 — done), T-2162 (Slice 3 — done)
+**Slices shipped:** T-2160 (Slice 1 — partial-complete, awaiting human), T-2161 (Slice 2 — done), T-2162 (Slice 3 — done), T-2163 (Slice 4 — done; write-side prevention nulls horizon at close-time in `update-task.sh:1660`; 4 bats green)
 
 ## Headline mechanic
 
@@ -109,6 +109,7 @@ $ bin/fw audit --section compliance | grep CTL-030
 | 1 | T-2160 | partial-complete, owner=human | conditions 1, 2, 3 |
 | 2 | T-2161 | completed | conditions 4, 5 (migration) |
 | 3 | T-2162 | completed | condition 5 (audit) + 10/10 bats green |
+| 4 | T-2163 | completed | write-side prevention at `agents/task-create/update-task.sh:1660` (null horizon at full-close move); 4/4 bats green (`tests/unit/update_task_horizon_null_on_close.bats`); closes the recurrence loop so the migration is one-shot, not perpetually-needed |
 
 ## arc-009 close readiness
 
@@ -117,6 +118,13 @@ $ bin/fw audit --section compliance | grep CTL-030
 - **`headline_mechanic:`** present and verified across all 5 conditions.
 - **Sovereignty:** `fw arc close` is human-only under `$CLAUDECODE=1` (T-1671). The human runs `fw task review <anchor>` → Watchtower `/arcs/horizon-axis-hardening/close`.
 
-## What didn't ship (filed candidate, NOT blocking)
+## Recurrence loop closed — both surfaces
 
-- **Slice 4 (write-side prevention):** null horizon at close-time in `update-task.sh` so that the migration is not needed on each new close. Read-side rail (CTL-030 + daily cron) already catches drift; write-side fix is a hygiene improvement. Not blocking the headline mechanic.
+The arc closes the missing edge at **both** prevention surfaces:
+
+- **Write-side (T-2163):** `agents/task-create/update-task.sh:1660` nulls the stored `horizon:` field atomically at the full-close move, so no completed/ file is ever written with `horizon: now|next|later`. The 4-bats fixture pins both branches in isolation (full-close nulls; partial-complete preserves — the file stays in active/ where horizon is still functional).
+- **Read-side (T-2162):** `fw audit --section compliance` runs CTL-030 daily via cron. Any drift that slips past the write-side (legacy file, manual edit, future regression of T-2163) FAILs the audit with the exact offender list and points at the migration script as the recovery.
+
+The migration (`bin/migrate-horizon-null-completed.sh`, T-2161) remains as a one-shot for cross-machine corpora that ingest the audit rail before they ingest the write-side fix. On a corpus where T-2163 has always been in effect, re-running the migration reports **0 changes** — that is Condition 5.
+
+Read-only mitigation alone (CTL-030 + migration on demand) would have left the recurrence loop open: every new task close would have generated fresh drift for the audit to catch. T-2163 closes the loop atomically; CTL-030 is now a backstop, not the primary mechanism.
