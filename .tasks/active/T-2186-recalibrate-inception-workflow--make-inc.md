@@ -15,15 +15,15 @@ description: >
   prerequisite) must be done before any working conclusion is treated as fact. No
   build tasks before fw inception decide go.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: [inception, workflow, prioritization, bvp, governance]
 components: []
 related_tasks: []
 created: 2026-06-02T21:18:05Z
-last_update: 2026-06-02T21:25:46Z
+last_update: 2026-06-02T21:33:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,6 +52,16 @@ bvp_scores_proposed:
       F-ORCH: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-02T21:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
@@ -142,11 +152,11 @@ constraints are framework-internal:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated — Step 0 confirmed LV/LC clustering on T-2186 itself (BVP=24/175 = 14%, cost ≈ 1.2); rubric-mechanism floor + blast_radius=0 structural floor are the real pathologies. Evidence: `docs/reports/T-2186-recalibrate-inception-workflow-seed.md` §"Step 0 Findings" F0.5, F0.6
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested — 8 working conclusions mapped to CONFIRMED / PARTIALLY-REFUTED / REFUTED / CARRY in Step 0 verdict table (3 need sharpening: A2 tier-side, A7 already-deployed redundancy, A8 terminology error). Evidence: seed §"Step 0 verdict on the seed's 8 working conclusions"
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale — see ## Recommendation below
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -160,37 +170,45 @@ constraints are framework-internal:
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- Step 0 identifies the actual mechanism behind LV/LC mis-categorisation (✓ done: blast_radius=0 structural floor + value-rubric mechanism-rewarding floor)
+- IW-1..7 each reach a defensible disposition with verifiable rationale (✓ done; see seed §"IW-1..7 Dispositions")
+- Constituent build-task slices are bounded and individually fits-one-session-sized (✓ done; 8 slices listed in seed §"Constituent Build-Task Slices")
+- Producer ≠ judge pattern is REUSED, not re-invented (✓ done; recalibration slots into existing reviewer-agent + bvp confirm + $CLAUDECODE=1 lockout layers)
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- The blast_radius=0 floor turns out NOT to be the dominant mis-scoring driver (would require fresh measurement across more inceptions)
+- IW-2 non-circularity claim fails when verified against `lib/arc.sh` BVP rollup (carries blocking risk for Model B)
+- The Sovereignty call on IW-7 (own-doc vs 010-section) cannot be made without further dialogue
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# For inception tasks, verification is often not needed (decisions, not code).
-#
-# Toolchain hint (L-291): if a GO decision will mean editing *.vbproj/*.csproj/*.xaml,
-# *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
-# matching build command (dotnet build / go build / cargo check / tsc --noEmit /
-# mvn compile) to that build task's ## Verification — P-011 only runs what you write.
+# Inception verification: confirm the seed/research artifact carries the
+# evidence the Recommendation cites. No code shipped; the build slices are
+# filed as separate tasks after `decide go`.
+test -f docs/reports/T-2186-recalibrate-inception-workflow-seed.md
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "Step 0 Findings"
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "IW-1..7 Dispositions"
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "Constituent Build-Task Slices"
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "Dialogue Log"
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO (with one pending Sovereignty call on IW-7 — own-doc vs 010-section)
+
+**Rationale:** Step 0 confirmed the seed's premise (inceptions cluster LV/LC) and sharpened the mechanism (it's `blast_radius=0` structural floor + value-driver mechanism-rewarding rubrics, not the seed's claimed tier/blast sign-flip — tier already costs more for inceptions). IW-1..7 each reached a defensible disposition; three of the seed's eight working conclusions needed refutation/sharpening but the *prescription* survives: an inception-aware VoI scoring exception in `policy/value-drivers.yaml` + a disposition gate in `update-task.sh` + reuse of the existing three-tier judge ladder. No new ceremony; 8 small build slices, each fits one session.
+
+**Evidence:**
+- **The pathology is real:** T-2186 itself (this very task) scores BVP=24/175 = 14% with cost ≈ 1.2 → LV/LC quadrant. Evidence: `agents/termlink/bvp-estimator/estimator.py:531` (COST_WORKFLOW_TIER), `:537` (score_blast_radius reads `components:`); `policy/value-drivers.yaml` driver rubrics.
+- **Producer ≠ judge already shipped:** `lib/inception.sh:106` ($CLAUDECODE=1 lockout on decide), `lib/bvp.sh` (bvp confirm §ACD-gated), `lib/reviewer/static_scan.py` (T-1985 auto-tick), AC prefix ladder T-1811. The recalibration adds nothing new in principle — it reuses these.
+- **Hardening pattern fits:** `agents/task-create/update-task.sh` already hosts 10 verb-gates with `--skip-<name>` + `FW_SKIP_*` bypass. The new disposition gate slots in identically.
+- **Park state already exists:** DEFER + horizon:later (T-1865) + revisit_at/revisit_evidence_needed frontmatter. No new state needed.
+- **A meta-finding emerged during execution:** the 2-commit inception exploration limit treated this task's filing+demote storage commits as exploration, blocking the Step 0 findings commit. Live evidence that commit-counting semantics need recalibration alongside the scoring. Captured in Step 0 commit `7fb0de956` and Dialogue Log.
+- **Three seed working conclusions need correction in the spec:** A2 (sign-flip wrong on tier — tier already costs more), A7 (producer≠judge already widely deployed — reuse, don't invent), A8 (rename built on non-existent terminology — `started-work` not `work-started`). Spec reflects sharpened versions, not seed-verbatim.
+
+**Pending human Sovereignty call:** IW-7 — own numbered system doc (`docs/system/050-Inceptions.md`) vs section of `010-TaskSystem.md`. Recommendation: own-doc (rationale in seed §"IW-7"); counter-argument fairly presented; this is the only IW question whose disposition is "recommend, human decides" rather than "answered".
+
+**Constituent build-task slices:** 8 slices listed in seed §"Constituent Build-Task Slices" — each sized for one session. Filed ONLY after `fw inception decide T-2186 go`. The keystone is Slice 1 (doc), gated by IW-7 Sovereignty decision.
 
 ## Decisions
 
@@ -227,3 +245,16 @@ constraints are framework-internal:
 ### 2026-06-02T21:25:46Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-06-02T21:33:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99214b97
+- **Timestamp:** 2026-06-02T21:49:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

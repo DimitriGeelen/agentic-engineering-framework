@@ -450,3 +450,281 @@ this session or pause for course-correction on the Step 0 refutations
 terminology; the underlying *concern* could still be valid but the
 prescription needs reframing).
 
+### 2026-06-02 — Operator selects "Raise limit + continue IW work"
+
+**Operator:** Chose to continue past 2-commit limit (raised to 6 via
+`FW_INCEPTION_COMMIT_LIMIT=6` for this session). The Step 0 finding that
+storage commits eat the exploration budget is now a recorded meta-finding
+in the Step 0 commit message.
+
+**Agent:** Proceeding with IW-1..7 dispositions, recalibrated spec, and
+Recommendation in this and one more commit.
+
+---
+
+# IW-1..7 Dispositions
+
+Each question gets a disposition (*answered* / *deferred* / *dissolved*) with
+verifiable rationale cited inline. The producer (this agent) is NOT the
+judge of whether these are sufficient — a separate entity (peer agent via
+`bin/fw reviewer T-2186` and/or human via `fw task review T-2186`) confirms.
+
+### IW-1 — VoI operationalization
+
+**Disposition:** answered (partial); the three primitives need to be split
+because they have different epistemic shapes.
+
+**Reach — answered.** Best proxy: `target_blast_radius` declared at filing
+time, with three sources of decreasing strength:
+1. *Arc-anchored inceptions:* inherit the arc anchor's blast_radius (Model B
+   from seed working conclusion #3). Non-circular because arc blast_radius
+   is set by arc headline mechanic, decided before constituent tasks exist.
+2. *Orphan inceptions:* human declares S/M/L/XL at filing time (cheap, honest
+   while uncertainty is high). Maps to existing T-shirt cost-fallback
+   (CLAUDE.md §Task System: `bvp_scores`/`cost_estimate`).
+3. *Auto-floor:* if neither (1) nor (2), default to M (= blast_radius:3) so
+   inceptions don't structurally floor to 0.
+
+Rationale: matches existing primitive (T-shirt size mapping `S/M/L/XL → 2/4/6/8`
+is already documented in CLAUDE.md as Q2 fallback). Reuses existing semantics.
+Evidence: `CLAUDE.md` §Task System paragraph on `cost_estimate.blast_radius`.
+
+**Uncertainty — answered.** Human-set or structurally-proxied — NOT
+estimator-self-assessed (the snake-eating-its-tail risk the seed names).
+The proposal:
+- Each inception's open-question list (declared at filing) carries a
+  `confidence: 0-3` per question (0 = "no idea", 3 = "strong leaning, want
+  to verify").
+- Aggregate uncertainty = `sum(3 - confidence_i) / count(open_questions)`
+  on a 0-3 scale.
+- Filing-time gate enforces ≥1 declared open question (the Open Questions
+  section pattern is already mandated by inception template).
+
+Rationale: human-set at filing (when uncertainty is most honest), structurally
+visible (open-question count + per-question confidence). Naive count-of-open-
+questions invites gaming (file 20 throwaway questions to inflate uncertainty);
+weighting by confidence dampens this.
+
+**Risk to flag:** the gaming threat is real but not severe at low scale.
+Reviewer-agent could catch obvious cases (e.g. ratio of "answered" to
+"deferred" dispositions across closed inceptions) but the static-scan
+already does similar pattern-watching elsewhere.
+
+**Cost-of-being-wrong — answered.** Best proxy: the same `target_blast_radius`
+from Reach above, multiplied by a "irreversibility" axis already in the
+framework (Tier classification — Tier 0 is irreversible, Tier 3 is reversible).
+Formula: `cost_of_wrong = target_blast_radius × (5 - tier) / 5`. Higher
+blast + lower tier (more consequential) = higher cost-of-wrong.
+
+Rationale: reuses both `target_blast_radius` (above) and `tier` (already on
+every task per `Tier 0/1/2/3` model in CLAUDE.md). No new primitive.
+
+### IW-2 — Inherit vs VoI routing
+
+**Disposition:** answered with arc-side verification carry-forward.
+
+**Routing rule:**
+- *Arc-anchored inception* (`arc_id: <slug>` set) → inherit arc's BVP scores
+  AS A FLOOR. The inception scores as `max(inception_VoI, arc_BVP)` so a
+  high-leverage arc anchor lifts its inception without erasing genuinely
+  high-VoI orphans.
+- *Orphan inception* (`arc_id` empty/missing) → score by VoI only.
+
+**Non-circularity check:** the arc is scored from its headline mechanic
+(`fw arc create --headline-mechanic "..."` is mandatory per §ACD discipline)
+and from its constituent build tasks BVP rollup. Since the inception ANCHOR
+of an arc precedes the constituent build tasks, there's no
+inception-scores-from-arc-scores-from-inception loop. Verified by reading
+`lib/arc.sh` BVP rollup logic at a high level (full file:line carry to build
+slice).
+
+**Carry to build slice:** confirm the Model B non-circularity claim by reading
+`lib/arc.sh` BVP-rollup code in full and pinning with a unit test. This is
+a build-slice deliverable, not blocking the decide.
+
+### IW-3 — The scoring-gate state
+
+**Disposition:** dissolved — the seed's question presupposes a NEW state.
+Step 0 F0.2 + F0.8 show the right slot is the EXISTING verb-gate in
+`update-task.sh` on `--status work-completed`, not a new state.
+
+**Reframed disposition:**
+- *Where the gate fires:* `update-task.sh` `--status work-completed` for
+  `workflow_type: inception` tasks, alongside the existing RCA / render-
+  surface / inception-scope-trace gates (T-1550, T-1766, T-1984).
+- *Precondition:* (a) Open Questions section non-empty, (b) every declared
+  open question has a `**Disposition:**` line followed by either `answered`,
+  `deferred`, or `dissolved`, (c) every disposition has a rationale line
+  citing inspectable evidence (file:line or doc URL).
+- *Trigger:* `--status work-completed` invocation.
+- *Output:* on PASS, proceed to existing `fw inception decide` (Sovereign-
+  held). On FAIL, refuse with a class-correct error message naming which
+  questions are unresolved.
+- *Bypass:* `--skip-disposition-gate "rationale"` (consistent with existing
+  `--skip-*` family) + `FW_SKIP_DISPOSITION_GATE=1` env-var for git/wrapper
+  invocations (per T-1890 producer/consumer parity).
+
+### IW-4 — The fork & the park state
+
+**Disposition:** answered — the park state ALREADY EXISTS.
+
+The lifecycle-thread Step 0 finding (F0.2 footnote) confirms: DEFER decisions
+set `horizon: later` + `status: captured`. This IS the park state. T-1865
+formalised it. `revisit_at: YYYY-MM-DD` + `revisit_evidence_needed: <desc>`
+frontmatter fields (already in the inception template — see T-2186 file
+lines 28-29) wire the park to G-053 daily revisit scan.
+
+**Routing rule:**
+- After dispositions complete, if `target_blast_radius >= 5` (i.e. ML or
+  larger) AND tier `<= 1` (high-consequence) → recommend DEFER unless
+  the human pre-authorises GO. This is the "high stakes ⇒ park" default the
+  seed proposes.
+- Else → recommend GO/NO-GO based on cost-of-wrong vs reach.
+
+The recommendation is the AGENT'S (producer); the actual decision is
+Sovereign (`fw inception decide` refuses under `$CLAUDECODE=1`).
+
+### IW-5 — Disposition gate adjudication
+
+**Disposition:** answered — reuse the existing three-tier judge ladder.
+
+| Stakes | Judge | Trigger condition |
+|--------|-------|-------------------|
+| Low (target_blast ≤ 3, tier ≥ 2) | Reviewer-agent static scan | `bin/fw reviewer T-XXX` confirms disposition completeness; auto-tick the gate AC (T-1985 v1.5) |
+| Medium | Reviewer-agent + human spot-check | Static scan PASS + human reviews the disposition rationale via `/review/T-XXX` |
+| High (target_blast ≥ 5 OR tier ≤ 1) | Human | `fw task review T-XXX` mandatory; reviewer-agent advisory only |
+
+**Reverse-trap guard ("premature discovery done"):** the gate condition is
+that every *declared* open question has a *recorded disposition*. An agent
+that declared 1 superficial question to "satisfy" the gate is caught by the
+reviewer-agent's existing `defer-as-hedge` detector (T-2145) — extended to
+also flag "answered with vacuous rationale" via existing prose-quality
+heuristics. Carry-forward to build slice: extend `defer-as-hedge` to also
+catch "answered-without-evidence" pattern.
+
+### IW-6 — 040 ↔ inception-doc ownership seam
+
+**Disposition:** answered.
+
+- **`policy/value-drivers.yaml`** owns the scoring rubrics for all drivers
+  (D1-D4 protected + F-* free) AND the cost composite formula. Add a new
+  section: "Inception scoring exception" documenting the
+  `target_blast_radius` filing-time field + the inherit-vs-VoI routing rule.
+- **The inception lifecycle doc** (per IW-7 decision: own doc) owns the
+  workflow state machine, the disposition gate, the park-state routing
+  rule, and references 040 for scoring formulas.
+- **Cross-reference:** each fact lives in exactly one doc; the other links
+  to it. Mirrors the existing seam between `010-TaskSystem` and individual
+  agent AGENT.md files.
+
+### IW-7 — Documentation home (Sovereignty call)
+
+**Disposition:** recommend own-doc; defer to human.
+
+**Recommendation: own numbered system doc** `docs/system/050-Inceptions.md`
+(peer to `010-TaskSystem.md`, `040-ValueDrivers.md`).
+
+**Rationale:**
+- Inception IS different in kind from task execution (discovery vs doing —
+  the very category error the recalibration corrects).
+- The doc carries non-trivial weight: lifecycle, disposition gate, scoring
+  exception, park state, fork routing, three-tier adjudication.
+- Burying it in `010-TaskSystem` § Inceptions would re-commit the category
+  error the recalibration is trying to fix.
+- 040 cross-reference seam (IW-6) needs a stable target — a section ID
+  inside a long doc is more fragile than a dedicated doc.
+
+**Counter-argument (in fairness):** `010-TaskSystem` is the canonical
+"how the framework treats tasks" doc; inceptions ARE tasks. Adding a 5th
+top-level doc raises the system-doc surface for new readers.
+
+**This is a Sovereignty call. Human decides.**
+
+---
+
+# Recalibrated Inception Lifecycle Spec (proposal)
+
+States: same 4-state lifecycle as all workflow types (F0.2). What changes
+is what fires *at* `--status work-completed` for `workflow_type: inception`.
+
+**New mandatory frontmatter fields for inceptions:**
+
+```yaml
+target_blast_radius: 0|1|3|5|7|9   # S/M/L/XL/XXL filing-time declaration; inherited from arc if anchored
+voi_score:                          # Computed, not author-written; estimator + reviewer-agent
+  reach: <0-9>                      # = target_blast_radius (after inherit/declare/default)
+  uncertainty: <0-3>                # = sum(3 - confidence_i)/count(declared_open_questions)
+  cost_of_wrong: <0-9>              # = target_blast_radius × (5 - tier) / 5
+  composite: <0-9>                  # weighted; weights live in policy/value-drivers.yaml v3+
+```
+
+**New body section required for inceptions** (mirrors existing
+`## Acceptance Criteria` discipline):
+
+```markdown
+## Open Questions
+- **IW-N — <topic>.** <prose>
+  - confidence: 0-3
+  - disposition: <answered | deferred | dissolved> | <empty until gate>
+  - rationale: <evidence citation; file:line, doc URL, or `deferred:T-XXX`>
+```
+
+**Disposition gate** (slots into `update-task.sh` per F0.8):
+- Fires on `--status work-completed` when `workflow_type: inception`
+- Refuses if any declared open question lacks a `disposition:` line
+- Refuses if any disposition lacks a `rationale:` line
+- Bypass: `--skip-disposition-gate "rationale"` + `FW_SKIP_DISPOSITION_GATE=1`
+- Logs Tier-2 to `.context/working/.gate-bypass-log.yaml`
+
+**Three-tier adjudication** (per IW-5):
+- Low stakes → reviewer-agent confirms dispositions (T-1985 auto-tick extended)
+- Medium stakes → reviewer + human spot-check
+- High stakes → human only
+
+**Park state:** existing DEFER+horizon:later mechanism, no change.
+
+**Recalibration of inception scoring** (slots into `policy/value-drivers.yaml`):
+- New section `# Inception scoring exception` adds the VoI composite as
+  a workflow-type-aware override
+- For `workflow_type: inception`: BVP composite uses VoI score, NOT the
+  D1-D4+F-* mechanism-rewarding rubrics
+- For all other types: existing rubrics apply unchanged
+
+---
+
+# Constituent Build-Task Slices (filed ONLY after `decide go`)
+
+These are runnable `fw task create` invocations. They MUST NOT fire until
+the human records `fw inception decide T-2186 go`.
+
+1. **Slice 1 — Doc:** `docs/system/050-Inceptions.md` written (per IW-7
+   pending human decision). Includes lifecycle, disposition gate spec,
+   scoring exception, three-tier adjudication, park-state cross-ref.
+2. **Slice 2 — Frontmatter schema:** add `target_blast_radius` + `voi_score`
+   fields to inception template (`.tasks/templates/zzz-default.md` or
+   inception-specific template if separated). PreToolUse hook validates.
+3. **Slice 3 — Estimator branch:** modify `agents/termlink/bvp-estimator/
+   estimator.py` to detect `workflow_type: inception` and compute VoI
+   composite instead of D1-D4+F-* rubrics. Update `policy/value-drivers.yaml`
+   v3+ with the inception-scoring-exception section.
+4. **Slice 4 — Open Questions body section + disposition gate:** extend
+   inception template + add disposition gate to `update-task.sh` with
+   `--skip-disposition-gate` bypass family. Bats test pins.
+5. **Slice 5 — Reviewer-agent extension:** extend `lib/reviewer/static_scan.py`
+   to verify disposition completeness on inceptions; integrate with auto-tick
+   v1.5 (T-1985); extend `defer-as-hedge` detector (T-2145) to catch
+   "answered-without-evidence" pattern.
+6. **Slice 6 — `fw bvp rank` inception axis:** extend the `/bvp` scatter
+   to render inceptions in their own quadrant aligned with VoI vs cost, so
+   they are visually rankable against each other.
+7. **Slice 7 — Migration:** existing inceptions (active + completed) get
+   `target_blast_radius` defaulted from arc inheritance or auto-floor (M=3);
+   no body backfill required (gate is opt-in via the new template).
+8. **Slice 8 — Open Questions filing-time placeholder check:** PreToolUse
+   hook on inception filing ensures `## Open Questions` section is non-empty
+   with ≥1 declared question. Mirrors existing G-020 placeholder gate.
+
+Slices are sized small-medium; each fits one session. Slice 1 (doc) is the
+keystone — IW-7 Sovereignty decision drives it.
+
+
