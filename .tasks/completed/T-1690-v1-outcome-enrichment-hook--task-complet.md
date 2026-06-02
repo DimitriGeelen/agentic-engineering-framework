@@ -168,15 +168,14 @@ date_finished: 2026-05-03T08:29:11Z
 - **Decision:** GO
 - **Rationale:** Default evaluator works (282ms to parse + run all Verification commands for T-1693, 6/6 Agent ACs detected as satisfied). Back-prop hook is fast on the unmatched path (0.3ms — far below the 10ms NO-GO threshold). Spike passes all functional tests. **Critical finding:** the modify-in-place pattern that T-1689 validated for *single-row* updates does NOT compose under cross-row concurrency — when two back-props run in parallel on different task_ids, the second rename overwrites the first writer's enrichments (last-writer-wins at the FILE level, not the row level). Spike measured 15/50 enrichments preserved when 10 threads enriched distinct task_ids concurrently. This is a CHANGE from T-1689's sub-spike A-5, which only proved no-corruption — not no-overwrite.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6c0f946a
-- **Timestamp:** 2026-05-03T08:29:12Z
+- **Scan ID:** R-85bd41cb
+- **Timestamp:** 2026-06-02T14:59:08Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-03T08:29:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

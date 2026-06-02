@@ -83,3 +83,21 @@ date_finished: 2026-03-29T20:03:05Z
 
 ### 2026-03-29T20:03:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-76e70f5a
+- **Timestamp:** 2026-06-02T15:04:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — tests/integration/fw_version.bats exists with 6 tests covering version output, aliases, semver format
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/fw_version.bats in: tests/integration/fw_version.bats exists with 6 tests covering version output, aliases, semver format`
+- **AC#2 (Agent)** — tests/integration/fw_cron.bats exists with 9 tests covering help, status, list, badcmd, run, pause/resume
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/fw_cron.bats in: tests/integration/fw_cron.bats exists with 9 tests covering help, status, list, badcmd, run, pause/resume`
+- **AC#3 (Agent)** — All 15 new tests pass: `bats tests/integration/fw_version.bats tests/integration/fw_cron.bats`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/fw_version.bats in: All 15 new tests pass: `bats tests/integration/fw_version.bats tests/integration/fw_cron.bats``

@@ -75,3 +75,17 @@ python3 -m pytest tests/web/ -q
 
 ### 2026-04-18T20:00:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c095e28b
+- **Timestamp:** 2026-06-02T14:56:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `build_ambient()` reads `.context/working/focus.yaml::current_task` and uses it as `focus_task` when non-null
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/focus.yaml in: `build_ambient()` reads `.context/working/focus.yaml::current_task` and uses it as `focus_task` when non-null`

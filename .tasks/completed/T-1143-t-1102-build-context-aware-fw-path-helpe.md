@@ -59,3 +59,17 @@ bash -c '! grep -q "echo.*bin/fw" lib/inception.sh'
 
 ### 2026-04-12T10:14:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5096d664
+- **Timestamp:** 2026-06-02T14:55:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — agents/context/check-tier0.sh uses _fw_cmd instead of hardcoded ./bin/fw
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/check-tier0.sh in: agents/context/check-tier0.sh uses _fw_cmd instead of hardcoded ./bin/fw`

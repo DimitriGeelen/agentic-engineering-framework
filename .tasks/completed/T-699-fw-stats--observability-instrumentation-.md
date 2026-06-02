@@ -81,3 +81,17 @@ grep -q "Recommendation" .tasks/active/T-699-fw-stats--observability-instrumenta
 - **Decision:** DEFER
 - **Rationale:** - Recommendation: DEFER
 - Rationale: The framework already has 5 observability stores with 2,400+ data points (607 metrics snapshots, 578 audit YAMLs, 666 episodic summaries, 426 handovers, 132 lea...
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d47f4743
+- **Timestamp:** 2026-06-02T15:04:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `grep -q "Recommendation" .tasks/active/T-699-fw-stats--observability-instrumentation-.md 2>/dev/null || grep -q "Recommendation" .tasks/completed/T-699-fw-stats--observability-instrumentation-.md 2>/d`

@@ -80,10 +80,10 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/inception_decide_at
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-138e62a4
-- **Timestamp:** 2026-04-26T13:55:04Z
+- **Scan ID:** R-df8ee0e5
+- **Timestamp:** 2026-06-02T14:57:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -93,6 +93,5 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/inception_decide_at
 
 - **AC#3 (Agent)** — `fw audit` discovery check flags inception tasks in `started-work` or `captured` status with empty Recommendation. New rule e.g. `discoveries/empty-inception-recommendation.yaml`.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=discoveries/empty-inception-recommendation.yaml in: `fw audit` discovery check flags inception tasks in `started-work` or `captured` status with empty Recommendation. New rule e.g. `discoveries/empty-in`
-
 ### 2026-04-26T13:54:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

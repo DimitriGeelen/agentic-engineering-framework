@@ -92,14 +92,13 @@ This RCA is also the answer to T-1626's framing question ("why did the framework
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3cc85a9e
-- **Timestamp:** 2026-04-30T21:27:45Z
+- **Scan ID:** R-d6187bf3
+- **Timestamp:** 2026-06-02T14:58:44Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-30T21:27:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

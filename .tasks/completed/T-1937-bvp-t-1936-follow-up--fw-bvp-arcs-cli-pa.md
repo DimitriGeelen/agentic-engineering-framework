@@ -234,10 +234,10 @@ anti-pattern caught one step earlier (within-arc instead of cross-arc).
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1937-bvp-t-1936-follow-up--fw-bvp-arcs-cli-pa.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1ff673c5
-- **Timestamp:** 2026-05-20T18:21:03Z
+- **Scan ID:** R-40550345
+- **Timestamp:** 2026-06-02T15:00:32Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -249,6 +249,5 @@ anti-pattern caught one step earlier (within-arc instead of cross-arc).
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: `cmd_arcs` in `lib/bvp.sh` falls back to constituent-task rollup when arc YAML lacks direct `bvp_scores:`, mirroring `web/blueprints/bvp.py:_collect_a`
 - **AC#5 (Agent)** — Unit tests in `tests/unit/test_bvp_cli_arcs_rollup.py` cover: empty members case, direct-confirmed bypass, derived-confirmed via task rollup, mixed-mode degrades to derived-proposed, both arc_id forms
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_bvp_cli_arcs_rollup.py in: Unit tests in `tests/unit/test_bvp_cli_arcs_rollup.py` cover: empty members case, direct-confirmed bypass, derived-confirmed via task rollup, mixed-mo`
-
 ### 2026-05-20T18:20:48Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

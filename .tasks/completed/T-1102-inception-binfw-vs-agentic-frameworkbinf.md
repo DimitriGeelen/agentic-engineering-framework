@@ -196,3 +196,12 @@ Evidence:
 ### 2026-04-12T10:14:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Build task T-1143 completed — _fw_cmd helper added, 3 sites fixed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-512b2706
+- **Timestamp:** 2026-06-02T14:55:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

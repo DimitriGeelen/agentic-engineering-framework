@@ -75,3 +75,17 @@ update-task.sh (805 lines) is the most complex agent script with no tests. Testi
 
 ### 2026-04-05T16:22:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-46f34813
+- **Timestamp:** 2026-06-02T15:05:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Test file exists at tests/unit/update_task.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/update_task.bats in: Test file exists at tests/unit/update_task.bats`

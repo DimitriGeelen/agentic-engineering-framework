@@ -96,22 +96,23 @@ date_finished: 2026-05-01T13:08:53Z
 ### 2026-05-01T13:08:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-be55ec6e
-- **Timestamp:** 2026-05-01T13:08:53Z
+- **Scan ID:** R-61d26567
+- **Timestamp:** 2026-06-02T14:58:50Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
-- **Needs Human:** no
-- **Findings:** 2
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
 
 **Per-AC findings:**
 
-- **AC#1 (Agent)** — [First criterion]
-  - **empty-body** (severe, deterministic) — `- [ ] [First criterion]`
-- **AC#2 (Agent)** — [Second criterion]
-  - **empty-body** (severe, deterministic) — `- [ ] [Second criterion]`
+- **AC#2 (Agent)** — MCP-tool task_id audit shipped — `agents/audit/orchestrator-mcp-scan.sh` + audit integration (W10 A)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/orchestrator-mcp-scan.sh in: MCP-tool task_id audit shipped — `agents/audit/orchestrator-mcp-scan.sh` + audit integration (W10 A)`
 
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `Cross-repo`
 ### 2026-05-01T13:08:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

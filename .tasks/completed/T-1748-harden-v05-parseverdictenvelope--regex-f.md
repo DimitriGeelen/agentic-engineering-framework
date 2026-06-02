@@ -104,14 +104,13 @@ cd /opt/999-Agentic-Engineering-Framework && grep -q 'ok 14' /tmp/_t1748_bats.ou
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1748-harden-v05-parseverdictenvelope--regex-f.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a5579105
-- **Timestamp:** 2026-05-05T18:28:47Z
+- **Scan ID:** R-00b6e277
+- **Timestamp:** 2026-06-02T14:59:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-05T18:28:45Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

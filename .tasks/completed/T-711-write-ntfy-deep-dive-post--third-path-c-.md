@@ -75,3 +75,16 @@ Third Path C deep-dive post. Research: `docs/reports/T-707-ntfy-deep-dive.md`. P
 
 ### 2026-03-29T11:21:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8b01183c
+- **Timestamp:** 2026-06-02T15:04:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-project`

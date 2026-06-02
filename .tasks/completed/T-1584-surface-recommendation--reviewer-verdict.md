@@ -102,13 +102,26 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1584-surface-recommendation--reviewer-verdict.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f45cf222
-- **Timestamp:** 2026-04-28T20:17:25Z
+- **Scan ID:** R-b13bb6e9
+- **Timestamp:** 2026-06-02T14:58:28Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 5
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `curl -sf "$(bin/fw watchtower url)/tasks/T-1582" | grep -q '<section class="recommendation-block" data-verdict="GO">'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 9
+     - evidence: `curl -sf "$(bin/fw watchtower url)/tasks/T-1582" | grep -q '<section class="reviewer-verdict-block" data-reviewer-overall="PASS">'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `! curl -sf "$(bin/fw watchtower url)/tasks/T-967" | grep -q '<section class="reviewer-verdict-block"'`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/tasks/T-1582" | grep -q '^200$'`
+  5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
+     - evidence: `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 ### 2026-04-28T15:30:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

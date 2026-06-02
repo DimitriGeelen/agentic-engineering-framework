@@ -18,20 +18,20 @@ description: >
   + bats tests in tests/unit/. Expected: re-scanning Cluster 1+2 tasks (12 of 19 cached
   FAILs) drops them to PASS without breaking any currently-PASSing task.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer-quality, detector-fp, fail-fix, T-2173-child]
-components: []
+components: [lib/reviewer/static_scan.py]
 related_tasks: [T-2173, T-2174, T-2175, T-2176, T-1443]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T11:52:20Z
-last_update: 2026-06-02T12:55:54Z
-date_finished:
+last_update: 2026-06-02T13:06:05Z
+date_finished: 2026-06-02T13:06:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -182,3 +182,19 @@ out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1); echo "
 ### 2026-06-02T12:55:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ce433012
+- **Timestamp:** 2026-06-02T15:01:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -k "skip_as_pass or swallowed" -q 2>&1); echo "$out" | grep -qE "passed"`
+### 2026-06-02T13:06:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

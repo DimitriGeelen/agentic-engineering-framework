@@ -53,3 +53,17 @@ grep -q "etc/cron" agents/context/check-project-boundary.sh
 
 ### 2026-04-12T22:03:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d1425200
+- **Timestamp:** 2026-06-02T14:55:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `check-project-boundary.sh` allows writes to `/etc/cron.d/` paths
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: `check-project-boundary.sh` allows writes to `/etc/cron.d/` paths`

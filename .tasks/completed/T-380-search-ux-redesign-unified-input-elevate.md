@@ -77,3 +77,19 @@ curl -sf "http://localhost:3000/search?q=healing&mode=hybrid" | grep -q "search-
 
 ### 2026-03-10T22:04:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a10abb31
+- **Timestamp:** 2026-06-02T15:02:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/search | grep -q "Search or ask"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf "http://localhost:3000/search?q=healing&mode=hybrid" | grep -q "search-result"`

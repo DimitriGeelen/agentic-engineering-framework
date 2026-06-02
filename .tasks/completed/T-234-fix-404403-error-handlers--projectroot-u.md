@@ -55,3 +55,24 @@ curl -sf http://localhost:3000/ -o /dev/null -w "%{http_code}" | grep -q "200"
 
 ### 2026-02-21T20:47:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7dce7a5e
+- **Timestamp:** 2026-06-02T15:01:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `PROJECT_ROOT` imported at module level in `web/app.py`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: `PROJECT_ROOT` imported at module level in `web/app.py``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -s http://localhost:3000/nonexistent-page -o /dev/null -w "%{http_code}" | grep -q "404"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/ -o /dev/null -w "%{http_code}" | grep -q "200"`

@@ -69,14 +69,14 @@ test -f .fabric/CROSS-REPO-CARDS.md
 ### 2026-05-01T15:10:00Z — promoted-and-scoped [agent]
 - **Action:** Promoted horizon later→now; chose Option A (extend convention) per the decision recorded above.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5e66a734
-- **Timestamp:** 2026-05-01T13:02:53Z
+- **Scan ID:** R-9d8b8732
+- **Timestamp:** 2026-06-02T14:58:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** 6
+- **Findings:** 7
 
 **Per-AC findings:**
 
@@ -93,10 +93,14 @@ test -f .fabric/CROSS-REPO-CARDS.md
 - **AC#6 (Agent)** — `.fabric/components/cross-repo-termlink-governance-subscriber.yaml` exists (T-1066's data plane subscriber)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/cross-repo-termlink-governance-subscriber.yaml in: `.fabric/components/cross-repo-termlink-governance-subscriber.yaml` exists (T-1066's data plane subscriber)`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `ls .fabric/components/cross-repo-termlink-*.yaml | wc -l | grep -q "^6$"`
+
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-repo`
-
 ### 2026-05-01T13:02:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

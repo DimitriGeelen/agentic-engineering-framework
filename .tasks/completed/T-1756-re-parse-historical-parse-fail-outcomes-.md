@@ -143,14 +143,18 @@ tracked as Evolution follow-up.
 ### 2026-05-05T22:34:03Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c3a021e6
-- **Timestamp:** 2026-05-05T22:37:39Z
+- **Scan ID:** R-e46bebdd
+- **Timestamp:** 2026-06-02T14:59:32Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 tools/reparse-historical-parsefails.py 2>&1 | grep -q "Idempotent: no new corrective outcomes"`
 ### 2026-05-05T22:37:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

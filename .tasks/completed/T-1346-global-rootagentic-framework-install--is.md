@@ -216,15 +216,14 @@ Decomposition (see docs/reports/T-1346-global-install-isolation.md):
 
 B1 lands first (correctness); B2+B3 are usability. Risk of B1: cron jobs or scripts that rely on the global path may see a vendored-pin mismatch — acceptable trade-off since pin-mismatch is the correct signal.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5b99c872
-- **Timestamp:** 2026-04-26T09:32:26Z
+- **Scan ID:** R-d51cb69d
+- **Timestamp:** 2026-06-02T14:56:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T09:32:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO recorded 2026-04-20

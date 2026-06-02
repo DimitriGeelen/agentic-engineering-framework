@@ -217,8 +217,8 @@ bash -n agents/task-create/update-task.sh
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-bcd6460c
-- **Timestamp:** 2026-05-28T12:19:52Z
+- **Scan ID:** R-1d1f370a
+- **Timestamp:** 2026-06-02T15:00:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -229,7 +229,7 @@ bash -n agents/task-create/update-task.sh
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1); echo "$out" | grep -qE "^[0-9]+ passed"`
   2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 28
-     - evidence: `out=$(python3 -c "import sys; sys.path.insert(0,'.'); from lib.reviewer import static_scan as ss; f=ss.detect_l387_sigpipe_risk('bin/fw doctor 2>&1 | grep -q OK\n'); print(len(f), f[0].pattern_id if f`
-
+     - evidence: `out=$(python3 -c "import sys; sys.path.insert(0,'.'); from lib.reviewer import static_scan as ss; f=ss.detect_l387_sigpipe_risk('bin/fw doctor 2>&1 | grep -q OK
+'); print(len(f), f[0].pattern_id if f`
 ### 2026-05-28T12:19:50Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -166,14 +166,20 @@ grep -q "GO\|NO-GO\|DEFER" prompts/prompt-triage.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1733-prompt-triage-v05-spike-a--first-orchest.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f2980e23
-- **Timestamp:** 2026-05-05T07:37:35Z
+- **Scan ID:** R-740b7bc0
+- **Timestamp:** 2026-06-02T14:59:24Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `bin/fw resolver workflows 2>&1 | grep -q "prompt-triage.yaml"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 15
+     - evidence: `{ tail -1 .context/dispatches.jsonl 2>/dev/null || echo '{}'; } | grep -q "prompt-triage"`
 ### 2026-05-05T07:37:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

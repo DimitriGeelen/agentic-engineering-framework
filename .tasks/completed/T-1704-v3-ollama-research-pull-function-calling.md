@@ -166,19 +166,23 @@ v4 inception filed with default-recommendation.
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8b115bf2
-- **Timestamp:** 2026-05-03T20:35:08Z
+- **Scan ID:** R-147a1e24
+- **Timestamp:** 2026-06-02T14:59:13Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#2 (Agent)** — `.context/litellm-config.yaml` adds `claude-3-5-sonnet-hermes3` →
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/litellm-config.yaml in: `.context/litellm-config.yaml` adds `claude-3-5-sonnet-hermes3` →`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf -H "Authorization: Bearer sk-litellm-local-dev" http://localhost:4000/v1/models | grep -q hermes3`
 ### 2026-05-03T20:35:08Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -215,8 +215,8 @@ rm -f /tmp/.fw-version.out /tmp/.fw-version-pt.out
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ab9138ac
-- **Timestamp:** 2026-05-29T14:25:17Z
+- **Scan ID:** R-12aac404
+- **Timestamp:** 2026-06-02T15:01:06Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -225,6 +225,5 @@ rm -f /tmp/.fw-version.out /tmp/.fw-version-pt.out
 - **Layer-1 escalations:** 1
   1. **destructive-action** (high) — Destructive operation in verification or AC
      - matched: `rm -f`
-
 ### 2026-05-29T14:25:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

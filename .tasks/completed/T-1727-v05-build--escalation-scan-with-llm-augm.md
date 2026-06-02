@@ -320,19 +320,25 @@ gate v0.5 completion.
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6f5711c4
-- **Timestamp:** 2026-05-05T16:50:59Z
+- **Scan ID:** R-77b69aec
+- **Timestamp:** 2026-06-02T14:59:21Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 3
 
 **Per-AC findings:**
 
 - **AC#1 (Agent (locked at T-1726 filing — do not modify without ## Evolution entry))** — **A1** New workflow file `prompts/escalation-triage.yaml` (or
   - **AC-verify-mismatch** (narrow, heuristic) — `path=prompts/escalation-triage.yaml in: **A1** New workflow file `prompts/escalation-triage.yaml` (or`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 42
+     - evidence: `bats --formatter pretty tests/unit/escalation_scan_v05.bats 2>&1 | grep -q -E "[0-9]+ tests, 0 failures"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 43
+     - evidence: `bin/fw fabric drift 2>&1 | grep -q -E "unregistered: 0"`
 ### 2026-05-05T16:50:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

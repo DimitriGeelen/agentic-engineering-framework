@@ -72,3 +72,19 @@ date_finished: 2026-04-20T07:18:58Z
 
 ### 2026-04-20T07:18:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5a07e4a2
+- **Timestamp:** 2026-06-02T14:56:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/app.py` `csrf_protect` no longer contains `request.path.startswith("/api/")` exemption
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: `web/app.py` `csrf_protect` no longer contains `request.path.startswith("/api/")` exemption`
+- **AC#2 (Agent)** — `web/templates/base.html` exposes `window.fetchWithCsrf(url, options)` helper that auto-attaches `X-CSRF-Token` to non-GET/HEAD
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/base.html in: `web/templates/base.html` exposes `window.fetchWithCsrf(url, options)` helper that auto-attaches `X-CSRF-Token` to non-GET/HEAD`

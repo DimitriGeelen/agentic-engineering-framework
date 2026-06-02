@@ -89,14 +89,20 @@ Stale-template gotcha noted: Flask's default template cache means a previously-r
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1586-cross-surface-parity-invariant--pin-reco.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f965ab16
-- **Timestamp:** 2026-04-28T16:16:18Z
+- **Scan ID:** R-2fff55e6
+- **Timestamp:** 2026-06-02T14:58:28Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 -m pytest tests/playwright/test_cross_surface_parity.py -q --no-header 2>&1 | tee /tmp/T-1586-pytest.out | grep -qE 'passed|warning'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 ### 2026-04-28T16:16:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

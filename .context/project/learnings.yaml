@@ -3469,3 +3469,10 @@ X'` returning empty group."
   date: 2026-06-02
   context: Added via context agent
   application: TBD
+- id: L-453
+  learning: "fw reviewer exits 1 on FAIL verdict (test-runner semantics) — JSON-capture wrappers must read stdout regardless of exit code, never gate parsing on $?"
+  source: P-001
+  task: T-2176
+  date: 2026-06-02
+  context: Added via context agent
+  application: TBD

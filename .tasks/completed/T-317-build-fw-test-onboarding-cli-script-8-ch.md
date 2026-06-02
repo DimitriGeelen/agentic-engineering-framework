@@ -63,3 +63,19 @@ grep -q "test-onboarding" bin/fw
 
 ### 2026-03-04T21:37:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-61c0038b
+- **Timestamp:** 2026-06-02T15:02:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `agents/onboarding-test/test-onboarding.sh 2>&1 | grep -q "SUMMARY"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `agents/onboarding-test/test-onboarding.sh 2>&1 | grep -q "ONBOARDING CLEAN"`

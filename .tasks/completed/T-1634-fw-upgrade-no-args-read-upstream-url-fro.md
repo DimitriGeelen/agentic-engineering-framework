@@ -97,14 +97,13 @@ grep -q "Bare-from-consumer detected — auto-cloning upstream" lib/upgrade.sh
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0ce5492d
-- **Timestamp:** 2026-05-14T14:10:16Z
+- **Scan ID:** R-54136aae
+- **Timestamp:** 2026-06-02T14:58:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-14T14:10:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

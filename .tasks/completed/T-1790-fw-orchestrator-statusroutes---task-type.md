@@ -102,14 +102,13 @@ python3 -m pytest tests/unit/test_orchestrator_routes.py tests/unit/test_orchest
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** task_type filter symmetric on status + routes
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-081f5847
-- **Timestamp:** 2026-05-11T11:21:38Z
+- **Scan ID:** R-abf4fa7f
+- **Timestamp:** 2026-06-02T14:59:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-11T11:21:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

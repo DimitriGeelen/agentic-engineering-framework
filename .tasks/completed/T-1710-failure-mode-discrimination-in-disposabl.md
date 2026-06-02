@@ -290,14 +290,13 @@ than fabricating a GO/NO-GO with no evidence base.
 - **Change:** horizon: now → later
 - **Change:** status: preserved at started-work (T-1589 shipping evidence)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-05085ed6
-- **Timestamp:** 2026-05-06T13:32:47Z
+- **Scan ID:** R-18a13025
+- **Timestamp:** 2026-06-02T14:59:15Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-06T13:32:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

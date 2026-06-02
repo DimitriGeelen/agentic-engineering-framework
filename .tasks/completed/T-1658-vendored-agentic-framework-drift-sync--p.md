@@ -103,14 +103,13 @@ diff -q lib/hook-telemetry.sh .agentic-framework/lib/hook-telemetry.sh
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d48c2b23
-- **Timestamp:** 2026-05-01T16:48:01Z
+- **Scan ID:** R-36ade7fc
+- **Timestamp:** 2026-06-02T14:58:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T16:48:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

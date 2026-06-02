@@ -180,8 +180,8 @@ Classification rule (from baseline header): action-verb start = mutator_ungated;
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-32a039f1
-- **Timestamp:** 2026-05-28T17:51:45Z
+- **Scan ID:** R-76583b3b
+- **Timestamp:** 2026-06-02T15:01:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -191,6 +191,5 @@ Classification rule (from baseline header): action-verb start = mutator_ungated;
 
 - **AC#1 (Agent)** — `.context/audits/orchestrator-mcp-baseline.yaml` baseline_count updated to 246 (242 from initial + 4 follow-on tools that surfaced on re-run) with 2026-05-28 update comment blocks matching T-1867's st
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/orchestrator-mcp-baseline.yaml in: `.context/audits/orchestrator-mcp-baseline.yaml` baseline_count updated to 246 (242 from initial + 4 follow-on tools that surfaced on re-run) with 202`
-
 ### 2026-05-28T17:51:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

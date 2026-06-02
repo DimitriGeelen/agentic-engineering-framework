@@ -97,14 +97,20 @@ termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/ter
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1590-multi-llm-routing-phase-4b--route-cache-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0c035872
-- **Timestamp:** 2026-04-28T18:57:27Z
+- **Scan ID:** R-78551513
+- **Timestamp:** 2026-06-02T14:58:30Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/termlink-build cargo check -p termlink-hub -p termlink-mcp 2>&1 | tail -1" --json 2>/dev/null | grep -q '"marker_found": tr`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/termlink-build cargo check -p termlink-hub -p termlink-mcp 2>&1 | tail -1" --json 2>/dev/null | grep -q "Finished \`dev\`"`
 ### 2026-04-28T18:57:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

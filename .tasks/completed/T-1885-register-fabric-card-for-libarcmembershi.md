@@ -160,10 +160,10 @@ out=$(bin/fw fabric drift 2>&1); echo "$out" | grep -q "unregistered: 0"
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1885-register-fabric-card-for-libarcmembershi.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b5a53ce1
-- **Timestamp:** 2026-05-17T19:57:26Z
+- **Scan ID:** R-91a29885
+- **Timestamp:** 2026-06-02T15:00:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -173,6 +173,5 @@ out=$(bin/fw fabric drift 2>&1); echo "$out" | grep -q "unregistered: 0"
 
 - **AC#1 (Agent)** — `.fabric/components/lib-arc_membership-sh.yaml` exists with proper `id: lib/arc_membership.sh`, purpose, depended_by edges
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/arc_membership.sh in: `.fabric/components/lib-arc_membership-sh.yaml` exists with proper `id: lib/arc_membership.sh`, purpose, depended_by edges`
-
 ### 2026-05-17T19:57:23Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

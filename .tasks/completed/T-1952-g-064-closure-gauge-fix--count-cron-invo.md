@@ -225,14 +225,18 @@ out=$(python3 tools/g064-readiness.py --json 2>&1); echo "$out" | python3 -c "im
 ### 2026-05-20T10:18:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b1e096f0
-- **Timestamp:** 2026-05-20T10:25:15Z
+- **Scan ID:** R-59f3e74e
+- **Timestamp:** 2026-06-02T15:00:38Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 26
+     - evidence: `python3 -m pytest tests/unit/test_g064_readiness.py -q 2>&1 | tail -3 | grep -q "21 passed"`
 ### 2026-05-20T10:25:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

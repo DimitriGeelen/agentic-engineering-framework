@@ -74,15 +74,19 @@ bats tests/unit/audit_flock.bats
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1464-t-1460-phase-1-follow-on-lift-quiet-only.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-bb98c606
-- **Timestamp:** 2026-04-25T16:13:40Z
+- **Scan ID:** R-a3133ea6
+- **Timestamp:** 2026-06-02T14:57:39Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `! grep -B0 -A1 'flock guard.*cron mode' agents/audit/audit.sh | grep -q 'if \[ "\$QUIET" = true \]'`
 ### 2026-04-25T16:13:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Lifted QUIET-only flock guard; foreground audits now flock-protect with stderr message; watchdog FD detached; .context/locks/ added to session-state filter; 8/8 verify tests pass

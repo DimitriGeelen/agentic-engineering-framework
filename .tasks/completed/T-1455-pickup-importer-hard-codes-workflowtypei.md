@@ -343,15 +343,14 @@ Alternatives considered:
 Out-of-scope follow-up:
 - After constrained Option A lands, watch for any `workflow_type: build` task that turned out to need inception scoping — that's the canary for revisiting Option C/D.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7a83809e
-- **Timestamp:** 2026-04-25T18:02:40Z
+- **Scan ID:** R-83ae4af5
+- **Timestamp:** 2026-06-02T14:57:35Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-25T18:02:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

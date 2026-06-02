@@ -53,3 +53,17 @@ bin/fw doctor 2>&1 | grep -qi "token"
 
 ### 2026-04-12T07:55:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f04b1405
+- **Timestamp:** 2026-06-02T15:04:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw doctor 2>&1 | grep -qi "token"`

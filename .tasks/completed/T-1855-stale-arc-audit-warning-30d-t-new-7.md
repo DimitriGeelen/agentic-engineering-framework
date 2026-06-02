@@ -159,10 +159,10 @@ test "$(bin/fw reviewer T-1855 2>&1 | grep -c 'Overall:.*PASS')" -ge 1
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e2e64e5a
-- **Timestamp:** 2026-05-17T22:22:10Z
+- **Scan ID:** R-3913e7b4
+- **Timestamp:** 2026-06-02T15:00:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

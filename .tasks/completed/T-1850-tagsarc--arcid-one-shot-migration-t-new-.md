@@ -195,15 +195,14 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1a2ac80e
-- **Timestamp:** 2026-05-16T09:28:29Z
+- **Scan ID:** R-8dc3b422
+- **Timestamp:** 2026-06-02T15:00:01Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-16T09:27:46Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** 162 tasks migrated, 2 stale-arc cleared, 2 multi-arc resolved, idempotency verified, 8/8 verification PASS

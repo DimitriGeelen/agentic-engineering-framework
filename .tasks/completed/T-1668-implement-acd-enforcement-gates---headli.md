@@ -125,10 +125,10 @@ CLAUDE.md compressed net-negative (976 → 961). 28/28 arc tests pass.
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1668-implement-acd-enforcement-gates---headli.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c0e87e58
-- **Timestamp:** 2026-05-02T07:18:06Z
+- **Scan ID:** R-66a437d4
+- **Timestamp:** 2026-06-02T14:59:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -138,7 +138,6 @@ CLAUDE.md compressed net-negative (976 → 961). 28/28 arc tests pass.
 
 - **AC#7 (Agent)** — `fw arc close --demo none --justification "..."` logs to `.context/audits/arc-bypass.jsonl` and proceeds
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/arc-bypass.jsonl in: `fw arc close --demo none --justification "..."` logs to `.context/audits/arc-bypass.jsonl` and proceeds`
-
 ### 2026-05-02T07:18:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

@@ -66,3 +66,36 @@ curl -sf http://localhost:3003/inception/T-1106 | grep -q "Recommendation"
 
 ### 2026-04-11T14:41:04Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-26a0e45d
+- **Timestamp:** 2026-06-02T14:55:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 9
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/inception.py` sections dict includes `"structural_upgrade": _md(_extract_section(task_body, "Structural Upgrade"))`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: `web/blueprints/inception.py` sections dict includes `"structural_upgrade": _md(_extract_section(task_body, "Structural Upgrade"))``
+- **AC#2 (Agent)** — `web/templates/inception_detail.html` renders `{% if sections.structural_upgrade %}` block between `recommendation` and `decision`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/inception_detail.html in: `web/templates/inception_detail.html` renders `{% if sections.structural_upgrade %}` block between `recommendation` and `decision``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3003/inception/T-1106 | grep -q "Structural Upgrade"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3003/inception/T-1100 | grep -q "Structural Upgrade"`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `curl -sf http://localhost:3003/inception/T-1101 | grep -q "Structural Upgrade"`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf http://localhost:3003/inception/T-1102 | grep -q "Structural Upgrade"`
+  5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `curl -sf http://localhost:3003/inception/T-1103 | grep -q "Structural Upgrade"`
+  6. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `curl -sf http://localhost:3003/inception/T-1104 | grep -q "Structural Upgrade"`
+  7. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `curl -sf http://localhost:3003/inception/T-1106 | grep -q "Recommendation"`

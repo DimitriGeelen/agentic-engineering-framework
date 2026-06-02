@@ -90,19 +90,23 @@ bin/fw cron list 2>&1 | grep -q escalation-drift-daily
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1555-layer-b-v1--cron-escalation-drift-scanne.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-676fd4f3
-- **Timestamp:** 2026-04-27T16:49:30Z
+- **Scan ID:** R-b1797fee
+- **Timestamp:** 2026-06-02T14:58:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
-- **AC#3 (ACs)** — New entry in `.context/cron-registry.yaml` registers the scanner as a daily job (`escalation-drift-daily`), with clear name/description/origin_task fields.
+- **AC#3 (Agent)** — New entry in `.context/cron-registry.yaml` registers the scanner as a daily job (`escalation-drift-daily`), with clear name/description/origin_task fields.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: New entry in `.context/cron-registry.yaml` registers the scanner as a daily job (`escalation-drift-daily`), with clear name/description/origin_task fi`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `bin/fw cron list 2>&1 | grep -q escalation-drift-daily`
 ### 2026-04-27T16:49:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

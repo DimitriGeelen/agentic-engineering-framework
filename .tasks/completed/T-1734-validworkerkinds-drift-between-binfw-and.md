@@ -154,19 +154,20 @@ source-of-truth.
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1734-validworkerkinds-drift-between-binfw-and.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f5bfb2fa
-- **Timestamp:** 2026-05-05T07:33:51Z
+- **Scan ID:** R-eba6aeac
+- **Timestamp:** 2026-06-02T14:59:24Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
-  1. **skip-as-pass** (severe, deterministic) @ Verification:line 10
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
      - evidence: `bin/fw resolver dispatch T-1733 prompt-triage --dry-run 2>&1 | grep -vq "invalid worker_kind"`
-
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `bin/fw resolver workflows 2>&1 | grep -c "yaml" | grep -q "^6$"`
 ### 2026-05-05T07:33:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

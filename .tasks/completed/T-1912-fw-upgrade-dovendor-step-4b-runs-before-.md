@@ -249,8 +249,8 @@ bats tests/unit/upgrade_fresh_machine_simulation.bats
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-fafc8e3a
-- **Timestamp:** 2026-05-28T15:28:29Z
+- **Scan ID:** R-17550ad3
+- **Timestamp:** 2026-06-02T15:00:25Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -260,6 +260,5 @@ bats tests/unit/upgrade_fresh_machine_simulation.bats
 
 - **AC#6 (Agent)** — Learning entry filed: L-441 — "Half-guards manufacture split-brain instead of clean refusal" (see `fw learnings` or `.context/project/learnings.yaml`)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/learnings.yaml in: Learning entry filed: L-441 — "Half-guards manufacture split-brain instead of clean refusal" (see `fw learnings` or `.context/project/learnings.yaml`)`
-
 ### 2026-05-28T15:28:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

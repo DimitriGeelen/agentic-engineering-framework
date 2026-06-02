@@ -54,3 +54,19 @@ bin/fw upgrade --help 2>&1 | grep -q 'Agent scripts'
 
 ### 2026-04-04T21:57:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5c32497c
+- **Timestamp:** 2026-06-02T15:05:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw upgrade --help 2>&1 | grep -q 'lib/\*.sh'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw upgrade --help 2>&1 | grep -q 'Agent scripts'`

@@ -108,8 +108,8 @@ grep -q "1 passed" /tmp/.t2104b.out
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-14f3b45b
-- **Timestamp:** 2026-05-30T08:32:13Z
+- **Scan ID:** R-522b8138
+- **Timestamp:** 2026-06-02T15:01:07Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -119,6 +119,5 @@ grep -q "1 passed" /tmp/.t2104b.out
 
 - **AC#1 (Agent)** — `tests/playwright/conftest.py` warms up `/approvals`, `/tasks`, `/timeline`, `/inception`, `/bvp` after the `/health` ready check, before `yield proc` — via shared `_warm_slow_routes()` helper used by
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/conftest.py in: `tests/playwright/conftest.py` warms up `/approvals`, `/tasks`, `/timeline`, `/inception`, `/bvp` after the `/health` ready check, before `yield proc``
-
 ### 2026-05-30T08:30:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

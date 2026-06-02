@@ -97,14 +97,13 @@ python3 -m pytest tests/unit/test_termlink_dispatch_tag_format.py -q
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1654-fix-framework-dispatch-tag-drift--agents.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d6dc9b3b
-- **Timestamp:** 2026-05-01T16:38:15Z
+- **Scan ID:** R-5b953fb5
+- **Timestamp:** 2026-06-02T14:58:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T16:38:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

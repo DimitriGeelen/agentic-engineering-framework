@@ -105,14 +105,13 @@ The fix is the symptom mitigation (counters appear), the prevention is the struc
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6876e526
-- **Timestamp:** 2026-05-01T07:20:33Z
+- **Scan ID:** R-80d61191
+- **Timestamp:** 2026-06-02T14:58:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T07:20:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

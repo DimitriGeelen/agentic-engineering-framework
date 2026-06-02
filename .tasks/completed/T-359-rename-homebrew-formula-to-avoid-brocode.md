@@ -72,3 +72,19 @@ grep -q 'agentic-fw/agentic-fw' README.md
 
 ### 2026-03-08T19:56:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-db03cf68
+- **Timestamp:** 2026-06-02T15:02:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Tap repo has `Formula/agentic-fw.rb` with class `AgenticFw`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=Formula/agentic-fw.rb in: Tap repo has `Formula/agentic-fw.rb` with class `AgenticFw``
+- **AC#2 (Agent)** — Old `Formula/fw.rb` deleted from tap repo
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=Formula/fw.rb in: Old `Formula/fw.rb` deleted from tap repo`

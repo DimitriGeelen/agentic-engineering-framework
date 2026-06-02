@@ -58,3 +58,17 @@ grep -q 'project_dir_name\|project_jsonl_dir' agents/context/checkpoint.sh
 
 ### 2026-03-30T14:46:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-73a70e25
+- **Timestamp:** 2026-06-02T15:04:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Unit test verifying project-scoped transcript discovery (tests/unit/checkpoint.bats — 8 tests)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/checkpoint.bats in: Unit test verifying project-scoped transcript discovery (tests/unit/checkpoint.bats — 8 tests)`

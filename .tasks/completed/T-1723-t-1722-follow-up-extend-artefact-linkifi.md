@@ -148,10 +148,10 @@ No new tests needed — coverage is in `tests/unit/test_render_artefact_paths.py
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1723-t-1722-follow-up-extend-artefact-linkifi.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-56bd383d
-- **Timestamp:** 2026-05-04T19:19:52Z
+- **Scan ID:** R-346b42e5
+- **Timestamp:** 2026-06-02T14:59:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

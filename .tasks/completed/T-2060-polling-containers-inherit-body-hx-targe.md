@@ -240,12 +240,11 @@ grep -A1 'hx-trigger="every' web/templates/approvals.html web/templates/review.h
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-069d7ad4
-- **Timestamp:** 2026-05-28T14:07:11Z
+- **Scan ID:** R-1fbf9614
+- **Timestamp:** 2026-06-02T15:00:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-28T14:07:08Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

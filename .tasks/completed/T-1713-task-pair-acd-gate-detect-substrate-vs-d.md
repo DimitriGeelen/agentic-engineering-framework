@@ -317,15 +317,14 @@ parser spike straightforward instead of NLP-heavy.
    becomes evidence that Recommendation-format structural enforcement
    (T-1715) must ship first.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7be036fa
-- **Timestamp:** 2026-05-04T12:04:23Z
+- **Scan ID:** R-d3f33edc
+- **Timestamp:** 2026-06-02T14:59:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-04T12:04:23Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

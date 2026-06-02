@@ -103,14 +103,20 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1587-cross-surface-no-rec-banner-invariant--p.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ee0ad5d2
-- **Timestamp:** 2026-04-28T16:28:10Z
+- **Scan ID:** R-97fd3683
+- **Timestamp:** 2026-06-02T14:58:29Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 -m pytest tests/playwright/test_cross_surface_parity.py -q --no-header 2>&1 | grep -qE '8 passed'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 ### 2026-04-28T16:27:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -180,10 +180,10 @@ python3 -m pytest tests/playwright/test_arcs_detail_arc_id_membership.py::test_a
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b3925eba
-- **Timestamp:** 2026-05-17T21:13:26Z
+- **Scan ID:** R-1c93a6f1
+- **Timestamp:** 2026-06-02T15:00:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

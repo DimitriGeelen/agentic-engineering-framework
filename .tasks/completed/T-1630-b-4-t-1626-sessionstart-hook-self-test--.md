@@ -82,14 +82,13 @@ grep -q "doctor-hook-exercise\|hook-self-test\|T-1630" agents/context/post-compa
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9c245441
-- **Timestamp:** 2026-05-01T08:57:14Z
+- **Scan ID:** R-3ff05eaf
+- **Timestamp:** 2026-06-02T14:58:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T08:57:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

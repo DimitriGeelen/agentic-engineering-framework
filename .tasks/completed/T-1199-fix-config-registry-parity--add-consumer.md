@@ -53,3 +53,17 @@ bats tests/lint/config-registry-parity.bats
 
 ### 2026-04-13T07:25:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-56428a2d
+- **Timestamp:** 2026-06-02T14:55:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — CONSUMER_SCAN_DIRS added to web/blueprints/config.py SETTINGS
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/config.py in: CONSUMER_SCAN_DIRS added to web/blueprints/config.py SETTINGS`

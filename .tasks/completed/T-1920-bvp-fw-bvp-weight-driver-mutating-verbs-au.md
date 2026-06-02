@@ -91,10 +91,10 @@ out=$(bin/fw bvp driver --remove D1 2>&1 || true); echo "$out" | grep -qi "prote
 ### 2026-05-19T07:30:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6fc8db93
-- **Timestamp:** 2026-05-19T07:36:44Z
+- **Scan ID:** R-688f7019
+- **Timestamp:** 2026-06-02T15:00:28Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -106,6 +106,5 @@ out=$(bin/fw bvp driver --remove D1 2>&1 || true); echo "$out" | grep -qi "prote
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/bvp-weight-history.yaml in: `fw bvp weight --set Dn=N --rationale "..."` writes append-only entry to `.context/bvp-weight-history.yaml` with timestamp, who, from-weight, to-weigh`
 - **AC#5 (Agent)** — `fw bvp driver --add "name" --weight N` appends to `free_drivers:` in policy/value-drivers.yaml (proven by smoke test: F1-F5 added then F6 with --drop)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `fw bvp driver --add "name" --weight N` appends to `free_drivers:` in policy/value-drivers.yaml (proven by smoke test: F1-F5 added then F6 with --drop`
-
 ### 2026-05-19T07:36:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

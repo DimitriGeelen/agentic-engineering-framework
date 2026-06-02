@@ -54,3 +54,19 @@ grep -q 'CRONREGEOF' lib/upgrade.sh
 
 ### 2026-03-28T15:37:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5689ebce
+- **Timestamp:** 2026-06-02T15:04:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw upgrade --dry-run` shows "WOULD SEED Cron registry + directory" for projects missing `.context/cron-registry.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: `fw upgrade --dry-run` shows "WOULD SEED Cron registry + directory" for projects missing `.context/cron-registry.yaml``
+- **AC#2 (Agent)** — `fw upgrade` creates `.context/cron/` dir and `.context/cron-registry.yaml` with empty jobs list
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: `fw upgrade` creates `.context/cron/` dir and `.context/cron-registry.yaml` with empty jobs list`

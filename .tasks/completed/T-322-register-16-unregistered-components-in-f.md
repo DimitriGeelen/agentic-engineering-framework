@@ -60,3 +60,17 @@ grep -q "First-run" .fabric/components/lib-first-run.yaml
 
 ### 2026-03-04T22:56:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0b11a8e4
+- **Timestamp:** 2026-06-02T15:02:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `fw fabric drift 2>&1 | grep -q "unregistered: 0"`

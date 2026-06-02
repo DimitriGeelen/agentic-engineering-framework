@@ -77,15 +77,14 @@ bats tests/unit/check_tier0_comment_stripping.bats
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1508-t-1506-build--tier-0-idempotency-sentine.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7fa38c3b
-- **Timestamp:** 2026-04-26T11:44:25Z
+- **Scan ID:** R-90044fe7
+- **Timestamp:** 2026-06-02T14:57:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T11:44:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** layer (b) tier0 sentinel landed (5/5 bats green); layer (a) discovered already complete via T-1479/T-1480/T-1481

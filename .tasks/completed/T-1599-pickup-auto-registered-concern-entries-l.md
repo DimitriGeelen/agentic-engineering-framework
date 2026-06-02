@@ -114,14 +114,13 @@ Scope decision: convert this task to an inception (decide: pre-push block vs pos
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3796024c
-- **Timestamp:** 2026-04-29T22:32:31Z
+- **Scan ID:** R-2fb9830e
+- **Timestamp:** 2026-06-02T14:58:34Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-29T22:32:31Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

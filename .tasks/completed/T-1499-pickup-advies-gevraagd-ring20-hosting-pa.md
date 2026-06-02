@@ -182,10 +182,10 @@ Next steps (this task):
 - **Change:** horizon: next → now (auto-sync)
 - **Reason:** Inception decision in progress
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-05ebef13
-- **Timestamp:** 2026-04-26T17:24:24Z
+- **Scan ID:** R-8e04fe26
+- **Timestamp:** 2026-06-02T14:57:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

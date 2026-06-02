@@ -147,14 +147,13 @@ python3 -m pytest tests/unit/test_resolver_run.py tests/unit/test_spawn.py tests
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1778-fw-resolver-runexplain--surface-terminal.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-35f27b11
-- **Timestamp:** 2026-05-13T21:10:07Z
+- **Scan ID:** R-e476925c
+- **Timestamp:** 2026-06-02T14:59:40Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-13T21:10:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

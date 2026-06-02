@@ -163,14 +163,18 @@ grep -q -i "precision" docs/reports/T-1736-spike-b.md
 ### 2026-05-05T08:03:58Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e1308770
-- **Timestamp:** 2026-05-05T08:14:09Z
+- **Scan ID:** R-5a1583e5
+- **Timestamp:** 2026-06-02T14:59:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 20
+     - evidence: `{ cat .tasks/active/T-1736-spike-b-prompt-triage-classifier-accurac.md .tasks/completed/T-1736-spike-b-prompt-triage-classifier-accurac.md 2>/dev/null || true; } | grep -q "## Recommendation"`
 ### 2026-05-05T08:14:09Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -277,14 +277,18 @@ out=$(bin/fw doctor 2>&1); echo "$out" | head -1 | grep -q "Framework Health Che
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1945-pretooluse-heredoc-in-cmd-sub-guard-hook.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a0130dbf
-- **Timestamp:** 2026-05-20T06:24:25Z
+- **Scan ID:** R-5b9d5ac2
+- **Timestamp:** 2026-06-02T15:00:35Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 30
+     - evidence: `out=$(bin/fw doctor 2>&1); echo "$out" | head -1 | grep -q "Framework Health Check"`
 ### 2026-05-20T06:22:04Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

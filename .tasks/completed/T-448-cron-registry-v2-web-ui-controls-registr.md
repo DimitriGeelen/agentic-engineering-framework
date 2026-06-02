@@ -104,3 +104,19 @@ grep -q "cron/jobs" web/blueprints/cron.py
 
 ### 2026-04-28T16:09:25Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e67d3cc
+- **Timestamp:** 2026-06-02T15:02:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `.context/cron-registry.yaml` exists as structured source of truth — each job has: id, name, schedule, command, source_file, origin_task, status (active/paused), description. `cron.py` reads from regi
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: `.context/cron-registry.yaml` exists as structured source of truth — each job has: id, name, schedule, command, source_file, origin_task, status (acti`
+- **AC#2 (Agent)** — `fw cron generate` command regenerates `/etc/cron.d/agentic-*` files from registry YAML (paused jobs are commented out). Respects T-604 project-scoped naming (`agentic-audit-{project-slug}`).
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: `fw cron generate` command regenerates `/etc/cron.d/agentic-*` files from registry YAML (paused jobs are commented out). Respects T-604 project-scoped`

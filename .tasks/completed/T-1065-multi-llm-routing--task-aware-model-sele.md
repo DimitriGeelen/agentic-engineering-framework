@@ -134,10 +134,10 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
 - **Output:** Recommendation flipped DEFER → GO; Decisions block updated; AC text updated with T-1590 evidence.
 - **Context:** T-1590 shipped exactly the deferred scope (`record_model_*`, `best_model_for`, `ModelCircuitBreaker::resolve_model`, `DEFAULT_MODEL_FALLBACK`) wired into `termlink_dispatch`. 480/0 tests on combined surface. All 7 Agent ACs now satisfied; task awaits Human [REVIEW].
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-34dc1c27
-- **Timestamp:** 2026-05-03T07:42:39Z
+- **Scan ID:** R-14420733
+- **Timestamp:** 2026-06-02T14:54:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -151,7 +151,6 @@ test -f .tasks/completed/T-1590-multi-llm-routing-phase-4b--route-cache-.md
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/src/circuit_breaker.rs in: Fallback chain is `opus → sonnet → haiku` (hard-coded const). Verified 2026-05-02T11:xx via T-1679 grep: `pub const DEFAULT_MODEL_FALLBACK: &[&str] = `
 - **AC#3 (Agent (T-1679 split — mechanical halves of the original routing-design review))** — Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlink/crates/termlink-mcp/src/tools.rs:854` + 3 unit t
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-mcp/src/tools.rs in: Outcome attribution uses task.completed `ok` field — no schema change. Verified 2026-05-02T11:xx via T-1679: `resolve_dispatch_model` at `/opt/termlin`
-
 ### 2026-05-03T07:42:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

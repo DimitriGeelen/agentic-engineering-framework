@@ -63,3 +63,17 @@ curl -sf http://localhost:3000/ | grep -q "href"
 
 ### 2026-04-06T22:29:18Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-89a0e268
+- **Timestamp:** 2026-06-02T15:04:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/ | grep -q "href"`

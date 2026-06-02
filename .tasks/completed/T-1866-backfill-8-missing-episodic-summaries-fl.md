@@ -143,10 +143,10 @@ for tid in T-1845 T-1846 T-1847 T-1858 T-1859 T-1860 T-1861 T-1862; do out=$(pyt
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1866-backfill-8-missing-episodic-summaries-fl.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b3a4080b
-- **Timestamp:** 2026-05-15T20:14:30Z
+- **Scan ID:** R-e126d14d
+- **Timestamp:** 2026-06-02T15:00:08Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -161,6 +161,5 @@ for tid in T-1845 T-1846 T-1847 T-1858 T-1859 T-1860 T-1861 T-1862; do out=$(pyt
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 19
      - evidence: `ls .context/episodic/T-1845.yaml .context/episodic/T-1846.yaml .context/episodic/T-1847.yaml .context/episodic/T-1858.yaml .context/episodic/T-1859.yaml .context/episodic/T-1860.yaml .context/episodic`
-
 ### 2026-05-15T20:14:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

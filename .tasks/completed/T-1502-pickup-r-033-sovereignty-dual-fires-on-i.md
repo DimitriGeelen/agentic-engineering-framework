@@ -187,15 +187,14 @@ The right action is closure + a learning entry, not a code change:
 - Capture L-XXX: "R-033 dual-fire is a misreading — `do_inception_decide` already passes `--skip-sovereignty` to the chained work-completed call. The bypass-log entry is the structural audit record, not noise."
 - Inform 003-NTB-ATC-Plugin via pickup-back: this works as designed; if you're seeing two prompts, your framework is pre-T-1262 — run `fw upgrade`.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-999c5143
-- **Timestamp:** 2026-04-26T13:58:26Z
+- **Scan ID:** R-ead9aa43
+- **Timestamp:** 2026-06-02T14:57:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T13:58:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: NO-GO

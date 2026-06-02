@@ -103,10 +103,10 @@ python3 -c "import json; d=json.load(open('docs/reports/orchestrator-rethink-dem
 ### 2026-05-02T15:13:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-cc0093ca
-- **Timestamp:** 2026-05-02T15:16:51Z
+- **Scan ID:** R-385e3f8e
+- **Timestamp:** 2026-06-02T14:59:06Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -116,6 +116,5 @@ python3 -c "import json; d=json.load(open('docs/reports/orchestrator-rethink-dem
 
 - **AC#1 (Agent)** — `agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE, ended=$finished_at. Skipped silently if `jq` is m
   - **AC-verify-mismatch** (narrow, heuristic) — `path=WDIR/meta.json in: `agents/termlink/termlink.sh` run.sh heredoc updates `$WDIR/meta.json` post-exit using `jq` + atomic mv: status=`done`/`failed`, exit_code=$EXIT_CODE,`
-
 ### 2026-05-02T15:16:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

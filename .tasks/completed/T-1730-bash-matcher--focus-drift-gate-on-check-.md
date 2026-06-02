@@ -182,18 +182,20 @@ beyond pre-existing baseline.
 ### 2026-05-05T06:48:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f8a5cc00
-- **Timestamp:** 2026-05-18T11:22:46Z
+- **Scan ID:** R-2e13a2e9
+- **Timestamp:** 2026-06-02T14:59:23Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `bats tests/unit/focus_drift_gate.bats`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `{ CLAUDECODE=1 echo '{"tool_name":"Bash","tool_input":{"command":"bin/fw task update T-1716 --add-tag drift"}}' | bash agents/context/check-active-task.sh 2>&1 || true; } | grep -qE "FOCUS-DRIFT|focus`
 ### 2026-05-05T07:08:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

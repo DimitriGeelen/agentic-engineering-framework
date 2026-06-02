@@ -59,3 +59,19 @@ test -f docs/reports/T-1262-inception-decide-sovereignty-bug.md
 ### 2026-04-15T17:11:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** All 6 Agent ACs met. 16/16 bats pass. Design note written. Watchtower decide path restored.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f5090edc
+- **Timestamp:** 2026-06-02T14:56:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — web/subprocess_utils.py strips CLAUDECODE from env when running fw commands (defense in depth, lines 50-51)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/subprocess_utils.py in: web/subprocess_utils.py strips CLAUDECODE from env when running fw commands (defense in depth, lines 50-51)`
+- **AC#6 (Agent)** — Existing tests pass: 16/16 bats tests/unit/lib_inception.bats (including new T-1262 test at position 16)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/lib_inception.bats in: Existing tests pass: 16/16 bats tests/unit/lib_inception.bats (including new T-1262 test at position 16)`

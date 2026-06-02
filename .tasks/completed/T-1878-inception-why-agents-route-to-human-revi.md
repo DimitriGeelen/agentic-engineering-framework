@@ -250,15 +250,14 @@ Confidence vs GO criteria:
 - ✅ ≥75% catch on T-1851/T-1857/T-1890/T-1893 (4/4 = 100%)
 - ✅ Reversible (existing reviewer infra; revert template + remove pattern + remove catalogue line)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4e313fed
-- **Timestamp:** 2026-05-18T07:58:43Z
+- **Scan ID:** R-00ce91f6
+- **Timestamp:** 2026-06-02T15:00:13Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-18T07:58:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

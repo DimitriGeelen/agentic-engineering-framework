@@ -136,23 +136,29 @@ test -f .tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1746-t-1745-fix-silent-failure-on-inception-d.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ac936876
-- **Timestamp:** 2026-05-05T13:57:15Z
+- **Scan ID:** R-69f1a241
+- **Timestamp:** 2026-06-02T14:59:28Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** 1
+- **Findings:** 3
 
 **Per-AC findings:**
 
 - **AC#2 (Agent)** — **A2 — RC2 fix:** `web/blueprints/inception.py::_decision_recorded_in_task` strips HTML comments before scanning the `## Decision` body and requires a non-commented canonical decision marker (e.g., `*
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: **A2 — RC2 fix:** `web/blueprints/inception.py::_decision_recorded_in_task` strips HTML comments before scanning the `## Decision` body and requires a`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 16
+     - evidence: `python3 -m pytest tests/web/test_inception_decide_e2e.py -k "t1746" -q 2>&1 | tail -3 | grep -qE "[0-9]+ passed"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 20
+     - evidence: `python3 -m pytest tests/web/test_inception_decide_e2e.py tests/web/test_inception_decide_hardening.py -q 2>&1 | tail -3 | grep -qE "[0-9]+ passed"`
+
 - **Layer-1 escalations:** 1
   1. **destructive-action** (high) — Destructive operation in verification or AC
      - matched: `rm -f`
-
 ### 2026-05-05T13:57:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

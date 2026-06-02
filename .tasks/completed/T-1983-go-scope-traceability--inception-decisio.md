@@ -241,15 +241,14 @@ Root cause of G-066 (T-1442/T-1443 closed work-completed with auto-tick GO unshi
 - **Decision:** GO
 - **Rationale:** Root cause of G-066 (T-1442/T-1443 closed work-completed with auto-tick GO unshipped 26 days). Symptom-level mitigation is shipping the missing halves (T-1950/T-1951). Structural fix: inception Decisions become machine-readable; build children declare unlocks_inception_decision; update-task.sh refuses inception close until every decision has a shipped child or explicit deferred_to link. Preventive (closes the trap at GO time, not 26 days later). Reuses T-1849 arc_id frontmatter pattern. Cost: schema + parser + one refusal check. Pick A from the A/B/C analysis in T-1950 RCA exchange (S-2026-0521-resume).
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-cef34e82
-- **Timestamp:** 2026-05-21T19:29:36Z
+- **Scan ID:** R-1fc93b49
+- **Timestamp:** 2026-06-02T15:00:44Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-21T19:29:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

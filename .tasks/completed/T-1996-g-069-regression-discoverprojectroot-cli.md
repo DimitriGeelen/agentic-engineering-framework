@@ -236,3 +236,22 @@ future lint/grep guard ([[L-420]] candidate); deferred, single instance found.
 ### 2026-05-22T19:37:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2ba3d4c2
+- **Timestamp:** 2026-06-02T15:00:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Confirmed this is a test-harness fix, NOT a source change to `web/shared.py` — the G-069 safety bound works correctly (verified in isolation: `_discover_project_root` returns `None`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: Confirmed this is a test-harness fix, NOT a source change to `web/shared.py` — the G-069 safety bound works correctly (verified in isolation: `_discov`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 -m pytest tests/unit/test_orchestrator_workflow_coverage.py "tests/unit/test_project_root_discovery.py::test_g069_stray_filesystem_root_marker_does_not_capture_framework" -q 2>&1 | tail -1 | g`

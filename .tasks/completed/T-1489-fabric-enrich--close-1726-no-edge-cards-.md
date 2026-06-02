@@ -54,14 +54,13 @@ bin/fw audit > /tmp/fw-audit-T-1489.log 2>&1; grep -q "Fabric: 21/454 cards have
 - **Action:** `fw fabric enrich` processed 454 cards, enriched 17 (9 depends_on + 20 depended_by edges added)
 - **Result:** Audit no-edge count: 26 → 21
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c333fac0
-- **Timestamp:** 2026-04-26T09:25:19Z
+- **Scan ID:** R-d47236ea
+- **Timestamp:** 2026-06-02T14:57:49Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T09:23:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

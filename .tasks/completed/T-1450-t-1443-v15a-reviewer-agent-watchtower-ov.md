@@ -96,19 +96,17 @@ python3 -c "from web.blueprints.reviewer import bp; assert bp.name == 'reviewer'
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1450-t-1443-v15a-reviewer-agent-watchtower-ov.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1fe827a6
-- **Timestamp:** 2026-04-25T13:30:50Z
+- **Scan ID:** R-c83674a9
+- **Timestamp:** 2026-06-02T14:57:34Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 5
+- **Findings:** 4
 
 **Per-AC findings:**
 
-- **AC#1 (Agent)** — `web/blueprints/reviewer.py` exists with a Blueprint named `reviewer` and a route `/reviewer/overrides`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/reviewer.py in: `web/blueprints/reviewer.py` exists with a Blueprint named `reviewer` and a route `/reviewer/overrides``
 - **AC#2 (Agent)** — Blueprint registered in `web/blueprints/__init__.py` `register_blueprints`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/__init__.py in: Blueprint registered in `web/blueprints/__init__.py` `register_blueprints``
 - **AC#3 (Agent)** — `web/templates/reviewer_overrides.html` extends `base.html` and renders a table of active overrides (id, task, pattern, ac, days_remaining, reason, expires_at)
@@ -117,6 +115,5 @@ python3 -c "from web.blueprints.reviewer import bp; assert bp.name == 'reviewer'
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/feedback-stream.yaml in: Page also renders a "Recent feedback events" panel (last 50 events from `.context/working/feedback-stream.yaml`)`
 - **AC#10 (Agent)** — Nav: Govern → Reviewer entry added in `web/shared.py` NAV_GROUPS
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: Nav: Govern → Reviewer entry added in `web/shared.py` NAV_GROUPS`
-
 ### 2026-04-25T13:30:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

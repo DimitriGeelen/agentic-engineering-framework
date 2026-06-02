@@ -170,14 +170,20 @@ governance matters most.
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2708e55d
-- **Timestamp:** 2026-05-05T07:53:27Z
+- **Scan ID:** R-39db2cd7
+- **Timestamp:** 2026-06-02T14:59:26Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `bats tests/unit/focus_drift_gate.bats 2>&1 | tail -3 | grep -qE "ok|tests"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
+     - evidence: `bats tests/unit/human_ac_tick_guard.bats 2>&1 | tail -3 | grep -qE "ok|tests"`
 ### 2026-05-05T07:53:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -60,3 +60,17 @@ fw test-onboarding 2>&1 | grep -q "ONBOARDING CLEAN"
 
 ### 2026-03-04T21:59:08Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4e1623a0
+- **Timestamp:** 2026-06-02T15:02:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `fw test-onboarding 2>&1 | grep -q "ONBOARDING CLEAN"`

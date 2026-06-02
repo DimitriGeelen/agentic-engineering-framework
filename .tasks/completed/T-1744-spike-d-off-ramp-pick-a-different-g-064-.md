@@ -176,15 +176,14 @@ The Spike-arc's architectural finding — 7-8B local ollama models cap at ~75-80
 
 The Spike-arc's architectural finding — 7-8B local ollama models cap at ~75-80% accuracy on prompt classification — is **design-tolerable** for escalation-scan: the workload's purpose is to surface candidate escalations for human review, not to gate user prompts. False positives are cheap (human ignores), false negatives are mitigated by the existing static-scan layer. The 80% ceiling becomes a virtue here: noisy-but-better-than-zero augmentation is exactly what an advisory escalation queue needs.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0dfe62f0
-- **Timestamp:** 2026-05-05T13:50:15Z
+- **Scan ID:** R-48c74fc1
+- **Timestamp:** 2026-06-02T14:59:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-05T13:50:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

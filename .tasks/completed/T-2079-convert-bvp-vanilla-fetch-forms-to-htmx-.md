@@ -217,8 +217,8 @@ CLI/API compatibility preserved: the three endpoints branch on `HX-Request` head
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b790fd0e
-- **Timestamp:** 2026-05-28T20:29:49Z
+- **Scan ID:** R-d6ffa155
+- **Timestamp:** 2026-06-02T15:01:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -228,6 +228,5 @@ CLI/API compatibility preserved: the three endpoints branch on `HX-Request` head
 
 - **AC#5 (Agent)** — `web/blueprints/bvp.py` returns a small HTML fragment (success message) + `HX-Trigger: bvpReload` on 200 when `HX-Request` header is present, and returns plain-text error in body on 4xx so htmx render
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/bvp.py in: `web/blueprints/bvp.py` returns a small HTML fragment (success message) + `HX-Trigger: bvpReload` on 200 when `HX-Request` header is present, and retu`
-
 ### 2026-05-28T20:29:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -71,3 +71,24 @@ curl -sf http://localhost:3000/search | grep -q tag-chip
 
 ### 2026-03-10T22:04:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dd550acf
+- **Timestamp:** 2026-06-02T15:02:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `aggregate_tags()` function in `web/search_utils.py` collects tags from episodic YAML
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/search_utils.py in: `aggregate_tags()` function in `web/search_utils.py` collects tags from episodic YAML`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/search | grep -q tag-cloud`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/search | grep -q tag-chip`

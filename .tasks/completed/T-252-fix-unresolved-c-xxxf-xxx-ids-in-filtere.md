@@ -54,3 +54,19 @@ curl -s "http://localhost:3000/fabric/graph?subsystem=audit" | grep -q "checkpoi
 
 ### 2026-02-22T16:16:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bef684c5
+- **Timestamp:** 2026-06-02T15:01:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -s "http://localhost:3000/fabric/graph?subsystem=audit" | grep -q "learnings-data"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `curl -s "http://localhost:3000/fabric/graph?subsystem=audit" | grep -q "checkpoint"`

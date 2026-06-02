@@ -112,14 +112,18 @@ grep -q "cron drift" agents/audit/audit.sh
 ### 2026-05-06T17:10:09Z — status-update [task-update-agent]
 - **Change:** tags: +audit
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3f4afbda
-- **Timestamp:** 2026-05-06T17:53:47Z
+- **Scan ID:** R-a4756e61
+- **Timestamp:** 2026-06-02T14:59:39Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `{ bin/fw audit --section structure 2>&1 || true; } | grep -qE "^(=== STRUCTURE|=== SUMMARY|Pass:|Fail:)"`
 ### 2026-05-06T17:53:45Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

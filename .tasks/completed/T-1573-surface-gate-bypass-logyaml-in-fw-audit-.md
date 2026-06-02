@@ -92,15 +92,14 @@ gate-bypass log is now read every audit run, with a graduated alert
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1573-surface-gate-bypass-logyaml-in-fw-audit-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-725628a5
-- **Timestamp:** 2026-04-27T21:57:35Z
+- **Scan ID:** R-aba2df4c
+- **Timestamp:** 2026-06-02T14:58:23Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-27T21:57:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** F8 implemented and tested

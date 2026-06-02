@@ -254,10 +254,10 @@ test "$(grep -cE '\$\([^)]*<<' bin/fw)" -eq 0
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1946-extract-binfw1911-worker-kinds-parity-he.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c708a7ff
-- **Timestamp:** 2026-05-20T06:48:58Z
+- **Scan ID:** R-9749e604
+- **Timestamp:** 2026-06-02T15:00:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -267,6 +267,5 @@ test "$(grep -cE '\$\([^)]*<<' bin/fw)" -eq 0
 
 - **AC#2 (Agent)** — `bin/fw doctor` invokes the helper as `python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$FW_LIB_DIR"`; the OK/WARN/FAIL surface output is byte-identical to the pre-extraction form.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=FRAMEWORK_ROOT/lib/worker_kinds_parity.py in: `bin/fw doctor` invokes the helper as `python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$FW_LIB_DIR"`; the OK/WARN/FAIL surface output is byte-id`
-
 ### 2026-05-20T06:46:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

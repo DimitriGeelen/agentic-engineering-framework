@@ -69,3 +69,17 @@ grep -q 'scheduled_tasks.lock' .gitignore
 
 ### 2026-04-11T08:31:27Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-83cb7ff7
+- **Timestamp:** 2026-06-02T14:55:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `.gitignore` has `.claude/scheduled_tasks.lock` entry
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/scheduled_tasks.lock in: `.gitignore` has `.claude/scheduled_tasks.lock` entry`

@@ -86,10 +86,10 @@ bin/fw doctor > /tmp/.t1558-doctor 2>&1 && grep -E "Cron registry" /tmp/.t1558-d
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1558-fw-doctor--bats-cron-registry-flock-pari.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1a761782
-- **Timestamp:** 2026-04-27T18:43:38Z
+- **Scan ID:** R-090cafa2
+- **Timestamp:** 2026-06-02T14:58:17Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -98,6 +98,5 @@ bin/fw doctor > /tmp/.t1558-doctor 2>&1 && grep -E "Cron registry" /tmp/.t1558-d
 - **Layer-1 escalations:** 1
   1. **destructive-action** (high) — Destructive operation in verification or AC
      - matched: `rm -f`
-
 ### 2026-04-27T18:42:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

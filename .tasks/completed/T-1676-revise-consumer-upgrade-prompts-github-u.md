@@ -98,10 +98,10 @@ python3 -c "import yaml; [yaml.safe_load(open(p).read().split('---',2)[1]) for p
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1676-revise-consumer-upgrade-prompts-github-u.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f7c82c8b
-- **Timestamp:** 2026-05-02T10:54:52Z
+- **Scan ID:** R-9ce3d7ba
+- **Timestamp:** 2026-06-02T14:59:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -111,6 +111,5 @@ python3 -c "import yaml; [yaml.safe_load(open(p).read().split('---',2)[1]) for p
 
 - **AC#1 (Agent)** — Both prompts pin upstream to `https://github.com/DimitriGeelen/agentic-engineering-framework.git` and explicitly note OneDev migration. `grep -l "github.com/DimitriGeelen/agentic-engineering-framework
   - **AC-verify-mismatch** (narrow, heuristic) — `path=github.com/DimitriGeelen/agentic-engineering-framework.git in: Both prompts pin upstream to `https://github.com/DimitriGeelen/agentic-engineering-framework.git` and explicitly note OneDev migration. `grep -l "gith`
-
 ### 2026-05-02T10:54:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

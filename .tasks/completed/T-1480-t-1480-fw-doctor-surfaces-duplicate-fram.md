@@ -73,11 +73,10 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/doctor_duplicate_ho
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1480-t-1480-fw-doctor-surfaces-duplicate-fram.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
-<!-- drift-baseline: {"bin/fw": "84a279ff07112cda2d28221f81b707e6ef0bd9c96ebcdb1ca14910761bd5c3ec", "tests/unit/doctor_duplicate_hook_detection.bats": "27de55952536fe50244166f265da4686157bc0fb95276809f600a2e7f7186882"} -->
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7ac01ecd
-- **Timestamp:** 2026-04-25T21:35:46Z
+- **Scan ID:** R-fcd4f19a
+- **Timestamp:** 2026-06-02T14:57:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -92,6 +91,5 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/doctor_duplicate_ho
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/doctor_duplicate_hook_detection.bats`
-
 ### 2026-04-25T21:35:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

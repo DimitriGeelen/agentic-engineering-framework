@@ -238,8 +238,8 @@ rm -rf /tmp/.fake-tasks-T2096 /tmp/.aud-t2096.out
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ff3329c2
-- **Timestamp:** 2026-05-29T13:41:14Z
+- **Scan ID:** R-18c4646a
+- **Timestamp:** 2026-06-02T15:01:05Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -248,6 +248,5 @@ rm -rf /tmp/.fake-tasks-T2096 /tmp/.aud-t2096.out
 - **Layer-1 escalations:** 1
   1. **destructive-action** (high) — Destructive operation in verification or AC
      - matched: `rm -rf`
-
 ### 2026-05-29T13:31:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

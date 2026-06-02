@@ -141,18 +141,20 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); from pause_resolve import res
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1809-pause-re-dispatch-chain--fw-pause-resolv.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f310dedd
-- **Timestamp:** 2026-05-13T18:36:20Z
+- **Scan ID:** R-1bb8c119
+- **Timestamp:** 2026-06-02T14:59:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_pause_resolve.py tests/unit/test_resolver.py tests/unit/test_dispatch_pause.py -q 2>&1 | tail -5`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw pause --help 2>&1 | grep -q "resolve"`
 ### 2026-05-13T17:20:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

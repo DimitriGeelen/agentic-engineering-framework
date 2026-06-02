@@ -80,3 +80,22 @@ fw doctor
 
 ### 2026-03-10T22:28:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c0ee2e9a
+- **Timestamp:** 2026-06-02T15:02:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — lib/compat.sh sourced reliably (no inline fallbacks remain in agents/)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/compat.sh in: lib/compat.sh sourced reliably (no inline fallbacks remain in agents/)`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `! grep -r 'PROJECT_ROOT=.*git.*rev-parse' agents/ --include='*.sh' -l | grep -v 'git/lib/hooks.sh' | grep -q .`

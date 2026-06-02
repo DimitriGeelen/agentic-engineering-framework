@@ -122,10 +122,10 @@ prefix-always pattern.
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1673-fabric-drift-orphan-check-prepends-proje.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-052bd5e5
-- **Timestamp:** 2026-05-02T09:08:45Z
+- **Scan ID:** R-016ef4c9
+- **Timestamp:** 2026-06-02T14:59:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
@@ -139,7 +139,6 @@ prefix-always pattern.
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-repo`
-
 ### 2026-05-02T09:08:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

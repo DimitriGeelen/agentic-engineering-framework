@@ -154,3 +154,12 @@ Evidence:
 - `web/shared.py:22` — FRAMEWORK_ROOT fallback with no discovery.
 - `bin/fw` and `lib/paths.sh` do walk-up-for-`.framework.yaml`. Python was ignored.
 - Termlink's T-1123 verified: cwd in `/opt/termlink/subdir` discovers `/opt/termlink`; cwd in `/tmp` falls back to framework; env still wins.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9b901346
+- **Timestamp:** 2026-06-02T14:56:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

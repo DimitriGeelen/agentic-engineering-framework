@@ -144,10 +144,10 @@ The slice reuses `_arc_require_status` (T-1852 helper, varargs design) — valid
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1db14187
-- **Timestamp:** 2026-05-17T22:22:09Z
+- **Scan ID:** R-5669d766
+- **Timestamp:** 2026-06-02T15:00:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

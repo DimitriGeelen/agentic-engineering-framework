@@ -74,3 +74,22 @@ grep -rn "from __future__ import annotations" web/shared.py web/ask.py web/searc
 
 ### 2026-03-27T17:34:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-64c7f540
+- **Timestamp:** 2026-06-02T15:03:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — All 13 affected web/*.py files + lib/ask.py have `from __future__ import annotations` as first statement after docstring
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/ask.py in: All 13 affected web/*.py files + lib/ask.py have `from __future__ import annotations` as first statement after docstring`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `grep -rn "from __future__ import annotations" web/shared.py web/ask.py web/search.py web/embeddings.py | wc -l | grep -q 4`

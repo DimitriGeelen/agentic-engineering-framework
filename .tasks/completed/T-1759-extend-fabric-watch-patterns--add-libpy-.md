@@ -125,10 +125,10 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -c "import yaml; yaml.safe_
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1759-extend-fabric-watch-patterns--add-libpy-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2ee47666
-- **Timestamp:** 2026-05-06T06:02:22Z
+- **Scan ID:** R-a8032e6b
+- **Timestamp:** 2026-06-02T14:59:33Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -140,6 +140,5 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -c "import yaml; yaml.safe_
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/ask.py in: After adding patterns, drift correctly flags genuinely-missing cards — caught `lib/ask.py` (existed without card) and `tools/escalation-scan-v0.py` (e`
 - **AC#4 (Agent)** — Drift catches a synthetic missing card: confirmed by direct python check — moving `lib-reviewer-audit.yaml` aside surfaced `lib/reviewer/audit.py` in unregistered list; restored, no longer flagged
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/reviewer/audit.py in: Drift catches a synthetic missing card: confirmed by direct python check — moving `lib-reviewer-audit.yaml` aside surfaced `lib/reviewer/audit.py` in `
-
 ### 2026-05-06T06:02:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

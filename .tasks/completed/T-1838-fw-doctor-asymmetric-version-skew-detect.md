@@ -176,14 +176,13 @@ grep -q "AHEAD of framework\|is AHEAD" bin/fw
 - Live verification: `bin/fw doctor` against this anchor now prints the asymmetric warning for all 12 ahead-of-framework consumers (transcript captured in Update entry above)
 - No source files outside `bin/fw` touched; no behavioural change for consumer-behind or version-match cases
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4ed00ffd
-- **Timestamp:** 2026-05-14T21:51:03Z
+- **Scan ID:** R-b3a6634a
+- **Timestamp:** 2026-06-02T14:59:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-14T21:51:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

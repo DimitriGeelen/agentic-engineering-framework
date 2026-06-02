@@ -127,14 +127,13 @@ bash -n lib/review.sh
 ### 2026-05-01T19:14:51Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-293407ac
-- **Timestamp:** 2026-05-01T19:17:09Z
+- **Scan ID:** R-6bfd9743
+- **Timestamp:** 2026-06-02T14:58:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T19:17:07Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -67,3 +67,21 @@ grep -q "mcp" lib/init.sh
 
 ### 2026-04-06T22:29:19Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-905016da
+- **Timestamp:** 2026-06-02T15:04:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Upstream copy in `.agentic-framework/lib/init.sh` also updated
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agentic-framework/lib/init.sh in: Upstream copy in `.agentic-framework/lib/init.sh` also updated`
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `Consumer project`

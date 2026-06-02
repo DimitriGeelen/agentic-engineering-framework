@@ -80,3 +80,12 @@ test -f docs/articles/deep-dives/18-blast-radius.md
 
 ### 2026-03-27T17:34:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-90365313
+- **Timestamp:** 2026-06-02T15:03:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

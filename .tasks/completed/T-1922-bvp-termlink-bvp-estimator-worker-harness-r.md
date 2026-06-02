@@ -202,10 +202,10 @@ harmless when it doesn't.
 ### 2026-05-19T17:47:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0a529159
-- **Timestamp:** 2026-05-21T07:20:24Z
+- **Scan ID:** R-6eeef535
+- **Timestamp:** 2026-06-02T15:00:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

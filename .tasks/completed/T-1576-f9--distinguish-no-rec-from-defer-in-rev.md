@@ -92,13 +92,18 @@ bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1576-f9--distinguish-no-rec-from-defer-in-rev.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e879b198
-- **Timestamp:** 2026-04-28T20:15:03Z
+- **Scan ID:** R-4daac892
+- **Timestamp:** 2026-06-02T14:58:24Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `bin/fw review-queue 2>&1 | grep -qE 'NO-REC' && echo "NO-REC rendered" || echo "NO-REC missing"`
 ### 2026-04-28T09:26:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

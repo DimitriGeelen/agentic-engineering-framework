@@ -77,3 +77,17 @@ date_finished: 2026-03-29T14:22:48Z
 
 ### 2026-03-29T14:22:48Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e7409ebe
+- **Timestamp:** 2026-06-02T15:04:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `check-tier0.sh` sources `lib/notify.sh` and calls `fw_notify` on Tier 0 block (already wired by T-709)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/notify.sh in: `check-tier0.sh` sources `lib/notify.sh` and calls `fw_notify` on Tier 0 block (already wired by T-709)`

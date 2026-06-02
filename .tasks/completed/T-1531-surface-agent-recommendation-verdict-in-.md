@@ -78,10 +78,10 @@ test $(grep -cE 'data-verdict="GO"' /tmp/T-1531-approvals.html) -ge 5
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1531-surface-agent-recommendation-verdict-in-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-972e758f
-- **Timestamp:** 2026-04-28T20:13:40Z
+- **Scan ID:** R-e5a5e0aa
+- **Timestamp:** 2026-06-02T14:58:07Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

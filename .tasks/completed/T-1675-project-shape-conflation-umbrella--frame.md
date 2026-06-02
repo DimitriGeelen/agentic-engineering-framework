@@ -334,10 +334,10 @@ Promotion criteria for revisiting:
 - If Lever 1 + Lever 2 ship AND a consumer reports an upgrade failure
   not caught locally → Lever 3 promotes to `now`.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-838ca294
-- **Timestamp:** 2026-05-02T10:21:20Z
+- **Scan ID:** R-08a496fd
+- **Timestamp:** 2026-06-02T14:59:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -347,7 +347,6 @@ Promotion criteria for revisiting:
 
 - **AC#4 (Agent)** — Umbrella concern G-063 registered in `.context/project/concerns.yaml` linking constituent tasks
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: Umbrella concern G-063 registered in `.context/project/concerns.yaml` linking constituent tasks`
-
 ### 2026-05-02T10:21:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

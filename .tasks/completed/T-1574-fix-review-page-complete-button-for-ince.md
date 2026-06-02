@@ -91,14 +91,22 @@ curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -qv 'class="complete-bt
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1574-fix-review-page-complete-button-for-ince.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dc1f42af
-- **Timestamp:** 2026-04-28T15:11:15Z
+- **Scan ID:** R-9066e091
+- **Timestamp:** 2026-06-02T14:58:24Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 3
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'inception-decide-form'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565/acs" | grep -q 'inception-decide-form'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -qv 'class="complete-btn"'`
 ### 2026-04-28T15:11:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

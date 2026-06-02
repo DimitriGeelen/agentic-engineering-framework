@@ -55,3 +55,24 @@ grep -c '_fw_cmd\|_fw=' agents/context/block-task-tools.sh | grep -q '[1-9]'
 
 ### 2026-04-12T21:09:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-abf2253c
+- **Timestamp:** 2026-06-02T14:55:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `block-task-tools.sh` sources `lib/paths.sh` and uses `_fw_cmd` instead of hardcoded `bin/fw`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/paths.sh in: `block-task-tools.sh` sources `lib/paths.sh` and uses `_fw_cmd` instead of hardcoded `bin/fw``
+- **AC#3 (Agent)** — Vendored copy synced to `.agentic-framework/agents/context/block-task-tools.sh`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agentic-framework/agents/context/block-task-tools.sh in: Vendored copy synced to `.agentic-framework/agents/context/block-task-tools.sh``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `grep -c '_fw_cmd\|_fw=' agents/context/block-task-tools.sh | grep -q '[1-9]'`

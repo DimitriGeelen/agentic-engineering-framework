@@ -103,15 +103,19 @@ correctly hidden.
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1570-stop-dropping-started-work-inceptions-wi.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9f0cde47
-- **Timestamp:** 2026-04-27T21:37:43Z
+- **Scan ID:** R-16ba1c8b
+- **Timestamp:** 2026-06-02T14:58:22Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bash -c 'PORT=$(bin/fw watchtower port 2>/dev/null || echo 3000); curl -s "http://localhost:$PORT/approvals" | grep -q "No agent recommendation written yet" && echo fallback-rendered'`
 ### 2026-04-27T21:37:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** F4 implemented and verified live

@@ -75,10 +75,10 @@ Fix: walk the vendored tree (`.agentic-framework/`) itself instead of a curated 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1521-extend-fw-doctor-vendor-drift-glob-to-co.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-01eb16eb
-- **Timestamp:** 2026-04-26T21:45:35Z
+- **Scan ID:** R-892ab69a
+- **Timestamp:** 2026-06-02T14:58:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -86,8 +86,7 @@ Fix: walk the vendored tree (`.agentic-framework/`) itself instead of a curated 
 
 **Per-AC findings:**
 
-- **AC#1 (ACs)** — `fw doctor` after dirtying `agents/handover/handover.sh` reports vendor-drift WARN with that file listed
+- **AC#1 (Agent)** — `fw doctor` after dirtying `agents/handover/handover.sh` reports vendor-drift WARN with that file listed
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/handover/handover.sh in: `fw doctor` after dirtying `agents/handover/handover.sh` reports vendor-drift WARN with that file listed`
-
 ### 2026-04-26T21:45:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

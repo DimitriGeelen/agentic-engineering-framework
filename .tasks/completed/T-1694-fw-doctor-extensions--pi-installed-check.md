@@ -116,19 +116,20 @@ test -d .context/project/workflows && bin/fw doctor 2>&1 | grep -qE "(workflow|p
 ### 2026-05-03T07:59:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6412da39
-- **Timestamp:** 2026-05-03T08:07:54Z
+- **Scan ID:** R-6ff00e9d
+- **Timestamp:** 2026-06-02T15:10:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** FAIL
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
   1. **swallowed-errors** (severe, deterministic) @ Verification:line 10
      - evidence: `test -d .context/project/workflows && bin/fw doctor 2>&1 | grep -qE "(workflow|pi)" || true`
-
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `test -d .context/project/workflows && bin/fw doctor 2>&1 | grep -qE "(workflow|pi)" || true`
 ### 2026-05-03T08:07:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

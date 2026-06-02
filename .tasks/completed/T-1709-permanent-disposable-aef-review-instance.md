@@ -187,15 +187,14 @@ Risk acknowledged:
 - Drift between policy files and reviewer behaviour. Mitigation: existing `fw reviewer audit` Pass A/B daily already covers this surface.
 - Two more `/opt/ttt-` directories to maintain. Acceptable cost — neither is git-tracked, both are shred-and-reinit, drift is bounded.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-147d3782
-- **Timestamp:** 2026-05-04T07:12:24Z
+- **Scan ID:** R-e2d11214
+- **Timestamp:** 2026-06-02T14:59:14Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-04T07:12:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

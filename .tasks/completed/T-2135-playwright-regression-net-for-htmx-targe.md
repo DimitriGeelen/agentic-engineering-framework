@@ -239,8 +239,8 @@ out=$(grep -E "T-(2112|2113|2114|2134|L-450)" tests/playwright/test_review_htmx_
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-827b3d0f
-- **Timestamp:** 2026-05-31T08:27:22Z
+- **Scan ID:** R-8fa29aff
+- **Timestamp:** 2026-06-02T15:01:17Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -250,6 +250,5 @@ out=$(grep -E "T-(2112|2113|2114|2134|L-450)" tests/playwright/test_review_htmx_
 
 - **AC#4 (Agent)** — Test fails predictably if a regression is introduced — verified by temporarily removing the `hx-target="this"` line in `web/templates/_review_acs.html`, running the test (expect FAIL), then restoring 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/_review_acs.html in: Test fails predictably if a regression is introduced — verified by temporarily removing the `hx-target="this"` line in `web/templates/_review_acs.html`
-
 ### 2026-05-31T08:26:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

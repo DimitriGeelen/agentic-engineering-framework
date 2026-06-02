@@ -56,3 +56,26 @@ bats tests/integration/ tests/unit/
 
 ### 2026-03-12T21:48:18Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-72f459b6
+- **Timestamp:** 2026-06-02T15:03:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — context_focus.bats: lib/tasks.sh + lib/compat.sh sourced for find_task_file/get_task_name/_sed_i
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/tasks.sh in: context_focus.bats: lib/tasks.sh + lib/compat.sh sourced for find_task_file/get_task_name/_sed_i`
+- **AC#5 (Agent)** — healing_suggest.bats: lib/yaml.sh sourced for get_yaml_field
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/yaml.sh in: healing_suggest.bats: lib/yaml.sh sourced for get_yaml_field`
+- **AC#6 (Agent)** — git_common.bats: lib/tasks.sh sourced, quote-stripping assertion fixed
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/tasks.sh in: git_common.bats: lib/tasks.sh sourced, quote-stripping assertion fixed`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/integration/ tests/unit/`

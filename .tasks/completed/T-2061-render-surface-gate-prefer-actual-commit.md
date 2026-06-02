@@ -179,12 +179,12 @@ out=$(bash -c 'source lib/render_surface.sh; task_touches_render_surface .tasks/
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-10b5014f
-- **Timestamp:** 2026-05-28T11:50:03Z
+- **Scan ID:** R-24ee8fe0
+- **Timestamp:** 2026-06-02T15:00:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 3
 
 **Per-AC findings:**
 
@@ -195,6 +195,7 @@ out=$(bash -c 'source lib/render_surface.sh; task_touches_render_surface .tasks/
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `out=$(bats tests/unit/test_render_surface_gate.bats 2>&1); echo "$out" | tail -1 | grep -qE "^ok 15"`
-
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 27
+     - evidence: `out=$(bats tests/unit/test_render_surface_gate.bats 2>&1); echo "$out" | tail -1 | grep -qE "^ok 15"`
 ### 2026-05-28T11:49:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

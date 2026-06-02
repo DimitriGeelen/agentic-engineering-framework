@@ -62,3 +62,17 @@ bats tests/integration/fw_cron.bats
 
 ### 2026-04-23T17:02:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9e21cd6d
+- **Timestamp:** 2026-06-02T14:57:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `_match_job_to_output()` returns last-run for `liveness-1m` from `.context/monitors/liveness-latest.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/monitors/liveness-latest.yaml in: `_match_job_to_output()` returns last-run for `liveness-1m` from `.context/monitors/liveness-latest.yaml``

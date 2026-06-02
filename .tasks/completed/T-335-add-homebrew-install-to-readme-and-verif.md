@@ -59,3 +59,16 @@ grep -q "curl -fsSL" README.md
 
 ### 2026-03-06T22:14:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-96341a34
+- **Timestamp:** 2026-06-02T15:02:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **external-publish** (high) — External publish or release
+     - matched: `brew tap`

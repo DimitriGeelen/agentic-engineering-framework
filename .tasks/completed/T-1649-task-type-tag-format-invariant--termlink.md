@@ -82,24 +82,29 @@ curl -sf -o /dev/null -w "%{http_code}\n" http://localhost:3000/orchestrator | g
 - **Context:** Continuing orchestrator-arc work (Arc C drift defenses) per autonomous-mode directive.
 - **Scope change:** Split into framework-side lint (this task) + cross-repo proposal (TermLink push to termlink-agent for /opt/termlink spawn validator).
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e775c3dd
-- **Timestamp:** 2026-05-01T12:56:47Z
+- **Scan ID:** R-abf3452f
+- **Timestamp:** 2026-06-02T14:58:52Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#5 (Agent)** — `web/templates/orchestrator.html` renders the new finding category in the drift panel
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/orchestrator.html in: `web/templates/orchestrator.html` renders the new finding category in the drift panel`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `curl -sf -o /dev/null -w "%{http_code}
+" http://localhost:3000/orchestrator | grep -q 200`
+
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-repo`
-
 ### 2026-05-01T12:56:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

@@ -151,14 +151,13 @@ test "$(bin/fw fabric drift 2>&1 | grep -c 'unregistered: 0, orphaned: 0')" -ge 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1892-fabric-enrichment-sweep--auto-resolve-47.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7d845e85
-- **Timestamp:** 2026-05-18T06:44:43Z
+- **Scan ID:** R-046edd59
+- **Timestamp:** 2026-06-02T15:00:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-18T06:44:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

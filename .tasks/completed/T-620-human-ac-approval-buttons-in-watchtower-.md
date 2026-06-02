@@ -70,3 +70,17 @@ curl -sf http://localhost:8050/tasks/T-614 | grep -q 'hx-post="/api/task/T-614/t
 
 ### 2026-03-26T12:30:46Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a60edd7c
+- **Timestamp:** 2026-06-02T15:03:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:8050/tasks/T-614 | grep -q 'hx-post="/api/task/T-614/toggle-ac"'`

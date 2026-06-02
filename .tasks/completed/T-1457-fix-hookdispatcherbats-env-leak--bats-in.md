@@ -70,10 +70,10 @@ date_finished: 2026-04-25T12:28:56Z
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1457-fix-hookdispatcherbats-env-leak--bats-in.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3ce1dc8f
-- **Timestamp:** 2026-04-25T12:28:56Z
+- **Scan ID:** R-4c729118
+- **Timestamp:** 2026-06-02T14:57:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -83,6 +83,5 @@ date_finished: 2026-04-25T12:28:56Z
 
 - **AC#1 (Agent)** — `tests/unit/hook_dispatcher.bats` setup() exports `PROJECT_ROOT="$TEST_PROJECT"` so the dispatcher writes to the test's `.context/working/.hook-crashes.log`, not the framework's
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/hook_dispatcher.bats in: `tests/unit/hook_dispatcher.bats` setup() exports `PROJECT_ROOT="$TEST_PROJECT"` so the dispatcher writes to the test's `.context/working/.hook-crashe`
-
 ### 2026-04-25T12:28:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

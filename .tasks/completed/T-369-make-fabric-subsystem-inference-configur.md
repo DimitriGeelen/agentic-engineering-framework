@@ -58,3 +58,17 @@ bash -n agents/fabric/lib/register.sh
 
 ### 2026-03-08T22:57:07Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7b5f4d3e
+- **Timestamp:** 2026-06-02T15:02:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — register.sh checks .fabric/subsystem-rules.yaml BEFORE hardcoded case statements
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/subsystem-rules.yaml in: register.sh checks .fabric/subsystem-rules.yaml BEFORE hardcoded case statements`

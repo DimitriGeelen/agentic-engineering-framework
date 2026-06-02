@@ -118,14 +118,14 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a54e3068
-- **Timestamp:** 2026-05-03T07:42:02Z
+- **Scan ID:** R-1a192038
+- **Timestamp:** 2026-06-02T14:54:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 3
 
 **Per-AC findings:**
 
@@ -134,6 +134,10 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - **AC#2 (Agent (T-1679 split — mechanical halves of the original Routing design review))** — Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.rs:3350`. Verified 2026-05-02T11:xx via T-1679: 1 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-hub/src/router.rs in: Backward-compatibility test exists and passes: `orchestrator_route_no_task_type_backward_compatible` at `/opt/termlink/crates/termlink-hub/src/router.`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/termlink-build cargo check -p termlink-hub --quiet 2>&1 | tail -1" --json 2>/dev/null | grep -q '"exit_code":0' || e`
 ### 2026-05-03T07:42:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

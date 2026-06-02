@@ -241,3 +241,19 @@ reference the stable repo path rather than the mutable module global. The broade
 ### 2026-05-22T19:45:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b6ac75f6
+- **Timestamp:** 2026-06-02T15:00:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_arcs_routes.py "tests/unit/test_file_route_extensions.py::test_route_serves_md_file" -q 2>&1 | tail -1 | grep -qE "passed" && ! (python3 -m pytest tests/unit/test_arc`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 -m pytest tests/unit/test_arcs_routes.py "tests/unit/test_file_route_extensions.py::test_route_serves_md_file" -q 2>&1 | tail -1 | grep -qE "passed" && ! (python3 -m pytest tests/unit/test_arc`

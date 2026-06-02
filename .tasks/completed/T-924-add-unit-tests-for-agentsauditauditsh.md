@@ -75,3 +75,17 @@ Audit agent (3274 lines) has no unit tests. Testing help, sections, output forma
 
 ### 2026-04-05T16:11:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c40c38f5
+- **Timestamp:** 2026-06-02T15:05:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Test file exists at tests/unit/audit.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/audit.bats in: Test file exists at tests/unit/audit.bats`

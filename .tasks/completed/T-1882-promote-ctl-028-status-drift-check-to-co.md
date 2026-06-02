@@ -158,14 +158,13 @@ No new audit warnings/failures introduced on the live tree (verified: `bin/fw au
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1882-promote-ctl-028-status-drift-check-to-co.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ca3b8572
-- **Timestamp:** 2026-05-17T18:35:08Z
+- **Scan ID:** R-cfd841f1
+- **Timestamp:** 2026-06-02T15:00:15Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-17T18:33:03Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

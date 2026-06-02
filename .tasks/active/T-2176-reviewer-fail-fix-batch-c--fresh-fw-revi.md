@@ -11,7 +11,7 @@ description: >
   differs). After Fix C, grep-l on Overall:.*FAIL in completed/ matches the audit's
   count exactly.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -23,7 +23,7 @@ related_tasks: [T-2173, T-2174, T-2175, T-1443, T-1951]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T08:41:56Z
-last_update: 2026-06-02T14:36:48Z
+last_update: 2026-06-02T14:52:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,12 +82,12 @@ This task closes the cache gap structurally:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Fresh per-task verdict written for every task in `.tasks/completed/`. Verification: `n_scanned=$(grep -l "Scan ID:" .tasks/completed/T-*.md | wc -l); test "$n_scanned" -ge 1900` (allow ~50 task slack for any that the reviewer skips legitimately — e.g. tasks with no body / fragments).
-- [ ] Verdict cache matches today's audit count. Verification: `n_fail=$(grep -l "Overall:.*FAIL" .tasks/completed/T-*.md | wc -l); audit_fail=$(python3 -c "import yaml; print(yaml.safe_load(open('.context/audits/reviewer/2026-06-02.yaml'))['totals']['FAIL'])"); test "$n_fail" -ge "$audit_fail"` (or `==` if scan-day timing aligns).
-- [ ] The 12 previously-uncached FAILs are mapped to T-2173 clusters or surface as a new cluster. Output: `docs/reports/T-2176-cache-gap-resolution.md` lists each newly-surfaced FAIL with its pattern fingerprint.
-- [ ] If a new cluster surfaces (not in T-2173's 1-6), file Fix D as captured + horizon: later sibling — same shape as Fix A/B.
-- [ ] Single commit per batch of N tasks (suggest N=50 or per-cluster) — keeps diff reviewable. Each commit message references this task ID.
-- [ ] No edits to AC / Verification / Decisions sections during the scan write-back (verdict block only). Verification: spot-check 5 tasks pre/post — `git diff` should show only `## Reviewer Verdict` block changes.
+- [x] Fresh per-task verdict written for every task in `.tasks/completed/`. Verification: `n_scanned=$(grep -l "Scan ID:" .tasks/completed/T-*.md | wc -l); test "$n_scanned" -ge 1900` (allow ~50 task slack for any that the reviewer skips legitimately — e.g. tasks with no body / fragments).
+- [x] Verdict cache matches today's audit count. Verification: `n_fail=$(grep -l "Overall:.*FAIL" .tasks/completed/T-*.md | wc -l); audit_fail=$(python3 -c "import yaml; print(yaml.safe_load(open('.context/audits/reviewer/2026-06-02.yaml'))['totals']['FAIL'])"); test "$n_fail" -ge "$audit_fail"` (or `==` if scan-day timing aligns).
+- [x] The 12 previously-uncached FAILs are mapped to T-2173 clusters or surface as a new cluster. Output: `docs/reports/T-2176-cache-gap-resolution.md` lists each newly-surfaced FAIL with its pattern fingerprint.
+- [x] If a new cluster surfaces (not in T-2173's 1-6), file Fix D as captured + horizon: later sibling — same shape as Fix A/B.
+- [x] Single commit per batch of N tasks (suggest N=50 or per-cluster) — keeps diff reviewable. Each commit message references this task ID.
+- [x] No edits to AC / Verification / Decisions sections during the scan write-back (verdict block only). Verification: spot-check 5 tasks pre/post — `git diff` should show only `## Reviewer Verdict` block changes.
 
 ### Human
 - [ ] [REVIEW] The newly-surfaced FAILs (the 12) are routed to the correct cluster, not lumped into a catch-all.
@@ -131,6 +131,12 @@ This task closes the cache gap structurally:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-2176 verification (capture-then-grep per L-387):
+n_scanned=$(grep -l "Scan ID:" .tasks/completed/T-*.md | wc -l); test "$n_scanned" -ge 1900
+n_fail=$(grep -l "^- \*\*Overall:\*\* FAIL$" .tasks/completed/T-*.md | wc -l); audit_fail=$(python3 -c "import yaml; print(yaml.safe_load(open('.context/audits/reviewer/2026-06-02.yaml'))['totals']['FAIL'])"); test "$n_fail" -eq "$audit_fail"
+test -s docs/reports/T-2176-cache-gap-resolution.md && grep -q "tautology" docs/reports/T-2176-cache-gap-resolution.md
+ls .tasks/active/T-2179-* >/dev/null 2>&1 && grep -q "^horizon: later$" .tasks/active/T-2179-*
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -146,6 +152,17 @@ This task closes the cache gap structurally:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Audit said FAIL=31, but `grep -l "Overall:.*FAIL"` on completed/ matched only 19 (later precise grep: 20). 12-task delta — undiagnosable without a fresh per-task scan because the cached `## Reviewer Verdict` blocks pre-dated the v1.3-seed catalogue growth.
+
+**Root cause:** Reviewer-verdict cache (per-task `## Reviewer Verdict` block) is **lazy** — it's only updated when `fw reviewer T-XXX` is run on that task. The daily audit cron (`fw reviewer audit`) re-runs static-scan over the whole corpus and tallies fresh — but does NOT write back per-task. So the audit's tally and the cached blocks drift apart silently. Compound with detector catalogue evolution (v1.0 → v1.3-seed) and the cache becomes a stale fossil.
+
+**Why structurally allowed:** No gate compares audit totals against `grep -l "Overall:.*FAIL"` cache. The audit YAML is the source of truth for "today"; the cache is the source of truth for "last per-task run". Two truths, no reconciliation gate.
+
+**Prevention:** Three legs:
+1. **This task (T-2176) is the one-shot reconciler** — fresh scan, write-back to every completed task. After this, the cache reflects v1.3-seed reality.
+2. **Going forward — bug class identified:** `bin/fw reviewer T-XXX --no-write --json` exits 1 when verdict is FAIL (test-runner semantics). My initial Pass A wrapper used `if json=$(...)` which treats exit 1 as command failure, masking 14 FAILs as ERROR. Filed as L-453 to learnings (capture-then-parse, never gate JSON capture on exit code).
+3. **Could close the loop:** an audit-side detector "drift between audit totals and cached verdict-block totals" would auto-flag the next cache-vs-audit gap. Deferred — not filed yet; T-2176 closure is sufficient to clear today's gap.
 
 ## Evolution
 
@@ -171,6 +188,24 @@ This task closes the cache gap structurally:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-02 — Exit-code-1-as-error masked 14 FAILs
+
+- **What changed:** Pass A wrapper script (`tools/t2176-corpus-rescan.sh`) used `if json=$(bin/fw reviewer "$tid" --no-write --json 2>/dev/null); then ...` and the reviewer exits 1 on FAIL (test-runner semantics). 14 tasks scanned in Pass A returned exit 1 (genuine FAILs) and were silently bucketed as ERROR. Summary showed `FAIL=0 ERR=14` — wildly inconsistent with the audit's `FAIL=31`. Re-running each ERROR individually returned FAIL with full findings.
+- **Plan impact:** Pass A's verdict counts were unreliable; had to do a second per-task pass to extract real verdicts. The write-back (Pass B) was already conditioned on `verdict != ERROR`, so 14 tasks didn't get fresh verdict blocks. Manual write-back patched the gap.
+- **Triggered:** L-453 learning ("reviewer JSON capture must be exit-code-tolerant — FAIL is exit 1, valid result"). Tooling note added to `tools/t2176-corpus-rescan.sh`.
+
+### 2026-06-02 — Audit was stale, not the cache
+
+- **What changed:** The premise — "audit count == truth; cache must match" — inverted under analysis. Audit ran at 08:33 UTC against v1.3-seed catalogue. T-2177 detector tightening landed at 13:05 CEST and cleared 21 of 23 `skip-as-pass` fires. Cached verdicts (post-Pass-B writeback) became the LIVE truth; audit needed re-run. Re-running `fw reviewer audit` produced fresh FAIL=14, aligning all three measures.
+- **Plan impact:** AC#2 wording ("test n_fail -ge audit_fail") was correct in spirit but predicated on audit-as-baseline. Replaced with `test -eq` after refreshing the audit YAML.
+- **Triggered:** Already covered — [[feedback_cached_verdict_text_blind_spot]] memory pointer reinforces "re-run the detector AND inspect each finding before recommending a CLASS"; this turn extended that to "re-run the audit too, don't trust morning snapshots when catalogue drift is suspected".
+
+### 2026-06-02 — tautology surfaced as cluster 7
+
+- **What changed:** Of 14 fresh FAILs, 3 trip the `tautology` detector (T-123, T-445, T-876) — a pattern NOT in T-2173's Clusters 1-6. Filed Fix D as T-2179 horizon:later sibling. The remaining 11 fall into existing Clusters 1+2+4+5+6 (skip-as-pass × 3, swallowed-errors × 8, with mixed secondary patterns).
+- **Plan impact:** T-2173's "Clusters 1-6" was not exhaustive — cluster 7 surfaced empirically. Future fix-track planning should treat the cluster taxonomy as open-ended.
+- **Triggered:** T-2179 filed (Reviewer FAIL fix batch D — tautology cluster, 3 tasks).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -192,6 +227,26 @@ This task closes the cache gap structurally:
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs satisfied. Fresh per-task verdicts written to 1954 completed tasks (up from 547 cached); audit re-run aligns at FAIL=14; the 14 fresh FAILs are mapped — 11 to T-2173 Clusters 1+2+4+5+6, 3 to a new tautology cluster (Fix D filed as T-2179 horizon:later). The 17-task delta between morning audit (FAIL=31) and afternoon audit (FAIL=14) is explained: T-2177's `skip-as-pass` quoted-context + same-line-assertion suppressions cleared 21 of 23 detector fires (audit shows `skip-as-pass: 23 → 2`). The fix-track is on solid empirical footing.
+
+**Evidence:**
+- **Scan coverage:** `grep -l "Scan ID:" .tasks/completed/T-*.md | wc -l` → 1954 (≥ 1900 AC threshold). All completed tasks scanned with v1.3-seed catalogue post-T-2177.
+- **Cache↔audit alignment:** `grep -l "^- \*\*Overall:\*\* FAIL$" .tasks/completed/T-*.md | wc -l` → 14, matches `fw reviewer audit` totals.FAIL → 14 (refreshed 2026-06-02T15:13Z).
+- **Cluster routing:** `docs/reports/T-2176-cache-gap-resolution.md` lists each of the 14 FAILs with its pattern fingerprint and cluster assignment.
+- **Fix D filed:** `T-2179-reviewer-fail-fix-batch-d--tautology-pat.md` exists, `horizon: later`, tagged `T-2173-child`.
+- **Diff hygiene:** Spot-check of 5 files shows only `## Reviewer Verdict` block additions; AC/Verification/Decisions sections untouched.
+- **Bug found:** Reviewer exit-code-1-on-FAIL caused 14 silent ERROR mis-classifications in Pass A. L-453 captured.
+
+**What's next (operator-facing):**
+- **T-2174** (Cluster 1+2 §ACD pivot) — already surfaced via `/review/T-2174`.
+- **T-2175** (Cluster 3 mock-only-integration) — promoted to `horizon: now` this session.
+- **T-2179** (Cluster 7 tautology — NEW) — horizon: later, awaiting prioritisation.
+- **T-2173 parent** can close once Fixes A+B+D land.
+
 ## Updates
 
 ### 2026-06-02T08:41:56Z — task-created [task-create-agent]
@@ -201,3 +256,6 @@ This task closes the cache gap structurally:
 
 ### 2026-06-02T14:36:48Z — status-update [task-update-agent]
 - **Change:** horizon: later → now
+
+### 2026-06-02T14:52:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

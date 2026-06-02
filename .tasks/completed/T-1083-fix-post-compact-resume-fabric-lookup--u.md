@@ -71,3 +71,17 @@ grep -q 'FRAMEWORK_ROOT/agents/fabric/fabric.sh' agents/context/post-compact-res
 
 ### 2026-04-11T08:46:18Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-772f8c8e
+- **Timestamp:** 2026-06-02T14:55:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Fabric condition still guards on consumer `.fabric/subsystems.yaml` existence
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/subsystems.yaml in: Fabric condition still guards on consumer `.fabric/subsystems.yaml` existence`

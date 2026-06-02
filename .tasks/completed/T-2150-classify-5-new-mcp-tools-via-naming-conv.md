@@ -220,8 +220,8 @@ clears.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f9f3e956
-- **Timestamp:** 2026-05-31T18:57:17Z
+- **Scan ID:** R-33b70905
+- **Timestamp:** 2026-06-02T15:01:22Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -230,6 +230,5 @@ clears.
 - **Layer-1 escalations:** 1
   1. **external-publish** (high) — External publish or release
      - matched: `broadcast`
-
 ### 2026-05-31T18:57:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

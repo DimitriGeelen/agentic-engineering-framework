@@ -121,14 +121,13 @@ out=$(grep -Fc 'out=$(' .tasks/templates/default.md); [ "$out" -ge 1 ]
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1864-default-task-template-lacks-sigpipe-safe.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-aa7489ae
-- **Timestamp:** 2026-05-15T19:46:55Z
+- **Scan ID:** R-de522633
+- **Timestamp:** 2026-06-02T15:00:07Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-15T19:46:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

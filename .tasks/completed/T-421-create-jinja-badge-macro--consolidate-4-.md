@@ -74,3 +74,17 @@ grep -q 'import.*badge' web/templates/risks.html || grep -q 'badge' web/template
 
 ### 2026-03-11T07:55:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0a7decec
+- **Timestamp:** 2026-06-02T15:02:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `grep -q 'import.*badge' web/templates/risks.html || grep -q 'badge' web/templates/risks.html`

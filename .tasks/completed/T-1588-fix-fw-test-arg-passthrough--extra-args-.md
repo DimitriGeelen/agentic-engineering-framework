@@ -106,10 +106,10 @@ The deeper preventive lesson is captured in L-317: when a workaround appears in 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1588-fix-fw-test-arg-passthrough--extra-args-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-91cb4b3d
-- **Timestamp:** 2026-04-28T16:39:02Z
+- **Scan ID:** R-cc9483e9
+- **Timestamp:** 2026-06-02T14:58:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -119,6 +119,5 @@ The deeper preventive lesson is captured in L-317: when a workaround appears in 
 
 - **AC#3 (Agent)** — `bin/fw test web [-- args]` — passes through to `python3 -m pytest`. Default still runs `web/test_app.py`.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/test_app.py in: `bin/fw test web [-- args]` — passes through to `python3 -m pytest`. Default still runs `web/test_app.py`.`
-
 ### 2026-04-28T16:38:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

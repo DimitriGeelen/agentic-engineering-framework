@@ -171,16 +171,9 @@ out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --name budget-ga
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c17bba4a
-- **Timestamp:** 2026-05-30T21:11:05Z
+- **Scan ID:** R-5f2e43b6
+- **Timestamp:** 2026-06-02T15:01:12Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
-
-**Verification-level findings:**
-
-  1. **skip-as-pass** (severe, deterministic) @ Verification:line 4
-     - evidence: `out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --script /tmp/test-hook-2124.sh --file /tmp/settings-2124.json --dry-run 2>&1); echo "$out" | grep -q '"command": "/tmp/test-hook-2124.s`
-  2. **skip-as-pass** (severe, deterministic) @ Verification:line 14
-     - evidence: `out=$(bash bin/hook-enable.sh --event PreToolUse --matcher Bash --name budget-gate --file /tmp/settings-2124.json --dry-run 2>&1); echo "$out" | grep -q '"command"'`
+- **Findings:** none

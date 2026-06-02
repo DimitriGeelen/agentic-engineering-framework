@@ -164,10 +164,10 @@ Same root-cause class as T-1763 (parser/render contract drift) — both surfaced
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1764-fix-file-route--404s-for-non-md-paths-de.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d15bdc5c
-- **Timestamp:** 2026-05-16T07:06:05Z
+- **Scan ID:** R-5e0be724
+- **Timestamp:** 2026-06-02T14:59:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -177,6 +177,5 @@ Same root-cause class as T-1763 (parser/render contract drift) — both surfaced
 
 - **AC#5 (Agent)** — **T-1762 review-page evidence link works** — `curl -sf http://localhost:3002/file/lib/task_pair_acd.sh` returns HTTP 200 (was 404). Same for `tests/unit/test_task_pair_acd_gate.bats` if linked.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=3002/file/lib/task_pair_acd.sh in: **T-1762 review-page evidence link works** — `curl -sf http://localhost:3002/file/lib/task_pair_acd.sh` returns HTTP 200 (was 404). Same for `tests/un`
-
 ### 2026-05-16T07:06:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

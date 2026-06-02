@@ -148,10 +148,10 @@ Already executed via the audit above (one session). No further spikes needed.
 - **Decision:** GO
 - **Rationale:** The audit revealed that the handover output IS the gap — every other human-facing surface (Tier 0, fw task review, verify-acs) already renders URLs. The handover is also the highest-traffic surface (loaded via `/resume` at every session start, 28+46 task references per render). Other surfaces (audit, healing, fw note list) are lower-traffic and can be addressed if/when they cause friction. Doing the handover scope alone removes ~80% of the visible friction at low risk.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ba366f39
-- **Timestamp:** 2026-04-25T14:01:37Z
+- **Scan ID:** R-98e83ee6
+- **Timestamp:** 2026-06-02T14:57:34Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -161,6 +161,5 @@ Already executed via the audit above (one session). No further spikes needed.
 
 - **AC#2 (Agent)** — Gap localized to `agents/handover/handover.sh` (3 sections + 1 missing URL resolver)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/handover/handover.sh in: Gap localized to `agents/handover/handover.sh` (3 sections + 1 missing URL resolver)`
-
 ### 2026-04-25T14:01:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -72,3 +72,17 @@ grep -q 'Watchtower not running (no triple)' bin/fw
 
 ### 2026-04-18T08:50:09Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-48450162
+- **Timestamp:** 2026-06-02T14:56:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — The new block reports WARN (with `run: bin/watchtower.sh restart`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/watchtower.sh in: The new block reports WARN (with `run: bin/watchtower.sh restart``

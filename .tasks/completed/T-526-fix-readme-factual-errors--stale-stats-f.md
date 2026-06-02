@@ -80,3 +80,17 @@ Agent evaluation report at `/tmp/fw-agent-readme-eval.md`. Stats hardcoded in mu
 
 ### 2026-03-17T23:20:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0e27a7ac
+- **Timestamp:** 2026-06-02T15:03:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Tier 0 approval count matches `grep -c "commit:" .context/project/bypass-log.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/bypass-log.yaml in: Tier 0 approval count matches `grep -c "commit:" .context/project/bypass-log.yaml``

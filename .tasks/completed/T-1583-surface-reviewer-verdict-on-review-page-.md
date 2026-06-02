@@ -92,14 +92,27 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1583-surface-reviewer-verdict-on-review-page-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d5900736
-- **Timestamp:** 2026-04-28T14:04:51Z
+- **Scan ID:** R-74eaeec8
+- **Timestamp:** 2026-06-02T14:58:27Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 5
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1582" | grep -q '<section class="reviewer-verdict-block" data-reviewer-overall="PASS">'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1582" | grep -q 'data-reviewer-overall='`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `! curl -sf "$(bin/fw watchtower url)/review/T-967" | grep -q '<section class="reviewer-verdict-block"'`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/review/T-1582" | grep -q '^200$'`
+  5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 
 - **Suppressed:** 2 (by override)
   - AC-verify-mismatch @ AC#1 (Agent)

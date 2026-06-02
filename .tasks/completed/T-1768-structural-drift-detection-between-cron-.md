@@ -266,15 +266,14 @@ Evidence:
 - `tools/g064-readiness.py` — companion gauge proves "deployed but not firing" is its own class
 - T-1767 commit `f62e32501` — concrete failure mode this prevents
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-db104e6c
-- **Timestamp:** 2026-05-06T16:37:42Z
+- **Scan ID:** R-8fc77b73
+- **Timestamp:** 2026-06-02T14:59:37Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-06T16:37:41Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

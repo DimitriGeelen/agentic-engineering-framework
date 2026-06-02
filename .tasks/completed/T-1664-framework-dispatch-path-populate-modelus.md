@@ -103,10 +103,10 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1664-framework-dispatch-path-populate-modelus.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-05a41813
-- **Timestamp:** 2026-05-01T21:39:34Z
+- **Scan ID:** R-3ac5d3d2
+- **Timestamp:** 2026-06-02T14:58:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -116,7 +116,6 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q`
-
 ### 2026-05-01T21:39:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

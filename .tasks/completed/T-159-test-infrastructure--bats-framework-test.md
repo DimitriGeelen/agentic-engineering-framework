@@ -62,3 +62,22 @@ test -d tests/unit && test -d tests/integration && test -d tests/fixtures
 
 ### 2026-02-18T15:11:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bd50157c
+- **Timestamp:** 2026-06-02T14:58:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (ACs)** — `tests/test_helper.bash` with common setup (FRAMEWORK_ROOT, temp dirs, cleanup)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/test_helper.bash in: `tests/test_helper.bash` with common setup (FRAMEWORK_ROOT, temp dirs, cleanup)`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/`

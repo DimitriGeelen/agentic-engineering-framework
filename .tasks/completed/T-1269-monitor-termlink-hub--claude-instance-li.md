@@ -75,3 +75,25 @@ Operator wants 1-min cadence liveness signals for: (a) TermLink hub, (b) Claude 
 
 ### 2026-04-15T21:25:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-664e414d
+- **Timestamp:** 2026-06-02T14:56:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 5
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `agents/monitor/liveness-check.sh` exists, executable, runs without error
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/monitor/liveness-check.sh in: `agents/monitor/liveness-check.sh` exists, executable, runs without error`
+- **AC#2 (Agent)** — Outputs append to `.context/monitors/liveness.jsonl` (one JSON object per run)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/monitors/liveness.jsonl in: Outputs append to `.context/monitors/liveness.jsonl` (one JSON object per run)`
+- **AC#3 (Agent)** — Writes snapshot to `.context/monitors/liveness-latest.yaml` with termlink.hub, claude_instances, watchtower fields
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/monitors/liveness-latest.yaml in: Writes snapshot to `.context/monitors/liveness-latest.yaml` with termlink.hub, claude_instances, watchtower fields`
+- **AC#4 (Agent)** — Registered in `.context/cron-registry.yaml` as `liveness-1m` (schedule `* * * * *`) and `liveness-boot` (schedule `@reboot`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: Registered in `.context/cron-registry.yaml` as `liveness-1m` (schedule `* * * * *`) and `liveness-boot` (schedule `@reboot`)`
+- **AC#8 (Agent)** — Installed to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` via `fw cron install` — verified entries present
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Installed to `/etc/cron.d/agentic-audit-999-agentic-engineering-framework` via `fw cron install` — verified entries present`

@@ -111,10 +111,10 @@ Evidence:
 - Learning L-236: captured in `.context/project/learnings.yaml` — "set -euo pipefail silently aborts via command-substitution assignments"
 - T-1374's own close: log captured, exit 0, episodic generated — the AC step executed successfully on real task close
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-abcf3603
-- **Timestamp:** 2026-05-18T08:37:52Z
+- **Scan ID:** R-d9241844
+- **Timestamp:** 2026-06-02T14:57:01Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

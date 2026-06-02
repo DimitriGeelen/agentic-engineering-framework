@@ -72,3 +72,28 @@ python3 -c "from web.blueprints.settings import bp; print('OK')"
 
 ### 2026-03-10T22:04:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f91febd6
+- **Timestamp:** 2026-06-02T15:02:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — web/templates/settings.html with engine selector, API key management, info section
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/settings.html in: web/templates/settings.html with engine selector, API key management, info section`
+- **AC#3 (Agent)** — YAML persistence at .context/settings.yaml (gitignored)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/settings.yaml in: YAML persistence at .context/settings.yaml (gitignored)`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/settings/ | grep -q "LLM Engine"`
+
+- **Layer-1 escalations:** 1
+  1. **secret-handling** (high) — Secret or credential changes
+     - matched: `API key`

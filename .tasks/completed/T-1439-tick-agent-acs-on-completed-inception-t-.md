@@ -61,3 +61,17 @@ test "$(grep -l '^- \[ \].*Phase\|^- \[ \].*Schema\|^- \[ \].*MCP tool\|^- \[ \]
 
 ### 2026-04-25T05:47:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d8c3a9a5
+- **Timestamp:** 2026-06-02T14:57:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `! bin/fw audit 2>&1 | grep -qE "CTL-012.*T-(1092|707|772) "`

@@ -83,10 +83,10 @@ grep -q "T-1541" .context/project/learnings.yaml
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ea4a5ca6
-- **Timestamp:** 2026-04-27T13:31:29Z
+- **Scan ID:** R-d5002417
+- **Timestamp:** 2026-06-02T14:58:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -96,6 +96,5 @@ grep -q "T-1541" .context/project/learnings.yaml
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 2
      - evidence: `bin/fw task verify T-1540 >/dev/null`
-
 ### 2026-04-27T13:31:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

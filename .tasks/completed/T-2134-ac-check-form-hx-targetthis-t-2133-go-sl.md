@@ -226,8 +226,8 @@ url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" |
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e5b8779d
-- **Timestamp:** 2026-05-31T07:22:34Z
+- **Scan ID:** R-cf9d80e5
+- **Timestamp:** 2026-06-02T15:01:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -246,6 +246,5 @@ url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" |
      - evidence: `url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" | grep -c 'class="ac-check"' | grep -qE '^[1-9]'`
   2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
      - evidence: `url=$(bin/fw watchtower url); out=$(curl -s "$url/review/T-2131"); echo "$out" | grep -A3 'class="ac-check"' | grep -q 'hx-target="this"'`
-
 ### 2026-05-31T07:22:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -86,14 +86,18 @@ git_before=$(git status --short | wc -l); bin/fw bvp > /dev/null 2>&1 || true; g
 ### 2026-05-19T07:26:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b86ce233
-- **Timestamp:** 2026-05-19T07:30:41Z
+- **Scan ID:** R-ec52282c
+- **Timestamp:** 2026-06-02T15:00:27Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw bvp --help 2>&1 | grep -q quadrant`
 ### 2026-05-19T07:30:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

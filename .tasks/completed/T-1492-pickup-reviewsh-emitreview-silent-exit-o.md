@@ -67,15 +67,14 @@ bats --filter "T-1492" tests/unit/lib_review.bats
 - **Change:** horizon: next → now (auto-sync)
 - **Reason:** applying fix (c)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8efb46ff
-- **Timestamp:** 2026-04-26T11:04:57Z
+- **Scan ID:** R-828fba40
+- **Timestamp:** 2026-06-02T14:57:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T11:04:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** fix (c) applied + 3 regression bats tests green

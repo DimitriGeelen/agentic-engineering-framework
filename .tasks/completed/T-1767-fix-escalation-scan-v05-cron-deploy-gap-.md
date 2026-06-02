@@ -172,14 +172,18 @@ This unblocks G-064 progression toward closure: 0 → 1 cron firing tomorrow mor
 - **Next:** First natural cron firing should occur 2026-05-07 05:33 UTC. After 3 distinct cron-firing dates (target 2026-05-09), `python3 tools/g064-readiness.py` → READY → G-064 can progress to closure decision.
 - **Status:** Ready for `--status work-completed`. Verification commands pass.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-15b731a7
-- **Timestamp:** 2026-05-06T12:11:37Z
+- **Scan ID:** R-09be3923
+- **Timestamp:** 2026-06-02T14:59:37Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 13
+     - evidence: `bin/fw cron status | grep -q "escalation-scan-v0-5"`
 ### 2026-05-06T12:11:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

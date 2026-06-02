@@ -100,14 +100,18 @@ grep -q "G-062" .context/project/concerns.yaml && grep -A 30 "id: G-062" .contex
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1655-g-062-mechanism-1-codify-arc-completion-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4bd81cee
-- **Timestamp:** 2026-05-01T16:38:08Z
+- **Scan ID:** R-3af2c7bc
+- **Timestamp:** 2026-06-02T14:58:55Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `grep -q "G-062" .context/project/concerns.yaml && grep -A 30 "id: G-062" .context/project/concerns.yaml | grep -q "partial-mitigation\|mechanism #1"`
 ### 2026-05-01T16:38:08Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

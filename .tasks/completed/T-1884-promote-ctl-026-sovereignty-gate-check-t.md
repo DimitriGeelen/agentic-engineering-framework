@@ -88,14 +88,18 @@ bats tests/unit/audit_ctl026_compliance_section.bats
 - Ship commit: 98471e32 — 3 files, +155/-14
 - Both commits pushed to origin: 46838293..a0788d87 master -> master
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-00633fbf
-- **Timestamp:** 2026-05-17T19:49:26Z
+- **Scan ID:** R-36a30934
+- **Timestamp:** 2026-06-02T15:00:15Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `out=$(bin/fw audit --section structure 2>&1); ! echo "$out" | grep -q "CTL-026"`
 ### 2026-05-17T19:47:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -90,13 +90,18 @@ grep -q "<html" /tmp/T-1540-approvals.html
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1540-three-sequential-blind-reviewer-validati.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2f4ee2c1
-- **Timestamp:** 2026-04-28T20:17:25Z
+- **Scan ID:** R-0c30560d
+- **Timestamp:** 2026-06-02T14:58:11Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `! termlink list 2>/dev/null | grep -q "tl-reviewer-iter.*ready"`
 ### 2026-04-27T13:03:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

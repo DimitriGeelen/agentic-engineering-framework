@@ -57,3 +57,17 @@ python3 -c "print('guard check placeholder — tested via unit test')"
 
 ### 2026-04-13T20:23:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-65088371
+- **Timestamp:** 2026-06-02T14:56:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Hook template in agents/git/lib/hooks.sh updated for consumer installs
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/git/lib/hooks.sh in: Hook template in agents/git/lib/hooks.sh updated for consumer installs`

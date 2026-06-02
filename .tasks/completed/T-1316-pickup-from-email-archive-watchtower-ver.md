@@ -163,3 +163,12 @@ Evidence:
 - Email-archive provided live `/proc/PID/cwd` evidence.
 - Same bug class as T-1043/T-1315 (vendored-mode blind spot).
 - Option 2 (change watchtower.sh CWD) deferred — wider blast radius, separate task if needed.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ed1c752b
+- **Timestamp:** 2026-06-02T14:56:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

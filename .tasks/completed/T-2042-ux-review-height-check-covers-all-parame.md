@@ -246,8 +246,8 @@ agent-verifiable.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2bf302cb
-- **Timestamp:** 2026-05-25T14:48:04Z
+- **Scan ID:** R-4b49545e
+- **Timestamp:** 2026-06-02T15:00:52Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -257,6 +257,5 @@ agent-verifiable.
 
 - **AC#5 (Agent)** — New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-unit-test_ux_review_routes.yaml`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/tests-unit-test_ux_review_routes.yaml in: New test registered in the component fabric (`fw fabric register`) — `.fabric/components/tests-unit-test_ux_review_routes.yaml``
-
 ### 2026-05-25T14:48:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -66,3 +66,17 @@ python3 -c "from web.blueprints.approvals import _load_pending_human_acs, _load_
 
 ### 2026-03-27T11:32:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9293445a
+- **Timestamp:** 2026-06-02T15:04:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/approvals | grep -q 'Human Acceptance Criteria\|No pending'`

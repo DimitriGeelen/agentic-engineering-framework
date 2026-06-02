@@ -93,14 +93,13 @@ Unlocks: T-1919 (read CLI reads these fields), T-1920 (mutating CLI writes `bvp_
 ### 2026-05-19T07:11:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9ccbc731
-- **Timestamp:** 2026-05-19T07:26:24Z
+- **Scan ID:** R-49ab9ed3
+- **Timestamp:** 2026-06-02T15:00:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-19T07:26:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

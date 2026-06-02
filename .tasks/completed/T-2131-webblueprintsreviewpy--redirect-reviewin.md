@@ -218,8 +218,8 @@ url=$(bin/fw watchtower url); code=$(curl -sI -o /dev/null -w "%{http_code}" "$u
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a68f4225
-- **Timestamp:** 2026-05-31T07:51:48Z
+- **Scan ID:** R-e95a1745
+- **Timestamp:** 2026-06-02T15:01:15Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -229,7 +229,6 @@ url=$(bin/fw watchtower url); code=$(curl -sI -o /dev/null -w "%{http_code}" "$u
 
 - **AC#1 (Agent)** — `web/blueprints/review.py` `/review/<task_id>` handler checks the target task's `workflow_type` early; if `inception`, returns 302 redirect to `/inception/<task_id>`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/review.py in: `web/blueprints/review.py` `/review/<task_id>` handler checks the target task's `workflow_type` early; if `inception`, returns 302 redirect to `/incep`
-
 ### 2026-05-31T07:51:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

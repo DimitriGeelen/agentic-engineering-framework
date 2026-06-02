@@ -132,10 +132,10 @@ Evidence:
 - T-1828 same-class structural shape (gate-vs-reality drift) confirms this is not a one-off.
 - Sibling to T-1830 (boundary-crossing invisibility) — both are "gate measures a proxy that diverges from what it should be measuring".
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-82aba7b1
-- **Timestamp:** 2026-05-14T20:29:46Z
+- **Scan ID:** R-7baa646b
+- **Timestamp:** 2026-06-02T14:59:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -147,7 +147,6 @@ Evidence:
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/inception.sh in: Characterise Layer-1 gate (AC checkbox vs content) — documented at lib/inception.sh:506-524 and update-task.sh:65-152`
 - **AC#2 (Agent)** — Characterise Layer-2 gate (missing `## Decision` heading) — root caused via code trace; lib/inception.sh:531-582 Python silently no-ops; gate fires at update-task.sh:366-386. T-1832 filed for framewor
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/inception.sh in: Characterise Layer-2 gate (missing `## Decision` heading) — root caused via code trace; lib/inception.sh:531-582 Python silently no-ops; gate fires at`
-
 ### 2026-05-14T20:29:45Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

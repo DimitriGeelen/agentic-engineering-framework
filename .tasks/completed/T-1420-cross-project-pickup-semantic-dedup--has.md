@@ -203,3 +203,17 @@ Build decomposition (after GO):
 ### 2026-04-24T12:56:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c1f418ef
+- **Timestamp:** 2026-06-02T14:57:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Recommendation written with rationale (§Recommendation below: GO — triple dedup second-pass in `lib/pickup.sh`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/pickup.sh in: Recommendation written with rationale (§Recommendation below: GO — triple dedup second-pass in `lib/pickup.sh`)`

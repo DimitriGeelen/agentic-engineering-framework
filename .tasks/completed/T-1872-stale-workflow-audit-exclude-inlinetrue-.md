@@ -156,10 +156,10 @@ LATEST_AUDIT=$(ls -t .context/audits/[0-9]*.yaml 2>/dev/null | head -1); python3
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1872-stale-workflow-audit-exclude-inlinetrue-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-923f23b3
-- **Timestamp:** 2026-05-16T07:30:45Z
+- **Scan ID:** R-060b7cfc
+- **Timestamp:** 2026-06-02T15:00:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -169,6 +169,5 @@ LATEST_AUDIT=$(ls -t .context/audits/[0-9]*.yaml 2>/dev/null | head -1); python3
 
 - **AC#4 (Agent)** — `bin/fw audit` after the fix reports 2 stale workflows (cheap-research, ollama-research) instead of 5 — visible in `.context/audits/2026-05-16.yaml` summary line `"2 stale workflow(s): cheap-research,
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/2026-05-16.yaml in: `bin/fw audit` after the fix reports 2 stale workflows (cheap-research, ollama-research) instead of 5 — visible in `.context/audits/2026-05-16.yaml` s`
-
 ### 2026-05-16T07:30:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

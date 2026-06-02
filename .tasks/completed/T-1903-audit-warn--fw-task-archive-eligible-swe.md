@@ -174,19 +174,18 @@ bin/fw task archive-eligible --dry-run 2>&1 | grep -qE 'no .*stuck|0 task.* elig
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1903-audit-warn--fw-task-archive-eligible-swe.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a7261ee3
-- **Timestamp:** 2026-05-18T19:01:55Z
+- **Scan ID:** R-e50b9673
+- **Timestamp:** 2026-06-02T15:00:23Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
 - **Findings:** 1
 
 **Verification-level findings:**
 
-  1. **skip-as-pass** (severe, deterministic) @ Verification:line 3
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
      - evidence: `bin/fw task archive-eligible --dry-run 2>&1 | grep -qE 'no .*stuck|0 task.* eligible|sweep'`
-
 ### 2026-05-18T18:58:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -91,3 +91,17 @@ test -f tests/unit/update_task_components_lookup.bats
 
 ### 2026-04-20T23:23:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d24f866b
+- **Timestamp:** 2026-06-02T14:57:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — Existing tests/unit/update_task_episodic_gen.bats still passes
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/update_task_episodic_gen.bats in: Existing tests/unit/update_task_episodic_gen.bats still passes`

@@ -118,10 +118,10 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q 2>&1 | tail 
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0e906fcb
-- **Timestamp:** 2026-05-02T05:51:46Z
+- **Scan ID:** R-39d31d42
+- **Timestamp:** 2026-06-02T14:58:50Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -131,7 +131,6 @@ python3 -m pytest tests/unit/test_termlink_dispatch_task_type.py -q 2>&1 | tail 
 
 - **AC#2 (Agent)** — **W1 (task-type derivation):** `fw termlink dispatch` accepts `--task-type` and, when omitted, auto-derives it from `.context/working/focus.yaml` → active task's `workflow_type`. Worker meta.json gets
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/focus.yaml in: **W1 (task-type derivation):** `fw termlink dispatch` accepts `--task-type` and, when omitted, auto-derives it from `.context/working/focus.yaml` → ac`
-
 ### 2026-05-02T05:51:46Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

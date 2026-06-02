@@ -69,3 +69,19 @@ bin/fw help | grep -q "update"
 
 ### 2026-04-06T22:29:17Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-261365eb
+- **Timestamp:** 2026-06-02T15:03:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `./bin/fw update --help | grep -q "Check for updates"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `bin/fw help | grep -q "update"`

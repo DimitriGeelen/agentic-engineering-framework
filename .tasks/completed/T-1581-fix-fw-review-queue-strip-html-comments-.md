@@ -92,21 +92,24 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1581-fix-fw-review-queue-strip-html-comments-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-270e04a9
-- **Timestamp:** 2026-04-28T12:32:34Z
+- **Scan ID:** R-84226711
+- **Timestamp:** 2026-06-02T14:58:27Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 4
 
 **Verification-level findings:**
 
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 1
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
      - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 'T-1274' && echo "FAIL T-1274 still in queue" && exit 1 || true`
-  2. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
      - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 'T-1542' && echo "FAIL T-1542 still in queue" && exit 1 || true`
-
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 'T-449' || (echo "REGRESSION: T-449 dropped" && exit 1)`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue 2>&1 | grep -q 'T-967' || (echo "REGRESSION: T-967 dropped" && exit 1)`
 ### 2026-04-28T12:32:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

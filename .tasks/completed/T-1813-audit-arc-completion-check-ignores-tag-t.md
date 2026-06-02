@@ -162,19 +162,27 @@ Longer-term consideration (not in scope here): the two discovery pathways should
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1813-audit-arc-completion-check-ignores-tag-t.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-79cacaed
-- **Timestamp:** 2026-05-13T19:00:54Z
+- **Scan ID:** R-e3476e28
+- **Timestamp:** 2026-06-02T14:59:48Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 4
 
 **Per-AC findings:**
 
 - **AC#1 (Agent)** — `agents/audit/audit.sh` arc-completion check falls back to tag-based scan when `constituent_tasks` is empty: inline python tag-scan added at lines ~3389-3411 mirroring `lib/arc.sh:_arc_tasks_with_tag`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `agents/audit/audit.sh` arc-completion check falls back to tag-based scan when `constituent_tasks` is empty: inline python tag-scan added at lines ~33`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 13
+     - evidence: `grep -E "Arc 'dispatch-safety'" "$(ls -t .context/audits/2026-*.yaml | head -1)" | grep -qE "[0-9]+/[0-9]+ tasks completed"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 14
+     - evidence: `grep -E "Arc 'orchestrator-rethink'" "$(ls -t .context/audits/2026-*.yaml | head -1)" | grep -qE "[0-9]+/[0-9]+"`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 15
+     - evidence: `grep -E "Arc 'embeddings-strategy'" "$(ls -t .context/audits/2026-*.yaml | head -1)" | grep -qE "[0-9]+/[0-9]+"`
 ### 2026-05-13T19:00:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

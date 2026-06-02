@@ -85,10 +85,10 @@ ls .tasks/completed/T-1262-* >/dev/null 2>&1 || ls .tasks/active/T-1262-* >/dev/
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b771285f
-- **Timestamp:** 2026-04-26T17:40:17Z
+- **Scan ID:** R-8b5f7524
+- **Timestamp:** 2026-06-02T14:57:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -98,6 +98,5 @@ ls .tasks/completed/T-1262-* >/dev/null 2>&1 || ls .tasks/active/T-1262-* >/dev/
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 4
      - evidence: `ls .tasks/completed/T-1262-* >/dev/null 2>&1 || ls .tasks/active/T-1262-* >/dev/null 2>&1`
-
 ### 2026-04-26T17:40:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

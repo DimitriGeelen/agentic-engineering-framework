@@ -80,20 +80,14 @@ test -n "$(bin/fw inception sweep --dry-run 2>&1 | grep -E 'status=(work-complet
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1514-extend-fw-inception-sweep-to-recover-sta.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-daf614a7
-- **Timestamp:** 2026-04-26T19:31:16Z
+- **Scan ID:** R-90dc6de0
+- **Timestamp:** 2026-06-02T14:58:00Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **skip-as-pass** (severe, deterministic) @ Verification:line 10
-     - evidence: `test -n "$(bin/fw inception sweep --dry-run 2>&1 | grep -E 'status=(work-completed|started-work) decision=' || true)"`
-
+- **Findings:** none
 ### 2026-04-26T19:31:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Sweep extended, T-1283/T-1284/T-1388 recovered, class 1 behavior preserved

@@ -111,10 +111,10 @@ grep -cE "flock -n /var/lock/agentic-cron-" .context/cron/agentic-audit.crontab 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1556-restore-flock-wrappers-in-cron-registry-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a66dda26
-- **Timestamp:** 2026-04-27T17:47:31Z
+- **Scan ID:** R-2dd9788f
+- **Timestamp:** 2026-06-02T14:58:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -122,15 +122,14 @@ grep -cE "flock -n /var/lock/agentic-cron-" .context/cron/agentic-audit.crontab 
 
 **Per-AC findings:**
 
-- **AC#1 (ACs)** — All cron registry entries that had flock wrappers in the prior /etc/cron.d/ get a flock prefix in their `command:` field. Lock-file names use `agentic-cron-<job_id>.lock` (no `fw-` prefix to avoid the
+- **AC#1 (Agent)** — All cron registry entries that had flock wrappers in the prior /etc/cron.d/ get a flock prefix in their `command:` field. Lock-file names use `agentic-cron-<job_id>.lock` (no `fw-` prefix to avoid the
   - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: All cron registry entries that had flock wrappers in the prior /etc/cron.d/ get a flock prefix in their `command:` field. Lock-file names use `agentic`
-- **AC#4 (ACs)** — Diff between previous /etc/cron.d/ snapshot (with flock) and newly-generated crontab is functionally equivalent for the formerly-wrapped entries (lockfile renamed, command preserved).
+- **AC#4 (Agent)** — Diff between previous /etc/cron.d/ snapshot (with flock) and newly-generated crontab is functionally equivalent for the formerly-wrapped entries (lockfile renamed, command preserved).
   - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Diff between previous /etc/cron.d/ snapshot (with flock) and newly-generated crontab is functionally equivalent for the formerly-wrapped entries (lock`
 
 **Verification-level findings:**
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 1
      - evidence: `bin/fw cron generate >/dev/null`
-
 ### 2026-04-27T17:47:31Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

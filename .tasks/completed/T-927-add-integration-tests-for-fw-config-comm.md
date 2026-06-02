@@ -75,3 +75,17 @@ No integration tests exist for `fw config` (set/get/list/overrides). Other fw co
 
 ### 2026-04-05T16:19:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-22d0bb63
+- **Timestamp:** 2026-06-02T15:05:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Test file exists at tests/integration/fw_config.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/fw_config.bats in: Test file exists at tests/integration/fw_config.bats`

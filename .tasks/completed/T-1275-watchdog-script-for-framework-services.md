@@ -94,3 +94,17 @@ task should not be reopened — its title is too vague to scope.
 
 ### 2026-04-24T09:52:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-08db2699
+- **Timestamp:** 2026-06-02T14:56:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Confirmed T-1269 ships liveness monitoring (`.context/monitors/liveness.jsonl` populated by 1-min cron)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/monitors/liveness.jsonl in: Confirmed T-1269 ships liveness monitoring (`.context/monitors/liveness.jsonl` populated by 1-min cron)`

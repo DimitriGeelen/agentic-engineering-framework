@@ -73,3 +73,22 @@ test -f .context/episodic/T-1358.yaml
 
 ### 2026-04-24T15:32:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2b9d6837
+- **Timestamp:** 2026-06-02T14:57:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `./agents/context/context.sh generate-episodic` produced a yaml for each of the 35 tasks
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/context.sh in: `./agents/context/context.sh generate-episodic` produced a yaml for each of the 35 tasks`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `! bin/fw audit 2>&1 | grep -q "has no episodic summary"`

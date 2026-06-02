@@ -72,3 +72,17 @@ test -f VERSION
 
 ### 2026-04-06T22:29:19Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-97baea45
+- **Timestamp:** 2026-06-02T15:04:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw version | grep -qE 'fw v1\.4\.'`

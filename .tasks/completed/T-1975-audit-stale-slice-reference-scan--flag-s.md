@@ -205,10 +205,10 @@ out=$(bin/fw audit --section structure 2>&1); grep -q "No stale-slice-references
 ### 2026-05-21T07:42:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-757b7711
-- **Timestamp:** 2026-05-21T07:56:06Z
+- **Scan ID:** R-ba3172d2
+- **Timestamp:** 2026-06-02T15:00:43Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

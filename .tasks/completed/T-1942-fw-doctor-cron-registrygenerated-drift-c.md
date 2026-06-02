@@ -255,10 +255,10 @@ and content-diffs against the on-disk source, catching add/remove/modify drift u
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1942-fw-doctor-cron-registrygenerated-drift-c.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-90436723
-- **Timestamp:** 2026-05-19T23:16:01Z
+- **Scan ID:** R-8ca8da14
+- **Timestamp:** 2026-06-02T15:00:34Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -268,6 +268,5 @@ and content-diffs against the on-disk source, catching add/remove/modify drift u
 
 - **AC#5 (Agent)** — Test runs in tmp dir via `FW_CRON_INSTALL_DIR` env-var override (no /etc/cron.d
   - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Test runs in tmp dir via `FW_CRON_INSTALL_DIR` env-var override (no /etc/cron.d`
-
 ### 2026-05-19T23:11:45Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -103,15 +103,25 @@ python3 -m pytest tests/unit/test_arcs_routes.py -q 2>&1 | tail -3
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-51a147d1
-- **Timestamp:** 2026-05-03T07:43:18Z
+- **Scan ID:** R-104728b4
+- **Timestamp:** 2026-06-02T14:58:58Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 4
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/arcs | grep -q 200`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `curl -sf -o /dev/null -w '%{http_code}' http://localhost:3000/arcs/orchestrator-rethink | grep -q 200`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/arcs/nonexistent-arc-id | grep -q 404`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `curl -s http://localhost:3000/orchestrator | grep -q "/arcs/orchestrator-rethink"`
 ### 2026-05-03T07:43:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

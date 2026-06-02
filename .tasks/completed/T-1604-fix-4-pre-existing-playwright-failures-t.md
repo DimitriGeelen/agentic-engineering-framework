@@ -86,14 +86,13 @@ bash -c 'timeout 60 python3 -m pytest tests/playwright/test_approvals.py::TestDe
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d1b6364a
-- **Timestamp:** 2026-04-29T19:40:08Z
+- **Scan ID:** R-4e5e4d36
+- **Timestamp:** 2026-06-02T14:58:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-29T19:40:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

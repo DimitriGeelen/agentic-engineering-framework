@@ -177,15 +177,14 @@ A-3 was validated empirically in this inception (ollama at 192.168.10.107:11434 
 
 A-1, A-2, A-4 are deferred to v1 build (each requires a real proxy install + dispatch).
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a3e3c03c
-- **Timestamp:** 2026-05-03T08:29:36Z
+- **Scan ID:** R-b2893247
+- **Timestamp:** 2026-06-02T14:59:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-03T08:29:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

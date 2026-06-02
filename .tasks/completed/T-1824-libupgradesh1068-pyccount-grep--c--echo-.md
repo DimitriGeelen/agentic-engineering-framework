@@ -109,14 +109,20 @@ bash -c 'pyc_count=$(echo "" | grep -E "__pycache__|\.pyc$" | wc -l); [ "$pyc_co
 ### 2026-05-14T07:34:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-eaa9dc6f
-- **Timestamp:** 2026-05-14T14:01:23Z
+- **Scan ID:** R-9ae7c65a
+- **Timestamp:** 2026-06-02T14:59:52Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bash -c '! grep -v "^[[:space:]]*#" lib/upgrade.sh | grep -q "pyc_count=.*grep -c"'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bash -c 'awk "/^[[:space:]]*pyc_count=/{found=1} found && /wc -l/{print; exit}" lib/upgrade.sh | grep -q "wc -l"'`
 ### 2026-05-14T14:01:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

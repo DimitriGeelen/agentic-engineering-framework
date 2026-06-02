@@ -67,3 +67,17 @@ grep -q "concerns.yaml" agents/handover/handover.sh
 
 ### 2026-03-10T22:04:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ce3135d4
+- **Timestamp:** 2026-06-02T15:02:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/risks | grep -q "Concerns"`

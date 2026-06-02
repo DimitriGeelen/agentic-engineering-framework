@@ -69,3 +69,22 @@ grep -q '/review/' lib/review.sh
 
 ### 2026-03-28T17:45:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f5695b45
+- **Timestamp:** 2026-06-02T15:04:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `web/templates/review.html` standalone template (no base.html inheritance)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/review.html in: `web/templates/review.html` standalone template (no base.html inheritance)`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/review/T-667 | grep -q 'review-page'`

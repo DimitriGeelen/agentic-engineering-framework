@@ -107,10 +107,10 @@ bin/fw doctor
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1696-v1-resolver-port--spike-to-libresolverpy.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ad7a126e
-- **Timestamp:** 2026-05-03T12:58:41Z
+- **Scan ID:** R-1b09ac55
+- **Timestamp:** 2026-06-02T14:59:10Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -122,6 +122,5 @@ bin/fw doctor
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: Telemetry round-trip: dispatch writes a row to `.context/dispatches.jsonl` containing dispatch_id, workflow_sha, template_sha, task_type, task_id, ts_`
 - **AC#10 (Agent)** — `HEALING_PATTERNS` injection pulls from `.context/project/patterns.yaml` when present
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/patterns.yaml in: `HEALING_PATTERNS` injection pulls from `.context/project/patterns.yaml` when present`
-
 ### 2026-05-03T12:57:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

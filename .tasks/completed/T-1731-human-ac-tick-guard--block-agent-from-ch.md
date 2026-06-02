@@ -175,13 +175,18 @@ The advisory mode (no-CLAUDECODE) preserves interactive human edits via vi/IDE �
 ### 2026-05-05T07:09:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-377a053e
-- **Timestamp:** 2026-05-18T10:22:25Z
+- **Scan ID:** R-c31d3c96
+- **Timestamp:** 2026-06-02T14:59:23Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `{ CLAUDECODE=1 echo '{"tool_name":"Edit","tool_input":{"file_path":"/opt/999-Agentic-Engineering-Framework/.tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md","old_string":"- [ ] [REVIEW`
 ### 2026-05-05T07:16:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -53,3 +53,17 @@ grep -c "FIXED" docs/reports/T-679-path-c-workflow.md | grep -q "^7$"
 
 ### 2026-03-28T23:03:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3784120a
+- **Timestamp:** 2026-06-02T15:04:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `grep -c "FIXED" docs/reports/T-679-path-c-workflow.md | grep -q "^7$"`

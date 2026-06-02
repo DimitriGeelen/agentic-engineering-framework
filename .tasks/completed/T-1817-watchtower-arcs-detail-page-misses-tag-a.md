@@ -115,14 +115,20 @@ bin/fw reviewer T-1817 2>&1 | grep -q "Overall:.*PASS"
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1817-watchtower-arcs-detail-page-misses-tag-a.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-56bb8181
-- **Timestamp:** 2026-05-13T20:52:43Z
+- **Scan ID:** R-61a9ad5e
+- **Timestamp:** 2026-06-02T14:59:50Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `curl -sf -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/arcs/dispatch-safety" | grep -q "^200$"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `bin/fw reviewer T-1817 2>&1 | grep -q "Overall:.*PASS"`
 ### 2026-05-13T20:52:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -76,14 +76,13 @@ bats tests/unit/inception_decide_atomicity.bats
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a9a760f3
-- **Timestamp:** 2026-04-26T12:07:46Z
+- **Scan ID:** R-4d87ad34
+- **Timestamp:** 2026-06-02T14:57:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T12:07:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

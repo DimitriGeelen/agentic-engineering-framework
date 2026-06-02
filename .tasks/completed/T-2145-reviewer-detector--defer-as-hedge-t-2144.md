@@ -265,8 +265,8 @@ out=$(python3 -m pytest tests/unit/test_reviewer_*.py 2>&1); echo "$out" | grep 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-637e9c6f
-- **Timestamp:** 2026-05-31T20:50:31Z
+- **Scan ID:** R-9f56c418
+- **Timestamp:** 2026-06-02T15:01:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -278,6 +278,5 @@ out=$(python3 -m pytest tests/unit/test_reviewer_*.py 2>&1); echo "$out" | grep 
      - evidence: `out=$(python3 -m pytest tests/unit/test_reviewer_defer_as_hedge.py 2>&1); echo "$out" | grep -q "13 passed"`
   2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
      - evidence: `python3 -c "from lib.reviewer.static_scan import detect_defer_as_hedge; print('ok')" | grep -q ok`
-
 ### 2026-05-31T20:50:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

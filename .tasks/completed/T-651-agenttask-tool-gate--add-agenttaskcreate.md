@@ -65,3 +65,12 @@ T-630 GO: Universal task gate. Spike 2 proved check-active-task.sh already handl
 
 ### 2026-04-06T22:29:19Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5d579954
+- **Timestamp:** 2026-06-02T15:04:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

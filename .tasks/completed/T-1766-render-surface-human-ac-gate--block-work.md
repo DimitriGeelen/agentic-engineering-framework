@@ -171,14 +171,14 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
   - L-364 learning ("render-surface fixes have a subjective layer that deterministic tests cannot cover")
 - **Status:** `started-work` (NOT work-completed). Do not run `fw task update T-1766 --status work-completed` until all Agent ACs are ticked.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2d591d62
-- **Timestamp:** 2026-05-18T10:22:26Z
+- **Scan ID:** R-686a595d
+- **Timestamp:** 2026-06-02T14:59:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 3
 
 **Per-AC findings:**
 
@@ -186,5 +186,7 @@ T-1575 had previously shipped a related guidance ("UI Verification Needs Eyes") 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: **Render-surface predicate** — `lib/render_surface.sh` exposes `task_touches_render_surface <task_file>` returning 0 (yes) or 1 (no). Predicate examin`
 - **AC#5 (Agent)** — **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as render-surface examples). The predicate correctly
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: **Self-application: T-1766 closure** — T-1766's body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as`
+- **AC#1 (Human)** — [REVIEW] Block-message UX is crisp — a new agent reading the message can act without re-opening T-1766 (wording is self-contained; the three pieces of info are easy to extract under cognitive load)
+  - **audience-mismatch** (partial, heuristic) — `agent-subject='agent read' in: Self-contained — fresh agent acts without re-reading the source task.`
 ### 2026-05-16T08:13:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

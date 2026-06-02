@@ -137,12 +137,12 @@ python3 -c "subj=('tone','preachy','voice','render','cleanly','rhythm','intuitiv
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1814-fw-verify-acs-nudge--suppress-for-genuin.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2607ed09
-- **Timestamp:** 2026-05-13T19:08:13Z
+- **Scan ID:** R-c019f5a8
+- **Timestamp:** 2026-06-02T14:59:49Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
 - **Findings:** 2
 
@@ -153,8 +153,7 @@ python3 -c "subj=('tone','preachy','voice','render','cleanly','rhythm','intuitiv
 
 **Verification-level findings:**
 
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 10
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
      - evidence: `bin/fw verify-acs T-1806 --verbose 2>&1 | grep -q "NUDGE" && exit 1 || true`
-
 ### 2026-05-13T19:08:09Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

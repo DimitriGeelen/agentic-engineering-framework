@@ -176,14 +176,18 @@ grep -q -i "gemma4" docs/reports/T-1741-spike-d.md
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4135eab8
-- **Timestamp:** 2026-05-05T09:26:29Z
+- **Scan ID:** R-ffb9e4eb
+- **Timestamp:** 2026-06-02T14:59:27Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 21
+     - evidence: `{ cat .tasks/active/T-1741-evaluate-alternative-ollama-models-for-p.md .tasks/completed/T-1741-evaluate-alternative-ollama-models-for-p.md 2>/dev/null || true; } | grep -q "## Recommendation"`
 ### 2026-05-05T09:26:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

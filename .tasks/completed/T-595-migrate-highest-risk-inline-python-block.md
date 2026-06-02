@@ -74,3 +74,17 @@ bin/fw doctor 2>&1 | grep -v "WARN" | grep -q "no failures"
 
 ### 2026-03-24T07:20:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aca28201
+- **Timestamp:** 2026-06-02T15:03:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `bin/fw doctor 2>&1 | grep -v "WARN" | grep -q "no failures"`

@@ -97,15 +97,25 @@ single frontmatter parse for efficiency.
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1571-add-pending-inception-decisions-to-fw-re.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3754ada0
-- **Timestamp:** 2026-04-27T21:41:11Z
+- **Scan ID:** R-d01a7865
+- **Timestamp:** 2026-06-02T14:58:23Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 4
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw review-queue 2>&1 | grep -q "DECISIONS" && echo decisions-section-rendered`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw review-queue 2>&1 | grep -q "VERDICT" && echo verdict-section-rendered`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw review-queue 2>&1 | grep -q "T-1565" && echo audit-task-listed`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw review-queue --help 2>&1 | grep -qi "decision" && echo help-mentions-decisions`
 ### 2026-04-27T21:41:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** F5 implemented and verified live

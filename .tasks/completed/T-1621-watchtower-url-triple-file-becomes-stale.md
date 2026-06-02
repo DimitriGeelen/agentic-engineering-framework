@@ -173,15 +173,14 @@ Evidence:
 - `git log --all -p -- .context/working/watchtower.url`: only `.107` ever committed — confirming `.123` was a runtime-write that DHCP outran, never a hand-edit.
 - T-885 / T-1287 / T-1376 (Watchtower port resolution discipline) already established the triple-file as authoritative; this fix preserves that contract on the write side and adds a thin liveness check on the read side.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0d835c9d
-- **Timestamp:** 2026-04-30T19:12:24Z
+- **Scan ID:** R-9a7c213e
+- **Timestamp:** 2026-06-02T14:58:42Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-30T19:12:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

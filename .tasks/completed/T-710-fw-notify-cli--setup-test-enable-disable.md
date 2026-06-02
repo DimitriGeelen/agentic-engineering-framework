@@ -88,3 +88,17 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw notify status
 ### 2026-04-30T20:47:07Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
 - **Change:** tags: +arc:ntfy
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1bf5515a
+- **Timestamp:** 2026-06-02T15:04:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — Config persisted in `.context/notify-config.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/notify-config.yaml in: Config persisted in `.context/notify-config.yaml``

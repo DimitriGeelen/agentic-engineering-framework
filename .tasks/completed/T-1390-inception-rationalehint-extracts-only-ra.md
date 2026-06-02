@@ -76,3 +76,19 @@ Fix: extract only the content under `**Rationale:**` marker (up to the next `**.
 
 ### 2026-04-22T22:27:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0627f84f
+- **Timestamp:** 2026-06-02T14:57:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `rationale_hint` in `web/blueprints/inception.py` extracts only the `**Rationale:**` body when the `## Recommendation` section follows the structured format
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: `rationale_hint` in `web/blueprints/inception.py` extracts only the `**Rationale:**` body when the `## Recommendation` section follows the structured `
+- **AC#4 (Agent)** — 7 unit tests in `tests/web/test_inception_rationale_extraction.py` (structured, no-evidence, unstructured, empty, multi-paragraph, build-decomposition-stop)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/web/test_inception_rationale_extraction.py in: 7 unit tests in `tests/web/test_inception_rationale_extraction.py` (structured, no-evidence, unstructured, empty, multi-paragraph, build-decomposition`

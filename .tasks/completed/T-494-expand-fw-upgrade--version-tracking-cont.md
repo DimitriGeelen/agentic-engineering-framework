@@ -71,3 +71,17 @@ bash tests/e2e/upgrade-test.sh
 
 ### 2026-03-14T20:14:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99c89c82
+- **Timestamp:** 2026-06-02T15:03:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `grep -q "context_dirs" lib/upgrade.sh || grep -q "bus\|scans\|inbox" lib/upgrade.sh`

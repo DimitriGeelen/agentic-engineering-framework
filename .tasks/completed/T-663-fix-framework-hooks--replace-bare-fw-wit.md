@@ -70,3 +70,17 @@ test -f .context/working/.tool-counter && [ "$(cat .context/working/.tool-counte
 
 ### 2026-04-06T22:29:20Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a0ae140a
+- **Timestamp:** 2026-06-02T15:04:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Vendored copy `.agentic-framework/lib/init.sh` synced
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agentic-framework/lib/init.sh in: Vendored copy `.agentic-framework/lib/init.sh` synced`

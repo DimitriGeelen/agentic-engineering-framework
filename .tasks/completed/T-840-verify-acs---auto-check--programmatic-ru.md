@@ -77,3 +77,17 @@ date_finished: 2026-04-04T13:16:49Z
 
 ### 2026-04-04T13:16:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-35dec5d3
+- **Timestamp:** 2026-06-02T15:05:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw verify-acs --auto-check` flag added to lib/verify-acs.sh
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/verify-acs.sh in: `fw verify-acs --auto-check` flag added to lib/verify-acs.sh`

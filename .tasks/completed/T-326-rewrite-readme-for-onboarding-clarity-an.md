@@ -162,3 +162,22 @@ grep -qi 'semantic search\|natural language\|fw ask\|fw recall' README.md
 
 ### 2026-03-05T02:11:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-068fb3c3
+- **Timestamp:** 2026-06-02T15:02:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#15 (Agent)** — Fix `lib/setup.sh` reference → `lib/preflight.sh`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/setup.sh in: Fix `lib/setup.sh` reference → `lib/preflight.sh``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 14
+     - evidence: `grep -cEi 'cursor|copilot|cline|aider' README.md | grep -qv '^0$'`

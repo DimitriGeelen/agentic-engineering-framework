@@ -171,10 +171,10 @@ given that proposed scores are advisory and the trigger in
 ### 2026-05-19T18:33:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c243db59
-- **Timestamp:** 2026-05-21T07:20:19Z
+- **Scan ID:** R-2440aae6
+- **Timestamp:** 2026-06-02T15:00:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

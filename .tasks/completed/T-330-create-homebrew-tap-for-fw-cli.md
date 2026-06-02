@@ -60,3 +60,17 @@ gh repo view DimitriGeelen/homebrew-agentic-fw --json name -q .name
 
 ### 2026-03-05T01:34:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8d6b6a7e
+- **Timestamp:** 2026-06-02T15:02:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Ruby formula (Formula/fw.rb) with correct SHA256 and tarball URL
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=Formula/fw.rb in: Ruby formula (Formula/fw.rb) with correct SHA256 and tarball URL`

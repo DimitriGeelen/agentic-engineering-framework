@@ -107,10 +107,10 @@ The fix is the symptom mitigation (active probe), the prevention is the rule tha
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d5b3af2d
-- **Timestamp:** 2026-05-01T08:04:51Z
+- **Scan ID:** R-ec8a240e
+- **Timestamp:** 2026-06-02T14:58:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -120,7 +120,6 @@ The fix is the symptom mitigation (active probe), the prevention is the rule tha
 
 - **AC#1 (Agent)** — `fw doctor` parses `.claude/settings.json` and extracts every configured hook command (delegated to `lib/doctor-hook-exercise.py`)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: `fw doctor` parses `.claude/settings.json` and extracts every configured hook command (delegated to `lib/doctor-hook-exercise.py`)`
-
 ### 2026-05-01T08:02:27Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Verification bats reliably passes interactive (6/6) — gate flake under concurrent bg load (multiple stuck task-update processes). Implementation verified live: bin/fw doctor reports 'OK Hook exercise from /tmp: 14 hook(s) resolve from foreign CWD'.

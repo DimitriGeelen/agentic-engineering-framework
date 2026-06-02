@@ -94,10 +94,10 @@ bash -c 'td=$(mktemp -d); touch "$td/.framework.yaml"; out=$(FRAMEWORK_ROOT=/opt
 ### 2026-05-14T14:11:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-68349a37
-- **Timestamp:** 2026-05-14T14:22:30Z
+- **Scan ID:** R-f2002499
+- **Timestamp:** 2026-06-02T14:59:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -106,6 +106,5 @@ bash -c 'td=$(mktemp -d); touch "$td/.framework.yaml"; out=$(FRAMEWORK_ROOT=/opt
 - **Layer-1 escalations:** 1
   1. **destructive-action** (high) — Destructive operation in verification or AC
      - matched: `rm -rf`
-
 ### 2026-05-14T14:22:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

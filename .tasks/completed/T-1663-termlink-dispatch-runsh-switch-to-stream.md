@@ -111,15 +111,14 @@ Default timeout was NOT raised here despite the task title mentioning it — rai
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1663-termlink-dispatch-runsh-switch-to-stream.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-41d97125
-- **Timestamp:** 2026-05-01T21:33:02Z
+- **Scan ID:** R-2d92dc5f
+- **Timestamp:** 2026-06-02T14:58:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T21:33:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

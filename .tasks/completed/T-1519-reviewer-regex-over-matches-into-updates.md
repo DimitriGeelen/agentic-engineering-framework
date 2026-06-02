@@ -75,15 +75,19 @@ python3 -m pytest tests/unit/test_reviewer_verdict_preserves_updates.py -q 2>&1 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1519-reviewer-regex-over-matches-into-updates.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-56a01af5
-- **Timestamp:** 2026-04-26T21:23:42Z
+- **Scan ID:** R-879c6883
+- **Timestamp:** 2026-06-02T14:58:02Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `python3 -m pytest tests/unit/test_reviewer_verdict_preserves_updates.py -q 2>&1 | tail -3 | grep -qE "passed|ok"`
 ### 2026-04-26T21:23:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Regex fix + 3 regression tests + sanity-inverse confirmed + live smoke verified

@@ -52,3 +52,17 @@ ls .context/episodic/T-1025.yaml .context/episodic/T-1026.yaml
 
 ### 2026-04-07T13:31:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cdc0d4c8
+- **Timestamp:** 2026-06-02T14:54:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Orphaned fabric card removed (web-terminal.yaml → web/terminal.py, refactored to package)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/terminal.py in: Orphaned fabric card removed (web-terminal.yaml → web/terminal.py, refactored to package)`

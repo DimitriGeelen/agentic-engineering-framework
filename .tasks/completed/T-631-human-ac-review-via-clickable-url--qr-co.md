@@ -74,3 +74,19 @@ curl -sf http://localhost:3000/task/T-631 | grep -q "T-631"
 
 ### 2026-03-27T18:30:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8d1a414e
+- **Timestamp:** 2026-06-02T15:04:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw task review T-631 --help 2>&1 | grep -q "review"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf http://localhost:3000/task/T-631 | grep -q "T-631"`

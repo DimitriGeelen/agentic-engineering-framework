@@ -68,19 +68,13 @@ cd /opt/999-Agentic-Engineering-Framework && grep -q ", gpu)" CLAUDE.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1471-doc-drift-fix--add-gpu-subcommand-to-cla.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c0a775fd
-- **Timestamp:** 2026-04-25T19:36:59Z
+- **Scan ID:** R-abe67c30
+- **Timestamp:** 2026-06-02T14:57:42Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
-     - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor 2>&1 | grep -E "Doc drift.*gpu" >/dev/null && exit 1 || true`
-
+- **Findings:** none
 ### 2026-04-25T19:36:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

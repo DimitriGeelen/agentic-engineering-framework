@@ -157,3 +157,12 @@ T-1671 §ACD gate correctly refuses agent-side arc closure ($CLAUDECODE=1 → fw
 
 ### 2026-05-18T18:35:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fba60cd6
+- **Timestamp:** 2026-06-02T15:00:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

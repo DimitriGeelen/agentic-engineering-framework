@@ -220,8 +220,8 @@ bats tests/unit/update_task_horizon_null_on_close.bats >/tmp/.t2163-bats 2>&1; g
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3907a8f9
-- **Timestamp:** 2026-06-01T12:27:33Z
+- **Scan ID:** R-b0c28654
+- **Timestamp:** 2026-06-02T15:01:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -231,6 +231,5 @@ bats tests/unit/update_task_horizon_null_on_close.bats >/tmp/.t2163-bats 2>&1; g
 
 - **AC#3 (Agent)** — Re-running `bin/migrate-horizon-null-completed.sh` after a fresh full close emits `0 changes` (no new drift candidates).
   - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/migrate-horizon-null-completed.sh in: Re-running `bin/migrate-horizon-null-completed.sh` after a fresh full close emits `0 changes` (no new drift candidates).`
-
 ### 2026-06-01T12:27:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

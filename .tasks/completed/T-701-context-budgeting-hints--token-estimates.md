@@ -83,3 +83,17 @@ grep -q "Recommendation" .tasks/active/T-701-context-budgeting-hints--token-esti
 
 ### 2026-03-29T14:16:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-749b6e00
+- **Timestamp:** 2026-06-02T15:04:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `grep -q "Recommendation" .tasks/active/T-701-context-budgeting-hints--token-estimates.md 2>/dev/null || grep -q "Recommendation" .tasks/completed/T-701-context-budgeting-hints--token-estimates.md 2>/d`

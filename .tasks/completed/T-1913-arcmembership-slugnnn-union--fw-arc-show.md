@@ -221,14 +221,13 @@ test "$(bin/fw arc show arc-005 2>&1 | grep -cE '^  T-[0-9]+')" -ge 35
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1913-arcmembership-slugnnn-union--fw-arc-show.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2d2a3058
-- **Timestamp:** 2026-05-20T14:23:50Z
+- **Scan ID:** R-63f93f9d
+- **Timestamp:** 2026-06-02T15:00:25Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-20T14:23:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -208,8 +208,8 @@ python3 -m pytest tests/playwright/test_cockpit_activity_navigation.py -q --no-h
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0011183e
-- **Timestamp:** 2026-05-30T16:30:17Z
+- **Scan ID:** R-9fe6e769
+- **Timestamp:** 2026-06-02T15:01:10Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -219,6 +219,5 @@ python3 -m pytest tests/playwright/test_cockpit_activity_navigation.py -q --no-h
 
   1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
      - evidence: `python3 -m pytest tests/playwright/test_cockpit_activity_navigation.py -q --no-header > /tmp/.t2113-test.log 2>&1 && tail -1 /tmp/.t2113-test.log | grep -q "passed"`
-
 ### 2026-05-30T16:29:31Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

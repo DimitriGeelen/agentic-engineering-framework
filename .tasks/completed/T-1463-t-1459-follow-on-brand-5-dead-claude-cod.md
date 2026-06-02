@@ -76,15 +76,14 @@ test "$(grep -c 'session-end\.sh\|stop-guard\.sh\|subagent-stop\.sh\|pl007-scann
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1463-t-1459-follow-on-brand-5-dead-claude-cod.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f698dd8c
-- **Timestamp:** 2026-04-25T15:27:40Z
+- **Scan ID:** R-6e8fbfa6
+- **Timestamp:** 2026-06-02T14:57:39Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-25T15:27:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** 5 dead hooks branded with REFERENCE ONLY banner; all ACs pass

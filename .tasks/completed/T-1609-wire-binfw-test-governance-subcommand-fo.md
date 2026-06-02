@@ -102,14 +102,18 @@ bash -n bin/fw
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1609-wire-binfw-test-governance-subcommand-fo.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f4ad03a1
-- **Timestamp:** 2026-04-29T22:09:01Z
+- **Scan ID:** R-ed7f79b9
+- **Timestamp:** 2026-06-02T14:58:38Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw test invalidarg 2>&1 | grep -q governance`
 ### 2026-04-29T22:08:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

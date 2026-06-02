@@ -75,3 +75,17 @@ date_finished: 2026-03-29T18:20:54Z
 
 ### 2026-03-29T18:20:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-189d7542
+- **Timestamp:** 2026-06-02T15:04:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Bats test file exists at `tests/integration/fw_notify.bats`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/fw_notify.bats in: Bats test file exists at `tests/integration/fw_notify.bats``

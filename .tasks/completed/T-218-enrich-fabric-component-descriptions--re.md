@@ -64,3 +64,19 @@ python3 -c "import urllib.request; r=urllib.request.urlopen('http://localhost:30
 
 ### 2026-02-20T09:07:51Z — status-update [task-update-agent]
 - **Change:** owner: human → human
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a11a25bf
+- **Timestamp:** 2026-06-02T15:01:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `! grep -rl "TODO" .fabric/components/ | grep -q .`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `! curl -s http://localhost:3000/fabric | grep -q "TODO"`

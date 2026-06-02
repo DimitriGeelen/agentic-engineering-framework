@@ -144,15 +144,14 @@ Layer-1 mitigation from T-1729 meta-RCA: UserPromptSubmit hook routes user messa
 - **Change:** status: captured → started-work
 - **Reason:** Inception decision in progress
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-285aed82
-- **Timestamp:** 2026-05-05T06:47:22Z
+- **Scan ID:** R-12cebc37
+- **Timestamp:** 2026-06-02T14:59:23Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-05T06:47:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

@@ -271,8 +271,8 @@ the human can groom into a structural fix when it surfaces in the inbox.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d25afc35
-- **Timestamp:** 2026-05-29T11:51:48Z
+- **Scan ID:** R-a16b9795
+- **Timestamp:** 2026-06-02T15:01:04Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -282,6 +282,5 @@ the human can groom into a structural fix when it surfaces in the inbox.
 
   1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 40
      - evidence: `out=$(bin/fw audit 2>&1); ! echo "$out" | grep -qE "Duplicate task IDs detected"`
-
 ### 2026-05-29T11:51:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

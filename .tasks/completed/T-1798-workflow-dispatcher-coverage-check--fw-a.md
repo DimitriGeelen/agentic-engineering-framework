@@ -115,10 +115,10 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); import workflow_coverage; r =
 - **Action:** Created task
 - **Context:** T-1776 prevention slice — convert runtime trap to audit-time visibility
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-eb7cbf34
-- **Timestamp:** 2026-05-12T22:07:38Z
+- **Scan ID:** R-339c071e
+- **Timestamp:** 2026-06-02T14:59:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -128,6 +128,5 @@ python3 -c "import sys; sys.path.insert(0, 'lib'); import workflow_coverage; r =
 
 - **AC#3 (Agent)** — `agents/audit/audit.sh` orchestrator section calls the coverage helper
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `agents/audit/audit.sh` orchestrator section calls the coverage helper`
-
 ### 2026-05-12T22:07:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

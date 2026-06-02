@@ -268,3 +268,12 @@ Critical user-facing warning (immediate, until B1-B4 ship):
 > Do NOT run `fw cron install` on any consumer where `cron-registry.yaml` shows `jobs: []` AND `/etc/cron.d/agentic-audit-<slug>` exists. The install will silently wipe the working audit schedule. Affected on this host: `/003-NTB-ATC-Plugin`, `/opt/150-skills-manager`. Use legacy `fw audit schedule install` until structural fix lands.
 
 Research artifact: `docs/reports/T-1261-consumer-cron-seed.md` (full spike findings, build decomposition table B1-B10, blast radius enumeration).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-06c65c82
+- **Timestamp:** 2026-06-02T14:56:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

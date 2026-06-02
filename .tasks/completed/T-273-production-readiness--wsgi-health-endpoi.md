@@ -94,3 +94,19 @@ grep -qv '"/tmp/' web/embeddings.py || echo "WARN: /tmp still referenced"
 
 ### 2026-02-25T08:34:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9bb950cc
+- **Timestamp:** 2026-06-02T15:01:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — All hardcoded model names in `web/ask.py` replaced with config references
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/ask.py in: All hardcoded model names in `web/ask.py` replaced with config references`
+- **AC#7 (Agent)** — Embedding DB path configurable via `VECTOR_DB_PATH` env var (default: `.context/working/fw-vec-index.db`)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/fw-vec-index.db in: Embedding DB path configurable via `VECTOR_DB_PATH` env var (default: `.context/working/fw-vec-index.db`)`

@@ -92,13 +92,18 @@ python3 -c "from web.blueprints.cockpit import get_action_summary; s = get_actio
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1577-f10--extend-no-rec-distinction-to-landin.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e840a786
-- **Timestamp:** 2026-04-28T20:15:03Z
+- **Scan ID:** R-929562df
+- **Timestamp:** 2026-06-02T14:58:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `curl -sf "$(bin/fw watchtower url)/" | grep -qE 'NO-REC' && echo "NO-REC pill present" || echo "NO-REC pill missing"`
 ### 2026-04-28T11:07:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

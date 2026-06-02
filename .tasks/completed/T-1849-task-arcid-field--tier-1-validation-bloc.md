@@ -175,10 +175,10 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c98bb166
-- **Timestamp:** 2026-05-16T09:20:21Z
+- **Scan ID:** R-59a69254
+- **Timestamp:** 2026-06-02T15:00:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -188,7 +188,6 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'Fail: 0')" -ge 1
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 24
      - evidence: `bats tests/unit/arc_id_validation_guard.bats >/dev/null 2>&1`
-
 ### 2026-05-16T09:19:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** All 5 ACs met, 8/8 verification commands PASS, 15/15 bats tests PASS, no Human ACs (no render surface touched)

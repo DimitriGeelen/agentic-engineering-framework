@@ -111,18 +111,24 @@ bash -c 'cat .context/pickup/{inbox,processed}/P-046-bug-report.yaml 2>/dev/null
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-71e74fd5
-- **Timestamp:** 2026-05-14T14:26:38Z
+- **Scan ID:** R-9b60300f
+- **Timestamp:** 2026-06-02T14:59:52Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** none
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bash -c 'cat .context/pickup/{inbox,processed}/P-046-bug-report.yaml 2>/dev/null | grep -q "T-1826"'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bash -c 'cat .context/pickup/{inbox,processed}/P-046-bug-report.yaml 2>/dev/null | grep -q "termlink"'`
 
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `Cross-repo`
-
 ### 2026-05-14T14:26:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

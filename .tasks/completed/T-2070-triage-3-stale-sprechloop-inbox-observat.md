@@ -197,8 +197,8 @@ Verified 2026-05-28 against current framework state. All four gaps shipped fixes
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2509c388
-- **Timestamp:** 2026-05-28T17:38:28Z
+- **Scan ID:** R-7b29a43d
+- **Timestamp:** 2026-06-02T15:00:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -208,6 +208,5 @@ Verified 2026-05-28 against current framework state. All four gaps shipped fixes
 
 - **AC#1 (Agent)** — G-001 (hooks-not-propagated) verified against current `lib/init.sh` + `lib/upgrade.sh` — classified resolved with `lib/upgrade.sh:783-880` + `lib/init.sh:589-777` evidence.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/init.sh in: G-001 (hooks-not-propagated) verified against current `lib/init.sh` + `lib/upgrade.sh` — classified resolved with `lib/upgrade.sh:783-880` + `lib/init`
-
 ### 2026-05-28T17:38:27Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

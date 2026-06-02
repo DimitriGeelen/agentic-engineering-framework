@@ -90,3 +90,17 @@ grep -q "NTFY_ENABLED" lib/notify.sh
 ### 2026-04-30T20:47:07Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
 - **Change:** tags: +arc:ntfy
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ab790195
+- **Timestamp:** 2026-06-02T15:04:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — Sourced by framework scripts via `source "$FRAMEWORK_ROOT/lib/notify.sh"`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=FRAMEWORK_ROOT/lib/notify.sh in: Sourced by framework scripts via `source "$FRAMEWORK_ROOT/lib/notify.sh"``

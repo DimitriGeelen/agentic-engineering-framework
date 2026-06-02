@@ -122,14 +122,19 @@ ls .context/audits/reviewer/*-pass-b.yaml 2>/dev/null | grep -qE "[0-9]{4}-[0-9]
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1484-reviewer-v15b--extend-fw-reviewer-audit-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b0941192
-- **Timestamp:** 2026-04-28T20:18:58Z
+- **Scan ID:** R-9ba9a034
+- **Timestamp:** 2026-06-02T14:57:48Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `ls .context/audits/reviewer/*-pass-b.yaml 2>/dev/null | grep -qE "[0-9]{4}-[0-9]{2}-[0-9]{2}-pass-b\.yaml"`
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#6 (Agent)

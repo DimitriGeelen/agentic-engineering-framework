@@ -211,8 +211,8 @@ n=$(awk 'BEGIN{p=0} /^## Open Questions/{p=1; next} p && /^## /{p=0} p' docs/rep
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-19c7def8
-- **Timestamp:** 2026-06-01T16:59:56Z
+- **Scan ID:** R-de2ab8d9
+- **Timestamp:** 2026-06-02T15:01:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -229,6 +229,5 @@ n=$(awk 'BEGIN{p=0} /^## Open Questions/{p=1; next} p && /^## /{p=0} p' docs/rep
      - evidence: `grep -q "^**Recommendation:** \(GO\|NO-GO\|GO with refinements\)" docs/reports/T-2157-value-drivers-v3-redesign.md || grep -qE "^\*\*Recommendation:\*\* (GO|NO-GO|GO with refinements)" docs/reports/T-`
   2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
      - evidence: `grep -c "^### F-\(RECALL\|ORCH\|AUTONOMY\)" docs/reports/T-2157-value-drivers-v3-redesign.md | grep -q "^3$"`
-
 ### 2026-06-01T16:59:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

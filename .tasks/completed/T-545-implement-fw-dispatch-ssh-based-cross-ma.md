@@ -63,3 +63,19 @@ date_finished: 2026-03-23T09:51:53Z
 
 ### 2026-03-23T09:51:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-14a5b309
+- **Timestamp:** 2026-06-02T15:03:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — fw dispatch command implemented (~130 lines bash in lib/dispatch.sh)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/dispatch.sh in: fw dispatch command implemented (~130 lines bash in lib/dispatch.sh)`
+- **AC#2 (Agent)** — fw bus receive command implemented (~35 lines bash in lib/bus.sh)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bus.sh in: fw bus receive command implemented (~35 lines bash in lib/bus.sh)`

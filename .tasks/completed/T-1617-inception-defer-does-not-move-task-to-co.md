@@ -157,15 +157,14 @@ Three spikes (each <15min):
   - Cross-cutting impact: handover Work-In-Progress + Watchtower /tasks + fw task list all read status without filtering on Decision
   - Smallest viable path (Option C): one helper `task_is_actively_worked()` that returns false if `Decision == DEFER`, called from the 3 consumers
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-91f7261f
-- **Timestamp:** 2026-04-30T09:22:10Z
+- **Scan ID:** R-acf2423e
+- **Timestamp:** 2026-06-02T14:58:41Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-30T09:22:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

@@ -174,14 +174,18 @@ bats tests/unit/inception_start_recommendation_gate.bats
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1716-filing-time---recommendation-gate-on-fw-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-fad4390b
-- **Timestamp:** 2026-05-04T21:56:27Z
+- **Scan ID:** R-0c713fc5
+- **Timestamp:** 2026-06-02T14:59:17Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `{ CLAUDECODE=1 bin/fw inception start "verify-gate-fires" 2>&1 || true; } | grep -qE "recommendation.*required|--recommendation"`
 ### 2026-05-04T21:56:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

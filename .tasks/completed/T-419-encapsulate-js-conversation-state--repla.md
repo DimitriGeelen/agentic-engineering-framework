@@ -67,3 +67,19 @@ See research artifact § "JAVASCRIPT" row J3.
 
 ### 2026-03-11T07:46:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3cb5df87
+- **Timestamp:** 2026-06-02T15:02:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `! grep -E '^(var|let) _chat(History|Abort|Scope)' web/static/js/chat.js | grep -q .`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `! grep -E '^(var|let) _(askAbort|lastQuestion|lastAnswer)' web/static/js/search-qa.js | grep -q .`

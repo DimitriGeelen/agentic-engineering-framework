@@ -212,8 +212,8 @@ test -f .context/working/.reviewed-T-2123
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-01a6d42c
-- **Timestamp:** 2026-05-30T21:46:25Z
+- **Scan ID:** R-8051490c
+- **Timestamp:** 2026-06-02T15:01:13Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -225,6 +225,5 @@ test -f .context/working/.reviewed-T-2123
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/review.sh in: Option A: `lib/review.sh:emit_review` emits `Open: <url>` line directly after the QR rendering and before the Artifacts block`
 - **AC#2 (Agent)** — Option C: `lib/review.sh:emit_review` emits `→ Decide: <url>` line after the review-marker block (final visible line of output)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/review.sh in: Option C: `lib/review.sh:emit_review` emits `→ Decide: <url>` line after the review-marker block (final visible line of output)`
-
 ### 2026-05-30T21:46:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -74,3 +74,20 @@ grep -q "docs-overflow" web/templates/project.html
 
 ### 2026-03-10T22:04:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-991df8fa
+- **Timestamp:** 2026-06-02T15:02:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/project > /dev/null`
+
+- **Suppressed:** 1 (by override)
+  - human-ac-mechanical-signal @ AC#1 (Human)

@@ -117,14 +117,13 @@ The framework process running from FRAMEWORK_ROOT had no business resolving PROJ
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1747-harden-webdiscoverprojectroot--remove-st.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2c9fb138
-- **Timestamp:** 2026-05-05T18:06:24Z
+- **Scan ID:** R-ed6c0a9d
+- **Timestamp:** 2026-06-02T14:59:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-05T18:05:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

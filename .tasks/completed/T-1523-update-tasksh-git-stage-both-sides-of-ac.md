@@ -75,14 +75,13 @@ Fix: use `git mv` when the file is tracked (auto-stages both rename sides); fall
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1523-update-tasksh-git-stage-both-sides-of-ac.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-346488b2
-- **Timestamp:** 2026-04-26T21:58:43Z
+- **Scan ID:** R-f5462090
+- **Timestamp:** 2026-06-02T14:58:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T21:58:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

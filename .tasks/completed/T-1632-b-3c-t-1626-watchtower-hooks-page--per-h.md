@@ -101,10 +101,10 @@ PYTHONDONTWRITEBYTECODE=1 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/t
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ff667b43
-- **Timestamp:** 2026-05-01T09:57:45Z
+- **Scan ID:** R-51edb261
+- **Timestamp:** 2026-06-02T14:58:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -118,6 +118,5 @@ PYTHONDONTWRITEBYTECODE=1 FW_TEST_PORT=3000 python3 -m pytest tests/playwright/t
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/hooks.html in: `web/templates/hooks.html` renders the table with: hook name, fires, failures, ratio %, status badge (FAIL / ok); summary metrics (total hooks, total `
 - **AC#3 (Agent)** — Blueprint registered in `web/blueprints/__init__.py` and added to the `Govern` nav group in `web/shared.py`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/__init__.py in: Blueprint registered in `web/blueprints/__init__.py` and added to the `Govern` nav group in `web/shared.py``
-
 ### 2026-05-01T09:57:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

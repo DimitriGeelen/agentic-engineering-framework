@@ -72,3 +72,15 @@ python3 -c "import sys; html=open('web/templates/fabric_explorer.html').read(); 
 
 ### 2026-04-12T09:27:23Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aa3e6705
+- **Timestamp:** 2026-06-02T15:05:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - human-ac-mechanical-signal @ AC#1 (Human)

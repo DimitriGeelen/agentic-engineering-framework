@@ -214,14 +214,18 @@ The same `bats` file covers both approve and remove because they're a state-tran
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1979-t-1976-round-trip-dedup-approve-driver--.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-869a5add
-- **Timestamp:** 2026-05-21T13:41:27Z
+- **Scan ID:** R-7b8d2409
+- **Timestamp:** 2026-06-02T15:00:43Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 25
+     - evidence: `bats tests/unit/arc_remove_driver_verb.bats 2>&1 | tail -1 | grep -q "^ok 18 "`
 ### 2026-05-21T13:41:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -75,3 +75,19 @@ fw costs and fw self-test have no integration tests. Add coverage.
 
 ### 2026-04-06T10:47:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4958ccf6
+- **Timestamp:** 2026-06-02T15:05:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — tests/integration/fw_costs.bats created (4 tests)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/fw_costs.bats in: tests/integration/fw_costs.bats created (4 tests)`
+- **AC#2 (Agent)** — tests/integration/fw_self_test.bats created (4 tests)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/fw_self_test.bats in: tests/integration/fw_self_test.bats created (4 tests)`

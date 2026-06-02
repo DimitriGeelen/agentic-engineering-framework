@@ -191,15 +191,14 @@ The user-chosen approach (β) from the T-1687 grilling is exactly this inception
 - **Change:** horizon: next → now (auto-sync)
 - **Reason:** Inception decision in progress
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d36d6517
-- **Timestamp:** 2026-05-13T17:39:25Z
+- **Scan ID:** R-b6901927
+- **Timestamp:** 2026-06-02T14:59:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-13T17:39:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

@@ -69,3 +69,19 @@ None — straightforward enhancement with no meaningful alternatives.
 
 ### 2026-03-10T22:04:14Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d3f2dc6d
+- **Timestamp:** 2026-06-02T15:02:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf http://localhost:3000/ | grep -q 'T-398'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `curl -sf http://localhost:3000/ | grep -q 'Concerns'`

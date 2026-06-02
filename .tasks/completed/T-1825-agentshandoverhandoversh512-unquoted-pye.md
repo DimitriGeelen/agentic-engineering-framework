@@ -111,14 +111,18 @@ grep -q "python3 << 'PYEOF'" agents/handover/handover.sh
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8e27d6fa
-- **Timestamp:** 2026-05-14T14:01:58Z
+- **Scan ID:** R-f7de059d
+- **Timestamp:** 2026-06-02T14:59:52Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bash -c "! shellcheck agents/handover/handover.sh 2>&1 | grep -q SC2284"`
 ### 2026-05-14T14:01:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

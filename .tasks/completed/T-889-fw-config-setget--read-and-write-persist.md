@@ -58,3 +58,17 @@ bin/fw config --help 2>&1 | grep -q "set\|get"
 
 ### 2026-04-05T12:44:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-588ee6da
+- **Timestamp:** 2026-06-02T15:05:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw config --help 2>&1 | grep -q "set\|get"`

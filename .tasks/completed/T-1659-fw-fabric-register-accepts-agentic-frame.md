@@ -146,8 +146,8 @@ out=$(bin/fw fabric register .agentic-framework/lib/hook-telemetry.sh 2>&1 || tr
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e1c55468
-- **Timestamp:** 2026-05-28T19:44:25Z
+- **Scan ID:** R-3bb4c79b
+- **Timestamp:** 2026-06-02T14:58:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -157,6 +157,5 @@ out=$(bin/fw fabric register .agentic-framework/lib/hook-telemetry.sh 2>&1 || tr
 
 - **AC#4 (Agent)** — `bats tests/unit/fabric_register_slug.bats` pins: (a) `.context/project/workflows/foo.yaml` → slug `context-project-workflows-foo`; (b) `.agentic-framework/lib/hook-telemetry.sh` → REJECT exit non-zer
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/workflows/foo.yaml in: `bats tests/unit/fabric_register_slug.bats` pins: (a) `.context/project/workflows/foo.yaml` → slug `context-project-workflows-foo`; (b) `.agentic-fram`
-
 ### 2026-05-28T19:44:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

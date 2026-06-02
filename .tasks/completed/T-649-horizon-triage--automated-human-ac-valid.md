@@ -54,3 +54,19 @@ bash tests/e2e/upgrade-test.sh 2>&1 | grep -q "All 8 upgrade tests passed"
 
 ### 2026-03-27T17:54:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-56051991
+- **Timestamp:** 2026-06-02T15:04:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `test $(for f in .tasks/active/T-*.md; do sed -n '/^---$/,/^---$/p' "$f" | grep -q '^horizon: now' && echo x; done | wc -l) -lt 25`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bash tests/e2e/upgrade-test.sh 2>&1 | grep -q "All 8 upgrade tests passed"`

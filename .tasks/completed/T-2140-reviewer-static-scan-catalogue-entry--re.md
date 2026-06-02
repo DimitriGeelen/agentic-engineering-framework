@@ -256,8 +256,8 @@ grep -q "Findings: 5 across 5 files\|Findings (per-AC) | 5" docs/reports/T-2140-
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ea58dc8d
-- **Timestamp:** 2026-05-31T21:28:42Z
+- **Scan ID:** R-fc8f0b4d
+- **Timestamp:** 2026-06-02T15:01:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -267,6 +267,5 @@ grep -q "Findings: 5 across 5 files\|Findings (per-AC) | 5" docs/reports/T-2140-
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_reviewer_review_link_homework.py -q`
-
 ### 2026-05-31T21:28:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

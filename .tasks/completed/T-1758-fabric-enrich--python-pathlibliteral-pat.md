@@ -144,10 +144,10 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -c "import os,yaml; n=sum(1
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1758-fabric-enrich--python-pathlibliteral-pat.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a2680d35
-- **Timestamp:** 2026-05-06T05:42:35Z
+- **Scan ID:** R-e7fd4a65
+- **Timestamp:** 2026-06-02T14:59:33Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -157,6 +157,5 @@ cd /opt/999-Agentic-Engineering-Framework && python3 -c "import os,yaml; n=sum(1
 
 - **AC#1 (Agent)** — `agents/fabric/lib/enrich.py` exports `detect_python_path_refs(content, source_location, framework_root) -> list[(target, etype)]` covering pathlib-chain, literal-quoted-paths, and bare `bin/fw` patte
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/fabric/lib/enrich.py in: `agents/fabric/lib/enrich.py` exports `detect_python_path_refs(content, source_location, framework_root) -> list[(target, etype)]` covering pathlib-ch`
-
 ### 2026-05-06T05:42:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -70,3 +70,17 @@ bin/fw --version | grep -qE "^fw v[0-9]+\.[0-9]+\.[0-9]+"
 
 ### 2026-04-19T15:57:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1141daad
+- **Timestamp:** 2026-06-02T14:56:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw --version | grep -qE "^fw v[0-9]+\.[0-9]+\.[0-9]+"`

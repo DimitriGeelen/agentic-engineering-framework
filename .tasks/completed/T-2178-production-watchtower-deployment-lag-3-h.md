@@ -10,10 +10,10 @@ description: >
   master). Option (b) from OBS-044 — the (a) "re-tag + deploy" path is an
   operational decision and stays operator territory.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [obs-044, partial-complete-url-rot, watchtower-fqdn-rewrite]
 components: [.tasks/active/T-1990, .tasks/active/T-1994]
 related_tasks: [T-1990, T-1994, T-1687]
@@ -22,8 +22,8 @@ related_tasks: [T-1990, T-1994, T-1687]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T13:21:22Z
-last_update: 2026-06-02T13:22:50Z
-date_finished:
+last_update: 2026-06-02T13:27:22Z
+date_finished: 2026-06-02T13:27:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -159,3 +159,14 @@ The honest scoping: T-2178 fixes the symptom; the prevention rail is *not* shipp
 
 ### 2026-06-02T13:22:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6081c629
+- **Timestamp:** 2026-06-02T15:01:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+### 2026-06-02T13:27:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

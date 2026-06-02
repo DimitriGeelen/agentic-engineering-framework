@@ -258,3 +258,17 @@ schema change fails them loudly with a clear message.
 ### 2026-05-22T19:05:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e8ad091b
+- **Timestamp:** 2026-06-02T15:00:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 -m pytest tests/unit/test_arc_system.py tests/unit/test_render_artefact_paths.py tests/unit/test_render_page_guard.py tests/unit/test_arc_headline_demo.py tests/unit/test_arc_close_agent_gate.`

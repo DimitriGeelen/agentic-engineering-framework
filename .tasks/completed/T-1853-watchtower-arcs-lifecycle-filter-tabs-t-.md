@@ -168,13 +168,18 @@ The slice absorbs T-1855's deferred AC #4 (stale badge on Watchtower) and unbloc
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-345340f6
-- **Timestamp:** 2026-05-18T09:30:59Z
+- **Scan ID:** R-ab64ffcd
+- **Timestamp:** 2026-06-02T15:00:02Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] Filter strip + stale badge fit Watchtower's visual rhythm and the operator finds the new surface intuitive
+  - **review-link-homework** (partial, heuristic) — `homework-pattern='URL from `bin/fw watchtower url`'`
 ### 2026-05-16T22:26:31Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

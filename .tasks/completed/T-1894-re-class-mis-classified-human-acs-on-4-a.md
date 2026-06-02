@@ -196,10 +196,10 @@ test "$(grep -c '^## Prong [1-5]' docs/reports/arc-005-headline-mechanic-demo.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1894-re-class-mis-classified-human-acs-on-4-a.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-47789b28
-- **Timestamp:** 2026-05-18T10:09:41Z
+- **Scan ID:** R-d566d1ab
+- **Timestamp:** 2026-06-02T15:00:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

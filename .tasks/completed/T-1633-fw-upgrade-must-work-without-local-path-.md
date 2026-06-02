@@ -161,15 +161,14 @@ T-1633 closes once both follow-ups are filed.
 - **Decision:** GO
 - **Rationale:** A vendored consumer cannot upgrade itself without scavenging the developer's filesystem. The framework's upgrade flow has had an unstated precondition all along — *"the developer's checkout is somewhere on this filesystem"* — that's invisible until a non-developer hits it. T-1542 fixed the crash and shipped a louder dead-end; the user story stayed broken. The fix is structural: replace the local-path assumption with a remote URL, add the missing fresh-machine simulation guard, and codify the rule. Without the simulation guard, we will regenerate this class of failure forever.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5be9a7ad
-- **Timestamp:** 2026-05-01T10:29:47Z
+- **Scan ID:** R-d1663c3c
+- **Timestamp:** 2026-06-02T14:58:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T10:29:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

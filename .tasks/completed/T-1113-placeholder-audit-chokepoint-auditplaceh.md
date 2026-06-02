@@ -81,3 +81,17 @@ bats tests/integration/audit_blocks_review_and_decide.bats
 
 ### 2026-04-11T22:13:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c26b8771
+- **Timestamp:** 2026-06-02T14:55:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — `.context/project/concerns.yaml`: G-018 marked resolved_by: T-1113.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: `.context/project/concerns.yaml`: G-018 marked resolved_by: T-1113.`

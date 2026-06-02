@@ -69,3 +69,17 @@ DOC_OUT=$(bin/fw doctor 2>&1); ! echo "$DOC_OUT" | grep -q "Doc drift:"
 
 ### 2026-04-24T16:48:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-11c59200
+- **Timestamp:** 2026-06-02T14:57:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `DOC_OUT=$(bin/fw doctor 2>&1); ! echo "$DOC_OUT" | grep -q "Doc drift:"`

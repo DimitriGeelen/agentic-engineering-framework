@@ -99,10 +99,10 @@ bash -c "source agents/termlink/termlink.sh; out=\$(_resolve_dispatch_model_and_
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1682-orchestrator-arc-failure-path-verificati.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d2181a71
-- **Timestamp:** 2026-05-02T14:34:11Z
+- **Scan ID:** R-0a0a0a09
+- **Timestamp:** 2026-06-02T14:59:06Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -112,6 +112,5 @@ bash -c "source agents/termlink/termlink.sh; out=\$(_resolve_dispatch_model_and_
 
 - **AC#5 (Agent)** — `/orchestrator` re-fetched renders new haiku-for-build success rate `82%` (was 90%). Verified: `grep -c "82%" /tmp/orch-page-postfail.html` returns 2.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tmp/orch-page-postfail.html in: `/orchestrator` re-fetched renders new haiku-for-build success rate `82%` (was 90%). Verified: `grep -c "82%" /tmp/orch-page-postfail.html` returns 2.`
-
 ### 2026-05-02T14:34:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

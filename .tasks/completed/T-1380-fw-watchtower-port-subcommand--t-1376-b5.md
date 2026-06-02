@@ -61,3 +61,32 @@ grep -q 'fw watchtower port' CLAUDE.md
 
 ### 2026-04-22T19:02:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-77c77098
+- **Timestamp:** 2026-06-02T14:57:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 7
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `bin/watchtower.sh port` prints the current port (integer) from `.context/working/watchtower.port` when Watchtower is running
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/watchtower.port in: `bin/watchtower.sh port` prints the current port (integer) from `.context/working/watchtower.port` when Watchtower is running`
+- **AC#2 (Agent)** — `bin/watchtower.sh url` prints the current URL from `.context/working/watchtower.url` when Watchtower is running
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/watchtower.url in: `bin/watchtower.sh url` prints the current URL from `.context/working/watchtower.url` when Watchtower is running`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/watchtower.sh port | grep -qE '^[0-9]+$'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/watchtower.sh url | grep -qE '^https?://'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw watchtower port | grep -qE '^[0-9]+$'`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/watchtower.sh --help | grep -q 'port '`
+  5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `bin/watchtower.sh --help | grep -q 'url '`

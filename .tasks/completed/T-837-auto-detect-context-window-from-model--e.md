@@ -216,3 +216,12 @@ Evidence:
 - FW_CONTEXT_WINDOW env var already provides per-project override capability
 - Auto-detection would require API calls or model metadata that may not be available offline
 - The "right" context window is a user preference, not a model property
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c5c4b6ee
+- **Timestamp:** 2026-06-02T15:05:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

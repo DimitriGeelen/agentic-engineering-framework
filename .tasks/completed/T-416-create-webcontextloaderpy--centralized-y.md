@@ -80,3 +80,17 @@ curl -sf http://localhost:3000/learnings > /dev/null || echo 'Flask not running 
 
 ### 2026-03-10T23:17:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-009205ec
+- **Timestamp:** 2026-06-02T15:02:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `! grep -r 'yaml.safe_load' web/blueprints/discovery.py | grep -v 'import' | grep -q .`

@@ -119,14 +119,14 @@ bats tests/unit/test_fw_gaps_closure_check.bats
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dee61a49
-- **Timestamp:** 2026-05-05T21:40:08Z
+- **Scan ID:** R-5805fbee
+- **Timestamp:** 2026-06-02T14:59:31Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 5
 
 **Per-AC findings:**
 
@@ -137,6 +137,11 @@ bats tests/unit/test_fw_gaps_closure_check.bats
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 1
      - evidence: `bin/fw gaps >/dev/null`
-
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw gaps | grep -q 'G-064'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw gaps | grep -A2 'G-064' | grep -q 'Closure:'`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw gaps | grep -A2 'G-064' | grep -q 'NOT_READY'`
 ### 2026-05-05T21:40:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

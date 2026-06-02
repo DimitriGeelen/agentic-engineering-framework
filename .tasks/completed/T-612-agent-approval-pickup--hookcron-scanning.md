@@ -81,3 +81,17 @@ bin/fw approvals --help 2>&1 | grep -q "approvals"
 
 ### 2026-03-26T12:30:48Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3cfb5487
+- **Timestamp:** 2026-06-02T15:03:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw approvals --help 2>&1 | grep -q "approvals"`

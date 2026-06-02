@@ -186,14 +186,13 @@ across a storage format boundary" — invisible until a migration runs.
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-324e2f7d
-- **Timestamp:** 2026-05-17T15:56:03Z
+- **Scan ID:** R-70d12e24
+- **Timestamp:** 2026-06-02T15:00:14Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-17T15:56:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -57,3 +57,17 @@ bats tests/unit/fw_mode_detection.bats
 
 ### 2026-04-23T18:48:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5df0bb74
+- **Timestamp:** 2026-06-02T14:57:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw version 2>&1 | grep -qE "^Mode:[[:space:]]+framework-repo"`

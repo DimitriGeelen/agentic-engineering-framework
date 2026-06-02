@@ -94,13 +94,22 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1585-surface-reviewer-verdict-on-inceptiont-x.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6035777c
-- **Timestamp:** 2026-04-28T20:17:25Z
+- **Scan ID:** R-0dbe7135
+- **Timestamp:** 2026-06-02T14:58:28Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `curl -sf "$(bin/fw watchtower url)/inception/T-1346" | grep -q '<section class="reviewer-verdict-block" data-reviewer-overall='`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/inception/T-1346" | grep -q '^200$'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
+     - evidence: `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 ### 2026-04-28T15:42:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

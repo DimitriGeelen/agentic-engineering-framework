@@ -159,15 +159,14 @@ Out of scope for this inception:
 - Actually shipping any of the six fixes (each gets its own task and RCA)
 - Reopening the consumer's `decided-defer` entries (consumer will reopen on framework-side fix landing)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dc348914
-- **Timestamp:** 2026-05-01T10:03:34Z
+- **Scan ID:** R-de544d04
+- **Timestamp:** 2026-06-02T14:58:44Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T10:03:34Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

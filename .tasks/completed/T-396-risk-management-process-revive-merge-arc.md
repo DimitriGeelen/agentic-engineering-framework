@@ -117,3 +117,12 @@ Research artifact: `docs/reports/T-396-risk-management-disposition.md`
 
 ### 2026-03-10T22:04:17Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6850cff4
+- **Timestamp:** 2026-06-02T15:02:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

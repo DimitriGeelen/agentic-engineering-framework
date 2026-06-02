@@ -54,3 +54,17 @@ python3 -c "import yaml; yaml.safe_load(open('.fabric/components/agents-session-
 
 ### 2026-04-05T15:47:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f85fbdbc
+- **Timestamp:** 2026-06-02T15:05:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Fabric card exists for web/blueprints/discovery.py
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/discovery.py in: Fabric card exists for web/blueprints/discovery.py`

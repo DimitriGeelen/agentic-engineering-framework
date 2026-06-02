@@ -79,10 +79,10 @@ python3 -m pytest tests/unit/test_termlink_route_cache_schema.py -v --tb=short
 - **Context:** Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.
 - **Scope split:** Framework-side schema pin in this task; cross-repo version-tag proposal sent via TermLink to termlink-agent.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c96b2b84
-- **Timestamp:** 2026-05-01T13:07:43Z
+- **Scan ID:** R-43e3b4ed
+- **Timestamp:** 2026-06-02T14:58:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
@@ -96,7 +96,6 @@ python3 -m pytest tests/unit/test_termlink_route_cache_schema.py -v --tb=short
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-repo`
-
 ### 2026-05-01T13:07:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

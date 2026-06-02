@@ -111,13 +111,22 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1575-structural-recommendation-rendering--uni.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-088107c2
-- **Timestamp:** 2026-04-28T20:17:25Z
+- **Scan ID:** R-8da5f0d3
+- **Timestamp:** 2026-06-02T14:58:24Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 9
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-rationale"'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'class="rec-evidence"'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 ### 2026-04-28T15:23:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

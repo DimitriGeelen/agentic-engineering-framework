@@ -205,10 +205,10 @@ test "$(grep -c 'pure HTML fragment' web/shared.py)" -ge 1
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1899-renderpage-runtime-guard--refuse-templat.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-31738bdf
-- **Timestamp:** 2026-05-18T17:25:42Z
+- **Scan ID:** R-24babad5
+- **Timestamp:** 2026-06-02T15:00:21Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -218,6 +218,5 @@ test "$(grep -c 'pure HTML fragment' web/shared.py)" -ge 1
 
 - **AC#5 (Agent)** — Live confirmation: temporarily re-introducing `{% extends "base.html" %}` at the top of `web/templates/arc_detail.html` causes `/arcs/arc-005` to return HTTP 500 with the actionable message (revert im
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_detail.html in: Live confirmation: temporarily re-introducing `{% extends "base.html" %}` at the top of `web/templates/arc_detail.html` causes `/arcs/arc-005` to retu`
-
 ### 2026-05-18T17:25:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -61,3 +61,17 @@ grep -q "top-down" web/templates/fabric_graph.html && grep -q "left-right" web/t
 
 ### 2026-02-21T20:14:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ce3caea8
+- **Timestamp:** 2026-06-02T15:01:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/fabric/graph | grep -q "dagre"`

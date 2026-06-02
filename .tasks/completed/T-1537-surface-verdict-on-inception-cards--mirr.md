@@ -99,10 +99,10 @@ python3 -c "from web.shared import extract_recommendation_verdict; assert extrac
 - **Output:** `web/blueprints/approvals.py`, `web/templates/approvals.html`, `tests/web/test_inception_verdict_render.py`
 - **Context:** Mirrors the T-1531 treatment for inception approval cards — build cards already had the verdict badge, inception cards were the missing surface.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f0f4a6af
-- **Timestamp:** 2026-04-28T20:17:25Z
+- **Scan ID:** R-3c047b85
+- **Timestamp:** 2026-06-02T14:58:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

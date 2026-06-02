@@ -51,3 +51,17 @@ bash -c 'fw audit 2>&1 | grep -q "CTL-012.*unchecked" && exit 1 || exit 0'
 
 ### 2026-02-19T21:59:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ad44fc02
+- **Timestamp:** 2026-06-02T15:00:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bash -c 'fw audit 2>&1 | grep -q "CTL-012.*unchecked" && exit 1 || exit 0'`

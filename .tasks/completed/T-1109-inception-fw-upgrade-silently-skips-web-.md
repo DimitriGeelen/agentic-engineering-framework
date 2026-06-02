@@ -169,3 +169,12 @@ Rationale: The RCA (worker + main session, ...
 - **Rationale:** Recommendation: GO — collapse `lib/upgrade.sh:do_upgrade()` step 4b into a single `do_vendor` call, add invariant tests, migrate the 4 broken consumers.
 
 Rationale: The RCA (worker + main session, ...
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b47df694
+- **Timestamp:** 2026-06-02T14:55:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

@@ -76,3 +76,19 @@ date_finished: 2026-04-03T20:14:17Z
 
 ### 2026-04-03T20:14:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b502231a
+- **Timestamp:** 2026-06-02T15:04:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `/costs` route added to route availability test in `web/test_app.py`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/test_app.py in: `/costs` route added to route availability test in `web/test_app.py``
+- **AC#3 (Agent)** — Tests pass: `pytest web/test_app.py -v -k costs`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/test_app.py in: Tests pass: `pytest web/test_app.py -v -k costs``

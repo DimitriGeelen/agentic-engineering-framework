@@ -189,14 +189,13 @@ out=$(grep -E "ship in T-1929|Live weight sliders \+ commit ship via" web/bluepr
 - grep shows zero remaining `ship in T-1929` references in `lib/` `web/` `policy/`
 - Verification command re-runs the structural check at the gate
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-72b5b3ae
-- **Timestamp:** 2026-05-21T07:08:16Z
+- **Scan ID:** R-15df8141
+- **Timestamp:** 2026-06-02T15:00:42Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-21T07:08:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

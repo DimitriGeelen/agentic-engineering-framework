@@ -93,10 +93,10 @@ grep -q "T-1720" tests/unit/test_cron_generate_shape.bats
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1769-cron-generate-shape--bats-fixture-pinnin.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-931a7583
-- **Timestamp:** 2026-05-06T16:23:49Z
+- **Scan ID:** R-6c1c438e
+- **Timestamp:** 2026-06-02T14:59:37Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -106,6 +106,5 @@ grep -q "T-1720" tests/unit/test_cron_generate_shape.bats
 
 - **AC#3 (Agent)** — Tests use isolated `TEST_PROJECT` temp dir (no mutation of real `.context/cron-registry.yaml`)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: Tests use isolated `TEST_PROJECT` temp dir (no mutation of real `.context/cron-registry.yaml`)`
-
 ### 2026-05-06T16:23:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

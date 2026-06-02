@@ -69,3 +69,26 @@ rm -rf /tmp/t184-verify2; fw audit --quiet --output /tmp/t184-verify2; python3 -
 
 ### 2026-02-19T20:57:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8a388910
+- **Timestamp:** 2026-06-02T15:00:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (ACs)** — `fw audit schedule install` installs cron entries to `/etc/cron.d/agentic-audit`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: `fw audit schedule install` installs cron entries to `/etc/cron.d/agentic-audit``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 2
+     - evidence: `rm -rf /tmp/t184-verify && fw audit --section structure --quiet --output /tmp/t184-verify && ls /tmp/t184-verify/*.yaml >/dev/null 2>&1`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`

@@ -77,3 +77,12 @@ test -s docs/articles/deep-dives/19-fabric-explorer.md
 
 ### 2026-04-06T22:29:22Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aed45425
+- **Timestamp:** 2026-06-02T15:04:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

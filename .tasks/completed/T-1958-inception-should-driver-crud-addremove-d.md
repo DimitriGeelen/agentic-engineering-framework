@@ -288,15 +288,14 @@ Out-of-scope follow-ups NOT recommended now:
 - Bulk-edit table: explicitly rejected by A4 (one row per write, with rationale, is the friction-as-feature design).
 - Calculator/visualisation UI for "how each global driver applies to each arc": separate complaint, already addressed by T-1956 (driver weights above-the-fold) — re-evaluate if human still finds it unclear after T-1956 lands.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a604fe4d
-- **Timestamp:** 2026-05-20T17:54:41Z
+- **Scan ID:** R-9b655bb5
+- **Timestamp:** 2026-06-02T15:00:39Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-20T17:54:41Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

@@ -85,14 +85,18 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw audit 2>&1 | grep -q "PASS n
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1510-d14-regex-false-positive--accept-bullete.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-adb57fb6
-- **Timestamp:** 2026-04-26T14:20:34Z
+- **Scan ID:** R-4e6fc280
+- **Timestamp:** 2026-06-02T14:57:58Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `cd /opt/999-Agentic-Engineering-Framework && bin/fw audit 2>&1 | grep -q "PASS no_empty_recommendations\|D14.*WARN.*[0-9]_empty: T-1499 T-1507" || echo "D14 still flagging T-844/T-705 wrongly"`
 ### 2026-04-26T14:18:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

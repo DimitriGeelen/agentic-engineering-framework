@@ -96,14 +96,30 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1582-add-htmx-error-handler-on-review-page--s.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7a127451
-- **Timestamp:** 2026-04-28T13:55:59Z
+- **Scan ID:** R-e84569cc
+- **Timestamp:** 2026-06-02T14:58:27Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 7
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'id="toast-container"'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'htmx:responseError'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'htmx:sendError'`
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q '.wt-toast'`
+  5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1565" | grep -q 'function showToast'`
+  6. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/review/T-1565" | grep -q '^200$'`
+  7. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 | grep -q '24 passed'`
 ### 2026-04-28T13:55:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

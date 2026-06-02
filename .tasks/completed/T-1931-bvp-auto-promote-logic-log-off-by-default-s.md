@@ -73,19 +73,23 @@ bats tests/unit/bvp_auto_promote.bats 2>&1 | tail -1 | grep -qE "ok 6|^6\.\.6"
 ### 2026-05-19T13:47:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-60e06261
-- **Timestamp:** 2026-05-19T13:54:31Z
+- **Scan ID:** R-3a90da19
+- **Timestamp:** 2026-06-02T15:00:32Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#1 (Agent)** — Logic in `lib/bvp.sh` reads `auto_promote.*` from `policy/value-drivers.yaml`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: Logic in `lib/bvp.sh` reads `auto_promote.*` from `policy/value-drivers.yaml``
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `bats tests/unit/bvp_auto_promote.bats 2>&1 | tail -1 | grep -qE "ok 6|^6\.\.6"`
 ### 2026-05-19T13:54:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

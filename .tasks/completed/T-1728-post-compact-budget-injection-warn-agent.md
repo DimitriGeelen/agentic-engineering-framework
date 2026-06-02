@@ -142,8 +142,8 @@ out=$(bash agents/context/post-compact-resume.sh 2>&1); echo "$out" > /tmp/.t172
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c6b673da
-- **Timestamp:** 2026-05-28T15:22:15Z
+- **Scan ID:** R-470033f3
+- **Timestamp:** 2026-06-02T14:59:22Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -153,6 +153,5 @@ out=$(bash agents/context/post-compact-resume.sh 2>&1); echo "$out" > /tmp/.t172
 
 - **AC#1 (Agent)** — `agents/context/post-compact-resume.sh` appends a Post-Compact Budget Note stanza to `$CONTEXT` that (a) tells the agent any prior-session budget assertions in the handover are stale, (b) cites `.cont
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/checkpoint.sh in: `agents/context/post-compact-resume.sh` appends a Post-Compact Budget Note stanza to `$CONTEXT` that (a) tells the agent any prior-session budget asse`
-
 ### 2026-05-28T15:22:07Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

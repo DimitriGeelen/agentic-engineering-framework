@@ -186,10 +186,10 @@ The mechanism contract (does flag work, does env var work, does git commit case 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1890-focus-drift-bypass-flag-mismatch--hook-r.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c4b51e83
-- **Timestamp:** 2026-05-18T07:28:48Z
+- **Scan ID:** R-0f48bf8b
+- **Timestamp:** 2026-06-02T15:00:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

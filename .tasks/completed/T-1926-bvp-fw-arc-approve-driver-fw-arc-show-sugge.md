@@ -86,10 +86,10 @@ Unlocks: T-1930 (Watchtower /arcs/<id> renders proposed_scoped_drivers with Appr
 ### 2026-05-19T07:44:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-61cc0942
-- **Timestamp:** 2026-05-19T07:47:45Z
+- **Scan ID:** R-7434225f
+- **Timestamp:** 2026-06-02T15:00:30Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -99,6 +99,5 @@ Unlocks: T-1930 (Watchtower /arcs/<id> renders proposed_scoped_drivers with Appr
 
 - **AC#4 (Agent)** — `fw arc approve-driver <arc> --none --justification "<≥30 chars>"` also flips status to in-progress AND writes to `.context/audits/arc-scoped-driver-bypass.jsonl` (arc_id, justification, ts) — proven 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/arc-scoped-driver-bypass.jsonl in: `fw arc approve-driver <arc> --none --justification "<≥30 chars>"` also flips status to in-progress AND writes to `.context/audits/arc-scoped-driver-b`
-
 ### 2026-05-19T07:47:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

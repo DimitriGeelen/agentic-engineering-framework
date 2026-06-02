@@ -107,10 +107,10 @@ python3 -m pytest tests/unit/test_orchestrator_routes.py tests/unit/test_orchest
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** CLI mirror of web /orchestrator's route-cache view
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9bd3419a
-- **Timestamp:** 2026-05-11T11:17:36Z
+- **Scan ID:** R-70554b8a
+- **Timestamp:** 2026-06-02T14:59:44Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -120,6 +120,5 @@ python3 -m pytest tests/unit/test_orchestrator_routes.py tests/unit/test_orchest
 
 - **AC#1 (Agent)** — `fw orchestrator routes` reads `/var/lib/termlink/route-cache.json`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=var/lib/termlink/route-cache.json in: `fw orchestrator routes` reads `/var/lib/termlink/route-cache.json``
-
 ### 2026-05-11T11:17:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

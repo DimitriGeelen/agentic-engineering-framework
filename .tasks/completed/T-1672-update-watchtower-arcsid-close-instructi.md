@@ -99,19 +99,25 @@ bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q -- "
 ### 2026-05-02T07:48:20Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c275dcb0
-- **Timestamp:** 2026-05-02T07:48:55Z
+- **Scan ID:** R-be7d0163
+- **Timestamp:** 2026-06-02T14:59:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 3
 
 **Per-AC findings:**
 
 - **AC#1 (Agent)** — `web/templates/arc_detail.html` close-instructions block shows
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/arc_detail.html in: `web/templates/arc_detail.html` close-instructions block shows`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q -- "--demo "'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bash -c 'curl -sf http://localhost:3000/arcs/orchestrator-rethink | grep -q -- "--from-watchtower"'`
 ### 2026-05-02T07:48:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

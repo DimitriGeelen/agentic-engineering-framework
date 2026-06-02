@@ -88,3 +88,17 @@ bin/fw audit --section structure --quiet
 
 ### 2026-02-25T09:36:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f411969b
+- **Timestamp:** 2026-06-02T15:01:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — `fw deploy` logs deployment record to `.context/deployments/YYYY-MM-DD-HHMM.yaml`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/deployments/YYYY-MM-DD-HHMM.yaml in: `fw deploy` logs deployment record to `.context/deployments/YYYY-MM-DD-HHMM.yaml``

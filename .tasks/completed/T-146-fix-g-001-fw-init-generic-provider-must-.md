@@ -54,3 +54,22 @@ grep -A3 "generic)" lib/init.sh | grep -q "generate_claude_code_config"
 
 ### 2026-02-18T10:02:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b920807e
+- **Timestamp:** 2026-06-02T14:57:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (ACs)** — `fw init` (generic provider) generates `.claude/settings.json` with all hooks
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: `fw init` (generic provider) generates `.claude/settings.json` with all hooks`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `grep -A3 "generic)" lib/init.sh | grep -q "generate_claude_code_config"`

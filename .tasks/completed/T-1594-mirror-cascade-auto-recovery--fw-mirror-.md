@@ -102,14 +102,14 @@ bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! ech
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1594-mirror-cascade-auto-recovery--fw-mirror-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5ae95374
-- **Timestamp:** 2026-04-28T22:18:27Z
+- **Scan ID:** R-b42a888a
+- **Timestamp:** 2026-06-02T15:10:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** FAIL
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 5
 
 **Per-AC findings:**
 
@@ -122,6 +122,9 @@ bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! ech
 
   1. **skip-as-pass** (severe, deterministic) @ Verification:line 9
      - evidence: `bin/fw mirror sync --dry-run --quiet`
-
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw mirror help 2>&1 | grep -q "sync"`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! echo "$out" | grep -q "^not ok" && [ "$(echo "$out" | grep -cE "^ok ")" -eq 8 ]'`
 ### 2026-04-28T22:18:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

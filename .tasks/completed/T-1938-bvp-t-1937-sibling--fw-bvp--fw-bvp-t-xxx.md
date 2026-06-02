@@ -245,10 +245,10 @@ confirmed scores exist yet. 8/8 new tests + 75 sibling tests PASS.
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1938-bvp-t-1937-sibling--fw-bvp--fw-bvp-t-xxx.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6c6c965a
-- **Timestamp:** 2026-05-20T18:22:46Z
+- **Scan ID:** R-c8132b52
+- **Timestamp:** 2026-06-02T15:00:33Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -258,6 +258,5 @@ confirmed scores exist yet. 8/8 new tests + 75 sibling tests PASS.
 
 - **AC#7 (Agent)** — Unit tests in `tests/unit/test_bvp_cli_rank_proposed.py` cover: confirmed-only default, --include-proposed opt-in, source column distinction, cost detail proposed fallback
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_bvp_cli_rank_proposed.py in: Unit tests in `tests/unit/test_bvp_cli_rank_proposed.py` cover: confirmed-only default, --include-proposed opt-in, source column distinction, cost det`
-
 ### 2026-05-20T18:22:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

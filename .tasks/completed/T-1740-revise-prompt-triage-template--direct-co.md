@@ -145,19 +145,23 @@ grep -q -i "delta" docs/reports/T-1740-spike-c.md
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2df209ba
-- **Timestamp:** 2026-05-05T08:21:38Z
+- **Scan ID:** R-39c97cab
+- **Timestamp:** 2026-06-02T14:59:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#2 (Agent)** — Re-run T-1736 harness (`scripts/spikes/T-1736-runharness.py`) against the **same** 50-prompt benchmark (`.context/spikes/T-1736-sampled.jsonl`), output written to `.context/spikes/T-1740-results.jsonl
   - **AC-verify-mismatch** (narrow, heuristic) — `path=scripts/spikes/T-1736-runharness.py in: Re-run T-1736 harness (`scripts/spikes/T-1736-runharness.py`) against the **same** 50-prompt benchmark (`.context/spikes/T-1736-sampled.jsonl`), outpu`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 17
+     - evidence: `{ cat .tasks/active/T-1740-revise-prompt-triage-template--direct-co.md .tasks/completed/T-1740-revise-prompt-triage-template--direct-co.md 2>/dev/null || true; } | grep -q "## Recommendation"`
 ### 2026-05-05T08:21:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

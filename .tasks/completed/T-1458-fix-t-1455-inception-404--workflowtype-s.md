@@ -73,19 +73,20 @@ bats tests/unit/observe.bats
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1458-fix-t-1455-inception-404--workflowtype-s.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b9ceabe1
-- **Timestamp:** 2026-04-25T13:20:59Z
+- **Scan ID:** R-b076509f
+- **Timestamp:** 2026-06-02T14:57:37Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 2
      - evidence: `curl -sf "$(bin/fw watchtower url)/inception/T-1455" >/dev/null`
-
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw note promote --help 2>&1 | grep -q -- "--type"`
 ### 2026-04-25T13:20:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

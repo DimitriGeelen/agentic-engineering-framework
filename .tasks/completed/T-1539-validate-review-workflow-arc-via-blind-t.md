@@ -91,14 +91,18 @@ grep -qi "verdict" docs/reports/T-1539-blind-reviewer-walkthrough.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1539-validate-review-workflow-arc-via-blind-t.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6d73a66f
-- **Timestamp:** 2026-04-27T12:18:49Z
+- **Scan ID:** R-71a5c466
+- **Timestamp:** 2026-06-02T14:58:10Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `! termlink list 2>/dev/null | grep -q "tl-blind-reviewer.*ready"`
 ### 2026-04-27T12:18:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

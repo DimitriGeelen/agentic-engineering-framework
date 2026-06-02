@@ -272,15 +272,14 @@ Block message dogfood-tested against synthetic inception and build bodies (Evolu
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-27d5cafa
-- **Timestamp:** 2026-05-31T15:36:42Z
+- **Scan ID:** R-dd74d706
+- **Timestamp:** 2026-06-02T15:01:17Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-- **Suppressed:** 2 (by override)
-  - skip-as-pass @ Verification:line 43
+- **Suppressed:** 1 (by override)
   - mock-only-integration @ AC vs Verification cross-check
 ### 2026-05-31T13:28:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

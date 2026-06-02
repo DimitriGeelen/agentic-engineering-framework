@@ -56,3 +56,17 @@ curl -sf "http://localhost:3000/api/v1/search?q=healing&mode=keyword" | python3 
 
 ### 2026-03-09T10:42:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-45e5dfe8
+- **Timestamp:** 2026-06-02T15:02:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — web/blueprints/api.py created with /api/v1/ask, /api/v1/search, /api/v1/health
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/api.py in: web/blueprints/api.py created with /api/v1/ask, /api/v1/search, /api/v1/health`

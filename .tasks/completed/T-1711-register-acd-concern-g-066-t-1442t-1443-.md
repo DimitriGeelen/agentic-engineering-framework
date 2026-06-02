@@ -128,14 +128,18 @@ test "$(grep '^  fail:' .context/audits/cron/LATEST-CRON.yaml | head -1 | awk '{
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1711-register-acd-concern-g-066-t-1442t-1443-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-67dd0330
-- **Timestamp:** 2026-05-04T06:35:27Z
+- **Scan ID:** R-ad24f6ac
+- **Timestamp:** 2026-06-02T14:59:16Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw gaps 2>&1 | grep -q "G-066"`
 ### 2026-05-04T06:35:27Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -115,21 +115,20 @@ python3 -c "import yaml; yaml.safe_load(open('.context/working/escalation-drift-
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1751-gitignore-ephemeral-working-state-files-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-96c71e13
-- **Timestamp:** 2026-05-05T21:20:54Z
+- **Scan ID:** R-e63ac94a
+- **Timestamp:** 2026-06-02T14:59:30Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
 - **Findings:** 2
 
 **Verification-level findings:**
 
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 1
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
      - evidence: `git ls-files .context/working/focus.yaml.bak | grep -q . && exit 1 || true`
-  2. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
      - evidence: `git ls-files .context/working/escalation-drift-LATEST-v0.5.yaml | grep -q . && exit 1 || true`
-
 ### 2026-05-05T21:20:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

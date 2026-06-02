@@ -157,14 +157,13 @@ grep -q "gap.get('title'" bin/fw
 - Consumer F4 report (framework:pickup offset 2, sender d1993c2c3ec44c94, 2026-05-04) closed by this fix
 - Bash parse: clean
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a1e7c9f1
-- **Timestamp:** 2026-05-14T22:06:50Z
+- **Scan ID:** R-530ec93c
+- **Timestamp:** 2026-06-02T14:59:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-14T22:06:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

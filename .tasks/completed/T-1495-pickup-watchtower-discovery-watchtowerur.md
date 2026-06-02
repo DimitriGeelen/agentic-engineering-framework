@@ -87,10 +87,10 @@ test -n "$(git log --oneline --all --grep='T-1286.*B1 identity endpoint')"
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-46b240fb
-- **Timestamp:** 2026-04-26T17:41:59Z
+- **Scan ID:** R-3370485d
+- **Timestamp:** 2026-06-02T14:57:52Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -100,6 +100,5 @@ test -n "$(git log --oneline --all --grep='T-1286.*B1 identity endpoint')"
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 1
      - evidence: `ls .tasks/active/T-1284-* >/dev/null`
-
 ### 2026-04-26T17:41:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

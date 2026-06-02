@@ -71,3 +71,17 @@ grep -q "hook.*resolv\|hook.*valid\|hook.*path" bin/fw
 
 ### 2026-03-14T22:58:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8113b56d
+- **Timestamp:** 2026-06-02T15:03:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `generate_claude_code_config()` in lib/init.sh produces settings.json with `fw hook` commands (zero absolute paths)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/init.sh in: `generate_claude_code_config()` in lib/init.sh produces settings.json with `fw hook` commands (zero absolute paths)`

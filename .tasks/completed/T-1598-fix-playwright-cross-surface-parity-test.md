@@ -80,14 +80,13 @@ test "$(grep -rn 'TASK_WITHOUT_REVIEWER.*T-967' tests/playwright/ | wc -l)" = "0
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c79dcff8
-- **Timestamp:** 2026-04-29T18:21:22Z
+- **Scan ID:** R-b92b9486
+- **Timestamp:** 2026-06-02T14:58:33Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-29T18:21:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -150,10 +150,10 @@ grep -q "## Recommendation" .tasks/active/T-1743-spike-d-off-ramp-re-score-4-mod
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0d0aa1b3
-- **Timestamp:** 2026-05-05T09:30:01Z
+- **Scan ID:** R-3650d9bb
+- **Timestamp:** 2026-06-02T14:59:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -163,6 +163,5 @@ grep -q "## Recommendation" .tasks/active/T-1743-spike-d-off-ramp-re-score-4-mod
 
 - **AC#1 (Agent)** — Write `scripts/spikes/T-1743-binary-rescore.py` that loads `.context/spikes/T-1736-labels.yaml` + the 4 result files (T-1740 hermes3 + T-1741 qwen3/qwen35/gemma4), collapses DEFER → NO-GO in both trut
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/spikes/T-1736-labels.yaml in: Write `scripts/spikes/T-1743-binary-rescore.py` that loads `.context/spikes/T-1736-labels.yaml` + the 4 result files (T-1740 hermes3 + T-1741 qwen3/qw`
-
 ### 2026-05-05T09:30:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -94,10 +94,10 @@ Fixed to `re.match(r"^#{2,}\s+\S", raw.strip())`. Both v13 tests pass after the 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1579-f12--reviewer-ac-verify-mismatch-recogni.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1bdfe6ef
-- **Timestamp:** 2026-04-28T11:31:02Z
+- **Scan ID:** R-8b494af7
+- **Timestamp:** 2026-06-02T14:58:25Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -111,6 +111,5 @@ Fixed to `re.match(r"^#{2,}\s+\S", raw.strip())`. Both v13 tests pass after the 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=a/b/c.py in: Unit test in `tests/unit/test_reviewer_static_scan.py` covers: (a) `from a.b.c import X` exempts `a/b/c.py`, (b) `import a.b.c` exempts `a/b/c.py`, (c`
 - **AC#4 (Agent)** — Re-run `bin/fw reviewer T-1577` → AC#1/AC#2 mentioning `web/blueprints/cockpit.py` no longer flagged (was 3 findings, now 1 — only `web/templates/cockpit.html` remains, a different class — Jinja templ
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/cockpit.py in: Re-run `bin/fw reviewer T-1577` → AC#1/AC#2 mentioning `web/blueprints/cockpit.py` no longer flagged (was 3 findings, now 1 — only `web/templates/cock`
-
 ### 2026-04-28T11:31:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

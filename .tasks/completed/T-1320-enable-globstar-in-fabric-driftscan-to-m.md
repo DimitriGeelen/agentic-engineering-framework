@@ -72,3 +72,17 @@ cd "$PROJECT_ROOT" && bats tests/unit/fabric_globstar.bats
 
 ### 2026-04-18T22:22:03Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d18d1a3
+- **Timestamp:** 2026-06-02T14:56:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `cd "$PROJECT_ROOT" && bats tests/unit/fabric_globstar.bats`

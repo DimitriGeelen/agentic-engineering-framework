@@ -85,3 +85,17 @@ bats tests/unit/fw_shim_selfloop_guard.bats
 
 ### 2026-04-21T20:36:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fea90eaf
+- **Timestamp:** 2026-06-02T14:56:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `timeout 5 bin/fw version | grep -q '^fw v'`

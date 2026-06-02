@@ -128,14 +128,14 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a1305b70
-- **Timestamp:** 2026-05-03T07:42:29Z
+- **Scan ID:** R-5ea3931d
+- **Timestamp:** 2026-06-02T14:54:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** 3
+- **Findings:** 4
 
 **Per-AC findings:**
 
@@ -146,10 +146,14 @@ bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/
 - **AC#3 (Agent (T-1679 split — mechanical halves of the original governance-design review))** — Pattern-matching unit tests pass in /opt/termlink. Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-session/Cargo.toml --lib governance_subscriber` → 5 p
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-session/Cargo.toml in: Pattern-matching unit tests pass in /opt/termlink. Verified 2026-05-02T11:xx via T-1679: `cargo test --manifest-path /opt/termlink/crates/termlink-ses`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw termlink interact framework-agent "cd /opt/termlink && CARGO_TARGET_DIR=/tmp/termlink-build cargo check -p termlink-session -p termlink-protocol --quiet 2>&1 | tail -1" --json 2>/dev/null | gre`
+
 - **Layer-1 escalations:** 1
   1. **external-publish** (high) — External publish or release
      - matched: `broadcast`
-
 ### 2026-05-03T07:42:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

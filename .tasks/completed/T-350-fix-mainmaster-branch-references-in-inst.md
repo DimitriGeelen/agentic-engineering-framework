@@ -55,3 +55,17 @@ grep -q 'BRANCH="${BRANCH:-master}"' install.sh
 
 ### 2026-03-08T13:42:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-398029e0
+- **Timestamp:** 2026-06-02T15:02:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Zero `raw.githubusercontent.com/.../main/install.sh` references remain in codebase
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=raw.githubusercontent.com/.../main/install.sh in: Zero `raw.githubusercontent.com/.../main/install.sh` references remain in codebase`

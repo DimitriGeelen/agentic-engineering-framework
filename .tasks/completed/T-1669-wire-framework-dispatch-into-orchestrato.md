@@ -154,10 +154,10 @@ bin/fw arc close orchestrator-rethink \
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1669-wire-framework-dispatch-into-orchestrato.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-79368a5f
-- **Timestamp:** 2026-05-02T07:17:54Z
+- **Scan ID:** R-59be108d
+- **Timestamp:** 2026-06-02T14:59:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -167,7 +167,6 @@ bin/fw arc close orchestrator-rethink \
 
 - **AC#8 (Agent)** — Step 3: web/blueprints/orchestrator.py reads route-cache.json, exposes per-task-type stats
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/orchestrator.py in: Step 3: web/blueprints/orchestrator.py reads route-cache.json, exposes per-task-type stats`
-
 ### 2026-05-02T07:17:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

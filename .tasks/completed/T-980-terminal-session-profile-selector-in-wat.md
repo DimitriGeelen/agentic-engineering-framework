@@ -70,3 +70,17 @@ python3 -m pytest tests/playwright/test_terminal.py -v
 
 ### 2026-04-12T09:27:25Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6c1918cf
+- **Timestamp:** 2026-06-02T15:06:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/terminal | grep -q 'profile'`

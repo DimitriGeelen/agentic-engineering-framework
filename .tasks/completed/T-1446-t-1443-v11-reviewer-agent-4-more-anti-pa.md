@@ -88,24 +88,25 @@ bin/fw reviewer T-1086 --no-write 2>&1 | grep -q "Overall:.*PASS"
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1446-t-1443-v11-reviewer-agent-4-more-anti-pa.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-130cfe95
-- **Timestamp:** 2026-04-25T14:02:03Z
+- **Scan ID:** R-1122718c
+- **Timestamp:** 2026-06-02T14:57:32Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** yes
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_reviewer_static_scan.py -q`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `bin/fw reviewer T-1086 --no-write 2>&1 | grep -q "Overall:.*PASS"`
 
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `cross-project`
-
 ### 2026-04-25T14:02:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

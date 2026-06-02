@@ -89,13 +89,18 @@ curl -sf "$(bin/fw watchtower url)/review/T-1062" | grep -qE 'NO-REC' && echo "N
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1578-f11--add-no-rec-banner-to-review-page-t-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0ad01a6d
-- **Timestamp:** 2026-04-28T20:15:04Z
+- **Scan ID:** R-f5c50516
+- **Timestamp:** 2026-06-02T14:58:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `curl -sf "$(bin/fw watchtower url)/review/T-1062" | grep -qE 'NO-REC' && echo "NO-REC banner present" || echo "NO-REC banner missing"`
 ### 2026-04-28T11:20:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

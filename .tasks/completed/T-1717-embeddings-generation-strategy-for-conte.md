@@ -461,15 +461,14 @@ the two arcs as evidence warrants.
 Full Phase 1–5 dialogue, findings, and design analysis:
 [`docs/reports/T-1717-embeddings-strategy-grill.md`](../../../docs/reports/T-1717-embeddings-strategy-grill.md)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-974e00ce
-- **Timestamp:** 2026-05-04T16:49:07Z
+- **Scan ID:** R-dd00433a
+- **Timestamp:** 2026-06-02T14:59:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-04T16:49:07Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

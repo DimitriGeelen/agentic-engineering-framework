@@ -147,15 +147,14 @@ Evidence:
 
 Systemic note: The pickup router lacks a self-loop guard (`source_project == $PROJECT_NAME` should skip auto-task-create). This is a single-incident observation, not yet a recurring pattern. Capturing as a learning; if it recurs, file a structural fix task.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-927e64f0
-- **Timestamp:** 2026-04-26T18:45:03Z
+- **Scan ID:** R-3ca1e135
+- **Timestamp:** 2026-06-02T14:57:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T18:45:03Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: NO-GO

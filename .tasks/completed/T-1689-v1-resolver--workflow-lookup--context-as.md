@@ -175,15 +175,14 @@ The Resolver is the load-bearing new component for v1 dispatch. CONTEXT.md + ADR
 - **Decision:** GO
 - **Rationale:** Substrate works end-to-end at 5.3 ms avg per dispatch (NO-GO threshold >500 ms — two orders of magnitude clear). All four assumptions testable in this inception (A-1, A-2, A-3, A-5) validated; A-4 (Tier 3 latency) intentionally deferred to v1 build because it requires a paid LLM call AND the substrate is unconditional regardless of Tier 3's runtime decision. The spike caught a real concurrency bug in the back-prop path (A-5 fixed-tmp race) before any production code shipped — exactly what spikes are for. The resolver fits one Python module (~290 LOC spike → ~400 LOC production estimate). Three of the four GO criteria are MET; the fourth (Tier 3 runtime bound) is wired as substrate and runtime-validated by the v1 build task.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-26b303e9
-- **Timestamp:** 2026-05-03T08:28:39Z
+- **Scan ID:** R-1e9f5375
+- **Timestamp:** 2026-06-02T14:59:08Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-03T08:28:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

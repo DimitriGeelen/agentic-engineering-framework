@@ -60,3 +60,19 @@ date_finished: 2026-03-30T14:21:30Z
 
 ### 2026-03-30T14:21:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c31626c8
+- **Timestamp:** 2026-06-02T15:04:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — lib/pickup.sh registered in fabric
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/pickup.sh in: lib/pickup.sh registered in fabric`
+- **AC#2 (Agent)** — tests/unit/lib_pickup.bats registered in fabric
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/lib_pickup.bats in: tests/unit/lib_pickup.bats registered in fabric`

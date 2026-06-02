@@ -172,15 +172,14 @@ A-1, A-3, A-4 paper-validated. A-2 (quota error parsing) needs actual install + 
 
 A-1, A-3, A-4 paper-validated. A-2 (quota error parsing) needs actual install + dispatch — deferred to v1 build for the same reason as T-1691 (the build task IS the test harness).
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-561d3f52
-- **Timestamp:** 2026-05-03T08:30:12Z
+- **Scan ID:** R-4c938747
+- **Timestamp:** 2026-06-02T14:59:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-03T08:30:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

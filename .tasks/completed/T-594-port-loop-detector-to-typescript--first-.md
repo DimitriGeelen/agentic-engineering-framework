@@ -88,3 +88,21 @@ echo "" | node lib/ts/dist/loop-detect.js
 
 ### 2026-03-24T06:35:43Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ba836640
+- **Timestamp:** 2026-06-02T15:03:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#10 (Agent)** — Hook registered in `lib/init.sh` settings.json template (PostToolUse section)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/init.sh in: Hook registered in `lib/init.sh` settings.json template (PostToolUse section)`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`

@@ -125,14 +125,13 @@ ratchet items into `gated` once handler-level governance is wired (out of scope 
 ### 2026-05-05T22:23:53Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a228edfd
-- **Timestamp:** 2026-05-05T22:26:21Z
+- **Scan ID:** R-c323314a
+- **Timestamp:** 2026-06-02T14:59:32Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-05T22:26:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

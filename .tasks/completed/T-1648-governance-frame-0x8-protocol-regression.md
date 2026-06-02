@@ -78,10 +78,10 @@ python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -v --tb=
 ### 2026-05-01T15:20:00Z — promoted-and-scoped [agent]
 - **Action:** Promoted horizon later→now. Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-bba718a6
-- **Timestamp:** 2026-05-01T13:05:32Z
+- **Scan ID:** R-41372d30
+- **Timestamp:** 2026-06-02T14:58:52Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -93,7 +93,6 @@ python3 -m pytest tests/unit/test_termlink_governance_frame_contract.py -v --tb=
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-protocol/src/data.rs in: Test parses /opt/termlink/crates/termlink-protocol/src/data.rs and asserts FrameType::Governance = 0x8`
 - **AC#4 (Agent)** — Test parses /opt/termlink/crates/termlink-protocol/src/governance.rs and asserts GovernanceEvent struct contains all expected fields (pattern_name, match_text, timestamp, channel_id)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=opt/termlink/crates/termlink-protocol/src/governance.rs in: Test parses /opt/termlink/crates/termlink-protocol/src/governance.rs and asserts GovernanceEvent struct contains all expected fields (pattern_name, ma`
-
 ### 2026-05-01T13:05:31Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

@@ -161,10 +161,10 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'anchor_task references'
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9d7d3752
-- **Timestamp:** 2026-05-16T09:38:42Z
+- **Scan ID:** R-d909129a
+- **Timestamp:** 2026-06-02T15:00:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -174,7 +174,6 @@ test "$(bin/fw audit --section structure 2>&1 | grep -c 'anchor_task references'
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 13
      - evidence: `bats tests/unit/audit_anchor_task_existence.bats >/dev/null 2>&1`
-
 ### 2026-05-16T09:37:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** L-393 fix applied to V3 idiom (grep -c >=1, not grep -q)

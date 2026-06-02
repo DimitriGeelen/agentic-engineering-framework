@@ -57,3 +57,17 @@ grep -q 'NO-GO' .tasks/active/T-316-spike-layered-claudemd-framework-base--p.md
 
 ### 2026-04-06T17:58:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2822a734
+- **Timestamp:** 2026-06-02T15:05:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Script saved for reproducibility at `docs/reports/T-963-add-recommendations.py`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=docs/reports/T-963-add-recommendations.py in: Script saved for reproducibility at `docs/reports/T-963-add-recommendations.py``

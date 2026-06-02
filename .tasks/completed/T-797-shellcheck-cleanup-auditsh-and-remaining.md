@@ -57,3 +57,17 @@ bash -n bin/fw
 
 ### 2026-03-30T18:54:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2cb0937c
+- **Timestamp:** 2026-06-02T15:04:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — lib/errors.sh shellcheck warnings reduced (1→0 excluding SC1091)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/errors.sh in: lib/errors.sh shellcheck warnings reduced (1→0 excluding SC1091)`

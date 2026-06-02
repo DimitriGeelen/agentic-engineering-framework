@@ -207,10 +207,10 @@ out=$(bin/fw bvp 2>&1); grep -q -- "--i-am-human" <<<"$out" && ! grep -q "once t
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1972-fw-bvp-empty-state-stale-text--t-1924-on.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f760e83d
-- **Timestamp:** 2026-05-21T07:04:03Z
+- **Scan ID:** R-37028ccc
+- **Timestamp:** 2026-06-02T15:00:42Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -220,6 +220,5 @@ out=$(bin/fw bvp 2>&1); grep -q -- "--i-am-human" <<<"$out" && ! grep -q "once t
 
 - **AC#1 (Agent)** — `"once that slice ships"` removed from `lib/bvp.sh:286-288` empty-state message
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: `"once that slice ships"` removed from `lib/bvp.sh:286-288` empty-state message`
-
 ### 2026-05-21T07:04:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

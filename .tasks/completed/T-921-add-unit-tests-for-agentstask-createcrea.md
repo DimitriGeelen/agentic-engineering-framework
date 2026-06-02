@@ -64,3 +64,17 @@ agents/task-create/ has no unit tests. Testing create-task.sh core functions: sl
 
 ### 2026-04-05T16:04:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a83b15a9
+- **Timestamp:** 2026-06-02T15:05:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Test file exists at tests/unit/create_task.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/create_task.bats in: Test file exists at tests/unit/create_task.bats`

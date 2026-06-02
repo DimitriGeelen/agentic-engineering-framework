@@ -251,14 +251,14 @@ surface gate (P-013) applies (web/blueprints/core.py + tasks.py touched) — one
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1879-t-new-14-migration-blindness-2-sweep--5-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-98cc5414
-- **Timestamp:** 2026-05-17T21:14:54Z
+- **Scan ID:** R-c0a066a0
+- **Timestamp:** 2026-06-02T15:00:13Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 2
 
 **Per-AC findings:**
 
@@ -266,11 +266,6 @@ surface gate (P-013) applies (web/blueprints/core.py + tasks.py touched) — one
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/core.py in: **Site 1 — landing-page arc card count (`web/blueprints/core.py`).** Count`
 - **AC#2 (Agent)** — **Site 2 — `/tasks?arc=<slug>` filter (`web/blueprints/tasks.py`).** Filter
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: **Site 2 — `/tasks?arc=<slug>` filter (`web/blueprints/tasks.py`).** Filter`
-
-**Verification-level findings:**
-
-  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
-     - evidence: `bats tests/unit/arc_membership_agent_surfaces.bats`
 ### 2026-05-17T14:08:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

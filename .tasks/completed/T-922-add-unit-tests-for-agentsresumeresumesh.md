@@ -75,3 +75,17 @@ agents/resume/resume.sh is used in every session recovery but has no unit tests.
 
 ### 2026-04-05T16:06:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e4a0a40c
+- **Timestamp:** 2026-06-02T15:05:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Test file exists at tests/unit/resume.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/resume.bats in: Test file exists at tests/unit/resume.bats`

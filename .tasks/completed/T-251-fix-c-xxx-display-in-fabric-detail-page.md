@@ -56,3 +56,24 @@ curl -sf http://localhost:3000/fabric/component/context-dispatcher | grep -q "C-
 
 ### 2026-02-22T15:42:50Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6ef1e073
+- **Timestamp:** 2026-06-02T15:01:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Path-based targets (agents/context/lib/init.sh) also resolve to names
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/lib/init.sh in: Path-based targets (agents/context/lib/init.sh) also resolve to names`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/fabric/component/context-dispatcher | grep -q "add-learning"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf http://localhost:3000/fabric/component/context-dispatcher | grep -q "C-002"`

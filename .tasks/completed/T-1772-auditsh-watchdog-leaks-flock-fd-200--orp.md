@@ -94,14 +94,18 @@ grep -q "/proc/self/fd" agents/audit/audit.sh
 ### 2026-05-06T17:43:53Z — status-update [task-update-agent]
 - **Change:** tags: +fd-leak
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ba0dacd1
-- **Timestamp:** 2026-05-06T17:53:23Z
+- **Scan ID:** R-348af85e
+- **Timestamp:** 2026-06-02T14:59:39Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `{ bin/fw audit --section structure 2>&1 || true; } | grep -qE "^(Pass:|Fail:)"`
 ### 2026-05-06T17:53:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

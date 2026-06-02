@@ -76,15 +76,13 @@ bats tests/unit/handover_t012_active_only.bats
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1477-t-1477-stop-using-t-012-as-commit-task-w.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
-<!-- drift-baseline: {"agents/handover/handover.sh": "3315c8635845a7ccdd824927ab11b97902ce44c0260b73a1c5b59cc6cbf18d47", "tests/unit/handover_t012_active_only.bats": "785243466a07987d237092317cd4e7b73c90b7dbc4d746f8d2cd39f92d79bbf6"} -->
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3a80ff36
-- **Timestamp:** 2026-04-25T21:07:13Z
+- **Scan ID:** R-7670ee48
+- **Timestamp:** 2026-06-02T14:57:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-25T21:07:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

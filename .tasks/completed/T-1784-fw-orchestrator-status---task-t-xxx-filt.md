@@ -97,14 +97,13 @@ python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/u
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Per-task filter for orchestrator status
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7e7846ff
-- **Timestamp:** 2026-05-13T21:08:43Z
+- **Scan ID:** R-ce195b50
+- **Timestamp:** 2026-06-02T14:59:42Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-13T21:08:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

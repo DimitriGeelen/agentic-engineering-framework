@@ -57,3 +57,17 @@ grep -q "EPISODIC_EXIT" agents/task-create/update-task.sh
 
 ### 2026-04-20T22:58:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1e47b089
+- **Timestamp:** 2026-06-02T14:57:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Vendored .agentic-framework/agents/task-create/update-task.sh synced
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agentic-framework/agents/task-create/update-task.sh in: Vendored .agentic-framework/agents/task-create/update-task.sh synced`

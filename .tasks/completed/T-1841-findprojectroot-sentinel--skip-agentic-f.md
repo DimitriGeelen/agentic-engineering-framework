@@ -179,14 +179,13 @@ grep -q "fw-not-a-project" lib/update.sh
 - `bash -n bin/fw lib/update.sh`: clean
 - Consumer F3-trap (framework:pickup offset 1) closed by this fix
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f784f443
-- **Timestamp:** 2026-05-14T22:14:40Z
+- **Scan ID:** R-45a314d7
+- **Timestamp:** 2026-06-02T14:59:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-14T22:14:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

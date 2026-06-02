@@ -71,3 +71,19 @@ grep -q "subsystem: tests" .fabric/components/tests-unit-inception_decide_ac_tic
 
 ### 2026-04-19T13:31:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5a5a6b98
+- **Timestamp:** 2026-06-02T14:56:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — tests-unit-handover_push_timeout.yaml: subsystem=tests, real purpose, depends_on agents/handover/handover.sh + agents/context/checkpoint.sh, last_verified=2026-04-19, created_by=T-1277
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/handover/handover.sh in: tests-unit-handover_push_timeout.yaml: subsystem=tests, real purpose, depends_on agents/handover/handover.sh + agents/context/checkpoint.sh, last_veri`
+- **AC#2 (Agent)** — tests-unit-inception_decide_ac_tick.yaml: subsystem=tests, real purpose, depends_on lib/inception.sh, last_verified=2026-04-19, created_by=T-1324
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/inception.sh in: tests-unit-inception_decide_ac_tick.yaml: subsystem=tests, real purpose, depends_on lib/inception.sh, last_verified=2026-04-19, created_by=T-1324`

@@ -143,15 +143,20 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "$(bin/fw watchtower url)/api/t
 - **Decision:** GO
 - **Rationale:** This bug is recurrence-prone. Any future standalone template (mobile-second-screen, embedded widgets, kiosk views) will hit the same trap. A 30-line `static/csrf-htmx.js` extracted from base.html is one-time cost; the Playwright regression test prevents recurrence via DOM-level coverage. Total scope ~2–3 hours including the audit sweep.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-afcd0d60
-- **Timestamp:** 2026-04-25T11:51:11Z
+- **Scan ID:** R-122854f1
+- **Timestamp:** 2026-06-02T14:57:34Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -s -o /dev/null -w "%{http_code}
+" -X POST "$(bin/fw watchtower url)/api/task/T-1447/toggle-ac" -d "line=5" | grep -q "^403$"`
 ### 2026-04-25T11:51:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

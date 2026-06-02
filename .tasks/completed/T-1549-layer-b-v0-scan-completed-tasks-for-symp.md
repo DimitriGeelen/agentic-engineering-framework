@@ -81,14 +81,13 @@ grep -q "Self-application" docs/reports/T-1549-escalation-scan-v0.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1549-layer-b-v0-scan-completed-tasks-for-symp.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-82c56763
-- **Timestamp:** 2026-04-27T15:53:59Z
+- **Scan ID:** R-50c9b781
+- **Timestamp:** 2026-06-02T14:58:13Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-27T15:53:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

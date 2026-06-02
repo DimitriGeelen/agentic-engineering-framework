@@ -170,10 +170,10 @@ grep -q "_arc_tasks_with_arc_id()" lib/arc.sh
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1874-fw-arc-show-task-membership-reads-arcid-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6af87970
-- **Timestamp:** 2026-05-17T21:13:19Z
+- **Scan ID:** R-35462a63
+- **Timestamp:** 2026-06-02T15:00:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

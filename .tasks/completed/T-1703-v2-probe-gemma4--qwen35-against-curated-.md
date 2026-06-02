@@ -180,10 +180,10 @@ v3 path documented for follow-up.
 ### 2026-05-03T19:34:04Z — status-update [task-update-agent]
 - **Change:** tags: +v2-prep
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f535ac95
-- **Timestamp:** 2026-05-03T20:00:15Z
+- **Scan ID:** R-29f36d4a
+- **Timestamp:** 2026-06-02T14:59:13Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -193,6 +193,5 @@ v3 path documented for follow-up.
 
 - **AC#3 (Agent)** — `tools/t1700-ollama-harness.sh` accepts `T1700_HARNESS_MODEL`, `T1700_HARNESS_TOOLS`,
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/t1700-ollama-harness.sh in: `tools/t1700-ollama-harness.sh` accepts `T1700_HARNESS_MODEL`, `T1700_HARNESS_TOOLS`,`
-
 ### 2026-05-03T20:00:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

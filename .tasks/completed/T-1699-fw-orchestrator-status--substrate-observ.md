@@ -105,19 +105,20 @@ bin/fw doctor
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1699-fw-orchestrator-status--substrate-observ.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-60866a67
-- **Timestamp:** 2026-05-03T13:15:01Z
+- **Scan ID:** R-498bd96f
+- **Timestamp:** 2026-06-02T14:59:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 1
      - evidence: `bin/fw orchestrator status >/dev/null`
-
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw orchestrator --help | grep -q status`
 ### 2026-05-03T13:14:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -174,14 +174,18 @@ This slice ships only the bookkeeping fix; prevention candidates are noted for a
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1886-refresh-enforcement-baseline-after-t-184.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-cc3fba9b
-- **Timestamp:** 2026-05-17T20:13:18Z
+- **Scan ID:** R-9cdb4b71
+- **Timestamp:** 2026-06-02T15:00:16Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `out=$(bin/fw doctor 2>&1); ! echo "$out" | grep -q "Enforcement baseline CHANGED"`
 ### 2026-05-17T20:10:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

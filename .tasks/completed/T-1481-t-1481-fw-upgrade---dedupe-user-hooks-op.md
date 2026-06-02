@@ -82,11 +82,10 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/upgrade_dedupe_user
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1481-t-1481-fw-upgrade---dedupe-user-hooks-op.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
-<!-- drift-baseline: {"lib/upgrade.sh": "961e3cf90e1e413a79044622863795a0bcd9808ed61463ebae7b6d0a51fbe9b2", "tests/unit/upgrade_dedupe_user_hooks.bats": "fcfc15fb0e3a18d9b30611dae1adb8e86aea81b31f2775deccf0de07a73a17c7"} -->
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b1e83b95
-- **Timestamp:** 2026-04-25T21:49:43Z
+- **Scan ID:** R-269bfa84
+- **Timestamp:** 2026-06-02T14:57:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -100,6 +99,5 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/upgrade_dedupe_user
   - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Backup created at `~/.claude/settings.json.bak-<epoch>` before modification`
 - **AC#6 (Agent)** — When `~/.claude/settings.json` doesn't exist, the flag exits cleanly (gated by `if [ -f $user_settings ]` block)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: When `~/.claude/settings.json` doesn't exist, the flag exits cleanly (gated by `if [ -f $user_settings ]` block)`
-
 ### 2026-04-25T21:49:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

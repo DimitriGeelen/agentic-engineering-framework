@@ -240,8 +240,8 @@ Closes T-1761 GO scope. Future batches of new `termlink_agent_*`/`termlink_chann
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-44068943
-- **Timestamp:** 2026-06-01T08:37:22Z
+- **Scan ID:** R-c471a7fe
+- **Timestamp:** 2026-06-02T15:01:24Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** yes
@@ -250,6 +250,5 @@ Closes T-1761 GO scope. Future batches of new `termlink_agent_*`/`termlink_chann
 - **Layer-1 escalations:** 1
   1. **external-publish** (high) — External publish or release
      - matched: `broadcast`
-
 ### 2026-06-01T08:37:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

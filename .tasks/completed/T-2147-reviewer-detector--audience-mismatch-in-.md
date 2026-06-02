@@ -255,8 +255,8 @@ out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py tests/unit/test_
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-96209045
-- **Timestamp:** 2026-05-31T20:36:09Z
+- **Scan ID:** R-28745299
+- **Timestamp:** 2026-06-02T15:01:21Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -268,6 +268,5 @@ out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py tests/unit/test_
      - evidence: `out=$(python3 -m pytest tests/unit/test_reviewer_audience_mismatch.py 2>&1); echo "$out" | grep -q "14 passed"`
   2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
      - evidence: `python3 -c "from lib.reviewer.static_scan import detect_audience_mismatch; print('ok')" | grep -q ok`
-
 ### 2026-05-31T20:36:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

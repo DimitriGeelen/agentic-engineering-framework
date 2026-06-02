@@ -75,3 +75,22 @@ grep -E 'echo "--- context.sh output ---"' -A 1 agents/task-create/update-task.s
 
 ### 2026-05-15T18:24:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-447acfc7
+- **Timestamp:** 2026-06-02T15:00:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — **A2** Log accumulates across consecutive invocations — pinned by `tests/unit/update_task_episodic_gen.bats` T-1860 test #1 (per-task path + header) and direct shell verification in `/tmp/T-1860-verif
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tmp/T-1860-verify.sh in: **A2** Log accumulates across consecutive invocations — pinned by `tests/unit/update_task_episodic_gen.bats` T-1860 test #1 (per-task path + header) a`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `grep -E 'echo "--- context.sh output ---"' -A 1 agents/task-create/update-task.sh | grep -q '>>\s*"\$EPISODIC_LOG"'`

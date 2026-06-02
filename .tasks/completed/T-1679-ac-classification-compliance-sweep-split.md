@@ -109,14 +109,18 @@ python3 -c "import yaml,glob; [yaml.safe_load(open(glob.glob(f'.tasks/active/{t}
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1679-ac-classification-compliance-sweep-split.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0f8d398b
-- **Timestamp:** 2026-05-02T11:45:37Z
+- **Scan ID:** R-36be0cd2
+- **Timestamp:** 2026-06-02T14:59:05Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
+     - evidence: `for t in T-1062 T-1064 T-1065 T-1066; do f=$(echo .tasks/active/${t}-*.md); awk '/^### Human/,/^## /' "$f" | grep -q "^- \[ \] \[REVIEW\]"; done`
 ### 2026-05-02T11:45:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

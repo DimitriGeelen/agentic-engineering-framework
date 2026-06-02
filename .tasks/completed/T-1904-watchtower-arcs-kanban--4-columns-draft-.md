@@ -205,10 +205,10 @@ curl -sf "$(bin/fw watchtower url)/arcs" | python3 -c "import sys,re; html=sys.s
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1904-watchtower-arcs-kanban--4-columns-draft-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-614bd488
-- **Timestamp:** 2026-05-18T19:25:33Z
+- **Scan ID:** R-a0a2a801
+- **Timestamp:** 2026-06-02T15:00:23Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -226,6 +226,5 @@ curl -sf "$(bin/fw watchtower url)/arcs" | python3 -c "import sys,re; html=sys.s
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: `/arcs` link in Watchtower nav is moved from the "Architecture" section to the "Work" section in `web/shared.py:NAV_GROUPS` (line 104 now lists Arcs u`
 - **AC#8 (Agent)** — `tests/playwright/test_arcs_kanban.py` covers: (a) page loads + 4 columns render, (b) columns in lifecycle order, (c) header + count per column, (d) in-progress non-empty + card links work, (e) card c
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_arcs_kanban.py in: `tests/playwright/test_arcs_kanban.py` covers: (a) page loads + 4 columns render, (b) columns in lifecycle order, (c) header + count per column, (d) i`
-
 ### 2026-05-18T19:25:32Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

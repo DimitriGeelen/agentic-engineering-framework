@@ -140,10 +140,10 @@ python3 agents/audit/completed-task-scan.py .tasks .context/episodic docs/report
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1870-audit-check--completed-task-with-status-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3abbba7e
-- **Timestamp:** 2026-05-15T22:12:41Z
+- **Scan ID:** R-d2c954ae
+- **Timestamp:** 2026-06-02T15:00:10Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -153,6 +153,5 @@ python3 agents/audit/completed-task-scan.py .tasks .context/episodic docs/report
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `bats tests/unit/audit_ctl028_completed_status_consistency.bats`
-
 ### 2026-05-15T22:12:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

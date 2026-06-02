@@ -153,15 +153,14 @@ Decision artifact: `docs/reports/T-1601-redteam-design.md` with: gate inventory,
 - **Decision:** GO
 - **Rationale:** Spike 1 inventoried 15 governance gates (7 PreToolUse + 4 git hooks + 4 task lifecycle); Spike 2 shipped a 5-test bash prototype that exercises 3 representative gates with 100% pass; Spike 3 found zero bash-coverage gaps (every gate is a shell script invokable with constructed JSON stdin or CLI args). The harness shape is **bash-only** (`tests/governance/test_*.bats`), wired into `bin/fw test governance` and the existing audit cron. Sized 3-4 hours of build work covering all 15 gates with positive + negative cases each. Cost is bounded; benefit is silent-regression detection across the entire enforcement surface.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0c21bae4
-- **Timestamp:** 2026-04-29T20:58:25Z
+- **Scan ID:** R-df2bd3bd
+- **Timestamp:** 2026-06-02T14:58:35Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-29T20:58:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

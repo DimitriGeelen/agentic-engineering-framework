@@ -105,19 +105,25 @@ termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo test -p t
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c7155a1a
-- **Timestamp:** 2026-05-01T11:00:17Z
+- **Scan ID:** R-24df6b8d
+- **Timestamp:** 2026-06-02T14:58:48Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 3
 
 **Per-AC findings:**
 
 - **AC#2 (Agent)** — `crates/termlink-session/src/lib.rs` declares the new module
   - **AC-verify-mismatch** (narrow, heuristic) — `path=crates/termlink-session/src/lib.rs in: `crates/termlink-session/src/lib.rs` declares the new module`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
+     - evidence: `termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo check -p termlink-session --message-format short 2>&1 | tail -3" --json --timeout 300 | grep -q 'Finished.*dev.*profile'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 14
+     - evidence: `termlink interact termlink-agent "CARGO_TARGET_DIR=/tmp/tl-build cargo test -p termlink-session --lib --quiet 2>&1 | tail -3" --json --timeout 600 | grep -qE 'test result: ok\. [0-9]+ passed; 0 failed`
 ### 2026-05-01T11:00:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -153,14 +153,13 @@ Evidence:
 - Path c (Claude Code PreToolUse hook reading Write file_path + rejecting on /tmp/fw-agent-.md match) is the cheapest of three explored options
 - No observed loss incidents since T-1645 shipped (2026-05-01)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-116d9393
-- **Timestamp:** 2026-05-02T08:39:55Z
+- **Scan ID:** R-eda46f65
+- **Timestamp:** 2026-06-02T14:58:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-02T08:39:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

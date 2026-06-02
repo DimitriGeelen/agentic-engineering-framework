@@ -114,14 +114,18 @@ python3 tools/audit-swallowed-errors.py --max 11 --min 9
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1815-l-369-follow-through-scrub-vacuous-verif.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-81f6cb97
-- **Timestamp:** 2026-05-13T19:58:54Z
+- **Scan ID:** R-8ea043c8
+- **Timestamp:** 2026-06-02T14:59:49Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1 | tail -3 | grep -qE "passed"`
 ### 2026-05-13T19:58:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

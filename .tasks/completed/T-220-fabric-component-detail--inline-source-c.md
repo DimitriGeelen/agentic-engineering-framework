@@ -63,3 +63,28 @@ python3 -c "import yaml; yaml.safe_load(open('.fabric/components/web-app.yaml'))
 
 ### 2026-02-22T08:50:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1e687883
+- **Timestamp:** 2026-06-02T15:01:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 5
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — highlight.js CSS + JS added to `web/templates/base.html` (CDN)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/base.html in: highlight.js CSS + JS added to `web/templates/base.html` (CDN)`
+- **AC#3 (Agent)** — `component_detail()` in `web/blueprints/fabric.py` reads source file from component location
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/fabric.py in: `component_detail()` in `web/blueprints/fabric.py` reads source file from component location`
+- **AC#4 (Agent)** — Source code section rendered in `web/templates/fabric_detail.html` with syntax highlighting
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/fabric_detail.html in: Source code section rendered in `web/templates/fabric_detail.html` with syntax highlighting`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/fabric/component/web-app | grep -q "hljs"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/fabric/component/web-app | grep -q "Source Code"`

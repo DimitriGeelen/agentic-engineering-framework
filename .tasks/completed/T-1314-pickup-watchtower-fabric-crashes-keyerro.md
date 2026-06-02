@@ -159,3 +159,12 @@ Evidence:
 - Docstring already promises normalized shape: `_load_subsystems` at lines 53-58
 - Termlink P-036 envelope provides reproducible repro path
 - Workaround (add `id:`) is reasonable but every consumer would need to do it; framework-side fix is the right level
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-19af364b
+- **Timestamp:** 2026-06-02T14:56:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

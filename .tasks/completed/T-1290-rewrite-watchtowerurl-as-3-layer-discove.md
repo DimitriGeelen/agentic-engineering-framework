@@ -88,3 +88,17 @@ bats tests/unit/lib_watchtower.bats
 
 ### 2026-04-18T08:52:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-61320628
+- **Timestamp:** 2026-06-02T14:56:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `WATCHTOWER_URL=http://example.invalid:9999 bash -c 'source lib/watchtower.sh; _watchtower_url' | grep -q '^http://example.invalid:9999$'`

@@ -284,8 +284,8 @@ for f in web/blueprints/bvp.py web/blueprints/approvals.py web/blueprints/timeli
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-effb3a11
-- **Timestamp:** 2026-05-30T08:21:16Z
+- **Scan ID:** R-fa324e86
+- **Timestamp:** 2026-06-02T15:01:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -295,6 +295,5 @@ for f in web/blueprints/bvp.py web/blueprints/approvals.py web/blueprints/timeli
 
 - **AC#1 (Human)** — [REVIEW] Five migrated pages render identically to pre-migration (pure refactor — no visual change expected).
   - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows s' in Expected: All 5 pages load and look as before — `/bvp` shows scatter, `/approvals` shows queue, `/timeline` shows handover list, `/search` accepts que`
-
 ### 2026-05-30T08:21:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

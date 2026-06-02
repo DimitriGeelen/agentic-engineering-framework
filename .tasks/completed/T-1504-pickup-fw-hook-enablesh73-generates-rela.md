@@ -69,14 +69,13 @@ bats tests/unit/hook_enable_absolute_path.bats
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9092c31c
-- **Timestamp:** 2026-04-26T12:02:31Z
+- **Scan ID:** R-7681df46
+- **Timestamp:** 2026-06-02T14:57:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T12:02:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

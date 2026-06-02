@@ -68,15 +68,14 @@ python3 -m pytest tests/unit/test_termlink_list_contract.py -v --tb=short
 - **Action:** Promoted horizon later→now; expanded scope from WezTerm-only to all framework consumers of termlink list --json.
 - **Context:** Continuing Arc C (T-1644) drift defenses per autonomous-mode directive.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e8d35b19
-- **Timestamp:** 2026-05-01T12:59:07Z
+- **Scan ID:** R-42a1d23e
+- **Timestamp:** 2026-06-02T14:58:53Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T12:59:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 

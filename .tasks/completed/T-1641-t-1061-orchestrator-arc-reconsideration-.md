@@ -243,15 +243,14 @@ Housekeeping completed in this aggregation pass (not new tasks):
 
 For human reviewer: decide GO/NO-GO/DEFER on the arc-or-arcs proposal (split into three distinct arcs, vs continue as one). Recommendation: GO on the split. Then T-1642 (Arc A) needs its own GO when the policy questions are surfaced.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-88fdc870
-- **Timestamp:** 2026-05-01T12:29:12Z
+- **Scan ID:** R-6368a867
+- **Timestamp:** 2026-06-02T14:58:49Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-01T12:29:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

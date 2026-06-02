@@ -139,19 +139,23 @@ Same family as **T-1767** (cron deploy gap, 24+ hr silent non-firing on escalati
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-702f18f9
-- **Timestamp:** 2026-05-06T13:46:33Z
+- **Scan ID:** R-eb381070
+- **Timestamp:** 2026-06-02T14:59:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#5 (Agent)** — `fw reviewer audit` runs cleanly under the same minimal env (proves the fix); next-morning verify `.context/audits/reviewer/2026-05-07.yaml` appears.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/reviewer/2026-05-07.yaml in: `fw reviewer audit` runs cleanly under the same minimal env (proves the fix); next-morning verify `.context/audits/reviewer/2026-05-07.yaml` appears.`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `env -i HOME=/root PATH=/usr/bin:/bin PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" bash -c 'cd "$PROJECT_ROOT" && "$PROJECT_ROOT/bin/fw" reviewer audit > /dev/null 2>&1 && echo PASS' | grep -q`
 ### 2026-05-06T13:46:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

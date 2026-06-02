@@ -73,3 +73,21 @@ date_finished: 2026-04-20T09:23:26Z
 
 ### 2026-04-20T09:23:26Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6d073a0b
+- **Timestamp:** 2026-06-02T14:56:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/init.sh` .mcp.json template wraps server definitions under `"mcpServers": {...}`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/init.sh in: `lib/init.sh` .mcp.json template wraps server definitions under `"mcpServers": {...}``
+- **AC#2 (Agent)** — `lib/upgrade.sh` CREATE path uses same wrapped schema
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/upgrade.sh in: `lib/upgrade.sh` CREATE path uses same wrapped schema`
+- **AC#3 (Agent)** — `lib/upgrade.sh` MERGE path reads and writes the `mcpServers` key (preserves existing user servers under the wrapper)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/upgrade.sh in: `lib/upgrade.sh` MERGE path reads and writes the `mcpServers` key (preserves existing user servers under the wrapper)`

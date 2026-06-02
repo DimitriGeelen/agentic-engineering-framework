@@ -71,3 +71,17 @@ curl -sf http://localhost:3000/fabric/component/agents-healing-healing | grep -q
 
 ### 2026-03-10T22:04:13Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-413e7333
+- **Timestamp:** 2026-06-02T15:02:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `curl -sf http://localhost:3000/fabric/component/agents-healing-healing | grep -q "Documentation"`

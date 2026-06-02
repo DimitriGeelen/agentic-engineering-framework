@@ -89,3 +89,21 @@ grep -q "fw pending resolve" CLAUDE.md
 
 ### 2026-04-23T14:01:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7a789d05
+- **Timestamp:** 2026-06-02T14:57:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `fw pending register --command 'CMD' --reason 'WHY' --task T-XXX [--host HOST]` appends an entry to `.context/working/pending-updates.yaml` with auto-generated `U-NNN` id, status `pending`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/pending-updates.yaml in: `fw pending register --command 'CMD' --reason 'WHY' --task T-XXX [--host HOST]` appends an entry to `.context/working/pending-updates.yaml` with auto-`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -f`

@@ -79,15 +79,13 @@ cd /opt/999-Agentic-Engineering-Framework && bats tests/unit/upgrade_duplicate_h
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1479-t-1479-fw-upgrade-detects-duplicate-fram.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
-<!-- drift-baseline: {"lib/upgrade.sh": "961e3cf90e1e413a79044622863795a0bcd9808ed61463ebae7b6d0a51fbe9b2", "tests/unit/upgrade_duplicate_hook_detection.bats": "98931e6363acb7f0321c09ce1019a759dc93de631bfdbfe511c19bc5c425f8fe"} -->
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c8b5070f
-- **Timestamp:** 2026-04-25T21:31:53Z
+- **Scan ID:** R-b50a704a
+- **Timestamp:** 2026-06-02T14:57:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-25T21:31:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

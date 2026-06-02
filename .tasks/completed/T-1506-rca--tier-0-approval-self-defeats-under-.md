@@ -212,15 +212,14 @@ Alternative considered (NO-GO — variant (d) doctor-only): rely on humans to cl
 
 Alternative considered (variant (c) — N-use TTL): changes Tier 0 semantics from "single-use" to "≤M-use within window." Rejected: weakens the security model. The sentinel approach in (b) preserves single-use semantics (once consumed, only same-hash same-invocation duplicates short-circuit; new commands still need fresh approval).
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3d1b8b0f
-- **Timestamp:** 2026-04-26T11:32:42Z
+- **Scan ID:** R-2188c4ab
+- **Timestamp:** 2026-06-02T14:57:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T11:32:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

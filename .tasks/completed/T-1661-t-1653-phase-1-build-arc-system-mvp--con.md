@@ -117,14 +117,14 @@ PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3
 - **Change:** horizon: now → now
 - **Change:** tags: +orchestrator,arc:orchestrator-rethink
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3d206800
-- **Timestamp:** 2026-05-02T05:52:23Z
+- **Scan ID:** R-def41e23
+- **Timestamp:** 2026-06-02T14:58:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 5
+- **Findings:** 6
 
 **Per-AC findings:**
 
@@ -141,7 +141,8 @@ PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3
      - evidence: `PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3000}/" >/dev/null`
   3. **empty-output-success** (partial, heuristic) @ Verification:line 12
      - evidence: `PORT=$(bin/fw watchtower port 2>/dev/null); curl -sf "http://localhost:${PORT:-3000}/tasks?arc=orchestrator-rethink" >/dev/null`
-
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw arc help 2>&1 | grep -qE "create|focus|list|show|close|tag|migrate"`
 ### 2026-05-02T05:52:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

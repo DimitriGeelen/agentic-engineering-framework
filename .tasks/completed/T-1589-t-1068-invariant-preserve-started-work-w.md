@@ -101,14 +101,13 @@ bats tests/unit/update_task.bats >/tmp/T-1589-bats.log 2>&1
 - `bats tests/unit/update_task.bats --tap` → 19/19 pass (12 existing + 4 new T-1589 + 3 unrelated)
 - L-318-class learning captured: "Captured-but-done drift" pattern documented for future detection
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-27fc6a6e
-- **Timestamp:** 2026-04-28T18:08:42Z
+- **Scan ID:** R-4c03d0a8
+- **Timestamp:** 2026-06-02T14:58:30Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-28T18:06:13Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

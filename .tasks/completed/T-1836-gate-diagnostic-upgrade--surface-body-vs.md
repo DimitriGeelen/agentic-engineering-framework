@@ -124,14 +124,13 @@ bats tests/unit/p010_gate_diagnostic_body_drift_hint.bats
 ### 2026-05-14T20:56:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c874cfa1
-- **Timestamp:** 2026-05-14T20:59:16Z
+- **Scan ID:** R-5a9026fd
+- **Timestamp:** 2026-06-02T14:59:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-14T20:59:15Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

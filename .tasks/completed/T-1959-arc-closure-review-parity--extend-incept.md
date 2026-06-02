@@ -241,15 +241,14 @@ Evidence:
 - Closing arc-005 is the meta-demo: the headline_mechanic includes "lifecycle has draft/in-progress/closed/abandoned tabs in Watchtower" — closing via a `/arcs/<slug>/review` page would be the cleanest wire-evidence of that mechanic firing, satisfying G-062.
 - Cost: 4 build slices, all small (template + thin handler + one CLI verb). Comparable to T-1909/T-1910 individually (each ~2-3 file edits + Playwright tests).
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-72eff3a6
-- **Timestamp:** 2026-05-20T17:54:51Z
+- **Scan ID:** R-ed9e1598
+- **Timestamp:** 2026-06-02T15:00:39Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-20T17:54:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

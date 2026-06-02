@@ -193,3 +193,19 @@ Not a bug fix — this is the *prevention* deliverable for the unbounded-page cl
 
 ### 2026-05-25T15:43:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-35f26b6e
+- **Timestamp:** 2026-06-02T15:00:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `tests/playwright/test_all_routes_height.py` added — parametrizes over `discover_get_routes()` (loaded from `agents/ux-review/ux-review.py`) and asserts each route's rendered `scrollHeight` < 8000px (
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_all_routes_height.py in: `tests/playwright/test_all_routes_height.py` added — parametrizes over `discover_get_routes()` (loaded from `agents/ux-review/ux-review.py`) and asser`
+- **AC#4 (Agent)** — `HEIGHT_CAP_PX` mirrors `agents/ux-review/ux-review.py:TALL_PAGE_CAP_PX` so the guard and the detector stay in lockstep — **`test_height_cap_matches_detector` passed**
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/ux-review/ux-review.py in: `HEIGHT_CAP_PX` mirrors `agents/ux-review/ux-review.py:TALL_PAGE_CAP_PX` so the guard and the detector stay in lockstep — **`test_height_cap_matches_d`

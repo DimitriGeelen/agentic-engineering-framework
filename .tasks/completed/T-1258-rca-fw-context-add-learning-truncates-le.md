@@ -349,3 +349,23 @@ Research artifact: `docs/reports/T-1258-add-learning-truncation-rca.md` (full in
 
 Interim workaround (until B1-B3 ship):
 > When capturing learnings, ONLY use `fw context add-learning "text" --task T-XXX --source P-001`. NEVER use Write/Edit tools on `.context/project/learnings.yaml` (or patterns.yaml, practices.yaml, decisions.yaml, gaps.yaml).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6d5e767a
+- **Timestamp:** 2026-06-02T14:56:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Root cause identified: `tests/unit/context_learning.bats:60-73` destroys real learnings.yaml via PROJECT_ROOT=FRAMEWORK_ROOT redirect + `rm -f` + do_add_learning
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/context_learning.bats in: Root cause identified: `tests/unit/context_learning.bats:60-73` destroys real learnings.yaml via PROJECT_ROOT=FRAMEWORK_ROOT redirect + `rm -f` + do_a`
+- **AC#3 (Agent)** — Same bug-class found in `tests/unit/context_decision.bats:60-73` (would destroy decisions.yaml)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/context_decision.bats in: Same bug-class found in `tests/unit/context_decision.bats:60-73` (would destroy decisions.yaml)`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `destroy`

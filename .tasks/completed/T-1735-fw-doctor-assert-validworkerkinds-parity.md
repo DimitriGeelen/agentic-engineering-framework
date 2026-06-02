@@ -126,14 +126,20 @@ test -f tests/unit/worker_kinds_parity.bats
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2e2d5431
-- **Timestamp:** 2026-05-05T08:34:55Z
+- **Scan ID:** R-bdff46c4
+- **Timestamp:** 2026-06-02T14:59:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 13
+     - evidence: `{ bin/fw doctor 2>&1 || true; } | grep -qiE "worker-kinds parity"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 15
+     - evidence: `{ bats tests/unit/worker_kinds_parity.bats 2>&1 || true; } | grep -q "^ok 1 "`
 ### 2026-05-05T08:33:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

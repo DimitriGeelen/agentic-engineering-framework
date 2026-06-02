@@ -59,3 +59,28 @@ bats tests/integration/ tests/unit/
 
 ### 2026-03-13T07:25:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e9e92796
+- **Timestamp:** 2026-06-02T15:03:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 5
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — tests/integration/budget_gate.bats exists with 16 tests covering: ok/warn/urgent/critical fast path, Read/Glob/Grep exempt, git commit/fw handover exempt, wrap-up paths (.context/.tasks/.claude/), sta
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/budget_gate.bats in: tests/integration/budget_gate.bats exists with 16 tests covering: ok/warn/urgent/critical fast path, Read/Glob/Grep exempt, git commit/fw handover exe`
+- **AC#2 (Agent)** — tests/integration/block_plan_mode.bats exists with 4 tests: block exit 2, /plan alternative, BLOCKED message, governance bypass
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/block_plan_mode.bats in: tests/integration/block_plan_mode.bats exists with 4 tests: block exit 2, /plan alternative, BLOCKED message, governance bypass`
+- **AC#3 (Agent)** — tests/integration/check_dispatch.bats exists with 8 tests: non-Task silent, small response silent, >5K WARNING, >20K CRITICAL, TaskOutput, empty response, preamble mention, malformed JSON
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/check_dispatch.bats in: tests/integration/check_dispatch.bats exists with 8 tests: non-Task silent, small response silent, >5K WARNING, >20K CRITICAL, TaskOutput, empty respo`
+- **AC#4 (Agent)** — tests/integration/check_fabric_new_file.bats exists with 8 tests: non-Write silent, skip prefixes, no patterns file, no match, advisory match, already registered, never blocks
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/check_fabric_new_file.bats in: tests/integration/check_fabric_new_file.bats exists with 8 tests: non-Write silent, skip prefixes, no patterns file, no match, advisory match, already`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/integration/ tests/unit/`

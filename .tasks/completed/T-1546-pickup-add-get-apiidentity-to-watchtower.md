@@ -153,15 +153,14 @@ Evidence:
 
 Alternative: If the human wants the framework to actively notify consumers that the endpoint shipped (so cross-project pickups don't propose already-built work), that's a separate inception task on the pickup-staleness mechanism (G-020-class concern about pickup-as-instruction). Not in scope here.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8b3f43c7
-- **Timestamp:** 2026-04-28T11:56:33Z
+- **Scan ID:** R-270653d1
+- **Timestamp:** 2026-06-02T14:58:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-28T11:56:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: NO-GO

@@ -166,10 +166,10 @@ All 6 Agent ACs satisfied. The doc is testable (9 grep-based assertions in Verif
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a8c092c9
-- **Timestamp:** 2026-05-18T10:09:41Z
+- **Scan ID:** R-905cf367
+- **Timestamp:** 2026-06-02T15:00:04Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

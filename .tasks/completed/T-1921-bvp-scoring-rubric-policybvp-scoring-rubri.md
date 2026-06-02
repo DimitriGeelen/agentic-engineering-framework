@@ -105,15 +105,14 @@ sections=$(grep -c "^## D[1-4]" policy/bvp-scoring-rubric.md); [ "$sections" = "
 ### 2026-05-19T07:37:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3481277c
-- **Timestamp:** 2026-05-19T17:37:50Z
+- **Scan ID:** R-c3548f82
+- **Timestamp:** 2026-06-02T15:00:29Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-19T17:37:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

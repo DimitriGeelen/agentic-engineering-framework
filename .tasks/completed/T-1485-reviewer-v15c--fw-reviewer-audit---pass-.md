@@ -105,16 +105,22 @@ ls .context/audits/reviewer/*-pass-a.yaml 2>/dev/null | grep -qE "[0-9]{4}-[0-9]
 - **Action:** Filled ACs, Verification, Recommendation per build-readiness gate
 - **Context:** v1.5c follow-on to T-1483/T-1484; closes v1.5 Reviewer arc end-to-end
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4d45bd12
-- **Timestamp:** 2026-04-28T20:18:58Z
+- **Scan ID:** R-f13147dc
+- **Timestamp:** 2026-06-02T14:57:48Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
-- **Suppressed:** 1 (by override)
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `ls .context/audits/reviewer/*-pass-a.yaml 2>/dev/null | grep -qE "[0-9]{4}-[0-9]{2}-[0-9]{2}-pass-a\.yaml"`
+
+- **Suppressed:** 2 (by override)
   - AC-verify-mismatch @ AC#5 (Agent)
+  - human-ac-mechanical-signal @ AC#1 (Human)
 ### 2026-04-26T07:22:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

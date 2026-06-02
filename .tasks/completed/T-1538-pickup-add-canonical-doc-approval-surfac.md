@@ -171,15 +171,14 @@ Evidence:
 
 Open question for human (non-blocker): Should the framework also ship the canonical-doc gate hook itself as a `fw init` opt-in template (so the UI's existence implies hook availability)? Recommendation: separate follow-up inception — keep this task focused on the UI surface only.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3c64abcc
-- **Timestamp:** 2026-04-28T11:56:18Z
+- **Scan ID:** R-516b1d93
+- **Timestamp:** 2026-06-02T14:58:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-28T11:56:18Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

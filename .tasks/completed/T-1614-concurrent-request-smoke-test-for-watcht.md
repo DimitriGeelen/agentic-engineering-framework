@@ -95,10 +95,10 @@ Test runs in 40ms, picked up automatically by pytest discovery from `tests/web/`
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1614-concurrent-request-smoke-test-for-watcht.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-36882647
-- **Timestamp:** 2026-04-30T08:08:20Z
+- **Scan ID:** R-cd31bb2b
+- **Timestamp:** 2026-06-02T14:58:39Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -112,6 +112,5 @@ Test runs in 40ms, picked up automatically by pytest discovery from `tests/web/`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: Test asserts `web/app.py` does NOT contain `threaded=False` (defensive)`
 - **AC#6 (Agent)** — Test discovered by `tests/web/conftest.py` sys.path setup (auto-discovered by pytest from tests/web/)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/web/conftest.py in: Test discovered by `tests/web/conftest.py` sys.path setup (auto-discovered by pytest from tests/web/)`
-
 ### 2026-04-30T08:08:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

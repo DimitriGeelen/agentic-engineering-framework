@@ -187,10 +187,10 @@ One [REVIEW] Human AC: confirm the create→start two-step is acceptable as a wo
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-50ef9732
-- **Timestamp:** 2026-05-18T09:30:59Z
+- **Scan ID:** R-81c5ec5d
+- **Timestamp:** 2026-06-02T15:00:02Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

@@ -75,3 +75,17 @@ Fabric agent manages 284 components but has no unit tests. Testing help, overvie
 
 ### 2026-04-05T16:28:44Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8cb50082
+- **Timestamp:** 2026-06-02T15:05:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Test file exists at tests/unit/fabric.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/fabric.bats in: Test file exists at tests/unit/fabric.bats`

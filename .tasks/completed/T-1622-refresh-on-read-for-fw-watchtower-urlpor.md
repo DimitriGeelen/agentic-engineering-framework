@@ -80,14 +80,14 @@ bin/fw watchtower url | grep -qE '^https?://'
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1622-refresh-on-read-for-fw-watchtower-urlpor.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-50fac4a5
-- **Timestamp:** 2026-04-30T19:16:15Z
+- **Scan ID:** R-844f4afb
+- **Timestamp:** 2026-06-02T14:58:43Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** 3
 
 **Verification-level findings:**
 
@@ -95,6 +95,7 @@ bin/fw watchtower url | grep -qE '^https?://'
      - evidence: `bin/fw watchtower port >/dev/null`
   2. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `test -f tests/unit/watchtower_url_refresh.bats`
-
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `bin/fw watchtower url | grep -qE '^https?://'`
 ### 2026-04-30T19:16:14Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

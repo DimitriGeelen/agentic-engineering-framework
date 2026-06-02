@@ -103,10 +103,10 @@ python3 -c "import json; json.load(open('tests/spikes/taskcreate-hook-probe-sett
 - **Implication:** Phase 2 Level 1 hook should match `TodoWrite`
   (and optionally `TaskCreate|TaskUpdate` for interactive-mode coverage).
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b9187ed1
-- **Timestamp:** 2026-05-18T08:37:52Z
+- **Scan ID:** R-a8bab233
+- **Timestamp:** 2026-06-02T14:55:16Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

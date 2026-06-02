@@ -61,3 +61,19 @@ bin/fw vendor --help 2>&1 | grep -q "\-\-source"
 
 ### 2026-03-28T22:35:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99f3159f
+- **Timestamp:** 2026-06-02T15:04:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `grep -q "source.*target.*same" bin/fw || grep -q "self-referenc" bin/fw`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw vendor --help 2>&1 | grep -q "\-\-source"`

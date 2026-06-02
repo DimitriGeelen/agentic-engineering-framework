@@ -105,14 +105,13 @@ python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/u
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Surface routing decision (model) on the same CLI surface that already shows workload breakdowns
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1b4a45bc
-- **Timestamp:** 2026-05-11T11:13:12Z
+- **Scan ID:** R-6bc16fa2
+- **Timestamp:** 2026-06-02T14:59:44Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-11T11:13:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

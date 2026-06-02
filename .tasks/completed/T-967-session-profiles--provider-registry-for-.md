@@ -116,15 +116,14 @@ grep -q "web/terminal.py" web/terminal/__init__.py
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c596d0a8
-- **Timestamp:** 2026-04-30T20:59:53Z
+- **Scan ID:** R-0b998e86
+- **Timestamp:** 2026-06-02T15:05:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-30T20:59:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** T-967 verified end-to-end by agent per human directive 2026-04-30 (L-329 — RUBBER-STAMP-shaped REVIEW: deterministic input/output + multi-tab isolation, no subjective judgment needed). Evidence in body.

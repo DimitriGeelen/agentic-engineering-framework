@@ -248,15 +248,14 @@ Evidence:
 - `fw doctor` already surfaces some cron-state info (Cron registry in sync check) — the heartbeat addition is incremental
 - T-1771 already wired cron-registry sync check into `fw audit` — heartbeat addition extends the same audit surface
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9c8f77bf
-- **Timestamp:** 2026-05-14T20:29:38Z
+- **Scan ID:** R-4a701c55
+- **Timestamp:** 2026-06-02T14:59:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-14T20:29:38Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

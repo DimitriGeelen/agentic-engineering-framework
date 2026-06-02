@@ -221,14 +221,13 @@ out=$(bin/fw arc help 2>&1); echo "$out" | grep -q "review <id>"
 ### 2026-05-21T09:13:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3f7ff4c2
-- **Timestamp:** 2026-05-21T09:16:24Z
+- **Scan ID:** R-177b8019
+- **Timestamp:** 2026-06-02T15:00:40Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-21T09:16:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -89,10 +89,10 @@ bats tests/unit/review_pipefail.bats
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7c104a38
-- **Timestamp:** 2026-04-27T16:39:51Z
+- **Scan ID:** R-a1bd545d
+- **Timestamp:** 2026-06-02T14:58:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -102,6 +102,5 @@ bats tests/unit/review_pipefail.bats
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 1
      - evidence: `bin/fw task review T-1545 >/dev/null 2>&1`
-
 ### 2026-04-27T16:39:48Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

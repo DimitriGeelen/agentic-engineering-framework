@@ -90,25 +90,24 @@ grep -q "fw mirror sync|status" CLAUDE.md
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1596-hygiene--vendor-sync--cron-install--clau.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ccb6de4e
-- **Timestamp:** 2026-04-28T22:39:52Z
+- **Scan ID:** R-17a66125
+- **Timestamp:** 2026-06-02T14:58:32Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
 - **Findings:** 4
 
 **Verification-level findings:**
 
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
      - evidence: `bin/fw doctor 2>&1 | grep -qv "Vendored-source drift" || (bin/fw doctor 2>&1 | grep "Vendored-source drift" && exit 1) ; bin/fw doctor 2>&1 | grep -qE "Vendored-source drift" && exit 1 || true`
-  2. **swallowed-errors** (severe, deterministic) @ Verification:line 3
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
      - evidence: `bin/fw doctor 2>&1 | grep -qE "Cron registry drift" && exit 1 || true`
-  3. **swallowed-errors** (severe, deterministic) @ Verification:line 4
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
      - evidence: `bin/fw doctor 2>&1 | grep -qE "Cron flock parity" && exit 1 || true`
-  4. **swallowed-errors** (severe, deterministic) @ Verification:line 5
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
      - evidence: `bin/fw doctor 2>&1 | grep -qE "Doc drift.*mirror" && exit 1 || true`
-
 ### 2026-04-28T22:36:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

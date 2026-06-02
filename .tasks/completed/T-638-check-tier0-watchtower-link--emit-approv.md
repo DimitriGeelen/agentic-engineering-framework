@@ -53,3 +53,17 @@ grep -q '/approvals' agents/context/check-tier0.sh
 
 ### 2026-03-27T11:23:09Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8b2ce6f0
+- **Timestamp:** 2026-06-02T15:04:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — URL uses dynamic hostname + port detection (same pattern as lib/review.sh)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/review.sh in: URL uses dynamic hostname + port detection (same pattern as lib/review.sh)`

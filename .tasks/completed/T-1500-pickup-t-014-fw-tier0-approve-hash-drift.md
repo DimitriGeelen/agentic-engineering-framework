@@ -71,14 +71,13 @@ bats tests/unit/check_tier0_comment_stripping.bats
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4d4a923d
-- **Timestamp:** 2026-04-26T11:58:30Z
+- **Scan ID:** R-2543574f
+- **Timestamp:** 2026-06-02T14:57:54Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T11:58:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

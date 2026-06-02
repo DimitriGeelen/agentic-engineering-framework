@@ -69,3 +69,19 @@ grep -q "docs_bp" web/app.py
 
 ### 2026-03-10T22:04:13Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-36e80b62
+- **Timestamp:** 2026-06-02T15:02:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `curl -sf http://localhost:3000/docs/generated | grep -q "Component Reference Docs"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf http://localhost:3000/docs/generated/budget-gate | grep -q "budget-gate"`

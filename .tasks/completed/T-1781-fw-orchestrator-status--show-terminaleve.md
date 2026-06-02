@@ -101,14 +101,13 @@ python3 -m pytest tests/unit/test_orchestrator_status_terminal_events.py tests/u
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Inline-row pair to T-1779's aggregate breakdown
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7c0848d6
-- **Timestamp:** 2026-05-13T21:05:17Z
+- **Scan ID:** R-0b388b0f
+- **Timestamp:** 2026-06-02T14:59:41Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-13T21:05:11Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

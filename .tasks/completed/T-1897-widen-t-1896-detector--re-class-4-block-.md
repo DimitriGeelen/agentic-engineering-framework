@@ -203,10 +203,10 @@ The remaining `[REVIEW]` Human AC on this task is genuine taste — does the re-
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-dfcf87f3
-- **Timestamp:** 2026-05-18T10:22:27Z
+- **Scan ID:** R-ee3cef9c
+- **Timestamp:** 2026-06-02T15:00:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -216,6 +216,5 @@ The remaining `[REVIEW]` Human AC on this task is genuine taste — does the re-
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_reviewer_human_ac_mechanical_signal.py -q`
-
 ### 2026-05-18T10:22:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

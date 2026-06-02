@@ -112,10 +112,10 @@ PROJECT_ROOT=$(pwd) python3 -c "import sys; sys.path.insert(0, 'lib'); import wo
 - **Action:** Created task
 - **Context:** Sibling gap to T-1798 — same antifragility shape on the provider field
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3e83ed49
-- **Timestamp:** 2026-05-12T22:16:30Z
+- **Scan ID:** R-3be09df7
+- **Timestamp:** 2026-06-02T14:59:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -125,6 +125,5 @@ PROJECT_ROOT=$(pwd) python3 -c "import sys; sys.path.insert(0, 'lib'); import wo
 
 - **AC#7 (Agent)** — Live audit: `bash agents/audit/audit.sh -s orchestrator` still PASS
   - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: Live audit: `bash agents/audit/audit.sh -s orchestrator` still PASS`
-
 ### 2026-05-12T22:16:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

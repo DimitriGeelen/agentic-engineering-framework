@@ -156,3 +156,12 @@ Evidence:
 - Live count proof from termlink: `/.rs` matches 14 entries without globstar, 68 with
 - No conflicting bats tests on these globs today (tests/unit/fabric.bats does not exercise recursive patterns)
 - Build sibling T-1320 ships fix + bats regression covering recursive globs
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ca61864f
+- **Timestamp:** 2026-06-02T14:56:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

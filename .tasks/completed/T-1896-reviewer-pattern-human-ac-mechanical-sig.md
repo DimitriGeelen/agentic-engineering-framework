@@ -115,10 +115,10 @@ A+B together close the producer/consumer split that produced the 412:7 `[REVIEW]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-967d4e14
-- **Timestamp:** 2026-05-18T10:09:41Z
+- **Scan ID:** R-05dc67b2
+- **Timestamp:** 2026-06-02T15:00:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

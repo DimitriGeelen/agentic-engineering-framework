@@ -121,20 +121,27 @@ Caption text was simultaneously updated (this same touch-up) to credit both popu
 ### 2026-05-01T18:57:17Z — status-update [task-update-agent]
 - **Change:** tags: +arc:orchestrator-rethink
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-aa57fd53
-- **Timestamp:** 2026-05-02T05:52:00Z
+- **Scan ID:** R-61f50067
+- **Timestamp:** 2026-06-02T14:58:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 3
 
 **Per-AC findings:**
 
 - **AC#5 (Agent)** — Page surfaces audit summary from `.context/audits/orchestrator-LATEST.yaml` (gated count, baseline) — verifiable via `curl -s http://localhost:3000/orchestrator | grep -q "75"` after an audit run
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/orchestrator-LATEST.yaml in: Page surfaces audit summary from `.context/audits/orchestrator-LATEST.yaml` (gated count, baseline) — verifiable via `curl -s http://localhost:3000/or`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 14
+     - evidence: `curl -sf -o /dev/null -w "%{http_code}
+" http://localhost:3000/orchestrator | grep -q 200`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 15
+     - evidence: `curl -s http://localhost:3000/orchestrator | grep -q "75"`
 ### 2026-05-02T05:52:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Completed via Watchtower UI (human action)

@@ -296,8 +296,8 @@ as its own follow-up rather than scope-creeping this gear fix. Recorded in Evolu
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-89e7ffe2
-- **Timestamp:** 2026-05-24T14:58:48Z
+- **Scan ID:** R-646afc33
+- **Timestamp:** 2026-06-02T15:00:50Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

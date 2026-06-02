@@ -54,3 +54,19 @@ fw test help 2>&1 | grep -q "integration"
 
 ### 2026-02-18T15:28:16Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8b2f9c6a
+- **Timestamp:** 2026-06-02T14:58:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `fw doctor 2>&1 | grep -q "Test infrastructure"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `fw test help 2>&1 | grep -q "integration"`

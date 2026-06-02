@@ -82,3 +82,17 @@ grep -q "T-1259\|CLAUDECODE" CLAUDE.md
 ### 2026-04-15T13:49:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** All 6 Agent ACs met: guard implemented (lib/inception.sh:204), tests pass (15/15), CLAUDE.md updated, regression flagged to T-1260
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d299ce5f
+- **Timestamp:** 2026-06-02T14:56:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `bats tests/unit/lib_inception.bats` adds 3 tests for blocked / bypassed / no-env (lib_inception.bats:127-153)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/lib_inception.bats in: `bats tests/unit/lib_inception.bats` adds 3 tests for blocked / bypassed / no-env (lib_inception.bats:127-153)`

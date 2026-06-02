@@ -234,8 +234,8 @@ out=$(bin/fw bvp 2>&1); echo "$out" | head -3
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-842737ad
-- **Timestamp:** 2026-06-01T17:50:15Z
+- **Scan ID:** R-b0d91e5d
+- **Timestamp:** 2026-06-02T15:01:28Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -245,6 +245,5 @@ out=$(bin/fw bvp 2>&1); echo "$out" | head -3
 
 - **AC#2 (Agent)** — Each of D1-D4 in `protected_drivers:` carries exactly: `id`, `name`, `weight`, `note:` (renamed from `rationale:`). Existing `weight:` values preserved (9/7/5/3). New `note:` text restates the existin
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: Each of D1-D4 in `protected_drivers:` carries exactly: `id`, `name`, `weight`, `note:` (renamed from `rationale:`). Existing `weight:` values preserve`
-
 ### 2026-06-01T17:50:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -128,14 +128,22 @@ bash -n agents/audit/audit.sh
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1816-fix-dispatch-safety-arc-yaml--unquoted-c.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c94fad21
-- **Timestamp:** 2026-05-13T20:28:57Z
+- **Scan ID:** R-834247a1
+- **Timestamp:** 2026-06-02T14:59:50Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 3
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `curl -sf -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/arcs/dispatch-safety" | grep -q '^200$'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `curl -s "$(bin/fw watchtower url)/arcs" | grep -q 'dispatch-safety'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `python3 -m pytest tests/unit/test_arc_system.py -q 2>&1 | tail -3 | grep -qE "passed"`
 ### 2026-05-13T20:28:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

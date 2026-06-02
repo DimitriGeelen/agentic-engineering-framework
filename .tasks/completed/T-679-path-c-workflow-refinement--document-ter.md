@@ -232,3 +232,17 @@ Evidence:
 
 ### 2026-04-06T22:29:20Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c314abaf
+- **Timestamp:** 2026-06-02T15:04:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — fw upgrade hook content validation implemented (F-2 fix) — `lib/upgrade.sh`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/upgrade.sh in: fw upgrade hook content validation implemented (F-2 fix) — `lib/upgrade.sh``

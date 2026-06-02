@@ -69,3 +69,17 @@ grep -q 'upgrades.yaml' lib/upgrade.sh
 
 ### 2026-03-25T22:39:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c2f3bf8
+- **Timestamp:** 2026-06-02T15:03:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — `lib/upgrade.sh` appends entry to consumer `.context/audits/upgrades.yaml` with timestamp, from_version, to_version
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/upgrades.yaml in: `lib/upgrade.sh` appends entry to consumer `.context/audits/upgrades.yaml` with timestamp, from_version, to_version`

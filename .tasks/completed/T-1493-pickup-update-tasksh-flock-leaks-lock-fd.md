@@ -81,14 +81,13 @@ bats tests/unit/keylock_subshell_close.bats
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-531da103
-- **Timestamp:** 2026-04-26T17:38:53Z
+- **Scan ID:** R-a46d5f31
+- **Timestamp:** 2026-06-02T14:57:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T17:38:52Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -76,3 +76,17 @@ date_finished: 2026-03-28T23:14:49Z
 
 ### 2026-03-28T23:14:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-030f98e5
+- **Timestamp:** 2026-06-02T15:04:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `_read_fw_version()` returns runtime FW_VERSION instead of literal from file (lib/version.sh)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/version.sh in: `_read_fw_version()` returns runtime FW_VERSION instead of literal from file (lib/version.sh)`

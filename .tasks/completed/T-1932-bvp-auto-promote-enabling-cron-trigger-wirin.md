@@ -66,19 +66,23 @@ bats tests/unit/bvp_auto_promote_enable.bats 2>&1 | tail -1 | grep -qE "ok 7|^7\
 ### 2026-05-19T13:54:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4515063c
-- **Timestamp:** 2026-05-19T14:18:58Z
+- **Scan ID:** R-d91d1907
+- **Timestamp:** 2026-06-02T15:00:32Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#1 (Agent)** — `fw bvp auto-promote --enable --rationale "..."` flips `auto_promote.enabled: true` in `policy/value-drivers.yaml` AND writes an enabling entry to `.context/bvp-auto-promote-log.yaml` (separate "enabl
   - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `fw bvp auto-promote --enable --rationale "..."` flips `auto_promote.enabled: true` in `policy/value-drivers.yaml` AND writes an enabling entry to `.c`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `bats tests/unit/bvp_auto_promote_enable.bats 2>&1 | tail -1 | grep -qE "ok 7|^7\.\.7"`
 ### 2026-05-19T14:15:20Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

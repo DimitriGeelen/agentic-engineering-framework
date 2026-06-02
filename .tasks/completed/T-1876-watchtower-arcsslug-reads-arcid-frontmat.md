@@ -166,18 +166,20 @@ out_slug=$(curl -sf "$(bin/fw watchtower url)/arcs/arc-grooming" 2>&1); out_num=
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1876-watchtower-arcsslug-reads-arcid-frontmat.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b3acfd0f
-- **Timestamp:** 2026-05-17T21:13:19Z
+- **Scan ID:** R-ed0d1b74
+- **Timestamp:** 2026-06-02T15:00:12Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Per-AC findings:**
 
 - **AC#5 (Agent)** — `tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-1575 compliance — NOT element-presence grep); (b) 
   - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_arcs_detail_arc_id_membership.py in: `tests/playwright/test_arcs_detail_arc_id_membership.py` exercises: (a) `/arcs/arc-grooming` lists ≥10 T-184x/T-185x rows by DOM-content assertion (T-`
+- **AC#7 (Agent)** — Constituent-list DOM-content contract — `tests/playwright/test_arcs_detail_arc_id_membership.py` pins (a) ≥10 T-184x/T-185x IDs render on `/arcs/arc-grooming`, (b) `/arcs/arc-005` (numeric) renders th
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_arcs_detail_arc_id_membership.py in: Constituent-list DOM-content contract — `tests/playwright/test_arcs_detail_arc_id_membership.py` pins (a) ≥10 T-184x/T-185x IDs render on `/arcs/arc-g`
 ### 2026-05-17T06:59:10Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

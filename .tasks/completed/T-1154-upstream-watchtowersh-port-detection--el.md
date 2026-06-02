@@ -71,3 +71,21 @@ bash -c 'grep -q "_watchtower_url" lib/watchtower.sh'
 
 ### 2026-04-12T11:43:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ec87a0cb
+- **Timestamp:** 2026-06-02T14:55:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `agents/audit/audit.sh` uses `_watchtower_url` — no inline port fallback to 3000
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `agents/audit/audit.sh` uses `_watchtower_url` — no inline port fallback to 3000`
+- **AC#5 (Agent)** — `bin/watchtower.sh` PID_FILE uses PROJECT_ROOT not FRAMEWORK_ROOT
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/watchtower.sh in: `bin/watchtower.sh` PID_FILE uses PROJECT_ROOT not FRAMEWORK_ROOT`
+- **AC#6 (Agent)** — `grep -rn 'fw_config.*PORT.*3000' lib/review.sh lib/verify-acs.sh agents/audit/audit.sh` returns no matches
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `grep -rn 'fw_config.*PORT.*3000' lib/review.sh lib/verify-acs.sh agents/audit/audit.sh` returns no matches`

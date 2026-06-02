@@ -135,14 +135,18 @@ cd /opt/999-Agentic-Engineering-Framework && bash agents/audit/orchestrator-mcp-
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1760-classify-18-new-termlinkagent-analytics-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d149751c
-- **Timestamp:** 2026-05-06T06:07:06Z
+- **Scan ID:** R-26e2c06a
+- **Timestamp:** 2026-06-02T14:59:34Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+     - evidence: `cd /opt/999-Agentic-Engineering-Framework && bash agents/audit/orchestrator-mcp-scan.sh 2>&1 | grep -q "WARN: NEW:" && (echo "FAIL: still flagging new tools"; exit 1) || echo "drift clean"`
 ### 2026-05-06T06:07:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

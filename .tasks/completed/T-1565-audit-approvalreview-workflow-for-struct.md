@@ -134,15 +134,14 @@ date_finished: 2026-04-28T07:23:39Z
 - **Decision:** GO
 - **Rationale:** Audit deliverable shipped (`docs/reports/T-1565-approval-arc-gaps-audit.md` — 9 findings, 2 HIGH / 4 MEDIUM / 3 LOW with file:line evidence and fix sketches). 7/9 findings closed across two sessions; 2/9 deferred with documented justification.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-89cc4ed7
-- **Timestamp:** 2026-04-28T07:23:39Z
+- **Scan ID:** R-e99cf4de
+- **Timestamp:** 2026-06-02T14:58:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-28T07:23:39Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

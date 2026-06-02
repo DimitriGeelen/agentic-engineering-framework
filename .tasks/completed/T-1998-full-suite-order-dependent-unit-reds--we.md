@@ -233,12 +233,16 @@ check (`pip list | grep randomly`) is the cheap guard against "green by luck" mi
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d16b3cd8
-- **Timestamp:** 2026-05-22T21:30:27Z
+- **Scan ID:** R-49dbf8dd
+- **Timestamp:** 2026-06-02T15:00:47Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 28
+     - evidence: `out=$(python3 -m pytest tests/unit -q -p no:cacheprovider 2>&1); echo "$out" | tail -3 | grep -q "passed" && ! echo "$out" | tail -3 | grep -q "failed"`
 ### 2026-05-22T21:29:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

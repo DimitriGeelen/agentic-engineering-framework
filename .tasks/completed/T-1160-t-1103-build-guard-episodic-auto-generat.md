@@ -53,3 +53,17 @@ bash -c 'grep -B8 "generate-episodic.*TASK_ID" agents/task-create/update-task.sh
 
 ### 2026-04-12T12:11:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-411eaa49
+- **Timestamp:** 2026-06-02T14:55:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bash -c 'grep -B8 "generate-episodic.*TASK_ID" agents/task-create/update-task.sh | grep -q "PARTIAL_COMPLETE.*false"'`

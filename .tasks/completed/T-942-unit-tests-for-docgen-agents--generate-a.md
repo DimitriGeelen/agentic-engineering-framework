@@ -76,3 +76,19 @@ Last 2 untested agent scripts. All other agents have bats unit tests.
 
 ### 2026-04-06T10:20:58Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-be056add
+- **Timestamp:** 2026-06-02T15:05:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — tests/unit/docgen_article.bats created with tests for generate-article.sh
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/docgen_article.bats in: tests/unit/docgen_article.bats created with tests for generate-article.sh`
+- **AC#2 (Agent)** — tests/unit/docgen_component.bats created with tests for generate-component.sh
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/docgen_component.bats in: tests/unit/docgen_component.bats created with tests for generate-component.sh`

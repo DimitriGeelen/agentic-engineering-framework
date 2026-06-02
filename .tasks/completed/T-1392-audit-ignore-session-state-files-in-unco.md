@@ -71,3 +71,22 @@ bats tests/unit/audit_session_state_filter.bats 2>&1 | grep -q "^ok 3"
 
 ### 2026-04-23T11:16:09Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-45da4803
+- **Timestamp:** 2026-06-02T14:57:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Filter set covers: `.context/working/{watchtower.*,session.yaml,focus.yaml,.session-metrics.yaml,.tool-counter,.edit-counter,.budget-status,.gate-bypass-log.yaml,.approval-notified}`, `.context/audits
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/metrics-history.yaml in: Filter set covers: `.context/working/{watchtower.*,session.yaml,focus.yaml,.session-metrics.yaml,.tool-counter,.edit-counter,.budget-status,.gate-bypa`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `bats tests/unit/audit_session_state_filter.bats 2>&1 | grep -q "^ok 3"`

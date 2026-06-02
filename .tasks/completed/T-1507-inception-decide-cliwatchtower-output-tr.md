@@ -186,15 +186,14 @@ T-1509 (closed in this session) addressed the happy-path trigger that made the `
 - **Change:** horizon: next → now (auto-sync)
 - **Reason:** Inception decision in progress
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2695d265
-- **Timestamp:** 2026-04-26T14:46:56Z
+- **Scan ID:** R-77d525e6
+- **Timestamp:** 2026-06-02T14:57:57Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-04-26T14:46:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

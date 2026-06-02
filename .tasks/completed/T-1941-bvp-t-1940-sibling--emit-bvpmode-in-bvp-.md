@@ -254,10 +254,10 @@ vs proposed" — not "direct vs derived". This slice closes the gap:
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1941-bvp-t-1940-sibling--emit-bvpmode-in-bvp-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b71f78c6
-- **Timestamp:** 2026-05-20T18:28:22Z
+- **Scan ID:** R-16d77c08
+- **Timestamp:** 2026-06-02T15:00:34Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -267,6 +267,5 @@ vs proposed" — not "direct vs derived". This slice closes the gap:
 
 - **AC#3 (Agent)** — tooltip in `web/templates/bvp.html` surfaces mode for arc dots (visible to user)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/templates/bvp.html in: tooltip in `web/templates/bvp.html` surfaces mode for arc dots (visible to user)`
-
 ### 2026-05-20T18:28:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

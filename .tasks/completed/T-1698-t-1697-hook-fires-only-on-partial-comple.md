@@ -90,14 +90,13 @@ bin/fw doctor
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1698-t-1697-hook-fires-only-on-partial-comple.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1f799184
-- **Timestamp:** 2026-05-03T13:10:59Z
+- **Scan ID:** R-dcc6f62f
+- **Timestamp:** 2026-06-02T14:59:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-03T13:10:17Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -109,14 +109,14 @@ bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! ech
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1595-g-019-layer-c--watchtower-surface-for-es.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-817ec573
-- **Timestamp:** 2026-04-28T22:27:27Z
+- **Scan ID:** R-b1cd78cc
+- **Timestamp:** 2026-06-02T14:58:32Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 6
 
 **Per-AC findings:**
 
@@ -127,5 +127,13 @@ bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! ech
 - **AC#8 (Agent)** — Component fabric registered for new files — `.fabric/components/web-blueprints-escalation.yaml` + `web-templates-escalation_drift.yaml`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=fabric/components/web-blueprints-escalation.yaml in: Component fabric registered for new files — `.fabric/components/web-blueprints-escalation.yaml` + `web-templates-escalation_drift.yaml``
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 7
+     - evidence: `curl -sf "$(bin/fw watchtower url)/escalation-drift" | grep -q "Escalation Drift"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `curl -sf "$(bin/fw watchtower url)/escalation-drift" | grep -qE "H1|Heuristic"`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! echo "$out" | grep -q "^not ok" && [ "$(echo "$out" | grep -cE "^ok ")" -eq 8 ]'`
 ### 2026-04-28T22:27:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

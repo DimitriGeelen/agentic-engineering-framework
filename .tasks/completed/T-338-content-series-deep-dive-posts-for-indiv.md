@@ -103,3 +103,12 @@ test "$(ls docs/articles/deep-dives/*.md 2>/dev/null | wc -l)" -ge 7
 
 ### 2026-03-10T22:04:13Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-94a0d796
+- **Timestamp:** 2026-06-02T15:02:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

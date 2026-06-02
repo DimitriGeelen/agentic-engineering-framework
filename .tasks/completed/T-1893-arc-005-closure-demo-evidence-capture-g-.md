@@ -232,14 +232,14 @@ The arc itself remains for the human to close per T-1671 (agent-gate on `fw arc 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1893-arc-005-closure-demo-evidence-capture-g-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-54d0d41e
-- **Timestamp:** 2026-05-18T10:54:15Z
+- **Scan ID:** R-68379ebd
+- **Timestamp:** 2026-06-02T15:00:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 4
 
 **Per-AC findings:**
 
@@ -252,5 +252,7 @@ The arc itself remains for the human to close per T-1671 (agent-gate on `fw arc 
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `test -f tests/unit/arc_abandon.bats`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 52
+     - evidence: `bin/fw arc 2>&1 | grep -q "close.*--demo"`
 ### 2026-05-18T07:22:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

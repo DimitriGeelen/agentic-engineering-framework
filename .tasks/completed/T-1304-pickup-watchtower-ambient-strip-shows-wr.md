@@ -149,3 +149,12 @@ Evidence:
 - `web/shared.py:93-102` reads `active_dir.glob("T-.md")` sorted alphabetically, ignoring `focus.yaml` entirely.
 - `.context/working/focus.yaml` is the canonical focus source (written by `fw work-on`, `fw task update`). Every other surface in the framework respects it.
 - Termlink ran the same fix under their T-1127 and confirmed ambient strip now follows `fw work-on`.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ba93ac86
+- **Timestamp:** 2026-06-02T14:56:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

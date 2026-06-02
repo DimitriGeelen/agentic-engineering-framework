@@ -79,14 +79,13 @@ Unlocks: T-1922 (estimator can now write proposed scores knowing confirm exists 
 ### 2026-05-19T07:48:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9506e70c
-- **Timestamp:** 2026-05-19T07:52:00Z
+- **Scan ID:** R-15b03e94
+- **Timestamp:** 2026-06-02T15:00:30Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-19T07:51:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -173,14 +173,18 @@ grep -q "force-downgrade\|force_downgrade" lib/upgrade.sh
 - `tests/unit/lib_upgrade.bats`: 12/12 still pass post-edit (no behind/match regression)
 - `bash -n lib/upgrade.sh`: clean
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8339f600
-- **Timestamp:** 2026-05-14T21:57:39Z
+- **Scan ID:** R-1a419748
+- **Timestamp:** 2026-06-02T14:59:57Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
+     - evidence: `bats tests/unit/test_upgrade_downgrade_guard.bats > /tmp/t1839-bats.out 2>&1 && grep -c "^ok " /tmp/t1839-bats.out | grep -qE "[4-9]|[0-9][0-9]"`
 ### 2026-05-14T21:57:35Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

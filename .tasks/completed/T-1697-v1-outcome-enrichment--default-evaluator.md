@@ -128,10 +128,10 @@ bin/fw doctor
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1697-v1-outcome-enrichment--default-evaluator.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-367ba067
-- **Timestamp:** 2026-05-03T13:06:25Z
+- **Scan ID:** R-5a0dc0a0
+- **Timestamp:** 2026-06-02T14:59:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -143,6 +143,5 @@ bin/fw doctor
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatch-outcomes.jsonl in: `bin/fw outcome backprop T-1696` appends N rows to `.context/dispatch-outcomes.jsonl` where N = count of T-1696 dispatch rows in dispatches.jsonl`
 - **AC#12 (Agent)** — `.gitignore` excludes `.context/dispatch-outcomes.jsonl`
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatch-outcomes.jsonl in: `.gitignore` excludes `.context/dispatch-outcomes.jsonl``
-
 ### 2026-05-03T13:05:28Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

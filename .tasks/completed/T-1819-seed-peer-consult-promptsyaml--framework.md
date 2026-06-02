@@ -143,14 +143,18 @@ bin/fw reviewer T-1819 2>&1 | grep -q "Overall:.*PASS"
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1819-seed-peer-consult-promptsyaml--framework.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d2f1bf41
-- **Timestamp:** 2026-05-13T23:10:58Z
+- **Scan ID:** R-21baa506
+- **Timestamp:** 2026-06-02T14:59:50Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 13
+     - evidence: `bin/fw reviewer T-1819 2>&1 | grep -q "Overall:.*PASS"`
 ### 2026-05-13T23:10:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

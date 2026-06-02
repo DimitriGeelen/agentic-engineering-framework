@@ -100,14 +100,13 @@ python3 -m pytest tests/unit/test_outcome.py -v
 - **Action:** Created task; arc-tagged orchestrator-rethink
 - **Context:** Forensics depth pair to T-1780 (which surfaces terminal context)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5b895290
-- **Timestamp:** 2026-05-13T21:08:19Z
+- **Scan ID:** R-604a38ea
+- **Timestamp:** 2026-06-02T14:59:42Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-13T21:08:18Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

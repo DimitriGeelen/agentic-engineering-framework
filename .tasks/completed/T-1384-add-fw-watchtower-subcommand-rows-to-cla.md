@@ -53,3 +53,17 @@ grep -qE 'fw watchtower (port|url|\{)' CLAUDE.md
 
 ### 2026-04-22T20:31:57Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-29d3e958
+- **Timestamp:** 2026-06-02T14:57:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `! bin/fw doctor 2>&1 | grep -q 'Missing:.*watchtower'`

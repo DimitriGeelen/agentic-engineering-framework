@@ -317,10 +317,10 @@ GO ships one build child (T-1950A): v1.0 reviewer auto-tick for `[REVIEWER]`-pre
 ACs. v2 (Verification-bound) and v3 (all Agent ACs) are filed as captured/horizon=later only
 after v1.0 dogfood signal proves the rails hold.
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-613b9ac9
-- **Timestamp:** 2026-05-21T21:55:23Z
+- **Scan ID:** R-400a6b1e
+- **Timestamp:** 2026-06-02T15:00:37Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -330,7 +330,6 @@ after v1.0 dogfood signal proves the rails hold.
 
 - **AC#2 (Agent)** — Assumptions tested — substrate audit: v1.3 per-AC findings already shipped (`Finding.ac_index` at `lib/reviewer/static_scan.py:49, 257, 703, 810, 906`); `update-task.sh` already invokes reviewer post-
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/reviewer/static_scan.py in: Assumptions tested — substrate audit: v1.3 per-AC findings already shipped (`Finding.ac_index` at `lib/reviewer/static_scan.py:49, 257, 703, 810, 906``
-
 ### 2026-05-21T21:55:22Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO

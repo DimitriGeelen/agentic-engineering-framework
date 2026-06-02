@@ -102,19 +102,25 @@ bin/fw orchestrator improve
 ### 2026-05-03T07:56:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-da8a1c32
-- **Timestamp:** 2026-05-03T07:58:18Z
+- **Scan ID:** R-d58dab6b
+- **Timestamp:** 2026-06-02T14:59:10Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 3
 
 **Per-AC findings:**
 
 - **AC#3 (Agent)** — Output mentions "v2", "not yet implemented", AND the data paths (`.context/dispatches.jsonl`, `.context/dispatch-blobs/`)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: Output mentions "v2", "not yet implemented", AND the data paths (`.context/dispatches.jsonl`, `.context/dispatch-blobs/`)`
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 9
+     - evidence: `bin/fw orchestrator improve | grep -q "v2"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
+     - evidence: `bin/fw orchestrator improve | grep -q "dispatches.jsonl"`
 ### 2026-05-03T07:58:18Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

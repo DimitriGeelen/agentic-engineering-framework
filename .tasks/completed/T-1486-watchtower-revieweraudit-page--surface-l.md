@@ -84,10 +84,10 @@ curl -sf "$(bin/fw watchtower url)/reviewer/overrides" >/dev/null
 ### 2026-04-26T07:25:00Z — scope-defined
 - **Action:** Filled ACs, Verification per build-readiness gate
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-04622bf1
-- **Timestamp:** 2026-04-26T07:27:38Z
+- **Scan ID:** R-d62c0672
+- **Timestamp:** 2026-06-02T14:57:48Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -104,6 +104,5 @@ curl -sf "$(bin/fw watchtower url)/reviewer/overrides" >/dev/null
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 4
      - evidence: `curl -sf "$(bin/fw watchtower url)/reviewer/overrides" >/dev/null`
-
 ### 2026-04-26T07:27:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

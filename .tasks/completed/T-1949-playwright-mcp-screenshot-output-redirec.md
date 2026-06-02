@@ -215,10 +215,10 @@ grep -q '!docs/reports/T-\*-evidence/\*.png' .gitignore
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1949-playwright-mcp-screenshot-output-redirec.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-78ba22e6
-- **Timestamp:** 2026-05-21T08:59:54Z
+- **Scan ID:** R-f343eca4
+- **Timestamp:** 2026-06-02T15:00:37Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -228,6 +228,5 @@ grep -q '!docs/reports/T-\*-evidence/\*.png' .gitignore
 
 - **AC#6 (Agent)** — Post-config residual cleanup (2026-05-21): 4 PNGs landed in repo root *after* `--output-dir` config went live (arc-badge-before/after.png from T-1969 visual diff; badge-contrast-after.png + badge-cont
   - **AC-verify-mismatch** (narrow, heuristic) — `path=arc-badge-before/after.png in: Post-config residual cleanup (2026-05-21): 4 PNGs landed in repo root *after* `--output-dir` config went live (arc-badge-before/after.png from T-1969 `
-
 ### 2026-05-21T08:59:53Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

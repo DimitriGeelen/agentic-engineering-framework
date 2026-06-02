@@ -135,14 +135,14 @@ bin/fw resolver dispatch T-1738 prompt-triage --dry-run 2>&1 | grep -q "dispatch
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1738-resolver-dispatch---var-keyvalue-for-cus.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-509c195e
-- **Timestamp:** 2026-05-05T07:44:31Z
+- **Scan ID:** R-86dbb738
+- **Timestamp:** 2026-06-02T14:59:25Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 5
+- **Findings:** 6
 
 **Per-AC findings:**
 
@@ -151,14 +151,15 @@ bin/fw resolver dispatch T-1738 prompt-triage --dry-run 2>&1 | grep -q "dispatch
 
 **Verification-level findings:**
 
-  1. **skip-as-pass** (severe, deterministic) @ Verification:line 10
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 9
+     - evidence: `bin/fw resolver dispatch --help 2>&1 | grep -q -- "--var"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 10
      - evidence: `bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var PROMPT_UNDER_TRIAGE="test prompt" 2>&1 | grep -q "dispatch_id"`
-  2. **skip-as-pass** (severe, deterministic) @ Verification:line 11
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
      - evidence: `{ bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var lowercase=bad 2>&1 || true; } | grep -q "UPPERCASE"`
-  3. **skip-as-pass** (severe, deterministic) @ Verification:line 12
+  4. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 12
      - evidence: `{ bin/fw resolver dispatch T-1738 prompt-triage --dry-run --var BADFORMAT 2>&1 || true; } | grep -q "KEY=VALUE"`
-  4. **skip-as-pass** (severe, deterministic) @ Verification:line 13
+  5. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 13
      - evidence: `bin/fw resolver dispatch T-1738 prompt-triage --dry-run 2>&1 | grep -q "dispatch_id"`
-
 ### 2026-05-05T07:44:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

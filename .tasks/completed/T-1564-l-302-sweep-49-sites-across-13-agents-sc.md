@@ -72,10 +72,10 @@ bin/fw audit --section structure >/dev/null 2>&1; rc=$?; [ $rc -le 1 ]
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1564-l-302-sweep-49-sites-across-13-agents-sc.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f0706488
-- **Timestamp:** 2026-04-27T20:48:39Z
+- **Scan ID:** R-c7ac5037
+- **Timestamp:** 2026-06-02T14:58:20Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -83,13 +83,12 @@ bin/fw audit --section structure >/dev/null 2>&1; rc=$?; [ $rc -le 1 ]
 
 **Per-AC findings:**
 
-- **AC#1 (ACs)** — 49 grep|head sites across 13 agents/ scripts wrapped with `{ grep ... 2>/dev/null || true; }` — same recipe as T-1562 / T-1563 / T-1560. Files touched: handover.sh (7), audit.sh (8), git/lib/{hooks,st
+- **AC#1 (Agent)** — 49 grep|head sites across 13 agents/ scripts wrapped with `{ grep ... 2>/dev/null || true; }` — same recipe as T-1562 / T-1563 / T-1560. Files touched: handover.sh (7), audit.sh (8), git/lib/{hooks,st
   - **AC-verify-mismatch** (narrow, heuristic) — `path=task-create/update-task.sh in: 49 grep|head sites across 13 agents/ scripts wrapped with `{ grep ... 2>/dev/null || true; }` — same recipe as T-1562 / T-1563 / T-1560. Files touched`
 
 **Verification-level findings:**
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 2
      - evidence: `bin/fw doctor >/dev/null`
-
 ### 2026-04-27T20:48:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

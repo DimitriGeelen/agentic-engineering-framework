@@ -293,10 +293,10 @@ Go/No-Go evaluation:
 - **Change:** status: captured → started-work
 - **Reason:** Inception decision in progress
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0548727d
-- **Timestamp:** 2026-05-17T07:00:23Z
+- **Scan ID:** R-954d53b7
+- **Timestamp:** 2026-06-02T14:59:55Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -306,7 +306,6 @@ Go/No-Go evaluation:
 
 - **AC#1 (Agent)** — Problem statement validated (source-line evidence at scripts/spikes/T-1736-harvest.py:116)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=scripts/spikes/T-1736-harvest.py in: Problem statement validated (source-line evidence at scripts/spikes/T-1736-harvest.py:116)`
-
 ### 2026-05-17T07:00:23Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
