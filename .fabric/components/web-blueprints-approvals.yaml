@@ -24,6 +24,8 @@ depends_on:
   type: calls
 - target: web/blueprints/arcs.py
   type: registers
+- target: web/blueprints/bvp.py
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -42,4 +44,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-05-22'
+last_enriched: '2026-06-02'

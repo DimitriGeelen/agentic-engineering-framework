@@ -108,6 +108,12 @@ depended_by:
   type: tests_by
 - target: web/blueprints/arcs.py
   type: called_by
+- target: lib/reviewer/static_scan.py
+  type: called_by
+- target: tests/unit/audit_ctl030_completed_horizon_drift.bats
+  type: called_by
+- target: tests/unit/audit_ctl030_completed_horizon_drift.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-05-20'
+last_enriched: '2026-06-02'

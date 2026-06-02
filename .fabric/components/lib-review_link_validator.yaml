@@ -8,9 +8,13 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: web/app.py
   type: calls
+- target: bin/fw
+  type: calls
 depended_by:
 - target: tests/unit/test_review_link_validator.py
   type: called_by
+- target: tests/unit/review_link_blocking_gate.bats
+  type: tests_by
 last_verified: 2026-05-25
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-06-02'

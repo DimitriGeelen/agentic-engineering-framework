@@ -100,6 +100,10 @@ depended_by:
   type: called_by
 - target: tests/unit/test_upgrade_downgrade_guard.bats
   type: tests_by
+- target: tests/unit/review_link_blocking_gate.bats
+  type: called_by
+- target: tests/unit/review_link_blocking_gate.bats
+  type: tests_by
 last_verified: 2026-03-11
 created_by: unknown
-last_enriched: '2026-05-15'
+last_enriched: '2026-06-02'

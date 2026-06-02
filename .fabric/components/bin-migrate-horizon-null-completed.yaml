@@ -1,0 +1,16 @@
+id: bin/migrate-horizon-null-completed.sh
+name: migrate-horizon-null-completed
+type: script
+subsystem: framework-core
+location: bin/migrate-horizon-null-completed.sh
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by:
+- target: tests/unit/update_task_horizon_null_on_close.bats
+  type: called_by
+- target: tests/unit/update_task_horizon_null_on_close.bats
+  type: tests_by
+last_verified: 2026-06-01
+created_by: unknown
+last_enriched: '2026-06-02'

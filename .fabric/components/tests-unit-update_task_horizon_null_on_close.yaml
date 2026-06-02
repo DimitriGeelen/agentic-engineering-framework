@@ -1,0 +1,20 @@
+id: tests/unit/update_task_horizon_null_on_close.bats
+name: update_task_horizon_null_on_close
+type: script
+subsystem: unknown
+location: tests/unit/update_task_horizon_null_on_close.bats
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: agents/task-create/update-task.sh
+  type: calls
+- target: bin/migrate-horizon-null-completed.sh
+  type: calls
+- target: agents/task-create/update-task.sh
+  type: tests
+- target: bin/migrate-horizon-null-completed.sh
+  type: tests
+depended_by: []
+last_verified: 2026-06-01
+created_by: unknown
+last_enriched: '2026-06-02'

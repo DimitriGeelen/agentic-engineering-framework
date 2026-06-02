@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: tests/unit/test_reviewer_ac_evidence_untick.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/reviewer/__init__.py
+  type: calls
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: calls
+depended_by: []
 last_verified: 2026-06-01
 created_by: unknown
+last_enriched: '2026-06-02'
