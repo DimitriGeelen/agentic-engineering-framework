@@ -108,19 +108,18 @@ out=$(curl -sf -o /dev/null -w "%{http_code}" -m 5 https://watchtower-dev.docker
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Four `[REVIEW]` Human-Steps URLs across two partial-complete tasks (T-1990 + T-1994) point at the prod Watchtower FQDN. Three of them 404 because prod tracks tagged releases and the redesigned routes only exist on master; the 4th URL additionally used a structurally non-existent path (`/docs/generated/components/hook-config` instead of `/fabric/component/hook-config`). Human reviewer hits 404, can't verify, the partial-complete sits unreviewable.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** The task-template's `[REVIEW]` Steps example uses a generic `https://example.com/...` placeholder. Authors of T-1990/T-1994 substituted the prod FQDN by reflex because it's the canonical operator-facing URL — without checking that the routes being reviewed shipped to *prod* (they didn't; they shipped to master, which the *dev* FQDN tracks). The structural gap: there is no author-time signal that "this route only exists on master, so the Human-Step URL should target the dev FQDN, not prod."
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Watchtower's prod/dev split (T-280 deployment design) is invisible from inside a task file. The task author has no convenient way to query "is this route deployed to prod yet?" before writing the URL. The `fw task review T-XXX` surface (which renders Watchtower URLs) currently emits the local-dev URL (`bin/fw watchtower url` → `http://192.168.10.107:3000/...`), but Human-Step URLs are author-typed and don't go through that resolver. So the FQDN choice in the body is uncaught until the human actually tries the link.
+
+**Prevention:**
+1. **This task's fix is symptom-only (the 4 URLs).** It does not prevent the next author from typing the same prod FQDN in a future Human-Step.
+2. **Class candidate for a reviewer detector** (T-1443 surface): pattern `partial-complete-prod-fqdn` — flag any Human-Step URL using `watchtower.docker.ring20.geelenandcompany.com` *unless* the task has a tag indicating "wait-for-release" or similar. Borderline cheap to ship; would need ≥3 instances before crossing the threshold. Not filing as an inception yet — one cleanup batch is not a class, even if the pattern feels durable.
+3. **Documentation rail:** CLAUDE.md §Copy-Pasteable Commands already covers `fw` paths; an analogous one-paragraph rule on "Human-Step URLs should target dev FQDN unless the task ships to prod first" would have caught this at write-time. Captured here for the next §Copy-Pasteable-Commands sweep — not editing CLAUDE.md inline because it merits coordinated review against existing rules.
+
+The honest scoping: T-2178 fixes the symptom; the prevention rail is *not* shipped in this task. Filing as observation OBS-049 if it recurs.
 
 ## Evolution
 
