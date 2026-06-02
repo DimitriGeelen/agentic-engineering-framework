@@ -12,16 +12,16 @@ description: >
   what structural mechanism catches/prevents bare paths in chat output where no file
   artifact exists for an existing hook to scan?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-02T19:13:31Z
-last_update: 2026-06-02T19:19:25Z
-date_finished:
+last_update: 2026-06-02T19:24:22Z
+date_finished: 2026-06-02T19:24:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -125,15 +125,15 @@ helper, D: A+C combined), empirical prototype evidence, dialogue log.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -236,7 +236,17 @@ I have the confidence to recommend GO Candidate D.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Candidate A (Stop-hook scanner) alone catches regressions but doesn't
+reduce their rate. Candidate C (review-batch helper + CLAUDE.md rule) alone relies on
+agent discipline that has demonstrably failed (this exact recurrence). Combined: C
+cuts the regression rate by making the right thing cheaper than the wrong thing;
+A is the structural backstop catching residual misses. Layered defence mirrors the
+T-2030 architecture (documentation + tooling + hook) which has held for file
+artifacts since 2026-05-25.
+
+**Date**: 2026-06-02T19:24:22Z
 
 ## Updates
 
@@ -245,3 +255,27 @@ I have the confidence to recommend GO Candidate D.
 
 ### 2026-06-02T19:13:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-02T19:24:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Candidate A (Stop-hook scanner) alone catches regressions but doesn't
+reduce their rate. Candidate C (review-batch helper + CLAUDE.md rule) alone relies on
+agent discipline that has demonstrably failed (this exact recurrence). Combined: C
+cuts the regression rate by making the right thing cheaper than the wrong thing;
+A is the structural backstop catching residual misses. Layered defence mirrors the
+T-2030 architecture (documentation + tooling + hook) which has held for file
+artifacts since 2026-05-25.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99a2a5f9
+- **Timestamp:** 2026-06-02T19:24:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-02T19:24:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
