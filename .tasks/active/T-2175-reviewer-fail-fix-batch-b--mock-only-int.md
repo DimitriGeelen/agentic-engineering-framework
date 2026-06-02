@@ -9,7 +9,7 @@ description: >
   N --reason '...' --ttl 90 if the mock is sufficient coverage. Decision is per-task
   — no batchable shape.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -21,7 +21,7 @@ related_tasks: [T-2173, T-1897, T-2072, T-1443]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T08:40:56Z
-last_update: 2026-06-02T14:36:41Z
+last_update: 2026-06-02T15:20:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,10 +78,10 @@ Parent: T-2173 Cluster 5. Two completed tasks fire `mock-only-integration` at FA
 ## Acceptance Criteria
 
 ### Agent
-- [ ] T-1897 triaged. Decision recorded in this task's `## Decisions` section: "real-smoke" OR "mock-sufficient (override OV-NNNN filed)". Verification: `bin/fw reviewer T-1897 --no-write --json | python3 -c "import sys,json; d=json.loads(sys.stdin.read()); ok = all(f.get('pattern_id') != 'mock-only-integration' for f in d.get('findings',[])); print(ok)"` returns `True`.
-- [ ] T-2072 triaged. Same decision shape. Verification: same JSON check on T-2072 returns `True`.
-- [ ] If override filed for either task, the override has `--ttl 90` (default) and a substantive `--reason` (not "FP, override"). Verification: `bin/fw reviewer override list 2>&1 | grep -E "T-1897|T-2072"` — entries present with substantive reason text.
-- [ ] If integration smoke added for either task, the new test lives in the appropriate `tests/` directory and is discoverable by `fw test`. Verification: `fw test all` includes the new test file in its output.
+- [x] T-1897 triaged. Decision recorded in this task's `## Decisions` section: "real-smoke" OR "mock-sufficient (override OV-NNNN filed)". Verification: `bin/fw reviewer T-1897 --no-write --json | python3 -c "import sys,json; d=json.loads(sys.stdin.read()); ok = all(f.get('pattern_id') != 'mock-only-integration' for f in d.get('findings',[])); print(ok)"` returns `True`.
+- [x] T-2072 triaged. Same decision shape. Verification: same JSON check on T-2072 returns `True`.
+- [x] If override filed for either task, the override has `--ttl 90` (default) and a substantive `--reason` (not "FP, override"). Verification: `bin/fw reviewer override list 2>&1 | grep -E "T-1897|T-2072"` — entries present with substantive reason text.
+- [x] If integration smoke added for either task, the new test lives in the appropriate `tests/` directory and is discoverable by `fw test`. Verification: `fw test all` includes the new test file in its output.
 
 ### Human
 - [ ] [REVIEW] Triage decisions match operator's intuition — "real-smoke" decisions are genuine integration gaps; "mock-sufficient" decisions don't hide real coverage loss.
@@ -125,6 +125,12 @@ Parent: T-2173 Cluster 5. Two completed tasks fire `mock-only-integration` at FA
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-2175 verification (capture-then-grep per L-387):
+out=$(bin/fw reviewer T-1897 --no-write --json 2>&1); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if all(f['pattern_id'] != 'mock-only-integration' for f in d.get('findings',[])) else 1)"
+out=$(bin/fw reviewer T-2072 --no-write --json 2>&1); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); sys.exit(0 if all(f['pattern_id'] != 'mock-only-integration' for f in d.get('findings',[])) else 1)"
+out=$(bin/fw reviewer override list 2>&1); echo "$out" | grep -q "OV-49013554.*T-1897.*mock-only-integration"
+out=$(bin/fw reviewer override list 2>&1); echo "$out" | grep -q "OV-28fe3d5a.*T-2072.*mock-only-integration"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -140,6 +146,17 @@ Parent: T-2173 Cluster 5. Two completed tasks fire `mock-only-integration` at FA
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-1897 and T-2072 fired `mock-only-integration` at FAIL severity in T-2173's corpus extraction — the heuristic flagged "AC mentions integration; Verification only invokes unit tests" for two tasks whose deliverables are inherently mock-free.
+
+**Root cause:** The `mock-only-integration` detector compares AC text (integration keywords) against Verification commands (looks for `pytest`/`bats` in `tests/unit/`). It cannot distinguish (a) "unit-only coverage of an integration AC" from (b) "the unit test IS the integration test for a deliverable that has no external dependency". For static analysers and CLI verbs, the unit-test directory location is convention, not semantic coverage class — but the detector has no view into the deliverable's nature.
+
+**Why structurally allowed:** The detector is `heuristic + partial` by design — it surfaces candidates for human review, not deterministic FAIL evidence. T-2173's batch-extraction logic treated `mock-only-integration` fires uniformly as FAILs (per the audit YAML schema) without consulting `lie_severity` or `detection_confidence`. That bucketing was the routing failure; the detector behaved as documented.
+
+**Prevention:** Three legs:
+1. **This task** — per-task triage with file-an-override-or-add-integration-smoke decision. Overrides carry substantive rationale (not "FP, override") so future audits know why the suppression is principled.
+2. **Detector confidence/severity surfaced at routing time** — when T-2173 (or future cluster extractors) builds the FAIL list, segregate heuristic+partial fires from deterministic+severe ones. Heuristic findings should land in a separate "needs-human-eye" bucket, not the auto-batch-fix queue. Deferred — would be a refactor of `lib/reviewer/audit.py` cluster-totals logic.
+3. **Override pattern as living documentation** — the reason text on overrides explains the FP class so future similar tasks can either avoid the trigger or reference an existing override pattern. (See T-1820 OV-22a57a31 "joint-smoke task: integration evidence is the demo" as a precedent.)
 
 ## Evolution
 
@@ -165,16 +182,27 @@ Parent: T-2173 Cluster 5. Two completed tasks fire `mock-only-integration` at FA
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-02 — Post-T-2177 severity drop changed both tasks from FAIL to CONCERN
+
+- **What changed:** Fresh `bin/fw reviewer T-XXX --no-write --json` shows both T-1897 and T-2072 at `overall: CONCERN` (not FAIL). T-2177's `skip-as-pass` tightening cleared the FAIL-severity drivers; the `mock-only-integration` finding remains but at its native `partial` severity, which bubbles to CONCERN not FAIL. So the urgency dropped — these are no longer blocking-class. Override-based mock-sufficient routing is still appropriate to clear the CONCERN, but the §ACD pivot from T-2174 ("Cluster 1+2 detector-FP-dominant") extends to Cluster 5: this is detector heuristic-FP, not real coverage gap.
+- **Plan impact:** No change — overrides still warranted. The plan's two-path triage (real-smoke vs mock-sufficient) collapsed to mock-sufficient for both. Decision recorded below.
+- **Triggered:** No new tasks. RCA captures the prevention rail (heuristic-severity routing).
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-02 — T-1897 mock-sufficient (OV-49013554)
+
+- **Chose:** File override — `mock-only-integration` is FP for this task.
+- **Why:** T-1897's deliverable IS a static analyser detector (`lib/reviewer/static_scan.py` widening of `_HUMAN_AC_MECHANICAL_RE`). The "integration" surface is task-file corpus regression, verified by python+bats unit tests + a real corpus regression run (`fw reviewer audit` cited in AC#6). No external system exists to integration-test against — the detector reads YAML+Markdown and produces JSON. Unit tests of synthetic fixtures + real corpus invocation IS the integration coverage.
+- **Rejected:** Adding "integration smoke" — there's nothing to smoke. The detector has no network/DB/external API dependency. A new test wouldn't add coverage, just bureaucratic compliance.
+- **Override:** OV-49013554, TTL 89 days (default).
+
+### 2026-06-02 — T-2072 mock-sufficient (OV-28fe3d5a)
+
+- **Chose:** File override — `mock-only-integration` is FP for this task.
+- **Why:** T-2072 ships `fw pickup promote-deferred` verb. AC#(d) explicitly covers an integration scenario: "integration via `fw pickup process` auto-fires promote then processes promoted envelope in the same tick". The bats test invokes the real `fw pickup` CLI in subshell — not a mock, not a stub. The `tests/unit/` location is convention (bats lives in unit/), not coverage type. The pickup pipeline IS the SUT; bats exercises it end-to-end through the public CLI.
+- **Rejected:** Moving the test to `tests/integration/` — the test is functionally an integration test; the directory rename would be cosmetic. Adding a new "true integration" test would duplicate what the existing bats already does.
+- **Override:** OV-28fe3d5a, TTL 89 days (default).
 
 ## Decision
 
@@ -186,6 +214,24 @@ Parent: T-2173 Cluster 5. Two completed tasks fire `mock-only-integration` at FA
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Both T-1897 and T-2072 triaged as "mock-sufficient" with substantive rationale (the detector heuristic genuinely mis-classes deliverables whose unit-test IS the integration test). Two overrides filed (OV-49013554, OV-28fe3d5a) with TTL 89 days; cached verdicts on both refreshed to `Overall: PASS`. The §ACD pivot from T-2174 (Cluster 1+2 detector-FP-dominant) extends to Cluster 5: `mock-only-integration` at heuristic+partial severity is appropriately routed via principled overrides, not by adding ceremonial integration tests with no real coverage value.
+
+**Evidence:**
+- **T-1897 cached verdict:** `Overall: PASS` (post-override).
+- **T-2072 cached verdict:** `Overall: PASS` (post-override).
+- **Overrides recorded:** `bin/fw reviewer override list | grep -E "T-1897|T-2072"` → OV-49013554 (T-1897, ttl 89), OV-28fe3d5a (T-2072, ttl 89), both with multi-sentence FP rationales.
+- **Verification block:** 4 capture-then-grep commands, all green (per L-387 SIGPIPE-safe pattern).
+
+**What's next (operator-facing):**
+- **T-2174** (Cluster 1+2 §ACD pivot) — surfaced via `/review/T-2174`.
+- **T-2176** (Cluster C corpus-rescan + cache-gap close) — surfaced via `/review/T-2176` this session.
+- **T-2179** (Cluster D tautology) — captured horizon: later, awaiting prioritisation.
+- **T-2173 parent** can close once human reviews this batch.
+
 ## Updates
 
 ### 2026-06-02T08:40:56Z — task-created [task-create-agent]
@@ -195,3 +241,6 @@ Parent: T-2173 Cluster 5. Two completed tasks fire `mock-only-integration` at FA
 
 ### 2026-06-02T14:36:41Z — status-update [task-update-agent]
 - **Change:** horizon: later → now
+
+### 2026-06-02T15:20:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

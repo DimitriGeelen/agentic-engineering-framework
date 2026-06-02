@@ -285,3 +285,30 @@ overrides:
   expires_at: '2027-05-31T15:36:37Z'
   added_by: root
   added_at: '2026-05-31T15:36:37Z'
+- id: OV-49013554
+  task_id: T-1897
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "FP: T-1897's deliverable IS the detector (lib/reviewer/static_scan.py +\
+    \ policy/anti-patterns.yaml). The 'integration' is static analysis of task corpora\
+    \ \u2014 verified by python+bats unit tests against synthetic fixtures and a real\
+    \ corpus regression run (see AC text). No external system exists to integration-test\
+    \ against. The mock-only-integration heuristic mis-categorises detector-development\
+    \ tasks where the unit-test IS the integration test."
+  expires_at: '2026-08-31T15:22:16Z'
+  added_by: root
+  added_at: '2026-06-02T15:22:16Z'
+- id: OV-28fe3d5a
+  task_id: T-2072
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "FP: T-2072 ships 'fw pickup promote-deferred' verb in lib/pickup.sh. AC\
+    \ (d) covers an integration scenario explicitly via 'fw pickup process auto-fires\
+    \ promote then processes promoted envelope in the same tick' \u2014 the bats test\
+    \ invokes the real fw pickup CLI in subshell, not a mock. The unit/ directory\
+    \ location is convention, not coverage type. No external system (HTTP API, DB,\
+    \ network) exists to integration-test against \u2014 the pickup pipeline IS the\
+    \ SUT and bats exercises it end-to-end via the CLI."
+  expires_at: '2026-08-31T15:22:27Z'
+  added_by: root
+  added_at: '2026-06-02T15:22:27Z'

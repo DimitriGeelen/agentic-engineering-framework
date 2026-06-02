@@ -227,16 +227,14 @@ out=$(bin/fw pickup promote-deferred --dry-run 2>&1); echo "$?" | grep -q "^0$"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-abe13298
-- **Timestamp:** 2026-06-02T15:01:00Z
+- **Scan ID:** R-c7879c53
+- **Timestamp:** 2026-06-02T15:22:47Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Verification-level findings:**
-
-  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
-     - evidence: `bats tests/unit/pickup_promote_deferred.bats`
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
 ### 2026-05-28T19:37:56Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

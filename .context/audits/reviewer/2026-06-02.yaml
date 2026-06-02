@@ -1,0 +1,75 @@
+scan_date: '2026-06-02'
+scan_timestamp: '2026-06-02T15:13:10Z'
+pass: B
+catalogue_version: v1.3-seed
+escalation_version: v1.1-seed
+tasks_scanned: 1954
+errors: []
+totals:
+  PASS: 1425
+  CONCERN: 515
+  FAIL: 14
+  needs_human: 67
+pattern_fire_counts:
+  AC-verify-mismatch: 356
+  l387-sigpipe-risk: 405
+  empty-output-success: 80
+  tautology: 3
+  mock-only-integration: 22
+  swallowed-errors: 11
+  skip-as-pass: 2
+  audience-mismatch: 1
+  review-link-homework: 1
+  human-ac-mechanical-signal: 1
+suppressed_fire_counts:
+  human-ac-mechanical-signal: 11
+  AC-verify-mismatch: 5
+  mock-only-integration: 1
+suppressed_total: 17
+active_overrides: 27
+escalation_fire_counts:
+  external-publish: 4
+  cross-project-blast: 40
+  destructive-action: 22
+  secret-handling: 1
+top_findings:
+- pattern_id: l387-sigpipe-risk
+  count: 405
+  examples:
+  - T-1040
+  - T-1041
+  - T-1042
+  - T-1064
+  - T-1066
+- pattern_id: AC-verify-mismatch
+  count: 356
+  examples:
+  - T-1020
+  - T-1020
+  - T-1028
+  - T-1064
+  - T-1064
+- pattern_id: empty-output-success
+  count: 80
+  examples:
+  - T-1195
+  - T-1204
+  - T-1222
+  - T-1223
+  - T-1232
+- pattern_id: mock-only-integration
+  count: 22
+  examples:
+  - T-1320
+  - T-1446
+  - T-1480
+  - T-159
+  - T-1622
+- pattern_id: swallowed-errors
+  count: 11
+  examples:
+  - T-1356
+  - T-1360
+  - T-1378
+  - T-1694
+  - T-229
