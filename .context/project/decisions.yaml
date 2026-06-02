@@ -1857,3 +1857,66 @@ decisions:
     date: 2026-05-31
     task: T-1702
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-268
+    decision: "Fix in the same commit as the gate."
+    scope: project
+    date: 2026-06-01
+    task: T-2092
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-269
+    decision: "Use the pre-pulled `debian:trixie-slim` image directly via"
+    scope: project
+    date: 2026-06-01
+    task: T-2092
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-270
+    decision: "Move all partial-complete entries into ONE bottom footer (post-WIP, pre-Inceptions), grouped internally by horizon"
+    scope: project
+    date: 2026-06-01
+    task: T-2160
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-271
+    decision: "Storage enum (`enum_horizons`: now/next/later) stays the source of truth for write-paths (kanban-drag, inline edits, create form). New `enum_render_horizons` (storage + past) is for filter dropdowns only."
+    scope: project
+    date: 2026-06-01
+    task: T-2160
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-272
+    decision: "Replace `horizon: <value>` with `horizon: null`"
+    scope: project
+    date: 2026-06-01
+    task: T-2161
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-273
+    decision: "Ship the audit rail (read-side recurrence detection) without also patching `update-task.sh` to null horizon at close-time (write-side prevention)."
+    scope: project
+    date: 2026-06-01
+    task: T-2162
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-274
+    decision: "Inject `_sed_i 's/^horizon:.*/horizon: null/'` right after the move-to-completed line."
+    scope: project
+    date: 2026-06-01
+    task: T-2163
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-275
+    decision: "File override — `mock-only-integration` is FP for this task."
+    scope: project
+    date: 2026-06-02
+    task: T-2175
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-276
+    decision: "File override — `mock-only-integration` is FP for this task."
+    scope: project
+    date: 2026-06-02
+    task: T-2175
+    rationale: "Auto-captured from task file on completion"
