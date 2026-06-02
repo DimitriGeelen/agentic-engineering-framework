@@ -23,7 +23,7 @@ tags: [inception, workflow, prioritization, bvp, governance]
 components: []
 related_tasks: []
 created: 2026-06-02T21:18:05Z
-last_update: 2026-06-02T21:24:02Z
+last_update: 2026-06-02T21:25:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -38,6 +38,19 @@ bvp_scores_proposed:
       F-RECALL: 0
       F-ORCH: 0
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-02T21:25:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
       (no-signal)
     rubric_sha: e4a00f38e801
@@ -204,5 +217,13 @@ constraints are framework-internal:
 - **Change:** horizon: next → now (auto-sync)
 
 ### 2026-06-02T21:24:02Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-06-02T21:25:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-06-02T21:25:46Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
