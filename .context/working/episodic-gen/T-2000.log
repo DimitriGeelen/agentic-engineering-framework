@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-05-23T12:12:51Z ===
+task_id: T-2000
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2000.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Specialised UX-review TermLink agent + enforce executed-browser review on render
+  Duration: 0 days (36 min)
+  Updates: 1
+  Commits: 1
+  Lines: +167 -0 across 1 files
+  Outcomes: 4 AC checked
+  Artifacts: 1 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2000-specialised-ux-review-termlink-agent--en.md
+--- exit code: 0 ---

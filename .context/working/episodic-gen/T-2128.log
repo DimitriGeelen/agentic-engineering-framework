@@ -1,0 +1,21 @@
+=== episodic-gen invocation: 2026-05-30T21:55:57Z ===
+task_id: T-2128
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework/.agentic-framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/.agentic-framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2128.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: adopt visual-verification hook from 025-WokrshopDesigner (PL-018)
+  Duration: 0 days (4 min)
+  Updates: 3
+  Commits: 0
+  Lines: +0 -0 across 0 files
+  Outcomes: 9 AC checked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2128-adopt-visual-verification-hook-from-025-.md
+--- exit code: 0 ---

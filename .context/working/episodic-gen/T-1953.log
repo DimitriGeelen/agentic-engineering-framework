@@ -1,0 +1,21 @@
+=== episodic-gen invocation: 2026-05-21T09:06:14Z ===
+task_id: T-1953
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1953.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: G-064 gauge timezone fix — CRON_HOUR_UTC mismatches actual cron fire (crontab
+  Duration: 1 days (1362 min)
+  Updates: 2
+  Commits: 1
+  Lines: +47 -10 across 3 files
+  Outcomes: 6 AC checked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1953-g-064-gauge-timezone-fix--cronhourutc-mi.md
+--- exit code: 0 ---

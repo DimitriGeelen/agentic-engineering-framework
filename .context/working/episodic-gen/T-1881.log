@@ -1,0 +1,23 @@
+=== episodic-gen invocation: 2026-05-17T15:56:07Z ===
+task_id: T-1881
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1881.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Audit-time lint: fail on grep arc:slug patterns without arc_id read
+  Duration: 0 days (108 min)
+  Updates: 2
+  Commits: 4
+  Lines: +360 -78 across 4 files
+  Outcomes: 6 AC checked
+  Challenges: 1 detected from git
+  Artifacts: 4 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1881-audit-time-lint-fail-on-grep-arcslug-pat.md
+--- exit code: 0 ---

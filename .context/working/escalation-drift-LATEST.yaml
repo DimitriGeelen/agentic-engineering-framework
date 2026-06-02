@@ -1,55 +1,55 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-05-13T03:23:01.916615+00:00
-corpus_total: 1700
-bug_class_total: 361
-bug_class_pct: 21
-h1_flagged: 326
-h1_pct_of_bug_class: 90
-h2_repeat_patterns: 70
-h3_flagged: 268
-h3_pct_of_bug_class: 74
-recent_30d_flagged: 120
+generated: 2026-06-02T03:23:02.337055+00:00
+corpus_total: 1951
+bug_class_total: 433
+bug_class_pct: 22
+h1_flagged: 346
+h1_pct_of_bug_class: 79
+h2_repeat_patterns: 105
+h3_flagged: 270
+h3_pct_of_bug_class: 62
+recent_30d_flagged: 23
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
-  - tid: "T-1123-pickup-approvals-page-shows-inception-ta"
-    name: "Pickup: Approvals page shows inception tasks without recommendations — creates n"
-  - tid: "T-1127-pickup-u-003-send-file-reports-ok-on-hub"
-    name: "Pickup: U-003: send-file reports ok on hub acceptance, not delivery — silent fil"
-  - tid: "T-1133-pickup-gnu-date--d-in-framework-shell-sc"
-    name: "Pickup: GNU date -d in framework shell scripts fails silently on macOS — causes "
-  - tid: "T-1195-fix-g-044-replace-hardcoded-opt-consumer"
-    name: "Fix G-044: Replace hardcoded /opt/* consumer discovery with configurable path"
-  - tid: "T-1197-fix-g-041-replace-hardcoded-status-selec"
-    name: "Fix G-041: Replace hardcoded status selectors in kanban CSS/HTML with dynamic Ji"
-  - tid: "T-1198-fix-remaining-hardcoded-status-strings-i"
-    name: "Fix remaining hardcoded status strings in watchtower blueprints (core.py, metric"
-  - tid: "T-1199-fix-config-registry-parity--add-consumer"
-    name: "Fix config-registry-parity — add CONSUMER_SCAN_DIRS to web/blueprints/config.py"
-  - tid: "T-1201-fix-fw-task-review-terminal-overflow--wr"
-    name: "Fix fw task review terminal overflow — wrap URLs, compact output"
-  - tid: "T-1202-fix-duplicate-decision-block--exact-matc"
-    name: "Fix duplicate decision block — exact match on ## Decision in lib/inception.sh (T"
-  - tid: "T-1209-fix-watchtower-500-on-consumer-home--dat"
-    name: "Fix Watchtower 500 on consumer home — datetime.date vs datetime.datetime in stal"
+  - tid: "T-1729-meta-rca-agent-did-substantive-work-rca-"
+    name: "meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — "
+  - tid: "T-1732-prompt-triage-as-g-064-first-real-consum"
+    name: "prompt-triage as G-064 first real consumer — orchestrator-driven user-prompt cla"
+  - tid: "T-1734-validworkerkinds-drift-between-binfw-and"
+    name: "VALID_WORKER_KINDS drift between bin/fw and lib/resolver.py — ollama-loop accept"
+  - tid: "T-1813-audit-arc-completion-check-ignores-tag-t"
+    name: "audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks onl"
+  - tid: "T-1829-version-stamping-algorithm-not-cross-tag"
+    name: "VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 clas"
+  - tid: "T-1830-fw-upgrade-incident-2026-05-14-meta-rca-"
+    name: "fw-upgrade-incident-2026-05-14 meta-RCA umbrella — boundary-crossing invisibilit"
+  - tid: "T-1831-ac-checkbox-vs-content-drift--agent-does"
+    name: "AC-checkbox-vs-content drift — agent does substantive work in body, gate measure"
+  - tid: "T-1833-t-1736-spike-harvest-read-session-jsonls"
+    name: "T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation v"
+  - tid: "T-1887-ship-t-1886-rca-candidate-a--task-templa"
+    name: "ship T-1886 RCA Candidate A — task-template hint to remind .claude/settings.json"
+  - tid: "T-1888-ship-t-1886-rca-candidate-b--posttooluse"
+    name: "ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits t"
 h2_top:
   - learning: "P-011"
-    task_count: 180
-  - learning: "P-010"
-    task_count: 120
+    task_count: 528
+  - learning: "L-387"
+    task_count: 345
   - learning: "L-291"
-    task_count: 102
+    task_count: 299
+  - learning: "P-010"
+    task_count: 155
+  - learning: "L-398"
+    task_count: 132
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
     task_count: 38
+  - learning: "L-332"
+    task_count: 35
   - learning: "PL-007"
     task_count: 24
   - learning: "L-293"
     task_count: 23
-  - learning: "L-002"
-    task_count: 13
-  - learning: "L-298"
-    task_count: 13
-  - learning: "L-316"
-    task_count: 13

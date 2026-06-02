@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-05-30T21:42:55Z ===
+task_id: T-2126
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2126.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: fw task review output: URL scrolls off-screen above QR — repeat below for terminal-reliable handoff
+  Duration: 0 days (7 min)
+  Updates: 1
+  Commits: 1
+  Lines: +448 -0 across 2 files
+  Outcomes: 4 AC checked
+  Artifacts: 2 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2126-fw-task-review-output-url-scrolls-off-sc.md
+--- exit code: 0 ---

@@ -1,0 +1,21 @@
+=== episodic-gen invocation: 2026-05-29T14:25:21Z ===
+task_id: T-2099
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2099.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: fork-bomb fix: lib/upgrade.sh handoff + bin/fw resolve_framework FRAMEWORK_ROOT pass-through (SEV-1)
+  Duration: 0 days (3 min)
+  Updates: 1
+  Commits: 0
+  Lines: +0 -0 across 0 files
+  Outcomes: 6 AC checked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2099-fork-bomb-fix-libupgradesh-handoff--binf.md
+--- exit code: 0 ---

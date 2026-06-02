@@ -1,0 +1,12 @@
+=== Task Update ===
+Task:    T-1848 ("Sequential arc-NNN immutable IDs (T-NEW-1.5)")
+File:    /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md
+Acceptance criteria: 8/8 checked ✓
+Human: 0/1 checked (not blocking)
+
+=== Verification Gate (P-011) ===
+Running 6 verification command(s)...
+
+  PASS: test $(grep -lE '^id: arc-' .context/arcs/*.yaml | wc -l) -ge 5
+  PASS: grep -q '^id: arc-001' .context/arcs/dispatch-safety.yaml
+  PASS: grep -q '^id: arc-005' .context/arcs/arc-grooming.yaml

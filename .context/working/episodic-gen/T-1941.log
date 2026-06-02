@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-05-20T18:28:26Z ===
+task_id: T-1941
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1941.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: BVP T-1940 sibling — emit bvp_mode in /bvp scatter arc payload + tooltip
+  Duration: 1 days (1270 min)
+  Updates: 1
+  Commits: 5
+  Lines: +1021 -5 across 12 files
+  Outcomes: 7 AC checked
+  Artifacts: 8 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1941-bvp-t-1940-sibling--emit-bvpmode-in-bvp-.md
+--- exit code: 0 ---

@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-05-20T10:25:19Z ===
+task_id: T-1952
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1952.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: G-064 closure gauge fix — count cron invocations not dispatch rows + idempotency-saturation
+  Duration: 0 days (6 min)
+  Updates: 2
+  Commits: 1
+  Lines: +610 -3 across 4 files
+  Outcomes: 8 AC checked
+  Artifacts: 4 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1952-g-064-closure-gauge-fix--count-cron-invo.md
+--- exit code: 0 ---

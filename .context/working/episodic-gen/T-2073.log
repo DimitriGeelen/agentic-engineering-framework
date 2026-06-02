@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-05-28T17:51:49Z ===
+task_id: T-2073
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2073.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: orchestrator-mcp-baseline 168→242 — classify 74 new termlink_agent_*/channel_*/fleet_*/hub_* tools by naming convention (4th batch after T-1755/T-1760/T-1867)
+  Duration: 0 days (4 min)
+  Updates: 1
+  Commits: 1
+  Lines: +295 -32 across 3 files
+  Outcomes: 5 AC checked
+  Artifacts: 3 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2073-orchestrator-mcp-baseline-168242--classi.md
+--- exit code: 0 ---

@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-05-19T07:07:09Z ===
+task_id: T-1916
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1916.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006
+  Duration: 0 days (25 min)
+  Updates: 1
+  Commits: 1
+  Lines: +1384 -0 across 19 files
+  Outcomes: 5 AC checked
+  Artifacts: 19 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1916-enrich-t-1915-bvp-inception-capture--wri.md
+--- exit code: 0 ---

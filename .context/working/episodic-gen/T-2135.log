@@ -1,0 +1,23 @@
+=== episodic-gen invocation: 2026-05-31T08:27:26Z ===
+task_id: T-2135
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2135.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Playwright regression net for htmx targetError class — /review/<id> interactive
+  Duration: 0 days (12 min)
+  Updates: 1
+  Commits: 3
+  Lines: +435 -0 across 3 files
+  Outcomes: 5 AC checked
+  Challenges: 1 detected from git
+  Artifacts: 3 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2135-playwright-regression-net-for-htmx-targe.md
+--- exit code: 0 ---

@@ -1,0 +1,23 @@
+=== episodic-gen invocation: 2026-05-21T19:29:41Z ===
+task_id: T-1983
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1983.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: GO-scope traceability — inception decisions machine-readable + close gate
+  Duration: 0 days (36 min)
+  Updates: 2
+  Commits: 1
+  Lines: +204 -0 across 1 files
+  Outcomes: 4 AC checked
+  Challenges: 1 detected from git
+  Artifacts: 1 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1983-go-scope-traceability--inception-decisio.md
+--- exit code: 0 ---

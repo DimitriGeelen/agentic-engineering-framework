@@ -1,0 +1,21 @@
+=== episodic-gen invocation: 2026-05-31T18:57:21Z ===
+task_id: T-2150
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2150.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: classify 5 new MCP tools via naming convention (T-1755 batch pattern)
+  Duration: 0 days (3 min)
+  Updates: 1
+  Commits: 0
+  Lines: +0 -0 across 0 files
+  Outcomes: 6 AC checked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2150-classify-5-new-mcp-tools-via-naming-conv.md
+--- exit code: 0 ---

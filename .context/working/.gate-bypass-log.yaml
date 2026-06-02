@@ -2382,3 +2382,112 @@ FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
 T-2092: file L-451 learning — bats + set -e exit-code capture pattern
 
 W'
+- timestamp: '2026-06-01T08:38:41Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2154'
+  command: 'git add .context/episodic/T-2154.yaml .fabric/components/tests-unit-test_orchestrator_mcp_classify.yaml .tasks/completed/T-2154-t-1761-build-hybrid-auto-classify-in-orc.md
+FW_SWITCH_FOCUS=1 bin/fw git'
+- timestamp: '2026-06-01T08:59:28Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2155'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2155: ac-evidence-untick reviewer detector (T-1761 prevention)
+
+Static-scan detector that catches the recurring Agent AC body-evidence
+present, checkbox unticked c'
+- timestamp: '2026-06-01T08:59:48Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2155'
+  command: 'FW_SWITCH_FOCUS=1 git add .fabric/components/tests-unit-test_reviewer_ac_evidence_untick.yaml 2>&1; FW_SWITCH_FOCUS=1 git commit -m "T-2155: fabric card for ac-evidence-untick unit test
+
+Co-Authored-B'
+- timestamp: '2026-06-01T09:12:56Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2156'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2156: HTML-comment strip in _parse_agent_acs (OBS-047, T-2155 follow-up)
+
+The T-1985 auto-tick subsystem was ticking the default.md templates
+- [ ] [REVIEWER] Bloc'
+- timestamp: '2026-06-01T09:13:21Z'
+  task: 'T-1820'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2156'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2156: parser code + tests + episodic (amend follow-up to f067325f)
+
+The previous commit captured only .context/inbox.yaml because the
+original add hit a pathspec err'
+- timestamp: '2026-06-01T09:51:23Z'
+  task: 'T-2157'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-01T09:51:34Z'
+  task: 'T-2159'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-01T11:11:30Z'
+  task: 'T-2161'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: Slice 2 of arc-009 touches zero web/ files (only bin/migrate-* script + docs/reports/). The render-surface diff detected by P-013 is from T-2160''s commit 90e4a5f7 which has its own [REVIEW] Human AC at /review/T-2160. No new render surface introduced.'
+  reason: ''
+- timestamp: '2026-06-01T11:59:05Z'
+  task: 'T-2162'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: Slice 3 of arc-009 touches zero web/ files (only agents/audit/* + tests/unit/*). The render-surface diff is from T-2160''s commit 90e4a5f7 already shipped with its own [REVIEW] Human AC at /review/T-2160.'
+  reason: ''
+- timestamp: '2026-06-01T16:59:55Z'
+  task: 'T-2165'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: docs/reports/ outside web/ render surface'
+  reason: ''
+- timestamp: '2026-06-01T17:50:14Z'
+  task: 'T-2166'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: policy/ outside web/ render surface'
+  reason: ''
+- timestamp: '2026-06-01T20:23:26Z'
+  task: 'T-2158'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2167'
+  command: 'git add -- .tasks/active/T-2167-investigate-obs-034-orphan-stash-254e902.md .context/working/.reviewed-T-2167 && \
+FW_SWITCH_FOCUS=1 git commit -m "T-2167: OBS-034 orphan stash 254e9028 — agent reco'
+- timestamp: '2026-06-01T20:23:38Z'
+  task: 'T-2158'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2167'
+  command: 'git add -- .tasks/active/T-2167-investigate-obs-034-orphan-stash-254e902.md && \
+FW_SWITCH_FOCUS=1 git commit -m "T-2167: OBS-034 orphan stash 254e9028 — agent recommendation: DROP
+
+Read-only invest'
+- timestamp: '2026-06-01T22:31:44Z'
+  task: 'T-2158'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2171'
+  command: 'git add .tasks/active/T-2170-bvp-t-new-d-per-driver-watchtower-displa.md .tasks/active/T-2171-bvp-t-new-e-f-autonomy-activation-gate--.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2170 + T-2171: drop duplica'
+- timestamp: '2026-06-02T05:45:27Z'
+  task: 'T-2158'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2169'
+  command: 'git add .tasks/active/T-2168-bvp-estimator-extension-for-f-recall--f-.md .tasks/active/T-2169-retirewhen-audit-advisory--fw-auditdocto.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2168 + T-2169: drop duplica'
+- timestamp: '2026-06-02T13:07:04Z'
+  task: 'T-2174'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2177'
+  command: 'git add -- .context/project/learnings.yaml .context/working/ 2>/dev/null; git status --short | grep -E "^\s*[MA]\s" | head -5; echo "---"
+FW_SWITCH_FOCUS=1 git commit -m "T-2177: capture L-452 — det'

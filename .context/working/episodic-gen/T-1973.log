@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-05-21T07:08:20Z ===
+task_id: T-1973
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1973.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: web/blueprints/bvp.py module docstring stale — 'sliders ship in T-1929' (T-1929 has shipped)
+  Duration: 0 days (1 min)
+  Updates: 1
+  Commits: 1
+  Lines: +192 -1 across 3 files
+  Outcomes: 4 AC checked
+  Artifacts: 3 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1973-webblueprintsbvppy-module-docstring-stal.md
+--- exit code: 0 ---

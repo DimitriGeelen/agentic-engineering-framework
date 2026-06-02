@@ -1,0 +1,23 @@
+=== episodic-gen invocation: 2026-06-01T08:20:35Z ===
+task_id: T-1761
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1761.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: orchestrator-mcp-scan auto-classify by naming convention (eliminate T-1755/T-1760
+  Duration: 26 days (37572 min)
+  Updates: 2
+  Commits: 3
+  Lines: +412 -11 across 3 files
+  Outcomes: 1 AC checked
+  Challenges: 1 detected from git
+  Artifacts: 3 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1761-orchestrator-mcp-scan-auto-classify-by-n.md
+--- exit code: 0 ---

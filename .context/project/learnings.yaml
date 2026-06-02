@@ -3462,3 +3462,10 @@ X'` returning empty group."
   date: 2026-06-01
   context: Added via context agent
   application: TBD
+- id: L-452
+  learning: "Detector regex like _SKIP_AS_PASS_RE that does flat substring search has no shell-context awareness — when tightening, add a strip-then-search pass for single/double-quoted substrings (quoted PATTERN args are not CLI flags) AND a same-line output-assertion suppression check (--dry-run + grep -q is simulation-with-check, not skip-as-pass). Corollary inception-level lesson: see memory feedback_cached_verdict_text_blind_spot — don't cluster cached pattern_id fingerprints; re-run the detector per cluster before recommending a mechanical fix batch."
+  source: P-001
+  task: T-2177
+  date: 2026-06-02
+  context: Added via context agent
+  application: TBD

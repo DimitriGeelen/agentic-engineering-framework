@@ -1,0 +1,21 @@
+=== episodic-gen invocation: 2026-05-15T22:12:45Z ===
+task_id: T-1870
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1870.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: audit check — completed/ task with status != work-completed (DESYNC class, L-390 prevention)
+  Duration: 0 days (28 min)
+  Updates: 1
+  Commits: 0
+  Lines: +0 -0 across 0 files
+  Outcomes: 5 AC checked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1870-audit-check--completed-task-with-status-.md
+--- exit code: 0 ---

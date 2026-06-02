@@ -1,0 +1,20 @@
+=== episodic-gen invocation: 2026-05-19T07:52:03Z ===
+task_id: T-1924
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-1924.yaml
+
+  Status: ✓ auto-complete (Auto-generated)
+  Task: BVP T-NEW-8: fw bvp confirm verb — bvp_scores_proposed → bvp_scores (Sovereignty boundary, §ACD gated)
+  Duration: 0 days (51 min)
+  Updates: 1
+  Commits: 0
+  Lines: +0 -0 across 0 files
+  Outcomes: 5 AC checked
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1924-bvp-fw-bvp-confirm-verb-proposed-confirmed-.md
+--- exit code: 0 ---
