@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2190: Inception recalibration Slice 4: Open Questions body section + disposition
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-02T23:18:42Z
+# ============================================================================
+
+task_id: T-2190
+task_name: "Inception recalibration Slice 4: Open Questions body section + disposition"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T22:04:27Z
+completed: 2026-06-02T23:18:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-06-03T01:18:20+02:00
+last_commit: 2026-06-03T01:18:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Open Questions body section + disposition gate
+
+# Key outcomes
+outcomes:
+  - '`.tasks/templates/inception.md` carries `## Open Questions` body section with per-question shape comment block (prose + `confidence: 0-3` + `disposition: answered|deferred|dissolved` + `rationale: <evidence>`)'
+  - '`agents/task-create/update-task.sh` carries a disposition-completeness check fired on `--status work-completed` when `workflow_type: inception`: refuses if any question (IW-N or similar) lacks a disposition line or a rationale line'
+  - 'Direct-invocation bypass `--skip-disposition-gate "rationale"` accepted by update-task.sh and logged Tier-2 to `.context/working/.gate-bypass-log.yaml`'
+  - 'Env-var bypass `FW_SKIP_DISPOSITION_GATE=1` accepted (T-1890 producer/consumer parity for git/wrapper-shaped callers) and logged Tier-2'
+  - 'Bats test `tests/unit/disposition_gate.bats` covers: under-disposed inception blocks, complete inception passes, --skip flag bypasses + logs, env-var bypasses + logs, non-inception workflow_type exempt — 7/7 PASS'
+  - '`050-Inceptions.md` Disposition Gate section cites the shipped section name, the gate location, and both bypass mechanisms by exact form'
+  - 'Reviewer PASS (`bin/fw reviewer T-2190`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '050-Inceptions.md'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-disposition_gate.yaml'
+  - '.tasks/active/T-2190-inception-recalibration-slice-4-open-que.md'
+  - '.tasks/templates/inception.md'
+  - 'tests/unit/disposition_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-03T01:18:20"
+    action: "T-2190: Open Questions body section + disposition gate"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 74 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, gate, disposition, T-2186-slice, update-task]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 74
+  commits: 1
+  files_changed: 6
+  lines_added: 420
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2190-inception-recalibration-slice-4-open-que.md
+generated_by: context-agent-hybrid
