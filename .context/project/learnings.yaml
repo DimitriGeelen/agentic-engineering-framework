@@ -3476,3 +3476,10 @@ X'` returning empty group."
   date: 2026-06-02
   context: Added via context agent
   application: TBD
+- id: L-454
+  learning: "Inception commit-budget counter must discriminate exploration from storage commits. Counting every T-XXX commit (filing, demote, status flip) burns the budget before substantive research starts, hitting the gate at commit 3 of a normal exploration sequence. Fix: classify commits by their diff — exempt task-file-only edits, count anything touching docs/reports/ or implementation source."
+  source: T-2186
+  task: T-2195
+  date: 2026-06-02
+  context: Added via context agent
+  application: TBD

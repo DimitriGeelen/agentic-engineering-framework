@@ -63,18 +63,26 @@ commit-msg hook blocks further commits until `fw inception decide T-XXX go|no-go
 is recorded. This bounds the "still thinking, just one more spike" failure
 mode.
 
-**Storage exemption (T-2195).** The current implementation counts *every*
-T-XXX commit including the initial filing + research-artifact storage
-commits, which can consume the budget before substantive exploration starts.
-T-2195 reshapes the counter to count only commits that *advance* exploration
-(skip filing-only, storage-only, and demotion-only). Until T-2195 ships,
-raise the limit explicitly when storage is heavy:
+**Storage exemption (T-2195).** Only **exploration commits** count toward
+the budget. A commit is exploration if it touches anything outside the
+inception's own task file (`.tasks/active/T-XXX-*.md`):
+
+- **Storage** (exempt): filing-only, demote, status-flip, frontmatter edit, AC
+  text revision — bookkeeping with zero research content
+- **Exploration** (counts): research-artifact edit
+  (`docs/reports/T-XXX-*.md`), prototype spike, implementation source edit
+
+The classifier lives at `agents/git/lib/hooks.sh::_count_inception_exploration_commits`;
+the contract is pinned by `tests/unit/inception_commit_counter.bats` (7
+cases). Override remains available for unusual cases:
 
 ```
 FW_INCEPTION_COMMIT_LIMIT=6 fw inception decide T-XXX go --rationale "..."
 ```
 
-The override is logged Tier-2.
+The override is logged Tier-2. Origin: T-2186 itself hit the old counter
+at commit 3 because filing + demote (both storage) consumed 2/2 with zero
+exploration — the same scoring-shaped rigidity the inception was recalibrating.
 
 ### Producer ≠ judge
 

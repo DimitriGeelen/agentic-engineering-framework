@@ -117,6 +117,33 @@ if [ -f "$FRAMEWORK_ROOT/lib/paths.sh" ]; then
 fi
 INCEPTION_COMMIT_LIMIT=$(fw_config "INCEPTION_COMMIT_LIMIT" 2 2>/dev/null || echo 2)
 
+# --- Inception commit classifier (T-2195) ---
+# An inception commit is "exploration" (counts toward budget) if its diff touches
+# anything OUTSIDE the inception's own task file in .tasks/{active,completed}/.
+# A "storage" commit (filing-only, status flip, demote, frontmatter edit) is
+# exempt — these are bookkeeping, not exploration. Origin: T-2186 hit the
+# budget at its 3rd commit (Step 0 findings) because filing + demote consumed
+# 2/2 with zero exploration. Same scoring-shaped rigidity the inception was
+# trying to recalibrate.
+#
+# Returns the count on stdout. Assumes TASK_REF is set.
+_count_inception_exploration_commits() {
+    local task_ref="$1"
+    local total=0
+    local sha files
+    # Subject-anchored match (T-1328) avoids counting body-mentions.
+    while IFS= read -r sha; do
+        [ -z "$sha" ] && continue
+        files=$(git show --name-only --format= "$sha" 2>/dev/null || echo "")
+        # If ANY file is outside .tasks/{active,completed}/T-XXX-*, this is exploration.
+        # grep -v matches storage-pattern lines; if anything remains, we count.
+        if echo "$files" | grep -vE "^\.tasks/(active|completed)/${task_ref}-" | grep -q '[^[:space:]]'; then
+            total=$((total + 1))
+        fi
+    done < <(git log --oneline 2>/dev/null | grep -E "^[0-9a-f]+ ${task_ref}:" | awk '{print $1}')
+    echo "$total"
+}
+
 # --- Inception Gate (T-126, T-1176) ---
 # Block commits on inception tasks after exploration threshold unless decision recorded
 # Threshold configurable via FW_INCEPTION_COMMIT_LIMIT (default: 2)
@@ -130,12 +157,14 @@ if [ -n "$TASK_REF" ]; then
         fi
 
         if [ "$HAS_DECISION" = false ]; then
-            # Count existing commits for this inception task.
-            # Match only commits whose SUBJECT starts with "T-XXX:" (T-1328) —
-            # using --grep against the full message would match body mentions of
-            # the same ID in unrelated commits. --oneline gives "<sha> <subject>"
-            # so anchor on the subject after the sha.
-            INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
+            # Count existing exploration commits for this inception task (T-2195).
+            # Storage commits (task-file-only edits: filing, demote, status flips,
+            # frontmatter changes) are exempt. The classifier looks at each commit's
+            # diff and counts only those touching files outside the task's own .md.
+            # Origin: T-2186 hit the limit at commit 3 (Step 0 findings) because
+            # filing + demote consumed 2/2 with zero exploration — a scoring-shaped
+            # rigidity in the very system the inception was recalibrating.
+            INCEPTION_COMMITS=$(_count_inception_exploration_commits "$TASK_REF")
 
             if [ "$INCEPTION_COMMITS" -ge "$INCEPTION_COMMIT_LIMIT" ]; then
                 echo ""
@@ -170,8 +199,8 @@ fi
 # First commit is allowed (task creation). Subsequent commits must have the artifact
 # either on disk already or in the staged changes.
 if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
-    # T-1328: anchor on subject prefix so body-mentions don't inflate the count
-    INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
+    # T-2195: exploration-only counter; storage commits exempt.
+    INCEPTION_COMMITS=$(_count_inception_exploration_commits "$TASK_REF")
     if [ "$INCEPTION_COMMITS" -gt 0 ]; then
         # Check if docs/reports/ changes are in this commit
         HAS_STAGED_RESEARCH=$(git diff --cached --name-only | grep -c "^docs/reports/" || true)

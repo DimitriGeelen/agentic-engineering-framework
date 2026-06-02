@@ -1,13 +1,25 @@
 ---
 id: T-2195
-name: "Inception recalibration Slice 9 (meta-finding): commit-counting semantics — exempt storage from exploration budget"
+name: "Inception recalibration Slice 9 (meta-finding): commit-counting semantics —
+  exempt storage from exploration budget"
 description: >
-  T-2186 Slice 9 (meta-finding from inception execution). The current inception commit-counter (agents/git/lib/hooks.sh:122) counts EVERY T-XXX commit toward the 2-commit exploration limit, including filing + demote (storage) commits that carry zero exploration. T-2186 itself hit this — its 3rd commit (Step 0 findings) was blocked because filing + demote consumed the budget. Fix: distinguish storage commits (status flips, frontmatter-only edits, body Context section pointer updates) from exploration commits (research artifact body deltas, body section additions to Problem Statement / Assumptions / Exploration Plan / Recommendation / Decisions). Heuristic: parse commit's git diff; if all changes are within frontmatter or storage-tagged sections, do not count. Add learning entry (L-NEW from this incident). Verification: bats test pins counter behaviour on synthetic storage vs exploration commits; the T-2186 commit sequence would have hit budget at the right place.
+  T-2186 Slice 9 (meta-finding from inception execution). The current inception commit-counter
+  (agents/git/lib/hooks.sh:122) counts EVERY T-XXX commit toward the 2-commit exploration
+  limit, including filing + demote (storage) commits that carry zero exploration.
+  T-2186 itself hit this — its 3rd commit (Step 0 findings) was blocked because filing
+  + demote consumed the budget. Fix: distinguish storage commits (status flips, frontmatter-only
+  edits, body Context section pointer updates) from exploration commits (research
+  artifact body deltas, body section additions to Problem Statement / Assumptions
+  / Exploration Plan / Recommendation / Decisions). Heuristic: parse commit's git
+  diff; if all changes are within frontmatter or storage-tagged sections, do not count.
+  Add learning entry (L-NEW from this incident). Verification: bats test pins counter
+  behaviour on synthetic storage vs exploration commits; the T-2186 commit sequence
+  would have hit budget at the right place.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
-horizon: next
+horizon: now
 tags: [inception, commit-counter, T-2186-slice, meta-finding, L-class]
 components: []
 related_tasks: [T-2186]
@@ -16,8 +28,8 @@ related_tasks: [T-2186]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:05:35Z
-last_update: 2026-06-02T22:05:35Z
-date_finished: null
+last_update: 2026-06-02T22:33:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +40,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 3
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=3 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2195: Inception recalibration Slice 9 (meta-finding): commit-counting semantics — exempt storage from exploration budget
@@ -39,42 +75,22 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] `agents/git/lib/hooks.sh` has a new helper `_count_inception_exploration_commits` that filters task-file-only commits out of the count
+- [x] Both call sites (inception-gate counter L138 + research-artifact enforcement L174) use the new helper instead of raw `git log | grep -c`
+- [x] Bats test pins behaviour: a synthetic 3-commit sequence (filing → demote → research-artifact edit) counts as 1 exploration commit, not 3 — `tests/unit/inception_commit_counter.bats` 7/7 PASS
+- [x] `050-Inceptions.md` "Commit budget" note updated — storage commits exempt by default (no override needed for the T-2186-shaped flow)
+- [x] Learning entry filed via `fw context add-learning` capturing the failure class (commit-counter conflated storage with exploration) — L-454
+- [x] Reviewer PASS (`bin/fw reviewer T-2195`) — R-fd45bdf0 2026-06-02T22:42:19Z, Findings: none
 
 ## Verification
+
+bash -n agents/git/lib/hooks.sh
+out=$(cat agents/git/lib/hooks.sh); grep -q "_count_inception_exploration_commits" <<<"$out"
+out=$(grep -c "_count_inception_exploration_commits" agents/git/lib/hooks.sh); test "$out" -ge 3
+out=$(cat 050-Inceptions.md); grep -q "storage commits" <<<"$out"
+bats tests/unit/inception_commit_counter.bats
+out=$(cat .context/project/learnings.yaml 2>&1); grep -q "T-2195" <<<"$out"
+out=$(bin/fw reviewer T-2195 2>&1); grep -qE "Overall:.*PASS" <<<"$out"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -174,3 +190,16 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2195-inception-recalibration-slice-9-meta-fin.md
 - **Context:** Initial task creation
+
+### 2026-06-02T22:33:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fd45bdf0
+- **Timestamp:** 2026-06-02T22:42:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
