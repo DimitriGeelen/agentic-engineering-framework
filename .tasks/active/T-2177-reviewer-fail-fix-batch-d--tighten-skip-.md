@@ -130,19 +130,16 @@ out=$(python3 -m pytest tests/unit/test_reviewer_static_scan.py -q 2>&1); echo "
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** The reviewer's `skip-as-pass` detector flagged tasks T-1516 and T-2072 (and 6 sibling Cluster 1 cases) as deterministic FAIL when their Verification blocks contained legitimate idioms — a `--skip-X` substring inside a quoted grep PATTERN argument (T-1516), and a `--dry-run` invocation followed on the same line by an output assertion via `; ... | grep -q` (T-2072). T-2173's inception cluster analysis read these cached fingerprints as "89% genuine task-quality issues" and recommended a 17-task mechanical retro-edit batch.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `_SKIP_AS_PASS_RE` at `lib/reviewer/static_scan.py:626-629` performs a flat substring search over the raw verification line. It has no shell-context awareness — it cannot distinguish `--skip-sovereignty` as a CLI flag (real skip-as-pass) from `--skip-sovereignty` as a textual argument inside `grep -E '...'` (FP). It also has no awareness of *what follows* the skip-flag on the same line — `--dry-run` with a subsequent `| grep -q "expected"` assertion is simulation-with-check, semantically equivalent to running the real command; the existing detector treats it identically to a bare `--dry-run` with discarded output.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The detector was seeded as a `deterministic` v1.1 pattern (T-1446 micro-version rollout) with the explicit intent to catch the obvious cases. Tightening was deferred to "if FPs accumulate". The accumulation surfaced via T-2173's corpus sweep — but T-2173's *analysis approach* (clustering cached `pattern_id` fingerprints without re-running the detector against original source) inherited the detector's blind spot. The corpus showed 14 FAILs labeled "skip-as-pass × 8 + swallowed-errors × 6"; the cluster names looked like task-quality issues because the fingerprint encodes *what fired*, not *what the rule means*. No earlier control prompted "re-run the detector and inspect each finding" before recommending a mechanical fix class. See [[feedback_cached_verdict_text_blind_spot]] for the durable class lesson.
+
+**Prevention:**
+1. **Test coverage at the detector** (this task): 9 new bats-style pytest cases in `tests/unit/test_reviewer_static_scan.py` pin the two new suppressions AND four preserved TPs. Future regex edits that break either heuristic fail the unit suite.
+2. **Memory rail at the inception level**: `[[feedback_cached_verdict_text_blind_spot]]` (created at T-2174 §ACD pivot) instructs future corpus-sweep inceptions to fresh-scan ≥3 tasks per cluster before recommending a mechanical fix batch.
+3. **§ACD pattern**: T-2174 + T-2177 together demonstrate the discipline in two pivots — first pivot reduced T-2174's mechanical batch from 17 to 2 genuine edits; second pivot (this task) further dissolved the swallowed-errors leg when empirical re-scan showed the existing `_NEGATIVE_ASSERTION_RE` was already correct and T-1694 was a genuine TP misclassified by the parent. The lesson compounds: re-run the detector at every scope decision, not just at the start.
 
 ## Evolution
 
