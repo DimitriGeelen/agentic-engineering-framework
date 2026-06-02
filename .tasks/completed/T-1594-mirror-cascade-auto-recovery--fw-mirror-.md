@@ -104,12 +104,12 @@ bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! ech
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b42a888a
-- **Timestamp:** 2026-06-02T15:10:26Z
+- **Scan ID:** R-5a37eaeb
+- **Timestamp:** 2026-06-02T17:28:48Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 5
+- **Findings:** 4
 
 **Per-AC findings:**
 
@@ -120,11 +120,12 @@ bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! ech
 
 **Verification-level findings:**
 
-  1. **skip-as-pass** (severe, deterministic) @ Verification:line 9
-     - evidence: `bin/fw mirror sync --dry-run --quiet`
-  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
      - evidence: `bin/fw mirror help 2>&1 | grep -q "sync"`
-  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 11
      - evidence: `bash -c 'out=$(bin/fw test unit -- tests/unit/test_mirror_sync.bats 2>&1); ! echo "$out" | grep -q "^not ok" && [ "$(echo "$out" | grep -cE "^ok ")" -eq 8 ]'`
+
+- **Suppressed:** 1 (by override)
+  - skip-as-pass @ Verification:line 9
 ### 2026-04-28T22:18:24Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

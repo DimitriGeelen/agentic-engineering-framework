@@ -356,3 +356,21 @@ overrides:
   expires_at: '2026-08-31T17:08:26Z'
   added_by: root
   added_at: '2026-06-02T17:08:26Z'
+- id: OV-f410b673
+  task_id: T-1594
+  pattern_id: skip-as-pass
+  ac_index: null
+  reason: "FP: 'bin/fw mirror sync --dry-run --quiet' is the canonical safe-smoke\
+    \ pattern for commands with side effects. The non-dry-run form 'bin/fw mirror\
+    \ sync' would actually push to remote \u2014 the --dry-run flag exists precisely\
+    \ to verify the command parses and reaches the dry-run code path without firing\
+    \ the side effect. --quiet suppresses informational output for cleaner CI logs.\
+    \ This is exactly the 'commands with side effects' class T-2174 named (AC body:\
+    \ 'the genuine safe smoke pattern'). T-2177's detector tightening (quoted-context\
+    \ + same-line-assertion) preserves this as FAIL because the line has no output\
+    \ assertion; that preservation is correct in general but the deliberate-side-effect-avoidance\
+    \ is the rationale here. The mirror sync work shipped end-to-end; the verification\
+    \ gate's job here is to confirm the CLI surface exists."
+  expires_at: '2026-08-31T17:28:37Z'
+  added_by: root
+  added_at: '2026-06-02T17:28:37Z'

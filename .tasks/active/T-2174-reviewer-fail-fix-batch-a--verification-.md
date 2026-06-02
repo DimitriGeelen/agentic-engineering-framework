@@ -22,7 +22,7 @@ related_tasks: [T-2173, T-1443]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T08:39:47Z
-last_update: 2026-06-02T11:47:00Z
+last_update: 2026-06-02T17:12:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,11 +99,12 @@ tightening). This task retains only the genuine + borderline cases.**
   Fresh scan today: FAIL→CONCERN (empty-body gone, residual AC-verify-mismatch
   is different class). This is a cache-staleness instance — T-2176 (Fix C)
   write-back over completed/ will materially close this leg.
-- [ ] Borderline T-1594 + T-2072: **DEFERRED to post-T-2177.** Both use `--dry-run`
+- [x] Borderline T-1594 + T-2072: **DEFERRED to post-T-2177.** Both use `--dry-run`
   with `--quiet` suppression / exit-code-only assertion — the genuine "safe smoke"
   pattern for commands with side effects. Detector tightening (T-2177) will likely
   drop these to PASS naturally without rewriting historical verification semantics.
   Re-evaluate after T-2177 lands.
+  **Post-T-2177 resolution (2026-06-02):** T-2072 cleared to PASS (T-2175 mock-only-integration override resolved both legs; skip-as-pass also no longer fires). T-1594 still genuinely fires skip-as-pass on `bin/fw mirror sync --dry-run --quiet` (no same-line output assertion, so T-2177's tightening correctly preserves it). Filed OV-f410b673 (TTL 89d) with rationale "canonical safe-smoke pattern for commands with side effects" — exactly the AC class this checkbox named. Both legs closed.
 - [x] Sibling detector-tightening task filed (id **T-2177**, "Reviewer FAIL fix
   batch D — tighten skip-as-pass + swallowed-errors detectors…", captured +
   horizon: later, owner: agent). Verification:
@@ -116,8 +117,9 @@ tightening). This task retains only the genuine + borderline cases.**
   FAIL→PASS, T-1644 FAIL→CONCERN (cache-stale). All three verified above with
   `bin/fw reviewer T-XXXX --no-write --json`.
 - [x] No edits to `## Decisions` or `## Updates` sections of touched tasks (Verification block edits only on T-1517/T-1518; no edit on T-1644).
-- [ ] Single commit listing the touched task IDs; commit body cites the §ACD
+- [x] Single commit listing the touched task IDs; commit body cites the §ACD
   pivot rationale from `## Evolution`.
+  **Satisfied by commit `ab6e3a46a` ("T-2174: §ACD pivot — Cluster 1+2 are detector-FP-dominant, not task-quality"):** body lists Cluster 1 (skip-as-pass × 8) and Cluster 2 (swallowed-errors × 6) task by task, names T-1516/T-1517/T-1518/T-1644 with their per-task verdicts, and cites the §ACD reasoning. Verified via `git log -1 ab6e3a46a --pretty=format:"%B"`.
 
 ### Human
 - [ ] [REVIEW] T-1644 retro-fill reflects genuine intent recovery from git

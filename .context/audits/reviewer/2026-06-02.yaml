@@ -1,5 +1,5 @@
 scan_date: '2026-06-02'
-scan_timestamp: '2026-06-02T17:08:53Z'
+scan_timestamp: '2026-06-02T17:28:53Z'
 pass: B
 catalogue_version: v1.3-seed
 escalation_version: v1.1-seed
@@ -7,8 +7,8 @@ tasks_scanned: 1954
 errors: []
 totals:
   PASS: 1430
-  CONCERN: 513
-  FAIL: 11
+  CONCERN: 514
+  FAIL: 10
   needs_human: 67
 pattern_fire_counts:
   AC-verify-mismatch: 356
@@ -16,17 +16,18 @@ pattern_fire_counts:
   empty-output-success: 80
   mock-only-integration: 20
   swallowed-errors: 11
-  skip-as-pass: 2
   audience-mismatch: 1
   review-link-homework: 1
   human-ac-mechanical-signal: 1
+  skip-as-pass: 1
 suppressed_fire_counts:
   human-ac-mechanical-signal: 11
   tautology: 3
   AC-verify-mismatch: 5
+  skip-as-pass: 1
   mock-only-integration: 3
-suppressed_total: 22
-active_overrides: 32
+suppressed_total: 23
+active_overrides: 33
 escalation_fire_counts:
   external-publish: 4
   cross-project-blast: 40
