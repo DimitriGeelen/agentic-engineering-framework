@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2184: audit-cleanup: commit fabric enrich (24 cards / 58 edges) + surface OBS-048
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-02T20:36:58Z
+# ============================================================================
+
+task_id: T-2184
+task_name: "audit-cleanup: commit fabric enrich (24 cards / 58 edges) + surface OBS-048"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T20:10:17Z
+completed: 2026-06-02T20:26:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-02T22:13:47+02:00
+last_commit: 2026-06-02T22:13:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrich (24 cards / 58 edges) + OBS-048 G-064 readiness handoff
+
+# Key outcomes
+outcomes:
+  - 'Fabric edges committed: `git status --short .fabric/` is empty after the commit (no `M ` lines under `.fabric/`); `git log -1 --format=%s -- .fabric/` matches `^T-2184:`. **Evidence:** commit `c1c5f1eee` — 27 files, +484/-81, includes 24 enriched fabric YAMLs.'
+  - 'Audit re-baselined: `bin/fw audit` post-commit shows the `Fabric: NN/779 cards have no edges` WARN''s count is strictly less than the baseline 88 (verifiable by checking the warn line in the output). **Evidence:** post-commit audit reports `Fabric: 79/779 cards have no edges` (baseline 88 → 79, Δ=−9 hard-floor, plus the +58 edges captured across already-edged cards).'
+  - 'OBS-048 surface evidence written to `docs/reports/T-2184-obs048-g064-handoff.md`: contains the class-correct `/gaps` URL (resolved via `bin/fw watchtower url`), the gauge command + output line, the 12 firing dates, the cascade note pointing to T-2169 F-ORCH retirement, and a one-line operator action recommendation. **Evidence:** doc landed at commit `c1c5f1eee`, 4.5KB; `/gaps`, `g064-readiness`, `T-2169` all present per smoke-test.'
+  - 'Reviewer PASS-or-known-FP: `bin/fw reviewer T-2184` overall verdict PASS or CONCERN with `needs_human=no` and only the auto-tick reverse-finding (`ac-evidence-untick`, which clears once this AC ticks). **Evidence:** post-fix reviewer scan R-9e1101d0 shows 1 finding (was 3 pre-fix) — `ac-evidence-untick` on AC#3 noting "size=4460B; AC unticked"; the two verification-level findings (l387-sigpipe-risk, empty-output-success) cleared after the verification-block rewrites in this commit.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2184-obs048-g064-handoff.md'
+  - '.fabric/components/agents-audit-active-task-scan.yaml'
+  - '.fabric/components/agents-audit-completed-task-scan.yaml'
+  - '.fabric/components/agents-audit-orchestrator-mcp-scan.yaml'
+  - '.fabric/components/agents-context-check-visual-verification.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/audit-yaml-validator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/bin-migrate-horizon-null-completed.yaml'
+  - '.fabric/components/lib-colors.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-reviewer-__init__.yaml'
+  - '.fabric/components/lib-reviewer-static_scan.yaml'
+  - '.fabric/components/lib-review_link_validator.yaml'
+  - '.fabric/components/lib-review.yaml'
+  - '.fabric/components/tests-unit-audit_ctl030_completed_horizon_drift.yaml'
+  - '.fabric/components/tests-unit-review_link_blocking_gate.yaml'
+  - '.fabric/components/tests-unit-test_driver_rubrics.yaml'
+  - '.fabric/components/tests-unit-test_orchestrator_mcp_classify.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_ac_evidence_untick.yaml'
+  - '.fabric/components/tests-unit-test_review_link_validator.yaml'
+  - '.fabric/components/tests-unit-update_task_horizon_null_on_close.yaml'
+  - '.fabric/components/tools-check_termlink_tag_drift.yaml'
+  - '.fabric/components/web-blueprints-approvals.yaml'
+  - '.fabric/components/web-blueprints-bvp.yaml'
+  - '.fabric/components/web-static-htmx-toast.yaml'
+  - '.tasks/active/T-2184-audit-cleanup-commit-fabric-enrich-24-ca.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-02T22:13:47"
+    action: "T-2184: fabric enrich (24 cards / 58 edges) + OBS-048 G-064 readiness handoff"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 27
+  lines_added: 484
+  lines_removed: 81
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2184-audit-cleanup-commit-fabric-enrich-24-ca.md
+generated_by: context-agent-hybrid
