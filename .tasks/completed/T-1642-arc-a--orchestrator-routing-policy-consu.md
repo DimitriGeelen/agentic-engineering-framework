@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-01T11:54:33Z
 last_update: 2026-05-01T18:58:36Z
 date_finished: 2026-05-01T17:08:41Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1642: Arc A — Orchestrator routing-policy consultation (T-1061 follow-up)

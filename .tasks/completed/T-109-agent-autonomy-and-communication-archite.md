@@ -16,6 +16,8 @@ related_tasks: [T-097, T-098, T-110, T-111]
 created: 2026-02-17T11:19:24Z
 last_update: 2026-02-17T15:27:07Z
 date_finished: 2026-02-17T15:27:07Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-109: Agent autonomy and communication architecture

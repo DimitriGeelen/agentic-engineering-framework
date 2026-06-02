@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T17:17:47Z
 last_update: 2026-03-28T09:32:16Z
 date_finished: 2026-03-28T09:32:16Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-564: OpenClaw comparative: agent isolation and session management

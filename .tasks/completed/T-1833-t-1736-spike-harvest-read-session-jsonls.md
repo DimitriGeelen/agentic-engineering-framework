@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-05-14T20:42:00Z
 last_update: 2026-05-17T07:00:23Z
 date_finished: 2026-05-17T07:00:23Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1833: T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation violation (Layer 3 RCA of fw-upgrade-incident-2026-05-14)

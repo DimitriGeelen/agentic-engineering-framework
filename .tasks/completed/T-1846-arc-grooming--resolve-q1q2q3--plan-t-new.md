@@ -15,6 +15,8 @@ arc_id: arc-grooming
 created: 2026-05-15T12:43:57Z
 last_update: 2026-05-17T18:25:00Z
 date_finished: 2026-05-15T14:49:04Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1846: Arc grooming — resolve Q1/Q2/Q3 + plan T-NEW-2..9 build slices

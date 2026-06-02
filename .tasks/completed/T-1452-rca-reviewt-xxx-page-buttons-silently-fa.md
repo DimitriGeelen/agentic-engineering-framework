@@ -14,6 +14,8 @@ related_tasks: [T-667, T-1343, T-1450]
 created: 2026-04-25T13:35:00Z
 last_update: 2026-04-25T13:09:38Z
 date_finished: 2026-04-25T11:51:10Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1452: RCA — /review/T-XXX page buttons silently fail (CSRF regression)

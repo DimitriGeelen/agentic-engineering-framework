@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-20T07:50:36Z
 last_update: 2026-04-26T09:32:26Z
 date_finished: 2026-04-26T09:32:26Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1346: Global /root/.agentic-framework install — isolation leak risk, deprecation path

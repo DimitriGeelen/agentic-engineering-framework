@@ -19,6 +19,8 @@ related_tasks: []
 created: 2026-02-19T13:18:27Z
 last_update: 2026-02-19T14:53:23Z
 date_finished: 2026-02-19T14:53:23Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-192: G-006 remediation — behavior verification gap in P-010 AC gate

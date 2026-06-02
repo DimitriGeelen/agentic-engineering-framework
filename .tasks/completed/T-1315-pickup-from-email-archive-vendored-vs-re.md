@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T20:33:25Z
 last_update: 2026-04-22T11:14:38Z
 date_finished: 2026-04-22T11:14:26Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1315: Pickup from email-archive: vendored-vs-repo mode blind spot RCA (sourced T-1043)

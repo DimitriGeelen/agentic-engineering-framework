@@ -16,6 +16,8 @@ last_update: 2026-04-26T18:45:03Z
 date_finished: 2026-04-26T18:45:03Z
 source_task_id_in_origin: T-1499
 source_project_in_origin: "999-Agentic-Engineering-Framework"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1512: Pickup: Re: T-045 hosting advice — relay response from ring20-management (from 999-Agentic-Engineering-Framework)

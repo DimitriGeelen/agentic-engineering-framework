@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-19T16:01:59Z
 last_update: 2026-04-19T23:46:17Z
 date_finished: 2026-04-19T23:46:17Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1337: G-048 Watchtower /api/* CSRF coverage — inventory, classify, decide enforcement approach

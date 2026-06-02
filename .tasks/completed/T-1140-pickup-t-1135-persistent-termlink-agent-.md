@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T09:45:01Z
 last_update: 2026-04-22T05:25:58Z
 date_finished: 2026-04-22T05:25:58Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1140: Pickup: T-1135 persistent TermLink agent sessions — cross-agent coordination results from framework + termlink project (from 999-Agentic-Engineering-Framework)

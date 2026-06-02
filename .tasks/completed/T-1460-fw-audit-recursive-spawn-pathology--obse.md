@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-25T13:52:39Z
 last_update: 2026-04-25T14:01:48Z
 date_finished: 2026-04-25T14:01:48Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1460: fw audit recursive-spawn pathology — observed during T-1441 close. Concurrent audit invocations (one in foreground from agent investigation + one inside T-1441's verification gate) caused audit.sh to spawn nested audit.sh children at ~1/min for 5+ minutes (saw 22 audit processes, parent-child chain 6+ levels deep). Each child appeared to be the audit re-running itself, possibly via the post-commit detector or a subshell loop in audit.sh's trend-analysis step. Killed manually with pkill -KILL. Need to investigate: does audit.sh fork itself? Does it lock to prevent concurrent runs? Should it?

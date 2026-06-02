@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T21:21:55Z
 last_update: 2026-04-13T06:23:22Z
 date_finished: 2026-03-28T17:08:13Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-584: Inception: Structured logging helper — subsystem-tagged log function for framework scripts

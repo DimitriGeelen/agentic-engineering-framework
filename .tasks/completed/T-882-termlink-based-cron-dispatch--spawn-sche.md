@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-05T06:58:24Z
 last_update: 2026-04-13T13:20:23Z
 date_finished: 2026-04-13T13:20:23Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-882: TermLink-based cron dispatch — spawn scheduled Claude sessions for deterministic audit/health tasks with interpreted output

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-25T20:03:41Z
 last_update: 2026-04-06T22:29:18Z
 date_finished: 2026-03-25T21:42:17Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-614: TermLink consumer project governance bypass investigation — Tier 0 bypass, taskless work, structural regression analysis

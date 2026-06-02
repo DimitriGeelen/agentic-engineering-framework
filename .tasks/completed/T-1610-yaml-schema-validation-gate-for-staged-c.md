@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-30T06:56:00Z
 last_update: 2026-04-30T07:24:58Z
 date_finished: 2026-04-30T07:24:58Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1610: YAML schema-validation gate for staged .context/project/*.yaml — prevent silent corruption

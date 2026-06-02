@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-20T07:46:35Z
 last_update: 2026-04-22T09:36:24Z
 date_finished: 2026-04-22T09:36:24Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1349: Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted changes present is the #1 audit trend (23×) for consumers (from termlink)

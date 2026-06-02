@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-23T16:46:40Z
 last_update: 2026-04-23T17:10:05Z
 date_finished: 2026-04-23T17:10:05Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1404: Evidence-based Human AC closure — extend T-954/T-1322 to backlog sweep + agent-side rubber-stamp ticking

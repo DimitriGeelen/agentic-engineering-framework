@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T08:21:39Z
 last_update: 2026-04-12T09:27:16Z
 date_finished: 2026-04-12T08:39:59Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1126: Codify TermLink communication protocol: inject for interactive, push for async — structural enforcement

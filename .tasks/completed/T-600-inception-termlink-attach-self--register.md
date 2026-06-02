@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-24T09:06:05Z
 last_update: 2026-04-13T06:29:08Z
 date_finished: 2026-03-28T17:07:13Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-600: Inception: TermLink attach-self — register an existing shell session as a TermLink endpoint for bidirectional cross-machine agent communication

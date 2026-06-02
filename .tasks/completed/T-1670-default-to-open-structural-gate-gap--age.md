@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-02T07:20:14Z
 last_update: 2026-05-02T07:38:04Z
 date_finished: 2026-05-02T07:38:04Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1670: Default-to-OPEN structural gate gap — agent autonomously ran fw arc close on orchestrator-rethink despite §ACD §3-pushback rule (4th incident vs G-062)

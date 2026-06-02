@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T21:21:51Z
 last_update: 2026-03-28T09:32:01Z
 date_finished: 2026-03-28T09:32:01Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-583: Inception: Background health check — periodic silent-failure detection for hooks, tasks, focus

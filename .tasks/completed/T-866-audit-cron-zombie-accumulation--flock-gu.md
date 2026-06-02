@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-04T20:43:13Z
 last_update: 2026-04-13T06:23:29Z
 date_finished: 2026-04-05T05:39:21Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-866: Audit cron zombie accumulation — flock guard, timeout, stale reaper

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-25T12:20:16Z
 last_update: 2026-04-25T18:02:40Z
 date_finished: 2026-04-25T18:02:40Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1455: Pickup importer hard-codes workflow_type=inception for all envelope types (bug-report, feature-proposal, etc.) — leading to 12 closed bug-fix tasks classified as inception. Audit C-001/missing-research check then warns about absent docs/reports/T-XXX-*.md artifacts that bug fixes don't need. Surgical fix landed in T-1440 (skip pickups in audit). Structural fix should change importer to map: bug-report→build, feature-proposal→inception (or build, with inception only for explicit research questions). See agents/pickup or lib/pickup-bus for importer code.

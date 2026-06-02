@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-24T10:04:58Z
 last_update: 2026-04-24T12:56:53Z
 date_finished: 2026-04-24T12:56:53Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1420: Cross-project pickup semantic dedup — hash-only misses 'same bug, different envelope bytes' (G-059)

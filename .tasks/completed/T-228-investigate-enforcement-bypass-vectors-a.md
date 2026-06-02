@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-02-21T14:14:15Z
 last_update: 2026-02-21T14:19:35Z
 date_finished: 2026-02-21T14:19:35Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-228: Investigate enforcement bypass vectors and strengthen framework gates

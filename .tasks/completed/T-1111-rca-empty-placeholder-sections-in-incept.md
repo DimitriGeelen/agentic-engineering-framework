@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-11T21:21:33Z
 last_update: 2026-04-17T20:07:55Z
 date_finished: 2026-04-11T21:28:54Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1111: RCA: empty placeholder sections in inception task files reach human review unnoticed

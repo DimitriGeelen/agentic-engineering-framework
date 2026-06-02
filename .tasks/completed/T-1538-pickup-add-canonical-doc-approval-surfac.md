@@ -16,6 +16,8 @@ last_update: 2026-04-28T11:56:18Z
 date_finished: 2026-04-28T11:56:18Z
 source_task_id_in_origin: T-210
 source_project_in_origin: "003-NTB-ATC-Plugin"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1538: Pickup: Add canonical-doc approval surface to Watchtower /approvals page (4th category alongside Tier-0 / inception / human-AC) (from 003-NTB-ATC-Plugin)

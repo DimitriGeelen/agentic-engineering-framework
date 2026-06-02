@@ -14,6 +14,8 @@ related_tasks: [T-1093, G-033, T-609]
 created: 2026-04-11T12:37:33Z
 last_update: 2026-04-13T06:23:15Z
 date_finished: 2026-04-12T10:14:30Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1102: Inception: bin/fw vs .agentic-framework/bin/fw — framework error messages broken in consumer projects (G-033)

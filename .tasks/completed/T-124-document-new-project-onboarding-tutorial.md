@@ -15,6 +15,8 @@ related_tasks: [T-125, T-126, T-127, T-128, T-129]
 created: 2026-02-17T19:06:03Z
 last_update: 2026-02-18T09:44:40Z
 date_finished: 2026-02-18T09:44:40Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-124: Validate framework new-project onboarding via live sprechloop experiment

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-07T11:02:23Z
 last_update: 2026-04-13T06:23:13Z
 date_finished: 2026-04-07T11:16:17Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1017: Test task pollution — E2E and integration tests leaking task files into real .tasks/active/ directory

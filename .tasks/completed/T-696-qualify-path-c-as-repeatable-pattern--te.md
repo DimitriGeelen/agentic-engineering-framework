@@ -14,6 +14,8 @@ related_tasks: [T-679, T-678, T-549, T-124]
 created: 2026-03-29T07:51:25Z
 last_update: 2026-04-13T06:23:24Z
 date_finished: 2026-03-29T07:58:45Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-696: Qualify Path C as repeatable pattern — template + second experiment

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T15:21:41Z
 last_update: 2026-04-22T05:19:25Z
 date_finished: 2026-04-22T05:19:25Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1298: Pickup: Inception template GO/NO-GO placeholders propagate to auto-created tasks — detected only at decide time (from termlink)

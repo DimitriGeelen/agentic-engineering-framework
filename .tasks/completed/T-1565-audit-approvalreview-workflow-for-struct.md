@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-27T20:49:14Z
 last_update: 2026-04-28T07:23:39Z
 date_finished: 2026-04-28T07:23:39Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1565: Audit approval/review workflow for structural gaps (TermLink-dispatched investigation)

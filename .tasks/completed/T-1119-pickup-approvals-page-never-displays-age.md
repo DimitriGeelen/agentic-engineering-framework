@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T07:45:01Z
 last_update: 2026-04-13T06:23:17Z
 date_finished: 2026-04-12T10:55:00Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1119: Pickup: Approvals page never displays agent recommendation or argumentation — rationale_hint only pre-fills textarea, no visible recommendation block (from 010-termlink)

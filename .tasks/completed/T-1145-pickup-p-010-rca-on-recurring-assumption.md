@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T10:11:59Z
 last_update: 2026-04-22T08:10:42Z
 date_finished: 2026-04-22T08:10:42Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1145: Pickup: P-010: RCA on recurring assumption fabrication/retraction/correction-of-retraction cycle — 4 proposed structural remediations (R1 provenance schema, R2 negative-claim TTL, R3 post-compact quarantine, R4 cross-section consistency) (from ring20-dashboard)

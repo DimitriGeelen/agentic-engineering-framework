@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T15:21:34Z
 last_update: 2026-04-22T05:19:22Z
 date_finished: 2026-04-22T05:19:22Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1297: Pickup: Watchtower PROJECT_ROOT defaults to FRAMEWORK_ROOT — ambient strip silently reads frameworks own state (from termlink)

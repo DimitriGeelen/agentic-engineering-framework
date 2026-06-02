@@ -23,6 +23,8 @@ related_tasks: [T-357, T-325]
 created: 2026-03-08T18:42:46Z
 last_update: 2026-03-10T20:35:14Z
 date_finished: 2026-03-10T20:35:14Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-358: Inception: Human AC prerequisite gap — deployment steps missing

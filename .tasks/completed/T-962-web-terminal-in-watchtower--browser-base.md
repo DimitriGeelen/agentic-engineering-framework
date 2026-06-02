@@ -17,6 +17,8 @@ related_tasks: []
 created: 2026-04-06T17:50:09Z
 last_update: 2026-04-13T06:23:30Z
 date_finished: 2026-04-06T18:24:33Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-962: Web terminal in Watchtower — browser-based interactive terminal with TermLink integration, multi-session architecture for future orchestrator

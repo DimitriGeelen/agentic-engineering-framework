@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-06T12:14:38Z
 last_update: 2026-05-06T16:37:41Z
 date_finished: 2026-05-06T16:37:41Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1768: structural drift detection between cron-registry.yaml and generated crontab and deployed /etc/cron.d/ — prevent recurrence of T-1767 silent non-deploy

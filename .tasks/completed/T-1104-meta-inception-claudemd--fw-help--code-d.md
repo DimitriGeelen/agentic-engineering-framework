@@ -14,6 +14,8 @@ related_tasks: [T-1093, G-035, T-652, T-630]
 created: 2026-04-11T12:44:58Z
 last_update: 2026-04-13T06:23:15Z
 date_finished: 2026-04-12T10:41:08Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1104: META-Inception: CLAUDE.md / fw help / code drift — structural enforcement of doc parity (G-035)

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-11T23:45:59Z
 last_update: 2026-03-12T13:00:12Z
 date_finished: 2026-03-12T13:00:12Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-442: Cron job: pull OneDev PRs and convert to tasks (local-only)

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-12T16:03:33Z
 last_update: 2026-03-12T17:00:23Z
 date_finished: 2026-03-12T17:00:23Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-455: Fix fw init — isolation, onboarding modes, knowledge separation

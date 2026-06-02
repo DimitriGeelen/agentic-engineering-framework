@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-24T09:17:00Z
 last_update: 2026-04-12T07:56:40Z
 date_finished: 2026-04-12T07:56:40Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-601: Multi-project cron collision — fw audit schedule install overwrites single /etc/cron.d/agentic-audit, silently disabling all other projects

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-14T07:02:11Z
 last_update: 2026-04-18T22:42:06Z
 date_finished: 2026-04-18T22:42:06Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1252: Audit detection quality: bugfix-learning denominator counts dev-discovered bugs inflating FAIL threshold

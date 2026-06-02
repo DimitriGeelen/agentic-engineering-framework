@@ -14,6 +14,8 @@ related_tasks: [T-823, T-193, T-325, T-358, T-373]
 created: 2026-04-06T11:49:04Z
 last_update: 2026-04-13T06:23:29Z
 date_finished: 2026-04-06T12:11:48Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-954: Human AC classification reform — risk-based AC assignment with programmatic, TermLink E2E, and Playwright verification tiers

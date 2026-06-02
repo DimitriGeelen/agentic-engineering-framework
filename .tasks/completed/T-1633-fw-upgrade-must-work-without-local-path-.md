@@ -27,6 +27,8 @@ bvp_scores_proposed:
     rationale: D1=2 (body:learning-ref); D2=1 (body:log-or-error-line); D3=0 
       (no-signal); D4=5 (body:class-neutral)
     rubric_sha: e4a00f38e801
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1633: fw upgrade must work without local-path knowledge — upstream URL + fresh-machine simulation guard

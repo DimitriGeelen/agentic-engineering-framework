@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T20:23:58Z
 last_update: 2026-04-18T22:48:58Z
 date_finished: 2026-04-18T22:48:38Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1314: Pickup: Watchtower /fabric crashes (KeyError: id) on subsystems.yaml without id key — loader should fall back to name (from termlink)

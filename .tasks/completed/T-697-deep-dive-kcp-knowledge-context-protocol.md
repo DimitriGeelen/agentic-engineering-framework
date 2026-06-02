@@ -14,6 +14,8 @@ related_tasks: [T-487, T-477, T-696]
 created: 2026-03-29T08:06:51Z
 last_update: 2026-04-13T06:23:25Z
 date_finished: 2026-03-29T08:56:52Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-697: Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion

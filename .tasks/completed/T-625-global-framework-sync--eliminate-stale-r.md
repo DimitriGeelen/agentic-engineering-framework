@@ -14,6 +14,8 @@ related_tasks: [T-622, T-614, T-481]
 created: 2026-03-26T13:41:33Z
 last_update: 2026-03-28T17:06:36Z
 date_finished: 2026-03-28T17:06:36Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-625: Global framework sync — eliminate stale /root/.agentic-framework deadlock

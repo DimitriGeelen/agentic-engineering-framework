@@ -16,6 +16,8 @@ last_update: 2026-04-22T18:29:40Z
 date_finished: 2026-04-22T18:29:40Z
 source_task_id_in_origin: T-1169
 source_project_in_origin: "termlink"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1365: Pickup: Multi-agent dispatch safety model — structural isolation and coordination primitives for parallel agent work on a shared repo (from termlink)

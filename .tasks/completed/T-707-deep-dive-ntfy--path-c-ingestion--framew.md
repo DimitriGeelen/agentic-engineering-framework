@@ -14,6 +14,8 @@ related_tasks: [T-696, T-697, T-698]
 created: 2026-03-29T09:52:55Z
 last_update: 2026-04-06T22:29:21Z
 date_finished: 2026-03-29T11:13:43Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-707: Deep-dive: ntfy — Path C ingestion + framework notification enhancement

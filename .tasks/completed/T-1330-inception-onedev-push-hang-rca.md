@@ -14,6 +14,8 @@ related_tasks: [T-1277]
 created: 2026-04-19T12:01:00Z
 last_update: 2026-04-19T13:28:29Z
 date_finished: 2026-04-19T13:28:29Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1330: Onedev push hang RCA

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-04T19:33:13Z
 last_update: 2026-04-13T06:23:28Z
 date_finished: 2026-04-06T11:45:34Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-860: Audit performance — 123 active tasks × 7 loops × 15 Python calls = >90s runtime

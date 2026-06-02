@@ -14,6 +14,8 @@ related_tasks: [T-1442, T-1064, T-1065]
 created: 2026-04-25T06:35:13Z
 last_update: 2026-04-25T09:59:48Z
 date_finished: 2026-04-25T09:59:48Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1443: Independent reviewer agent — TermLink-dispatched, evidence-gated, can auto-tick Agent ACs

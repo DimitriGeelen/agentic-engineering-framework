@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-03T20:46:02Z
 last_update: 2026-03-03T21:07:26Z
 date_finished: 2026-03-03T21:07:26Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-292: Cascade OneDev repo to GitHub

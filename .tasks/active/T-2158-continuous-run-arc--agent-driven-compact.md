@@ -14,7 +14,7 @@ tags: [priority, arc-003, orchestrator, autonomy, continuous-run]
 components: []
 related_tasks: []
 created: 2026-06-01T09:39:33Z
-last_update: 2026-06-01T09:45:09Z
+last_update: '2026-06-02T09:45:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -29,6 +29,19 @@ bvp_scores_proposed:
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-02T09:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-01T09:45:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -39,6 +52,8 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-2158: continuous-run arc — agent-driven compact→resume loop with bounded-autonomy ceiling

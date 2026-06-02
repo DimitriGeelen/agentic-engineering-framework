@@ -14,6 +14,8 @@ related_tasks: [T-1611]
 created: 2026-04-30T08:55:00Z
 last_update: 2026-04-30T09:22:10Z
 date_finished: 2026-04-30T09:22:10Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1617: Inception DEFER does not move task to completed — semantics question (parking vs done)

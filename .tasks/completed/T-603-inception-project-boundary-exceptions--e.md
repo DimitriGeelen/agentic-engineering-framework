@@ -14,6 +14,8 @@ related_tasks: [T-559, T-602, T-601]
 created: 2026-03-24T09:44:00Z
 last_update: 2026-04-13T13:21:32Z
 date_finished: 2026-04-13T13:21:32Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-603: Inception: Project boundary exceptions — /etc/cron.d and other legitimate outside-PROJECT_ROOT writes

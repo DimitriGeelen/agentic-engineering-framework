@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-02-25T14:55:34Z
 last_update: 2026-02-25T17:47:59Z
 date_finished: 2026-02-25T17:47:59Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-279: Watchtower deployment model — framework dashboard vs multi-project SaaS

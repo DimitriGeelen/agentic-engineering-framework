@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T08:05:17Z
 last_update: 2026-04-13T06:23:18Z
 date_finished: 2026-04-12T11:02:51Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1122: TermLink U-002: no hub-level inbox — cannot push files when zero sessions registered

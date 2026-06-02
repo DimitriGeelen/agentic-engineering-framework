@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T09:30:01Z
 last_update: 2026-04-22T05:25:55Z
 date_finished: 2026-04-22T05:25:55Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1138: Pickup: Response to dashboard-brain Q1-Q5 consultation — fw bus, cross-project topology, init gaps (from 999-Agentic-Engineering-Framework)

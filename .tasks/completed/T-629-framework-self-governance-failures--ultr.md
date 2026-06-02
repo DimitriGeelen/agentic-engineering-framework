@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-26T21:35:09Z
 last_update: 2026-03-27T10:22:30Z
 date_finished: 2026-03-27T09:56:27Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-629: Framework self-governance failures — ultra-deep audit of operational friction, deadlocks, and self-defeating enforcement

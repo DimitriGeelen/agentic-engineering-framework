@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-04T17:15:16Z
 last_update: 2026-05-04T17:18:22Z
 date_finished: 2026-05-04T17:18:22Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1721: Frictionless artefact links — auto-render docs/path/report references in tasks and approvals as clickable Watchtower URLs (dynamic port-aware)

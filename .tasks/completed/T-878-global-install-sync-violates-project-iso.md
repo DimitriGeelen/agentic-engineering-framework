@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-05T06:08:16Z
 last_update: 2026-04-13T13:21:41Z
 date_finished: 2026-04-13T13:21:41Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-878: Global install sync violates project isolation — fw upgrade still writes to ~/.agentic-framework

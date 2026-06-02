@@ -14,6 +14,8 @@ related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585, T-592, T
 created: 2026-03-23T21:32:53Z
 last_update: 2026-04-13T13:21:29Z
 date_finished: 2026-04-13T13:21:29Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-586: Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo

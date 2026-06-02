@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-01T11:30:01Z
 last_update: 2026-05-01T18:58:36Z
 date_finished: 2026-05-01T12:29:12Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1641: T-1061 orchestrator arc reconsideration — what got lost between inception, exploration, and shipped phases?

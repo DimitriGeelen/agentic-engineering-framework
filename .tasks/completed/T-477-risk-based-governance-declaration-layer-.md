@@ -14,6 +14,8 @@ related_tasks: [T-061, T-139, T-193]
 created: 2026-03-14T11:20:55Z
 last_update: 2026-03-30T00:03:35Z
 date_finished: 2026-03-30T00:03:35Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-477: Risk-based governance declaration layer — machine-readable predictability×blast-radius matrix that runtime maps to enforcement levels

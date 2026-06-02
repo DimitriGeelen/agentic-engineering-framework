@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-14T23:01:08Z
 last_update: 2026-04-18T22:44:20Z
 date_finished: 2026-04-18T22:43:53Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1260: Human-owned inception tasks cannot complete — 5 layered root causes (sovereignty, dispatch, template drift, recommendation gate, tier0 hash)

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-03T20:52:22Z
 last_update: 2026-04-12T09:27:22Z
 date_finished: 2026-04-03T21:36:02Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-817: 3-tier config resolution — env var configuration layer for framework settings

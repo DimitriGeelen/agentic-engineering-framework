@@ -14,6 +14,8 @@ related_tasks: [T-1093, G-032]
 created: 2026-04-11T12:37:23Z
 last_update: 2026-04-13T06:23:14Z
 date_finished: 2026-04-12T10:05:26Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1101: Inception: fw inception decide silent --force bypass — RCA + remediation path (G-032 CRITICAL)

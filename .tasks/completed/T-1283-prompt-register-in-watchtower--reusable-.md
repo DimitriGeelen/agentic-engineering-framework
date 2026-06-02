@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-17T16:04:15Z
 last_update: 2026-04-26T19:30:17Z
 date_finished: null
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1283: Prompt register in Watchtower — reusable agent prompts (upgrade+test+fix, dispatch, audit, etc.)

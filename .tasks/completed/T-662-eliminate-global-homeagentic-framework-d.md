@@ -14,6 +14,8 @@ related_tasks: [T-625, T-660, T-559, T-614]
 created: 2026-03-28T16:44:24Z
 last_update: 2026-04-13T06:23:24Z
 date_finished: 2026-03-28T17:06:18Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-662: Eliminate global HOME/.agentic-framework dependency — full project isolation without PATH-based fw resolution

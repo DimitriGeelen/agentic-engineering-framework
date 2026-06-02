@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-15T21:36:12Z
 last_update: 2026-04-23T14:57:49Z
 date_finished: 2026-04-23T14:57:49Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1270: Peer-learning cron: every 15 min, connect to all reachable TermLink agents, exchange reflections on what we can learn from each other

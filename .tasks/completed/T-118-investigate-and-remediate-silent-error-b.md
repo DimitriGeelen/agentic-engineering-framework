@@ -12,6 +12,8 @@ related_tasks: []
 created: 2026-02-17T14:43:20Z
 last_update: 2026-02-17T15:11:12Z
 date_finished: 2026-02-17T15:11:12Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-118: Investigate and remediate silent error bypass behavior

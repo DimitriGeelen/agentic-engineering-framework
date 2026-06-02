@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-02T22:56:02Z
 last_update: 2026-05-03T08:29:35Z
 date_finished: 2026-05-03T08:29:35Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1691: v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs claude-bridge) + per-workflow env-redirect plumbing

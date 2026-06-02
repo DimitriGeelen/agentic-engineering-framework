@@ -14,6 +14,8 @@ related_tasks: [T-885, T-903, T-1154, T-1284, T-1287, T-1292]
 created: 2026-04-22T08:07:28Z
 last_update: 2026-04-26T20:30:12Z
 date_finished: 2026-04-22T18:29:45Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1376: Port parameter visibility — why agents keep defaulting to :3000 after T-1154 + T-1287 + T-885 + T-1284 landed, and the minimum fix

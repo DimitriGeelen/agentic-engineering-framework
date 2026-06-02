@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-08T17:36:15Z
 last_update: 2026-03-08T19:16:41Z
 date_finished: 2026-03-08T19:16:41Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-356: Post-init validation: verify fw init produced correct and complete output

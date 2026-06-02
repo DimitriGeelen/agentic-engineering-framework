@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-04T12:58:31Z
 last_update: 2026-04-17T21:26:29Z
 date_finished: 2026-04-13T11:30:46Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-837: Auto-detect context window from model — eliminate hardcoded CONTEXT_WINDOW default

@@ -15,6 +15,8 @@ arc_id: embeddings-strategy
 created: 2026-05-04T12:25:28Z
 last_update: 2026-05-04T16:49:07Z
 date_finished: 2026-05-04T16:49:07Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1717: Embeddings generation strategy for context and component fabric

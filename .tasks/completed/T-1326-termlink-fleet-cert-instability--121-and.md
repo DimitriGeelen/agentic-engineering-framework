@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-19T08:41:32Z
 last_update: 2026-04-19T08:58:18Z
 date_finished: 2026-04-19T08:58:18Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1326: TermLink fleet cert instability — .121 and .122 hub certs rotating, secrets desynced

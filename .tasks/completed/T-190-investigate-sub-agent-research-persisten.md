@@ -13,6 +13,8 @@ related_tasks: []
 created: 2026-02-19T09:12:32Z
 last_update: 2026-02-19T20:58:30Z
 date_finished: 2026-02-19T20:58:30Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-190: Investigate sub-agent research persistence — ensure agent findings are saved to docs/reports for traceability

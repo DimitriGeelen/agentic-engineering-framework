@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-09T19:17:44Z
 last_update: 2026-03-12T12:41:19Z
 date_finished: 2026-03-10T20:34:13Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-396: Risk management process: revive, merge, archive, or slim

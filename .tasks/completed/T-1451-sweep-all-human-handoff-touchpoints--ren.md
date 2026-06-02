@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-25T11:29:09Z
 last_update: 2026-04-25T14:01:37Z
 date_finished: 2026-04-25T14:01:37Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1451: Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere agent surfaces work for human

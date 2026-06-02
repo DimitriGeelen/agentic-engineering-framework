@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T21:18:38Z
 last_update: 2026-03-28T09:31:59Z
 date_finished: 2026-03-28T09:31:59Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-582: Inception: Session-scoped agent isolation — session keys + crash recovery for concurrent agents

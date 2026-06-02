@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T09:00:04Z
 last_update: 2026-04-22T05:25:52Z
 date_finished: 2026-04-22T05:25:52Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1133: Pickup: GNU date -d in framework shell scripts fails silently on macOS — causes episodic generation failures (from 010-termlink)

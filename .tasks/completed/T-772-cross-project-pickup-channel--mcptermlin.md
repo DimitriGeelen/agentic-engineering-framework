@@ -14,6 +14,8 @@ related_tasks: [T-469, T-598, T-682, T-704]
 created: 2026-03-30T12:45:22Z
 last_update: 2026-04-06T22:29:22Z
 date_finished: 2026-03-30T13:08:54Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-772: Cross-project pickup channel — MCP/TermLink-based push for learnings, bugfixes, feature proposals

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-12T21:14:17Z
 last_update: 2026-03-17T11:20:59Z
 date_finished: 2026-03-17T11:20:59Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-473: Unit test suite for bash enforcement layer (bats-core)

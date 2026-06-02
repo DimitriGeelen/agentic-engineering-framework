@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-30T14:51:26Z
 last_update: 2026-04-13T06:23:27Z
 date_finished: 2026-04-04T20:50:34Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-792: Pickup: TermLink agent dispatch pattern — cwd, timeout, worktree merge (from 050-email-archive)

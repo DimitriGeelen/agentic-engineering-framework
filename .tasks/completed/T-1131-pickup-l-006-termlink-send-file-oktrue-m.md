@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T08:45:07Z
 last_update: 2026-04-22T05:25:45Z
 date_finished: 2026-04-22T05:25:45Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1131: Pickup: L-006: termlink send-file ok:true means hub accepted, NOT delivered — verify receipt independently (from 999-Agentic-Engineering-Framework)

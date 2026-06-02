@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-05T06:06:23Z
 last_update: 2026-04-13T06:23:29Z
 date_finished: 2026-04-05T06:14:36Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-877: Strengthen install-to-first-session pipeline — auto-fix warnings, guide onboarding, fw vs bin/fw resolution

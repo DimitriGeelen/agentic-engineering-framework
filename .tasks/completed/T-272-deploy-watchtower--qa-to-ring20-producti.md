@@ -14,6 +14,8 @@ related_tasks: [T-273, T-274, T-275, T-276, T-277, T-278, T-254, T-077]
 created: 2026-02-25T07:59:26Z
 last_update: 2026-02-25T08:25:38Z
 date_finished: 2026-02-25T08:25:38Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-272: Deploy Watchtower + Q&A to Ring20 production

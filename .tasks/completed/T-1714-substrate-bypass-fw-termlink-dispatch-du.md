@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-04T08:05:46Z
 last_update: 2026-05-04T09:56:32Z
 date_finished: 2026-05-04T09:56:32Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1714: Substrate bypass: fw termlink dispatch ducks under fw resolver dispatch, leaving substrate at zero real-consumer telemetry (T-1700 AC4.3 RCA)

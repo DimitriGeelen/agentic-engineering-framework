@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T22:23:27Z
 last_update: 2026-04-18T22:51:42Z
 date_finished: 2026-04-18T22:51:42Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1322: Pickup: fw inception decide doesnt tick the RUBBER-STAMP Record go/no-go decision Human AC — tasks stay in active/ forever (from termlink)

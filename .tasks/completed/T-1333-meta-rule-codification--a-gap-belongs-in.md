@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-19T13:03:02Z
 last_update: 2026-04-24T09:23:59Z
 date_finished: 2026-04-24T09:23:59Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1333: Meta-rule codification — a gap belongs in the register where the fix lives, not where it was hit

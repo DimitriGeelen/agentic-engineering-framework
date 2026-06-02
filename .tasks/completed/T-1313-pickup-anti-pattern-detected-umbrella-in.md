@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T20:23:38Z
 last_update: 2026-04-22T11:14:12Z
 date_finished: 2026-04-22T11:13:46Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1313: Pickup: Anti-pattern detected: umbrella inceptions bundling N independent decisions (T-1112 NO-GO) (from termlink)

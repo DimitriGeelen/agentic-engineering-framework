@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-05-05T12:58:17Z
 last_update: 2026-05-05T13:25:08Z
 date_finished: 2026-05-05T13:25:08Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1745: Watchtower inception-decide form silently fails on bold-emphasized recommendation — T-1744 GO un-recordable

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T20:33:46Z
 last_update: 2026-04-18T22:50:07Z
 date_finished: 2026-04-18T22:49:32Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1316: Pickup from email-archive: Watchtower verification CWD bug (sourced T-1044)

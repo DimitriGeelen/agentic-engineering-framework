@@ -14,6 +14,8 @@ related_tasks: [T-697, T-696, T-679, T-577]
 created: 2026-03-29T08:18:33Z
 last_update: 2026-04-13T06:23:25Z
 date_finished: 2026-03-29T13:34:02Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-698: TermLink dispatch observability — evaluate interactive vs headless worker mode for human observation

@@ -16,6 +16,8 @@ related_tasks: []
 created: 2026-03-12T18:36:18Z
 last_update: 2026-03-12T20:50:17Z
 date_finished: 2026-03-12T20:50:17Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-468: PR: Tool call telemetry — capture store + reporting from 010-termlink

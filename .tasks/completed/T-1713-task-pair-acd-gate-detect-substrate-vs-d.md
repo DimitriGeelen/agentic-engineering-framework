@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-04T06:43:45Z
 last_update: 2026-05-04T12:04:23Z
 date_finished: 2026-05-04T12:04:23Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1713: Task-pair §ACD gate: detect substrate-vs-deliverable conflation at work-completed time (G-066 prong 2)

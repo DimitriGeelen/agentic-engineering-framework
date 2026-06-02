@@ -16,6 +16,8 @@ last_update: 2026-04-26T13:41:12Z
 date_finished: 2026-04-27T12:09:29+02:00
 source_task_id_in_origin: T-108
 source_project_in_origin: "003-NTB-ATC-Plugin"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1501: Pickup: Extend verification-gate.sh: when task touches .vbproj/.xaml, require dotnet build (from 003-NTB-ATC-Plugin)

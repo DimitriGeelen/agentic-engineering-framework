@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T20:23:09Z
 last_update: 2026-04-22T05:21:15Z
 date_finished: 2026-04-22T05:21:15Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1312: Pickup: Ship watchtower.service systemd template — fixes restart races without WSGI-server swap (from termlink)

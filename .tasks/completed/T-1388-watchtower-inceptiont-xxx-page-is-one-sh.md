@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-22T21:35:53Z
 last_update: 2026-04-26T19:30:17Z
 date_finished: null
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1388: Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance after decision recorded

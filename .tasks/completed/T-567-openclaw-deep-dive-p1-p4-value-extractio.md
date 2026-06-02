@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T17:18:02Z
 last_update: 2026-04-04T12:34:55Z
 date_finished: 2026-04-04T12:34:55Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-567: OpenClaw deep-dive: P1-P4 value extraction — request context, session keys, config reload, skills discovery

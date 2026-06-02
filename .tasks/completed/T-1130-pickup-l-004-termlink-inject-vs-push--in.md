@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T08:45:04Z
 last_update: 2026-04-22T05:25:41Z
 date_finished: 2026-04-22T05:25:41Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1130: Pickup: L-004: TermLink inject vs push — inject for interactive, push for async only (from 999-Agentic-Engineering-Framework)

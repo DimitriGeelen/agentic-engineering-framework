@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-28T20:49:43Z
 last_update: 2026-04-06T22:29:20Z
 date_finished: 2026-03-28T22:06:24Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-678: vnx-orchestration deep-dive — ingest, build fabric, analyze architecture and patterns

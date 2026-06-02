@@ -14,6 +14,8 @@ related_tasks: [T-1093, T-1094, T-1099, T-1101, T-1102, T-1103]
 created: 2026-04-11T12:16:16Z
 last_update: 2026-04-13T06:23:14Z
 date_finished: 2026-04-12T09:29:42Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1100: Inception: reconcile FIVE isolation patterns (G-031, widened)

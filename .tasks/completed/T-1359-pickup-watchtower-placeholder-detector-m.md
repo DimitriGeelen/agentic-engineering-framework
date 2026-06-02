@@ -16,6 +16,8 @@ last_update: 2026-04-22T18:29:20Z
 date_finished: 2026-04-22T18:29:20Z
 source_task_id_in_origin: T-1167
 source_project_in_origin: "termlink"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1359: Pickup: Watchtower placeholder detector matches text inside HTML comments — false-positives on default Decisions-section template (from termlink)

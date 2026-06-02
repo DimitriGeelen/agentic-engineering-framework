@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T15:21:28Z
 last_update: 2026-04-22T05:19:19Z
 date_finished: 2026-04-22T05:19:19Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1296: Pickup: Watchtower CSRF 403 after restart — auto-regenerated FW_SECRET_KEY + multi-process leak (from termlink)

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-25T20:17:29Z
 last_update: 2026-04-13T06:23:23Z
 date_finished: 2026-03-28T17:09:07Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-619: Inception: Bash task gate with bootstrap allowlist

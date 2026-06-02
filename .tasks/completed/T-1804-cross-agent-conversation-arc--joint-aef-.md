@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-13T14:38:27Z
 last_update: 2026-05-13T17:39:25Z
 date_finished: 2026-05-13T17:39:25Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1804: cross-agent conversation arc — joint AEF + TermLink design (consult substrate)

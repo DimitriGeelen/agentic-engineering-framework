@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T18:43:38Z
 last_update: 2026-04-18T22:47:03Z
 date_finished: 2026-04-18T22:46:39Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1304: Pickup: Watchtower ambient strip shows wrong task as focus — ignores focus.yaml (from termlink)

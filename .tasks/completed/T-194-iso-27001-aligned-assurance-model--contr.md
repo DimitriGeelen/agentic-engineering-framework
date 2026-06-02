@@ -20,6 +20,8 @@ related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
 last_update: 2026-02-19T19:29:03Z
 date_finished: 2026-02-19T19:29:03Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign

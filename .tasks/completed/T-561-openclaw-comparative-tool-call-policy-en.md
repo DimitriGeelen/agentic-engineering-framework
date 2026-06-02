@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T17:17:39Z
 last_update: 2026-03-28T09:32:07Z
 date_finished: 2026-03-28T09:32:07Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-561: OpenClaw comparative: tool call policy enforcement — runBeforeToolCallHook vs PreToolUse

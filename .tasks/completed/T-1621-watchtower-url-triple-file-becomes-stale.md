@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-30T19:05:28Z
 last_update: 2026-04-30T19:12:24Z
 date_finished: 2026-04-30T19:12:24Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1621: Watchtower URL triple-file becomes stale when host LAN IP changes

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-20T07:46:35Z
 last_update: 2026-04-22T08:22:46Z
 date_finished: 2026-04-22T08:22:46Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1352: Pickup: Watchtower Flask secret_key auto-regenerates on every restart — breaks CSRF for existing browser sessions (from termlink)

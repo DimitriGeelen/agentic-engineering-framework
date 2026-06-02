@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-27T08:42:51Z
 last_update: 2026-03-27T09:56:30Z
 date_finished: 2026-03-27T09:56:30Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-635: Deterministic human-facing action routing — structural enforcement that agent always routes through Watchtower/fw-task-review instead of pasting raw commands

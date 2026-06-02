@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T20:56:23Z
 last_update: 2026-04-13T06:23:21Z
 date_finished: 2026-03-28T17:09:43Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-571: TermLink supervisor event loop — reliable bidirectional signaling between supervisor and dispatched agents

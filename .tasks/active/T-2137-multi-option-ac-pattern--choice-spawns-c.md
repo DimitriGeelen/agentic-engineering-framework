@@ -6,16 +6,16 @@ description: >
   Inception: Multi-option AC pattern — choice spawns child inception (T-1776 surfaces
   the gap)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: [inception-spawn, arc-008, multi-option-ac, review-loop, ac-classification]
 components: []
 related_tasks: [T-1776, T-2101, T-2097, T-2098, T-2100]
 arc_id: inception-review-loop
 created: 2026-05-31T10:28:56Z
-last_update: 2026-05-31T14:20:52Z
+last_update: '2026-06-02T14:30:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -31,6 +31,40 @@ bvp_scores_proposed:
     rationale: "D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); D4=2
       (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1)"
     rubric_sha: e4a00f38e801
+  - ts: '2026-05-31T14:22:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F1: 1
+    rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); D4=2
+      (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-01T14:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-02T14:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-31T10:30:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -41,6 +75,17 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-01T10:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-2137: Multi-option AC pattern — choice spawns child inception (T-1776 surfaces the gap)
@@ -195,3 +240,7 @@ This inception captures a structural gap surfaced by T-1776's close: Human AC #H
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** Inception decision: DEFER — parking task
+
+### 2026-05-31T14:22:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

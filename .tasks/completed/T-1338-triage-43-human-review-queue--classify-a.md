@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-19T16:26:30Z
 last_update: 2026-04-19T23:47:01Z
 date_finished: 2026-04-19T23:47:01Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1338: Triage 43 human review queue — classify automatable (programmatic/TermLink E2E/Playwright) vs genuine-human, recommend build tasks

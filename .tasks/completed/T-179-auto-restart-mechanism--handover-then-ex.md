@@ -13,6 +13,8 @@ related_tasks: []
 created: 2026-02-18T19:27:34Z
 last_update: 2026-02-19T07:37:31Z
 date_finished: 2026-02-19T07:37:31Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-179: Auto-restart mechanism — handover then exit then auto-resume

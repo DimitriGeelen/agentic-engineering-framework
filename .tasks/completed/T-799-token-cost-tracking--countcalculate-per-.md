@@ -16,6 +16,8 @@ related_tasks: [T-800, T-699, T-596]
 created: 2026-03-31T19:05:13Z
 last_update: 2026-04-12T09:27:22Z
 date_finished: 2026-04-01T11:24:04Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-799: Token cost tracking — count/calculate per-task and project-total token usage and costs

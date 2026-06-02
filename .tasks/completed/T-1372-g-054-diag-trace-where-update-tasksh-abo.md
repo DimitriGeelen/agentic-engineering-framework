@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-20T22:59:32Z
 last_update: 2026-04-26T20:29:10Z
 date_finished: 2026-04-20T23:03:04Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1372: G-054 diag: trace where update-task.sh aborts silently

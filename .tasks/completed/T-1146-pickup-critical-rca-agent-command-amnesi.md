@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T10:12:02Z
 last_update: 2026-04-13T07:36:21Z
 date_finished: 2026-04-13T07:36:21Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1146: Pickup: CRITICAL RCA: Agent command amnesia has 3 structural root causes — framework scripts ARE the violation source (from 010-termlink)

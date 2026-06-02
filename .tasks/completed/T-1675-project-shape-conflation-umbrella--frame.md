@@ -15,6 +15,8 @@ arc_id: project-shape-resilience
 created: 2026-05-02T10:04:39Z
 last_update: 2026-05-02T10:21:20Z
 date_finished: 2026-05-02T10:21:20Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1675: Project-shape conflation umbrella — framework code assumes consumer shape, silently fails in framework repo / fresh-init / vendored states

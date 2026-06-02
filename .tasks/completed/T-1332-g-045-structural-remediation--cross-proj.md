@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-19T13:02:24Z
 last_update: 2026-04-24T09:23:53Z
 date_finished: 2026-04-24T09:23:53Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1332: G-045 structural remediation — cross-project pickup for fleet-rotation secret distribution UX

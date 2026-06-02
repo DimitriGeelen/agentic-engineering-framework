@@ -16,6 +16,8 @@ last_update: 2026-05-01T10:03:34Z
 date_finished: 2026-05-01T10:03:34Z
 source_task_id_in_origin: T-271
 source_project_in_origin: "003-NTB-ATC-Plugin"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1625: Pickup: Six framework-level bugs surfaced as long-watching concerns in 003-NTB-ATC-Plugin. Project is decide-deferring all six locally and forwarding upstream so framework-agent can prioritize fixes. (from 003-NTB-ATC-Plugin)

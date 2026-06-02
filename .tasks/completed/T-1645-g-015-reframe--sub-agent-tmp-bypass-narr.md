@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-01T11:55:08Z
 last_update: 2026-05-01T18:58:37Z
 date_finished: 2026-05-01T17:09:08Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1645: G-015 reframe — sub-agent /tmp/ bypass: narrow T-1061 claim or open non-TermLink workstream

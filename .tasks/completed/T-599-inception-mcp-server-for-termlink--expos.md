@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-24T09:05:57Z
 last_update: 2026-04-13T06:23:22Z
 date_finished: 2026-03-28T17:06:57Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-599: Inception: MCP server for TermLink — expose session/file/remote/hub commands as structured tools for agent discovery

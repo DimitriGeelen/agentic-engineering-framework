@@ -16,6 +16,8 @@ last_update: 2026-05-18T07:58:43Z
 date_finished: 2026-05-18T07:58:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1878: [INCEPTION] Why agents route to human review when reviewer/agent could close — structural routing-decision investigation

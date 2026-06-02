@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-12T00:23:46Z
 last_update: 2026-03-12T13:00:15Z
 date_finished: 2026-03-12T13:00:15Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-445: README overhaul: sharpen positioning, add 5-min demo, honest enforcement gradient

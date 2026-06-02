@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-05-04T21:34:52Z
 last_update: 2026-05-04T21:53:12Z
 date_finished: 2026-05-04T21:53:12Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1726: escalation-scan v0.5 — LLM augmentation as G-064 first real consumer

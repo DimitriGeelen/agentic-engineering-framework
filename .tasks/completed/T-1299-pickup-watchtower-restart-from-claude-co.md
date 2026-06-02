@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T15:21:47Z
 last_update: 2026-04-19T08:57:23Z
 date_finished: 2026-04-19T08:57:23Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1299: Pickup: Watchtower restart from Claude Code session requires setsid + Jinja cache requires full process kill (from termlink)

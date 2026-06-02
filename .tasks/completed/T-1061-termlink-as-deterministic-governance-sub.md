@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-07T20:51:33Z
 last_update: 2026-04-13T06:23:14Z
 date_finished: 2026-04-08T05:30:50Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1061: TermLink as deterministic governance substrate — PTY-level enforcement vs Claude Code hooks, custom terminal evaluation, multi-LLM routing

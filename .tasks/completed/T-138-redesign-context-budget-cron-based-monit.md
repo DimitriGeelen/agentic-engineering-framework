@@ -12,6 +12,8 @@ related_tasks: []
 created: 2026-02-18T07:02:20Z
 last_update: 2026-02-18T07:29:09Z
 date_finished: 2026-02-18T07:29:09Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-138: Redesign context budget: cron-based monitor + PreToolUse enforcement

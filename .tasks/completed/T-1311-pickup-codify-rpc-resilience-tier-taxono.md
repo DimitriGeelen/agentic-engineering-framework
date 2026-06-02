@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T20:22:51Z
 last_update: 2026-04-18T22:48:09Z
 date_finished: 2026-04-18T22:47:41Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1311: Pickup: Codify RPC resilience-tier taxonomy + version skew enforcement (Tier-A opaque vs Tier-B typed) (from termlink)

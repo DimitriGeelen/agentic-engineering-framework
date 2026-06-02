@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-03T22:52:29Z
 last_update: 2026-04-13T06:23:28Z
 date_finished: 2026-04-03T23:05:55Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-823: Automated Human AC verification — programmatic, TermLink E2E, and Playwright approaches for stale task clearance

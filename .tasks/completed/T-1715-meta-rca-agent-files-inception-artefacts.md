@@ -14,6 +14,8 @@ related_tasks: [T-679, T-1259, T-1260, T-1713, T-1714]
 created: 2026-05-04T08:13:50Z
 last_update: 2026-05-04T09:56:18Z
 date_finished: 2026-05-04T09:56:18Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1715: Meta-RCA: agent files inception artefacts without ## Recommendation block, forcing human to decide on incomplete advisory (T-679 rule recurring violation)

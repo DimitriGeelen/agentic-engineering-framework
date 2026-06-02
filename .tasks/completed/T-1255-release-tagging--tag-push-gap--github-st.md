@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-14T20:32:43Z
 last_update: 2026-04-25T18:35:43Z
 date_finished: 2026-04-14T20:39:20Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1255: Release tagging + tag-push gap — GitHub stuck at v1.0.0

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-18T15:21:53Z
 last_update: 2026-04-22T05:19:28Z
 date_finished: 2026-04-22T05:19:28Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1300: Pickup: Ambient strip pattern (T-1117..T-1121) — single-source linked status chrome worth codifying as framework default (from termlink)

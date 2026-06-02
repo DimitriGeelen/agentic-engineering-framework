@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-26T22:01:13Z
 last_update: 2026-03-27T10:22:30Z
 date_finished: 2026-03-27T09:56:28Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-630: Universal task gate — close Bash, Agent, and TermLink bypass paths that violate core principle

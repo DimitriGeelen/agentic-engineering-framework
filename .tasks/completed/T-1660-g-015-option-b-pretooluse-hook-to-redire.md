@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-05-01T17:18:21Z
 last_update: 2026-05-02T08:39:55Z
 date_finished: 2026-05-02T08:39:55Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1660: G-015 Option B: PreToolUse hook to redirect /tmp/fw-agent-*.md sub-agent writes through fw bus post

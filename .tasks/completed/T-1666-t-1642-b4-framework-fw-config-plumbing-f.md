@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-02T05:37:42Z
 last_update: 2026-05-02T10:21:07Z
 date_finished: 2026-05-02T10:21:07Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1666: T-1642-B4 framework: fw config plumbing for routing-policy.yaml

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-25T13:39:44Z
 last_update: 2026-04-25T14:01:35Z
 date_finished: 2026-04-25T14:01:35Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1459: 4 Claude Code hooks mirrored from termlink are dead code — never registered in .claude/settings.json or cron. Scripts: agents/context/{session-end,stop-guard,subagent-stop,pl007-scanner}.sh plus session-silent-scanner.sh which claims cron invocation but isn't in crontab. Commits b5383596/562c2fc7/a5c4fe85 landed handlers but settings.json was not updated. Likely skipped after the G-016 commit-storm incident but not documented. Needs inception: register (which ones, after what safeguards?), decommission, or document as reference-only.

@@ -39,6 +39,8 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-2157: value-drivers.yaml v3 redesign — F-RECALL + F-ORCH active, F-AUTONOMY carved, schema_version→version, per-driver rubric+guardrails+retire_when

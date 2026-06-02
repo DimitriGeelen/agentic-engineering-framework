@@ -14,6 +14,8 @@ related_tasks: [T-1100, T-1101, T-1102, T-1103, T-1104, T-1093]
 created: 2026-04-11T13:11:13Z
 last_update: 2026-04-13T06:23:16Z
 date_finished: 2026-04-12T09:31:53Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1105: META-META Inception: Chokepoint + Invariant Test discipline as framework governance rule

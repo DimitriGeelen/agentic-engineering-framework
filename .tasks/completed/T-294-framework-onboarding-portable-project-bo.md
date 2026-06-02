@@ -17,6 +17,8 @@ related_tasks: [T-124, T-108, T-125, T-126, T-127, T-295, T-296, T-297, T-298, T
 created: 2026-03-04T14:23:26Z
 last_update: 2026-03-08T20:49:19Z
 date_finished: 2026-03-08T20:49:19Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-294: Framework onboarding: portable project bootstrap

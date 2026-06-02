@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T08:15:03Z
 last_update: 2026-04-22T05:25:35Z
 date_finished: 2026-04-22T05:25:35Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1124: Pickup: U-002: Hub-level inbox — store files at hub for delivery when sessions register (from 999-Agentic-Engineering-Framework)

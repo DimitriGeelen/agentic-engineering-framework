@@ -16,6 +16,8 @@ last_update: 2026-04-26T12:58:45Z
 date_finished: 2026-04-26T12:58:45Z
 source_task_id_in_origin: T-140
 source_project_in_origin: "003-NTB-ATC-Plugin"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1505: Pickup: fw doctor hook-health: scan session jsonl for hook failure rate, FAIL doctor if rate > threshold (closes detection blind spot revealed by T-140 RCA) (from 003-NTB-ATC-Plugin)

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T08:42:41Z
 last_update: 2026-04-12T07:56:26Z
 date_finished: 2026-04-12T07:56:26Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-532: Onboarding gate — structural enforcement that setup tasks complete before other work

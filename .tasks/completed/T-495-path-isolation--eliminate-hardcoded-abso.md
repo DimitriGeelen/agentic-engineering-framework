@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-14T22:25:26Z
 last_update: 2026-03-14T22:35:38Z
 date_finished: 2026-03-14T22:35:38Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-495: Path isolation — eliminate hardcoded absolute paths from all committed files

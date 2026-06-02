@@ -13,6 +13,8 @@ related_tasks: []
 created: 2026-02-17T15:41:51Z
 last_update: 2026-02-19T08:17:34Z
 date_finished: 2026-02-19T08:17:34Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-120: Review Google Context Engineering whitepaper against framework

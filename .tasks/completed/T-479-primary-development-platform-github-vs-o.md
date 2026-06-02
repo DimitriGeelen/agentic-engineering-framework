@@ -14,6 +14,8 @@ related_tasks: [T-334, T-442, T-443, T-476]
 created: 2026-03-14T12:51:19Z
 last_update: 2026-04-13T06:23:21Z
 date_finished: 2026-03-28T17:07:53Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-479: Primary development platform: GitHub vs OneDev — source of truth, CI, issues, community interaction for post-launch

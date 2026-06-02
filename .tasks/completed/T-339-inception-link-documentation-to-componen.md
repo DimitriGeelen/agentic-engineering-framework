@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-08T08:20:49Z
 last_update: 2026-03-09T08:49:49Z
 date_finished: 2026-03-09T08:49:49Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-339: Inception: link documentation to Component Fabric endpoints

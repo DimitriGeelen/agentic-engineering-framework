@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T17:18:08Z
 last_update: 2026-04-04T12:35:28Z
 date_finished: 2026-04-04T12:35:28Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-569: OpenClaw deep-dive: quality and testing patterns — security fuzzing, suite abstraction

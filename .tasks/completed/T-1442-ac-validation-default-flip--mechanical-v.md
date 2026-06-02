@@ -14,6 +14,8 @@ related_tasks: [T-1443, T-954, T-1064]
 created: 2026-04-25T06:34:35Z
 last_update: 2026-04-25T07:22:38Z
 date_finished: 2026-04-25T07:22:38Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1442: AC validation default-flip — mechanical verification with persisted evidence

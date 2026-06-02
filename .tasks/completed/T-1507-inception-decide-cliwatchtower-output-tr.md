@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-26T11:35:02Z
 last_update: 2026-04-26T14:46:56Z
 date_finished: 2026-04-26T14:46:56Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1507: Inception decide CLI/Watchtower output truncates long rationale comments mid-sentence (T-1506 close: '...sett' cut from '/root/.claude/settings.json'). Affects readability of post-decision side-effect warning. Likely a fixed-width terminal/template buffer; check do_inception_decide post-print + Watchtower /inception/T-XXX rendering of rationale.

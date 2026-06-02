@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-04T22:03:56Z
 last_update: 2026-05-05T06:47:06Z
 date_finished: 2026-05-05T06:47:06Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1729: meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — multiple breakdown points in single session

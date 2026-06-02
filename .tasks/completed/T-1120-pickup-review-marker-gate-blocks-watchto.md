@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T08:00:02Z
 last_update: 2026-04-13T06:23:18Z
 date_finished: 2026-04-12T10:55:05Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1120: Pickup: Review marker gate blocks Watchtower GO/NO-GO decisions — human clicking approve button gets Task review required error (from 010-termlink)

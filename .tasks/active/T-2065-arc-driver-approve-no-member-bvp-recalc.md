@@ -55,6 +55,8 @@ bvp_scores_proposed:
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-2065: arc driver-approve doesn't trigger member-task BVP recalculation

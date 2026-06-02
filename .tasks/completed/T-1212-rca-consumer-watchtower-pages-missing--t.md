@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-13T09:08:36Z
 last_update: 2026-04-25T18:35:01Z
 date_finished: 2026-04-13T13:20:41Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1212: RCA: Consumer Watchtower pages missing — terminal page 404, approvals bare, recurring across all consumers

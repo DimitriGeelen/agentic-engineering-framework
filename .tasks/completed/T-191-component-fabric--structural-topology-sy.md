@@ -18,6 +18,8 @@ related_tasks: [T-120, T-130, T-190]
 created: 2026-02-19T09:56:36Z
 last_update: 2026-02-20T07:13:43Z
 date_finished: 2026-02-20T07:13:43Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-191: Component Fabric — structural topology system for codebase self-awareness

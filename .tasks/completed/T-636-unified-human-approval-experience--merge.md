@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-27T10:06:21Z
 last_update: 2026-03-28T23:38:49Z
 date_finished: 2026-03-28T23:38:49Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-636: Unified human approval experience — merge Watchtower approvals page with fw task review QR/link/command into one rich flow

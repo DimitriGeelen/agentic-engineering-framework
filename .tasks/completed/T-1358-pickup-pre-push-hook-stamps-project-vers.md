@@ -16,6 +16,8 @@ last_update: 2026-04-22T09:42:33Z
 date_finished: 2026-04-22T09:42:33Z
 source_task_id_in_origin: T-1157
 source_project_in_origin: "termlink"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1358: Pickup: Pre-push hook stamps project VERSION into .agentic-framework/VERSION — overwrites vendored framework version on every push (from termlink)

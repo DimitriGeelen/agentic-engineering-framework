@@ -13,6 +13,8 @@ related_tasks: []
 created: 2026-02-18T08:00:18Z
 last_update: 2026-02-18T08:07:21Z
 date_finished: 2026-02-18T08:07:21Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-140: Fix sprechloop knowledge gap — backfill + enforce knowledge capture

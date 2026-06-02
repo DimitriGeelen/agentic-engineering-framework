@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-04T05:35:45Z
 last_update: 2026-05-06T13:32:47Z
 date_finished: 2026-05-06T13:32:47Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1710: Failure-mode discrimination in disposable test instances — distinguish 'scenario triggered as designed' from 'instance is broken'

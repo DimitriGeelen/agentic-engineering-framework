@@ -14,6 +14,8 @@ related_tasks: [T-1442, T-1443, T-1445, T-1448, T-1449, T-1450]
 created: 2026-04-25T22:10:49Z
 last_update: 2026-04-25T22:22:04Z
 date_finished: 2026-04-25T22:22:04Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1482: Reviewer v1.5 drift re-verification — sandbox isolation strategy (worktree vs container vs subprocess)

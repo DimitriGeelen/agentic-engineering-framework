@@ -14,6 +14,8 @@ related_tasks: [T-549, T-569]
 created: 2026-03-23T21:49:31Z
 last_update: 2026-03-28T09:31:49Z
 date_finished: 2026-03-28T09:31:49Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-589: Inception: YAML/JSON fuzz testing — security fuzzing for framework parsing surfaces

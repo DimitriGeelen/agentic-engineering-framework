@@ -14,6 +14,8 @@ related_tasks: [T-1093, G-034, G-032]
 created: 2026-04-11T12:37:39Z
 last_update: 2026-04-13T06:23:15Z
 date_finished: 2026-04-11T20:08:11Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1103: Inception: episodic auto-generation on partial-complete tasks — premature memory of unfinalized work (G-034)

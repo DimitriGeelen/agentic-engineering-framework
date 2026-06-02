@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-05T05:42:02Z
 last_update: 2026-05-05T06:47:22Z
 date_finished: 2026-05-05T06:47:22Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1732: prompt-triage as G-064 first real consumer — orchestrator-driven user-prompt classifier (T-1729 sibling 3)

@@ -16,6 +16,8 @@ related_tasks: [T-193, T-285, T-289]
 created: 2026-03-04T23:51:59Z
 last_update: 2026-03-08T19:30:13Z
 date_finished: 2026-03-08T19:30:13Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-325: Actionable human AC handoffs — enforce quality, surface pending reviews

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-12T08:19:54Z
 last_update: 2026-04-13T06:23:19Z
 date_finished: 2026-04-12T11:03:00Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1125: TermLink U-003: send-file reports ok on hub acceptance, not delivery — silent file loss

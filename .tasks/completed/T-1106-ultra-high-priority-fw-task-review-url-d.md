@@ -14,6 +14,8 @@ related_tasks: [T-885, T-1105, T-1100, T-1093]
 created: 2026-04-11T13:30:22Z
 last_update: 2026-04-13T06:23:16Z
 date_finished: 2026-04-11T20:10:54Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1106: ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-project task-ID collision serves wrong content

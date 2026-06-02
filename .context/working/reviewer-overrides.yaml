@@ -582,3 +582,13 @@ overrides:
   expires_at: '2026-08-31T18:58:26Z'
   added_by: root
   added_at: '2026-06-02T18:58:26Z'
+- id: OV-c3ab1066
+  task_id: T-2193
+  pattern_id: skip-as-pass
+  ac_index: null
+  reason: "T-2174 cached-verdict blind spot: --dry-run + assertion pattern over-matched.\
+    \ Verification re-runs migration in dry-run AFTER apply to assert idempotency\
+    \ \u2014 correct migration-verification shape. T-2177 detector tightening filed."
+  expires_at: '2026-08-31T23:05:18Z'
+  added_by: root
+  added_at: '2026-06-02T23:05:18Z'

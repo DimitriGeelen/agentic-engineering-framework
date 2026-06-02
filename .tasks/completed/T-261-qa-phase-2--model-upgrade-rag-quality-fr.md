@@ -17,6 +17,8 @@ related_tasks: [T-254, T-255, T-256, T-257, T-258, T-259]
 created: 2026-02-24T08:33:55Z
 last_update: 2026-02-25T20:37:38Z
 date_finished: 2026-02-25T20:37:38Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-261: Q&A Phase 2 — model upgrade, RAG quality, framework integration, saved answers

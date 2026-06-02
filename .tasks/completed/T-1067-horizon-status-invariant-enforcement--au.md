@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-08T10:18:04Z
 last_update: 2026-04-13T06:23:14Z
 date_finished: 2026-04-08T10:31:50Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1067: Horizon-status invariant enforcement — auto-sync horizon and status in update-task.sh

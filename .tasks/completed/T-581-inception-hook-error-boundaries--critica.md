@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-23T21:11:29Z
 last_update: 2026-03-26T21:19:18Z
 date_finished: 2026-03-25T12:15:19Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-581: Inception: Hook error boundaries — critical vs advisory hook failure modes

@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-04-20T07:46:37Z
 last_update: 2026-04-22T09:36:13Z
 date_finished: 2026-04-22T09:36:13Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1348: Pickup: fw fabric drift and scan miss recursive glob matches — bash ** needs shopt -s globstar (from termlink)

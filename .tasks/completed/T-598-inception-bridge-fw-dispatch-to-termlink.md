@@ -14,6 +14,8 @@ related_tasks: []
 created: 2026-03-24T09:05:48Z
 last_update: 2026-04-13T06:23:22Z
 date_finished: 2026-03-28T17:08:25Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-598: Inception: Bridge fw dispatch to TermLink file/remote — replace SSH text pipe with native hub routing and file transfer

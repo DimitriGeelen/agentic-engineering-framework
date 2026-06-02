@@ -14,6 +14,8 @@ related_tasks: [T-1827, T-1828, T-1829, T-1594, T-1603]
 created: 2026-05-14T19:10:00Z
 last_update: 2026-05-14T20:29:38Z
 date_finished: 2026-05-14T20:29:38Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1830: fw-upgrade-incident-2026-05-14 meta-RCA umbrella — boundary-crossing invisibility class

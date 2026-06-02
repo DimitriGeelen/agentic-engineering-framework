@@ -15,6 +15,8 @@ arc_id: orchestrator-rethink
 created: 2026-05-04T05:21:06Z
 last_update: 2026-05-04T07:12:24Z
 date_finished: 2026-05-04T07:12:24Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1709: Permanent disposable AEF review instance at /opt/ttt-AEF-Review-instance — TermLink-driven test bench for human-AC reviews + install/upgrade flow testing

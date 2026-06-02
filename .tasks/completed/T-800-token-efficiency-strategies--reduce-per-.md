@@ -17,6 +17,8 @@ related_tasks: [T-799, T-596, T-701, T-699, T-136, T-073]
 created: 2026-04-01T09:25:47Z
 last_update: 2026-04-12T09:27:22Z
 date_finished: 2026-04-01T11:24:07Z
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-800: Token efficiency strategies — reduce per-task and per-session cost through context management, output discipline, caching, and dispatch optimization

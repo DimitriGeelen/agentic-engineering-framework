@@ -65,6 +65,8 @@ inception_decisions:
   - id: command-layer
     text: "Command layer: ⌘K palette + ?-shortcuts overlay (global keydown registry)"
     ships_in: deferred:T-1993
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1987: Watchtower redesign — apply Claude Design exploration: foundations + /settings/appearance + nav restructure + per-page redesigns + interactions

@@ -16,6 +16,8 @@ last_update: 2026-04-28T11:56:22Z
 date_finished: 2026-04-28T11:56:22Z
 source_task_id_in_origin: T-202
 source_project_in_origin: "003-NTB-ATC-Plugin"
+target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
+voi_score: 0.5            # T-2193 migration default (medium)
 ---
 
 # T-1544: Pickup: Update agents/inception/AGENT.md copy-paste guidance for review-first Watchtower decide flow + project-port awareness (from 003-NTB-ATC-Plugin)
