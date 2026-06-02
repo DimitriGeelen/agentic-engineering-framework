@@ -57,7 +57,6 @@ grep -q "decision=defer" web/templates/_approvals_content.html
 # Smoke: live page contains the hint when no pending and >0 deferred
 curl -sf "$(bin/fw watchtower url)/approvals/content" -o /tmp/T-1518-approvals.html
 grep -qE "deferred|Deferred" /tmp/T-1518-approvals.html
-echo "T-1518 verification ok"
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;

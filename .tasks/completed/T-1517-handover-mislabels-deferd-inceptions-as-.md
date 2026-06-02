@@ -50,7 +50,6 @@ awk '/^### Inception Phases — Awaiting Decision/{f=1;next} /^### |^## /{f=0} f
 # Deferred section must list at least one of the known DEFER'd inceptions
 awk '/^### Deferred Inceptions/{f=1;next} /^### |^## /{f=0} f{print}' .context/handovers/LATEST.md > /tmp/T-1517-deferred.txt
 grep -qE 'T-(1265|1501|558)' /tmp/T-1517-deferred.txt
-echo "T-1517 verification ok"
 
 ## Decisions
 
