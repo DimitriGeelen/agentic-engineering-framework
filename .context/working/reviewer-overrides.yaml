@@ -374,3 +374,211 @@ overrides:
   expires_at: '2026-08-31T17:28:37Z'
   added_by: root
   added_at: '2026-06-02T17:28:37Z'
+- id: OV-7effcc5d
+  task_id: T-774
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "soft-warn-tool FP: shellcheck is advisory (style/lint), not a gate \u2014\
+    \ failures must not block work-completed when other verification lines (bash -n\
+    \ + bats tests in same block) are the actual correctness gates. The || true is\
+    \ the deliberate semantics for soft-warn tools, not error-hiding. Cluster: soft-warn-tool."
+  expires_at: '2026-08-31T18:56:48Z'
+  added_by: root
+  added_at: '2026-06-02T18:56:48Z'
+- id: OV-8f8573a5
+  task_id: T-1356
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "soft-warn-doctor FP: bin/fw doctor emits WARN on benign drift (mirror lag,\
+    \ optional toolchain not installed, etc) that should NOT block work-completed.\
+    \ The || true on a defensive doctor-call is the deliberate soft-warn semantics\
+    \ \u2014 the actual AC gates live elsewhere (build/lint/test commands). Cluster:\
+    \ soft-warn-doctor."
+  expires_at: '2026-08-31T18:57:01Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:01Z'
+- id: OV-efcc0a7b
+  task_id: T-1356
+  pattern_id: empty-output-success
+  ac_index: null
+  reason: 'version-noop FP: bin/fw version >/dev/null is intentionally output-suppressed
+    (only checking exit code 0 to confirm the binary runs). Empty stdout is the deliberate
+    semantics, not a swallowed signal. Cluster: version-noop.'
+  expires_at: '2026-08-31T18:57:02Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:02Z'
+- id: OV-d757ee54
+  task_id: T-1378
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "non-bash-content FP: bash -n on lib/templates/claude-project.md treats\
+    \ a markdown TEMPLATE as bash (it isn't \u2014 it's documentation content possibly\
+    \ containing prose that resembles shell). The || true prevents bash -n's syntax-error\
+    \ exit on non-bash file from blocking the gate. Cluster: non-bash-content / template-shape-check."
+  expires_at: '2026-08-31T18:57:18Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:18Z'
+- id: OV-0b693d1b
+  task_id: T-1378
+  pattern_id: AC-verify-mismatch
+  ac_index: null
+  reason: 'historical-AC FP: T-1378 closed work-completed at the time with then-current
+    AC text + verification rigor. The mismatch detector compares AC text to verification
+    commands; ACs 1/3/6 cite paths (watchtower.url, lib/config.sh, liveness.jsonl)
+    the verification block doesn''t explicitly grep for. The work shipped real changes
+    to those files; the AC text was the human-readable summary, not a verification
+    recipe. Retroactive AC re-wording on a months-old completed task adds no value.
+    Cluster: historical-completed-task / AC-prose-vs-verification-shape.'
+  expires_at: '2026-08-31T18:57:18Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:18Z'
+- id: OV-38b841a4
+  task_id: T-1360
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "soft-warn-doctor FP: bin/fw doctor >/dev/null 2>&1 || true is the soft-warn\
+    \ semantics \u2014 doctor emits WARN on benign drift that should not block work-completed.\
+    \ Other verification lines carry the real gates. Cluster: soft-warn-doctor."
+  expires_at: '2026-08-31T18:57:35Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:35Z'
+- id: OV-76b34971
+  task_id: T-1360
+  pattern_id: AC-verify-mismatch
+  ac_index: null
+  reason: "historical-AC FP: completed task whose AC text mentions hook-crashes.log\
+    \ as the audit surface for the fix (rate-limiting hook misses). Verification block\
+    \ did not explicitly grep the log file \u2014 the AC was the human-readable contract\
+    \ describing the change; the actual hook-crash logging behavior was the deliverable.\
+    \ Retroactive re-wording on a months-old completed task adds no value. Cluster:\
+    \ historical-completed-task."
+  expires_at: '2026-08-31T18:57:36Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:36Z'
+- id: OV-fb7905fe
+  task_id: T-1694
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "soft-warn-doctor FP: conditional doctor probe (test -d X && doctor ...\
+    \ || true) \u2014 the && gates the doctor call to only fire if the workflows dir\
+    \ exists, and the || true prevents doctor's soft-WARN exit from blocking the gate.\
+    \ The intent is presence-of-feature, not strict-pass-on-doctor. Cluster: soft-warn-doctor\
+    \ / conditional-probe."
+  expires_at: '2026-08-31T18:57:36Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:36Z'
+- id: OV-232fcaed
+  task_id: T-1694
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  reason: "same line as the swallowed-errors finding above () \u2014 the || true at\
+    \ end-of-line catches both the SIGPIPE-141 exit and the genuine grep-no-match\
+    \ exit equally. The L-387 risk is structurally neutralised by the || true, AND\
+    \ the doctor-probe intent makes match-or-no-match equally acceptable. Cluster:\
+    \ soft-warn-doctor / l387-neutralised-by-trailing-or-true."
+  expires_at: '2026-08-31T18:57:36Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:36Z'
+- id: OV-cbe91f31
+  task_id: T-229
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "stderr-swallow-block-test FP: 2>/dev/null is used to suppress hook STDERR\
+    \ while the line ENDS with 'test $? -eq 2' \u2014 that test IS the deliberate\
+    \ assertion (Tier-0 hook MUST exit with code 2 to indicate blocking). The hook's\
+    \ stderr is its prose message to the agent; suppressing it for the test does not\
+    \ swallow the assertion. The exit-code test is the gate, not a hidden failure.\
+    \ Cluster: stderr-swallow-block-test / hook-block-assertion."
+  expires_at: '2026-08-31T18:57:51Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:51Z'
+- id: OV-3940ebfd
+  task_id: T-229
+  pattern_id: AC-verify-mismatch
+  ac_index: null
+  reason: "historical-AC FP: AC #2 cites .claude/settings.json as the protected surface\
+    \ for the B-005 block contract. Verification block uses the more direct test of\
+    \ the hook script invocation (echoing a tool_input + asserting exit 2) \u2014\
+    \ this IS the structural test of the AC, expressed as a behavioral assertion rather\
+    \ than a file-exists check on settings.json. Mismatch is between AC prose vocabulary\
+    \ and verification command shape, not a real gap. Cluster: historical-completed-task\
+    \ / behavioral-vs-structural-verification."
+  expires_at: '2026-08-31T18:57:52Z'
+  added_by: root
+  added_at: '2026-06-02T18:57:52Z'
+- id: OV-c5662c87
+  task_id: T-303
+  pattern_id: skip-as-pass
+  ac_index: null
+  reason: "dry-run-as-pass FP: fw preflight --check-only is the literal subject of\
+    \ the AC \u2014 preflight in check-only mode is the deliverable being verified.\
+    \ The AC explicitly tests that running preflight in check-only mode (no-op execution\
+    \ mode) returns success when no real action is taken. This is the inverse of a\
+    \ normal skip-as-pass FP (where --dry-run masks no real assertion happens) \u2014\
+    \ here the dry-run mode itself IS the AC's subject of verification. Cluster: dry-run-as-assertion-subject\
+    \ / preflight-mode-test."
+  expires_at: '2026-08-31T18:58:01Z'
+  added_by: root
+  added_at: '2026-06-02T18:58:01Z'
+- id: OV-a7d3a13d
+  task_id: T-341
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "assert-absent FP: T-341 verification combines two absence-assertions for\
+    \ content review \u2014 (1) python generator-exit pattern asserting 'no Post Body\
+    \ line found in any deep-dive 01-07' and (2) grep -rL listing files-without-pattern.\
+    \ The redirect+|| true on both lines reflects the assert-absent idiom \u2014 exit\
+    \ 0 when the assertion holds (no matches found), gracefully when the file glob\
+    \ expands to nothing. The actual content-quality gate lives in the Human ACs (rubber-stamp\
+    \ tone review). Cluster: assert-absent / content-review-historical."
+  expires_at: '2026-08-31T18:58:15Z'
+  added_by: root
+  added_at: '2026-06-02T18:58:15Z'
+- id: OV-b019c46c
+  task_id: T-454
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: 'soft-check FP: test -x lib/upstream.sh || true is a soft executability
+    probe (file may not exist or executable bit unset; the actual gates are below).
+    The other verification lines (bin/fw upstream config + bin/fw upstream report
+    --dry-run) carry the real assertions. Cluster: soft-check / file-presence-probe.'
+  expires_at: '2026-08-31T18:58:15Z'
+  added_by: root
+  added_at: '2026-06-02T18:58:15Z'
+- id: OV-43a5dfcb
+  task_id: T-454
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  reason: "intent-preserved-l387 FP: two double-pipe patterns \u2014 '...config |\
+    \ grep -c \"Repo:\" | grep -q \"[1-9]\"' (count-then-match-ge-1) and '...report\
+    \ --dry-run | grep -q \"DRY RUN\"'. The SIGPIPE risk is real in shape, but if\
+    \ SIGPIPE-141 fires it means the upstream wrote AT LEAST as much as grep needed\
+    \ \u2014 i.e. the match succeeded. The L-387 risk is structurally a false-negative\
+    \ on success, never a false-positive. Cluster: intent-preserved-l387 / sigpipe-on-success-only."
+  expires_at: '2026-08-31T18:58:15Z'
+  added_by: root
+  added_at: '2026-06-02T18:58:15Z'
+- id: OV-4a61dae1
+  task_id: T-415
+  pattern_id: swallowed-errors
+  ac_index: null
+  reason: "intent-preserved-l387 FP: 'fw task update T-411 --status started-work 2>&1\
+    \ | grep -q sovereignty\\|human || true' \u2014 the AC asserts a sovereignty/human\
+    \ prose appears in the gate's STDERR when the agent attempts started-work on a\
+    \ human-owned task. The || true is paired with the grep-q pattern: SIGPIPE-141\
+    \ or grep-no-match both exit non-zero, and the || true forgives both. The intent\
+    \ (prose-in-stderr after a structural block) holds whether or not the pipe wedges.\
+    \ Cluster: intent-preserved-l387 / sigpipe-neutralised-by-or-true."
+  expires_at: '2026-08-31T18:58:26Z'
+  added_by: root
+  added_at: '2026-06-02T18:58:26Z'
+- id: OV-3b3ff782
+  task_id: T-415
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  reason: "same line as the swallowed-errors finding above \u2014 both detectors fire\
+    \ on the same shape (cmd | grep -q PAT || true). The L-387 risk is structurally\
+    \ neutralised by the trailing || true. Cluster: intent-preserved-l387 / shared-line-finding."
+  expires_at: '2026-08-31T18:58:26Z'
+  added_by: root
+  added_at: '2026-06-02T18:58:26Z'

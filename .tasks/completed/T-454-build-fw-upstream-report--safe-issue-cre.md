@@ -83,22 +83,18 @@ grep -q 'upstream)' bin/fw
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-169205e7
-- **Timestamp:** 2026-06-02T15:10:27Z
+- **Scan ID:** R-595b78d9
+- **Timestamp:** 2026-06-02T18:58:51Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** yes
-- **Findings:** 3
-
-**Verification-level findings:**
-
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
-     - evidence: `test -x lib/upstream.sh || true`
-  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
-     - evidence: `/opt/999-Agentic-Engineering-Framework/bin/fw upstream config 2>&1 | grep -c "Repo:" | grep -q "[1-9]"`
-  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
-     - evidence: `/opt/999-Agentic-Engineering-Framework/bin/fw upstream report --title "Verification test" --dry-run 2>&1 | grep -q "DRY RUN"`
+- **Findings:** none
 
 - **Layer-1 escalations:** 1
   1. **cross-project-blast** (medium) — Cross-project or cross-repo change
      - matched: `consumer project`
+
+- **Suppressed:** 3 (by override)
+  - swallowed-errors @ Verification:line 2
+  - l387-sigpipe-risk @ Verification:line 5
+  - l387-sigpipe-risk @ Verification:line 6

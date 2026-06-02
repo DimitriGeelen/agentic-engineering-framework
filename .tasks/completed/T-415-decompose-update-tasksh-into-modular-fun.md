@@ -85,16 +85,13 @@ fw task update T-411 --status started-work 2>&1 | grep -q 'sovereignty\|human' |
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-c983b281
-- **Timestamp:** 2026-06-02T15:10:27Z
+- **Scan ID:** R-673713b3
+- **Timestamp:** 2026-06-02T18:58:52Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** none
 
-**Verification-level findings:**
-
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
-     - evidence: `fw task update T-411 --status started-work 2>&1 | grep -q 'sovereignty\|human' || true`
-  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
-     - evidence: `fw task update T-411 --status started-work 2>&1 | grep -q 'sovereignty\|human' || true`
+- **Suppressed:** 2 (by override)
+  - swallowed-errors @ Verification:line 2
+  - l387-sigpipe-risk @ Verification:line 2

@@ -147,8 +147,8 @@ grep -q "Group A reviewer verdict summary\|Group A — reviewer verdicts" docs/r
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-71433c17
-- **Timestamp:** 2026-06-02T14:59:48Z
+- **Scan ID:** R-0a49355a
+- **Timestamp:** 2026-06-02T18:58:50Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

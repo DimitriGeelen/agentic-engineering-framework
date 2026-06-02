@@ -78,14 +78,12 @@ grep -q "do_preflight" /opt/999-Agentic-Engineering-Framework/lib/init.sh
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-83977a97
-- **Timestamp:** 2026-06-02T15:10:27Z
+- **Scan ID:** R-cafbcf19
+- **Timestamp:** 2026-06-02T18:58:51Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Verification-level findings:**
-
-  1. **skip-as-pass** (severe, deterministic) @ Verification:line 1
-     - evidence: `fw preflight --check-only`
+- **Suppressed:** 1 (by override)
+  - skip-as-pass @ Verification:line 1

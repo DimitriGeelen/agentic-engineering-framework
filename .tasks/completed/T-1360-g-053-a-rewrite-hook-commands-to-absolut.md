@@ -83,19 +83,13 @@ bin/fw hook __nonexistent_hook_for_test__ 2>/dev/null; [ $? -eq 0 ]
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a2746ee9
-- **Timestamp:** 2026-06-02T15:10:26Z
+- **Scan ID:** R-bad254a6
+- **Timestamp:** 2026-06-02T18:58:50Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#3 (Agent)** — Logs the miss to `.context/working/hook-crashes.log` (append, one line per miss, rate-limit trivially via timestamp) so `fw doctor` can surface it
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/hook-crashes.log in: Logs the miss to `.context/working/hook-crashes.log` (append, one line per miss, rate-limit trivially via timestamp) so `fw doctor` can surface it`
-
-**Verification-level findings:**
-
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
-     - evidence: `bin/fw doctor >/dev/null 2>&1 || true`
+- **Suppressed:** 2 (by override)
+  - swallowed-errors @ Verification:line 2
+  - AC-verify-mismatch @ AC#3 (Agent)

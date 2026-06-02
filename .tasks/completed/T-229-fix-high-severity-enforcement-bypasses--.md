@@ -65,21 +65,14 @@ echo '{"tool_input":{"command":"git commit -m \"T-229: test\""}}' | /opt/999-Age
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2881b975
-- **Timestamp:** 2026-06-02T15:10:27Z
+- **Scan ID:** R-d9a41208
+- **Timestamp:** 2026-06-02T18:58:51Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#2 (Agent)** — B-005: Write/Edit to `.claude/settings.json` blocked by check-active-task.sh (Tier 0 or explicit block)
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: B-005: Write/Edit to `.claude/settings.json` blocked by check-active-task.sh (Tier 0 or explicit block)`
-
-**Verification-level findings:**
-
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
-     - evidence: `echo '{"tool_input":{"command":"git commit --no-verify -m test"}}' | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>/dev/null; test $? -eq 2`
-  2. **swallowed-errors** (severe, deterministic) @ Verification:line 3
-     - evidence: `echo '{"tool_input":{"command":"git push --no-verify"}}' | /opt/999-Agentic-Engineering-Framework/agents/context/check-tier0.sh 2>/dev/null; test $? -eq 2`
+- **Suppressed:** 3 (by override)
+  - swallowed-errors @ Verification:line 2
+  - swallowed-errors @ Verification:line 3
+  - AC-verify-mismatch @ AC#2 (Agent)

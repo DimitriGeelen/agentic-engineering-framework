@@ -205,8 +205,8 @@ The remaining `[REVIEW]` Human AC on this task is genuine taste — does the re-
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-80f5deb4
-- **Timestamp:** 2026-06-02T15:22:47Z
+- **Scan ID:** R-69016d36
+- **Timestamp:** 2026-06-02T18:58:50Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

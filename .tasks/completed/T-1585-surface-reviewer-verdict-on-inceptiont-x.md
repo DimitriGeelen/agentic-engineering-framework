@@ -96,8 +96,8 @@ python3 -m pytest tests/unit/test_extract_recommendation.py -q --no-header 2>&1 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0dbe7135
-- **Timestamp:** 2026-06-02T14:58:28Z
+- **Scan ID:** R-684d4ec4
+- **Timestamp:** 2026-06-02T18:58:49Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

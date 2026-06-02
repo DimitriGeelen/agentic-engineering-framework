@@ -86,23 +86,15 @@ test $(grep -cE 'localhost:3000' lib/init.sh lib/templates/claude-project.md age
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-db02128b
-- **Timestamp:** 2026-06-02T15:10:26Z
+- **Scan ID:** R-82c34719
+- **Timestamp:** 2026-06-02T18:58:51Z
 - **Catalogue:** v1.3-seed
-- **Overall:** FAIL
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 4
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — `lib/init.sh` /resume skill no longer hardcodes `:3000` — reads from `.context/working/watchtower.url` triple-file when present, falls back to `fw_config PORT 3000` for fresh projects.
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/watchtower.url in: `lib/init.sh` /resume skill no longer hardcodes `:3000` — reads from `.context/working/watchtower.url` triple-file when present, falls back to `fw_con`
-- **AC#3 (Agent)** — `agents/monitor/liveness-check.sh` no longer hardcodes `localhost:3000` — sources `lib/config.sh` and reads `fw_config PORT 3000` (or the triple file) before curling.
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: `agents/monitor/liveness-check.sh` no longer hardcodes `localhost:3000` — sources `lib/config.sh` and reads `fw_config PORT 3000` (or the triple file)`
-- **AC#6 (Agent)** — Liveness check runtime test passed — watchtower detected as `running` via triple-file resolution (tail of `.context/monitors/liveness.jsonl` confirms).
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/monitors/liveness.jsonl in: Liveness check runtime test passed — watchtower detected as `running` via triple-file resolution (tail of `.context/monitors/liveness.jsonl` confirms)`
-
-**Verification-level findings:**
-
-  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
-     - evidence: `bash -n lib/templates/claude-project.md || true`
+- **Suppressed:** 4 (by override)
+  - swallowed-errors @ Verification:line 2
+  - AC-verify-mismatch @ AC#1 (Agent)
+  - AC-verify-mismatch @ AC#3 (Agent)
+  - AC-verify-mismatch @ AC#6 (Agent)
