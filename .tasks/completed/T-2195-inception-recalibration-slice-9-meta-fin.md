@@ -16,20 +16,20 @@ description: >
   behaviour on synthetic storage vs exploration commits; the T-2186 commit sequence
   would have hit budget at the right place.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [inception, commit-counter, T-2186-slice, meta-finding, L-class]
-components: []
+components: [agents/git/lib/hooks.sh, tests/unit/inception_commit_counter.bats]
 related_tasks: [T-2186]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:05:35Z
-last_update: 2026-06-02T22:33:48Z
-date_finished:
+last_update: 2026-06-02T22:43:34Z
+date_finished: 2026-06-02T22:43:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -197,9 +197,12 @@ out=$(bin/fw reviewer T-2195 2>&1); grep -qE "Overall:.*PASS" <<<"$out"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-fd45bdf0
-- **Timestamp:** 2026-06-02T22:42:19Z
+- **Scan ID:** R-60b61736
+- **Timestamp:** 2026-06-02T22:43:35Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-02T22:43:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
