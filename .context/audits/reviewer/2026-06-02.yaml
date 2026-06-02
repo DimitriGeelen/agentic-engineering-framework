@@ -1,21 +1,20 @@
 scan_date: '2026-06-02'
-scan_timestamp: '2026-06-02T15:13:10Z'
+scan_timestamp: '2026-06-02T17:08:53Z'
 pass: B
 catalogue_version: v1.3-seed
 escalation_version: v1.1-seed
 tasks_scanned: 1954
 errors: []
 totals:
-  PASS: 1425
-  CONCERN: 515
-  FAIL: 14
+  PASS: 1430
+  CONCERN: 513
+  FAIL: 11
   needs_human: 67
 pattern_fire_counts:
   AC-verify-mismatch: 356
   l387-sigpipe-risk: 405
   empty-output-success: 80
-  tautology: 3
-  mock-only-integration: 22
+  mock-only-integration: 20
   swallowed-errors: 11
   skip-as-pass: 2
   audience-mismatch: 1
@@ -23,10 +22,11 @@ pattern_fire_counts:
   human-ac-mechanical-signal: 1
 suppressed_fire_counts:
   human-ac-mechanical-signal: 11
+  tautology: 3
   AC-verify-mismatch: 5
-  mock-only-integration: 1
-suppressed_total: 17
-active_overrides: 27
+  mock-only-integration: 3
+suppressed_total: 22
+active_overrides: 32
 escalation_fire_counts:
   external-publish: 4
   cross-project-blast: 40
@@ -58,7 +58,7 @@ top_findings:
   - T-1223
   - T-1232
 - pattern_id: mock-only-integration
-  count: 22
+  count: 20
   examples:
   - T-1320
   - T-1446

@@ -312,3 +312,47 @@ overrides:
   expires_at: '2026-08-31T15:22:27Z'
   added_by: root
   added_at: '2026-06-02T15:22:27Z'
+- id: OV-36b15109
+  task_id: T-123
+  pattern_id: tautology
+  ac_index: null
+  reason: "Intentional retroactive tautology: T-123's deliverable was an end-to-end\
+    \ lifecycle shakedown on a throwaway project that was TORN DOWN post-verification\
+    \ (see ## Verification comment: 'Project torn down \u2014 verification commands\
+    \ ran during shakedown, not applicable post-teardown'). The 7 ACs were verified\
+    \ live during the shakedown; the post-teardown Verification block is necessarily\
+    \ a no-op because the artifacts no longer exist. 'echo shakedown complete' is\
+    \ the agent's placeholder, not a missed assertion."
+  expires_at: '2026-08-31T17:08:03Z'
+  added_by: root
+  added_at: '2026-06-02T17:08:03Z'
+- id: OV-52b3bb45
+  task_id: T-445
+  pattern_id: tautology
+  ac_index: null
+  reason: 'Intentional retroactive tautology: T-445 is workflow_type=inception. Verification
+    for inception tasks is the go/no-go decision itself (recorded via ''fw inception
+    decide T-445''), not a shell command. The decision was made; the artefact docs/reports/T-445-readme-overhaul.md
+    captures the research; the deliverable shipped. ''echo Inception task...'' is
+    the agent''s placeholder explaining why no shell verification applies. Inception
+    tasks with shell-tautology Verification should be allowed under this rationale
+    class.'
+  expires_at: '2026-08-31T17:08:16Z'
+  added_by: root
+  added_at: '2026-06-02T17:08:16Z'
+- id: OV-a763a0ed
+  task_id: T-876
+  pattern_id: tautology
+  ac_index: null
+  reason: "Intentional retroactive tautology: T-876 upgraded 11 consumer projects\
+    \ from v1.4.546 to v1.4.553. The original verification (zero version-mismatch\
+    \ warnings) became stale almost immediately \u2014 by 2026-04-05 the framework\
+    \ had moved to v1.4.576, and a v1.4.553-specific check would now fail. The ##\
+    \ Verification comment explicitly documents: 'Original verification obsolete \u2014\
+    \ T-881 superseded (upgraded to v1.4.559)'. 'true' is the agent's placeholder\
+    \ once the version-target check became meaningless. The work shipped; the verification's\
+    \ expiration is documented in-place. Future similar version-bump tasks should\
+    \ be auto-flagged for re-verification, not retroactively edited."
+  expires_at: '2026-08-31T17:08:26Z'
+  added_by: root
+  added_at: '2026-06-02T17:08:26Z'
