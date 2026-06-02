@@ -10,20 +10,20 @@ description: >
   T-2173 Recommendation + docs/reports/T-2173-reviewer-fail-sweep.md for cluster→task
   mapping.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [reviewer-quality, fail-fix, completed-corpus-hygiene, T-2173-child]
-components: []
+components: [lib/reviewer/static_scan.py]
 related_tasks: [T-2173, T-1443]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T08:39:47Z
-last_update: 2026-06-02T17:12:48Z
-date_finished:
+last_update: 2026-06-02T17:32:43Z
+date_finished: 2026-06-02T17:32:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -191,6 +191,19 @@ tightening). This task retains only the genuine + borderline cases.**
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** T-2173 inception classified 14 completed tasks as FAIL across Clusters 1 (skip-as-pass × 8) and 2 (swallowed-errors × 6) and routed all of them to mechanical Verification-block hygiene rewrites in T-2174. Fresh per-task `bin/fw reviewer T-XXX --no-write --json` reruns revealed 11+ of 14 were detector false positives, not real verification smells.
+
+**Root cause:** T-2173's cluster extraction grep'd `pattern_id` fingerprints out of cached `## Reviewer Verdict` blocks (`grep -l "Overall:.*FAIL" .tasks/completed/T-*.md` + per-task verdict text reads). This treats the cached fingerprint as ground truth without re-running the detector against the original source. Two distinct FP classes were invisible to that approach:
+1. **`skip-as-pass` over-matches `--dry-run + same-line assertion`** — a simulation-and-check pattern that is the *opposite* of skip-as-pass (it asserts what dry-run produced). T-2177 detector tightening (`_OUTPUT_ASSERTION_RE`) closed this.
+2. **`swallowed-errors` over-matches `&& exit N || true`** — the assert-absent idiom that exists to deliberately suppress the exit signal as part of the assertion. The existing `_NEGATIVE_ASSERTION_RE` (T-1815) already handles this; T-2173's per-task triage was unnecessary.
+
+**Why structurally allowed:** No reviewer-side gate cross-checks the cached verdict against a fresh re-run before downstream consumers (audit reports, fix-track inception planning) treat the cache as canonical. Cluster extractors compose pattern names without consulting `lie_severity` or `detection_confidence`; heuristic+partial findings get bucketed identically to severe+deterministic ones.
+
+**Prevention:** Three legs:
+1. **This task (T-2174)** — pivoted from mechanical Cluster 1+2 rewrites to filing T-2177 (detector tightening) as the sibling fix. Cleared 21 of 23 `skip-as-pass` fires.
+2. **L-452 captured** (this session) — "cached verdict TEXT inherits detector blind spots — re-run the detector against original source before any mechanical batch fix". Memory pointer `[[feedback_cached_verdict_text_blind_spot]]` for future fix-track planning.
+3. **Detector-confidence-aware cluster extraction (deferred)** — would require `lib/reviewer/audit.py` cluster-totals logic to segregate heuristic+partial from deterministic+severe before bucketing. Not filed; T-2173 fix-track is now structurally closed.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -299,6 +312,22 @@ tightening). This task retains only the genuine + borderline cases.**
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 7 Agent ACs ticked across two work sessions. The §ACD pivot (commit `ab6e3a46a`) correctly identified Cluster 1+2 as detector-FP-dominant rather than task-quality, leading to T-2177's detector tightening (skip-as-pass: 23 → 2 fires) instead of mechanical AC-rewriting on 14 tasks. The two deferred legs (T-1594, T-2072) resolved cleanly post-T-2177 via the sibling task chain (T-2175 covered T-2072; OV-f410b673 today covers T-1594's canonical safe-smoke pattern). T-2173 fix-track is now structurally complete (A=T-2174, B=T-2175, C=T-2176, D=T-2179).
+
+**Evidence:**
+- **Cluster 1 (skip-as-pass) outcome:** Audit fires 23 → 2 between morning and now. T-2177's `_QUOTED_SUBSTR_RE` + `_OUTPUT_ASSERTION_RE` suppressions correctly cleared 21 detector FPs (T-1516 quoted-context, T-2072-class same-line-assertion). T-1594 preserved as FAIL (correct — bare `--dry-run` with no assertion) then routed via principled override.
+- **Cluster 2 (swallowed-errors) outcome:** 11 fires remain corpus-wide but only 8 are FAIL drivers; all are the `&& exit N || true` assert-absent idiom that the existing `_NEGATIVE_ASSERTION_RE` suppression already handles. No additional work needed.
+- **Per-task fresh verdicts captured:** T-1517 FAIL→CONCERN, T-1518 FAIL→PASS, T-1644 FAIL→CONCERN (cache-staleness), T-1594 FAIL→CONCERN (post-override), T-2072 FAIL→PASS (post-T-2175). All via `bin/fw reviewer T-XXXX --no-write --json`.
+- **Audit re-run aggregate:** FAIL 31 (08:33 stale) → 14 (post-T-2177) → 11 (post-T-2179) → **10** (post-OV-f410b673). 21 FAILs cleared by the fix-track; 10 remain as genuine `swallowed-errors` + `mock-only-integration` + 1 isolated `skip-as-pass`.
+
+**What's next (operator-facing):**
+- **2 [REVIEW] Human ACs on this task:** "T-1644 retro-fill reflects genuine intent recovery" + "Detector-tightening scope (T-2177) is right-sized". Both surfaced at `/review/T-2174`.
+- **Siblings ready for review in parallel:** `/review/T-2175`, `/review/T-2176`, `/review/T-2179` — once all four are ticked, T-2173 parent's [REVIEW] question ("sweep complete, no orphan FAILs") is materially satisfied.
+
 ## Updates
 
 ### 2026-06-02T08:39:47Z — task-created [task-create-agent]
@@ -309,3 +338,15 @@ tightening). This task retains only the genuine + borderline cases.**
 ### 2026-06-02T11:47:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-84b1b4a3
+- **Timestamp:** 2026-06-02T17:32:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-02T17:32:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
