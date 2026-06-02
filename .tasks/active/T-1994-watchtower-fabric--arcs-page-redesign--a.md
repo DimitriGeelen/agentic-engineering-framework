@@ -126,7 +126,7 @@ This is an **umbrella roll-up** for arc-007 S5 (fabric + arcs page redesign: sem
 
 - [ ] [REVIEW] Fabric + Arcs feel like one redesigned surface
   **Steps:**
-  1. Open `https://watchtower.docker.ring20.geelenandcompany.com/arcs` and `/fabric` in the same browser session.
+  1. Open `https://watchtower-dev.docker.ring20.geelenandcompany.com/arcs` and `/fabric` in the same browser session.
   2. Switch palettes via ⚙ → /settings/appearance (Calm / Editorial / Console / Paper / Bone / Midnight).
   3. For each preset, eyeball: do arc cards, fabric coupling notes, and dependency links share the same colour language?
   **Expected:** No jarring mismatch between arcs and fabric on any preset; coupling-note bands use semantic tokens that respect the active preset.
@@ -134,7 +134,7 @@ This is an **umbrella roll-up** for arc-007 S5 (fabric + arcs page redesign: sem
 
 - [ ] [REVIEW] docs/generated detail pages — dependency links resolve and are useful
   **Steps:**
-  1. Open `https://watchtower.docker.ring20.geelenandcompany.com/docs/generated/components/hook-config` (or any component with deps).
+  1. Open `https://watchtower-dev.docker.ring20.geelenandcompany.com/fabric/component/hook-config` (or any component with deps).
   2. Click a `Dependencies:` target.
   **Expected:** Link resolves to the other component page; the dependency relationship is intelligible to the reader.
   **If not:** Note the component + target + observed behaviour.

@@ -138,7 +138,7 @@ This is an **umbrella roll-up** for arc-007 S3 (cockpit + approvals tokenisation
 
 - [ ] [REVIEW] Cockpit + Approvals feel like one redesigned surface (not 9 stitched fixes)
   **Steps:**
-  1. Open `https://watchtower.docker.ring20.geelenandcompany.com/` (Cockpit) and `/approvals` in the same browser session.
+  1. Open `https://watchtower-dev.docker.ring20.geelenandcompany.com/` (Cockpit) and `/approvals` in the same browser session.
   2. Switch between Calm / Editorial / Console / Paper / Bone / Midnight presets via the ⚙ gear → /settings/appearance.
   3. For each preset, eyeball: do the status pills, density spacing, dark-toggle visibility, and approvals rows look consistent between the two pages?
   **Expected:** Each preset reads as one design language across both pages — no jarring spacing/colour mismatch, dark-toggle visible on light presets, gear visible in top-bar.
@@ -146,7 +146,7 @@ This is an **umbrella roll-up** for arc-007 S3 (cockpit + approvals tokenisation
 
 - [ ] [REVIEW] Approvals review-queue interactions feel inline (no jarring page redirects)
   **Steps:**
-  1. Open `https://watchtower.docker.ring20.geelenandcompany.com/approvals`.
+  1. Open `https://watchtower-dev.docker.ring20.geelenandcompany.com/approvals`.
   2. Click any approval row and use the inline approve/reject controls.
   **Expected:** Decision lands without a full-page redirect; row state updates in place.
   **If not:** Note the row T-XXX + the observed redirect behaviour; file a follow-up.
