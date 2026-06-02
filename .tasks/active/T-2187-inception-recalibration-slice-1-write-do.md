@@ -1,13 +1,24 @@
 ---
 id: T-2187
-name: "Inception recalibration Slice 1: write docs/system/050-Inceptions.md (keystone, T-2186 IW-7 own-doc)"
+name: "Inception recalibration Slice 1: write docs/system/050-Inceptions.md (keystone,
+  T-2186 IW-7 own-doc)"
 description: >
-  T-2186 Slice 1 (keystone). Write docs/system/050-Inceptions.md as the canonical doc owning: inception lifecycle (states + transitions, references 010-TaskSystem.md), disposition gate (slot in update-task.sh, evidence-or-justified-absence discipline), scoring exception (target_blast_radius + VoI composite, cross-ref to 040-ValueDrivers.md), three-tier adjudication (low/medium/high stakes → reviewer-agent/reviewer+human/human only), park state cross-ref (DEFER + horizon:later + revisit_at). IW-6 ownership seam: 040 owns scoring rubrics; this doc owns workflow placement and references 040. Cross-link FRAMEWORK.md from system-doc index. Verification: file exists, all 5 sections present, two specific cross-refs (010 + 040) resolvable. ACs include doc structure check + cross-ref grep + section presence. Render-surface? No (Markdown doc, no Flask template touch).
+  T-2186 Slice 1 (keystone). Write docs/system/050-Inceptions.md as the canonical
+  doc owning: inception lifecycle (states + transitions, references 010-TaskSystem.md),
+  disposition gate (slot in update-task.sh, evidence-or-justified-absence discipline),
+  scoring exception (target_blast_radius + VoI composite, cross-ref to 040-ValueDrivers.md),
+  three-tier adjudication (low/medium/high stakes → reviewer-agent/reviewer+human/human
+  only), park state cross-ref (DEFER + horizon:later + revisit_at). IW-6 ownership
+  seam: 040 owns scoring rubrics; this doc owns workflow placement and references
+  040. Cross-link FRAMEWORK.md from system-doc index. Verification: file exists, all
+  5 sections present, two specific cross-refs (010 + 040) resolvable. ACs include
+  doc structure check + cross-ref grep + section presence. Render-surface? No (Markdown
+  doc, no Flask template touch).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [inception, doc, T-2186-slice, 050-Inceptions]
 components: []
 related_tasks: [T-2186]
@@ -16,8 +27,8 @@ related_tasks: [T-2186]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:03:33Z
-last_update: 2026-06-02T22:03:33Z
-date_finished: null
+last_update: 2026-06-02T22:27:02Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +39,43 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-02T22:27:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2187: Inception recalibration Slice 1: write docs/system/050-Inceptions.md (keystone, T-2186 IW-7 own-doc)
@@ -39,43 +87,29 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] `050-Inceptions.md` exists at repo root (matching 010/040 numbered-doc convention) and is non-empty
+- [x] Doc carries the five required sections per T-2186 spec: `## Lifecycle`, `## Disposition Gate`, `## Scoring Exception`, `## Three-Tier Adjudication`, `## Park State`
+- [x] Cross-refs both `010-TaskSystem.md` (lifecycle anchor) and `040-ValueDrivers.md` (scoring anchor) inline by filename
+- [x] FRAMEWORK.md references `050-Inceptions.md` from its doc index (system-doc discoverability)
+- [x] Reviewer-agent verdict PASS (`bin/fw reviewer T-2187` → Overall: PASS) — R-369eedb1 2026-06-02T22:31:00Z, Findings: none
+- [x] T-2186 description's `docs/system/050-Inceptions.md` path reconciled — Evolution entry explains root-level filing per convention<!-- @auto-tick-on-decide: no — pure agent self-eval -->
 
 ## Verification
 
+test -f 050-Inceptions.md
+out=$(cat 050-Inceptions.md); grep -q "## Lifecycle" <<<"$out"
+out=$(cat 050-Inceptions.md); grep -q "## Disposition Gate" <<<"$out"
+out=$(cat 050-Inceptions.md); grep -q "## Scoring Exception" <<<"$out"
+out=$(cat 050-Inceptions.md); grep -q "## Three-Tier Adjudication" <<<"$out"
+out=$(cat 050-Inceptions.md); grep -q "## Park State" <<<"$out"
+out=$(cat 050-Inceptions.md); grep -q "010-TaskSystem.md" <<<"$out"
+out=$(cat 050-Inceptions.md); grep -q "040-ValueDrivers.md" <<<"$out"
+test -f 010-TaskSystem.md
+test -f 040-ValueDrivers.md
+out=$(grep -c "050-Inceptions" FRAMEWORK.md); test "$out" -ge 1
+out=$(bin/fw reviewer T-2187 2>&1); grep -qE "Overall:.*PASS" <<<"$out"
+
+# (Original template comments preserved below for hint reference)
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -124,6 +158,12 @@ date_finished: null
 -->
 
 ## Evolution
+
+### 2026-06-03 — root-level filing (path reconciliation)
+
+- **What changed:** T-2186's spec named `docs/system/050-Inceptions.md`, but the established convention for numbered system docs is repo-root (`001-Vision.md`, `005-DesignDirectives.md`, `010-TaskSystem.md`, `011-EnforcementConfig.md`, `012-ArcSystem.md`, `015-Practices.md`, `020-Experiments.md`, `025-ArtifactDiscovery.md`, `030-WatchtowerDesign.md`, `040-ValueDrivers.md`). No `docs/system/` directory exists.
+- **Plan impact:** Filed at `050-Inceptions.md` (repo root) for convention parity. T-2186 IW-7's intent was "own doc" (not a section in 010); the directory was an unverified guess on my part during inception drafting. Root-level filing preserves the user's authorised choice (own dedicated doc) while matching the discoverability convention.
+- **Triggered:** No new sub-task — within-scope path correction. T-2186 description still reads `docs/system/...`; left as historical record of the spec-vs-reality reconciliation. Anyone searching for `050-Inceptions.md` finds it adjacent to its siblings.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -174,3 +214,16 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2187-inception-recalibration-slice-1-write-do.md
 - **Context:** Initial task creation
+
+### 2026-06-02T22:27:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-369eedb1
+- **Timestamp:** 2026-06-02T22:31:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

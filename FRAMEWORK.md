@@ -284,7 +284,7 @@ fw tier0 approve     # Approve a blocked destructive command
 | **Episodic Memory** | Condensed history of completed tasks — what was done, what worked, what failed. Auto-generated on task completion. Stored in `.context/episodic/`. Used by agents to learn from past experience. |
 | **Healing Loop** | The antifragile error-recovery cycle: classify failure, look up similar patterns, suggest recovery, log resolution. Triggered when a task enters `issues` status. See `fw healing`. |
 | **Horizon** | Priority scheduling field on tasks. `now` = ready to work on, `next` = ready after current work, `later` = parked/backlog. Controls handover suggestions and task ordering. |
-| **Inception** | A workflow type for exploring a problem space before committing to build. Produces a go/no-go decision with evidence. Build tasks are created separately after a GO decision. |
+| **Inception** | A workflow type for exploring a problem space before committing to build. Produces a go/no-go decision with evidence. Build tasks are created separately after a GO decision. See `050-Inceptions.md` for the lifecycle, disposition gate, scoring exception (`target_blast_radius` + VoI), three-tier adjudication, and park-state semantics. |
 | **Project Memory** | Patterns, decisions, and learnings accumulated across all tasks. Persists between sessions. Stored in `.context/project/`. |
 | **Sovereignty** | The human's absolute authority in the Authority Model. Humans can override anything but are accountable for the outcome. Structural gates enforce sovereignty — agents cannot bypass them. |
 | **Working Memory** | Active session state: current focus, pending actions, recent context. Lives in `.context/working/`. Refreshed each session via `fw context init`. |
