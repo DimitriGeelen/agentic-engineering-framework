@@ -81,7 +81,7 @@ FW_INCEPTION_COMMIT_LIMIT=6 fw inception decide T-XXX go --rationale "..."
 ```
 
 The override is logged Tier-2. Origin: T-2186 itself hit the old counter
-at commit 3 because filing + demote (both storage) consumed 2/2 with zero
+at commit 3 because filing + demote (both storage commits) consumed 2/2 with zero
 exploration — the same scoring-shaped rigidity the inception was recalibrating.
 
 ### Producer ≠ judge
