@@ -1,13 +1,20 @@
 ---
 id: T-2176
-name: "Reviewer FAIL fix batch C — fresh fw reviewer scan over completed/ to surface 12 missing FAILs + write-back current verdicts"
+name: "Reviewer FAIL fix batch C — fresh fw reviewer scan over completed/ to surface
+  12 missing FAILs + write-back current verdicts"
 description: >
-  Today's audit reports FAIL=31 but only 19 are cached in completed/ task bodies via grep. The 12-task gap is the cache-vs-current drift (older verdict blocks written before catalogue v1.3 grew). Fix C: run fw reviewer T-XXX --no-write OR with write-back over every completed/ task, capture current per-task verdict + findings, surface the 12 untyped FAILs into one of T-2173 Clusters 1-6 (or a new cluster if shape differs). After Fix C, grep-l on Overall:.*FAIL in completed/ matches the audit's count exactly.
+  Today's audit reports FAIL=31 but only 19 are cached in completed/ task bodies via
+  grep. The 12-task gap is the cache-vs-current drift (older verdict blocks written
+  before catalogue v1.3 grew). Fix C: run fw reviewer T-XXX --no-write OR with write-back
+  over every completed/ task, capture current per-task verdict + findings, surface
+  the 12 untyped FAILs into one of T-2173 Clusters 1-6 (or a new cluster if shape
+  differs). After Fix C, grep-l on Overall:.*FAIL in completed/ matches the audit's
+  count exactly.
 
 status: captured
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [reviewer-quality, fail-fix, corpus-rescan, T-2173-child, cache-gap-close]
 components: []
 related_tasks: [T-2173, T-2174, T-2175, T-1443, T-1951]
@@ -16,8 +23,8 @@ related_tasks: [T-2173, T-2174, T-2175, T-1443, T-1951]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T08:41:56Z
-last_update: 2026-06-02T08:41:56Z
-date_finished: null
+last_update: 2026-06-02T14:36:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +35,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-02T08:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-02T08:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2176: Reviewer FAIL fix batch C — fresh fw reviewer scan over completed/ to surface 12 missing FAILs + write-back current verdicts
@@ -167,3 +198,6 @@ This task closes the cache gap structurally:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2176-reviewer-fail-fix-batch-c--fresh-fw-revi.md
 - **Context:** Initial task creation
+
+### 2026-06-02T14:36:48Z — status-update [task-update-agent]
+- **Change:** horizon: later → now
