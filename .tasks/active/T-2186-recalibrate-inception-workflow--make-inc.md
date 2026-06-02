@@ -160,7 +160,7 @@ constraints are framework-internal:
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -223,7 +223,11 @@ out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$ou
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Step 0 confirmed the seed's premise (inceptions cluster LV/LC) and sharpened the mechanism (it's `blast_radius=0` structural floor + value-driver mechanism-rewarding rubrics, not the seed's claimed tier/blast sign-flip — tier already costs more for inceptions). IW-1..7 each reached a defensible disposition; three of the seed's eight working conclusions needed refutation/sharpening but the *prescription* survives: an inception-aware VoI scoring exception in `policy/value-drivers.yaml` + a disposition gate in `update-task.sh` + reuse of the existing three-tier judge ladder. No new ceremony; 8 small build slices, each fits one session.
+
+**Date**: 2026-06-02T21:58:58Z
 
 ## Updates
 
@@ -258,3 +262,8 @@ out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$ou
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-02T21:58:58Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Step 0 confirmed the seed's premise (inceptions cluster LV/LC) and sharpened the mechanism (it's `blast_radius=0` structural floor + value-driver mechanism-rewarding rubrics, not the seed's claimed tier/blast sign-flip — tier already costs more for inceptions). IW-1..7 each reached a defensible disposition; three of the seed's eight working conclusions needed refutation/sharpening but the *prescription* survives: an inception-aware VoI scoring exception in `policy/value-drivers.yaml` + a disposition gate in `update-task.sh` + reuse of the existing three-tier judge ladder. No new ceremony; 8 small build slices, each fits one session.
