@@ -150,22 +150,43 @@ makes inceptions *look* cheaper than the build slices they unblock — even
 when the inception will authorise a 5-component refactor. The 040 formula was
 designed for build-shaped work; inceptions need a proxy.
 
-### `target_blast_radius` (T-2188)
+### `target_blast_radius` (T-2188 — shipped)
 
 Inceptions carry a frontmatter field declaring the **anticipated** blast
 radius of the build work the inception would authorise on GO:
 
 ```yaml
 workflow_type: inception
-target_blast_radius: 5    # expected component count if GO
-voi_score: 0.7            # value-of-information, 0..1 (see below)
+target_blast_radius: 5    # int 0..9 — expected component count if GO
+voi_score: 0.7            # float 0..1 — value-of-information (see below)
 ```
 
 The estimator (T-2189) detects `workflow_type: inception` and substitutes
 `target_blast_radius` into the F8 cost formula, recovering rank parity with
-build tasks. A PreToolUse hook (T-2188) validates the field is present and
-within range; absent on legacy inceptions is grandfathered (T-2193 backfills
-historic ones).
+build tasks.
+
+**Validation gate.** The PreToolUse hook `check-inception-schema`
+(`agents/context/check-inception-schema.py`) blocks Write/Edit on
+`.tasks/{active,completed}/T-*.md` files when `workflow_type: inception`
+and either field is missing or out of range. Range guide for
+`target_blast_radius`:
+
+- `0` — docs only
+- `1` — single file
+- `3` — small subsystem (S)
+- `5` — cross-subsystem (M)
+- `7` — multi-arc (L)
+- `9` — framework-wide (XL)
+
+**Bypass.** `FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 <command>` skips the check
+and logs Tier-2 to `.context/working/.gate-bypass-log.yaml`. Per T-1890
+producer/consumer parity, the env-var works through git commit and any
+external caller that rejects unknown flags.
+
+**Legacy.** Inceptions filed before T-2188 don't carry these fields and are
+grandfathered (the hook only matches `workflow_type: inception` files that
+exist; absent frontmatter on a write would pass through). T-2193 backfills
+historic inceptions so the estimator can rank them too.
 
 ### Value of Information (VoI)
 
