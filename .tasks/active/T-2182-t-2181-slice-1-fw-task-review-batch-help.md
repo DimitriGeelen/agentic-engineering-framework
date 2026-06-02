@@ -121,10 +121,11 @@ out=$(bats tests/unit/upgrade_fresh_machine_simulation.bats 2>&1); echo "$out" |
 # 4. Backward compat: single-task review still emits class-correct URL
 out=$(bin/fw task review T-2174 2>&1); echo "$out" | grep -q "http.*/review/T-2174"
 
-# 5. Live class-correctness: inception → /inception/, build → /review/
-out=$(bin/fw task review-batch T-2174 T-2181 2>&1)
-echo "$out" | grep -q "T-2174 | build | http.*/review/T-2174"
-echo "$out" | grep -q "T-2181 | inception | http.*/inception/T-2181"
+# 5a. Live class-correctness — build URL
+out=$(bin/fw task review-batch T-2174 T-2181 2>&1); echo "$out" | grep -q "T-2174 | build | http.*/review/T-2174"
+
+# 5b. Live class-correctness — inception URL
+out=$(bin/fw task review-batch T-2174 T-2181 2>&1); echo "$out" | grep -q "T-2181 | inception | http.*/inception/T-2181"
 
 ## RCA
 
