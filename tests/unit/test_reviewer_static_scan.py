@@ -406,6 +406,70 @@ def test_skip_as_pass_negative_marker_filter():
     assert f == []
 
 
+# ───── T-2177: quoted-context + output-assertion suppression ─────
+
+
+def test_skip_as_pass_negative_quoted_skip_flag_in_grep_pattern():
+    """T-1516 empirical FP: --skip-sovereignty inside grep PATTERN argument."""
+    line = "test -z \"$(grep -E 'manual fix.*--skip-sovereignty|deserves RCA' agents/audit/audit.sh || true)\"\n"
+    f = ss.detect_skip_as_pass(line)
+    assert f == [], f"expected no finding when --skip-X is inside quoted grep pattern, got: {[fnd.evidence for fnd in f]}"
+
+
+def test_skip_as_pass_negative_quoted_dry_run_in_awk():
+    """awk/sed PATTERN argument can carry --dry-run as text, not a CLI flag."""
+    line = "awk '/--dry-run/ {print}' /var/log/runs.log\n"
+    f = ss.detect_skip_as_pass(line)
+    assert f == []
+
+
+def test_skip_as_pass_negative_dry_run_with_grep_assertion():
+    """T-2072 empirical FP: --dry-run followed by ; ... | grep -q assertion."""
+    line = 'out=$(bin/fw pickup promote-deferred --dry-run 2>&1); echo "$?" | grep -q "^0$"\n'
+    f = ss.detect_skip_as_pass(line)
+    assert f == [], f"expected no finding when --dry-run line carries a grep assertion, got: {[fnd.evidence for fnd in f]}"
+
+
+def test_skip_as_pass_negative_collect_only_with_diff_assertion():
+    """pytest --collect-only piped into diff is a real assertion."""
+    line = "pytest --collect-only tests/ | diff - tests/expected_collection.txt\n"
+    f = ss.detect_skip_as_pass(line)
+    assert f == []
+
+
+def test_skip_as_pass_negative_dry_run_with_test_check():
+    """--dry-run followed by && test -f is simulation + file check."""
+    line = "bin/fw deploy --dry-run && test -f /tmp/deploy.plan\n"
+    f = ss.detect_skip_as_pass(line)
+    assert f == []
+
+
+def test_skip_as_pass_positive_bare_skip_preserved():
+    """Bare --skip flag with no quoting and no assertion still fires."""
+    line = "bash agents/audit/audit.sh --skip-rca\n"
+    f = ss.detect_skip_as_pass(line)
+    assert len(f) == 1 and f[0].pattern_id == "skip-as-pass"
+
+
+def test_skip_as_pass_positive_collect_only_preserved():
+    """Bare pytest --collect-only (no assertion) still fires (TP regression guard)."""
+    f = ss.detect_skip_as_pass("pytest --collect-only tests/\n")
+    assert len(f) == 1 and f[0].pattern_id == "skip-as-pass"
+
+
+def test_skip_as_pass_positive_dry_run_with_devnull_only():
+    """--dry-run with > /dev/null (no assertion) still fires — output is discarded."""
+    line = "bin/fw deploy --dry-run > /dev/null\n"
+    f = ss.detect_skip_as_pass(line)
+    assert len(f) == 1
+
+
+def test_skip_as_pass_positive_pytest_mark_skip_preserved():
+    """pytest.mark.skip in verification still fires (TP regression guard)."""
+    f = ss.detect_skip_as_pass("pytest tests/foo.py::test_x  # pytest.mark.skip\n")
+    assert len(f) == 1
+
+
 # ───────────────── v1.1: mock-only-integration ─────────────────
 
 

@@ -628,12 +628,34 @@ _SKIP_AS_PASS_RE = re.compile(
     re.IGNORECASE,
 )
 
+# T-2177: strip single/double-quoted substrings so skip-tokens inside grep/awk/sed
+# PATTERN arguments do not fire. Empirical FP: T-1516 line 2
+#   test -z "$(grep -E 'manual fix.*--skip-sovereignty|deserves RCA' agents/audit/audit.sh || true)"
+# The `--skip-sovereignty` here is text inside a quoted regex, not a CLI flag.
+# Shape mirrors `_GREP_LITERAL_RE` (L-264-(a)) — strip-then-search is cleaner
+# than a lookbehind in `_SKIP_AS_PASS_RE` and survives nesting better.
+_QUOTED_SUBSTR_RE = re.compile(r"'[^']*'|\"[^\"]*\"")
+
+# T-2177: suppress when the line carries a real output assertion on the same
+# logical command. A `--dry-run` followed by `| grep -q PAT` or `&& test -f X`
+# is simulation-with-check, not skip-as-pass. Empirical FP: T-2072 line 9
+#   out=$(bin/fw pickup promote-deferred --dry-run 2>&1); echo "$?" | grep -q "^0$"
+# Note: the `;` chain still counts — the later `| grep -q` is the assertion.
+_OUTPUT_ASSERTION_RE = re.compile(
+    r"\|\s*(grep|test|cmp|diff|jq|awk|sed)\b|&&\s*(grep|test|cmp|diff|jq|awk|sed|\[)\b"
+)
+
 
 def detect_skip_as_pass(verification_section: str) -> list[Finding]:
     """Verification command flags that collect/skip rather than execute.
 
     `pytest --collect-only` exits 0 if collection succeeds — does NOT run tests.
     `make test SKIP=true` typically skips. xfail-ed assertions count as passes.
+
+    T-2177 suppressions:
+      (a) skip-token appears only inside single/double quotes (text, not flag)
+      (b) line carries an output assertion on the same logical command
+          (`| grep`, `&& test`, etc.) — simulation-with-check is fine.
     """
     findings: list[Finding] = []
     if not verification_section:
@@ -642,17 +664,26 @@ def detect_skip_as_pass(verification_section: str) -> list[Finding]:
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-        if _SKIP_AS_PASS_RE.search(line):
-            findings.append(
-                Finding(
-                    pattern_id="skip-as-pass",
-                    pattern_name="Skipped/collected tests treated as pass",
-                    detection_confidence="deterministic",
-                    lie_severity="severe",
-                    location=f"Verification:line {lineno}",
-                    evidence=line[:200],
-                )
+        if not _SKIP_AS_PASS_RE.search(line):
+            continue
+        # T-2177 (a): if the match only exists inside quotes, suppress.
+        stripped = _QUOTED_SUBSTR_RE.sub("", line)
+        if not _SKIP_AS_PASS_RE.search(stripped):
+            continue
+        # T-2177 (b): if the line has an output assertion, the skip-flag is
+        # part of a simulation-with-check, not an unverified skip.
+        if _OUTPUT_ASSERTION_RE.search(line):
+            continue
+        findings.append(
+            Finding(
+                pattern_id="skip-as-pass",
+                pattern_name="Skipped/collected tests treated as pass",
+                detection_confidence="deterministic",
+                lie_severity="severe",
+                location=f"Verification:line {lineno}",
+                evidence=line[:200],
             )
+        )
     return findings
 
 
