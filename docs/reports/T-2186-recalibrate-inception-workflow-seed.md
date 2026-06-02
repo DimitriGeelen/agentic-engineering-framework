@@ -240,3 +240,213 @@ worth funding. Read the discovery note as input; do not score from frontmatter a
 ## First line of the discovery note on delivery
 
 `Research inception: recalibrate inception workflow. IW-1…7 disposed. Scoring: VoI + blast/tier flip. Gate state: <name>. Park state: <in|out>. Inception-doc: <own|010-section>. Verdict: <go|no-go|defer>.`
+
+---
+
+# Step 0 Findings (2026-06-02, S-2026-0602-2308+)
+
+Producer: agent (T-2186 session); NOT JUDGED YET. Cited inline so a separate
+entity can verify. Findings refute or sharpen three of the seed's working
+conclusions and confirm a fourth.
+
+### F0.1 — State name is `started-work`, NOT `work-started`
+
+Verified by Explore-agent read across `lib/inception.sh`,
+`agents/task-create/update-task.sh`, and `policy/value-drivers.yaml` references.
+The canonical state name is `started-work` (hyphen between, not "work-started").
+The seed's "work-started → discovery-started rename" proposal (working
+conclusion #8) is built on **non-existent terminology** — the state it names
+doesn't exist.
+
+**Disposition impact:** A8 is **refuted on terminology**, but the underlying
+concern ("the opening state's name should signal epistemic activity, not
+build-doing") may still be valid. If pursued, the implementation would be
+adding a *new* state, not renaming an existing one. Carry to IW work.
+
+### F0.2 — Same 4-state lifecycle for ALL workflow types
+
+Inceptions traverse the same `captured → started-work → work-completed |
+issues` lifecycle as build / test / refactor / specification / design /
+decommission tasks. There is no inception-specific state machine.
+
+**Disposition impact:** "Extend the inception workflow's status with a scoring
+gate inside the one workflow" (#4) needs to be more specific: the gate has to
+slot somewhere in the shared lifecycle, not in an inception-only state.
+The most fitting hook is the `--status work-completed` verb-gate (see F0.8).
+
+### F0.3 — Inceptions differ at the *decision gate*, not in state names
+
+Inception-specific mechanics:
+- `fw inception decide` is mandatory before completion (`lib/inception.sh`)
+- Under `$CLAUDECODE=1`, the decide verb refuses (agent locked out, human
+  Watchtower or `--i-am-human` for scripts) — `lib/inception.sh:106`, `:423`
+- Filing-time `--recommendation` is required when filed under `$CLAUDECODE=1`
+  (T-1715) — agent gives a recommendation BUT cannot self-authorise GO
+- 2-commit exploration limit before decision is forced (commit-msg hook)
+- Other workflow types have NONE of these
+
+**Disposition impact:** The "producer ≠ judge" principle is ALREADY deployed
+in inception flow — just at the decision layer, not the scoring layer.
+The seed's claim that the principle needs to be added is wrong; the principle
+is already there. What's missing is its *consistent application* to the
+scoring/prioritization step.
+
+### F0.4 — Cost-tier IS workflow-aware (refutes seed's premise on tier)
+
+`agents/termlink/bvp-estimator/estimator.py:531`:
+```python
+COST_WORKFLOW_TIER = {
+    "inception": 4, "specification": 4, "design": 3,
+    "build": 2, "refactor": 3, "test": 1, "decommission": 2,
+}
+```
+
+The estimator already assigns inceptions tier=4 (high), used in the cost
+composite `0.6×blast_radius + 0.3×tier + 0.1×effort`. So **tier raises
+inception cost, not lowers it** — the seed's working conclusion #2
+("blast_radius and tier flip sides for inceptions") is **partially refuted
+on tier**: tier already costs MORE for inceptions, not less.
+
+**Disposition impact:** The sign-flip proposal needs to be re-examined per
+primitive separately. Tier is NOT the culprit. Blast_radius is — see F0.5.
+
+### F0.5 — The real estimator pathology: `blast_radius=0` structural floor
+
+`estimator.py:537` scores blast_radius as `len(fm["components"])` mapped onto
+a 0/1/3/5/7/9 ladder. Inceptions structurally have empty `components:`
+because the components-to-be-touched are decided by the *post-decide* build
+slices, not at inception filing time. So:
+
+- Every inception → `blast_radius=0` (or near-zero)
+- Cost composite weights blast_radius at 0.6 → dominates the formula
+- Result: even though tier=4 (inception default), cost composite stays low
+  because `0.6×0 + 0.3×4 + 0.1×effort ≈ 1.2 + small` → still LV/LC quadrant
+
+**Verified on T-2186 itself:** components=[] → blast_radius=0; tier=4 (inception);
+effort=small. Estimator-proposed cost ≈ 1.2. Value side: D1=2 (learning-ref),
+D2=0, D3=0, D4=2 (env-class), F-RECALL=0, F-ORCH=0. Weighted BVP =
+`2×9 + 0×7 + 0×5 + 2×3 + 0×6 + 0×5 = 24 / 175 max = 14%`. **LV/LC confirmed.**
+
+**Disposition impact:** Seed working conclusion (LV/LC clustering) is right
+in practice, but the mechanism is more specific than the seed names. The
+fix is one of:
+- (a) Make inceptions declare an *imagined target blast* at filing (human-set proxy)
+- (b) Inherit blast_radius from the arc anchor (Model B in seed #3)
+- (c) Estimator parses Scope Fence "IN scope:" entries as proxy components
+
+### F0.6 — Value drivers are *mechanism-rewarding*, not *anticipation-rewarding*
+
+Read `policy/value-drivers.yaml` rubrics for D1-D4 + F-RECALL + F-ORCH:
+
+- D1 (antifragility) rewards healing-loop mechanisms, structural gates,
+  PreToolUse hooks, regression tests — *built things*, not decisions about
+  what to build
+- D2 (reliability) rewards observability, audit, no-silent-failures — built
+- D3 (usability) rewards human-in-loop ergonomics — built
+- D4 (portability) rewards file-based, source-controlled state — built
+- F-RECALL rewards reusable knowledge artifacts retrievable by `fw recall` — built
+- F-ORCH rewards "routable surface" — built
+
+**An inception ships none of these** at the time it's scored — it decides
+HOW a future build slice will. So the value side floors at the few signals
+the rubrics catch incidentally (e.g. body mentions an L-NNN learning, body
+notes a sovereignty boundary class). T-2186's 14% is typical, not anomalous.
+
+**Disposition impact:** The seed's working conclusion #1 ("inception value
+is anticipatory, not intrinsic") is **strongly supported by direct rubric
+reading**. The drivers literally cannot score discovery work fairly because
+their rubrics measure outputs, not value-of-information.
+
+### F0.7 — "Producer ≠ judge" is widely deployed, just not named
+
+Existing patterns:
+- **Decide-layer:** `fw inception decide` and `fw arc close` refuse under
+  `$CLAUDECODE=1` (`lib/inception.sh:106`, `:423`; analogous in `lib/arc.sh`)
+- **Scoring-layer:** `fw bvp confirm` is §ACD-gated, requires `--i-am-human`
+  for scripts (T-1924 — `lib/bvp.sh`)
+- **AC-layer:** Reviewer auto-tick (T-1985) — static-scan layer separate
+  from producing agent, conjunctive 5-condition gate, feedback-stream rail
+  for human override (`lib/reviewer/static_scan.py`)
+- **AC-prefix ladder (T-1811):** `[RUBBER-STAMP]` (shell judge) → `[REVIEWER]`
+  (static-scan judge) → `[REVIEW]` (human judge). Scrutiny scales with stakes.
+
+**Disposition impact:** Seed working conclusion #7 ("a separate entity scores
+and judges") is right but **already broadly implemented**. The seed should
+*reuse* these patterns, not invent new ones. The "scoring gate" proposal
+slots into the existing reviewer-agent + bvp-confirm layer cleanly.
+
+### F0.8 — Dominant gate-hardening pattern: verb-gate in `update-task.sh`
+
+Confirmed by Explore-agent: 10 structured checks fire during
+`fw task update --status work-completed`, each with `--skip-<name>` flag +
+matching `FW_SKIP_*` env var, logged to `.context/working/.gate-bypass-log.yaml`.
+Producer/consumer parity required (T-1890).
+
+**Disposition impact:** A new "scoring gate" should slot into update-task.sh
+as one more verb-gate check, NOT as a new PreToolUse hook (which would
+double-fire on every Write/Edit). Bypass mechanism: `--skip-scoring-gate
+"rationale"` + `FW_SKIP_SCORING_GATE=1`, logged identically.
+
+### Step 0 verdict on the seed's 8 working conclusions
+
+| # | Working conclusion | Status |
+|---|---|---|
+| 1 | Inception value is anticipatory (VoI), not intrinsic | **CONFIRMED** by direct rubric reading (F0.6) |
+| 2 | `blast_radius` and `tier` flip sides for inceptions | **PARTIALLY REFUTED** — tier already costs MORE; blast_radius is the real culprit (F0.4 + F0.5) |
+| 3 | Arc-anchored inherit; orphan score by VoI | Step 0 confirms the mechanism is viable but not yet verified against `lib/arc.sh` — carry to IW-2 |
+| 4 | No new ceremony, no new "kind"; extend the workflow | **SUPPORTED** but needs specificity — must slot in shared 4-state lifecycle (F0.2) at the verb-gate layer (F0.8) |
+| 5 | Gate mechanics (input = artefact, name = epistemic) | Carry to IW-3 |
+| 6 | Gate is dispositions, not predicates | Strongly supported by §ACD precedent — carry to IW-5 |
+| 7 | Producer ≠ judge with scrutiny-scaling | **CONFIRMED ALREADY DEPLOYED** (F0.7); seed should reuse existing patterns, not invent |
+| 8 | `work-started` → `discovery-started` rename | **REFUTED ON TERMINOLOGY** (F0.1); the state is `started-work`. A new opening-state, if needed, is additive — not a rename |
+
+### Step 0 → IW handoff
+
+The seed's premise — that inceptions are mis-prioritized — is **confirmed**.
+The seed's *mechanism explanation* — that tier and blast_radius both treat
+inceptions as cost-low — is **wrong on tier, right on blast_radius**. The
+seed's *prescription* — VoI scoring, sign-flip on cost primitives — is
+**partly viable**: blast_radius is the actual pathology; tier is fine; the
+fix should target the blast_radius=0 structural floor and the rubric-mechanism
+floor on the value side.
+
+Carry to IW work:
+- **IW-1 (VoI op):** Reach + cost-of-being-wrong proxies from blast_radius;
+  uncertainty needs new primitive (likely human-set at filing — declared
+  open-question count is a tempting structural proxy but invites gaming)
+- **IW-2 (Inherit vs VoI):** Test Model B against actual `lib/arc.sh` BVP
+  computation; confirm non-circularity
+- **IW-3 (Gate state):** Reuse the verb-gate in update-task.sh; name the
+  precondition (research artifact path + dispositions-with-rationale present);
+  do NOT add a new lifecycle state — gate fires on `--status work-completed`
+- **IW-4 (Park state):** Likely yes, given DEFER already parks (lifecycle
+  agent finding); confirm DEFER+horizon:later IS the existing park
+- **IW-5 (Adjudication):** Reuse `[REVIEWER]` for low-stakes, `[REVIEW]` for
+  high-stakes, bvp confirm pattern for scoring
+- **IW-6 (040 ↔ inception doc ownership):** 040 owns scoring rubrics, the
+  inception doc owns lifecycle placement — confirmed by reading 040's own
+  filing-history comment block (it explicitly defers lifecycle to caller)
+- **IW-7 (Doc home):** Carry — Sovereignty call, human decides
+
+---
+
+# Dialogue Log
+
+### 2026-06-02 — Inception start, Step 0 boundary
+
+**Operator:** "please start work on inception"
+
+**Agent:** Started T-2186, stated inception discipline rules, ran Step 0
+in 4 parallel Explore agents (2 landed before dispatch-2 cap; remaining
+2 threads run inline via Read/Grep).
+
+**Findings produced (Step 0 section above).** Three of the seed's eight
+working conclusions need sharpening (#2, #7, #8). One (#1) strongly
+confirmed by direct rubric reading.
+
+**Pending operator input:** whether to proceed with IW-1…7 dispositions in
+this session or pause for course-correction on the Step 0 refutations
+(especially the A8 rename — the proposed rename is built on non-existent
+terminology; the underlying *concern* could still be valid but the
+prescription needs reframing).
+
