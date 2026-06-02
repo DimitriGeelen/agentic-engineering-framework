@@ -1,21 +1,54 @@
 ---
 id: T-2173
-name: "Reviewer FAIL sweep — 31 completed/ tasks with overall=FAIL; cluster, classify, recommend"
+name: "Reviewer FAIL sweep — 31 completed/ tasks with overall=FAIL; cluster, classify,
+  recommend"
 description: >
-  Today's reviewer audit (.context/audits/reviewer/2026-06-02.yaml) reports 31 FAIL verdicts across 1951 completed tasks plus 503 CONCERN + 67 needs_human. Pattern_fire_counts skew toward l387-sigpipe-risk (405) and AC-verify-mismatch (356), but those fire mostly at CONCERN severity; the 31 FAILs are a smaller subset where one or more pattern escalated to FAIL. Inception scope: (1) extract the 31 FAIL task IDs with their per-task findings, (2) cluster by pattern_id, (3) classify each cluster as detector-FP (override needed), task-quality (file edit needed), or detector-edge (detector tightening needed), (4) recommend per-cluster fix track. Output: docs/reports/T-XXXX-reviewer-fail-sweep.md. Decision: GO/NO-GO on each fix cluster filed as sibling build tasks.
+  Today's reviewer audit (.context/audits/reviewer/2026-06-02.yaml) reports 31 FAIL
+  verdicts across 1951 completed tasks plus 503 CONCERN + 67 needs_human. Pattern_fire_counts
+  skew toward l387-sigpipe-risk (405) and AC-verify-mismatch (356), but those fire
+  mostly at CONCERN severity; the 31 FAILs are a smaller subset where one or more
+  pattern escalated to FAIL. Inception scope: (1) extract the 31 FAIL task IDs with
+  their per-task findings, (2) cluster by pattern_id, (3) classify each cluster as
+  detector-FP (override needed), task-quality (file edit needed), or detector-edge
+  (detector tightening needed), (4) recommend per-cluster fix track. Output: docs/reports/T-XXXX-reviewer-fail-sweep.md.
+  Decision: GO/NO-GO on each fix cluster filed as sibling build tasks.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer-quality, fail-sweep, completed-corpus-hygiene]
 components: []
 related_tasks: [T-1443, T-1947, T-2147]
 created: 2026-06-02T08:35:27Z
-last_update: 2026-06-02T08:35:27Z
-date_finished: null
+last_update: 2026-06-02T11:43:13Z
+date_finished: 2026-06-02T11:43:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-02T08:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-02T08:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2173: Reviewer FAIL sweep — 31 completed/ tasks with overall=FAIL; cluster, classify, recommend
@@ -62,7 +95,7 @@ None — read-only analysis over completed/ task bodies. No live-code modificati
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -133,9 +166,31 @@ Sibling task IDs above filed in same session under arc:reviewer-quality. Operato
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 19/19 cached FAILs cluster cleanly into 6 pattern-groups with uniform fix shape per group. 17/19 (89%) are genuine task-quality issues in Verification blocks (`|| true` swallowing, `if [ -f X ]` skip-as-pass, tautology, empty-body). 2/19 are mixed `mock-only-integration` cases needing per-task triage. No FP-dominant clusters surfaced → no detector tightening needed this round. Fix is scoped (17+2+1 = 20 task edits + 1 fresh-scan), testable (post-edit reviewer scan returns PASS), reversible (git revert).
+
+**Date**: 2026-06-02T11:43:13Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-02T11:43:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 19/19 cached FAILs cluster cleanly into 6 pattern-groups with uniform fix shape per group. 17/19 (89%) are genuine task-quality issues in Verification blocks (`|| true` swallowing, `if [ -f X ]` skip-as-pass, tautology, empty-body). 2/19 are mixed `mock-only-integration` cases needing per-task triage. No FP-dominant clusters surfaced → no detector tightening needed this round. Fix is scoped (17+2+1 = 20 task edits + 1 fresh-scan), testable (post-edit reviewer scan returns PASS), reversible (git revert).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fb59bd95
+- **Timestamp:** 2026-06-02T11:43:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-02T11:43:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
