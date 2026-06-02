@@ -2486,6 +2486,17 @@ else:
 PYTASK_VERIFY
             fi
             ;;
+        review-batch)
+            # T-2182 / T-2181 Slice 1: emit a markdown table of full Watchtower URLs
+            # for multi-task handoff in chat. Composes from emit_review_batch in
+            # lib/review.sh. The single-task `fw task review T-XXX` form is unchanged.
+            if [ $# -lt 1 ]; then
+                echo -e "${RED}Usage: fw task review-batch T-A T-B [...]${NC}" >&2
+                exit 1
+            fi
+            source "$FW_LIB_DIR/review.sh"
+            emit_review_batch "$@"
+            ;;
         review)
             # T-631/T-634: Print clickable URL + QR code for Human AC review
             # T-2139: --skip-review-link-check "rationale" Tier-2 bypass for the
@@ -2598,6 +2609,7 @@ PYTASK_VERIFY
             echo "                    Triage flags (T-1628): --compact, --by-age,"
             echo "                    --rubber-stamp-only, --review-only"
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
+            echo "  review-batch T-A T-B [...]  Emit markdown table of full URLs for multi-task chat handoff (T-2182)"
             echo "  revisit-due       Show tasks whose revisit_at is <= today UTC (G-053 / T-1452)"
             echo ""
             echo "Usage:"
@@ -2608,6 +2620,7 @@ PYTASK_VERIFY
             echo '  fw task verify T-XXX  # Run verification commands from task'
             echo '  fw task review T-631  # Print URL + QR for Human AC review'
             echo '  fw task review T-631 --poll  # Poll until all Human ACs checked'
+            echo '  fw task review-batch T-A T-B T-C  # Markdown table of full URLs (chat handoff)'
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'

@@ -796,6 +796,17 @@ When agent ACs are complete and human ACs remain:
 
 **Why this rule exists (T-2125 origin):** the agent typed `/review/T-XXX` for four consecutive inception handoffs in one chat, because the four prior memories ([[feedback_use_fw_task_review]], [[feedback_human_review_links]], [[feedback_review_concrete_links]], [[feedback_post_grill_governance]]) all said "use `fw task review`" without disambiguating that the *URL it emits* is class-dependent. The user feedback was unambiguous: *"inception decisions are not in review, they should be in approval properly filed."* The fix has three legs — render-side 302 forgiveness (build slice A, separate task), this codification (slice B, T-2129), and re-issuing the backlog with class-correct URLs (slice D, done in T-2125 narrative).
 
+**Multi-task chat handoffs — use `fw task review-batch` (T-2182, T-2181):** When summarising 2+ tasks for [REVIEW] in chat (session-end queues, mid-thread handoffs, post-grill governance closure tables), **paste the verbatim output of `fw task review-batch T-A T-B T-C …`** rather than hand-typing the table. The batch helper emits a class-correct markdown table:
+
+```
+| Task | Workflow | Link |
+|------|----------|------|
+| T-A  | build | http://<host>/review/T-A |
+| T-B  | inception | http://<host>/inception/T-B |
+```
+
+Reading from the same task-file source of truth as the single-task `fw task review T-XXX` form, so the per-task URL routing is identical (inception → `/inception/<id>`, build/refactor/test → `/review/<id>`). **Never hand-type a `| Task | Link |` table** — the 2026-06-02 chat-output regression class (T-2181 RCA) was bare `/review/T-XXX` paths in hand-typed session-summary tables, despite three sibling memories forbidding it. Brevity in the summary slot is the regression slot; the helper output IS the structural counter — quote it verbatim. Single-task handoffs continue to use `fw task review T-XXX` (unchanged).
+
 ### Hypothesis-Driven Debugging
 When encountering errors or unexpected behavior:
 1. **State the symptom** in one sentence

@@ -273,3 +273,56 @@ except ImportError:
     echo -e "  → ${BOLD}Decide:${NC} ${review_url}"
     echo ""
 }
+
+# emit_review_batch — T-2182 / T-2181 Slice 1.
+#
+# Emit a markdown table of full Watchtower URLs for N tasks in one go. Lets the
+# agent quote a class-correct, copy-pasteable handoff queue verbatim, instead of
+# hand-typing a `/review/T-XXXX` table that drops the host:port (chat-output
+# regression class — see T-2030 + T-2181 RCA).
+#
+# Usage: emit_review_batch T-A T-B T-C [...]
+# Output: stdout — markdown table with columns | Task | Workflow | Link |
+# Returns: 0 on success, 1 if no task IDs supplied.
+#
+# Class correctness: each URL routes to /inception/<id> for workflow_type=inception,
+# /review/<id> otherwise (mirrors emit_review's branch — same source of truth).
+# Unknown task IDs render with workflow=? and link=NOT-FOUND, never crash.
+emit_review_batch() {
+    if [ $# -lt 1 ]; then
+        echo "ERROR: emit_review_batch requires ≥1 task ID" >&2
+        echo "Usage: emit_review_batch T-A T-B [...]" >&2
+        return 1
+    fi
+
+    local base_url
+    base_url=$(_watchtower_url "$1")
+
+    echo "| Task | Workflow | Link |"
+    echo "|------|----------|------|"
+
+    local tid
+    for tid in "$@"; do
+        local task_file=""
+        for f in "$PROJECT_ROOT/.tasks/active/$tid"*.md "$PROJECT_ROOT/.tasks/completed/$tid"*.md; do
+            if [ -f "$f" ]; then
+                task_file="$f"
+                break
+            fi
+        done
+        if [ -z "$task_file" ]; then
+            echo "| $tid | ? | NOT-FOUND |"
+            continue
+        fi
+
+        local wtype
+        wtype=$(grep -m1 'workflow_type:' "$task_file" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
+        local url
+        if [ "$wtype" = "inception" ]; then
+            url="${base_url}/inception/${tid}"
+        else
+            url="${base_url}/review/${tid}"
+        fi
+        echo "| $tid | ${wtype:-build} | $url |"
+    done
+}
