@@ -103,10 +103,31 @@ fw task review T-XXX     # emit class-correct Watchtower URL
 ## Disposition Gate
 
 An inception body has an **`## Open Questions`** section listing each
-exploration question (typically `IW-1 … IW-N`). The disposition gate
-(implemented in `agents/task-create/update-task.sh` per T-2190) refuses
-`--status work-completed` unless every Open Question has a **disposition** of
-one of three forms:
+exploration question (typically `IW-1 … IW-N`). The disposition gate is
+**shipped** at `agents/task-create/update-task.sh::check_disposition_gate`
+(T-2190): it fires on `--status work-completed` when `workflow_type: inception`
+and the `## Open Questions` section exists, refusing if any IW-N question
+lacks both a `disposition:` line and a `rationale:` line. Bypass family:
+
+- `--skip-disposition-gate "rationale"` — direct CLI invocation, logged Tier-2
+- `FW_SKIP_DISPOSITION_GATE=1 <command>` — env-var (T-1890 producer/consumer
+  parity for git commit and any external caller that rejects unknown flags),
+  logged Tier-2
+
+Backward compatibility: inceptions filed before T-2190 don't carry the
+section and are grandfathered (gate no-ops). New inceptions get the section
+from the template (T-2188).
+
+Per-question shape:
+
+```
+- **IW-1: <question text>**
+  confidence: 0-3      (0=guess, 3=verified)
+  disposition: answered | deferred | dissolved
+  rationale: <evidence: file:line, decision id, dialogue ref>
+```
+
+Each question must end with a **disposition** of one of three forms:
 
 | Disposition | Meaning | What evidence looks like |
 |-------------|---------|--------------------------|

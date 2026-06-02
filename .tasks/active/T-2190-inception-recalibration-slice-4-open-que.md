@@ -1,13 +1,22 @@
 ---
 id: T-2190
-name: "Inception recalibration Slice 4: Open Questions body section + disposition gate in update-task.sh"
+name: "Inception recalibration Slice 4: Open Questions body section + disposition
+  gate in update-task.sh"
 description: >
-  T-2186 Slice 4. Add '## Open Questions' as a required body section on inception templates with per-question shape: prose + confidence: 0-3 + disposition: answered|deferred|dissolved + rationale: <evidence>. Add disposition-completeness gate to agents/task-create/update-task.sh — fires on --status work-completed when workflow_type=inception; refuses if any declared question lacks disposition or rationale. Bypass family: --skip-disposition-gate 'rationale' (direct) + FW_SKIP_DISPOSITION_GATE=1 (git/wrapper) per T-1890 producer/consumer parity, logged Tier-2 to .gate-bypass-log.yaml. Bats test pins gate + bypass. Verification: template carries the section; update-task.sh refuses on under-disposed inception; bypass works; log entry written.
+  T-2186 Slice 4. Add '## Open Questions' as a required body section on inception
+  templates with per-question shape: prose + confidence: 0-3 + disposition: answered|deferred|dissolved
+  + rationale: <evidence>. Add disposition-completeness gate to agents/task-create/update-task.sh
+  — fires on --status work-completed when workflow_type=inception; refuses if any
+  declared question lacks disposition or rationale. Bypass family: --skip-disposition-gate
+  'rationale' (direct) + FW_SKIP_DISPOSITION_GATE=1 (git/wrapper) per T-1890 producer/consumer
+  parity, logged Tier-2 to .gate-bypass-log.yaml. Bats test pins gate + bypass. Verification:
+  template carries the section; update-task.sh refuses on under-disposed inception;
+  bypass works; log entry written.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [inception, gate, disposition, T-2186-slice, update-task]
 components: []
 related_tasks: [T-2186, T-2187, T-2188]
@@ -16,8 +25,8 @@ related_tasks: [T-2186, T-2187, T-2188]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:04:27Z
-last_update: 2026-06-02T22:04:27Z
-date_finished: null
+last_update: 2026-06-02T23:08:28Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +37,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2190: Inception recalibration Slice 4: Open Questions body section + disposition gate in update-task.sh
@@ -39,42 +72,25 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] `.tasks/templates/inception.md` carries `## Open Questions` body section with per-question shape comment block (prose + `confidence: 0-3` + `disposition: answered|deferred|dissolved` + `rationale: <evidence>`)
+- [x] `agents/task-create/update-task.sh` carries a disposition-completeness check fired on `--status work-completed` when `workflow_type: inception`: refuses if any question (IW-N or similar) lacks a disposition line or a rationale line
+- [x] Direct-invocation bypass `--skip-disposition-gate "rationale"` accepted by update-task.sh and logged Tier-2 to `.context/working/.gate-bypass-log.yaml`
+- [x] Env-var bypass `FW_SKIP_DISPOSITION_GATE=1` accepted (T-1890 producer/consumer parity for git/wrapper-shaped callers) and logged Tier-2
+- [x] Bats test `tests/unit/disposition_gate.bats` covers: under-disposed inception blocks, complete inception passes, --skip flag bypasses + logs, env-var bypasses + logs, non-inception workflow_type exempt — 7/7 PASS
+- [x] `050-Inceptions.md` Disposition Gate section cites the shipped section name, the gate location, and both bypass mechanisms by exact form
+- [x] Reviewer PASS (`bin/fw reviewer T-2190`)
 
 ## Verification
+
+bash -n agents/task-create/update-task.sh
+out=$(cat .tasks/templates/inception.md); grep -q "## Open Questions" <<<"$out"
+out=$(cat .tasks/templates/inception.md); grep -q "disposition:" <<<"$out"
+out=$(cat agents/task-create/update-task.sh); grep -q "skip-disposition-gate\|SKIP_DISPOSITION_GATE" <<<"$out"
+out=$(cat agents/task-create/update-task.sh); grep -q "disposition:" <<<"$out"
+bats tests/unit/disposition_gate.bats
+out=$(cat 050-Inceptions.md); grep -q "FW_SKIP_DISPOSITION_GATE" <<<"$out"
+out=$(cat 050-Inceptions.md); grep -q -- "--skip-disposition-gate" <<<"$out"
+out=$(bin/fw reviewer T-2190 2>&1); grep -qE "Overall:.*PASS" <<<"$out"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -174,3 +190,16 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2190-inception-recalibration-slice-4-open-que.md
 - **Context:** Initial task creation
+
+### 2026-06-02T23:08:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d91bfbb5
+- **Timestamp:** 2026-06-02T23:17:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

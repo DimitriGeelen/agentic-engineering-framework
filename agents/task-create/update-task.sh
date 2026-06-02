@@ -733,6 +733,94 @@ check_evolution_log() {
     exit 1
 }
 
+# Disposition-completeness gate (T-2190, T-2186 Slice 4)
+# Inception tasks must dispose every declared question in the ## Open Questions
+# body section. Each question gets answered / dissolved / deferred with cited
+# evidence — never a bare checkbox. Refuses on under-disposed inceptions.
+#
+# Bypass family per T-1890 producer/consumer parity:
+#   --skip-disposition-gate "rationale"  (direct CLI invocations)
+#   FW_SKIP_DISPOSITION_GATE=1           (git/wrapper / env-only callers)
+# Both logged Tier-2 to .context/working/.gate-bypass-log.yaml.
+check_disposition_gate() {
+    # Only fires on inception tasks
+    local wf
+    wf=$(grep -E "^workflow_type:" "$TASK_FILE" | head -1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+    if [ "$wf" != "inception" ]; then
+        return 0
+    fi
+
+    # Backward-compat: if ## Open Questions section absent, no-op (grandfathered)
+    if ! grep -qE "^## Open Questions" "$TASK_FILE"; then
+        return 0
+    fi
+
+    # Extract the Open Questions section between '## Open Questions' and the next '## '
+    local oq
+    oq=$(awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag' "$TASK_FILE")
+
+    # Find IW-N (or any question marker) lines; for each, look for a sibling
+    # "disposition:" and "rationale:" within the same block.
+    # A "block" = lines from one question marker to the next (or section end).
+    local missing=0 missing_list=""
+    local current_q="" has_disposition=false has_rationale=false
+
+    while IFS= read -r line; do
+        # Match question markers: "- IW-1: ..." or "### IW-1 ..." or "**IW-1**:"
+        if echo "$line" | grep -qE "(IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)"; then
+            # Flush previous question's verdict
+            if [ -n "$current_q" ] && { [ "$has_disposition" = false ] || [ "$has_rationale" = false ]; }; then
+                missing=$((missing + 1))
+                missing_list="$missing_list\n    - $current_q (disposition=$has_disposition rationale=$has_rationale)"
+            fi
+            current_q=$(echo "$line" | grep -oE "IW-[0-9]+|Q-?[0-9]+" | head -1)
+            has_disposition=false
+            has_rationale=false
+            continue
+        fi
+        # Match dispositions
+        if echo "$line" | grep -qE "disposition:[[:space:]]*(answered|deferred|dissolved)"; then
+            has_disposition=true
+        fi
+        if echo "$line" | grep -qE "rationale:[[:space:]]*.+"; then
+            has_rationale=true
+        fi
+    done <<< "$oq"
+
+    # Flush the last question
+    if [ -n "$current_q" ] && { [ "$has_disposition" = false ] || [ "$has_rationale" = false ]; }; then
+        missing=$((missing + 1))
+        missing_list="$missing_list\n    - $current_q (disposition=$has_disposition rationale=$has_rationale)"
+    fi
+
+    if [ "$missing" -eq 0 ]; then
+        echo -e "${GREEN}Disposition gate: all Open Questions disposed ✓${NC}"
+        return 0
+    fi
+
+    if [ "$SKIP_DISPOSITION_GATE" = true ]; then
+        echo -e "${YELLOW}WARNING: $missing Open Question(s) under-disposed (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE bypass)${NC}"
+        log_gate_bypass "--skip-disposition-gate" "check_disposition_gate"
+        return 0
+    fi
+
+    echo -e "${RED}ERROR: Cannot complete inception — $missing Open Question(s) under-disposed.${NC}" >&2
+    echo "" >&2
+    echo "T-2190 (T-2186 Slice 4): every IW-N question in ## Open Questions must carry" >&2
+    echo "  disposition: answered|deferred|dissolved" >&2
+    echo "  rationale: <evidence>" >&2
+    echo "Never binary. See 050-Inceptions.md §Disposition Gate." >&2
+    echo "" >&2
+    echo "Missing:" >&2
+    echo -e "$missing_list" >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. Add disposition + rationale lines per missing question" >&2
+    echo "  2. --skip-disposition-gate \"rationale\"  (direct, logged Tier-2)" >&2
+    echo "  3. FW_SKIP_DISPOSITION_GATE=1 <command>  (env-var, logged Tier-2)" >&2
+    exit 1
+}
+
 # Task-pair §ACD Gate (P-012, T-1762, structural remediation for G-066)
 # Fires on --status work-completed for build tasks whose `related_tasks`
 # chain references an inception with `**Recommendation:** GO` AND that
@@ -960,6 +1048,11 @@ SKIP_HUMAN_OWNERSHIP=false
 SKIP_RECOMMENDATION=false
 SKIP_RCA=false
 SKIP_EVOLUTION=false
+# T-2190: disposition-completeness gate (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE=1)
+SKIP_DISPOSITION_GATE=false
+if [ "${FW_SKIP_DISPOSITION_GATE:-0}" = "1" ]; then
+    SKIP_DISPOSITION_GATE=true
+fi
 SKIP_INCEPTION_DECISION=false
 SKIP_INCEPTION_SCOPE_TRACE=false
 SKIP_RENDER_REVIEW=false
@@ -982,6 +1075,13 @@ while [[ $# -gt 0 ]]; do
         --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
         --skip-rca) SKIP_RCA=true; shift ;;
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
+        --skip-disposition-gate)
+            SKIP_DISPOSITION_GATE=true
+            if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]]; then
+                REASON="${REASON:-$2}"
+                shift
+            fi
+            shift ;;
         --skip-inception-decision) SKIP_INCEPTION_DECISION=true; shift ;;
         --skip-inception-scope-trace)
             SKIP_INCEPTION_SCOPE_TRACE=true
@@ -1329,6 +1429,12 @@ PY
         # Bug-class tasks must capture root cause before completion.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_rca_for_bugfix
+        fi
+
+        # === Disposition Gate (T-2190, T-2186 Slice 4) ===
+        # Inception tasks with ## Open Questions must dispose every question.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_disposition_gate
         fi
 
         # === Render-surface Human-AC Gate (T-1766, P-013) ===

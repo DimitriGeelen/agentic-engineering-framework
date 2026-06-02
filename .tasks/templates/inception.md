@@ -33,6 +33,24 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
 
+## Open Questions
+
+<!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
+     --status work-completed. Disposition gate (agents/task-create/update-task.sh
+     check_disposition_gate) refuses on under-disposed inceptions.
+
+     Per-question shape:
+
+       - **IW-1: <question text>**
+         confidence: 0-3      (your confidence in your current answer; 0=guess, 3=verified)
+         disposition: answered | deferred | dissolved
+         rationale: <one-line evidence — file:line, decision id, dialogue ref>
+
+     Never bare yes/no — the gate refuses bare checkboxes. See 050-Inceptions.md
+     §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
+     FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
+-->
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
