@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-06-02T22:07:57Z ===
+task_id: T-2186
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2186.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Recalibrate inception workflow — make inceptions first-class + prioritizable
+  Duration: 0 days (49 min)
+  Updates: 5
+  Commits: 6
+  Lines: +2614 -31 across 11 files
+  Outcomes: 4 AC checked
+  Artifacts: 11 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2186-recalibrate-inception-workflow--make-inc.md
+--- exit code: 0 ---

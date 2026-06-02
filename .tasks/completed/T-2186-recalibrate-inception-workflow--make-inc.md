@@ -15,16 +15,16 @@ description: >
   prerequisite) must be done before any working conclusion is treated as fact. No
   build tasks before fw inception decide go.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [inception, workflow, prioritization, bvp, governance]
 components: []
 related_tasks: []
 created: 2026-06-02T21:18:05Z
-last_update: 2026-06-02T21:33:13Z
-date_finished:
+last_update: 2026-06-02T22:07:51Z
+date_finished: 2026-06-02T22:07:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -184,13 +184,12 @@ constraints are framework-internal:
 ## Verification
 
 # Inception verification: confirm the seed/research artifact carries the
-# evidence the Recommendation cites. No code shipped; the build slices are
-# filed as separate tasks after `decide go`.
+# evidence the Recommendation cites. L-387-safe: here-string, no pipe.
 test -f docs/reports/T-2186-recalibrate-inception-workflow-seed.md
-out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "Step 0 Findings"
-out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "IW-1..7 Dispositions"
-out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "Constituent Build-Task Slices"
-out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$out" | grep -q "Dialogue Log"
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); grep -q "Step 0 Findings" <<<"$out"
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); grep -q "IW-1..7 Dispositions" <<<"$out"
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); grep -q "Constituent Build-Task Slices" <<<"$out"
+out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); grep -q "Dialogue Log" <<<"$out"
 
 ## Recommendation
 
@@ -256,14 +255,16 @@ out=$(cat docs/reports/T-2186-recalibrate-inception-workflow-seed.md); echo "$ou
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-99214b97
-- **Timestamp:** 2026-06-02T21:49:12Z
+- **Scan ID:** R-6b450018
+- **Timestamp:** 2026-06-02T22:07:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-06-02T21:58:58Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Step 0 confirmed the seed's premise (inceptions cluster LV/LC) and sharpened the mechanism (it's `blast_radius=0` structural floor + value-driver mechanism-rewarding rubrics, not the seed's claimed tier/blast sign-flip — tier already costs more for inceptions). IW-1..7 each reached a defensible disposition; three of the seed's eight working conclusions needed refutation/sharpening but the *prescription* survives: an inception-aware VoI scoring exception in `policy/value-drivers.yaml` + a disposition gate in `update-task.sh` + reuse of the existing three-tier judge ladder. No new ceremony; 8 small build slices, each fits one session.
+
+### 2026-06-02T22:07:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
