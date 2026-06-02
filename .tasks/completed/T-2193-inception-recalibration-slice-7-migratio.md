@@ -11,20 +11,20 @@ description: >
   dry-run report counts (inceptions touched, arc-inherited, defaulted, skipped); migration
   commit lists every changed file.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [inception, migration, T-2186-slice]
-components: []
+components: [tools/migrate-inception-schema.py]
 related_tasks: [T-2186, T-2188]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:05:04Z
-last_update: 2026-06-02T22:58:05Z
-date_finished:
+last_update: 2026-06-02T23:07:38Z
+date_finished: 2026-06-02T23:07:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -192,8 +192,8 @@ out=$(bin/fw reviewer T-2193 2>&1); grep -qE "Overall:.*PASS" <<<"$out"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4e69d334
-- **Timestamp:** 2026-06-02T23:05:28Z
+- **Scan ID:** R-56dd243a
+- **Timestamp:** 2026-06-02T23:07:39Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -201,3 +201,6 @@ out=$(bin/fw reviewer T-2193 2>&1); grep -qE "Overall:.*PASS" <<<"$out"
 
 - **Suppressed:** 1 (by override)
   - skip-as-pass @ Verification:line 6
+
+### 2026-06-02T23:07:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
