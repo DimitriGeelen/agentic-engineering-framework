@@ -1920,3 +1920,24 @@ decisions:
     date: 2026-06-02
     task: T-2175
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-277
+    decision: "File override — teardown-style task, intentional retroactive tautology."
+    scope: project
+    date: 2026-06-02
+    task: T-2179
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-278
+    decision: "File override — inception task, verification IS the go/no-go decision (not a shell command)."
+    scope: project
+    date: 2026-06-02
+    task: T-2179
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-279
+    decision: "File override — version-target verification expired; tautology placeholder is intentional and documented."
+    scope: project
+    date: 2026-06-02
+    task: T-2179
+    rationale: "Auto-captured from task file on completion"
