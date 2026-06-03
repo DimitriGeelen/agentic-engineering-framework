@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2196: audit-cleanup: fabric enrich (85 unedged cards / 794 total) — close last audit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-03T21:46:57Z
+# ============================================================================
+
+task_id: T-2196
+task_name: "audit-cleanup: fabric enrich (85 unedged cards / 794 total) — close last audit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-03T20:46:45Z
+completed: 2026-06-03T21:28:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-03T23:08:26+02:00
+last_commit: 2026-06-03T23:28:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric enrich — 8 cards enriched, 12 edges (audit WARN 85→81). fix audit verification — check [FAIL] absence, not 'fail: 0' literal
+
+# Key outcomes
+outcomes:
+  - 'Fabric enriched and committed: `git status --short .fabric/` is empty after the commit (no `M ` or `??` lines under `.fabric/`); `git log -1 --format=%s -- .fabric/` matches `^T-2196:`.'
+  - 'Audit WARN count strictly decreases: post-commit `bin/fw audit --section structure` reports `Fabric: NN/785 cards have no edges` where `NN < 85` (baseline). Observed: 81/785 (Δ4). The 8-cards-enriched figure from the dry-run measured enrichment events, not zero-to-nonzero transitions — several of the enriched cards already had ≥1 edge (e.g. `agents-git-lib-hooks` got a new reverse edge but had outgoing edges already). The NN<85 invariant holds.'
+  - 'No FAIL introduced: post-commit `bin/fw audit --section structure` reports `fail: 0`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix audit verification — check [FAIL] absence, not ''fail: 0'' literal'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/agents-git-lib-hooks.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/tests-unit-disposition_gate.yaml'
+  - '.fabric/components/tests-unit-inception_commit_counter.yaml'
+  - '.fabric/components/tests-unit-test_audit_retire_when.yaml'
+  - '.fabric/components/tests-unit-test_bvp_estimator.yaml'
+  - '.tasks/active/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-03T23:08:26"
+    action: "T-2196: fabric enrich — 8 cards enriched, 12 edges (audit WARN 85→81)"
+  - time: "2026-06-03T23:28:07"
+    action: "T-2196: fix audit verification — check [FAIL] absence, not 'fail: 0' literal"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 41
+  commits: 2
+  files_changed: 9
+  lines_added: 278
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md
+generated_by: context-agent-hybrid
