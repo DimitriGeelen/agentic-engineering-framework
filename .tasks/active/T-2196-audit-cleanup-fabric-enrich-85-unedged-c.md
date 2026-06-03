@@ -142,8 +142,8 @@ This is operational cleanup, not work pickup. Same pattern as T-2184. Selected p
 # T-2196 verification commands (here-string pattern per L-387):
 out=$(git status --short .fabric/ 2>&1); [ -z "$out" ]
 out=$(git log -1 --format=%s -- .fabric/ 2>&1); grep -q "^T-2196:" <<<"$out"
-out=$(bin/fw audit --section structure 2>&1); grep -qE "fail: 0" <<<"$out"
 out=$(bin/fw audit --section structure 2>&1); grep -qE "Fabric: (8[0-4]|[1-7][0-9]|[0-9])/[0-9]+ cards have no edges" <<<"$out"
+out=$(bin/fw audit --section structure 2>&1); ! grep -qE "^\[FAIL\]" <<<"$out"
 
 ## RCA
 
