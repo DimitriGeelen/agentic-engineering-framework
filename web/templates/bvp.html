@@ -206,7 +206,7 @@
     <summary>Raw data ({{ task_points|length + arc_points|length }} point(s))</summary>
     <table>
       <thead>
-        <tr><th>Kind</th><th>ID</th><th>Name</th><th>BVP_norm</th><th>Cost</th><th>Source</th><th>Status</th></tr>
+        <tr><th>Kind</th><th>ID</th><th>Name</th><th>WF</th><th>BVP_norm</th><th>Cost</th><th>Source</th><th>Status</th></tr>
       </thead>
       <tbody>
         {% for p in arc_points %}
@@ -214,6 +214,7 @@
           <td><strong>arc</strong></td>
           <td><code>{{ p.id }}</code></td>
           <td>{{ p.name }}</td>
+          <td>—</td>
           <td>{{ "%.3f"|format(p.bvp_norm) }}</td>
           <td>{{ "%.2f"|format(p.cost) if p.cost is not none else "—" }}</td>
           <td>{{ p.cost_source }}</td>
@@ -225,6 +226,8 @@
           <td>task</td>
           <td><code>{{ p.id }}</code></td>
           <td>{{ p.name }}</td>
+          {# T-2192: WF column makes inceptions glanceable in the raw-data table without hovering each dot #}
+          <td>{% if p.workflow_type == 'inception' %}<strong style="color:#9333ea;">inception</strong>{% elif p.workflow_type %}{{ p.workflow_type }}{% else %}—{% endif %}</td>
           <td>{{ "%.3f"|format(p.bvp_norm) }}</td>
           <td>{{ "%.2f"|format(p.cost) }}</td>
           <td>{{ p.cost_source }}</td>
@@ -439,7 +442,16 @@
     if (d.kind === "arc" && d.bvp_mode) {
       provenance = `<br><small>source: <code>${d.bvp_mode}</code></small>`;
     }
-    return `<strong>${d.id}</strong> [${d.kind}]${advisory}<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}${provenance}`;
+    // T-2192: inception extras — voi_score + target_blast_radius if filed
+    let incExtras = "";
+    if (d.workflow_type === "inception") {
+      const voi = (d.voi_score !== null && d.voi_score !== undefined) ? `voi ${d.voi_score.toFixed(2)}` : "voi —";
+      const tbr = (d.target_blast_radius !== null && d.target_blast_radius !== undefined) ? `tbr ${d.target_blast_radius}` : "tbr —";
+      incExtras = `<br><small><strong>inception</strong> · ${voi} · ${tbr}</small>`;
+    } else if (d.workflow_type) {
+      incExtras = `<br><small>wf: ${d.workflow_type}</small>`;
+    }
+    return `<strong>${d.id}</strong> [${d.kind}]${advisory}<br>${d.name}<br>BVP_norm ${d.bvp_norm.toFixed(3)} (raw ${d.bvp_raw})<br>${cost}${provenance}${incExtras}`;
   }
 
   function drawPoints(taskData, arcData) {
@@ -450,25 +462,43 @@
     const confirmedArcs  = arcData.filter(d => !d.proposed);
     const proposedArcs   = arcData.filter(d => d.proposed);
 
-    // Confirmed tasks — filled steelblue
+    // T-2192 (T-2186 slice 6): inception tasks get a distinct purple hue +
+    // diamond shape so they stand out from build-task steelblue dots in
+    // a dense scatter. Tooltip extras (voi/tbr) are emitted by tipHTML().
+    function dotFill(d) {
+      if (d.workflow_type === "inception") return "#9333ea";  // purple-600
+      return "steelblue";
+    }
+    function dotStroke(d) {
+      if (d.workflow_type === "inception") return "#6b21a8";  // purple-800
+      return "steelblue";
+    }
+    function dotClass(d, base) {
+      return base + (d.workflow_type === "inception" ? " dot-inception" : "");
+    }
+
+    // Confirmed tasks — filled, inception purple / build steelblue
     const tCSel = g.selectAll(".pt-task-confirmed").data(confirmedTasks, d => d.id);
     tCSel.exit().remove();
     tCSel.enter().append("circle")
-      .attr("class", "pt-task pt-task-confirmed")
-      .attr("r", 4).attr("fill", "steelblue").attr("opacity", 0.85)
+      .attr("class", d => dotClass(d, "pt-task pt-task-confirmed"))
+      .attr("r", d => d.workflow_type === "inception" ? 5 : 4)
+      .attr("fill", dotFill).attr("opacity", 0.85)
+      .attr("stroke", dotStroke).attr("stroke-width", d => d.workflow_type === "inception" ? 1.2 : 0)
       .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })
       .merge(tCSel)
       .attr("cx", d => x(d.cost)).attr("cy", d => y(d.bvp_norm));
 
-    // Proposed tasks — outlined steelblue (stroke-only)
+    // Proposed tasks — outlined; inception purple-stroke / build steelblue-stroke
     const tPSel = g.selectAll(".pt-task-proposed").data(proposedTasks, d => d.id);
     tPSel.exit().remove();
     tPSel.enter().append("circle")
-      .attr("class", "pt-task pt-task-proposed")
-      .attr("r", 4).attr("fill", "none")
-      .attr("stroke", "steelblue").attr("stroke-width", 1.5).attr("opacity", 0.65)
+      .attr("class", d => dotClass(d, "pt-task pt-task-proposed"))
+      .attr("r", d => d.workflow_type === "inception" ? 5 : 4)
+      .attr("fill", "none")
+      .attr("stroke", dotStroke).attr("stroke-width", 1.5).attr("opacity", 0.65)
       .on("mouseover", function(event, d) { tip.style("opacity", 1).html(tipHTML(d)); })
       .on("mousemove", function(event)     { tip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY - 30) + "px"); })
       .on("mouseout",  function()          { tip.style("opacity", 0); })

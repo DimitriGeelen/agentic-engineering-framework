@@ -315,6 +315,13 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
                 src = src + "-proposed"
             if cost is None:
                 continue
+            # T-2192 (T-2186 slice 6): surface workflow_type + inception scoring
+            # fields so the scatter can style inceptions distinctly. None values
+            # are emitted on non-inception points so the JS doesn't need to test
+            # presence — `d.voi_score !== null` is a clean tooltip-guard.
+            wf = (fm.get("workflow_type") or "").strip() or None
+            tbr_val = fm.get("target_blast_radius")
+            voi_val = fm.get("voi_score")
             points.append({
                 "kind": "task",
                 "id": fm.get("id") or Path(p).stem,
@@ -329,6 +336,9 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
                 "status": fm.get("status") or "-",
                 "scores": {k: int(v) for k, v in scores.items() if isinstance(v, (int, float))},
                 "proposed": is_proposed,
+                "workflow_type": wf,
+                "target_blast_radius": int(tbr_val) if isinstance(tbr_val, (int, float)) else None,
+                "voi_score": float(voi_val) if isinstance(voi_val, (int, float)) else None,
             })
     return points
 
