@@ -3483,3 +3483,10 @@ X'` returning empty group."
   date: 2026-06-02
   context: Added via context agent
   application: TBD
+- id: L-455
+  learning: "Closure-surface pattern (T-2185): when a gap's status_notes describes a mechanical closure contract, the closure_check_command YAML field is the canonical machine-readable hook — surface it from a shared lib (lib/gaps.py) so web + CLI + doctor all consume the same logic. Text-surgical block rewrite of concerns.yaml preserves comments where PyYAML load-dump would wreck them."
+  source: P-009
+  task: T-2185
+  date: 2026-06-03
+  context: Added via context agent
+  application: TBD
