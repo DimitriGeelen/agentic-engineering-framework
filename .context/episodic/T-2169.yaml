@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2169: retire_when: audit advisory — fw audit/doctor staleness warning when free-driver
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-03T15:47:16Z
+# ============================================================================
+
+task_id: T-2169
+task_name: "retire_when: audit advisory — fw audit/doctor staleness warning when free-driver"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T20:32:55Z
+completed: 2026-06-03T15:47:01Z
+duration_days: 2
+updates_count: 4
+first_commit: 2026-06-03T17:45:56+02:00
+last_commit: 2026-06-03T17:45:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  retire_when advisory rail in audit.sh + bats + CLAUDE.md doc
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` (or `lib/audit/free_driver_retire_when.py` if Python-extension is the structural pattern in audit.sh) gains a structure-check that parses `policy/value-drivers.yaml`, reads each ACTIVE `free_drivers[]` entry''s `retire_when:` text, and runs a per-driver recognition heuristic against the corpus.'
+  - '**F-RECALL retire-condition recognition heuristic:** retire_when text is *"L4 Reflect criteria (positive reinforcement capture, preference index, CLAUDE.md auto-sync, durable reflection log) are green."* Recognition = ALL four sub-criteria show evidence: (a) `git log --grep=''positive-reinforcement\|happiness'' --since=30days | head -1` non-empty (positive capture present); (b) `find . -name ''preference-index.yaml'' -o -name ''preferences.yaml'' | head -1` non-empty (preference index exists); (c) `grep -l ''auto-sync\|CLAUDE-sync'' agents/ lib/ -r | head -1` non-empty (auto-sync code exists); (d) `find .context -name ''reflection*.yaml'' -mtime -7 | head -1` non-empty (durable reflection log active). If ALL four match → emit `WARN: free driver F-RECALL retire_when condition appears met (4/4 signals) — review whether to retire`.'
+  - '**F-ORCH retire-condition recognition heuristic:** retire_when text is *"Multi-agent orchestration criterion goes green / orchestrator substrate (T-1643) lands in production."* Recognition = (a) T-1643 in `.tasks/completed/` AND its body lacks `partial-complete` or `[REVIEW]` marker; OR (b) G-064 marked closed in `.context/project/concerns.yaml`. Either signal triggers WARN.'
+  - '**Generic fallback for any future free driver:** when an active `free_drivers[]` entry has `retire_when:` text but no dedicated recognition heuristic, the audit emits an `INFO: retire_when text present, no recognition heuristic — manual review.` (not a WARN). This keeps the surface honest: only WARN when we have real evidence.'
+  - '**WARN cap:** at most ONE WARN per audit run per driver (de-dupe; the bats test pins this — re-running audit produces same count, not N×count).'
+  - '**Bats coverage** (`tests/unit/test_audit_retire_when.bats`, new): (a) F-RECALL recognition fires only when all 4 signals present; (b) F-ORCH recognition fires when T-1643 is completed cleanly; (c) generic fallback fires for a fictional `F-TEST` free driver with retire_when text but no heuristic; (d) inactive (commented-out) free drivers are skipped; (e) no false-WARN when retire_when is empty.'
+  - '**No FAIL emitted.** This is strictly advisory — operator''s call on retirement. Maps to T-1855 stale-arc precedent (WARN, never FAIL).'
+  - '**CLAUDE.md §Configuration update:** add `FW_RETIRE_WHEN_ADVISORY` env var (default `1` = on, `0` = silence) for sessions where retire-warns are noisy during exploration. Document in CLAUDE.md §Configuration.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'CLAUDE.md'
+  - '.tasks/active/T-2169-retirewhen-audit-advisory--fw-auditdocto.md'
+  - 'tests/unit/test_audit_retire_when.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-03T17:45:56"
+    action: "T-2169: retire_when advisory rail in audit.sh + bats + CLAUDE.md doc"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2594 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [v3-followup-C, audit-advisory]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2594
+  commits: 2
+  files_changed: 5
+  lines_added: 577
+  lines_removed: 81
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2169-retirewhen-audit-advisory--fw-auditdocto.md
+generated_by: context-agent-hybrid
