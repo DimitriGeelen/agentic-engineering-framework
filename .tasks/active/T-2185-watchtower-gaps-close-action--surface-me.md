@@ -15,20 +15,20 @@ description: >
   gauge AND the gauge reports READY (or operator-override path with rationale logged);
   audit trail entry written. Render-surface — needs [REVIEW] Human AC.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/gaps.py, tests/playwright/test_gaps_close.py, tests/unit/gaps_close.bats, C-003, web/templates/gaps.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T21:02:45Z
-last_update: 2026-06-03T22:28:10Z
-date_finished:
+last_update: 2026-06-03T22:52:05Z
+date_finished: 2026-06-03T22:52:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -277,3 +277,22 @@ out=$(curl -sf "$(bin/fw watchtower url)/gaps" 2>&1); grep -q "hx-post=\"/gaps/G
 ### 2026-06-03T22:28:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e8126ae6
+- **Timestamp:** 2026-06-03T22:52:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/discovery.py` POST handler `/gaps/<gap_id>/close` exists (lives on the existing discovery blueprint per `/gaps` GET handler's home): parses gap_id, loads `.context/project/concerns.yam
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: `web/blueprints/discovery.py` POST handler `/gaps/<gap_id>/close` exists (lives on the existing discovery blueprint per `/gaps` GET handler's home): p`
+- **AC#6 (Agent)** — Playwright test (`tests/playwright/test_gaps_close.py`) — 3 tests: Close button visible + form contract OK for G-064 (hx-post, hx-confirm modal trigger, CSRF token embedded), disabled-state shape corr
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_gaps_close.py in: Playwright test (`tests/playwright/test_gaps_close.py`) — 3 tests: Close button visible + form contract OK for G-064 (hx-post, hx-confirm modal trigge`
+
+### 2026-06-03T22:52:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
