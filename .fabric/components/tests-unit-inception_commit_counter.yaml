@@ -1,14 +1,14 @@
-id: tests/unit/disposition_gate.bats
-name: disposition_gate
+id: tests/unit/inception_commit_counter.bats
+name: inception_commit_counter
 type: script
 subsystem: unknown
-location: tests/unit/disposition_gate.bats
+location: tests/unit/inception_commit_counter.bats
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on:
-- target: agents/task-create/update-task.sh
+- target: agents/git/lib/hooks.sh
   type: calls
-- target: agents/task-create/update-task.sh
+- target: agents/git/lib/hooks.sh
   type: tests
 depended_by: []
 last_verified: 2026-06-02

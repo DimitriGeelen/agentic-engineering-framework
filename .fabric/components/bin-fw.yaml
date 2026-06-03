@@ -101,7 +101,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-06-03'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -545,3 +545,5 @@ depended_by:
   type: tests_by
 - target: tests/unit/test_review_link_validator.py
   type: called_by
+- target: tests/unit/test_audit_retire_when.bats
+  type: tests_by

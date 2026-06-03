@@ -22,9 +22,13 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-15'
+last_enriched: '2026-06-03'
 depended_by:
 - target: agents/git/git.sh
   type: called_by
 - target: tests/lint/no-bare-fw-in-gate-scripts.bats
+  type: tests_by
+- target: tests/unit/inception_commit_counter.bats
+  type: called_by
+- target: tests/unit/inception_commit_counter.bats
   type: tests_by

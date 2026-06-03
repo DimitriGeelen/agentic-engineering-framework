@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: lib/bvp.sh
   type: called_by
+- target: tests/unit/test_bvp_estimator.py
+  type: called_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-06-03'
