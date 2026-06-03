@@ -153,7 +153,7 @@ python3 -m pytest tests/unit/test_bvp_estimator.py -q
 python3 -c "import sys; sys.path.insert(0, 'agents/termlink/bvp-estimator'); import estimator; assert callable(estimator.score_f_recall) and callable(estimator.score_f_orch)"
 out=$(python3 -c "import sys; sys.path.insert(0, 'agents/termlink/bvp-estimator'); import estimator; print(estimator.score_f_recall({}, '', []))" 2>&1); echo "$out" | grep -q "no recall signal"
 out=$(python3 -c "import sys; sys.path.insert(0, 'agents/termlink/bvp-estimator'); import estimator; print(estimator.score_f_orch({}, 'we should delegate this to a worker', []))" 2>&1); echo "$out" | grep -q "f-orch-refuse"
-out=$(bin/fw bvp --include-proposed 2>&1); echo "$out" | head -1 | grep -q "TASK"
+out=$(bin/fw bvp --include-proposed 2>&1); grep -q "^TASK" <<<"$out"
 
 ## RCA
 
