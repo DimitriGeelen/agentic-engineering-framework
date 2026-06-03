@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2168: BVP estimator extension for F-RECALL + F-ORCH heuristics (T-NEW-A from T-2157/T-2165
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-03T20:27:05Z
+# ============================================================================
+
+task_id: T-2168
+task_name: "BVP estimator extension for F-RECALL + F-ORCH heuristics (T-NEW-A from T-2157/T-2165"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-01T20:28:50Z
+completed: 2026-06-03T20:26:54Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-06-03T22:26:04+02:00
+last_commit: 2026-06-03T22:26:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  F-RECALL + F-ORCH dedicated BVP heuristics (T-NEW-A v3 follow-up). fix L-387 SIGPIPE in /bvp verification (head pipe → here-string)
+
+# Key outcomes
+outcomes:
+  - '`agents/termlink/bvp-estimator/estimator.py` gains `score_f_recall(fm, body, tags) -> (int, list[str])` modelled on `score_d1_antifragility()` structure. The function maps real signals to the 0-5 rubric in `policy/value-drivers.yaml` lines 105-112: level 0 (no durable artifact), level 1 (session-scoped capture only), level 2 (lightly promoted but not retrievable), level 3 (writes `[[memory_slug]]`-linkable / `fw recall`-findable artifact), level 4 (closes capture→encode→synced-into-CLAUDE.md loop), level 5 (improves the retrieval/synthesis layer itself). Heuristic signals must distinguish those levels by genuine file-path / pattern evidence (e.g. wrote to `.context/episodic/` only = 1; wrote `[[memory]]` link in commit msg = 3; touched CLAUDE.md = 4; touched `lib/recall.sh` or embeddings substrate = 5).'
+  - '`score_f_orch(fm, body, tags) -> (int, list[str])` follows the same shape, anchored to `policy/value-drivers.yaml` lines 131-141: level 0 (primary-agent serial), level 1 (hand-wired dispatch only), level 2 (single-use routing improvement), level 3 (typed I/O contract / decision gate), level 4 (rubric-scored work routable to TermLink worker), level 5 (expands orchestrator substrate itself). The guardrail in lines 142-146 — "Score CAPABILITY UPLIFT, NOT ease-of-delegating-this-task" — must be enforced as a **refuse-rule**: if the task body matches `wrap.*in.*dispatch|delegate.*this|run via termlink` without also touching dispatch substrate (workflows, resolver, peer, orchestrator namespaces), `score_f_orch` returns 0 with rationale `"f-orch-refuse:wrap-without-substrate"`. This is the F-ORCH-specific anti-Goodhart per R5 of the policy.'
+  - '`estimate_task()` (line 395) dispatches free drivers to the new functions: `"F-RECALL": score_f_recall, "F-ORCH": score_f_orch` added to the scorer map alongside D1-D4. Generic `score_free_driver()` is retained as the fallback for any active free driver without a dedicated heuristic (so future free-driver additions don''t crash the estimator before this task ships a heuristic for them).'
+  - 'Rationale strings end up in `bvp_scores_proposed[].rationale` and read informatively — they cite the signal that produced the score (e.g. `F-RECALL=3 (body:fw-recall-mention, body:memory-link)`, not `F-RECALL=1 (body/tag hits for ''F-RECALL'': 1)` which is the current placeholder output).'
+  - '`tests/unit/test_bvp_estimator.py` gains coverage: at minimum one positive case per rubric level (0/3/5) for F-RECALL, one positive case per level (0/3/5) for F-ORCH, AND the F-ORCH refuse-rule case (body says "delegate this to TermLink" without touching dispatch substrate → returns 0). Tests pin signal-to-score, not implementation.'
+  - 'Re-running the estimator on existing scored tasks does NOT trigger spurious `bvp_scores_proposed` writes — the v2-delta gate (`_v2_delta_should_skip`) still suppresses re-writes when new heuristic score differs from confirmed `bvp_scores:` by <2 on every driver. (Sanity: stage existing tasks before/after and confirm `git status` shows no spurious AC-bumps on tasks already scored under the old generic.)'
+  - '`bin/fw bvp --include-proposed` continues to rank correctly post-extension; spot-check 5 tasks where F-RECALL / F-ORCH heuristics now distinguish what used to all score 0 / 1.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix L-387 SIGPIPE in /bvp verification (head pipe → here-string)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.tasks/active/T-2168-bvp-estimator-extension-for-f-recall--f-.md'
+  - 'tests/unit/test_bvp_estimator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-03T22:26:04"
+    action: "T-2168: F-RECALL + F-ORCH dedicated BVP heuristics (T-NEW-A v3 follow-up)"
+  - time: "2026-06-03T22:26:44"
+    action: "T-2168: fix L-387 SIGPIPE in /bvp verification (head pipe → here-string)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2878 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [v3-followup-A]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2878
+  commits: 2
+  files_changed: 3
+  lines_added: 428
+  lines_removed: 36
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2168-bvp-estimator-extension-for-f-recall--f-.md
+generated_by: context-agent-hybrid
