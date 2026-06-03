@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2197: OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + concerns.yaml flip)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-03T22:06:42Z
+# ============================================================================
+
+task_id: T-2197
+task_name: "OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + concerns.yaml flip)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-03T22:01:41Z
+completed: 2026-06-03T22:06:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-04T00:06:24+02:00
+last_commit: 2026-06-04T00:06:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + flip)
+
+# Key outcomes
+outcomes:
+  - 'Handoff doc `docs/reports/T-2197-obs043-g065-handoff.md` written, containing: (a) the cascade summary (T-1702 → T-1707 → G-065), (b) class-correct review URLs (resolved via `bin/fw watchtower url`, never hardcoded `:3000`), (c) the single unchecked Human AC text from each task, (d) the G-065 status flip recommendation with citation of the closing-evidence task (T-1707), (e) the operator evidence checklist.'
+  - 'Doc references all three artifacts by ID — `T-1702`, `T-1707`, `G-065` — and at least one verbatim phrase from G-065''s `description:` field (so the surface matches the source-of-truth).'
+  - 'OBS-043 stays in inbox until operator acts on the handoff — agent does NOT silently dismiss. Only the doc is the deliverable; sovereignty preserved.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2197-obs043-g065-handoff.md'
+  - '.tasks/active/T-2197-obs-043-handoff-doc--g-065-cascade-t-170.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-04T00:06:24"
+    action: "T-2197: OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + flip)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 2
+  lines_added: 337
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2197-obs-043-handoff-doc--g-065-cascade-t-170.md
+generated_by: context-agent-hybrid
