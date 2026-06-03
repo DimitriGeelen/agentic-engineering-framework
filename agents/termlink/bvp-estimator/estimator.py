@@ -392,11 +392,42 @@ def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> t
 
 # ---- top-level orchestration ------------------------------------------------
 
+def _score_inception_voi(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """T-2189 inception scoring exception (050-Inceptions.md §Scoring Exception).
+
+    Inceptions are evaluated by `voi_score` (T-2188 schema, float 0..1) rather
+    than per-driver mechanism rubrics, because the inception's "value" IS the
+    expected value of resolving the question, not the build-shaped traits the
+    D-handlers measure. Same score is returned for every requested driver —
+    rank is determined by voi alone. Build-task scoring is unchanged.
+
+    Missing or malformed `voi_score` returns a neutral mid-score (2) so
+    grandfathered inceptions (pre-T-2188) still rank, just not by VoI.
+    """
+    voi = fm.get("voi_score")
+    if voi is None:
+        return 2, ["→2 (voi-absent-grandfathered)"]
+    try:
+        voi_f = float(voi)
+    except (TypeError, ValueError):
+        return 2, ["→2 (voi-malformed)"]
+    voi_f = max(0.0, min(1.0, voi_f))
+    score = int(round(voi_f * 5))
+    return score, [f"→{score} (voi:{voi_f:.2f})"]
+
+
 def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
-    """Score one task; return {scores, evidence, version, rubric_sha, latency_s}."""
+    """Score one task; return {scores, evidence, version, rubric_sha, latency_s}.
+
+    T-2189 inception scoring exception: when `workflow_type: inception`, ALL
+    requested drivers are scored via `_score_inception_voi` instead of per-
+    driver handlers. The voi_score field (T-2188 schema) IS the composite.
+    See 050-Inceptions.md §Scoring Exception.
+    """
     t0 = time.monotonic()
     fm, body = parse_task(task_path)
     tags = list(fm.get("tags") or [])
+    is_inception = (fm.get("workflow_type") or "").lower() == "inception"
 
     scores: dict[str, int] = {}
     evidence: dict[str, list[str]] = {}
@@ -408,7 +439,9 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         "D4": score_d4_portability,
     }
     for driver_id in drivers:
-        if driver_id in handlers:
+        if is_inception:
+            sc, ev = _score_inception_voi(fm, body, tags)
+        elif driver_id in handlers:
             sc, ev = handlers[driver_id](fm, body, tags)
         else:
             sc, ev = score_free_driver(driver_id, fm, body, tags)
@@ -541,7 +574,26 @@ def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int, list[
     lists imply wider blast radius. The 0/1/3/5/7/9 ladder is non-linear by
     design — a component count of 7 vs 8 is rarely meaningful, but 0 vs 1
     vs 5+ is.
+
+    T-2189 inception scoring exception: inceptions' `components:` is empty
+    by definition (the build doesn't exist yet), so the formula above
+    always returns 0 — making inceptions look artificially cheap. When
+    `workflow_type: inception`, prefer the `target_blast_radius` (T-2188
+    schema) frontmatter field. See 050-Inceptions.md §Scoring Exception
+    and policy/value-drivers.yaml §inception_scoring_exception.
     """
+    wf = (fm.get("workflow_type") or "").lower()
+    if wf == "inception":
+        tbr = fm.get("target_blast_radius")
+        if tbr is not None:
+            try:
+                v = int(tbr)
+                v = max(0, min(9, v))
+                return v, [f"→{v} (target_blast_radius:inception-T-2189)"]
+            except (TypeError, ValueError):
+                # Malformed → fall through to components count
+                pass
+
     components = fm.get("components") or []
     if not isinstance(components, list):
         return 0, ["→0 (components-malformed)"]

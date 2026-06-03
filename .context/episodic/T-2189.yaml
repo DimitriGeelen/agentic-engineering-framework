@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2189: Inception recalibration Slice 3: estimator workflow_type=inception branch +
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-03T05:52:34Z
+# ============================================================================
+
+task_id: T-2189
+task_name: "Inception recalibration Slice 3: estimator workflow_type=inception branch +"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T22:04:03Z
+completed: 2026-06-03T05:52:27Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`score_blast_radius()` in `agents/termlink/bvp-estimator/estimator.py` checks `workflow_type: inception` and prefers `target_blast_radius` (int 0..9, clamped) over `components` count. Falls back to the existing component-count logic when the field is missing/malformed (grandfathered). Smoke: inception tbr=7 → 7; inception no-tbr → 0 fallback; build 3-components → 3 unchanged.'
+  - 'New helper `_score_inception_voi()` returns `(score, evidence)` derived from `voi_score` (0..1 → 0..5 scaled, round). Missing or malformed `voi_score` returns neutral mid-score (2) with evidence string naming the fallback reason. Smoke: 0.9→4, 0.1→0, missing→2, malformed→2, 1.5 clamped→5.'
+  - '`estimate_task()` branches on `workflow_type: inception`: instead of routing each driver to its D-handler, it routes ALL driver IDs (D1-D4 + free drivers) through `_score_inception_voi`. Build/refactor/test/etc. paths are unchanged (regression guard).'
+  - '`policy/value-drivers.yaml` carries a new `inception_scoring_exception:` top-level section documenting (1) the cost substitution (target_blast_radius), (2) the value substitution (voi-derived for all drivers), (3) source-of-truth pointer to 050-Inceptions.md §Scoring Exception. YAML parses cleanly; keys: enabled, cost_substitution, value_substitution, source_of_truth, estimator_ref.'
+  - 'Unit test `tests/unit/test_estimator_inception.py` pins: inception with voi=0.9 ranks higher than inception with voi=0.1 on the same drivers; target_blast_radius substitution applies; missing fields fall back gracefully; build-task scoring path is byte-identical pre/post (regression). 13/13 PASS. Regression: existing `test_bvp_estimator.py` 43/43 PASS unchanged.'
+  - 'Reviewer agent self-scan (`bin/fw reviewer T-2189`) returns Overall: PASS (scan R-ad932262, 2026-06-03T05:51:38Z, findings: none).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 468 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, estimator, bvp, T-2186-slice, value-drivers]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 468
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2189-inception-recalibration-slice-3-estimato.md
+generated_by: context-agent-hybrid

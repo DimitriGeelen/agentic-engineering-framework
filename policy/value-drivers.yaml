@@ -204,3 +204,58 @@ auto_promote:
   bvp_norm_min: 0.85    # only top-band value
   cost_max: 1           # only lowest-cost band
   max_concurrent: 1     # at most one auto-promoted item in flight
+
+# ---------------------------------------------------------------------------
+# Inception scoring exception (T-2189 / T-2186 slice 3)
+# ---------------------------------------------------------------------------
+# Inceptions break the standard scoring model in two specific ways. They are
+# evaluated by the VALUE OF INFORMATION their resolution provides, NOT by
+# the build-shaped traits the D-handlers measure. The exception is mechanical,
+# not semantic — D1-D4 still apply ONCE the inception ships build slices;
+# this only changes how the ESTIMATOR ranks `workflow_type: inception` tasks.
+#
+# Source of truth for the lifecycle and the human-facing semantics:
+# 050-Inceptions.md §Scoring Exception.
+#
+# Cost-side substitution (target_blast_radius)
+# --------------------------------------------
+# F8 = 0.6 × blast_radius + 0.3 × tier + 0.1 × effort
+# An inception's `components:` is empty by definition — the build doesn't
+# exist yet. blast_radius → 0 makes the inception look artificially cheap.
+# The estimator (`score_blast_radius()`) substitutes the inception's
+# `target_blast_radius` (T-2188 schema, int 0..9) — the anticipated
+# component count of the build work the inception authorises on GO.
+# Missing/malformed → falls back to the components-count path (returns 0).
+#
+# Value-side substitution (voi_score → all drivers)
+# -------------------------------------------------
+# Inceptions' value is captured by a single field, `voi_score` (T-2188
+# schema, float 0..1). The estimator (`_score_inception_voi()`) maps this
+# to the 0..5 BVP scale (round(voi × 5)) and returns the SAME score for
+# every requested driver — D1-D4 and free drivers alike. Rank between
+# inceptions is therefore determined by voi alone; rank between an
+# inception and a build is determined by the cost-substitution above
+# plus the voi-derived value contribution.
+#
+# Build-task scoring is unchanged. The exception is gated by
+# `workflow_type == "inception"` and never fires for any other type.
+#
+# Grandfathering
+# --------------
+# Inceptions filed before T-2188 (no `voi_score` field) return a neutral
+# mid-score (2) with evidence string `→2 (voi-absent-grandfathered)`.
+# T-2193 backfilled historic inceptions with `voi_score: 0.5` /
+# `target_blast_radius: 3` defaults so they rank rather than null out.
+inception_scoring_exception:
+  enabled: true
+  cost_substitution:
+    field: target_blast_radius
+    range: [0, 9]
+    fallback: components-count
+  value_substitution:
+    field: voi_score
+    range: [0.0, 1.0]
+    scale_to: [0, 5]
+    fallback_score: 2
+  source_of_truth: 050-Inceptions.md#scoring-exception
+  estimator_ref: "agents/termlink/bvp-estimator/estimator.py::_score_inception_voi"
