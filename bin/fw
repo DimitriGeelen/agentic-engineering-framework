@@ -1940,6 +1940,35 @@ else:
             ;;
     esac
 
+    # T-2185: stale gauge-READY gaps — surface operator-procrastination class.
+    # WARN when ≥1 gap has closure_check_command + gauge currently READY for
+    # ≥7 days (created/last_reviewed). Mirrors OBS-048 (G-064 READY since
+    # 2026-05-15, surfaced by T-2184 handoff doc; closure path now exists
+    # via `fw gaps close G-XXX` and the /gaps Close button).
+    local _stale_gaps_out _stale_gaps_count
+    _stale_gaps_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+import sys; sys.path.insert(0, '$FRAMEWORK_ROOT')
+try:
+    from lib.gaps import stale_ready_gaps
+    out = stale_ready_gaps(threshold_days=7)
+    for g in out:
+        print(f\"{g['gap_id']}\t{g['age_days']}\t{g['title'][:60]}\")
+except Exception as e:
+    print(f'ERROR\t{e}', file=sys.stderr)
+" 2>/dev/null)
+    _stale_gaps_count=$(echo "$_stale_gaps_out" | grep -c "^G-" || true)
+    if [ "${_stale_gaps_count:-0}" -gt 0 ]; then
+        echo -e "  ${YELLOW}WARN${NC}  Gauge-READY gaps not closed: $_stale_gaps_count gap(s) ≥7 days READY"
+        while IFS=$'\t' read -r _gid _age _title; do
+            [ -n "$_gid" ] || continue
+            echo -e "         $_gid (${_age}d READY) — $_title"
+        done <<< "$_stale_gaps_out"
+        echo -e "         Close via: fw gaps close <gap_id> (or /gaps Close button)"
+        warnings=$((warnings + 1))
+    else
+        echo -e "  ${GREEN}OK${NC}  No stale gauge-READY gaps"
+    fi
+
     # Summary (T-1707: break out host_warnings count when > 0)
     local _scope_breakdown=""
     if [ "$host_warnings" -gt 0 ]; then
@@ -5134,6 +5163,50 @@ with open('$BYPASS_LOG', 'w') as f:
             echo -e "${YELLOW}No gaps register found${NC}"
             echo "Create one at: .context/project/concerns.yaml"
             exit 0
+        fi
+        # T-2185: subcommand routing — `fw gaps close <id>` flips gauge-READY gaps.
+        if [ "${1:-}" = "close" ]; then
+            shift
+            GAP_ID="${1:-}"
+            RATIONALE=""
+            OVERRIDE_FLAG=""
+            shift 2>/dev/null || true
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    --rationale) RATIONALE="${2:-}"; shift 2 ;;
+                    --override)  OVERRIDE_FLAG="1"; shift ;;
+                    *)           shift ;;
+                esac
+            done
+            if [ -z "$GAP_ID" ]; then
+                echo -e "${YELLOW}Usage:${NC} fw gaps close <gap_id> [--rationale \"...\"] [--override]"
+                echo
+                echo "Closure-eligible gaps (status:watching with gauge=READY):"
+                PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+import sys; sys.path.insert(0, '$FRAMEWORK_ROOT')
+from lib.gaps import stale_ready_gaps
+for g in stale_ready_gaps(threshold_days=0):
+    print(f'  {g[\"gap_id\"]}  ({g[\"age_days\"]}d READY)  {g[\"title\"][:60]}')
+" 2>/dev/null
+                exit 2
+            fi
+            PROJECT_ROOT="$PROJECT_ROOT" GAP_ID="$GAP_ID" RATIONALE="$RATIONALE" OVERRIDE_FLAG="$OVERRIDE_FLAG" python3 -c "
+import json, os, sys
+sys.path.insert(0, '$FRAMEWORK_ROOT')
+from lib.gaps import close_gap, GapCloseError
+gap_id = os.environ['GAP_ID']
+rationale = os.environ.get('RATIONALE') or None
+override = bool(os.environ.get('OVERRIDE_FLAG'))
+try:
+    result = close_gap(gap_id, rationale=rationale, override=override, actor='cli')
+    print(f'\033[0;32mClosed\033[0m {gap_id} — verdict={result[\"verdict\"]}, closed_date={result[\"closed_date\"]}')
+    print(f'Audit: {result[\"audit_path\"]}')
+    sys.exit(0)
+except GapCloseError as e:
+    print(f'\033[0;31mRefused\033[0m ({e.code}) {e.message}', file=sys.stderr)
+    sys.exit(1)
+"
+            exit $?
         fi
         python3 << PYEOF
 import yaml, json, os, subprocess
