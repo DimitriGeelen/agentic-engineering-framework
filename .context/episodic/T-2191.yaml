@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2191: Inception recalibration Slice 5: reviewer-agent disposition completeness +
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-03T05:39:57Z
+# ============================================================================
+
+task_id: T-2191
+task_name: "Inception recalibration Slice 5: reviewer-agent disposition completeness +"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T22:04:35Z
+completed: 2026-06-03T05:39:49Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'New `detect_disposition_completeness` function in `lib/reviewer/static_scan.py` fires on `workflow_type: inception` when `## Open Questions` exists; for each `- **IW-N:**` entry, checks disposition value ∈ {answered, deferred, dissolved} AND rationale exists AND `disposition: answered` rationale contains an evidence citation (file:line, `T-NNNN`, `docs/reports/...`, or G-/L-/D-NNN id). Python smoke-test 6/6: well-filed→0, missing-disp→1, answered-no-cite→1, invalid-value→1, build-exempt→0, no-section→0.'
+  - 'Detector registered in catalogue `policy/anti-patterns.yaml` as `disposition-incomplete` with description, examples_positive/negative, and override guidance (parallels T-2145 entry).'
+  - 'Detector wired into `scan_task()` orchestrator (after the T-2145 `defer-as-hedge` block) and emits findings with `ac_index=None`, `lie_severity=partial`, `detection_confidence=heuristic`. Reviewer self-scan R-de365602 PASS confirms wiring imports cleanly.'
+  - 'Bats test `tests/unit/reviewer_disposition_incomplete.bats` pins: well-disposed inception passes, missing-disposition fires, missing-rationale fires, invalid disposition value fires, answered-without-citation fires, non-inception exempt, no-Open-Questions section grandfathered. All tests PASS (9/9; +2 over filed scope: deferred-no-citation-passes, multi-IW-mixed-health). Full reviewer suite: 14/14.'
+  - 'Reviewer agent self-scan (`bin/fw reviewer T-2191`) returns Overall: PASS (scan R-239920e1, 2026-06-03T05:38:58Z, findings: none).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 455 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, reviewer, T-2186-slice, T-2145-extension]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 455
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2191-inception-recalibration-slice-5-reviewer.md
+generated_by: context-agent-hybrid

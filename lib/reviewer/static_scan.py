@@ -1491,6 +1491,177 @@ def detect_defer_as_hedge(
     return findings
 
 
+# ───────── disposition-incomplete detector (T-2191, T-2186 slice 5) ─────────
+#
+# Inception `## Open Questions` discipline (per 050-Inceptions.md §Disposition
+# Gate). Each declared `- **IW-N:**` entry must carry:
+#   - `disposition:` line with value ∈ {answered, deferred, dissolved}
+#   - `rationale:` line with content
+#   - When disposition is `answered`, rationale must cite evidence (file:line,
+#     T-NNNN, docs/reports/..., or G-/L-/D-NNN id)
+#
+# This catches the inception-side family that T-2145 catches in Recommendation:
+# decision-without-evidence. defer-as-hedge fires on Recommendation DEFER + full
+# artifact + substantive rationale; disposition-incomplete fires on per-question
+# laxity (missing fields, bare yes/no, answered-without-citation). Sibling shape.
+# Both are partial-CONCERN heuristics; the disposition gate (T-2190, completion-
+# time) is the structural enforcement; this detector is the static-scan layer.
+
+_IW_ENTRY_RE = re.compile(
+    r"^\s*-\s*\*\*IW-(\d+):\s*(.*?)\*\*\s*$",
+    re.MULTILINE,
+)
+
+_VALID_DISPOSITIONS = {"answered", "deferred", "dissolved"}
+
+# Evidence citation patterns inside a rationale line.
+_CITATION_PATTERNS = [
+    re.compile(r"\bT-\d+\b"),                                   # task ref
+    re.compile(r"docs/reports/T-\d+"),                          # research artifact
+    re.compile(r"\b[GLD]-\d+\b"),                               # gap / learning / decision
+    re.compile(r"[\w\-./]+\.\w+:\d+"),                          # file:line
+    re.compile(r"[\w\-./]+\.\w+#L\d+"),                         # file#Lnnn
+    re.compile(r"\bdialogue[\s-]?log\b", re.IGNORECASE),        # dialogue ref
+    re.compile(r"\b(?:commit|sha|hash)[:\s][0-9a-f]{6,}", re.IGNORECASE),  # commit ref
+]
+
+
+def _has_citation(text: str) -> bool:
+    return any(p.search(text) for p in _CITATION_PATTERNS)
+
+
+def detect_disposition_completeness(
+    meta: dict | None,
+    body: str,
+    task_path: Path,
+) -> list[Finding]:
+    """Per-question disposition-completeness check on inception Open Questions.
+
+    Returns one Finding per malformed IW-N (verdict-level, ac_index=None).
+    Severity: partial CONCERN, heuristic.
+
+    Gates (file-level):
+      1. `workflow_type: inception` in frontmatter
+      2. `## Open Questions` section exists in body
+      3. ≥1 `- **IW-N:**` entry declared (grandfathers empty/template sections)
+
+    Per-entry checks:
+      A. `disposition:` line exists
+      B. disposition value ∈ {answered, deferred, dissolved}
+      C. `rationale:` line exists with non-empty content
+      D. When disposition=answered, rationale carries an evidence citation
+    """
+    findings: list[Finding] = []
+    if not meta or meta.get("workflow_type") != "inception":
+        return findings
+
+    oq_section = extract_section(body, "Open Questions")
+    if not oq_section:
+        return findings
+
+    # Find IW-N entries and slice each entry's lines
+    entries: list[tuple[int, str, int]] = []  # (iw_n, entry_text, start_line)
+    lines = oq_section.splitlines()
+    current_iw: int | None = None
+    current_lines: list[str] = []
+    current_start = 0
+    for idx, line in enumerate(lines):
+        m = re.match(r"^\s*-\s*\*\*IW-(\d+):", line)
+        if m:
+            if current_iw is not None:
+                entries.append((current_iw, "\n".join(current_lines), current_start))
+            current_iw = int(m.group(1))
+            current_lines = [line]
+            current_start = idx
+        elif current_iw is not None:
+            # Stop accumulating at the next top-level list item (different IW or section)
+            if re.match(r"^\s*-\s*\*\*[A-Z]", line) and not line.lstrip().startswith("- **IW-"):
+                # not another IW — close out
+                entries.append((current_iw, "\n".join(current_lines), current_start))
+                current_iw = None
+                current_lines = []
+            else:
+                current_lines.append(line)
+    if current_iw is not None:
+        entries.append((current_iw, "\n".join(current_lines), current_start))
+
+    if not entries:
+        return findings
+
+    for iw_n, entry_text, _start in entries:
+        # Check A/B: disposition line
+        disp_match = re.search(r"^\s*disposition:\s*(\S+)", entry_text, re.MULTILINE)
+        rat_match = re.search(r"^\s*rationale:\s*(.+?)$", entry_text, re.MULTILINE)
+
+        if not disp_match:
+            findings.append(
+                Finding(
+                    pattern_id="disposition-incomplete",
+                    pattern_name="Inception IW-N missing disposition (T-2191)",
+                    detection_confidence="heuristic",
+                    lie_severity="partial",
+                    location=f"## Open Questions: IW-{iw_n}",
+                    evidence=f"IW-{iw_n}: no `disposition:` line",
+                    ac_index=None,
+                )
+            )
+            continue
+
+        disp_value = disp_match.group(1).strip().lower().rstrip(",.;")
+        if disp_value not in _VALID_DISPOSITIONS:
+            findings.append(
+                Finding(
+                    pattern_id="disposition-incomplete",
+                    pattern_name="Inception IW-N invalid disposition value (T-2191)",
+                    detection_confidence="heuristic",
+                    lie_severity="partial",
+                    location=f"## Open Questions: IW-{iw_n}",
+                    evidence=(
+                        f"IW-{iw_n}: disposition='{disp_value}' "
+                        f"(must be one of {sorted(_VALID_DISPOSITIONS)})"
+                    ),
+                    ac_index=None,
+                )
+            )
+            continue
+
+        # Check C: rationale present + non-empty
+        if not rat_match or not rat_match.group(1).strip():
+            findings.append(
+                Finding(
+                    pattern_id="disposition-incomplete",
+                    pattern_name="Inception IW-N missing rationale (T-2191)",
+                    detection_confidence="heuristic",
+                    lie_severity="partial",
+                    location=f"## Open Questions: IW-{iw_n}",
+                    evidence=f"IW-{iw_n} disposition='{disp_value}': no/empty `rationale:` line",
+                    ac_index=None,
+                )
+            )
+            continue
+
+        # Check D: answered without citation (sibling to T-2145 decision-without-evidence)
+        rationale = rat_match.group(1).strip()
+        if disp_value == "answered" and not _has_citation(rationale):
+            findings.append(
+                Finding(
+                    pattern_id="disposition-incomplete",
+                    pattern_name="Inception IW-N answered-without-citation (T-2191, sibling of T-2145)",
+                    detection_confidence="heuristic",
+                    lie_severity="partial",
+                    location=f"## Open Questions: IW-{iw_n}",
+                    evidence=(
+                        f"IW-{iw_n} disposition='answered' but rationale has no "
+                        f"evidence citation (T-NNNN, file:line, docs/reports/, "
+                        f"G-/L-/D-id, dialogue-log, or commit hash)"
+                    ),
+                    ac_index=None,
+                )
+            )
+
+    return findings
+
+
 # ───────── review-link-homework detector (T-2140, T-2138 V2) ─────────
 #
 # Catches the review-handoff homework pattern in `### Human` ACs: Steps
@@ -2043,6 +2214,10 @@ def scan_task(
     # v1.6 +2: T-2145 — defer-as-hedge (T-2144 leg B); inception with
     # complete evidence but recommendation hedged to DEFER.
     findings.extend(detect_defer_as_hedge(meta, body, task_path))
+    # v1.6 +2b: T-2191 — disposition-incomplete (T-2186 slice 5); per-question
+    # discipline on inception ## Open Questions: missing/invalid disposition,
+    # missing rationale, or `answered` without evidence citation.
+    findings.extend(detect_disposition_completeness(meta, body, task_path))
     # v1.6 +3: T-2140 — review-link-homework (T-2138 V2); catch-before-handoff
     # backstop for Human AC Steps that ask the reviewer to construct a URL.
     findings.extend(detect_review_link_homework(ac_section))

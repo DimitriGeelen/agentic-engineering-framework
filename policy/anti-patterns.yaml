@@ -369,6 +369,61 @@ patterns:
       - "Inception with **Recommendation:** DEFER (historical — superseded by 2026-05-31 re-evaluation) (revisit-trigger marker)"
       - "Build task (not inception) with DEFER in body somewhere"
 
+  - id: disposition-incomplete
+    name: "Inception IW-N missing disposition/rationale or answered-without-citation (T-2191)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_disposition_completeness"
+    description: >
+      Inception `## Open Questions` discipline (per 050-Inceptions.md
+      §Disposition Gate). Each declared `- **IW-N:**` entry must carry:
+
+        - `disposition:` line with value ∈ {answered, deferred, dissolved}
+        - `rationale:` line with content (not empty / placeholder)
+        - When `disposition: answered`, rationale must cite evidence — a
+          file:line, `T-NNNN` ref, `docs/reports/...` path, G-/L-/D-NNN
+          id, dialogue-log reference, or commit hash.
+
+      This is the per-question sibling of `defer-as-hedge` (T-2145): the
+      same decision-without-evidence family applied to inception sub-
+      decisions. T-2190 ships the completion-time disposition gate
+      (refuses `--status work-completed`); T-2194 ships the filing-time
+      placeholder gate (blocks source-edits with no IW-N declared); this
+      detector is the static-scan layer that catches the laxity in
+      between — questions filed but disposed by hand-wave.
+
+      Gates (all must hold):
+        1. `workflow_type: inception` in frontmatter
+        2. `## Open Questions` section exists in body
+        3. ≥1 `- **IW-N:**` entry declared
+        4. ≥1 entry fails one of: missing `disposition:`, invalid value,
+           missing/empty `rationale:`, or `answered` without citation
+
+      Verdict-level findings (`ac_index=None`) — one Finding per malformed
+      IW-N. CONCERN-level via the verdict thresholds; never blocks alone.
+
+      Origin: T-2191 — extends T-2145 (defer-as-hedge / decision-without-
+      evidence) to per-question dispositions. The recursion is intentional:
+      T-2143 hedged at the Recommendation level; T-2145 catches that. The
+      same anti-pattern at the Open-Question level — "answered: idk" —
+      should be caught by the same family of static-scan rules.
+
+      Override: `fw reviewer override add T-XXX --pattern disposition-incomplete
+      --reason "..." --ttl 90` when the rationale is intentionally
+      placeholder during draft work, or when citation lives in a follow-up
+      task linked but not yet inlined.
+    examples_positive:
+      - "Inception IW-1 with `disposition: answered` and `rationale: yes`"
+      - "Inception IW-1 with no `disposition:` line"
+      - "Inception IW-1 with `disposition: maybe` (invalid value)"
+      - "Inception IW-1 with `disposition: answered` and `rationale: agreed with the user`"
+    examples_negative:
+      - "Inception IW-1 with `disposition: answered` and `rationale: see docs/reports/T-9999.md L42`"
+      - "Inception IW-1 with `disposition: deferred` and `rationale: spike scheduled in T-9998`"
+      - "Inception IW-1 with `disposition: dissolved` and `rationale: premise refuted by F-0.3 dialogue-log`"
+      - "Build task (not inception) with similar disposition markup anywhere"
+      - "Inception with NO `## Open Questions` section (grandfathered)"
+
   - id: review-link-homework
     name: "`### Human` AC Steps require constructing URL instead of clickable link (T-2138)"
     detection_confidence: heuristic
