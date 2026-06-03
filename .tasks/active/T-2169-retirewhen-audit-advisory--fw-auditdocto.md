@@ -6,16 +6,16 @@ description: >
   retire_when: audit advisory — fw audit/doctor staleness warning when free-driver
   retire condition is recognisably met (T-NEW-C from v3 follow-ups)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [v3-followup-C, audit-advisory]
 components: [policy/value-drivers.yaml, agents/audit/audit.sh, agents/audit/lib]
 related_tasks: [T-2157, T-2165, T-2166, T-2168, L-417]
 arc_id: value-prioritisation
 created: 2026-06-01T20:32:55Z
-last_update: '2026-06-01T20:45:02Z'
+last_update: 2026-06-03T15:26:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,6 +40,19 @@ bvp_scores_proposed:
     rationale: "D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 (body/tag hits
       for 'F-RECALL': 1); F-ORCH=1 (body/tag hits for 'F-ORCH': 1)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-02T20:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 1
+    rationale: "D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=1 (body/tag hits for 'F-RECALL':
+      1); F-ORCH=1 (body/tag hits for 'F-ORCH': 1)"
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-01T20:45:02Z'
@@ -83,14 +96,14 @@ scan, structural emit, bats-pinned regex.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/audit/audit.sh` (or `lib/audit/free_driver_retire_when.py` if Python-extension is the structural pattern in audit.sh) gains a structure-check that parses `policy/value-drivers.yaml`, reads each ACTIVE `free_drivers[]` entry's `retire_when:` text, and runs a per-driver recognition heuristic against the corpus.
-- [ ] **F-RECALL retire-condition recognition heuristic:** retire_when text is *"L4 Reflect criteria (positive reinforcement capture, preference index, CLAUDE.md auto-sync, durable reflection log) are green."* Recognition = ALL four sub-criteria show evidence: (a) `git log --grep='positive-reinforcement\|happiness' --since=30days | head -1` non-empty (positive capture present); (b) `find . -name 'preference-index.yaml' -o -name 'preferences.yaml' | head -1` non-empty (preference index exists); (c) `grep -l 'auto-sync\|CLAUDE-sync' agents/ lib/ -r | head -1` non-empty (auto-sync code exists); (d) `find .context -name 'reflection*.yaml' -mtime -7 | head -1` non-empty (durable reflection log active). If ALL four match → emit `WARN: free driver F-RECALL retire_when condition appears met (4/4 signals) — review whether to retire`.
-- [ ] **F-ORCH retire-condition recognition heuristic:** retire_when text is *"Multi-agent orchestration criterion goes green / orchestrator substrate (T-1643) lands in production."* Recognition = (a) T-1643 in `.tasks/completed/` AND its body lacks `partial-complete` or `[REVIEW]` marker; OR (b) G-064 marked closed in `.context/project/concerns.yaml`. Either signal triggers WARN.
-- [ ] **Generic fallback for any future free driver:** when an active `free_drivers[]` entry has `retire_when:` text but no dedicated recognition heuristic, the audit emits an `INFO: retire_when text present, no recognition heuristic — manual review.` (not a WARN). This keeps the surface honest: only WARN when we have real evidence.
-- [ ] **WARN cap:** at most ONE WARN per audit run per driver (de-dupe; the bats test pins this — re-running audit produces same count, not N×count).
-- [ ] **Bats coverage** (`tests/unit/test_audit_retire_when.bats`, new): (a) F-RECALL recognition fires only when all 4 signals present; (b) F-ORCH recognition fires when T-1643 is completed cleanly; (c) generic fallback fires for a fictional `F-TEST` free driver with retire_when text but no heuristic; (d) inactive (commented-out) free drivers are skipped; (e) no false-WARN when retire_when is empty.
-- [ ] **No FAIL emitted.** This is strictly advisory — operator's call on retirement. Maps to T-1855 stale-arc precedent (WARN, never FAIL).
-- [ ] **CLAUDE.md §Configuration update:** add `FW_RETIRE_WHEN_ADVISORY` env var (default `1` = on, `0` = silence) for sessions where retire-warns are noisy during exploration. Document in CLAUDE.md §Configuration.
+- [x] `agents/audit/audit.sh` (or `lib/audit/free_driver_retire_when.py` if Python-extension is the structural pattern in audit.sh) gains a structure-check that parses `policy/value-drivers.yaml`, reads each ACTIVE `free_drivers[]` entry's `retire_when:` text, and runs a per-driver recognition heuristic against the corpus.
+- [x] **F-RECALL retire-condition recognition heuristic:** retire_when text is *"L4 Reflect criteria (positive reinforcement capture, preference index, CLAUDE.md auto-sync, durable reflection log) are green."* Recognition = ALL four sub-criteria show evidence: (a) `git log --grep='positive-reinforcement\|happiness' --since=30days | head -1` non-empty (positive capture present); (b) `find . -name 'preference-index.yaml' -o -name 'preferences.yaml' | head -1` non-empty (preference index exists); (c) `grep -l 'auto-sync\|CLAUDE-sync' agents/ lib/ -r | head -1` non-empty (auto-sync code exists); (d) `find .context -name 'reflection*.yaml' -mtime -7 | head -1` non-empty (durable reflection log active). If ALL four match → emit `WARN: free driver F-RECALL retire_when condition appears met (4/4 signals) — review whether to retire`.
+- [x] **F-ORCH retire-condition recognition heuristic:** retire_when text is *"Multi-agent orchestration criterion goes green / orchestrator substrate (T-1643) lands in production."* Recognition = (a) T-1643 in `.tasks/completed/` AND its body lacks `partial-complete` or `[REVIEW]` marker; OR (b) G-064 marked closed in `.context/project/concerns.yaml`. Either signal triggers WARN.
+- [x] **Generic fallback for any future free driver:** when an active `free_drivers[]` entry has `retire_when:` text but no dedicated recognition heuristic, the audit emits an `INFO: retire_when text present, no recognition heuristic — manual review.` (not a WARN). This keeps the surface honest: only WARN when we have real evidence.
+- [x] **WARN cap:** at most ONE WARN per audit run per driver (de-dupe; the bats test pins this — re-running audit produces same count, not N×count).
+- [x] **Bats coverage** (`tests/unit/test_audit_retire_when.bats`, new): (a) F-RECALL recognition fires only when all 4 signals present; (b) F-ORCH recognition fires when T-1643 is completed cleanly; (c) generic fallback fires for a fictional `F-TEST` free driver with retire_when text but no heuristic; (d) inactive (commented-out) free drivers are skipped; (e) no false-WARN when retire_when is empty.
+- [x] **No FAIL emitted.** This is strictly advisory — operator's call on retirement. Maps to T-1855 stale-arc precedent (WARN, never FAIL).
+- [x] **CLAUDE.md §Configuration update:** add `FW_RETIRE_WHEN_ADVISORY` env var (default `1` = on, `0` = silence) for sessions where retire-warns are noisy during exploration. Document in CLAUDE.md §Configuration.
 
 ### Human
 <!-- All Agent ACs. Audit advisory output may be spot-checked but is not blocking. -->
@@ -127,6 +140,23 @@ scan, structural emit, bats-pinned regex.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# Bats test (12 cases pin AC #5+#6+#7) — L-387 safe: bats `run` captures output.
+bats tests/unit/test_audit_retire_when.bats
+
+# Audit.sh syntax (the new section uses a Python heredoc inside bash)
+bash -n agents/audit/audit.sh
+
+# Live audit on the framework must not regress; the new section produces no
+# WARN/FAIL on the current corpus (F-RECALL: 1/4 signals, F-ORCH: T-1643 still
+# has [REVIEW] marker + G-064 status=watching).
+out=$(FW_RETIRE_WHEN_ADVISORY=1 bin/fw audit --section structure 2>&1)
+grep -q "free driver F-RECALL" <<<"$out" && exit 1 || true
+grep -q "free driver F-ORCH" <<<"$out" && exit 1 || true
+echo "$out" | tail -1 | grep -qE "Errors: 0"
+
+# CLAUDE.md §Configuration documents the new env var
+grep -q "FW_RETIRE_WHEN_ADVISORY" CLAUDE.md
 
 ## RCA
 
@@ -168,6 +198,18 @@ scan, structural emit, bats-pinned regex.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-03 — implementation shape: inline Python heredoc, not separate lib file
+
+- **What changed:** The AC explored a `lib/audit/free_driver_retire_when.py` extraction; in practice the per-driver recognition logic is small (~50 LOC), and audit.sh already inlines comparable Python heredoc passes (T-1927 BVP coherence, the active-task scanner). Inline matches the surrounding pattern and keeps the audit.sh single-file shape.
+- **Plan impact:** No new `lib/audit/` directory; the components: list in frontmatter remains accurate (`agents/audit/audit.sh`, no `agents/audit/lib`).
+- **Triggered:** None — pure shape choice.
+
+### 2026-06-03 — F-ORCH detection: literal AC reading on `[REVIEW]` marker
+
+- **What changed:** AC #3 specifies "T-1643 in completed/ AND body lacks `partial-complete` or `[REVIEW]` marker". Live T-1643 contains a TICKED `[x] [REVIEW]` line (its Human AC was reviewed). Implementation matches the literal AC text — TICKED `[REVIEW]` still suppresses the F-ORCH WARN. That is conservative-correct: a task whose body still mentions review (ticked or not) hasn't reached the "no review residue" state the AC asks for. A future refinement could distinguish `[ ] [REVIEW]` vs `[x] [REVIEW]`, but the current behaviour is on-spec and safe (false-negative bias matches the WARN-only advisory shape).
+- **Plan impact:** None — matches AC.
+- **Triggered:** A possible follow-up if operator wants stricter (only unticked) detection.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -199,3 +241,10 @@ scan, structural emit, bats-pinned regex.
 ### 2026-06-01T20:34:19Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
 - **Change:** horizon: now → later
+
+### 2026-06-03T15:26:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-06-03T15:26:31Z — status-update [task-update-agent]
+- **Change:** horizon: now → now

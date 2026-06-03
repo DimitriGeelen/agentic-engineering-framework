@@ -737,6 +737,161 @@ if [ "$arcs_checked_for_staleness" -gt 0 ] && [ "$stale_arc_count" -eq 0 ]; then
     pass "All $arcs_checked_for_staleness in-progress arc(s) had task commits within ${stale_arc_threshold} days"
 fi
 
+# T-2169 (T-NEW-C, value-drivers v3 follow-up): retire_when advisory.
+# For each ACTIVE free_driver in policy/value-drivers.yaml that has retire_when:
+# text, run a per-driver recognition heuristic against the corpus. WARN when
+# the heuristic says "looks recognisably met"; INFO when retire_when text is
+# present but no dedicated heuristic exists (manual review). WARN-only, never
+# blocks. One WARN per driver per run (de-duped by construction). Modelled on
+# T-1855 stale-arc. Silence with FW_RETIRE_WHEN_ADVISORY=0.
+if [ "${FW_RETIRE_WHEN_ADVISORY:-1}" != "0" ] \
+   && [ -f "$PROJECT_ROOT/policy/value-drivers.yaml" ] \
+   && command -v python3 >/dev/null 2>&1; then
+    retire_when_findings=$(python3 - "$PROJECT_ROOT" <<'PY' 2>/dev/null
+import sys, os, glob, subprocess, time
+try:
+    import yaml
+except ImportError:
+    sys.exit(0)
+
+project_root = sys.argv[1]
+vd_path = os.path.join(project_root, "policy", "value-drivers.yaml")
+try:
+    with open(vd_path) as fh:
+        vd = yaml.safe_load(fh) or {}
+except Exception:
+    sys.exit(0)
+
+# Active free drivers only — commented-out (candidate) entries don't appear in
+# the parsed dict, so they're skipped by construction.
+free = vd.get("free_drivers") or []
+
+def recall_signals():
+    """F-RECALL retire_when: 4 sub-criteria (a,b,c,d) — return count present."""
+    s = 0
+    # (a) positive-reinforcement / happiness capture in last 30d
+    try:
+        out = subprocess.check_output(
+            ["git", "-C", project_root, "log",
+             "--grep=positive-reinforcement", "--grep=happiness",
+             "--since=30.days.ago", "--format=%H", "-n", "1"],
+            stderr=subprocess.DEVNULL, text=True, timeout=5)
+        if out.strip():
+            s += 1
+    except Exception:
+        pass
+    # (b) preference index file
+    found_b = False
+    for name in ("preference-index.yaml", "preferences.yaml"):
+        if glob.glob(os.path.join(project_root, "**", name), recursive=True):
+            found_b = True
+            break
+    if found_b:
+        s += 1
+    # (c) auto-sync code in agents/ or lib/
+    try:
+        for d in ("agents", "lib"):
+            dpath = os.path.join(project_root, d)
+            if not os.path.isdir(dpath):
+                continue
+            out = subprocess.check_output(
+                ["grep", "-rlE", "auto-sync|CLAUDE-sync", dpath],
+                stderr=subprocess.DEVNULL, text=True, timeout=5)
+            if out.strip():
+                s += 1
+                break
+    except Exception:
+        pass
+    # (d) durable reflection log mtime within last 7 days
+    refl_dir = os.path.join(project_root, ".context")
+    if os.path.isdir(refl_dir):
+        cutoff = time.time() - 7 * 86400
+        hit = False
+        for root, _, files in os.walk(refl_dir):
+            for f in files:
+                if "reflection" in f.lower() and f.endswith(".yaml"):
+                    try:
+                        if os.path.getmtime(os.path.join(root, f)) > cutoff:
+                            hit = True
+                            break
+                    except OSError:
+                        pass
+            if hit:
+                break
+        if hit:
+            s += 1
+    return s
+
+def orch_signal():
+    """F-ORCH retire_when: T-1643 cleanly completed OR G-064 closed."""
+    # (a) T-1643 in completed/ without partial-complete marker
+    for tf in glob.glob(os.path.join(project_root, ".tasks", "completed", "T-1643*.md")):
+        try:
+            with open(tf) as fh:
+                body = fh.read()
+            if "partial-complete" not in body and "[REVIEW]" not in body:
+                return True
+        except Exception:
+            pass
+    # (b) G-064 closed in concerns.yaml
+    cpath = os.path.join(project_root, ".context", "project", "concerns.yaml")
+    if os.path.isfile(cpath):
+        try:
+            with open(cpath) as fh:
+                c = yaml.safe_load(fh) or {}
+            entries = c.get("concerns") or c.get("entries") or []
+            if isinstance(entries, dict):
+                entries = list(entries.values())
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                if entry.get("id") == "G-064" and entry.get("status") == "closed":
+                    return True
+        except Exception:
+            pass
+    return False
+
+seen = set()
+for drv in free:
+    if not isinstance(drv, dict):
+        continue
+    drv_id = drv.get("id")
+    rw = drv.get("retire_when")
+    if not drv_id or not rw or not str(rw).strip():
+        continue
+    if drv_id in seen:  # WARN-cap safety
+        continue
+    seen.add(drv_id)
+    if drv_id == "F-RECALL":
+        s = recall_signals()
+        if s >= 4:
+            print(f"WARN|{drv_id}|retire_when condition appears met ({s}/4 signals) — review whether to retire|")
+    elif drv_id == "F-ORCH":
+        if orch_signal():
+            print(f"WARN|{drv_id}|retire_when condition appears met (T-1643 completed cleanly OR G-064 closed) — review whether to retire|")
+    else:
+        print(f"INFO|{drv_id}|retire_when text present, no recognition heuristic — manual review|")
+PY
+)
+    retire_warn=0
+    retire_info=0
+    while IFS='|' read -r rw_level rw_drv rw_msg rw_ctx; do
+        [ -z "$rw_level" ] && continue
+        case "$rw_level" in
+            WARN)
+                warn "free driver $rw_drv: $rw_msg" \
+                     "Retire-when text in policy/value-drivers.yaml appears recognisably satisfied${rw_ctx:+ — $rw_ctx}" \
+                     "Review the driver; if truly retired, comment it out or move to candidates section. Silence with FW_RETIRE_WHEN_ADVISORY=0."
+                retire_warn=$((retire_warn + 1))
+                ;;
+            INFO)
+                info "free driver $rw_drv: $rw_msg"
+                retire_info=$((retire_info + 1))
+                ;;
+        esac
+    done <<<"$retire_when_findings"
+fi
+
 # T-1927 (T-NEW-11, arc-006): per-driver coherence audit.
 # WARN when an arc claims a driver is important (weight ≥ BVP_COHERENCE_ARC_MIN
 # OR arc bvp_scores[Dn] ≥ BVP_COHERENCE_ARC_MIN) but ≥ BVP_COHERENCE_FRACTION of

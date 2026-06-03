@@ -361,6 +361,7 @@ Agent-relevant settings:
 - `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
 - `FW_STALE_ARC_DAYS` (30) — T-1855: stale-arc audit WARN threshold. In-progress arcs whose constituent tasks (matched by `arc_id:`) have no commit in the last N days surface a WARN. Silent on draft/closed/abandoned arcs and on zero-population arcs.
 - `FW_ALLOW_ARC_ID_DRIFT` (0) — T-1849: single-use bypass for the `arc_id:` validation hook when the field doesn't resolve to an existing arc YAML. Logged Tier-2 to `.context/working/.gate-bypass-log.yaml`.
+- `FW_RETIRE_WHEN_ADVISORY` (1) — T-2169: audit retire_when advisory rail. For each ACTIVE `free_drivers[]` entry in `policy/value-drivers.yaml` with `retire_when:` text, audit runs a per-driver recognition heuristic against the corpus and emits a WARN when the condition appears recognisably met (F-RECALL: 4/4 signals; F-ORCH: T-1643 cleanly in completed/ OR G-064 closed). Drivers with `retire_when:` text but no dedicated heuristic emit an INFO (not WARN). WARN-only, never blocks. Set to `0` to silence the section entirely.
 
 Full reference (handover timeouts, bash timeout, stale-task days, call-level fallbacks, inception commit limit, etc.): `fw config list`, `env | grep FW_`, or Watchtower `/config`. `fw doctor` warns on out-of-range values.
 
