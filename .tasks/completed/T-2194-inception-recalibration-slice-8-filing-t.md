@@ -1,13 +1,21 @@
 ---
 id: T-2194
-name: "Inception recalibration Slice 8: filing-time placeholder check — Open Questions section non-empty + ≥1 declared question"
+name: "Inception recalibration Slice 8: filing-time placeholder check — Open Questions
+  section non-empty + ≥1 declared question"
 description: >
-  T-2186 Slice 8. PreToolUse hook on Write/Edit to inception task files refuses if ## Open Questions section is missing, empty, or contains only template placeholders. Mirrors existing G-020 placeholder gate (build-task ACs) — the inception equivalent. Each question must carry the per-question shape from Slice 4 (prose + confidence + later-filled disposition + rationale slot). Bypass family: --skip-open-questions-check + FW_SKIP_OPEN_QUESTIONS_CHECK=1. Bats pin. Verification: hook refuses on placeholder/empty/missing Open Questions on inception; allows non-inception; allows well-filed inception; bypass works + log entry written.
+  T-2186 Slice 8. PreToolUse hook on Write/Edit to inception task files refuses if
+  ## Open Questions section is missing, empty, or contains only template placeholders.
+  Mirrors existing G-020 placeholder gate (build-task ACs) — the inception equivalent.
+  Each question must carry the per-question shape from Slice 4 (prose + confidence
+  + later-filled disposition + rationale slot). Bypass family: --skip-open-questions-check
+  + FW_SKIP_OPEN_QUESTIONS_CHECK=1. Bats pin. Verification: hook refuses on placeholder/empty/missing
+  Open Questions on inception; allows non-inception; allows well-filed inception;
+  bypass works + log entry written.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [inception, gate, filing-time, T-2186-slice, placeholder-check]
 components: []
 related_tasks: [T-2186, T-2188, T-2190]
@@ -16,8 +24,8 @@ related_tasks: [T-2186, T-2188, T-2190]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:05:27Z
-last_update: 2026-06-02T22:05:27Z
-date_finished: null
+last_update: 2026-06-03T05:30:33Z
+date_finished: 2026-06-03T05:30:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,51 +36,46 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-02T22:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2194: Inception recalibration Slice 8: filing-time placeholder check — Open Questions section non-empty + ≥1 declared question
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Filing-time mirror of G-020 for inceptions. When the active task is `workflow_type: inception` and its `## Open Questions` section contains zero filed `- **IW-N:**` questions (template-only or empty), Write/Edit on non-exempt source files is refused. The task file itself stays editable (under `.tasks/*` exempt path) so the agent can add questions to unblock. Bypass: `FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1`. Builds on T-2190 which shipped the `## Open Questions` template section.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] `agents/context/check-active-task.sh` extended with an inception-placeholder block: when the active task has `workflow_type: inception` AND its `## Open Questions` section exists but contains zero `- **IW-N:**` entries, source-file Write/Edit is blocked with exit 2 and a structured message naming the bypass mechanism and the unblock path (add ≥1 `- **IW-N:**` to the section).
+- [x] Grandfather rule honoured: inceptions with NO `## Open Questions` section at all pass through (no block). Only the placeholder-with-no-IW case triggers the gate. Non-inception workflow types are exempt (build-task path already gated by G-020).
+- [x] Bypass `FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1` allows the write and writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml` naming the gate.
+- [x] Bats test `tests/unit/inception_open_questions_gate.bats` pins: placeholder-only blocks, filed-IW passes, no-section grandfathered, non-inception exempt, bypass works + logs. All tests PASS (6/6, +1 over filed scope).
+- [x] Reviewer agent scan (`bin/fw reviewer T-2194`) returns Overall: PASS (scan R-7abc0f55, 2026-06-03T05:29:53Z, findings: none).
 
 ## Verification
 
@@ -106,6 +109,11 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bats tests/unit/inception_open_questions_gate.bats
+out=$(bin/fw reviewer T-2194 --no-write 2>&1); echo "$out" | grep -q "Overall:.*PASS"
+grep -q "Inception Open Questions readiness gate" agents/context/check-active-task.sh
+grep -q "FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT" agents/context/check-active-task.sh
 
 ## RCA
 
@@ -147,6 +155,14 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-03 — extended check-active-task.sh in place rather than a new hook
+- **What changed:** Original sketch implied a new dedicated PreToolUse hook (`check-inception-open-questions.{sh,py}`). On reading `check-active-task.sh` it was already the natural home — the G-020 build-readiness block sits at L482-507 and exempts inceptions explicitly. Adding a parallel inception block alongside is one file, one trace, one ordering rule (after Inception awareness, before G-020 build path). No `.claude/settings.json` change needed (the hook is already registered).
+- **Plan impact:** Saved the `bin/fw hook-enable` round-trip and the enforcement-baseline refresh that T-2188 needed. Bats test target is the existing hook, not a new one.
+- **Triggered:** None — kept slice scoped.
+
+<!-- Evolution closed.
+-->
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -174,3 +190,19 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2194-inception-recalibration-slice-8-filing-t.md
 - **Context:** Initial task creation
+
+### 2026-06-03T05:24:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-86e0a603
+- **Timestamp:** 2026-06-03T05:30:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-03T05:30:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

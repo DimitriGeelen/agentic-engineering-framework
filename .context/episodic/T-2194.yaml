@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2194: Inception recalibration Slice 8: filing-time placeholder check — Open Questions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-03T05:30:41Z
+# ============================================================================
+
+task_id: T-2194
+task_name: "Inception recalibration Slice 8: filing-time placeholder check — Open Questions"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T22:05:27Z
+completed: 2026-06-03T05:30:33Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-active-task.sh` extended with an inception-placeholder block: when the active task has `workflow_type: inception` AND its `## Open Questions` section exists but contains zero `- **IW-N:**` entries, source-file Write/Edit is blocked with exit 2 and a structured message naming the bypass mechanism and the unblock path (add ≥1 `- **IW-N:**` to the section).'
+  - 'Grandfather rule honoured: inceptions with NO `## Open Questions` section at all pass through (no block). Only the placeholder-with-no-IW case triggers the gate. Non-inception workflow types are exempt (build-task path already gated by G-020).'
+  - 'Bypass `FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1` allows the write and writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml` naming the gate.'
+  - 'Bats test `tests/unit/inception_open_questions_gate.bats` pins: placeholder-only blocks, filed-IW passes, no-section grandfathered, non-inception exempt, bypass works + logs. All tests PASS (6/6, +1 over filed scope).'
+  - 'Reviewer agent scan (`bin/fw reviewer T-2194`) returns Overall: PASS (scan R-7abc0f55, 2026-06-03T05:29:53Z, findings: none).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 445 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, gate, filing-time, T-2186-slice, placeholder-check]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 445
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2194-inception-recalibration-slice-8-filing-t.md
+generated_by: context-agent-hybrid

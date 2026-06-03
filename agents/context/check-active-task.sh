@@ -474,6 +474,64 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
     fi
 fi
 
+# --- Inception Open Questions readiness gate (T-2194, G-067) ---
+# Filing-time mirror of G-020 for inceptions: if the active inception has a
+# ## Open Questions section but ZERO filed `- **IW-N:**` entries, source-file
+# Write/Edit is blocked. The task file itself is `.tasks/*` exempt above, so
+# the agent can still add questions to unblock. Grandfather: inceptions with
+# no Open Questions section at all pass through (older inceptions pre-T-2190).
+# Bypass: FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 (logged Tier-2).
+if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2>/dev/null; then
+    # Only check if the section exists at all (grandfather older inceptions)
+    if grep -q "^## Open Questions" "$ACTIVE_FILE" 2>/dev/null; then
+        # Extract Open Questions section content (between header and next ## heading)
+        OQ_SECTION=$(awk '/^## Open Questions/{f=1; next} /^## /{f=0} f' "$ACTIVE_FILE" 2>/dev/null)
+        # Strip HTML comments so the template guidance does not count
+        OQ_STRIPPED=$(echo "$OQ_SECTION" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
+        # Count real IW-N entries
+        HAS_IW=$(echo "$OQ_STRIPPED" | grep -cE '^\s*-\s*\*\*IW-[0-9]+:' 2>/dev/null || true)
+        if [ "${HAS_IW:-0}" -eq 0 ]; then
+            if [ "${FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT:-0}" = "1" ]; then
+                # Bypass — log Tier-2
+                LOG_DIR="$PROJECT_ROOT/.context/working"
+                mkdir -p "$LOG_DIR" 2>/dev/null || true
+                LOG_FILE="$LOG_DIR/.gate-bypass-log.yaml"
+                _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                {
+                    echo "- timestamp: '$_ts'"
+                    echo "  task: '$CURRENT_TASK'"
+                    echo "  flag: 'FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT'"
+                    echo "  caller: 'check-active-task:inception-open-questions'"
+                    echo "  file: '$FILE_PATH'"
+                } >> "$LOG_FILE" 2>/dev/null || true
+                echo "NOTE: Inception $CURRENT_TASK has no filed Open Questions; write allowed via FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 — logged." >&2
+            else
+                echo "" >&2
+                echo "BLOCKED: Inception $CURRENT_TASK has '## Open Questions' but zero filed questions." >&2
+                echo "" >&2
+                echo "Filing-time mirror of G-020 — inception build-readiness." >&2
+                echo "Inception work cannot edit source files until at least one Open Question is declared." >&2
+                echo "" >&2
+                echo "To unblock:" >&2
+                echo "  1. Edit $CURRENT_TASK and add at least one entry under '## Open Questions':" >&2
+                echo "       - **IW-1: <question text>**" >&2
+                echo "         confidence: 0-3" >&2
+                echo "         disposition: answered|deferred|dissolved   # filled later" >&2
+                echo "         rationale: <one-line evidence>              # filled later" >&2
+                echo "" >&2
+                echo "  2. Or remove the '## Open Questions' section entirely (grandfathered)." >&2
+                echo "" >&2
+                echo "  3. Override (logged Tier 2):  FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 <command>" >&2
+                echo "" >&2
+                echo "Attempting to modify: $FILE_PATH" >&2
+                echo "Policy: T-2194 / G-067 (Inception Open Questions readiness gate)" >&2
+                echo "See: 050-Inceptions.md §Disposition Gate, CLAUDE.md §Inception Discipline" >&2
+                exit 2
+            fi
+        fi
+    fi
+fi
+
 # --- Build readiness gate (G-020, T-471) ---
 # Build/refactor/test tasks must have real ACs before modifying source files.
 # Placeholder ACs ([First criterion]) indicate the task was created from template
