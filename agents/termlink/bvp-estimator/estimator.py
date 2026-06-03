@@ -375,12 +375,242 @@ def score_d4_portability(fm: dict, body: str, tags: list[str]) -> tuple[int, lis
     return 0, ev + ["→0 (no portability signal)"]
 
 
-def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
-    """Heuristic fallback for free drivers — keyword-on-driver-id only.
+def _components_text(fm: dict) -> str:
+    """Helper: flatten the `components:` frontmatter list to a single lowercased
+    string for regex matching. Returns empty string if absent/malformed."""
+    comps = fm.get("components") or []
+    if not isinstance(comps, list):
+        return ""
+    return " ".join(str(c).lower() for c in comps)
 
-    Free drivers don't yet have rubric sections (per R9 rubric reversibility),
-    so we score conservatively. Looks for the driver id as a substring in
-    body/tags; if present, scores 1-2 based on count. If absent, 0.
+
+def score_f_recall(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """F-RECALL — Recall Leverage: durable, retrievable knowledge accumulation.
+
+    T-2168 (v3-followup-A). Anchored to policy/value-drivers.yaml lines 105-112.
+    Rewards better RETRIEVAL & SYNTHESIS, not raw capture (guardrail line 116).
+
+    Rubric:
+      0: No durable artifact.
+      1: Session-scoped capture only (episodic, not promoted).
+      2: Captured + lightly promoted, but not retrievable by future sessions.
+      3: Writes a reusable artifact future sessions can find via `fw recall`.
+      4: Closes the capture→encode→synced-into-CLAUDE.md loop.
+      5: Improves the retrieval/synthesis layer itself.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+    body_l = body.lower()
+
+    # Level 5 — touches the retrieval/synthesis layer itself
+    layer_touch = (_has_any(comps, [
+        r"lib/recall", r"agents/recall", r"web/blueprints/recall",
+        r"lib/synthesis", r"agents/condensation", r"lib/embeddings",
+        r"qdrant", r"lib/index",
+    ]) or _has_any(body, [
+        r"retrieval (layer|engine|surface)",
+        r"synthesis layer", r"selective recall", r"condensation engine",
+        r"embeddings? (substrate|index|store)",
+        r"improves? (the )?(recall|retrieval|synthesis) (layer|engine|surface)",
+    ]))
+    if layer_touch:
+        ev.append("body/components:retrieval-layer")
+        return 5, ev + ["→5 (improves recall/synthesis layer)"]
+
+    # Level 4 — closes capture→encode→synced-into-instructions loop
+    instruction_sync = (_has_any(comps, [
+        r"\bCLAUDE\.md\b", r"FRAMEWORK\.md", r"050-Inceptions\.md",
+    ]) or _has_any(body, [
+        r"sync(ed|s|ing)? (into|to) CLAUDE\.md",
+        r"writes? (a |the )?rule (into|to) CLAUDE",
+        r"auto[- ]sync.*CLAUDE", r"CLAUDE[- ]sync",
+        r"adds? (a )?writing rule",
+        r"codif(y|ies|ied) (a )?(rule|practice|pattern) into",
+        r"closes? (the )?(capture|recall) loop",
+    ]))
+    if instruction_sync:
+        ev.append("body/components:instruction-sync")
+        return 4, ev + ["→4 (capture→encode→sync loop closed)"]
+
+    # Level 3 — reusable artifact future sessions can find via fw recall
+    recallable = (_has_any(body, [
+        r"\[\[[a-z][a-z0-9_-]+\]\]",                    # memory-slug link
+        r"fw recall", r"fw ask",                        # explicit recall surfaces
+        r"writes? (an? |the )?(learning|pattern|decision) entry",
+        r"fw context add-(learning|pattern|decision)",
+        r"memory slug", r"add-learning ",
+    ]) or _has_any(comps, [
+        r"\.context/project/learnings\.yaml",
+        r"\.context/project/patterns\.yaml",
+        r"\.context/project/decisions\.yaml",
+    ]))
+    if recallable:
+        ev.append("body:fw-recall-or-memory-link")
+        return 3, ev + ["→3 (recallable artifact)"]
+
+    # Level 2 — lightly promoted (concerns/observations/notes), not retrievable
+    promoted = (_has_any(body, [
+        r"concerns?\.yaml", r"observation(s|-)? (inbox|register)?",
+        r"register(ed)? (a |the )?(gap|concern|observation)",
+        r"fw note (add|promote)", r"docs/reports/",
+    ]) or _has_any(comps, [
+        r"\.context/project/concerns\.yaml",
+        r"\.context/working/observations",
+        r"docs/reports/",
+    ]))
+    if promoted:
+        ev.append("body:lightly-promoted")
+        return 2, ev + ["→2 (promoted, not retrievable)"]
+
+    # Level 1 — session-scoped only (episodic capture)
+    episodic = (_has_any(body, [
+        r"\.context/episodic", r"episodic (entry|summary|yaml)",
+        r"handover( document| file)?", r"session capture",
+    ]) or _has_any(comps, [
+        r"\.context/episodic", r"\.context/handovers",
+    ]))
+    if episodic:
+        ev.append("body:episodic-only")
+        return 1, ev + ["→1 (session-scoped capture)"]
+
+    return 0, ev + ["→0 (no recall signal)"]
+
+
+def score_f_orch(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """F-ORCH — Orchestration Leverage: routable-surface expansion.
+
+    T-2168 (v3-followup-A). Anchored to policy/value-drivers.yaml lines 131-141.
+    Guardrail line 142-146: Score CAPABILITY UPLIFT, not ease-of-delegating
+    THIS task. Anchor on genuine routable-surface expansion to avoid
+    manufactured I/O-block busywork.
+
+    Refuse-rule (R5 enforcement): if body says "delegate this" / "wrap in
+    dispatch" / "run via termlink" without ALSO touching dispatch substrate
+    (workflows, resolver, peer, orchestrator, dispatch, bus, termlink lib),
+    return 0 with rationale `f-orch-refuse:wrap-without-substrate`.
+
+    Rubric:
+      0: Primary-agent serial only.
+      1: Hand-wired dispatch only.
+      2: Minor routing improvement, single-use.
+      3: Clean typed I/O contract or decision gate.
+      4: Rubric-scored work routable to TermLink worker; router decision tree.
+      5: Expands orchestration substrate itself.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    # Substrate-touching components — required for any non-zero score under R5.
+    substrate_touch = _has_any(comps, [
+        r"agents/orchestrator", r"agents/dispatch", r"agents/peer",
+        r"agents/reviewer",                                       # dispatch-mode worker
+        r"lib/resolver", r"lib/peer", r"lib/orchestrator", r"lib/bus",
+        r"lib/dispatch", r"lib/termlink", r"agents/termlink",
+        r"\.context/dispatches", r"\.context/workflows",
+        r"web/blueprints/orchestrator",
+        r"bvp-estimator/estimator\.py",                          # rubric-scored routing
+    ])
+    substrate_body = _has_any(body, [
+        r"orchestrator substrate", r"resolver workflow", r"router decision tree",
+        r"\bfw bus (post|read|manifest)\b", r"\bfw dispatch\b",
+        r"\bfw orchestrator\b", r"\bfw peer subscribe\b",
+        r"\bfw resolver\b", r"\bfw outcome\b",
+        r"typed (I/O |io )?(contract|envelope)",
+        r"dispatch envelope", r"refuse-or-dispatch",
+        r"TermLink (worker|dispatch)", r"peer-consult",
+    ])
+
+    # R5 refuse-rule: "delegate this" without substrate touch → 0.
+    # "Touching" substrate = an edit landing in a substrate component path.
+    # Body keywords alone (substrate_body) are not enough — they describe the
+    # wrap, not the substrate uplift. This is the F-ORCH anti-Goodhart per the
+    # T-2168 AC: a task that ONLY says "delegate this" with no substrate edit
+    # is busywork, not capability uplift.
+    wrap_phrase = _has_any(body, [
+        r"wrap.{0,30}in.{0,20}(dispatch|termlink)",
+        r"delegate this",
+        r"run (this )?via termlink",
+        r"dispatch this (out|task|to)",
+        r"can be (delegated|dispatched|routed)",
+    ])
+    if wrap_phrase and not substrate_touch:
+        return 0, ["body:wrap-phrase-without-substrate",
+                   "→0 (f-orch-refuse:wrap-without-substrate)"]
+
+    # Level 5 — expands the substrate itself
+    substrate_expand = _has_any(body, [
+        r"new worker class", r"parallel (dispatch|workers)",
+        r"multi[- ]perspective dispatch",
+        r"advances? the orchestrator",
+        r"new (orchestrator|resolver|peer) (namespace|primitive)",
+        r"expands? (the )?orchestrat(ion|or) substrate",
+    ])
+    substrate_create_comps = _has_any(comps, [
+        r"agents/orchestrator", r"agents/peer", r"lib/orchestrator", r"lib/peer",
+    ])
+    if substrate_expand and substrate_create_comps:
+        ev.append("body:substrate-expand")
+        ev.append("components:substrate-namespace")
+        return 5, ev + ["→5 (orchestration substrate expanded)"]
+    if substrate_expand:
+        ev.append("body:substrate-expand")
+        return 5, ev + ["→5 (substrate-expand body)"]
+
+    # Level 4 — rubric-scored work routable to worker, or router decision tree
+    rubric_route = _has_any(body, [
+        r"rubric[- ]scored", r"BVP estimator",
+        r"router decision tree", r"refuse-or-dispatch (gate|step)",
+        r"reviewer.*--dispatch", r"dispatch[- ]mode",
+        r"interpretive.*rubric[- ]scored",
+        r"peer (responder|subscribe).*spawn",
+    ])
+    if rubric_route:
+        ev.append("body:rubric-routable")
+        return 4, ev + ["→4 (rubric-routable / router decision tree)"]
+
+    # Level 3 — typed I/O contract or decision gate
+    typed_io = _has_any(body, [
+        r"typed (I/O |io )?(contract|envelope)",
+        r"dispatch envelope", r"YAML envelope", r"decision gate",
+        r"workflow yaml", r"resolver workflow",
+        r"\bfw bus (post|read|manifest)\b",
+    ])
+    if typed_io:
+        ev.append("body:typed-io-or-gate")
+        return 3, ev + ["→3 (typed I/O contract or decision gate)"]
+
+    # Level 2 — minor routing improvement, single-use
+    minor_route = _has_any(body, [
+        r"single[- ]use (routing|dispatch)",
+        r"minor (routing|dispatch) (improvement|change)",
+        r"adds? (a |one )?(dispatch|routing) (call|invocation)",
+    ])
+    if minor_route or (substrate_touch and not substrate_body):
+        ev.append("components:substrate-edit" if substrate_touch else "body:minor-routing")
+        return 2, ev + ["→2 (minor routing change)"]
+
+    # Level 1 — hand-wired dispatch only (no reusable artifact)
+    hand_wired = _has_any(body, [
+        r"hand[- ]wired dispatch",
+        r"one[- ]off (dispatch|termlink|worker)",
+        r"\btermlink dispatch\b", r"\btermlink spawn\b",
+        r"\btermlink exec\b", r"\btermlink interact\b",
+    ])
+    if hand_wired:
+        ev.append("body:hand-wired-dispatch")
+        return 1, ev + ["→1 (hand-wired dispatch only)"]
+
+    return 0, ev + ["→0 (no orchestration signal)"]
+
+
+def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """Heuristic fallback for free drivers without a dedicated scorer — keyword-
+    on-driver-id only.
+
+    Used for any active free driver not yet covered by a dedicated `score_f_*`
+    function (T-2168 added F-RECALL + F-ORCH; future drivers fall back here
+    until they get dedicated heuristics). Looks for the driver id as a
+    substring in body/tags; if present, scores 1-2 based on count. If absent, 0.
     """
     ev: list[str] = []
     needle = driver_id.lower()
@@ -437,6 +667,10 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         "D2": score_d2_reliability,
         "D3": score_d3_usability,
         "D4": score_d4_portability,
+        # T-2168 — dedicated free-driver heuristics. Generic score_free_driver
+        # remains the fallback for any other active free driver.
+        "F-RECALL": score_f_recall,
+        "F-ORCH": score_f_orch,
     }
     for driver_id in drivers:
         if is_inception:

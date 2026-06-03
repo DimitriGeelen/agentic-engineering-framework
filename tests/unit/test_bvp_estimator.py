@@ -129,6 +129,107 @@ def test_d2_fw_doctor_keyword_scores_4():
     assert score == 4
 
 
+# --------------------------------------- f-recall / f-orch (T-2168)
+
+def test_f_recall_empty_scores_zero():
+    """L0 — no durable artifact, no signal anywhere."""
+    score, _ = estimator.score_f_recall({}, "", [])
+    assert score == 0
+
+
+def test_f_recall_layer_substrate_scores_5():
+    """L5 — touches the retrieval/synthesis layer itself."""
+    fm = {"workflow_type": "build", "components": ["lib/recall.sh"]}
+    body = "Improves the retrieval engine with selective recall."
+    score, ev = estimator.score_f_recall(fm, body, [])
+    assert score == 5
+    assert any("retrieval-layer" in e for e in ev)
+
+
+def test_f_recall_recallable_artifact_scores_3():
+    """L3 — writes a `[[memory-slug]]` link / fw recall mention."""
+    fm = {"workflow_type": "build", "components": []}
+    body = "Records the pattern as [[feedback-handoff-url-per-class]] for fw recall."
+    score, _ = estimator.score_f_recall(fm, body, [])
+    assert score == 3
+
+
+def test_f_orch_empty_scores_zero():
+    """L0 — primary-agent serial, no routable surface."""
+    score, _ = estimator.score_f_orch({}, "", [])
+    assert score == 0
+
+
+def test_f_orch_typed_io_scores_3():
+    """L3 — clean typed I/O contract / decision gate."""
+    fm = {"workflow_type": "build", "components": []}
+    body = "Adds a typed I/O contract: dispatch envelope schema for fw bus post."
+    score, _ = estimator.score_f_orch(fm, body, [])
+    assert score == 3
+
+
+def test_f_orch_rubric_routable_scores_4():
+    """L4 — rubric-scored work routable to TermLink worker."""
+    fm = {"workflow_type": "build", "components": ["agents/termlink/bvp-estimator/estimator.py"]}
+    body = "BVP estimator now rubric-scored, routable to peer responder via fw bus post."
+    score, _ = estimator.score_f_orch(fm, body, [])
+    assert score == 4
+
+
+def test_f_orch_substrate_expand_scores_5():
+    """L5 — expands the orchestration substrate itself."""
+    fm = {"workflow_type": "build", "components": ["agents/orchestrator/orchestrator.sh", "lib/peer/responder.sh"]}
+    body = "Expands the orchestration substrate with a new worker class."
+    score, _ = estimator.score_f_orch(fm, body, [])
+    assert score == 5
+
+
+def test_f_orch_refuse_wrap_without_substrate():
+    """R5 anti-Goodhart: 'delegate this' without substrate touch → 0."""
+    fm = {"workflow_type": "build", "components": ["docs/notes.md"]}
+    body = "Suggests we delegate this work to a TermLink worker — easy win."
+    score, ev = estimator.score_f_orch(fm, body, [])
+    assert score == 0
+    assert any("refuse" in e for e in ev)
+
+
+def test_estimate_task_routes_f_recall_to_dedicated_scorer(tmp_path):
+    """estimate_task wires F-RECALL into the new dedicated handler."""
+    fm_extra = {"components": "[CLAUDE.md]"}  # serialise as YAML list
+    body = "Sync rule into CLAUDE.md closing the capture loop."
+    path = _make_task(tmp_path, body, fm_extra)
+    drivers = {"D1": 9, "F-RECALL": 6, "F-ORCH": 5}
+    result = estimator.estimate_task(path, drivers)
+    # F-RECALL should be 4 (instruction-sync), not 0 (no driver-id mention) or 1
+    # (which is what the placeholder score_free_driver would have produced if
+    # called for "F-RECALL").
+    assert result["scores"]["F-RECALL"] == 4
+    assert any("instruction-sync" in e for e in result["evidence"]["F-RECALL"])
+
+
+def test_unknown_free_driver_falls_back_to_generic_score_free_driver(tmp_path):
+    """Generic fallback retained for any active free driver without dedicated scorer."""
+    body = "A task mentioning F-NEWHYPOTHETICAL once in its body."
+    path = _make_task(tmp_path, body)
+    drivers = {"D1": 9, "F-NEWHYPOTHETICAL": 3}
+    result = estimator.estimate_task(path, drivers)
+    # Body says "F-NEWHYPOTHETICAL" once → generic scores 1.
+    assert result["scores"]["F-NEWHYPOTHETICAL"] in (1, 2)
+    assert any("F-NEWHYPOTHETICAL" in e for e in result["evidence"]["F-NEWHYPOTHETICAL"])
+
+
+def test_f_recall_rationale_is_informative_not_naive_count():
+    """AC #4: rationale cites the SIGNAL, not a string-count placeholder."""
+    fm = {"workflow_type": "build", "components": ["CLAUDE.md"]}
+    body = "Adds an auto-sync rule into CLAUDE.md."
+    score, ev = estimator.score_f_recall(fm, body, [])
+    # Rationale must not look like the old placeholder
+    # "body/tag hits for 'F-RECALL': 1" — it should cite a structural signal.
+    assert score == 4
+    assert not any("body/tag hits for 'F-RECALL'" in e for e in ev)
+    assert any("instruction-sync" in e for e in ev)
+
+
 # ----------------------------------------------------- determinism contract
 
 def test_same_input_same_output(tmp_path):
