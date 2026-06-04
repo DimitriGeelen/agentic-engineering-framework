@@ -170,15 +170,16 @@ This widens IW-2's "which corruption modes" question: **the pre-flight should ar
 
 ## Recommendation
 
-<!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
-     Watchtower reads this section — if it's empty, the human sees nothing.
-     Format:
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence from exploration)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
--->
+**Recommendation:** GO — Candidate B (shared helper for all claude-p spawn surfaces)
+
+**Rationale:** Two-incident pattern in one session. T-2200 surfaced the burning case (`/root/.claude.json` corruption diagnostic buried 3 file-reads deep from the dispatch surface, after tmux session + worker dir + prompt write + env write + telemetry all spent). T-2202 added the env-leak class (`FRAMEWORK_ROOT` leaks from parent into worker, worker reasons around it instead of dispatch surface scrubbing). Both observations are dispatch-time hygiene the framework should own. Fix shape is bounded — single shared helper `lib/claude_cli_preflight.{sh,py}` invoked from `cmd_dispatch` + `fw reviewer --dispatch` + `fw peer subscribe` responder, single python `json.load` check plus env-scrub before tmux spawn. Risk is low (one check, no behaviour change on healthy config). Adjacent classes already addressed (L-291 toolchain-build-missing-from-Verification, L-364 cron-drift-not-surfaced-at-audit) use the same "detect → refuse fast → name the specific bypass" pattern. Defer Candidate C (`fw doctor` advisory) to a sibling — separate concern, separate cadence.
+
+**Evidence:**
+- T-2200 worker exited rc=1 within seconds with diagnostic only in worker stdout log — three file reads removed from the dispatch surface; ~3 minutes of agent forensics.
+- T-2202 worker (same session, ~30 min later) hit `FRAMEWORK_ROOT` env-leak from parent — worker adapted by prefixing every fw call with `FRAMEWORK_ROOT=...` and `PROJECT_ROOT=...`. Second-incident evidence for IW-2's "which corruption modes" question.
+- `agents/termlink/termlink.sh::cmd_dispatch` flow has no `claude -p` config pre-flight between arg parse and tmux spawn — verified by inspection.
+- `fw reviewer --dispatch` (T-1951) and `fw peer subscribe` responder spawn-bridge would both inherit the same gap.
+- Adjacent pattern shipped: L-291 (toolchain) and L-364 (cron-drift) both use the same "fail-late surface → detect → refuse fast" fix shape that Candidate B mirrors.
 
 ## Decisions
 
