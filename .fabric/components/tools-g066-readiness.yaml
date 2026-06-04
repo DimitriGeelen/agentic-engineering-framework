@@ -4,17 +4,17 @@ type: script
 subsystem: unknown
 location: tools/g066-readiness.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: lib/reviewer/static_scan.py
+  type: calls
+- target: lib/reviewer/dispatch_cli.py
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/g066_readiness.bats
+  type: tests_by
 last_verified: 2026-06-04
 created_by: unknown
+last_enriched: '2026-06-04'

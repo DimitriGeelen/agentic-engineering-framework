@@ -52,6 +52,8 @@ depends_on:
   type: renders
 - target: F-002
   type: calls
+- target: lib/gaps.py
+  type: calls
 depended_by:
 - target: C-006
   type: htmx
@@ -68,4 +70,4 @@ depended_by:
   type: registered_by
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-05-06'
+last_enriched: '2026-06-04'

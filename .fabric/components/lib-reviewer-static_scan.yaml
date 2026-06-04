@@ -21,6 +21,10 @@ depended_by:
   type: called_by
 - target: tools/audit-swallowed-errors.py
   type: called_by
+- target: tests/unit/g066_readiness.bats
+  type: tests_by
+- target: tools/g066-readiness.py
+  type: called_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-06-04'

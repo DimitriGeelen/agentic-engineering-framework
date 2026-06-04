@@ -101,7 +101,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-03'
+last_enriched: '2026-06-04'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -547,3 +547,9 @@ depended_by:
   type: called_by
 - target: tests/unit/test_audit_retire_when.bats
   type: tests_by
+- target: tests/unit/g066_readiness.bats
+  type: tests_by
+- target: tests/unit/gaps_close.bats
+  type: tests_by
+- target: tools/g066-readiness.py
+  type: called_by
