@@ -2031,7 +2031,17 @@ concerns:
   created: 2026-05-04
   last_reviewed: 2026-05-06
   related_task: T-1709
-  related_tasks_extra: [T-1442, T-1443, T-1668, T-1671, T-1709, T-1711, T-1713, T-1762, G-062]
+  related_tasks_extra: [T-1442, T-1443, T-1668, T-1671, T-1709, T-1711, T-1713, T-1762, T-1951, T-1985, T-2198, G-062]
+  closure_check_command: "python3 tools/g066-readiness.py --json"
+  status_notes: |
+    2026-06-04 — T-2198 added the closure-readiness gauge. Both halves of
+    PRONG 1 now wired: T-1985 wired auto-tick into lib/reviewer/static_scan.py
+    (_should_auto_tick + auto_ticked field + feedback-stream sovereignty rail);
+    T-1951 wired `fw reviewer --dispatch` → lib/reviewer/dispatch_cli.py with
+    FW_REVIEWER_IN_DISPATCH=1 recursion guard. PRONG 2 (per-task §ACD gate,
+    T-1762) shipped 2026-05-06. With both prongs satisfied per the
+    recommendation, gauge=READY and the operator can close from /gaps
+    Close button (T-2185 surface) or `fw gaps close G-066`.
 
 - id: G-067
   type: gap
