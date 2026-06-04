@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-06-04T09:00:06Z
-last_update: 2026-06-04T09:02:11Z
+last_update: '2026-06-04T09:15:03Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,6 +36,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-04T09:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -103,15 +113,15 @@ This-session repro (third recurrence of the T-679 rule):
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -168,7 +178,11 @@ T-1715/T-1716 closed fw-inception-start filing path under $CLAUDECODE=1. T-2201 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: T-1715/T-1716 closed fw-inception-start filing path under $CLAUDECODE=1. T-2201 + T-2203 are this-session repro: both filed via fw task create + fw work-on (workflow_type: inception set directly), bypassed T-1716, sat with template Recommendation blocks, agent emitted /inception/<id> handoff URLs anyway. Three filing-path bypasses (task create, work-on, direct YAML) plus one consumer-side gap (fw task review/review-batch emission lacks Recommendation-completeness pre-check) remain after T-1716. Retrofit-recommendations exists but is manual-only (no cron, no hook). Bounded fix shape known (extend T-1716 contract to all producers + add review-batch emission gate). Evidence concrete, risk low — GO.
+
+**Date**: 2026-06-04T16:09:52Z
 
 ## Updates
 
@@ -177,3 +191,8 @@ T-1715/T-1716 closed fw-inception-start filing path under $CLAUDECODE=1. T-2201 
 
 ### 2026-06-04T09:02:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-04T16:09:52Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** T-1715/T-1716 closed fw-inception-start filing path under $CLAUDECODE=1. T-2201 + T-2203 are this-session repro: both filed via fw task create + fw work-on (workflow_type: inception set directly), bypassed T-1716, sat with template Recommendation blocks, agent emitted /inception/<id> handoff URLs anyway. Three filing-path bypasses (task create, work-on, direct YAML) plus one consumer-side gap (fw task review/review-batch emission lacks Recommendation-completeness pre-check) remain after T-1716. Retrofit-recommendations exists but is manual-only (no cron, no hook). Bounded fix shape known (extend T-1716 contract to all producers + add review-batch emission gate). Evidence concrete, risk low — GO.
