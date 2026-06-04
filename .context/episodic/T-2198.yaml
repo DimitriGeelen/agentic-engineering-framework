@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2198: G-066 closure-readiness gauge — prove reviewer auto-tick + dispatch wiring
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-04T07:10:41Z
+# ============================================================================
+
+task_id: T-2198
+task_name: "G-066 closure-readiness gauge — prove reviewer auto-tick + dispatch wiring"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-04T06:55:01Z
+completed: 2026-06-04T07:10:31Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-04T09:05:34+02:00
+last_commit: 2026-06-04T09:05:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-066 closure-readiness gauge — prove reviewer auto-tick + dispatch wiring. register tests/unit/g066_readiness.bats fabric card
+
+# Key outcomes
+outcomes:
+  - '`tools/g066-readiness.py` exists and emits JSON `verdict: READY` against the live repo (both T-1985 and T-1951 wirings present).'
+  - 'Gauge JSON shape: contains `gap_id`, `verdict`, `passing_count`, `total_count`, `checks[]` fields.'
+  - '`.context/project/concerns.yaml` G-066 entry has `closure_check_command: "python3 tools/g066-readiness.py --json"`.'
+  - '`tests/unit/g066_readiness.bats` covers four conditions: (a) READY against live repo, (b) NOT_READY when auto-tick stub absent, (c) NOT_READY when dispatch routing absent, (d) `--strict` exit 1 on NOT_READY. (Actual: 12/12 PASS, exceeds the four-condition floor.)'
+  - '`lib.gaps.gauge_state("G-066")` returns `verdict: READY` and `has_gauge: True` (proves T-2185 surface reads the new gauge).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-04 — Wiring-presence check, not behaviour-replay'
+    chose: 'Structural inspection of the four wiring sites (function definition, field declaration, fw routing branch, dispatch_cli module presence). No end-to-end reviewer run.'
+    rationale: 'Closure readiness is a wiring question. Running the reviewer would couple closure to the live corpus (which is volatile) and to the live TermLink hub (which may not be reachable from cron). Wiring presence is the necessary-and-sufficient signal for "PRONG 1 shipped".'
+    alternatives_rejected: ['(a) Run `fw reviewer T-1442 --dispatch` end-to-end — too slow, network-coupled, and verifies behaviour not wiring; (b) Hash the reviewer source and compare against a baseline — too brittle, refactors trip it; (c) Defer to operator-only override — wastes the T-2185 surface that exists to actuate gauge-confirmed closures.']
+  - decision: '2026-06-04 — Refuse exit on missing project root, not silent fallback'
+    chose: 'Exit 2 when `--project-root` (or env/auto-discovery) points at a path with no `.context/`.'
+    rationale: 'Auto-discovery walks up from `__file__`, and a stray `.context/` in a parent directory (e.g. `/tmp/.context/` from prior bats runs) could silently mislabel the project root. Explicit refusal forces the caller to make the root visible.'
+    alternatives_rejected: ['Falling back to CWD silently — same auto-discovery hazard, just relocated.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-g066_readiness.yaml'
+  - '.fabric/components/tools-g066-readiness.yaml'
+  - '.tasks/active/T-2198-g-066-closure-readiness-gauge--prove-rev.md'
+  - 'tests/unit/g066_readiness.bats'
+  - 'tools/g066-readiness.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-04T09:05:34"
+    action: "T-2198: G-066 closure-readiness gauge — prove reviewer auto-tick + dispatch wiring"
+  - time: "2026-06-04T09:05:56"
+    action: "T-2198: register tests/unit/g066_readiness.bats fabric card"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 2
+  files_changed: 6
+  lines_added: 640
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2198-g-066-closure-readiness-gauge--prove-rev.md
+generated_by: context-agent-hybrid

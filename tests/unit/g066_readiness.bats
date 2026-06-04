@@ -10,6 +10,13 @@ setup() {
     REPO_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
     TMPDIR="$(mktemp -d)"
     cd "$TMPDIR"
+    # PROJECT_ROOT takes precedence over auto-discovery in the gauge. The
+    # framework's update-task.sh exports PROJECT_ROOT before running
+    # ## Verification commands; without unsetting it, synthetic-repo tests
+    # would inspect the live repo instead of their tmpdir (and pass when
+    # they should fail). Standalone bats invocation didn't see this
+    # because no PROJECT_ROOT was inherited.
+    unset PROJECT_ROOT
     # All synthetic-repo tests share a common skeleton — `.context/` is the
     # only marker the gauge uses to recognise a project root.
     mkdir -p .context lib/reviewer bin tools
@@ -44,8 +51,9 @@ SH
 
 @test "READY: live repo has all four wirings (T-1985 + T-1951)" {
     # Run against actual repo, not synthetic — proves the live state.
-    cd "$REPO_ROOT"
-    out=$(python3 tools/g066-readiness.py --json 2>&1)
+    # Pin via --project-root so PROJECT_ROOT-unset (from setup()) doesn't
+    # auto-discover the bats tmpdir.
+    out=$(python3 "$REPO_ROOT/tools/g066-readiness.py" --json --project-root "$REPO_ROOT" 2>&1)
     [ "$?" -eq 0 ]
     rc=0
     echo "$out" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); assert d['verdict']=='READY', d; assert d['passing_count']==4, d" || rc=$?
@@ -133,8 +141,7 @@ SH
 }
 
 @test "JSON shape contract: required fields all present" {
-    cd "$REPO_ROOT"
-    out=$(python3 tools/g066-readiness.py --json)
+    out=$(python3 "$REPO_ROOT/tools/g066-readiness.py" --json --project-root "$REPO_ROOT")
     rc=0
     echo "$out" | python3 -c "
 import json, sys
@@ -149,15 +156,16 @@ assert isinstance(d['checks'], list) and len(d['checks']) == 4
 }
 
 @test "human-readable mode emits VERDICT line" {
-    cd "$REPO_ROOT"
-    run python3 tools/g066-readiness.py
+    run python3 "$REPO_ROOT/tools/g066-readiness.py" --project-root "$REPO_ROOT"
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "VERDICT:"
 }
 
 @test "lib.gaps.gauge_state surfaces verdict to T-2185 handlers" {
-    cd "$REPO_ROOT"
-    out=$(python3 -c "from lib.gaps import gauge_state; import json; print(json.dumps(gauge_state('G-066')))")
+    # gauge_state runs the closure_check_command which is `python3 tools/g066-readiness.py --json`
+    # — relative path — so we need cwd at REPO_ROOT for it to resolve. Pass Path object
+    # (gauge_state's project_root param expects a Path, not a str — lib/gaps.py:_concerns_path).
+    out=$(cd "$REPO_ROOT" && python3 -c "from pathlib import Path; from lib.gaps import gauge_state; import json; print(json.dumps(gauge_state('G-066', project_root=Path('$REPO_ROOT'))))")
     rc=0
     echo "$out" | python3 -c "
 import json, sys
