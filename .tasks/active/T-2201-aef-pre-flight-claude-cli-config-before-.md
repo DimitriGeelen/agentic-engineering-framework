@@ -130,15 +130,15 @@ This widens IW-2's "which corruption modes" question: **the pre-flight should ar
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -194,9 +194,18 @@ This widens IW-2's "which corruption modes" question: **the pre-flight should ar
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Two-incident pattern in one session. T-2200 surfaced the burning case (`/root/.claude.json` corruption diagnostic buried 3 file-reads deep from the dispatch surface, after tmux session + worker dir + prompt write + env write + telemetry all spent). T-2202 added the env-leak class (`FRAMEWORK_ROOT` leaks from parent into worker, worker reasons around it instead of dispatch surface scrubbing). Both observations are dispatch-time hygiene the framework should own. Fix shape is bounded — single shared helper `lib/claude_cli_preflight.{sh,py}` invoked from `cmd_dispatch` + `fw reviewer --dispatch` + `fw peer subscribe` responder, single python `json.load` check plus env-scrub before tmux spawn. Risk is low (one check, no behaviour change on healthy config). Adjacent classes already addressed (L-291 toolchain-build-missing-from-Verification, L-364 cron-drift-not-surfaced-at-audit) use the same "detect → refuse fast → name the specific bypass" pattern. Defer Candidate C (`fw doctor` advisory) to a sibling — separate concern, separate cadence.
+
+**Date**: 2026-06-04T19:47:12Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-04T19:47:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Two-incident pattern in one session. T-2200 surfaced the burning case (`/root/.claude.json` corruption diagnostic buried 3 file-reads deep from the dispatch surface, after tmux session + worker dir + prompt write + env write + telemetry all spent). T-2202 added the env-leak class (`FRAMEWORK_ROOT` leaks from parent into worker, worker reasons around it instead of dispatch surface scrubbing). Both observations are dispatch-time hygiene the framework should own. Fix shape is bounded — single shared helper `lib/claude_cli_preflight.{sh,py}` invoked from `cmd_dispatch` + `fw reviewer --dispatch` + `fw peer subscribe` responder, single python `json.load` check plus env-scrub before tmux spawn. Risk is low (one check, no behaviour change on healthy config). Adjacent classes already addressed (L-291 toolchain-build-missing-from-Verification, L-364 cron-drift-not-surfaced-at-audit) use the same "detect → refuse fast → name the specific bypass" pattern. Defer Candidate C (`fw doctor` advisory) to a sibling — separate concern, separate cadence.
