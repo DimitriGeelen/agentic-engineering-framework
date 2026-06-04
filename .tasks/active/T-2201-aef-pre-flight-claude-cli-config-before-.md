@@ -77,6 +77,12 @@ The framework's dispatch surface did NOT pre-flight the Claude CLI config before
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
 
+## Second incident — same class (2026-06-04, ~30min after T-2200)
+
+Both `fan-dashboard-aef-setup` (T-2200) and `workflow-designer-aef-setup` (T-2202) workers exhibited the SAME observable when reaching Step 2 (discover commands): the parent's `FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework` env var leaked into the worker subprocess, so the worker's `fw help` consulted the framework repo's lib, not its own vendored `.agentic-framework/`. The workers adapted by prefixing every fw call with `FRAMEWORK_ROOT=/opt/<project>/.agentic-framework PROJECT_ROOT=/opt/<project>`. This isn't fatal — the worker reasoned around it — but it IS dispatch-time hygiene the framework should own, not delegate to the worker's reasoning budget.
+
+This widens IW-2's "which corruption modes" question: **the pre-flight should arguably also strip / re-pin worker environment** (PROJECT_ROOT, FRAMEWORK_ROOT, possibly more) so workers start in a clean, project-local env. Adjacent class to L-456 (bats `unset PROJECT_ROOT` discipline shipped this session). Adds candidate **B+** to the working set: shared helper does config pre-flight AND env scrubbing before spawn.
+
 ## Open Questions
 
 - **IW-1: Should `fw termlink dispatch` pre-flight `/root/.claude.json` parseability, OR should that check live in a deeper layer (`agents/termlink/termlink.sh::ensure_termlink` or a shared helper)?**
