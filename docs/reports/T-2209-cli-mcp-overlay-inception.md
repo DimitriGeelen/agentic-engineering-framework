@@ -317,3 +317,28 @@ Pre-arc-create survey of the current `fw --json` surface across the 16 read-only
 **OSQ-C performance benchmark:** before this slice's close gate, measure `time bin/fw <verb> --json` vs `time bin/fw <verb>` for each of the 16. Acceptance criterion: <2× slower OR document the fast-path / accept the latency. Slice 1 should not blanket-add JSON serialization if it doubles cron-loop latency.
 
 **This survey is informational data; it does NOT pre-empt Slice 1's build task design — the operator runs `fw arc create capability-overlay` before any Slice 1 task can be filed.**
+
+---
+
+## §16. OR-2 scan extension sketch (T-2216 build leg pre-spec)
+
+T-2216 §Slice Assignment named OR-2 as Slice 1's one real build leg (~40 LoC). Verifying the estimate by inspecting the current scan surface (`agents/audit/orchestrator-mcp-scan.sh`):
+
+**Current state (414 lines total):**
+- `probe_via_direct_read()` (lines 48-50) — gates direct-read mode
+- `probe_tools()` (lines 55-66) — greps `/opt/termlink/crates/termlink-mcp/src/tools.rs` for `name = "termlink_*"`
+- `probe_gate_calls()` (lines 69-89) — greps for `check_task_governance(... "termlink_*")` to identify gated tools
+- `probe_sessions_json()` (lines 92-100) — pulls live TermLink session tags (T-1649 lint)
+- Classifier (Python, lines 113+) — set ops over baseline.yaml entries
+
+**OR-2 extension shape:**
+- **New function** `probe_framework_tools()` (~15 LoC) — reads the framework MCP server's manifest (per OR-1, location TBD by Slice 2 — see OSQ-E). Returns list of `mcp__framework__*` tool names + gated-flag (the framework analogue of `check_task_governance`). Manifest format expected: `framework-mcp-manifest.json` next to the MCP server entry point.
+- **Classifier merge** (~10 LoC) — union the framework tool names into the same `seen` set the termlink classifier uses. Prefix-disjoint (`termlink_*` vs `mcp__framework__*`) so no collisions.
+- **Freshness check** (~10 LoC) — `mtime(manifest) ≥ mtime(server_entry_point)` else emit WARN. Without this, a manifest can drift behind code (the L-291 toolchain-build class one level up).
+- **Verification block addition** (per OR-6) — Slice 1's `## Verification` includes `bin/fw audit | grep -q "framework-mcp.*PASS"` so the scan extension is exercised by the slice's own close gate.
+
+**Total: ~35-40 LoC of new shell + ~5 LoC Python classifier merge.** T-2216's estimate holds.
+
+**Edge case Slice 1 must handle:** scan runs cross-host (some operators run it via TermLink remote, others direct). When the framework MCP server is not yet deployed (early days), `probe_framework_tools()` must return empty cleanly, not error. Modelled on `probe_tools()`'s existing fallback (lines 85-87: `ERROR: probe returned empty tool list`).
+
+**Cross-host pattern reuse:** the existing `probe_via_direct_read` / TermLink-fallback pattern (lines 49-65) is the right shape for `probe_framework_tools()`. For the framework's own MCP, "direct read" usually wins (the scan host owns the framework repo) but the fallback path needs to work for the symmetric case where a remote-host operator audits a framework MCP on another machine.
