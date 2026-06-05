@@ -217,4 +217,35 @@ Either is operator-Sovereign. The agent cannot self-authorise.
 
 ---
 
+### 2026-06-05 — RC5 surfaced WHILE writing this RCA
+
+**Mid-RCA the framework reproduced the same class on T-2217 itself.**
+
+T-2217's IW-4 had `disposition: deferred` + `rationale: …` correctly filled. The disposition gate at `agents/task-create/update-task.sh:770` refused work-completed with `IW-4 (disposition=true rationale=false)`. Investigation:
+
+```bash
+# update-task.sh:770
+if echo "$line" | grep -qE "(IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)"; then
+```
+
+The `IW-[0-9]+` branch has **no line anchor** — it matches the substring anywhere on a line. The IW-4 rationale text contained the phrase "add IW-1/IW-2 dispositions" (referring back to T-2209's open questions). The parser saw `IW-1` mid-line, treated it as a new question marker, **flushed IW-4's verdict before reaching IW-4's rationale line**, and produced `disposition=true rationale=false`.
+
+**This is RC5 of G-068 class.** Adding to the table in §1:
+
+| Date | Incident | RC | Resolution |
+|------|----------|-----|------------|
+| 2026-06-05 mid-RCA | T-2217 disposition gate false-positive | RC5 (new) — `update-task.sh:770` IW-N regex matches `IW-N` anywhere on a line, not just question-marker positions; rationale text referencing other IWs triggers premature verdict flush | TBD — Slice 3 candidate (anchor the regex to bullet/heading delimiters) |
+
+**The recursive symmetry matters:** T-2217 is an inception about *Watchtower side-effect-warning truncation*, and the gate that blocks T-2217 itself is exactly the gate whose side-effect warning was truncated on T-2209. The framework reproduced the META-class on the very inception filed to address it. That is the strongest possible signal that B (the e2e contract test) is the right fix shape.
+
+**Workaround applied:** rewrote IW-4 rationale to say *"the missing dispositions"* instead of `"IW-1/IW-2 dispositions"`. Bug remains in `update-task.sh:770` — should be filed as a build slice (proposal: Slice 3 of T-2217 — anchor the IW-N regex per `^[[:space:]]*-[[:space:]]*\*\*IW-[0-9]+:` shape).
+
+### Recommendation evolution (updated)
+
+| Stamp | Recommendation | Rationale |
+|---|---|---|
+| Filing | DEFER | Evidence gap — candidates A/B/C/D not yet analysed |
+| §3-§4 analysis | **GO — A + B joint** | A closes immediate RC4 at XS cost; B closes G-068 META-class (31-day-old follow-up). |
+| Post-RC5 | **GO — A + B + Slice 3 (regex anchor)** | RC5 surfaced WHILE writing the RCA. The recursive symmetry confirms B is correct shape. Slice 3 added: anchor `update-task.sh:770` regex. F8 0.5 (XS). |
+
 *(further entries appended as exploration / operator dialogue proceeds)*

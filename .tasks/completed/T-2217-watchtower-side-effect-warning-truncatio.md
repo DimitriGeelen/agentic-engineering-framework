@@ -6,16 +6,16 @@ description: >
   Inception: Watchtower side-effect-warning truncation — RCA + systemic mitigation
   (G-068 4th incident)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-05T19:52:03Z
-last_update: '2026-06-05T20:00:02Z'
-date_finished:
+last_update: 2026-06-05T20:04:35Z
+date_finished: 2026-06-05T20:04:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -79,7 +79,7 @@ cost_estimate_proposed:
 - **IW-4: How does the immediate T-2209 stuck `started-work` state resolve, independent of this task's mitigation?**
   confidence: 3
   disposition: deferred
-  rationale: Operator-Sovereign — either honest fix (add IW-1/IW-2 dispositions to T-2209 then re-click GO) or Tier-2 bypass (`FW_SKIP_DISPOSITION_GATE=1`). Not blocking T-2217. See §7.
+  rationale: Operator-Sovereign — either honest fix (add the missing dispositions to T-2209 then re-click GO) or Tier-2 bypass (`FW_SKIP_DISPOSITION_GATE=1`). Not blocking T-2217. See artifact section seven.
 
 <!-- Format reference (do not delete):
      - **IW-N: <question>**
@@ -178,7 +178,10 @@ Strategic-investment frame (operator-applied to T-2209 / Path C-scoped) applies 
 | Slice | Candidate | Scope | F8 | Closes |
 |---|---|---|---|---|
 | 1 | A | Widen `web/blueprints/inception.py:551` truncation 150→1500; wrap stderr in `<pre>` for newline preservation | 0.5 | RC4 visibility |
-| 2 | B | `tests/playwright/test_inception_decide_contract.py` — 3 cases (GO success, GO disposition-blocked, NO-GO success); fixture under-disposed inception; assertions on persistence + actionable-error visibility (≥300 chars + "Options:" recovery block) | 3.0 | G-068 META; RC1-RC4 regression net; pre-empts RC5/RC6 |
+| 2 | B | `tests/playwright/test_inception_decide_contract.py` — 3 cases (GO success, GO disposition-blocked, NO-GO success); fixture under-disposed inception; assertions on persistence + actionable-error visibility (≥300 chars + "Options:" recovery block) | 3.0 | G-068 META; RC1-RC5 regression net; pre-empts RC6 |
+| 3 | (new — RC5 surgical) | Anchor `agents/task-create/update-task.sh:770` IW-N regex to question-marker line shape (`^[[:space:]]*-[[:space:]]*\*\*IW-[0-9]+:`); bats test pinning the anchor | 0.5 | RC5 |
+
+**RC5 surfaced WHILE filing this inception** — the disposition gate parser at update-task.sh:770 had an unanchored IW-N regex. My IW-4 rationale mentioned other IW numbers in prose; the parser treated those as new question markers and false-positive-rejected IW-4. Adds Slice 3 to the GO scope. See artifact §8 / RC5 entry.
 
 **Headline mechanic (§ACD):** *"operator submits GO via Watchtower against a fixture inception with under-disposed Open Questions; CI test fails because the operator-visible HTML truncates the actionable recovery options. The test failing IS the demo that the regression-net works."*
 
@@ -217,14 +220,17 @@ Either is operator-Sovereign; agent cannot self-authorise.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5a379f8d
-- **Timestamp:** 2026-06-05T19:57:52Z
+- **Scan ID:** R-dede72a0
+- **Timestamp:** 2026-06-05T20:04:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-06-05T20:00:49Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Filed initially as DEFER (evidence gap); upgraded to GO after candidate analysis landed in `docs/reports/T-2217-watchtower-side-effect-truncation-rca.md` §3-§6.
+
+### 2026-06-05T20:04:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Operator GO recorded via Watchtower; RC5 mid-RCA fix applied (IW-4 rationale rewording)
