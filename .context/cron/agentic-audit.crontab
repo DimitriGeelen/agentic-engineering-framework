@@ -73,3 +73,6 @@ PATH=/usr/local/bin:/usr/bin:/bin
 
 # BVP cost-estimator sweep (15 min, T-1935)
 */15 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-bvp-cost-estimator-sweep.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" bvp estimate-cost sweep --cron' 2>&1 | logger -t agentic-cron
+
+# Inception Recommendation retrofit (hourly, T-2204 Slice D)
+19 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-inception-retrofit-rec.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" inception retrofit-recommendations --apply' 2>&1 | logger -t agentic-cron

@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2208: T-2204 Slice D — hourly cron for fw inception retrofit-recommendations --apply
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-05T11:46:12Z
+# ============================================================================
+
+task_id: T-2208
+task_name: "T-2204 Slice D — hourly cron for fw inception retrofit-recommendations --apply"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-05T11:30:57Z
+completed: 2026-06-05T11:44:15Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Cron registry entry exists: `.context/cron-registry.yaml` contains a job with `id: inception-retrofit-rec-hourly` invoking `fw inception retrofit-recommendations --apply` on an hourly schedule, with `origin_task: T-2208`, `status: active`, and a description.'
+  - '`fw cron generate` succeeds and produces a crontab containing the `inception-retrofit-rec-hourly` line (registry → generated transition).'
+  - '`fw doctor` reports cron in sync AND does not report "Cron registry edited but not generated" (L-364 mandatory dual-clause check, T-1942/T-1943).'
+  - '`fw cron status` (or `list`) lists `inception-retrofit-rec-hourly` as active.'
+  - '`fw cron run inception-retrofit-rec-hourly` executes successfully end-to-end (deployed→executable check, the L-365 advisory transition).'
+  - 'Idempotence: a second `fw inception retrofit-recommendations --apply` invocation after the first reports zero changes and exits 0 (so the cron does not flap on already-clean state).'
+  - 'Reviewer PASS: `bin/fw reviewer T-2208 2>&1 | grep -q "Overall:.*PASS"`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2208-t-2204-slice-d--hourly-cron-for-fw-incep.md
+generated_by: context-agent-hybrid
