@@ -3518,3 +3518,10 @@ X'` returning empty group."
   date: 2026-06-05
   context: Added via context agent
   application: TBD
+- id: L-460
+  learning: "Actionable-survey CLI defaults should filter past-tense status rows (work-completed/done/archived) by default; archival sweep is an explicit --include-completed opt-in. The opposite bias creates the T-2223 class — the operator's HV-LC survey is technically correct but practically misleading. Sovereignty parity sibling: T-1938 --include-proposed. Both flip ONE dimension (data-quality, lifecycle-status) toward broader sweep; highest-trust slice is the default floor."
+  source: P-009
+  task: T-2223
+  date: 2026-06-05
+  context: Added via context agent
+  application: TBD
