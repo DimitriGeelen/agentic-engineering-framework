@@ -101,6 +101,7 @@ jobs:
   # GITHUB MIRROR (all branches + tags) - T-292
   # =========================================================================
   - name: Push to GitHub Mirror
+    jobExecutor: server-docker
     steps:
       - !PushRepository
         name: Push to GitHub
