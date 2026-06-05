@@ -74,24 +74,24 @@ This-session repro (third recurrence of the T-679 rule):
 ## Open Questions
 
 - **IW-1: Single producer fix (B), single consumer fix (C), pair (B+C), or full hybrid (E = B+C+D cron)?**
-  confidence: 2
-  disposition: <decide-time>
-  rationale: Leaning E by L-399 producer/consumer parity discipline; but B+C alone may suffice if retrofit cron adds shipping cost without proportional defence (active inceptions get reviewed within hours, not days).
+  confidence: 4
+  disposition: answered — Candidate E (full hybrid: B + B' + C + D). B (T-2205 Write/Edit hook), B' (T-2207 create-task.sh CLI parity), C (T-2206 emit_review/batch consumer), D (T-2208 hourly cron). All four legs shipped 2026-06-04 → 2026-06-05. Per L-399 / T-1890 producer/consumer parity discipline: every plausible filing path closes the gate, unified env-var bypass.
+  rationale: B+C alone left direct-YAML and post-hoc workflow_type-flip paths uncovered; cron backstop catches both classes plus the window before the operator wires Slice B's hook into .claude/settings.json (T-2205 operator action pending).
 
 - **IW-2: For Candidate B (Write/Edit hook), what's the bypass mechanism per T-1890 parity rule — env var only, flag only, or both?**
-  confidence: 2
-  disposition: <decide-time>
-  rationale: Env var `FW_ALLOW_EMPTY_RECOMMENDATION=1` is needed because the Write tool has no flag surface; `--allow-empty-recommendation` flag is needed because `fw task create` and `fw work-on` do have one. T-1890 says ship both when hook gates internal + external producer patterns.
+  confidence: 5
+  disposition: answered — env-var-only (`FW_ALLOW_EMPTY_RECOMMENDATION=1`) for the Write/Edit hook surface; flag (`--recommendation` / `--rationale` / `--i-am-human`) for CLI surfaces (`do_inception_start`, `create-task.sh`). T-1890 satisfied — bypass-contract symmetric across internal + external producer patterns.
+  rationale: Write tool has no flag surface so env-var is mandatory for Slice B (T-2205); CLI surfaces use both — flag for human terminal sessions, env for agent override (T-1716, T-2207). All agent-initiated bypasses log Tier-2 to `.context/working/.gate-bypass-log.yaml`. `FW_INCEPTION_PRE_GATED=1` trusted-caller signal stays silent (internal routing, not override).
 
 - **IW-3: Does `fw task update T-XXX` that flips `workflow_type` to `inception` post-hoc count as a filing event — should it trigger the same Recommendation-completeness check at the moment of the flip?**
-  confidence: 1
-  disposition: <decide-time>
-  rationale: Probably yes (mid-build pivot to inception means the Recommendation contract now applies), but UX cost is real — the flip happens during exploration when no Recommendation can yet be sound. Maybe defer-stub injection on flip is the right shape.
+  confidence: 3
+  disposition: deferred — covered indirectly by Slice D (T-2208) cron backstop rather than a synchronous gate on the flip itself. Hourly retrofit-recommendations sweep injects DEFER stub within ≤60 min of any post-hoc flip that leaves an empty Recommendation block. Synchronous gate revisitable as Slice E if production data shows post-hoc flips are common.
+  rationale: A synchronous gate on `fw task update --type inception` would have UX cost — the flip is itself often mid-exploration, no Recommendation can yet be sound. Cron backstop accepts up-to-60min eventual consistency in exchange for not blocking the flip; if production data shows post-hoc flips are common, a synchronous gate can be added later as Slice E.
 
 - **IW-4: Should `fw task review-batch` refuse emission entirely, or emit with a `[NO-REC]` annotation (T-1576 already wires this verb in handover output)?**
-  confidence: 1
-  disposition: <decide-time>
-  rationale: Operator preference (A4) is refuse. T-1576's `[NO-REC]` annotation belongs in *survey output* (handover, queue listings) where the agent surveys what exists; the handoff verb is where the agent *commits* to advisory — different semantics. Lean refuse.
+  confidence: 5
+  disposition: answered — refuse emission entirely (Slice C / T-2206 emit_review_batch BLOCK). T-1576's `[NO-REC]` survey-annotation stays for *describing what exists*; the handoff verb is where the agent *commits* to advisory — different semantics, different surfaces.
+  rationale: Per the operator's 2026-06-04 pushback ("again surface without recommendation") on T-2201/T-2203 inception handoffs, the BLOCK semantic was the unambiguous read — T-2206 shipped the consumer leg of the answer. `[NO-REC]` (T-1576) continues to appear in handover queue listings and `fw review-queue` output where the agent is surveying state, not handing off.
 
 ## Exploration Plan
 
@@ -161,9 +161,12 @@ T-1715/T-1716 closed fw-inception-start filing path under $CLAUDECODE=1. T-2201 
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- **Slice B (T-2205) — PreToolUse Write/Edit hook** — `lib/hooks/check_inception_recommendation.py`; refuses Write/Edit on `.tasks/active/T-*.md` when frontmatter has `workflow_type: inception` AND `## Recommendation` block is empty / template-only. Operator action still pending: wire into `.claude/settings.json` (B-005 hard-blocks agent — see Updates below).
+- **Slice B' (T-2207) — `create-task.sh` CLI parity** — `agents/task-create/create-task.sh` accepts `--recommendation GO|NO-GO|DEFER`, `--rationale "..."`, `--i-am-human`. Inception filings under `$CLAUDECODE=1` refused without rec+rationale. Trusted-caller signal `FW_INCEPTION_PRE_GATED=1` (silent, not logged) prevents double-gating from `do_inception_start`. 11/11 bats PASS (`tests/unit/create_task_inception_recommendation_gate.bats`).
+- **Slice C (T-2206) — `emit_review` / `emit_review_batch` BLOCK consumer** — `lib/review.sh` refuses to emit handoff URL for inceptions with empty/template Recommendation; unified env-var bypass `FW_ALLOW_EMPTY_RECOMMENDATION=1` writes Tier-2 NOTE + log entry per task. 14/14 bats PASS + 4-file regression sweep clean.
+- **Slice D (T-2208, shipped 2026-06-05) — hourly cron backstop** — `.context/cron-registry.yaml` entry `inception-retrofit-rec-hourly` (schedule `19 * * * *`) wraps `fw inception retrofit-recommendations --apply`. L-364 dual-clause cron sync PASS (`fw doctor` reports "Cron registry in sync"). Idempotent on clean state. 5/5 Verification commands PASS including reviewer.
+- **CLAUDE.md §Recommendation-completeness gate** — table now names all 4 producer legs + consumer + cron backstop with unified bypass-env semantics per L-399 / T-1890 producer/consumer parity discipline. Commit landing alongside this Recommendation update.
+- **Producer/consumer parity confirmed** — every producer surface refuses under `$CLAUDECODE=1`; all use the same `FW_ALLOW_EMPTY_RECOMMENDATION=1` env-var bypass; agent-initiated bypasses log Tier-2; trusted-caller signal silent. 4-of-4 leg map closed.
 
 ## Decisions
 
@@ -196,3 +199,12 @@ T-1715/T-1716 closed fw-inception-start filing path under $CLAUDECODE=1. T-2201 
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** T-1715/T-1716 closed fw-inception-start filing path under $CLAUDECODE=1. T-2201 + T-2203 are this-session repro: both filed via fw task create + fw work-on (workflow_type: inception set directly), bypassed T-1716, sat with template Recommendation blocks, agent emitted /inception/<id> handoff URLs anyway. Three filing-path bypasses (task create, work-on, direct YAML) plus one consumer-side gap (fw task review/review-batch emission lacks Recommendation-completeness pre-check) remain after T-1716. Retrofit-recommendations exists but is manual-only (no cron, no hook). Bounded fix shape known (extend T-1716 contract to all producers + add review-batch emission gate). Evidence concrete, risk low — GO.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fe0f21e9
+- **Timestamp:** 2026-06-05T11:52:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

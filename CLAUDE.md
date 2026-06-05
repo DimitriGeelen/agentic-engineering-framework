@@ -784,6 +784,19 @@ When agent ACs are complete and human ACs remain:
 
 **Structural enforcement (T-1259, T-1260):** `lib/inception.sh do_inception_decide` refuses when `$CLAUDECODE=1` and points agents at `fw task review T-XXX`. Override flag `--i-am-human` exists for script/test contexts; `--from-watchtower` is the Flask-backend exemption.
 
+**Recommendation-completeness gate (T-2204, all 4 producer legs + consumer + cron):** When an agent files a task with `workflow_type: inception` under `$CLAUDECODE=1`, the framework refuses the filing unless `--recommendation GO|NO-GO|DEFER` AND `--rationale "..."` are supplied. The gate fires at **every plausible filing path** plus the handoff verb, and a cron backstop catches anything that slips past:
+
+| Leg | Surface | Origin | Bypass |
+|-----|---------|--------|--------|
+| Producer 1 | `fw inception start` | T-1715/T-1716 (`do_inception_start`) | `--i-am-human` / `FW_ALLOW_EMPTY_RECOMMENDATION=1` |
+| Producer 2 | `fw work-on --type inception` | Routes through `do_inception_start` | (same as Producer 1) |
+| Producer 3 | `fw task create --type inception` | T-2207 (`create-task.sh` CLI) | `--i-am-human` / `FW_ALLOW_EMPTY_RECOMMENDATION=1` / `FW_INCEPTION_PRE_GATED=1` (silent internal trusted-caller signal from `do_inception_start`) |
+| Producer 4 | Direct Write/Edit on `.tasks/active/T-*.md` | T-2205 (PreToolUse hook `check-inception-recommendation`) | `FW_ALLOW_EMPTY_RECOMMENDATION=1` (env-only — Write tool has no flag surface) |
+| Consumer | `fw task review` / `fw task review-batch` (emit) | T-2206 (`emit_review` / `emit_review_batch` BLOCK) | `FW_ALLOW_EMPTY_RECOMMENDATION=1` |
+| Backstop | Hourly cron `inception-retrofit-rec-hourly` | T-2208 (calls `fw inception retrofit-recommendations --apply`) | n/a — preventive sweep, idempotent on clean state |
+
+The unified bypass-env name `FW_ALLOW_EMPTY_RECOMMENDATION=1` per L-399 / T-1890 producer/consumer parity discipline; each agent-initiated bypass writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`. The trusted-caller signal `FW_INCEPTION_PRE_GATED=1` is silent (not logged) — it routes between `do_inception_start` and `create-task.sh` without double-firing the gate. The cron entry sweeps every hour at minute :19 and injects DEFER stubs into any active inception with an empty / template-only `## Recommendation` block — catching the three paths the producer gates cannot reach (direct YAML writes, post-hoc `fw task update --workflow-type inception` flips, the window before the operator wires T-2205's hook into `.claude/settings.json`).
+
 **Two decision classes, one CLI verb (T-2141):** `fw task review` looks like one handoff but is two structurally distinct decisions. **Inception go/no-go** decides whether a `workflow_type: inception` task should produce build slices — recorded via `fw inception decide` (agent-blocked under `$CLAUDECODE=1`, see Structural enforcement below); the human GOes/NO-GOes/DEFERs the candidate. **Partial-complete review** decides whether a build task's unchecked `### Human` ACs are satisfied — recorded by the human ticking the box(es) and running `fw task update --status work-completed`. The two classes route to different Watchtower pages (`/inception/<id>` vs `/review/<id>`), produce different audit records, and answer different operator questions. Conflating them in chat handoffs ("review T-2143's inception decision at /review/T-2143") was the T-2125 origin slip.
 
 **Per-class URL mapping (T-2125, T-2129):** `fw task review` emits a *class-correct* URL — `/inception/<id>` for inceptions, `/review/<id>` for partial-complete task reviews, etc. When listing handoffs in chat, **never synthesise the handoff URL from memory** — run `fw task review T-XXX` and quote the URL it emits, verbatim. The table below is for awareness; the CLI is the source of truth.
