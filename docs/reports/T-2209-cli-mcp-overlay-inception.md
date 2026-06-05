@@ -180,6 +180,20 @@ Per [[feedback_defer_for_evidence_not_confidence]] discipline: each DEFER above 
 - **Agent response:** Filed T-2216 (orchestrator-routing-integration spike, OR-1..OR-6) and dispatched TermLink worker. Gap #2, #3, #4 captured as Open Sub-Questions for slice-level resolution (§14 below).
 - **Operator directive:** *"proceed as seen fit, prioritize High value / low cost BCP tasks, continue until context is at 300k, apply framework governance"* — initiative delegated.
 
+### 2026-06-05 — T-2215 + T-2216 supplemental spike verdicts return; integrated into §10-§12
+
+- **T-2215 (CLI error survey, B-vs-C empirical lens).** Worker returned 17 KB artifact `docs/reports/T-2215-cli-error-survey.md`. Verdict: *"The empirical CLI-error evidence SUPPORTS B. It does not pivot to C."* Observed CLI pain is dominated by Class P (~15 parse-fragility) + Class O (~7 observability) + half of Class S (~11 type-coupling) — all 100% covered by B's `--json` underlay. C's incremental fixes target MCP clients (a consumer class that currently generates zero errors). On Class A (auth/sovereignty), C is net-negative (adds spoofable §B-005 surface). **Critical build-slice requirement surfaced:** Class S coverage is *conditional* on `--json` shipping a `schema_version` field. A naive shape-dump still lets the ×11 type-coupling class fail silently. **Now folded into Slice 1 ACs (§12).**
+- **T-2216 (orchestrator-routing lens, OR-1..OR-6).** Worker returned 24 KB artifact `docs/reports/T-2216-orchestrator-routing-integration.md`. Verdict: *"The orchestrator-routing lens is ~80% absorbed into the existing slice plan as decisions, and adds one bounded build leg — it does NOT spawn a new arc or a new slice."* Slice assignments:
+  - OR-1 manifest-declared classification → Slice 2 (trivial emitter)
+  - **OR-2 scan probe extension** → **Slice 1 (~40 LoC, the one real build leg)** — without it the framework's own MCP server is invisible to drift defenses, reproducing T-1641-W10 failure one repo over
+  - OR-3 capture coverage → DECISION (no, MCP calls not in `dispatches.jsonl`)
+  - OR-4 route_cache learning → DECISION (exclude; MCP tools deterministic)
+  - OR-5 workflow declaration → DECISION (reuse `allowed_tools`; no `mcp_tools:` field)
+  - OR-6 per-slice procedural debt → CONVENTION (introduced by Slice 1, inherited by all)
+- **Reconciliation with strategic-investment framing.** T-2215 confirms B suffices for *observed* pain but acknowledges F-ORCH forward bet is a Sovereign operator call — that call was made last session ("foundational work … strategic investment"). T-2216 sharpens C's slice plan without expanding it. Both verdicts coherent with **GO — Path C-scoped (4 slices)**.
+- **§10 row added; §12 build-slice shape updated with `schema_version` requirement, OR-2 scan extension, OR-6 verification convention, Slice 2.5 consumer-propagation sub-slice, OR-3/4/5 decisions recorded.**
+- **§11 dispositions remain PROPOSED** — operator confirmation still required via Watchtower review of `/inception/T-2209` (Sovereign — cannot lock from `$CLAUDECODE=1`).
+
 *(further entries appended as exploration proceeds)*
 
 ---
@@ -192,6 +206,7 @@ Per [[feedback_defer_for_evidence_not_confidence]] discipline: each DEFER above 
 | 2026-06-05 (post-spikes, value/cost framing) | GO — Path B (CLI-overlay-only first; MCP optional later) | IW-1 worker recommendation. Highest value/cost ratio (1.30). 5 IW spikes complete but cross-spike tension between IW-1=B and IW-4/IW-5=needs-MCP-server. |
 | 2026-06-05 (strategic-investment framing pivot) | **GO — Path C-scoped (both-as-siblings, sliced)** | Cost no longer the deciding axis. C wins on BVP (2.97 vs 2.86). Cross-spike tension collapses: IW-4 HM-A + IW-5 sibling MCP both presume a server, which C ships. Auth surface stays zero (IW-3 env-inherit + binding conditions). Slice as 3-4 evolutionary increments per §ACD. |
 | 2026-06-05 (pending) | TBD — awaits T-2215 + T-2216 + operator confirmation of reconfigured IW dispositions | T-2215 CLI-error survey (slice-1 prioritization data) and T-2216 orchestrator-routing-integration spike (closes Gap #1) both running. Build slicing should wait. |
+| 2026-06-05 (post-supplementals) | **GO — Path C-scoped (4 evolutionary slices) — strategic-investment forward bet, empirically grounded** | T-2215 verdict: observed CLI pain is 100% B-addressable; C only justified as forward F-ORCH bet — operator already made that strategic call. T-2216 verdict: orchestrator-routing lens ABSORBED into existing slices; adds only OR-2 scan extension (~40 LoC) to Slice 1, no new arc. Both verdicts coherent. Awaits operator confirmation of §11 dispositions and Sovereign `fw arc create`. |
 
 ---
 
@@ -211,14 +226,20 @@ Per [[feedback_defer_for_evidence_not_confidence]] discipline: each DEFER above 
 
 ## §12. Proposed build-slice shape (PROPOSED — awaits T-2216 results + operator)
 
-**Total arc budget:** F8 ≈ 5.4 (Path C-scoped) — sliced as 3-4 evolutionary increments per §ACD:
+**Total arc budget:** F8 ≈ 5.4 + 2.7 (OR-2 scan extension, T-2216) ≈ **8.1** (Path C-scoped) — sliced as 4 evolutionary increments per §ACD:
 
-- **Slice 1:** `fw --json` extension to the curated-22 read-only verbs + per-verb `schema_version` field + smoke test. No MCP server yet.
-- **Slice 2:** Sibling `mcp__framework__*` MCP server skeleton (env-inherit auth, `tools/list` returning the 22 read-only tools) + HM-F slice-1 read-only smoke test. Adds orchestrator-mcp-baseline.yaml entries (per T-2216 OR-1).
-- **Slice 3:** Adds agent-authority verbs (task_update, work_on, etc.) with `task_id` requirement + HM-A headline mechanic demo. Triggers IW-3 auth binding conditions.
-- **Slice 4:** Watchtower frontend migrates one POST endpoint to the new surface (consumer-side validation; HM-E no-shell-out rider proof) — closes Gap #2.
+- **Slice 1:** `fw --json` extension to the curated-22 read-only verbs + per-verb `schema_version` field (T-2215 Class-S coverage requirement) + smoke test + OR-2 scan extension to `agents/audit/orchestrator-mcp-scan.sh` so the framework's own MCP server is visible to drift defenses + OR-6 `## Verification` convention introduced. **No MCP server yet** — pure CLI overlay.
+- **Slice 2:** Sibling `mcp__framework__*` MCP server skeleton (env-inherit auth + IW-3 binding conditions: never strip `$CLAUDECODE`/`AI_AGENT`/`TOOL_NAME`; never expose settings.json verbs) + `tools/list` returning the 22 read-only tools + HM-F slice-1 read-only smoke test. Adds `orchestrator-mcp-baseline.yaml` entries via T-2216 OR-1 manifest-declared classification.
+  - **Slice 2.5 (consumer-propagation, OSQ-B):** dedicated sub-slice — per-consumer `.mcp.json` management, lifecycle (lazy-spawn recommended), `fw upgrade`/`fw vendor` propagation, `tests/unit/upgrade_fresh_machine_simulation.bats` extension per L-417/T-1633.
+- **Slice 3:** Adds agent-authority verbs (task_update, work_on, etc.) with `task_id` requirement + HM-A headline mechanic demo (MCP-routed agent picks up T-XXX, works to work-completed via `mcp__fw__*` tools; JSONL shows no `Bash(bin/fw …)`). T-2216 OR-5: reuse `allowed_tools`, no `mcp_tools:` field. Triggers IW-3 auth binding conditions live.
+- **Slice 4:** Watchtower frontend migrates one POST endpoint to the new surface (consumer-side validation; HM-E no-shell-out rider proof) — closes Gap #2 / OSQ-A.
 
 Each slice MUST land its own demo (§ACD honest), its own classification baseline diff (per T-2216 OR-6), and its own consumer-fresh-machine bats simulation (per L-417 / T-1633).
+
+**Decisions absorbed (T-2216) — recorded in arc design log, no build:**
+- **OR-3:** Do NOT capture MCP calls in `dispatches.jsonl`; per-call audit log optional and deferred.
+- **OR-4:** Exclude MCP calls from `route_cache`; MCP tools are deterministic, no model choice.
+- **OR-5:** No `mcp_tools:` workflow field; reuse `allowed_tools`; no `worker_kind: mcp`.
 
 ---
 
@@ -231,8 +252,8 @@ Each slice MUST land its own demo (§ACD honest), its own classification baselin
 | IW-3 auth model | T-2212 | iw3-auth-model | done | docs/reports/T-2212-iw-research.md |
 | IW-4 headline mechanic | T-2213 | iw4-headline-mechanic | done | docs/reports/T-2213-iw-research.md |
 | IW-5 overlap | T-2214 | iw5-overlap | done | docs/reports/T-2214-iw-research.md |
-| Supplemental: CLI error survey | T-2215 | iw1-cli-error-survey-retry | running (529-retry) | docs/reports/T-2215-cli-error-survey.md (pending) |
-| Supplemental: orchestrator routing | T-2216 | iw-or-routing | running | docs/reports/T-2216-orchestrator-routing-integration.md (pending) |
+| Supplemental: CLI error survey | T-2215 | iw1-cli-error-survey-retry | **done** (2026-06-05 17:07Z) | docs/reports/T-2215-cli-error-survey.md — *Verdict: B suffices for observed pain; C requires strategic forward-bet (operator's call, already made)* |
+| Supplemental: orchestrator routing | T-2216 | iw-or-routing | **done** (2026-06-05 17:07Z) | docs/reports/T-2216-orchestrator-routing-integration.md — *Verdict: ABSORBED; +1 build leg (OR-2 scan extension) in Slice 1; OR-3/4/5 are decisions; OR-6 process convention* |
 
 ---
 
@@ -244,4 +265,10 @@ Gaps #2, #3, #4 are not arc-shape questions — they are slice-build questions. 
 - **OSQ-B (Gap #3 — Consumer-project propagation).** Does each consumer project run its own `mcp__framework__*` server? How is `.mcp.json` managed per-consumer? Lifecycle (autostart? systemd? lazy-spawn?). `fw upgrade` / `fw vendor` propagation implications. **Slice assignment:** Slice 2.5 — a dedicated "consumer-propagation" sub-slice between Slice 2 (skeleton) and Slice 3 (agent-authority verbs). Must include `tests/unit/upgrade_fresh_machine_simulation.bats` extension (per L-417 / T-1633 discipline).
 - **OSQ-C (Gap #4 — Performance).** MCP stdio JSON-RPC latency vs shell-exec for high-frequency verbs (e.g. `fw context status` called by cron every 5 min, hooks firing on every tool call). **Slice assignment:** Slice 1 includes a latency benchmark for the curated-22 read-only set. If any verb is >2× shell-exec slower under JSON output mode, that verb either gets a fast-path or stays shell-only. Decision criterion is empirical, not architectural.
 - **OSQ-D (Cross-spike consistency).** The 5 IW workers ran in isolation and produced one cross-spike contradiction (resolved by operator framing pivot). For future multi-IW inception dispatch patterns, consider adding a **synthesis spike** that reads all sibling artifacts and produces a coherence-check before operator presentation. Captured as candidate for the dispatch-pattern template at `docs/dispatch-templates/iw-spike-worker.md`.
+
+### Newly-surfaced OSQs (from T-2216, captured for slice-level resolution):
+- **OSQ-E (MCP manifest format).** Format/location of `framework-mcp-manifest.json` depends on Slice 2's language choice (Python vs other). Finalised at Slice 2 design time.
+- **OSQ-F (Per-call audit log).** Should the framework MCP server emit a per-call audit log (request IDs, idempotency keys from HM-A)? Overlaps with IW-4 HM-A and T-2215 CLI error lens — optional micro-build, deferred. Becomes MANDATORY if sovereignty-bound verbs are ever MCP-exposed (currently §3-foreclosed).
+- **OSQ-G (Baseline file count).** One baseline file or two? T-2216 assumes one `orchestrator-mcp-baseline.yaml` holding both `termlink_*` and `mcp__framework__*` (prefixes don't collide). Operator may prefer split — cosmetic call, not structural.
+- **OSQ-H (Cross-repo convention propagation).** The `mcp__framework__*` manifest pattern is strictly better than termlink's grep-over-Rust probe. Worth a cross-link to termlink baseline owners as a forward proposal (out of scope — path isolation; propose via TermLink U-message, do not edit).
 | *(future)* | *(GO / NO-GO / refined DEFER)* | *(updated after Spikes 1-5 land in §3-§7 and operator returns disposition on IW-1..IW-4)* |
