@@ -545,19 +545,30 @@ def record_decision(task_id):
             label = decision.upper()
             warning_html = ""
             if not ok and primary_landed:
-                # T-1470: side-effect failure — show warning, not error
+                # T-1470: side-effect failure — show warning, not error.
+                # T-2219 (T-2217 Slice 1): widen 150 → 1500, HTML-escape, and use
+                # white-space:pre-wrap so multi-line stderr (e.g. the disposition
+                # gate's block message with bullet list + bypass options) renders
+                # readably instead of getting clipped at the first sentence.
+                # Mirrors the sibling escape+pre-wrap pattern at line ~579 (the
+                # pre-decision validation rejection path).
+                import html as _html
                 warning_html = (
-                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px;">'
-                    f'⚠ Decision recorded; side-effect warning: {(stderr or stdout)[:150]}'
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
+                    f'white-space:pre-wrap;">'
+                    f'⚠ Decision recorded; side-effect warning: '
+                    f'{_html.escape((stderr or stdout)[:1500])}'
                     f'</div>'
                 )
             if not commit_ok:
                 # T-2053: decision recorded but the auto-commit failed — surface it
                 # (no silent failure); the decision is still on disk for a later commit.
+                # T-2219: widen 150 → 1500 + pre-wrap, matching sibling above.
                 import html as _html
                 warning_html += (
-                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px;">'
-                    f'⚠ Decision recorded but not committed: {_html.escape(commit_msg[:150])}'
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
+                    f'white-space:pre-wrap;">'
+                    f'⚠ Decision recorded but not committed: {_html.escape(commit_msg[:1500])}'
                     f'</div>'
                 )
             return (
