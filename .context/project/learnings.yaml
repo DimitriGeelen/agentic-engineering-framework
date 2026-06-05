@@ -3490,3 +3490,17 @@ X'` returning empty group."
   date: 2026-06-03
   context: Added via context agent
   application: TBD
+- id: L-456
+  learning: "Unanchored alternation in question-marker regex matches the marker name in prose, false-flushing the prior block's accumulated state. Specifically: '(IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)' had a sibling Q-N branch with line-anchor but the IW branch had none — so 'depends on IW-1's answer' in a rationale line was misclassified as a new IW-1 marker. When you add a new alternation to a marker-detection regex, retro-fit the existing branches to the same anchor discipline; sibling-pattern review is cheaper than the recursive symmetry of a parser bug RCA'ing itself."
+  source: P-002
+  task: T-2218
+  date: 2026-06-05
+  context: Added via context agent
+  application: TBD
+- id: L-457
+  learning: "When fixing a render-side bug, scan the SAME file for sibling render patterns and bring them to the same correctness shape in one slice. Specifically: web/blueprints/inception.py:551 had a 150-char + no-escape + no-pre-wrap bug for the side-effect-warning path. The sibling pre-decision-rejection path at lines 579-587 had the correct shape (escape + pre-wrap + wider truncation) — that was the template. Slice 1 didn't just patch the symptom; it brought the side-effect path AND its commit-failure sibling into shape match with the validation-rejection sibling. The unit test pins all three asymmetric properties (length, escape, pre-wrap) on BOTH widened paths and explicitly preserves the URL-query-string path at [:300] — so future widening sweeps can't accidentally cross the URL-length boundary. The pattern: 'fix this AND its sibling AND prevent its inverse' is one slice contract, three structural anchors. Cheaper than three separate bugs over six months."
+  source: P-001
+  task: T-2219
+  date: 2026-06-05
+  context: Added via context agent
+  application: TBD
