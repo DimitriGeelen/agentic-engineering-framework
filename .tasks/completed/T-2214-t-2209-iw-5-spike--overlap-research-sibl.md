@@ -1,23 +1,24 @@
 ---
-id: T-2211
-name: "T-2209 IW-2 spike — verb scope research (curated 22 / curated 40 / full 129)"
+id: T-2214
+name: "T-2209 IW-5 spike — overlap research (sibling MCP server vs federate into skills)"
 description: >
-  Research which fw verbs belong in scope for the capability overlay. Classify by sovereignty/authority/read-only. Stellman/strawman + BVP per scope-size candidate. Recommend.
+  Research overlap between framework primitives and mcp__skills__* surface. Stellman/strawman
+  federation vs sibling-server. BVP per candidate. Recommend.
 
-status: started-work
+status: work-completed
 workflow_type: specification
 owner: claude-code
-horizon: now
-tags: [inception-spike, t-2209-children, iw-2, verb-scope]
+horizon: null
+tags: [inception-spike, t-2209-children, iw-5, overlap-federation]
 components: []
 related_tasks: [T-2209]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-06-05T14:54:27Z
-last_update: 2026-06-05T14:54:27Z
-date_finished: null
+created: 2026-06-05T14:55:40Z
+last_update: 2026-06-05T17:51:58Z
+date_finished: 2026-06-05T17:51:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +29,55 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-05T15:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-05T15:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2211: T-2209 IW-2 spike — verb scope research (curated 22 / curated 40 / full 129)
+# T-2214: T-2209 IW-5 spike — overlap research (sibling MCP server vs federate into skills)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2209 inception IW-5 spike — *"Existing-MCP overlap — sibling framework
+MCP server vs federate into mcp__skills__*; what does the surface
+analysis say?"* Worker dispatched 2026-06-05 (`fw termlink dispatch
+--task T-2214 --name iw5-overlap`). Artifact:
+`docs/reports/T-2214-iw-research.md`. Integrated into parent T-2209
+§11 PROPOSED disposition (A=sibling `mcp__framework__*` server,
+read-only Shape-2). Federation foreclosed by path isolation per G-045
+Gap Homing.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Worker artifact exists at `docs/reports/T-2214-iw-research.md` and is non-trivial (≥15 KB)
+- [x] Artifact analyses each candidate (sibling / federate / hybrid / defer) with steelman + strawman
+- [x] Artifact contains BVP Scoring Matrix scoring candidates against active drivers
+- [x] Artifact contains Cost Estimates using F8 formula
+- [x] Artifact reaches an explicit Recommendation
+- [x] G-045 Gap Homing inversion check addressed (federation foreclosed by path-isolation)
+- [x] Disposition integrated into parent T-2209 §11 PROPOSED row for IW-5
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -107,6 +143,14 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+test -s docs/reports/T-2214-iw-research.md && test $(wc -c < docs/reports/T-2214-iw-research.md) -ge 15000
+grep -q "Candidates" docs/reports/T-2214-iw-research.md
+grep -q "BVP Scoring" docs/reports/T-2214-iw-research.md
+grep -q "Cost Estimate" docs/reports/T-2214-iw-research.md
+grep -q "Recommendation" docs/reports/T-2214-iw-research.md
+grep -q "G-045" docs/reports/T-2214-iw-research.md
+grep -q "IW-5" docs/reports/T-2209-cli-mcp-overlay-inception.md
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -170,7 +214,19 @@ date_finished: null
 
 ## Updates
 
-### 2026-06-05T14:54:27Z — task-created [task-create-agent]
+### 2026-06-05T14:55:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2211-t-2209-iw-2-spike--verb-scope-research-c.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2214-t-2209-iw-5-spike--overlap-research-sibl.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cfb63b1c
+- **Timestamp:** 2026-06-05T17:51:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-05T17:51:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

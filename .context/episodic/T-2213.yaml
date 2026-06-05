@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2213: T-2209 IW-4 spike — headline mechanic research (G-062 §ACD wire-level demos)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-05T17:51:06Z
+# ============================================================================
+
+task_id: T-2213
+task_name: "T-2209 IW-4 spike — headline mechanic research (G-062 §ACD wire-level demos)"
+workflow_type: specification
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-05T14:55:24Z
+completed: 2026-06-05T17:51:00Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Worker artifact exists at `docs/reports/T-2213-iw-research.md` and is non-trivial (≥15 KB)'
+  - 'Artifact analyses candidates HM-A..HM-E with steelman + strawman'
+  - 'Artifact contains BVP Scoring Matrix scoring candidates against active drivers'
+  - 'Artifact contains Cost Estimates using F8 formula'
+  - 'Artifact reaches an explicit Recommendation that is a wire-level deliverable (passes G-062 §ACD)'
+  - 'Disposition integrated into parent T-2209 §11 PROPOSED row for IW-4 + §12 Slice 3 build slice'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 175 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception-spike, t-2209-children, iw-4, headline-mechanic]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 175
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2213-t-2209-iw-4-spike--headline-mechanic-res.md
+generated_by: context-agent-hybrid

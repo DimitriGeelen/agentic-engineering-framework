@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2216: T-2209 supplemental — orchestrator routing lens (OR-1..OR-6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-05T17:46:09Z
+# ============================================================================
+
+task_id: T-2216
+task_name: "T-2209 supplemental — orchestrator routing lens (OR-1..OR-6)"
+workflow_type: specification
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-05T17:01:07Z
+completed: 2026-06-05T17:46:03Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Worker artifact exists at `docs/reports/T-2216-orchestrator-routing-integration.md` and is non-trivial (≥15 KB)'
+  - 'Artifact addresses each of OR-1..OR-6 in its own section with analysis + recommendation'
+  - 'Artifact reaches an explicit Verdict naming whether orchestrator-routing spawns a new arc, a new slice, or is absorbed into existing T-2209 slice plan'
+  - 'OR recommendations are assigned to specific T-2209 build slices (§Slice Assignment table)'
+  - 'Parent T-2209 §12 absorbed OR-2 scan extension into Slice 1, OR-3/4/5 recorded as decisions, OR-6 ## Verification convention noted'
+  - 'Bus envelope posted (`fw bus manifest T-2216` returns R-001 with non-trivial summary)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception-spike, t-2209-children, orchestrator-routing, or-lens]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2216-t-2209-supplemental--orchestrator-routin.md
+generated_by: context-agent-hybrid

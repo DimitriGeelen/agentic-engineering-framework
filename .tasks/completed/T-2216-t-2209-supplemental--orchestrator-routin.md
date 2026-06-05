@@ -1,23 +1,26 @@
 ---
-id: T-2212
-name: "T-2209 IW-3 spike — auth model research (env-inherit / per-client token / capability handshake / shell-only)"
+id: T-2216
+name: "T-2209 supplemental — orchestrator routing lens (OR-1..OR-6)"
 description: >
-  Research authentication candidates for the capability overlay surface. Sovereignty-aware. Stellman/strawman + BVP per auth candidate. Recommend.
+  Investigate orchestrator/dispatch/routing integration for mcp__framework__* tools.
+  Classification entry into orchestrator-mcp-baseline.yaml; orchestrator-mcp-scan
+  probe extension; capture_dispatch coverage; route_cache learning; workflow schema
+  extension; per-slice classification debt.
 
-status: started-work
+status: work-completed
 workflow_type: specification
 owner: claude-code
-horizon: now
-tags: [inception-spike, t-2209-children, iw-3, auth-model]
+horizon: null
+tags: [inception-spike, t-2209-children, orchestrator-routing, or-lens]
 components: []
-related_tasks: [T-2209]
+related_tasks: [T-2209, T-2210, T-2211]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-06-05T14:55:03Z
-last_update: 2026-06-05T14:55:03Z
-date_finished: null
+created: 2026-06-05T17:01:07Z
+last_update: 2026-06-05T17:46:03Z
+date_finished: 2026-06-05T17:46:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +31,55 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-05T17:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-05T17:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2212: T-2209 IW-3 spike — auth model research (env-inherit / per-client token / capability handshake / shell-only)
+# T-2216: T-2209 supplemental — orchestrator routing lens (OR-1..OR-6)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Supplemental research spike under T-2209 inception, filed after operator
+caught a gap (2026-06-05): the 5 IW spikes (T-2210..T-2214) covered
+delivery shape / verb scope / auth / headline mechanic / overlap, but
+did NOT integrate the new `mcp__framework__*` surface against the
+framework's existing orchestrator-routing substrate
+(orchestrator-mcp-baseline.yaml, orchestrator-mcp-scan.sh, lib/resolver.py,
+workflow YAMLs, route_cache). Six sub-questions OR-1..OR-6 captured at
+filing. Worker artifact: `docs/reports/T-2216-orchestrator-routing-integration.md`.
+Integrated into parent T-2209 §10/§12 by commit 5cffa71a1.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Worker artifact exists at `docs/reports/T-2216-orchestrator-routing-integration.md` and is non-trivial (≥15 KB)
+- [x] Artifact addresses each of OR-1..OR-6 in its own section with analysis + recommendation
+- [x] Artifact reaches an explicit Verdict naming whether orchestrator-routing spawns a new arc, a new slice, or is absorbed into existing T-2209 slice plan
+- [x] OR recommendations are assigned to specific T-2209 build slices (§Slice Assignment table)
+- [x] Parent T-2209 §12 absorbed OR-2 scan extension into Slice 1, OR-3/4/5 recorded as decisions, OR-6 ## Verification convention noted
+- [x] Bus envelope posted (`fw bus manifest T-2216` returns R-001 with non-trivial summary)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -107,6 +145,29 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Artifact exists and is substantial
+test -s docs/reports/T-2216-orchestrator-routing-integration.md && test $(wc -c < docs/reports/T-2216-orchestrator-routing-integration.md) -ge 15000
+
+# All six OR sections present
+out=$(grep -c "^## OR-[1-6]" docs/reports/T-2216-orchestrator-routing-integration.md); test "$out" -eq 6
+
+# Verdict section present
+grep -q "^## Verdict" docs/reports/T-2216-orchestrator-routing-integration.md
+
+# Slice assignment table present
+grep -q "^## Slice Assignment" docs/reports/T-2216-orchestrator-routing-integration.md
+
+# Parent T-2209 §12 absorbed OR-2 scan extension into Slice 1
+grep -q "OR-2 scan extension" docs/reports/T-2209-cli-mcp-overlay-inception.md
+
+# Parent T-2209 §12 recorded OR-3/4/5 as decisions
+grep -q "OR-3:" docs/reports/T-2209-cli-mcp-overlay-inception.md
+grep -q "OR-4:" docs/reports/T-2209-cli-mcp-overlay-inception.md
+grep -q "OR-5:" docs/reports/T-2209-cli-mcp-overlay-inception.md
+
+# Bus envelope posted
+out=$(bin/fw bus manifest T-2216 2>&1); echo "$out" | grep -q "R-001"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -170,7 +231,19 @@ date_finished: null
 
 ## Updates
 
-### 2026-06-05T14:55:03Z — task-created [task-create-agent]
+### 2026-06-05T17:01:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2212-t-2209-iw-3-spike--auth-model-research-e.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2216-t-2209-supplemental--orchestrator-routin.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5456e1db
+- **Timestamp:** 2026-06-05T17:46:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-05T17:46:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

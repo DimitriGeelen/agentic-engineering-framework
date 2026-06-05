@@ -1,23 +1,25 @@
 ---
-id: T-2213
-name: "T-2209 IW-4 spike — headline mechanic research (G-062 §ACD wire-level demos)"
+id: T-2212
+name: "T-2209 IW-3 spike — auth model research (env-inherit / per-client token / capability
+  handshake / shell-only)"
 description: >
-  Research headline-mechanic candidates per G-062 §ACD. Each: who does what, observes what user-visible result. Stellman/strawman + BVP. Recommend one for arc creation.
+  Research authentication candidates for the capability overlay surface. Sovereignty-aware.
+  Stellman/strawman + BVP per auth candidate. Recommend.
 
-status: started-work
+status: work-completed
 workflow_type: specification
 owner: claude-code
-horizon: now
-tags: [inception-spike, t-2209-children, iw-4, headline-mechanic]
+horizon: null
+tags: [inception-spike, t-2209-children, iw-3, auth-model]
 components: []
 related_tasks: [T-2209]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-06-05T14:55:24Z
-last_update: 2026-06-05T14:55:24Z
-date_finished: null
+created: 2026-06-05T14:55:03Z
+last_update: 2026-06-05T17:49:59Z
+date_finished: 2026-06-05T17:49:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +30,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-05T15:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-05T15:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2213: T-2209 IW-4 spike — headline mechanic research (G-062 §ACD wire-level demos)
+# T-2212: T-2209 IW-3 spike — auth model research (env-inherit / per-client token / capability handshake / shell-only)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2209 inception IW-3 spike — *"Auth model — env-inherit / per-client
+token / capability handshake / shell-only — which preserves §B-005
+sovereignty?"* Worker dispatched 2026-06-05 (`fw termlink dispatch
+--task T-2212 --name iw3-auth-model`). Artifact:
+`docs/reports/T-2212-iw-research.md`. Integrated into parent T-2209
+§11 PROPOSED disposition (D=shell-only opening; A=env-inherit as
+pre-approved mate when MCP leg ships, with binding conditions).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Worker artifact exists at `docs/reports/T-2212-iw-research.md` and is non-trivial (≥12 KB)
+- [x] Artifact analyses each candidate (env-inherit / per-client token / capability handshake / shell-only) with steelman + strawman
+- [x] Artifact contains BVP Scoring Matrix scoring candidates against active drivers
+- [x] Artifact contains Cost Estimates using F8 formula
+- [x] Artifact reaches an explicit Recommendation that preserves §B-005 sovereignty
+- [x] Disposition integrated into parent T-2209 §11 PROPOSED row for IW-3
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -107,6 +142,13 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+test -s docs/reports/T-2212-iw-research.md && test $(wc -c < docs/reports/T-2212-iw-research.md) -ge 12000
+grep -q "^## Candidates" docs/reports/T-2212-iw-research.md
+grep -q "BVP Scoring" docs/reports/T-2212-iw-research.md
+grep -q "Cost Estimate" docs/reports/T-2212-iw-research.md
+grep -q "^## Recommendation" docs/reports/T-2212-iw-research.md
+grep -q "IW-3" docs/reports/T-2209-cli-mcp-overlay-inception.md
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -170,7 +212,19 @@ date_finished: null
 
 ## Updates
 
-### 2026-06-05T14:55:24Z — task-created [task-create-agent]
+### 2026-06-05T14:55:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2213-t-2209-iw-4-spike--headline-mechanic-res.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2212-t-2209-iw-3-spike--auth-model-research-e.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-84f4b16e
+- **Timestamp:** 2026-06-05T17:49:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-05T17:49:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

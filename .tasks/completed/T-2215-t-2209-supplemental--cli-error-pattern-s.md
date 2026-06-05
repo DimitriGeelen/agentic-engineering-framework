@@ -1,23 +1,25 @@
 ---
-id: T-2210
-name: "T-2209 IW-1 spike — delivery shape research (MCP server / CLI-overlay / both / federate)"
+id: T-2215
+name: "T-2209 supplemental — CLI error pattern survey vs IW-1 B vs C"
 description: >
-  Research candidate delivery shapes for T-2209 capability-overlay arc. Stellman/strawman + BVP score each. Recommend one.
+  Investigate observed CLI errors/friction in the framework. Map root-cause classes
+  to B (CLI-overlay-only) vs C (both-as-siblings) fix-coverage. Does evidence support
+  T-2210's B recommendation or pivot to C?
 
-status: started-work
+status: work-completed
 workflow_type: specification
 owner: claude-code
-horizon: now
-tags: [inception-spike, t-2209-children, iw-1, delivery-shape]
+horizon: null
+tags: [inception-spike, t-2209-children, iw-1-supplemental, cli-error-survey]
 components: []
-related_tasks: [T-2209]
+related_tasks: [T-2209, T-2210]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-06-05T14:53:44Z
-last_update: 2026-06-05T14:53:44Z
-date_finished: null
+created: 2026-06-05T15:12:10Z
+last_update: 2026-06-05T17:45:40Z
+date_finished: 2026-06-05T17:45:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,20 +30,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-05T15:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-05T15:15:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2210: T-2209 IW-1 spike — delivery shape research (MCP server / CLI-overlay / both / federate)
+# T-2215: T-2209 supplemental — CLI error pattern survey vs IW-1 B vs C
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Supplemental research spike under T-2209 inception. Operator asked
+(2026-06-05): *"please also investigate all teh cli erros we have and
+copyre against B vs C"* — empirical CLI-error survey as forensic lens
+on IW-1's B-vs-C decision (T-2210 recommended B on value/cost; operator
+wanted observed-pain evidence). Worker artifact:
+`docs/reports/T-2215-cli-error-survey.md`. Integrated into parent
+T-2209 §10/§12 by commit 5cffa71a1.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Worker artifact exists at `docs/reports/T-2215-cli-error-survey.md` and is non-trivial (≥10 KB)
+- [x] Artifact classifies CLI error patterns by ≥6 root-cause classes (P/S/D/C/V/A/O)
+- [x] Artifact contains fix-coverage matrix mapping each class to B / C / neither
+- [x] Artifact reaches an explicit Verdict naming whether B suffices or evidence pivots to C
+- [x] Surfaced finding (`schema_version` requirement for B's Class-S coverage) is integrated into parent T-2209 §12 Slice 1 ACs
+- [x] Bus envelope posted (`fw bus manifest T-2215` returns R-001 with non-trivial summary)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -107,6 +142,24 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Artifact exists and is substantial
+test -s docs/reports/T-2215-cli-error-survey.md && test $(wc -c < docs/reports/T-2215-cli-error-survey.md) -ge 10000
+
+# Artifact contains all 7 root-cause classes (P/S/D/C/V/A/O)
+out=$(grep -c "^### Class [PSDCVAO]" docs/reports/T-2215-cli-error-survey.md); test "$out" -ge 6
+
+# Artifact contains explicit Verdict section
+grep -q "^## Verdict" docs/reports/T-2215-cli-error-survey.md
+
+# Fix-coverage matrix present
+grep -q "Fix-Coverage Matrix" docs/reports/T-2215-cli-error-survey.md
+
+# Parent T-2209 §12 absorbed the schema_version finding (cite T-2215)
+out=$(grep "schema_version" docs/reports/T-2209-cli-mcp-overlay-inception.md); echo "$out" | grep -q "T-2215"
+
+# Bus envelope posted
+out=$(bin/fw bus manifest T-2215 2>&1); echo "$out" | grep -q "R-001"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -170,7 +223,19 @@ date_finished: null
 
 ## Updates
 
-### 2026-06-05T14:53:44Z — task-created [task-create-agent]
+### 2026-06-05T15:12:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2210-t-2209-iw-1-spike--delivery-shape-resear.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2215-t-2209-supplemental--cli-error-pattern-s.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-06cbfdd6
+- **Timestamp:** 2026-06-05T17:45:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-05T17:45:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
