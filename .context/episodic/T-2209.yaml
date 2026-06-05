@@ -1,0 +1,128 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2209: Capability-overlay arc — MCP subsystem + CLI route for agent-callable framework
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-05T20:52:45Z
+# ============================================================================
+
+task_id: T-2209
+task_name: "Capability-overlay arc — MCP subsystem + CLI route for agent-callable framework"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-05T12:04:51Z
+completed: 2026-06-05T20:52:39Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-05T14:09:07+02:00
+last_commit: 2026-06-05T21:46:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file capability-overlay inception per G-020 + research artifact (C-001). spike-1/2/5 read-only inventory results in research artifact. inception decision GO (via Watchtower). scaffold IW-1..IW-5 spike children + reusable worker template. dialogue log + reconfigured §11 IW dispositions + §14 OSQ gaps captured. integrate T-2215 + T-2216 supplemental verdicts into inception artifact. close 7 IW spike children (T-2210..T-2216) — artifacts on disk. §15 Slice 1 readiness survey — empirical --json baseline. §16 OR-2 scan extension sketch — Slice 1 build leg pre-spec
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2210.yaml'
+  - '.context/episodic/T-2211.yaml'
+  - '.context/episodic/T-2212.yaml'
+  - '.context/episodic/T-2213.yaml'
+  - '.context/episodic/T-2214.yaml'
+  - '.context/episodic/T-2215.yaml'
+  - '.context/episodic/T-2216.yaml'
+  - 'docs/dispatch-templates/iw-spike-worker.md'
+  - 'docs/reports/T-2209-cli-mcp-overlay-inception.md'
+  - 'docs/reports/T-2210-iw-research.md'
+  - 'docs/reports/T-2211-iw-research.md'
+  - 'docs/reports/T-2212-iw-research.md'
+  - 'docs/reports/T-2213-iw-research.md'
+  - 'docs/reports/T-2214-iw-research.md'
+  - 'docs/reports/T-2215-cli-error-survey.md'
+  - 'docs/reports/T-2216-orchestrator-routing-integration.md'
+  - '.tasks/active/T-2209-capability-overlay-arc--mcp-subsystem--c.md'
+  - '.tasks/active/T-2210-t-2209-iw-1-spike--delivery-shape-resear.md'
+  - '.tasks/active/T-2211-t-2209-iw-2-spike--verb-scope-research-c.md'
+  - '.tasks/active/T-2212-t-2209-iw-3-spike--auth-model-research-e.md'
+  - '.tasks/active/T-2213-t-2209-iw-4-spike--headline-mechanic-res.md'
+  - '.tasks/active/T-2214-t-2209-iw-5-spike--overlap-research-sibl.md'
+  - '.tasks/completed/T-2210-t-2209-iw-1-spike--delivery-shape-resear.md'
+  - '.tasks/completed/T-2211-t-2209-iw-2-spike--verb-scope-research-c.md'
+  - '.tasks/completed/T-2212-t-2209-iw-3-spike--auth-model-research-e.md'
+  - '.tasks/completed/T-2213-t-2209-iw-4-spike--headline-mechanic-res.md'
+  - '.tasks/completed/T-2214-t-2209-iw-5-spike--overlap-research-sibl.md'
+  - '.tasks/completed/T-2215-t-2209-supplemental--cli-error-pattern-s.md'
+  - '.tasks/completed/T-2216-t-2209-supplemental--orchestrator-routin.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-05T14:09:07"
+    action: "T-2209: file capability-overlay inception per G-020 + research artifact (C-001)"
+  - time: "2026-06-05T14:11:26"
+    action: "T-2209: spike-1/2/5 read-only inventory results in research artifact"
+  - time: "2026-06-05T16:36:45"
+    action: "T-2209: inception decision GO (via Watchtower)"
+  - time: "2026-06-05T16:57:31"
+    action: "T-2209: scaffold IW-1..IW-5 spike children + reusable worker template"
+  - time: "2026-06-05T19:05:14"
+    action: "T-2209: dialogue log + reconfigured §11 IW dispositions + §14 OSQ gaps captured"
+  - time: "2026-06-05T19:42:09"
+    action: "T-2209: integrate T-2215 + T-2216 supplemental verdicts into inception artifact"
+  - time: "2026-06-05T19:53:43"
+    action: "T-2209: close 7 IW spike children (T-2210..T-2216) — artifacts on disk"
+  - time: "2026-06-05T19:42:09"
+    action: "T-2209: integrate T-2215 + T-2216 supplemental verdicts into inception artifact"
+  - time: "2026-06-05T19:53:43"
+    action: "T-2209: close 7 IW spike children (T-2210..T-2216) — artifacts on disk"
+  - time: "2026-06-05T21:15:54"
+    action: "T-2209: inception decision GO (via Watchtower)"
+  - time: "2026-06-05T21:26:33"
+    action: "T-2209: §15 Slice 1 readiness survey — empirical --json baseline"
+  - time: "2026-06-05T21:28:11"
+    action: "T-2209: §16 OR-2 scan extension sketch — Slice 1 build leg pre-spec"
+  - time: "2026-06-05T21:46:20"
+    action: "T-2209: inception decision GO (via Watchtower)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 15 commit(s), 527 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 527
+  commits: 15
+  files_changed: 25
+  lines_added: 6928
+  lines_removed: 128
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2209-capability-overlay-arc--mcp-subsystem--c.md
+generated_by: context-agent-hybrid

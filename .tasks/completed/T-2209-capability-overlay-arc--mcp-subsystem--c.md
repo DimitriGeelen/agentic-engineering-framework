@@ -6,16 +6,16 @@ description: >
   Inception: Capability-overlay arc — MCP subsystem + CLI route for agent-callable
   framework primitives
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, tests/unit/disposition_gate.bats, web/blueprints/inception.py]
 related_tasks: []
 created: 2026-06-05T12:04:51Z
-last_update: '2026-06-05T12:15:02Z'
-date_finished:
+last_update: 2026-06-05T20:52:39Z
+date_finished: 2026-06-05T20:52:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -214,7 +214,7 @@ Scope unbounded at filing: new subsystem + new CLI route + secret handling + pot
 
 **Rationale**: Scope unbounded at filing: new subsystem + new CLI route + secret handling + potential cross-repo coordination per G-020 trigger; specific deliverables, integration points, and existing-surface overlap unknown. DEFER until Problem Statement and Open Questions surface a bounded candidate to recommend GO on.
 
-**Date**: 2026-06-05T19:46:20Z
+**Date**: 2026-06-05T20:52:39Z
 
 ## Updates
 
@@ -226,13 +226,12 @@ Scope unbounded at filing: new subsystem + new CLI route + secret handling + pot
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-153d6d02
-- **Timestamp:** 2026-06-05T12:11:05Z
+- **Scan ID:** R-30c07b55
+- **Timestamp:** 2026-06-05T20:52:40Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-06-05T14:36:44Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** GO
@@ -247,3 +246,12 @@ Scope unbounded at filing: new subsystem + new CLI route + secret handling + pot
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Scope unbounded at filing: new subsystem + new CLI route + secret handling + potential cross-repo coordination per G-020 trigger; specific deliverables, integration points, and existing-surface overlap unknown. DEFER until Problem Statement and Open Questions surface a bounded candidate to recommend GO on.
+
+### 2026-06-05T20:52:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Scope unbounded at filing: new subsystem + new CLI route + secret handling + potential cross-repo coordination per G-020 trigger; specific deliverables, integration points, and existing-surface overlap unknown. DEFER until Problem Statement and Open Questions surface a bounded candidate to recommend GO on.
+
+### 2026-06-05T20:52:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
