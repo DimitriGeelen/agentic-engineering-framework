@@ -24,6 +24,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+# T-1984: machine-readable GO scope — each IW question's answer ships in a research-spike child task.
+inception_decisions:
+  - id: iw1-delivery-shape
+    text: "MCP server vs CLI-overlay vs both-as-siblings vs federate-into-skills — which delivery shape does the arc produce?"
+    ships_in: deferred:T-2210
+  - id: iw2-verb-scope
+    text: "Which fw verbs are in scope — curated 22, curated 40, or full 129; what's the classification rule?"
+    ships_in: deferred:T-2211
+  - id: iw3-auth-model
+    text: "Auth model — env-inherit / per-client token / capability handshake / shell-only — which preserves §B-005 sovereignty?"
+    ships_in: deferred:T-2212
+  - id: iw4-headline-mechanic
+    text: "Wire-level headline mechanic per G-062 §ACD — one named user-visible deliverable that proves the arc fires"
+    ships_in: deferred:T-2213
+  - id: iw5-overlap
+    text: "Existing-MCP overlap — sibling framework MCP server vs federate into mcp__skills__*; what does the surface analysis say?"
+    ships_in: deferred:T-2214
 bvp_scores_proposed:
   - ts: '2026-06-05T12:05:51Z'
     estimator: bvp-estimator-v1-heuristic
