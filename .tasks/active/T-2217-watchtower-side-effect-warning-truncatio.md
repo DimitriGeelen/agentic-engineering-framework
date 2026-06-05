@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-06-05T19:52:03Z
-last_update: 2026-06-05T19:52:41Z
+last_update: '2026-06-05T20:00:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,6 +36,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-05T20:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -98,15 +108,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -191,7 +201,11 @@ Either is operator-Sovereign; agent cannot self-authorise.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Filed initially as DEFER (evidence gap); upgraded to GO after candidate analysis landed in `docs/reports/T-2217-watchtower-side-effect-truncation-rca.md` §3-§6.
+
+**Date**: 2026-06-05T20:00:49Z
 
 ## Updates
 
@@ -209,3 +223,8 @@ Either is operator-Sovereign; agent cannot self-authorise.
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-05T20:00:49Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Filed initially as DEFER (evidence gap); upgraded to GO after candidate analysis landed in `docs/reports/T-2217-watchtower-side-effect-truncation-rca.md` §3-§6.
