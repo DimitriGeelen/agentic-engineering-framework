@@ -138,8 +138,13 @@ do_inception_start() {
     # Create inception task using create-task.sh
     # T-554: Inception tasks start as captured (not started-work).
     # Use fw work-on T-XXX to explicitly start work when ready.
+    #
+    # T-2207 (T-2204 Slice B'): signal "upstream trusted caller — already gated"
+    # to create-task.sh so the CLI-mirror filing gate doesn't double-fire on this
+    # path. The recommendation has already been validated above and will be
+    # injected via _inject_recommendation_block after creation.
     local output
-    output=$("$AGENTS_DIR/task-create/create-task.sh" \
+    output=$(FW_INCEPTION_PRE_GATED=1 "$AGENTS_DIR/task-create/create-task.sh" \
         --name "$name" \
         --description "Inception: $name" \
         --type inception \

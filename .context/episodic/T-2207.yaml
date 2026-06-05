@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2207: T-2204 Slice B-prime — fw task create / work-on CLI gate mirrors T-1716 contract
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-05T09:36:46Z
+# ============================================================================
+
+task_id: T-2207
+task_name: "T-2204 Slice B-prime — fw task create / work-on CLI gate mirrors T-1716 contract"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-05T09:29:02Z
+completed: 2026-06-05T09:36:37Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`create-task.sh` accepts `--recommendation GO|NO-GO|DEFER`, `--rationale "..."`, and `--i-am-human` flags. Unknown values for `--recommendation` exit 1 with clear message (parity with `do_inception_start` validation).'
+  - 'Filing-time gate fires when ALL of: `$WORKFLOW_TYPE`=inception AND `$CLAUDECODE`=1 AND `--i-am-human` absent AND `$FW_ALLOW_EMPTY_RECOMMENDATION` ≠ 1 AND `$FW_INCEPTION_PRE_GATED` ≠ 1 AND (`--recommendation` empty OR `--rationale` empty) → exit 1 + BLOCK message naming all bypass mechanisms.'
+  - '`FW_ALLOW_EMPTY_RECOMMENDATION=1` bypass: NOTE + Tier-2 log to `.context/working/.gate-bypass-log.yaml` + continue. Symmetric with T-2205/T-2206 (T-1890 parity).'
+  - '`--i-am-human` bypass: continues + logs Tier-2 entry (mirrors `do_inception_start` lines 124-136).'
+  - '`FW_INCEPTION_PRE_GATED=1` bypass: silent pass-through (used by `do_inception_start` to signal "upstream already gated"; not logged because it''s the internal trusted-caller path, not an agent override).'
+  - 'When `--recommendation` + `--rationale` are provided and an inception task file is created, the `## Recommendation` block in the new task body is populated (template comment replaced with `**Recommendation:** <value>` + `**Rationale:** <rationale>`). Mirrors `_inject_recommendation_block` (`lib/inception.sh:173+`).'
+  - '`do_inception_start` updated: passes `FW_INCEPTION_PRE_GATED=1` env to its `create-task.sh` invocation. The existing `_inject_recommendation_block` post-step remains (no breaking refactor); the env signal prevents double-gating.'
+  - 'Build tasks (non-inception) and template-validation path (T-1263) unaffected — `## Acceptance Criteria` block stays at template; only `## Recommendation` block is mutated when flags supplied.'
+  - 'Block message names: (a) `FW_ALLOW_EMPTY_RECOMMENDATION=1` env-var bypass, (b) `--i-am-human` script/test bypass, (c) the canonical fix path (`--recommendation GO|NO-GO|DEFER --rationale "..."`), (d) cross-refs T-679 / T-1715 / T-1716 / T-2204 / T-2205 / T-2206. Audience-axis-correct (T-2143) — agent-facing stderr stays `### Agent` self-eval.'
+  - 'Unit tests in `tests/unit/create_task_inception_recommendation_gate.bats` cover: non-inception passes silently, inception+CLAUDECODE+no-rec BLOCKS, inception+CLAUDECODE+rec+rat passes + Recommendation block injected, `--i-am-human` bypass passes + logs, `FW_ALLOW_EMPTY_RECOMMENDATION=1` bypass passes + logs, `FW_INCEPTION_PRE_GATED=1` bypass passes silently (no log), `do_inception_start` regression still works end-to-end.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2207-t-2204-slice-b-prime--fw-task-create--wo.md
+generated_by: context-agent-hybrid

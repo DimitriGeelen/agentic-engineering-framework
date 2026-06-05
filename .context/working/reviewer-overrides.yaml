@@ -592,3 +592,15 @@ overrides:
   expires_at: '2026-08-31T23:05:18Z'
   added_by: root
   added_at: '2026-06-02T23:05:18Z'
+- id: OV-9b1912ad
+  task_id: T-2207
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "False positive: tests/unit/create_task_inception_recommendation_gate.bats\
+    \ spawns real agents/task-create/create-task.sh end-to-end, inspects real file\
+    \ contents, verifies real bypass-log entries. No mocking \u2014 detector is heuristic\
+    \ and over-matches on AC wording 'covers: X passes' which it reads as mock surface.\
+    \ Same FP class as T-2174 cluster (skip-as-pass, swallowed-errors)."
+  expires_at: '2026-09-03T09:35:53Z'
+  added_by: root
+  added_at: '2026-06-05T09:35:53Z'
