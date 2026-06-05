@@ -348,12 +348,12 @@ observations:
     captured: 2026-06-05T20:35:34Z
     context_task: T-2219
     tags: [deferred]
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-050
     text: "add"
     captured: 2026-06-05T20:41:45Z
     context_task: T-2219
     tags: [forensics]
-    status: pending
+    status: dismissed
     promoted_to: null
