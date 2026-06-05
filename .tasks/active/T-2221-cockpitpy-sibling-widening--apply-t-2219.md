@@ -1,8 +1,10 @@
 ---
 id: T-2221
-name: "cockpit.py sibling widening — apply T-2219 escape+pre-wrap+1500 pattern to 4 scan/action error renders (OBS-049 partial closure)"
+name: "cockpit.py sibling widening — apply T-2219 escape+pre-wrap+1500 pattern to
+  4 scan/action error renders (OBS-049 partial closure)"
 description: >
-  cockpit.py sibling widening — apply T-2219 escape+pre-wrap+1500 pattern to 4 scan/action error renders (OBS-049 partial closure)
+  cockpit.py sibling widening — apply T-2219 escape+pre-wrap+1500 pattern to 4 scan/action
+  error renders (OBS-049 partial closure)
 
 status: started-work
 workflow_type: build
@@ -16,8 +18,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-05T20:53:56Z
-last_update: 2026-06-05T20:53:56Z
-date_finished: null
+last_update: '2026-06-05T21:00:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +30,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-05T21:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-05T21:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2221: cockpit.py sibling widening — apply T-2219 escape+pre-wrap+1500 pattern to 4 scan/action error renders (OBS-049 partial closure)
@@ -60,8 +86,8 @@ All four already escape correctly; all four lack `white-space:pre-wrap`; all fou
 
 - [ ] [REVIEW] Cockpit scan/action error fragments render cleanly when widened multi-line stderr fires
   **Steps:**
-  1. Open http://192.168.10.107:3000/cockpit
-  2. Trigger a scan-refresh / scan-action that surfaces an error (e.g. force a gate to fire). If no live trigger handy, use browser Inspect Element on the cockpit page to confirm the error `<p>` style carries `white-space: pre-wrap`.
+  1. Open http://192.168.10.107:3000/ (root is the cockpit dashboard — `/cockpit` is not a route)
+  2. Trigger a scan-refresh / scan-action that surfaces an error (e.g. force a gate to fire). If no live trigger handy, use browser DevTools to POST `/api/scan/refresh` and observe the returned htmx fragment — or just `grep -nE 'white-space:\s*pre-wrap' web/blueprints/cockpit.py` to confirm the 4 sites carry the style.
   3. Confirm: any rendered error fragment with multi-line stderr shows full content (not clipped at the first sentence), newlines render as line breaks, no HTML-escape glitches.
 
   **Expected:** Error fragments fit their card width without breaking the surrounding cockpit layout; layout reads clean on dark + light palettes.
