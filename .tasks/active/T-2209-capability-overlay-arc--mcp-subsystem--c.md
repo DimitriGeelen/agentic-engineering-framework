@@ -214,7 +214,7 @@ Scope unbounded at filing: new subsystem + new CLI route + secret handling + pot
 
 **Rationale**: Scope unbounded at filing: new subsystem + new CLI route + secret handling + potential cross-repo coordination per G-020 trigger; specific deliverables, integration points, and existing-surface overlap unknown. DEFER until Problem Statement and Open Questions surface a bounded candidate to recommend GO on.
 
-**Date**: 2026-06-05T14:36:44Z
+**Date**: 2026-06-05T19:15:54Z
 
 ## Updates
 
@@ -234,6 +234,11 @@ Scope unbounded at filing: new subsystem + new CLI route + secret handling + pot
 - **Findings:** none
 
 ### 2026-06-05T14:36:44Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Scope unbounded at filing: new subsystem + new CLI route + secret handling + potential cross-repo coordination per G-020 trigger; specific deliverables, integration points, and existing-surface overlap unknown. DEFER until Problem Statement and Open Questions surface a bounded candidate to recommend GO on.
+
+### 2026-06-05T19:15:54Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** Scope unbounded at filing: new subsystem + new CLI route + secret handling + potential cross-repo coordination per G-020 trigger; specific deliverables, integration points, and existing-surface overlap unknown. DEFER until Problem Statement and Open Questions surface a bounded candidate to recommend GO on.
