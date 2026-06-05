@@ -19,6 +19,15 @@ from web.subprocess_utils import run_fw_command
 bp = Blueprint("tasks", __name__)
 
 
+# T-2222 (OBS-049 full closure): _escape helper for error-fragment renders.
+# Mirrors the cockpit.py:255 shape; used by the 6 action-error renders at
+# ~L972/990/1006/1022/1045/1061 below to defuse XSS on raw stderr interpolation.
+def _escape(text):
+    """Escape HTML in error-render fragments. Mirrors cockpit.py:_escape."""
+    return (text.replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace('"', "&quot;"))
+
+
 # ---------------------------------------------------------------------------
 # T-1980: per-task BVP/Cost computation reused from /bvp and /arcs/<id> helpers.
 # Same math path → numbers cannot drift between surfaces.
@@ -968,8 +977,10 @@ def create_task():
         task_id = id_match.group(1) if id_match else "new task"
         return f'<p style="color: var(--pico-ins-color);">Created {task_id}: {name}</p>'
     else:
+        # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
         return (
-            f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>',
+            f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+            f'Error: {_escape((stderr or stdout)[:1500])}</p>',
             500,
         )
 
@@ -987,7 +998,12 @@ def update_task_horizon(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--horizon", horizon])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Horizon set to {horizon}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/owner", methods=["POST"])
@@ -1003,7 +1019,12 @@ def update_task_owner(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--owner", owner])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Owner set to {owner}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/type", methods=["POST"])
@@ -1019,7 +1040,12 @@ def update_task_type(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--type", wtype])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Type set to {wtype}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/complete", methods=["POST"])
@@ -1042,7 +1068,12 @@ def complete_task(task_id):
             '<p style="color: var(--pico-ins-color);">Task completed.</p>'
             f'<div id="complete-button" hx-swap-oob="innerHTML"></div>'
         )
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/status", methods=["POST"])
@@ -1058,7 +1089,12 @@ def update_task_status(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--status", status])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Status updated to {status}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 # ---------------------------------------------------------------------------
