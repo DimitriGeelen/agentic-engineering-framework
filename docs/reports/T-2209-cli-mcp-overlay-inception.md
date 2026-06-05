@@ -271,4 +271,49 @@ Gaps #2, #3, #4 are not arc-shape questions — they are slice-build questions. 
 - **OSQ-F (Per-call audit log).** Should the framework MCP server emit a per-call audit log (request IDs, idempotency keys from HM-A)? Overlaps with IW-4 HM-A and T-2215 CLI error lens — optional micro-build, deferred. Becomes MANDATORY if sovereignty-bound verbs are ever MCP-exposed (currently §3-foreclosed).
 - **OSQ-G (Baseline file count).** One baseline file or two? T-2216 assumes one `orchestrator-mcp-baseline.yaml` holding both `termlink_*` and `mcp__framework__*` (prefixes don't collide). Operator may prefer split — cosmetic call, not structural.
 - **OSQ-H (Cross-repo convention propagation).** The `mcp__framework__*` manifest pattern is strictly better than termlink's grep-over-Rust probe. Worth a cross-link to termlink baseline owners as a forward proposal (out of scope — path isolation; propose via TermLink U-message, do not edit).
-| *(future)* | *(GO / NO-GO / refined DEFER)* | *(updated after Spikes 1-5 land in §3-§7 and operator returns disposition on IW-1..IW-4)* |
+
+---
+
+## §15. Slice 1 readiness survey (empirical baseline, 2026-06-05 PM)
+
+Pre-arc-create survey of the current `fw --json` surface across the 16 read-only Slice 1 candidate verbs (§3 + T-2211 D-rule, T-2209 §3 line 70). Data fixes Slice 1's starting point so the author doesn't need to re-survey.
+
+**Method:** for each verb, `timeout 30 bin/fw <verb> --json 2>/dev/null` and try `json.loads(strip_ansi(stdout))`.
+
+| Verb | `--json` status | What needs to happen in Slice 1 |
+|------|-----------------|---------------------------------|
+| `ask` | ✓ **valid JSON** (lib/ask.py) | Add `schema_version` field; reference impl |
+| `task list` | ✗ ignored — prints prose | Add `--json` handler to `bin/fw task list` |
+| `task show T-XXX` | ✗ ignored — prints prose | Add `--json` handler (return frontmatter + body) |
+| `review-queue` | ✗ ignored — prints prose | Add `--json` handler |
+| `inception status` | ✗ ignored — prints prose | Add `--json` handler |
+| `bvp rank` | ✗ verb doesn't exist | Resolve subcommand naming (vs `bvp list`?) then add `--json` |
+| `learnings` | ✗ ignored — prints prose | Add `--json` handler |
+| `decisions` | ✗ ignored — prints prose | Add `--json` handler |
+| `recall <q>` | ✗ ignored — prints prose | Add `--json` handler |
+| `gaps` | ✗ ignored — prints prose | Add `--json` handler |
+| `metrics` | ✗ **errors** "Unknown metrics subcommand: --json" | Argparse rejects unknown — needs explicit handler |
+| `doctor` | ✗ ignored — prints prose | Add `--json` handler |
+| `fabric search <q>` | ✗ ignored — prints prose | Add `--json` handler |
+| `fabric deps <path>` | ✗ ignored — prints prose | Add `--json` handler |
+| `costs` | ✗ **errors** "Unknown costs subcommand: --json" | Argparse rejects unknown — needs explicit handler |
+| `version` | ✗ **errors** "Unknown version subcommand: --json" | Argparse rejects unknown — needs explicit handler |
+
+**Empirical truth: 1/16 verbs currently produces valid JSON; 12/16 silently ignore `--json` and print prose (worst case — caller may think it succeeded); 3/16 error explicitly (best case — caller learns to use a different shape).**
+
+**Three classes of work in Slice 1:**
+
+1. **Add `--json` handler** (12 verbs) — read the underlying data, JSON-encode, print to stdout. ANSI must NOT leak into stdout when `--json` is set. Stderr may carry prose; stdout is pure JSON. The reference impl is `lib/ask.py:96` (`add_argument("--json", action="store_true", dest="json_output")` + a single branch at print-time).
+2. **Resolve argparse rejections** (3 verbs: `metrics`, `costs`, `version`) — these reject unknown options before any handler runs. Either pre-process argv to strip `--json`, route to a subparser that knows the flag, or accept it as a recognised top-level option.
+3. **Resolve verb naming** (1 verb: `bvp rank`) — current `bvp` subcommands don't include `rank`; resolve to `bvp list --rank` or similar before Slice 1 ships.
+
+**Universal addition (T-2215 finding):** all 16 verbs (including `ask` which already produces JSON) need a top-level `schema_version` field added. Current `ask --json` keys: `[answer, model, sources, thinking, thinking_used]` — no `schema_version`. Without it, downstream type-coupling breaks silently (the ×11 datetime/str class in T-2215).
+
+**Recommended Slice 1 shape:**
+- 16 read-only verbs uniformly emit `{"schema_version": "1", "ok": true, "data": {...}}` on success
+- On error: `{"schema_version": "1", "ok": false, "error_code": "<kebab-case>", "message": "<human-readable>"}`
+- A `tests/unit/test_fw_json_surface.bats` parametric test asserts every verb's output is valid JSON parseable by `json.loads` and contains `schema_version`. New verbs added without `--json` fail the test.
+
+**OSQ-C performance benchmark:** before this slice's close gate, measure `time bin/fw <verb> --json` vs `time bin/fw <verb>` for each of the 16. Acceptance criterion: <2× slower OR document the fast-path / accept the latency. Slice 1 should not blanket-add JSON serialization if it doubles cron-loop latency.
+
+**This survey is informational data; it does NOT pre-empt Slice 1's build task design — the operator runs `fw arc create capability-overlay` before any Slice 1 task can be filed.**
