@@ -147,7 +147,40 @@ Per [[feedback_defer_for_evidence_not_confidence]] discipline: each DEFER above 
 - **Surface check:** No handoff file on disk; prior memory reference (`HANDOFF-cli-mcp-overlay-2026-06-02 v3`) corrected as phantom in [[project_t2204_completed_4_of_4_plus_cron]] sibling memory.
 - **Next:** spikes 1-5 (read-only), then `fw task review T-2209` to surface candidates to operator for IW-1..IW-5 disposition.
 
-*(further entries to be appended as exploration proceeds and operator feedback lands)*
+### 2026-06-05 — Operator records GO; agent surfaces decision-rationale-vs-text contradiction
+- **Operator action:** GO recorded via Watchtower at `2026-06-05T14:36:44Z`. Decision Rationale text on file is the filing-time DEFER text verbatim (template artifact, not new operator scope).
+- **Agent response:** Stopped — refused to synthesise IW-1..IW-5 answers under inception discipline + §ACD G-062 (headline mechanic must be operator-named) + Producer ≠ judge. Surfaced the contradiction back to operator.
+- **Operator directive:** *"for all iw1 bis iw5 send out a temlink agent for each to research, score against business value drivers, stellman and strawman and then report back to be and take me through each step by stepp, ensure we put a struicture ion palce to support this if needed break down in further tasks under the inception arc"*
+- **Agent response:** Filed 5 spike children T-2210..T-2214 (workflow_type: specification), wrote reusable worker template at `docs/dispatch-templates/iw-spike-worker.md`, wired T-2209 `inception_decisions:` per T-1984 GO-scope traceability, dispatched 5 TermLink workers in parallel.
+
+### 2026-06-05 — IW-1..IW-5 spike results returned; cross-spike tension surfaced
+- **Workers complete:** All 5 produced research artifacts at `docs/reports/T-22{10,11,12,13,14}-iw-research.md` (~15K each). Workers skipped bus-post step (artifact-on-disk is canonical persistence).
+- **Headline recommendations (initial framing — value/cost-balanced):**
+  - IW-1 (T-2210): **B — CLI-overlay-only** (highest value/cost 1.30, D dominated)
+  - IW-2 (T-2211): **D-rule (classification-by-axis)** — first slice ≈ ~22 tools
+  - IW-3 (T-2212): **D — shell-only** opening; A (env-inherit) as pre-approved mate IF MCP leg ships later
+  - IW-4 (T-2213): **HM-A + HM-E rider** — MCP-routed agent works T-XXX to work-completed; operator observes /review/T-XXX; JSONL shows no `Bash(bin/fw …)`
+  - IW-5 (T-2214): **A — sibling `mcp__framework__*` server** (Shape-2 read-only first slice); federation structurally foreclosed by path-isolation
+- **Cross-spike tension flagged:** IW-1 (B = no MCP) is contradicted by IW-4 (HM-A needs MCP) and IW-5 (active sibling-MCP recommendation). Workers ran in isolation.
+- **Agent supplemental investigation request:** Operator: *"please also investigate all teh cli erros we have and compare against B vs C"* → filed T-2215 (CLI-error-survey supplemental); first dispatch failed API 529; redispatched.
+
+### 2026-06-05 — Strategic-investment framing pivot
+- **Operator directive:** *"ok i thinks this is so fundemental for day-to-day usage of teh framework that high cost are acceptable. its foundational work … and therefor strategic investment, does this make sense?"*
+- **Agent response:** Yes — `bin/fw` is empirically the hottest surface (33 existing `--json` sites, 15+ cron callers, every commit hook, every TermLink worker, every consumer project, all Watchtower routes). Producer/consumer parity bugs (L-399 / T-1890) are the exact drift class typed surfaces kill. Foundational claim is grounded.
+- **One discipline reframe:** "Foundational, high cost acceptable" ≠ big-bang. §ACD + T-1626/T-1641/T-1670 trio precedent → ship as 3-4 vertically-sliced increments, each demoing the HM-A mechanic at progressively wider scope.
+- **Cross-spike tension collapses under new framing:** When cost is not the deciding axis, C (both-as-siblings, BVP 2.97) wins over B; reconfigured IW recommendations integrate cleanly (see §11 below).
+
+### 2026-06-05 — Operator catches orchestrator-routing lens gap
+- **Operator directive:** *"can we please check back with the mcp redisgn document and see if we have cuptured all, for instance i am not sure that we have propely adressed teh achetratoir routing lens, amongst others, bnut i might be wrong"*
+- **Agent investigation:** No standalone "MCP redesign document" on disk (closest match is this artifact). However, operator was correct — material gaps identified:
+  - **Gap #1 (Orchestrator routing lens)** — `orchestrator-mcp-baseline.yaml` (251 classified tools), `agents/audit/orchestrator-mcp-scan.sh`, `lib/resolver.py` dispatch substrate, 5 workflow YAMLs declaring `worker_kind` / `allowed_tools`, route_cache learning. Six concrete sub-questions OR-1..OR-6 (classification entry, scan probe extension, capture coverage, route_cache learning, workflow schema, per-slice procedural debt). NOT addressed in T-2210..T-2214.
+  - **Gap #2 (Watchtower frontend migration)** — touched by HM-E but not sized; ~20 blueprints POSTing argv-shape commands need migration.
+  - **Gap #3 (Consumer-project propagation)** — `.agentic-framework/bin/fw` ships in every consumer; per-consumer MCP server lifecycle / `.mcp.json` management / `fw upgrade` implications unknown.
+  - **Gap #4 (Performance)** — MCP stdio JSON-RPC latency vs shell-exec for high-frequency verbs (cron-fired every 5 min, hooks per tool call).
+- **Agent response:** Filed T-2216 (orchestrator-routing-integration spike, OR-1..OR-6) and dispatched TermLink worker. Gap #2, #3, #4 captured as Open Sub-Questions for slice-level resolution (§14 below).
+- **Operator directive:** *"proceed as seen fit, prioritize High value / low cost BCP tasks, continue until context is at 300k, apply framework governance"* — initiative delegated.
+
+*(further entries appended as exploration proceeds)*
 
 ---
 
@@ -156,4 +189,59 @@ Per [[feedback_defer_for_evidence_not_confidence]] discipline: each DEFER above 
 | Date | Recommendation | Rationale |
 |------|----------------|-----------|
 | 2026-06-05 (filing) | DEFER | Five open questions, all needing operator input or read-only spike completion. Honest evidence-gap (not hedge). |
+| 2026-06-05 (post-spikes, value/cost framing) | GO — Path B (CLI-overlay-only first; MCP optional later) | IW-1 worker recommendation. Highest value/cost ratio (1.30). 5 IW spikes complete but cross-spike tension between IW-1=B and IW-4/IW-5=needs-MCP-server. |
+| 2026-06-05 (strategic-investment framing pivot) | **GO — Path C-scoped (both-as-siblings, sliced)** | Cost no longer the deciding axis. C wins on BVP (2.97 vs 2.86). Cross-spike tension collapses: IW-4 HM-A + IW-5 sibling MCP both presume a server, which C ships. Auth surface stays zero (IW-3 env-inherit + binding conditions). Slice as 3-4 evolutionary increments per §ACD. |
+| 2026-06-05 (pending) | TBD — awaits T-2215 + T-2216 + operator confirmation of reconfigured IW dispositions | T-2215 CLI-error survey (slice-1 prioritization data) and T-2216 orchestrator-routing-integration spike (closes Gap #1) both running. Build slicing should wait. |
+
+---
+
+## §11. Reconfigured IW dispositions under strategic-investment framing (PROPOSED — awaits operator confirmation)
+
+| IW | Original (value/cost) | Reconfigured (strategic-investment) | Effective candidate | Status |
+|----|----------------------|------------------------------------|---------------------|--------|
+| 1 | B (CLI-overlay-only) | **C — both-as-siblings** (`fw --json` underlay + sibling MCP server) | Highest BVP, IW-4+IW-5 alignment | PROPOSED |
+| 2 | D-rule, slice 1 ≈ 22 | **D-rule, slice 1 ≈ 22** (foundational framing widens future slices, not slice 1 — keeps §ACD honest) | D-rule yields ~22 | PROPOSED |
+| 3 | D (shell-only) | **A — env-inherit** + binding conditions (never strip `$CLAUDECODE`/`AI_AGENT`/`TOOL_NAME`; never expose settings.json verbs) | Required because MCP leg ships in C | PROPOSED |
+| 4 | HM-A + HM-E rider | **HM-A + HM-E rider — unchanged** | Was already higher-ambition pick | PROPOSED |
+| 5 | A (sibling) | **A — sibling `mcp__framework__*` — unchanged** | Federation foreclosed by path-isolation, never cost-dependent | PROPOSED |
+
+**Sovereignty discipline:** these are *proposed* dispositions surfaced for operator confirmation via `fw task review T-2209`. The agent cannot autonomously bake these into T-2209's `inception_decisions:` text. Operator confirmation drives the lock-in.
+
+---
+
+## §12. Proposed build-slice shape (PROPOSED — awaits T-2216 results + operator)
+
+**Total arc budget:** F8 ≈ 5.4 (Path C-scoped) — sliced as 3-4 evolutionary increments per §ACD:
+
+- **Slice 1:** `fw --json` extension to the curated-22 read-only verbs + per-verb `schema_version` field + smoke test. No MCP server yet.
+- **Slice 2:** Sibling `mcp__framework__*` MCP server skeleton (env-inherit auth, `tools/list` returning the 22 read-only tools) + HM-F slice-1 read-only smoke test. Adds orchestrator-mcp-baseline.yaml entries (per T-2216 OR-1).
+- **Slice 3:** Adds agent-authority verbs (task_update, work_on, etc.) with `task_id` requirement + HM-A headline mechanic demo. Triggers IW-3 auth binding conditions.
+- **Slice 4:** Watchtower frontend migrates one POST endpoint to the new surface (consumer-side validation; HM-E no-shell-out rider proof) — closes Gap #2.
+
+Each slice MUST land its own demo (§ACD honest), its own classification baseline diff (per T-2216 OR-6), and its own consumer-fresh-machine bats simulation (per L-417 / T-1633).
+
+---
+
+## §13. Spike status summary
+
+| Spike | Task | Worker | Status | Artifact |
+|-------|------|--------|--------|----------|
+| IW-1 delivery shape | T-2210 | iw1-delivery-shape | done | docs/reports/T-2210-iw-research.md |
+| IW-2 verb scope | T-2211 | iw2-verb-scope | done | docs/reports/T-2211-iw-research.md |
+| IW-3 auth model | T-2212 | iw3-auth-model | done | docs/reports/T-2212-iw-research.md |
+| IW-4 headline mechanic | T-2213 | iw4-headline-mechanic | done | docs/reports/T-2213-iw-research.md |
+| IW-5 overlap | T-2214 | iw5-overlap | done | docs/reports/T-2214-iw-research.md |
+| Supplemental: CLI error survey | T-2215 | iw1-cli-error-survey-retry | running (529-retry) | docs/reports/T-2215-cli-error-survey.md (pending) |
+| Supplemental: orchestrator routing | T-2216 | iw-or-routing | running | docs/reports/T-2216-orchestrator-routing-integration.md (pending) |
+
+---
+
+## §14. Open Sub-Questions captured for slice-level resolution
+
+Gaps #2, #3, #4 are not arc-shape questions — they are slice-build questions. Captured here for honest deferral:
+
+- **OSQ-A (Gap #2 — Watchtower migration).** How does `web/blueprints/*.py` migrate from argv-shape POST to JSON-shape requests? Approx 20 blueprints. **Slice assignment:** Slice 4 (HM-E consumer demo); concrete blueprint-by-blueprint migration plan filed at slice-4 design time. Pre-condition: at least one HM-A demo from Slice 3 has shipped to validate the typed-call shape.
+- **OSQ-B (Gap #3 — Consumer-project propagation).** Does each consumer project run its own `mcp__framework__*` server? How is `.mcp.json` managed per-consumer? Lifecycle (autostart? systemd? lazy-spawn?). `fw upgrade` / `fw vendor` propagation implications. **Slice assignment:** Slice 2.5 — a dedicated "consumer-propagation" sub-slice between Slice 2 (skeleton) and Slice 3 (agent-authority verbs). Must include `tests/unit/upgrade_fresh_machine_simulation.bats` extension (per L-417 / T-1633 discipline).
+- **OSQ-C (Gap #4 — Performance).** MCP stdio JSON-RPC latency vs shell-exec for high-frequency verbs (e.g. `fw context status` called by cron every 5 min, hooks firing on every tool call). **Slice assignment:** Slice 1 includes a latency benchmark for the curated-22 read-only set. If any verb is >2× shell-exec slower under JSON output mode, that verb either gets a fast-path or stays shell-only. Decision criterion is empirical, not architectural.
+- **OSQ-D (Cross-spike consistency).** The 5 IW workers ran in isolation and produced one cross-spike contradiction (resolved by operator framing pivot). For future multi-IW inception dispatch patterns, consider adding a **synthesis spike** that reads all sibling artifacts and produces a coherence-check before operator presentation. Captured as candidate for the dispatch-pattern template at `docs/dispatch-templates/iw-spike-worker.md`.
 | *(future)* | *(GO / NO-GO / refined DEFER)* | *(updated after Spikes 1-5 land in §3-§7 and operator returns disposition on IW-1..IW-4)* |
