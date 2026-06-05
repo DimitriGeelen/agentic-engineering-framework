@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2218: T-2217 Slice 3 — anchor IW-N regex in update-task.sh disposition gate (RC5 fix)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-05T20:24:29Z
+# ============================================================================
+
+task_id: T-2218
+task_name: "T-2217 Slice 3 — anchor IW-N regex in update-task.sh disposition gate (RC5 fix)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-05T20:17:36Z
+completed: 2026-06-05T20:24:21Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/task-create/update-task.sh` line ~770 IW-N branch is anchored to start-of-line; the bare `IW-[0-9]+` alternation is removed/replaced.'
+  - '`tests/unit/disposition_gate.bats` gains a regression test that exercises an Open Questions block where a fully-disposed IW-N''s rationale text mentions "IW-1" / "IW-2" in prose — gate must PASS (not block).'
+  - 'All pre-existing bats tests in `tests/unit/disposition_gate.bats` still pass (7 tests + 1 new = 8 PASS).'
+  - 'T-2209''s own ## Open Questions (which contains IW-N prose-mentions per the RC5 incident) no longer triggers FP on the disposition gate — verified via dry-run grep against the regex.'
+  - 'Reviewer static-scan PASS on this task (`bin/fw reviewer T-2218 2>&1 \| grep -q "Overall:.*PASS"`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2218-t-2217-slice-3--anchor-iw-n-regex-in-upd.md
+generated_by: context-agent-hybrid

@@ -766,8 +766,13 @@ check_disposition_gate() {
     local current_q="" has_disposition=false has_rationale=false
 
     while IFS= read -r line; do
-        # Match question markers: "- IW-1: ..." or "### IW-1 ..." or "**IW-1**:"
-        if echo "$line" | grep -qE "(IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)"; then
+        # Match question markers (T-2218 RC5 fix): anchored to start-of-line marker
+        # forms only. The previous unanchored `IW-[0-9]+` branch matched IW-N
+        # mentions in prose (e.g. rationale text "depends on IW-1's answer"),
+        # causing a false flush of the prior question's disposition/rationale.
+        #   Valid: "- **IW-1: text**", "- IW-1: text", "### IW-1 title"
+        #   Plus the legacy Q-N list-item form (unchanged).
+        if echo "$line" | grep -qE "(^[[:space:]]*-[[:space:]]*\*?\*?IW-[0-9]+|^###[[:space:]]+IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)"; then
             # Flush previous question's verdict
             if [ -n "$current_q" ] && { [ "$has_disposition" = false ] || [ "$has_rationale" = false ]; }; then
                 missing=$((missing + 1))

@@ -169,6 +169,34 @@ _make_inception() {
     [[ "$output" == *"BYPASS_LOGGED"* ]]
 }
 
+@test "prose mention of IW-N in rationale does NOT trigger a false flush (T-2218 RC5)" {
+    # Regression for T-2217 RC5: the IW-N branch of the question-marker regex
+    # was unanchored, so the IW-2 rationale text "depends on IW-1's answer"
+    # was classified as a new IW-1 marker, false-flushing IW-2's real
+    # disposition+rationale as "missing".
+    file=$(_make_inception T-9106 "
+- **IW-1: First question**
+  confidence: 2
+  disposition: answered
+  rationale: see docs/reports/T-9106.md L42
+
+- **IW-2: Second question depends on IW-1**
+  confidence: 1
+  disposition: deferred — depends on IW-1's answer and IW-1's rationale per the docs
+  rationale: IW-1 must resolve first; the IW-1 / IW-2 ordering is what the prose calls out
+")
+    run bash -c "
+        TASK_FILE='$file'
+        SKIP_DISPOSITION_GATE=false
+        GREEN='' YELLOW='' RED='' NC=''
+        log_gate_bypass() { :; }
+        source <(sed -n '/^check_disposition_gate()/,/^}/p' '$UPDATE_SH')
+        check_disposition_gate
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"all Open Questions disposed"* ]]
+}
+
 @test "update-task.sh accepts --skip-disposition-gate flag in arg parsing" {
     # Just confirm the flag is recognised (no 'unknown option' error)
     run bash -c "$UPDATE_SH --help 2>&1 || true"
