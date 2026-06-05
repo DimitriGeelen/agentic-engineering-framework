@@ -268,7 +268,13 @@ def scan_refresh():
             ctx = get_cockpit_context(scan_data)
             return render_template("cockpit.html", **ctx)
         return '<p style="color:var(--pico-del-color)">Scan succeeded but output not found.</p>', 500
-    return f'<p style="color:var(--pico-del-color)">Scan failed: {_escape(stderr[:300])}</p>', 500
+    # T-2221: widen 300 → 1500 + pre-wrap so multi-line gate stderr renders fully
+    # (T-2219 sibling pattern; OBS-049 class closure).
+    return (
+        f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+        f'Scan failed: {_escape(stderr[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/scan/approve/<rec_id>", methods=["POST"])
@@ -298,7 +304,12 @@ def scan_approve(rec_id):
                  "--source", "scan",
                  "--recommendation-type", rec_type])
             return f'<p style="color:var(--pico-ins-color)">Approved: {_escape(rec.get("summary", rec_id)[:100])}</p>'
-        return f'<p style="color:var(--pico-del-color)">Action failed: {_escape(stderr[:200])}</p>', 500
+        # T-2221: widen 200 → 1500 + pre-wrap (T-2219 sibling pattern).
+        return (
+            f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+            f'Action failed: {_escape(stderr[:1500])}</p>',
+            500,
+        )
 
     return f'<p style="color:var(--pico-del-color)">No executable action for {_escape(rec_id)}.</p>', 400
 
@@ -351,7 +362,12 @@ def scan_apply(rec_id):
         stdout, stderr, ok = run_fw_command(cmd_parts)
         if ok:
             return f'<p style="color:var(--pico-ins-color)">Applied: {_escape(rec.get("summary", rec_id)[:100])}</p>'
-        return f'<p style="color:var(--pico-del-color)">Failed: {_escape(stderr[:200])}</p>', 500
+        # T-2221: widen 200 → 1500 + pre-wrap (T-2219 sibling pattern).
+        return (
+            f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+            f'Failed: {_escape(stderr[:1500])}</p>',
+            500,
+        )
 
     return f'<p style="color:var(--pico-del-color)">No action for {_escape(rec_id)}.</p>', 400
 
@@ -364,7 +380,12 @@ def scan_focus(task_id):
     stdout, stderr, ok = run_fw_command(["context", "focus", task_id])
     if ok:
         return f'<p style="color:var(--pico-ins-color)">Focus set to {_escape(task_id)}</p>'
-    return f'<p style="color:var(--pico-del-color)">Failed: {_escape(stderr[:200])}</p>', 500
+    # T-2221: widen 200 → 1500 + pre-wrap (T-2219 sibling pattern).
+    return (
+        f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+        f'Failed: {_escape(stderr[:1500])}</p>',
+        500,
+    )
 
 
 # ---------------------------------------------------------------------------
