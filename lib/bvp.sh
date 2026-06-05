@@ -242,14 +242,24 @@ def quadrant(bvp_norm, cost, bvp_median, cost_median):
 
 
 # --------------------------------------------------------------------- verbs
-def cmd_rank(filter_quadrant=None, include_proposed=False):
+def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=False):
     """T-1938: --include-proposed opt-in falls back to bvp_scores_proposed:
     for tasks lacking confirmed scores. Sovereignty default is confirmed-only;
-    explicit consent is required to fold in advisory inputs."""
+    explicit consent is required to fold in advisory inputs.
+
+    T-2223: --include-completed opt-in folds work-completed tasks back into the
+    rank. Actionable-only is the default — the surface answers "what should I
+    work on next" by default, not "rank everything we have data for". Set the
+    flag when running an archival/historical sweep."""
     policy = load_policy()
     weights = driver_weights(policy)
     rows = []
     for path, fm in collect_tasks():
+        # T-2223: skip work-completed rows by default so the rank lists actionable
+        # tasks only. Tasks in active/ with status==work-completed (partial-complete
+        # pending Human ACs) are also skipped — they are not the operator's next pick.
+        if not include_completed and fm.get('status') == 'work-completed':
+            continue
         scores = fm.get('bvp_scores') or {}
         source = 'confirmed'
         if not scores:
@@ -1155,10 +1165,14 @@ def usage():
     print("""fw bvp — Business Value Points (read-only)
 
 USAGE:
-  fw bvp                          rank all confirmed-scored tasks by BVP (desc)
+  fw bvp                          rank actionable confirmed-scored tasks by BVP (desc)
+                                  (T-2223: work-completed tasks excluded by default —
+                                  the rank answers "what should I work on next")
   fw bvp --include-proposed       also rank tasks with estimator-proposed scores
                                   (T-1938; SOURCE column distinguishes confirmed/proposed;
                                   cost falls back to cost_estimate_proposed: too)
+  fw bvp --include-completed      also rank work-completed tasks (T-2223; archival
+                                  sweep semantic — opt-in for historical analysis)
   fw bvp T-<id>                   per-driver detail for one task; cost section
                                   falls back to cost_estimate_proposed: when
                                   cost_estimate: is absent (T-1938)
@@ -1218,8 +1232,15 @@ def main(argv):
     if '--include-proposed' in args:
         include_proposed = True
         args = [a for a in args if a != '--include-proposed']
+    # T-2223: --include-completed is a positional flag valid for rank surfaces.
+    # Default (False) skips work-completed tasks — actionable-only rank.
+    include_completed = False
+    if '--include-completed' in args:
+        include_completed = True
+        args = [a for a in args if a != '--include-completed']
     if not args:
-        return cmd_rank(include_proposed=include_proposed)
+        return cmd_rank(include_proposed=include_proposed,
+                        include_completed=include_completed)
     if args[0] in ('--help', '-h', 'help'):
         return usage()
     if args[0] == '--quadrant':
@@ -1230,7 +1251,8 @@ def main(argv):
         if q not in ('hv-lc', 'hv-hc', 'lv-lc', 'lv-hc'):
             print(f"ERROR: invalid quadrant '{q}'", file=sys.stderr)
             return 2
-        return cmd_rank(filter_quadrant=q, include_proposed=include_proposed)
+        return cmd_rank(filter_quadrant=q, include_proposed=include_proposed,
+                        include_completed=include_completed)
     if args[0] == 'arcs':
         return cmd_arcs()
     if args[0] == 'weight':
