@@ -3504,3 +3504,17 @@ X'` returning empty group."
   date: 2026-06-05
   context: Added via context agent
   application: TBD
+- id: L-458
+  learning: "When scoping a class-closure task (widening, refactor, audit-WARN reduction), live-grep the class BEFORE writing the AC count. OBS captures are heuristic and may be off-by-one. T-2222 found 6 sites where memory said 5; the missed site (tasks.py:1061) would have failed the unit test at close-gate time rather than at scope-assessment. Verify before authoring."
+  source: P-001
+  task: T-2222
+  date: 2026-06-05
+  context: Added via context agent
+  application: TBD
+- id: L-459
+  learning: "Reviewer 'human-ac-mechanical-signal' FP on genuine [REVIEW] ACs is defused by REPHRASING the Expected clause, not by overriding the detector. The heuristic matches literal substrings like 'shows N' / 'displays N' in Expected; when the AUDIENCE is genuinely operator (per T-2143 axis), the fix is to substitute vocabulary that signals experiential judgment ('the operator's reading experience confirms', 'no rendered HTML bleed-through') and explicitly cite that mechanical contracts are pinned by the agent test. T-2222 went CONCERN -> PASS with one Expected rewrite, no override needed."
+  source: P-001
+  task: T-2222
+  date: 2026-06-05
+  context: Added via context agent
+  application: TBD
