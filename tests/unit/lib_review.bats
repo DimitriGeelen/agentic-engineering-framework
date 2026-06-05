@@ -28,6 +28,13 @@ _create_review_task() {
     local task_id="${1:-T-999}"
     local workflow="${2:-build}"
     local file="$TEST_TEMP_DIR/.tasks/active/${task_id}-test.md"
+    # T-2206: inception fixtures need a substantive ## Recommendation block,
+    # otherwise emit_review BLOCKS them via the Slice C consumer-side gate.
+    # Build tasks do not gate on Recommendation, so the heading is conditional.
+    local rec_block=""
+    if [ "$workflow" = "inception" ]; then
+        rec_block=$'\n## Recommendation\n\n**Recommendation:** GO\n**Rationale:** test fixture\n'
+    fi
     cat > "$file" <<EOF
 ---
 id: ${task_id}
@@ -38,7 +45,7 @@ owner: human
 ---
 
 # ${task_id}: Test task
-
+${rec_block}
 ## Acceptance Criteria
 
 ### Agent
@@ -135,9 +142,12 @@ EOF
 }
 
 @test "review: T-1492 — emit_review survives pipefail when inception task has no Recommendation line" {
-    # Regression: pre-fix, grep-finds-nothing under pipefail aborted emit_review
-    # via command substitution; .reviewed-T-XXX marker was never created and
-    # the function exited silently between "Scan QR" and the marker touch.
+    # T-1492 invariant: grep-finds-nothing under pipefail must NOT silently
+    # abort emit_review between "Scan QR" and the marker touch.
+    # T-2206 update: empty ## Recommendation now BLOCKS by default — assert the
+    # pipefail-survival invariant under the FW_ALLOW_EMPTY_RECOMMENDATION=1 bypass
+    # path, which keeps emit_review's body-print path active. The T-2206 BLOCK
+    # branch is covered separately in tests/unit/audit_inception_recommendation.bats.
     local file="$TEST_TEMP_DIR/.tasks/active/T-1492a-test.md"
     cat > "$file" <<EOF
 ---
@@ -156,7 +166,7 @@ owner: human
 EOF
     # Run with the exact shell mode update-task.sh uses
     set -euo pipefail
-    run emit_review "T-1492a" "$file"
+    FW_ALLOW_EMPTY_RECOMMENDATION=1 run emit_review "T-1492a" "$file"
     [ "$status" -eq 0 ]
     # Marker MUST exist — proves we reached past the bug site (line ~150)
     [ -f "$TEST_TEMP_DIR/.context/working/.reviewed-T-1492a" ]
@@ -167,6 +177,7 @@ EOF
 @test "review: T-1492 — HTML-commented Recommendation line does not poison the rationale" {
     # If the only **Recommendation:** match is inside an HTML comment, treat
     # it as missing rather than extracting the comment marker as rationale.
+    # T-2206: same bypass needed — empty ## Recommendation BLOCKS by default.
     local file="$TEST_TEMP_DIR/.tasks/active/T-1492b-test.md"
     cat > "$file" <<EOF
 ---
@@ -186,13 +197,16 @@ owner: human
 - [ ] [REVIEW] decide
 EOF
     set -euo pipefail
-    run emit_review "T-1492b" "$file"
+    FW_ALLOW_EMPTY_RECOMMENDATION=1 run emit_review "T-1492b" "$file"
     [ "$status" -eq 0 ]
     [ -f "$TEST_TEMP_DIR/.context/working/.reviewed-T-1492b" ]
     [[ "$output" == *"No \`**Recommendation:**\` line found"* ]]
 }
 
 @test "review: T-1492 — present Recommendation line is extracted into the CLI rationale" {
+    # T-2206: the Recommendation line must live INSIDE the ## Recommendation
+    # section for the new audit gate to accept it. Pre-T-2206 fixture had the
+    # bare line at file scope; updated to canonical structure.
     local file="$TEST_TEMP_DIR/.tasks/active/T-1492c-test.md"
     cat > "$file" <<EOF
 ---
@@ -203,6 +217,8 @@ owner: human
 ---
 
 # T-1492c
+
+## Recommendation
 
 **Recommendation:** GO — apply the fix
 

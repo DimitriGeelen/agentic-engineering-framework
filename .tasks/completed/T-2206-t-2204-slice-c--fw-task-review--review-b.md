@@ -1,23 +1,25 @@
 ---
 id: T-2206
-name: "T-2204 Slice C — fw task review / review-batch refuses emission when inception has template-only Recommendation block"
+name: "T-2204 Slice C — fw task review / review-batch refuses emission when inception
+  has template-only Recommendation block"
 description: >
-  T-2204 Slice C — fw task review / review-batch refuses emission when inception has template-only Recommendation block
+  T-2204 Slice C — fw task review / review-batch refuses emission when inception has
+  template-only Recommendation block
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/review.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-04T20:06:25Z
-last_update: 2026-06-04T20:06:25Z
-date_finished: null
+last_update: 2026-06-05T09:24:59Z
+date_finished: 2026-06-05T09:24:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +30,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-04T20:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-04T20:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2206: T-2204 Slice C — fw task review / review-batch refuses emission when inception has template-only Recommendation block
@@ -49,7 +75,7 @@ unlocks_inception_decision: [T-2204:slice-c]
 - [x] Bypass via `FW_ALLOW_EMPTY_RECOMMENDATION=1` env var — symmetric with T-2205 Slice B per T-1890 producer/consumer parity. `_log_empty_recommendation_bypass` helper writes to `.context/working/.gate-bypass-log.yaml`.
 - [x] Block message names canonical fix path (edit Recommendation block with verdict+rationale) AND the env-var bypass.
 - [x] Non-inception tasks pass through silently (audit guard inspects workflow_type first).
-- [ ] Unit tests in `tests/unit/audit_inception_recommendation.bats` — **NOT YET WRITTEN (next session — Write tool blocked by budget critical 96%).** Will cover: non-inception passes, populated Rec passes, template-only blocks, FW_ALLOW_EMPTY_RECOMMENDATION=1 bypass, batch refuses on any failure, Tier-2 log entry on bypass.
+- [x] Unit tests in `tests/unit/audit_inception_recommendation.bats` — 14/14 PASS. Covers: audit primitive (populated/empty/template/missing-file), `emit_review` (build-passthrough/populated-passes/empty-BLOCKS/template-BLOCKS/bypass-NOTE+log), `emit_review_batch` (clean-passes/mixed-passes/any-empty-refuses-batch/bypass-NOTE+per-task-log/build-only-passes). Plus regression sweep: `lib_review.bats` 12/13 (test 7 pre-existing fail unrelated), `review_link_blocking_gate.bats` 5/5, `review_batch.bats` 7/7, `review_pipefail.bats` 5/5 (semantically rewritten: T-2206 BLOCK upgrade of T-1545 WARN, T-1545 silent-failure invariant preserved via "loud BLOCK" assertion). Fixtures across 4 existing test files updated to include substantive `## Recommendation` blocks on inception fixtures — under the new contract empty Rec correctly BLOCKS, so tests not exercising the gate need real fixtures.
 - [x] Block-message stderr (agent-facing) names: (a) `FW_ALLOW_EMPTY_RECOMMENDATION=1` env-var bypass, (b) the canonical fix (edit Recommendation), (c) cross-refs T-679 / T-1715 / T-1716 / T-2204 / T-2205. Audience-axis-correct (T-2143) — agent-facing stderr stays ### Agent self-eval. Self-eval against `lib/review.sh:163-186` (emit_review block) and `lib/review.sh:328-357` (emit_review_batch block).
 
 ## Verification
@@ -155,3 +181,15 @@ out=$(bin/fw reviewer T-2206 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2206-t-2204-slice-c--fw-task-review--review-b.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-042989b5
+- **Timestamp:** 2026-06-05T09:25:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-05T09:24:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

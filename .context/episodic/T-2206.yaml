@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2206: T-2204 Slice C — fw task review / review-batch refuses emission when inception
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-05T09:25:09Z
+# ============================================================================
+
+task_id: T-2206
+task_name: "T-2204 Slice C — fw task review / review-batch refuses emission when inception"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-04T20:06:25Z
+completed: 2026-06-05T09:24:59Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-06-04T22:13:32+02:00
+last_commit: 2026-06-04T22:13:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2204 Slice C — emit_review/emit_review_batch BLOCK on empty Recommendation (partial — tests pending next session)
+
+# Key outcomes
+outcomes:
+  - '`audit_inception_recommendation <task_file>` already exists in `lib/task-audit.sh:117` (T-1497). Returns 0 if Recommendation populated, 1 otherwise. Reused directly — no new function needed.'
+  - '`emit_review` (`lib/review.sh:149-186`) wired to BLOCK on inception with empty Recommendation. Was WARNING (T-1215/T-1545); now exit 1 + block message naming bypass mechanism. Bypass: `FW_ALLOW_EMPTY_RECOMMENDATION=1` → NOTE + Tier-2 log + continue.'
+  - '`emit_review_batch` (`lib/review.sh:291-380`) gained pre-pass: scans all inception members for empty Recommendation; refuses entire batch with named bypass on any failure; emits non-blocking NOTE + log when bypass set.'
+  - 'Bypass via `FW_ALLOW_EMPTY_RECOMMENDATION=1` env var — symmetric with T-2205 Slice B per T-1890 producer/consumer parity. `_log_empty_recommendation_bypass` helper writes to `.context/working/.gate-bypass-log.yaml`.'
+  - 'Block message names canonical fix path (edit Recommendation block with verdict+rationale) AND the env-var bypass.'
+  - 'Non-inception tasks pass through silently (audit guard inspects workflow_type first).'
+  - 'Unit tests in `tests/unit/audit_inception_recommendation.bats` — 14/14 PASS. Covers: audit primitive (populated/empty/template/missing-file), `emit_review` (build-passthrough/populated-passes/empty-BLOCKS/template-BLOCKS/bypass-NOTE+log), `emit_review_batch` (clean-passes/mixed-passes/any-empty-refuses-batch/bypass-NOTE+per-task-log/build-only-passes). Plus regression sweep: `lib_review.bats` 12/13 (test 7 pre-existing fail unrelated), `review_link_blocking_gate.bats` 5/5, `review_batch.bats` 7/7, `review_pipefail.bats` 5/5 (semantically rewritten: T-2206 BLOCK upgrade of T-1545 WARN, T-1545 silent-failure invariant preserved via "loud BLOCK" assertion). Fixtures across 4 existing test files updated to include substantive `## Recommendation` blocks on inception fixtures — under the new contract empty Rec correctly BLOCKS, so tests not exercising the gate need real fixtures.'
+  - 'Block-message stderr (agent-facing) names: (a) `FW_ALLOW_EMPTY_RECOMMENDATION=1` env-var bypass, (b) the canonical fix (edit Recommendation), (c) cross-refs T-679 / T-1715 / T-1716 / T-2204 / T-2205. Audience-axis-correct (T-2143) — agent-facing stderr stays ### Agent self-eval. Self-eval against `lib/review.sh:163-186` (emit_review block) and `lib/review.sh:328-357` (emit_review_batch block).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/focus.yaml'
+  - 'lib/review.sh'
+  - '.tasks/active/T-2206-t-2204-slice-c--fw-task-review--review-b.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-04T22:13:32"
+    action: "T-2206: T-2204 Slice C — emit_review/emit_review_batch BLOCK on empty Recommendation (partial — tests pending next session)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 798 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 798
+  commits: 1
+  files_changed: 3
+  lines_added: 281
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2206-t-2204-slice-c--fw-task-review--review-b.md
+generated_by: context-agent-hybrid

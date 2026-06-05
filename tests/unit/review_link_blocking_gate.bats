@@ -51,8 +51,15 @@ EOF
 }
 
 @test "emit_review blocks on URL-from-bin/fw watchtower homework (inception)" {
+    # T-2206: inception fixtures need a substantive ## Recommendation, otherwise
+    # the Slice C consumer gate fires (exit 1) before the link gate (exit 2).
     local file
-    file=$(_write_task "T-9991" "inception" "## Acceptance Criteria
+    file=$(_write_task "T-9991" "inception" "## Recommendation
+
+**Recommendation:** GO
+**Rationale:** test fixture
+
+## Acceptance Criteria
 ### Human
 - [ ] [REVIEW] open the pages
   **Steps:**
@@ -67,7 +74,12 @@ EOF
 
 @test "emit_review block message names inception class for inception tasks" {
     local file
-    file=$(_write_task "T-9992" "inception" "## Acceptance Criteria
+    file=$(_write_task "T-9992" "inception" "## Recommendation
+
+**Recommendation:** GO
+**Rationale:** test fixture
+
+## Acceptance Criteria
 ### Human
 - [ ] [REVIEW] open
   **Steps:**

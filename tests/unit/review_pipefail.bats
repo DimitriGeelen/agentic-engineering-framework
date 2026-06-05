@@ -1,14 +1,21 @@
 #!/usr/bin/env bats
-# T-1545 — Regression: fw task review must not silent-exit-1 on inception
+# T-1545 (origin) + T-2206 (upgrade) — fw task review behavior on inception
 # tasks with empty/template-only ## Recommendation sections.
 #
-# Origin: 003-NTB-ATC-Plugin T-203. lib/review.sh used a sed|grep -v|...|head
-# pipeline that exited 1 when every grep -v filtered all input. Under
-# `set -e -o pipefail` (set in bin/fw) this aborted emit_review silently:
-# exit 1, empty stdout/stderr, no review marker, locked inception-decide gate.
+# T-1545 origin: lib/review.sh used a sed|grep -v|...|head pipeline that exited 1
+# when every grep -v filtered all input. Under `set -e -o pipefail` (set in bin/fw)
+# this aborted emit_review silently: exit 1, empty stdout/stderr, no review marker,
+# locked inception-decide gate. T-1545 fix: WARNING to stderr, exit 0, marker created.
 #
-# Behavior under fix: WARNING goes to stderr; URL/QR/marker still print;
-# exit 0; review marker created in .context/working/.
+# T-2206 upgrade: empty/template-only ## Recommendation now BLOCKS by default
+# (exit 1 with LOUD block message) per T-2204 GO consumer-side parity. The T-1545
+# invariant survives: exit MUST NOT be silent. The bypass FW_ALLOW_EMPTY_RECOMMENDATION=1
+# restores the warn-and-continue path.
+#
+# Contract under T-2206:
+#   - empty ## Recommendation  → exit 1 + loud BLOCK message + Tier-2 hint
+#   - empty + FW_ALLOW_EMPTY_RECOMMENDATION=1 → exit 0 + NOTE + bypass log
+#   - substantive ## Recommendation → exit 0 + URL/QR/marker (unchanged)
 
 load ../test_helper
 
@@ -60,18 +67,22 @@ EOF
     echo "$file"
 }
 
-@test "empty Recommendation: WARNING fires AND exit 0 AND marker created" {
+@test "T-2206: empty Recommendation BLOCKS (exit 1) with loud stderr" {
     cd "$PROJECT_ROOT"
     _make_inception "T-9001" "" >/dev/null
 
     run "$FRAMEWORK_ROOT/bin/fw" task review T-9001
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"WARNING: No substantive ## Recommendation"* ]]
-    [[ "$output" == *"Inception Review: T-9001"* ]]
-    [ -f "$PROJECT_ROOT/.context/working/.reviewed-T-9001" ]
+    [ "$status" -eq 1 ]
+    # The new BLOCK message must name the env-var bypass.
+    [[ "$output" == *"BLOCKED: Inception T-9001 has empty"* ]]
+    [[ "$output" == *"FW_ALLOW_EMPTY_RECOMMENDATION=1"* ]]
+    # Origin cross-refs must be present (T-679 governance + T-2204 chain).
+    [[ "$output" == *"T-679"* ]] || [[ "$output" == *"T-2204"* ]]
+    # No review marker on a blocked emission.
+    [ ! -f "$PROJECT_ROOT/.context/working/.reviewed-T-9001" ]
 }
 
-@test "template-only Recommendation (multi-line HTML comment): WARNING fires AND exit 0" {
+@test "T-2206: template-only Recommendation BLOCKS (exit 1)" {
     cd "$PROJECT_ROOT"
     local placeholder='<!-- REQUIRED before fw inception decide. Write your recommendation here.
      Format:
@@ -81,12 +92,12 @@ EOF
     _make_inception "T-9002" "$placeholder" >/dev/null
 
     run "$FRAMEWORK_ROOT/bin/fw" task review T-9002
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"WARNING: No substantive ## Recommendation"* ]]
-    [ -f "$PROJECT_ROOT/.context/working/.reviewed-T-9002" ]
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"BLOCKED: Inception T-9002 has empty"* ]]
+    [ ! -f "$PROJECT_ROOT/.context/working/.reviewed-T-9002" ]
 }
 
-@test "substantive Recommendation: NO warning, exit 0, marker created" {
+@test "substantive Recommendation: exit 0, marker created" {
     cd "$PROJECT_ROOT"
     local rec='**Recommendation:** GO
 
@@ -99,19 +110,39 @@ EOF
 
     run "$FRAMEWORK_ROOT/bin/fw" task review T-9003
     [ "$status" -eq 0 ]
-    [[ "$output" != *"WARNING: No substantive"* ]]
+    [[ "$output" != *"BLOCKED: Inception"* ]]
     [[ "$output" == *"Inception Review: T-9003"* ]]
     [ -f "$PROJECT_ROOT/.context/working/.reviewed-T-9003" ]
 }
 
-@test "empty Recommendation must NOT exit 1 with silent stdout/stderr (T-1545 origin)" {
+@test "T-1545 invariant: empty Recommendation MUST NOT exit silently (loud BLOCK is fine)" {
     cd "$PROJECT_ROOT"
     _make_inception "T-9004" "" >/dev/null
 
-    # Run twice — once capturing combined output, once capturing exit code only —
-    # to assert both invariants hold simultaneously.
+    # T-1545 origin invariant: exit-1 with empty stdout/stderr is the bug.
+    # T-2206 contract: exit 1 is now expected, but stderr MUST be loud.
     run "$FRAMEWORK_ROOT/bin/fw" task review T-9004
-    [ "$status" -eq 0 ]
-    # stdout/stderr combined must NOT be empty (the silent-failure symptom)
+    [ "$status" -eq 1 ]
+    # The T-1545 anti-symptom is silent failure; the test guards loudness, not
+    # success. Merged stdout+stderr must NOT be empty.
     [ -n "$output" ]
+    # Must contain the BLOCK keyword or block banner — never silent.
+    [[ "$output" == *"BLOCKED"* ]]
+}
+
+@test "T-2206 bypass: FW_ALLOW_EMPTY_RECOMMENDATION=1 → exit 0 + NOTE + log" {
+    cd "$PROJECT_ROOT"
+    _make_inception "T-9005" "" >/dev/null
+
+    FW_ALLOW_EMPTY_RECOMMENDATION=1 run "$FRAMEWORK_ROOT/bin/fw" task review T-9005
+    [ "$status" -eq 0 ]
+    # NOTE banner replaces the BLOCK banner under the bypass.
+    [[ "$output" == *"NOTE: Inception T-9005 has empty"* ]] || [[ "$output" == *"emission allowed via FW_ALLOW_EMPTY_RECOMMENDATION=1"* ]]
+    # Marker is created on the bypass path.
+    [ -f "$PROJECT_ROOT/.context/working/.reviewed-T-9005" ]
+    # Tier-2 log entry written.
+    local log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+    [ -f "$log" ]
+    grep -q "FW_ALLOW_EMPTY_RECOMMENDATION" "$log"
+    grep -q "T-9005" "$log"
 }

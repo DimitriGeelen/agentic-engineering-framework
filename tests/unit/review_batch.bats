@@ -32,6 +32,12 @@ _make_task() {
     local task_id="$1"
     local workflow="${2:-build}"
     local file="$TEST_TEMP_DIR/.tasks/active/${task_id}-test.md"
+    # T-2206: inception fixtures need a substantive ## Recommendation; otherwise
+    # emit_review_batch's Slice C pre-pass refuses the entire batch.
+    local rec_block=""
+    if [ "$workflow" = "inception" ]; then
+        rec_block=$'\n## Recommendation\n\n**Recommendation:** GO\n**Rationale:** test fixture\n'
+    fi
     cat > "$file" <<EOF
 ---
 id: ${task_id}
@@ -42,6 +48,7 @@ owner: agent
 ---
 
 # ${task_id}: Test task
+${rec_block}
 EOF
 }
 
