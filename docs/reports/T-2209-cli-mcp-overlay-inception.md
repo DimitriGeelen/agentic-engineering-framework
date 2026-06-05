@@ -342,3 +342,13 @@ T-2216 §Slice Assignment named OR-2 as Slice 1's one real build leg (~40 LoC). 
 **Edge case Slice 1 must handle:** scan runs cross-host (some operators run it via TermLink remote, others direct). When the framework MCP server is not yet deployed (early days), `probe_framework_tools()` must return empty cleanly, not error. Modelled on `probe_tools()`'s existing fallback (lines 85-87: `ERROR: probe returned empty tool list`).
 
 **Cross-host pattern reuse:** the existing `probe_via_direct_read` / TermLink-fallback pattern (lines 49-65) is the right shape for `probe_framework_tools()`. For the framework's own MCP, "direct read" usually wins (the scan host owns the framework repo) but the fallback path needs to work for the symmetric case where a remote-host operator audits a framework MCP on another machine.
+
+---
+
+## §16. Slice-side dispatch infrastructure (added 2026-06-06)
+
+While the arc itself awaits operator `fw arc create capability-overlay --headline-mechanic "..."` (Sovereign — §ACD G-062 + `$CLAUDECODE=1` refusal), the build-side dispatch infrastructure is pre-staged:
+
+- **`docs/dispatch-templates/iw-slice-worker.md`** (commit `90742e380`) — sibling of `iw-spike-worker.md`; encodes build-slice discipline (real ACs before Bash/Edit per G-020, progressive AC ticks per T-1831 C-4, headline-mechanic demo at slice boundary per §ACD G-062, no scope creep, bus envelope, partial-complete handoff). References the full routing ladder (T-1878 → T-1947 → T-2143 → T-2147), L-387 SIGPIPE safety, and L-458 + L-459 from the T-2222 session.
+
+Once the operator runs `fw arc create capability-overlay`, dispatching Slice 1-4 is one `fw termlink dispatch` call away — the template carries every gate-aware pattern needed. The Slice 1 surface (§12 + §15) is fully scoped: `fw --json` extension on the curated-22 read-only verbs + `schema_version` field + OR-2 scan extension to `agents/audit/orchestrator-mcp-scan.sh` + OR-6 `## Verification` convention.
