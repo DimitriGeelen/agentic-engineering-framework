@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2232: Durable in-consumer fw upgrade — vendor .upstream sentinel + upgrade-time fallback chain (T-2078 V1-D pivot for ring20-dashboard class)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T16:43:27Z
+# ============================================================================
+
+task_id: T-2232
+task_name: "Durable in-consumer fw upgrade — vendor .upstream sentinel + upgrade-time fallback chain (T-2078 V1-D pivot for ring20-dashboard class)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-06T16:33:13Z
+completed: 2026-06-06T16:43:09Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-06T18:42:56+02:00
+last_commit: 2026-06-06T18:42:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  durable in-consumer fw upgrade — vendor .upstream sentinel + 3-leg fallback chain
+
+# Key outcomes
+outcomes:
+  - 'AC#1 — `bin/fw:do_vendor` writes a `.upstream` sentinel into `$dest/` (vendored `.agentic-framework/.upstream`) containing the framework''s git origin URL when one is resolvable from `git -C "$vendor_source" remote get-url origin`. Symmetric with `lib/init.sh:212-228` resolution (origin → first push remote → empty).'
+  - 'AC#2 — When the framework source has no resolvable git origin, `do_vendor` does NOT write the sentinel (and does NOT error). Existing vendored-without-sentinel state is tolerated as legitimate (legacy or `file://` framework checkouts without remotes).'
+  - 'AC#3 — `lib/upgrade.sh`''s collapse-refusal branch (lines ~241-281) extends the fallback chain to a third precedence step: `--from-upstream` flag → `.framework.yaml:upstream_repo:` → **vendored `.upstream` sentinel** → existing helpful error. The chain is short-circuiting; first hit wins.'
+  - 'AC#4 — When the sentinel resolves the upstream URL, a single observability line is emitted to stdout naming the chain step used (e.g. `Upstream URL resolved from vendored .agentic-framework/.upstream sentinel`). This is BEFORE the auto-clone announcement, so the operator can see which leg of the chain fired.'
+  - 'AC#5 — After a successful sentinel-driven auto-clone-and-replay completes (return code 0), the resolved URL is appended to `$target_dir/.framework.yaml` as `upstream_repo: <url>` so the sentinel fallback is not needed on the next upgrade. Self-healing leg. Skipped on dry-run and on failure.'
+  - 'AC#6 — New bats gate `tests/unit/t2232_durable_in_consumer_upgrade.bats` covers six paths: (i) `do_vendor` writes sentinel when origin exists; (ii) `do_vendor` skips sentinel cleanly when origin absent; (iii) `do_upgrade` resolves from `--from-upstream` flag (precedence-1 dry-run, no sentinel needed); (iv) `do_upgrade` resolves from `.framework.yaml:upstream_repo:` (precedence-2 dry-run); (v) `do_upgrade` resolves from vendored `.upstream` sentinel (precedence-3 dry-run, observability message present); (vi) `do_upgrade` emits the existing "no upstream URL is known" error when none of the three resolve.'
+  - 'AC#7 — `tests/unit/upgrade_fresh_machine_simulation.bats` regression net stays green — the synthetic fresh-machine consumer still onboards under `env -i`. Touching consumer-facing commands without this check is the T-1633 origin pattern.'
+  - 'AC#8 — `bin/fw reviewer T-2232 --no-write 2>&1 | grep -q "Overall:.*PASS"` returns 0 (reviewer static-scan PASS). Any FAIL/CONCERN is addressed via Verification-line recasting (L-459 pattern) or overridden with documented rationale.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-06 — Pivot from T-2095 spec''d scope to the actually-durable fix'
+    chose: 'File T-2232 with the **vendor sentinel + upgrade-time fallback chain + self-healing yaml-persist** shape. Two surfaces (`bin/fw:do_vendor`, `lib/upgrade.sh:do_upgrade`), one new sentinel artifact, full bats coverage.'
+    rationale: 'T-2095 per T-2078 §F2 spec is a *self-vendor refactor* — extracting `lib/upgrade.sh:341-360`''s framework-side self-vendor loop into a separate verb. That fix is real but **does not unblock ring20-dashboard''s .121do field failure** (T-2231 class). Ring20-dashboard''s `.framework.yaml` lacks `upstream_repo:`, so the existing T-1634 auto-clone path refuses with the helpful 3-path remediation — but legacy consumers (init''d before T-575 or without a framework origin at init time) have no recovery path. The operator directive at session-start was explicit: *"focus on durable fix for the in-consumer upgrade path ring20-dashboard needs."* T-2095 doesn''t match that scope.'
+    alternatives_rejected: ['']
+  - decision: '2026-06-06 — Sentinel resolution: framework''s git origin, not the consumer''s'
+    chose: '`do_vendor` reads `git -C "$vendor_source" remote get-url origin` (with `(push)` first-remote fallback, symmetric with `lib/init.sh:212-228`) at vendor-time and writes the URL into `$dest/.upstream`.'
+    rationale: 'At upgrade-time the vendored copy is NOT a git repo (`do_vendor` doesn''t copy `.git/`), so the framework''s origin URL must be captured AT vendor time and travel WITH the vendored copy. Reading at upgrade-time would always fail. The `$vendor_source` is whatever `--source` resolves to — typically `$FRAMEWORK_ROOT`, but operator can override.'
+    alternatives_rejected: ['']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2095-v1-d-fw-upgrade-self-vendor-extraction-i.md'
+  - '.tasks/active/T-2232-durable-in-consumer-fw-upgrade--vendor-u.md'
+  - 'tests/unit/t2232_durable_in_consumer_upgrade.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T18:42:56"
+    action: "T-2232: durable in-consumer fw upgrade — vendor .upstream sentinel + 3-leg fallback chain"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 5
+  lines_added: 535
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2232-durable-in-consumer-fw-upgrade--vendor-u.md
+generated_by: context-agent-hybrid

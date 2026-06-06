@@ -1948,3 +1948,17 @@ decisions:
     date: 2026-06-05
     task: T-2222
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-281
+    decision: "File T-2232 with the **vendor sentinel + upgrade-time fallback chain + self-healing yaml-persist** shape. Two surfaces (`bin/fw:do_vendor`, `lib/upgrade.sh:do_upgrade`), one new sentinel artifact, full bats coverage."
+    scope: project
+    date: 2026-06-06
+    task: T-2232
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-282
+    decision: "`do_vendor` reads `git -C \"$vendor_source\" remote get-url origin` (with `(push)` first-remote fallback, symmetric with `lib/init.sh:212-228`) at vendor-time and writes the URL into `$dest/.upstream`."
+    scope: project
+    date: 2026-06-06
+    task: T-2232
+    rationale: "Auto-captured from task file on completion"
