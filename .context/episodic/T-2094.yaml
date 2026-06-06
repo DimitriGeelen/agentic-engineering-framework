@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2094: V1-c fw upgrade: pre-flight tooling check + post-upgrade fw doctor advisory
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T20:19:10Z
+# ============================================================================
+
+task_id: T-2094
+task_name: "V1-c fw upgrade: pre-flight tooling check + post-upgrade fw doctor advisory"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T11:58:34Z
+completed: 2026-06-06T20:18:54Z
+duration_days: 8
+updates_count: 3
+first_commit: 2026-06-06T22:17:17+02:00
+last_commit: 2026-06-06T22:17:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  V1-C fw upgrade — F8 pre-flight tooling check + F10 fw doctor advisory
+
+# Key outcomes
+outcomes:
+  - '**F8 — pre-flight tooling check loop in `lib/upgrade.sh:do_upgrade`** — Loop names `python3 git diff sed mktemp`; missing tool emits `ERROR: required tool missing: <cmd>` on stderr and returns 1. **Evidence:** `lib/upgrade.sh:202-220`; `grep "required tool missing" lib/upgrade.sh` → line 214.'
+  - '**F8 — missing-tool path aborts before mutation** — Bats stubs PATH to omit `mktemp`; do_upgrade returns non-zero with diagnostic + "Aborting before any file mutation"; trip-wire do_vendor never fires. **Evidence:** `tests/unit/t2094_upgrade_preflight_doctor_advisory.bats:t3` PASS.'
+  - '**F8 — happy path proceeds past pre-flight unchanged** — All 5 tools present; do_vendor stub fires AFTER pre-flight. **Evidence:** `t4` PASS, "do_vendor invoked AFTER pre-flight passed".'
+  - '**F10 — post-upgrade `fw doctor` advisory invoked on live success** — Helper `_t2094_emit_doctor_advisory` runs `PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" doctor` and emits `Post-upgrade health check (advisory):` header. **Evidence:** call site `lib/upgrade.sh:1458` (inside `if [ "$changes" -gt 0 ]` of non-dry-run else); helper at `lib/upgrade.sh:1483-1513`; bats `t5` PASS.'
+  - '**F10 — dry-run skips advisory** — Helper has exactly one call site, gated structurally on `changes > 0` inside the non-dry-run else branch. **Evidence:** structural `t8` PASS (`call_count == 1` and call line > `if [ "$changes" -gt 0 ]` line).'
+  - '**F10 — doctor exit code is non-blocking** — Helper ends `return 0`; stubbed doctor exit 3 surfaces `doctor exited 3 — doctor exit code does not affect upgrade success` and helper still exits 0. **Evidence:** bats `t6` PASS.'
+  - '**F10 — advisory runs in `target_dir` PROJECT_ROOT context** — Single line `PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" doctor` adjacency. **Evidence:** `lib/upgrade.sh:1503`; bats `t7` PASS.'
+  - '**Bats suite passes** — `bats tests/unit/t2094_upgrade_preflight_doctor_advisory.bats` → 8/8 PASS on first run.'
+  - '**Fresh-machine regression unaffected** — `bats tests/unit/upgrade_fresh_machine_simulation.bats` → 3/3 PASS; T-2093 6/6 PASS; T-2232 8/8 PASS — **25/25 PASS across the V1-ladder regression net**.'
+  - '**Reviewer PASS** — `bin/fw reviewer T-2094 --no-write` → R-ceaa883a 2026-06-06T20:14:25Z, **Overall: PASS**, Findings: none, Needs Human: no.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2094-v1-c-fw-upgrade-pre-flight-tooling-check.md'
+  - 'tests/unit/t2094_upgrade_preflight_doctor_advisory.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T22:17:17"
+    action: "T-2094: V1-C fw upgrade — F8 pre-flight tooling check + F10 fw doctor advisory"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12020 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-upgrade, reliability, v1, T-2078-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12020
+  commits: 1
+  files_changed: 3
+  lines_added: 364
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2094-v1-c-fw-upgrade-pre-flight-tooling-check.md
+generated_by: context-agent-hybrid
