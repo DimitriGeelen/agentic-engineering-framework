@@ -1405,10 +1405,26 @@ EOF
     # ── Summary ──
     echo ""
     if [ "$dry_run" = true ]; then
-        echo -e "${CYAN}=== Dry Run Complete ===${NC}"
-        echo ""
+        # T-2093 F4 (dry-run parity): when any step would have failed under
+        # live mode, surface a PARTIAL hint so the operator can decide
+        # whether to fix the cause or re-run with --strict. Without this
+        # the dry-run lies — it announces success even when a stubbed step
+        # already returned non-zero.
+        if [ "$failed_steps" -gt 0 ] && [ "$strict" != true ]; then
+            echo -e "${YELLOW}=== Dry Run PARTIAL ===${NC}"
+            echo ""
+            echo "  $failed_steps step(s) reported failure during dry-run."
+            echo "  Run with ${BOLD}--strict${NC} to fail-fast on the first failure under live mode."
+            echo ""
+        else
+            echo -e "${CYAN}=== Dry Run Complete ===${NC}"
+            echo ""
+        fi
         echo "  $changes change(s) would be made"
         echo "  $skipped item(s) skipped (manual review needed)"
+        if [ "$failed_steps" -gt 0 ]; then
+            echo "  $failed_steps step(s) reported failure"
+        fi
         echo ""
         echo "Run without --dry-run to apply changes."
     else

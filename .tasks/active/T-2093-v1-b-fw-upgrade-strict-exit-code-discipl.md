@@ -20,7 +20,7 @@ related_tasks: [T-2078, T-2092]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:58:28Z
-last_update: 2026-06-06T13:34:40Z
+last_update: 2026-06-06T16:47:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,15 +78,15 @@ V1-D (T-2095, self-vendor extraction).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] F5 — PIPESTATUS capture: `lib/upgrade.sh:656` (dry-run branch) and `:658` (live branch) read `${PIPESTATUS[0]}` immediately after the `do_vendor | sed` pipe; failure (non-zero) is surfaced as a WARN line and increments a `failed_steps` counter
-- [ ] F6 — subshell-scoped force: `generate_claude_code_config "$target_dir"` is invoked under a subshell scoping the `force=true` override so an in-call exit cannot leak `force=true` into the rest of `do_upgrade`
-- [ ] F4 — `--strict` flag added to `do_upgrade` arg parser + `--help` (opt-in, off by default for backward-compat)
-- [ ] F4 — under `--strict`, any per-step `failed_steps++` increment causes `do_upgrade` to abort with a PARTIAL diagnostic that names the failed step
-- [ ] F4 — without `--strict`, failure counters still accumulate; the existing footer prints a PARTIAL warning line when `failed_steps > 0` (advisory, exit 0 preserved for backward-compat)
-- [ ] `lib/upgrade.sh` passes `bash -n` syntax check
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` passes unchanged (no regression on T-1633/T-1635 gate)
-- [ ] New bats `tests/unit/t2093_upgrade_strict_exit_codes.bats` covers: F5 PIPESTATUS surfaces vendor failure; F6 force=true is subshell-scoped; F4 `--strict` aborts on step failure; F4 non-strict mode prints PARTIAL footer when failures counted; `--help` advertises `--strict`
-- [ ] No `### Agent` AC is ticked until its corresponding work is in place (T-1831 C-4 progressive ticking)
+- [x] F5 — PIPESTATUS capture: `lib/upgrade.sh:656` (dry-run branch) and `:658` (live branch) read `${PIPESTATUS[0]}` immediately after the `do_vendor | sed` pipe; failure (non-zero) is surfaced as a WARN line and increments a `failed_steps` counter
+- [x] F6 — subshell-scoped force: `generate_claude_code_config "$target_dir"` is invoked under a subshell scoping the `force=true` override so an in-call exit cannot leak `force=true` into the rest of `do_upgrade`
+- [x] F4 — `--strict` flag added to `do_upgrade` arg parser + `--help` (opt-in, off by default for backward-compat)
+- [x] F4 — under `--strict`, any per-step `failed_steps++` increment causes `do_upgrade` to abort with a PARTIAL diagnostic that names the failed step
+- [x] F4 — without `--strict`, failure counters still accumulate; the existing footer prints a PARTIAL warning line when `failed_steps > 0` (advisory, exit 0 preserved for backward-compat)
+- [x] `lib/upgrade.sh` passes `bash -n` syntax check
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` passes unchanged (no regression on T-1633/T-1635 gate)
+- [x] New bats `tests/unit/t2093_upgrade_strict_exit_codes.bats` covers: F5 PIPESTATUS surfaces vendor failure; F6 force=true is subshell-scoped; F4 `--strict` aborts on step failure; F4 non-strict mode prints PARTIAL footer when failures counted; `--help` advertises `--strict`
+- [x] No `### Agent` AC is ticked until its corresponding work is in place (T-1831 C-4 progressive ticking)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -159,6 +159,7 @@ grep -qE '\(\s*force=true\s*;' lib/upgrade.sh
 out=$(bin/fw upgrade --help 2>&1); echo "$out" | grep -q -- "--strict"
 bats tests/unit/t2093_upgrade_strict_exit_codes.bats
 bats tests/unit/upgrade_fresh_machine_simulation.bats
+out=$(bin/fw reviewer T-2093 --no-write 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 ## RCA
 
@@ -210,6 +211,27 @@ bats tests/unit/upgrade_fresh_machine_simulation.bats
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+## Recommendation
+
+**Recommendation:** GO (close as work-completed)
+
+**Rationale:** All 9 Agent ACs satisfied. T-2078 §F4/F5/F6 closed: F5 PIPESTATUS captures (`lib/upgrade.sh:710,713`) surface vendor failures the old `| sed` pipe swallowed; F6 subshell-scoped `force=true` (`lib/upgrade.sh:956,1031`) blocks the `force=true` leak class T-2078 §F6 named; F4 `--strict` flag + `failed_steps` counter + STRICT ABORT diagnostic + PARTIAL footer (live + dry-run parity) give the operator real exit-code discipline and a re-runnable diagnostic. Backward-compatible (off by default; existing flows untouched). Source landed in commit `44c6d6781` (prior session WIP); this session adds the bats gate + dry-run-parity PARTIAL footer.
+
+**Evidence:**
+
+- `bats tests/unit/t2093_upgrade_strict_exit_codes.bats` — 6/6 PASS (F4 help, F5 WARN, F4 strict abort, F4 PARTIAL footer, F6 structural, F6 runtime no-leak).
+- `bats tests/unit/upgrade_fresh_machine_simulation.bats` — 3/3 regression PASS (T-1633/T-1635 consumer-facing hygiene preserved).
+- `bin/fw reviewer T-2093 --no-write` — PASS, R-4b193508, zero findings.
+- Source-line references (post `44c6d6781`):
+  - F4 substrate: `lib/upgrade.sh:133-145` (--strict argparse, failed_steps locals).
+  - F4 --help: `lib/upgrade.sh:162-165`.
+  - F5 PIPESTATUS: `lib/upgrade.sh:707-723`.
+  - F6 subshell sites: `lib/upgrade.sh:956,1031`.
+  - F4 live PARTIAL footer: `lib/upgrade.sh:1419-1422`.
+  - F4 dry-run parity PARTIAL footer: `lib/upgrade.sh:1407-1418` (this session).
+
+**Sequential ladder closure:** V1-B (T-2093, this) ships. V1-C (T-2094 pre-flight + post-upgrade `fw doctor` advisory) and V1-D self-vendor refactor (T-2095, captured) remain. Operator's directional pivot this session pulled the in-consumer durable fix forward as T-2232 (shipped earlier this turn); the F2 self-vendor extraction stays as T-2095 follow-up V1-D scope per T-2078 spec.
 
 ## Decision
 
