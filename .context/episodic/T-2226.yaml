@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2226: T-2225 Slice 1: T-Test-NNN sentinel namespace + autouse client_isolation fixture
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T09:23:50Z
+# ============================================================================
+
+task_id: T-2226
+task_name: "T-2225 Slice 1: T-Test-NNN sentinel namespace + autouse client_isolation fixture"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-06T08:56:07Z
+completed: 2026-06-06T09:20:51Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-06T11:16:42+02:00
+last_commit: 2026-06-06T11:20:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2225 Slice 1 — sentinel namespace + tmp_project_root helper. tighten AC#2 path reference (drop nonexistent web/conftest.py OR-clause)
+
+# Key outcomes
+outcomes:
+  - 'All sentinel-id hardcodes in `web/test_app.py` migrated from `T-996/997/998/999` (3-digit) to `T-Test-NNN` namespace (001..006 assigned). Verified by `grep -nE "T-(996|997|998|999)\b" web/test_app.py` returning zero matches. The T-9999 route-format-check on line 331 is NOT a sentinel write — see inline rationale.'
+  - 'New helper fixture `tmp_project_root` defined in `web/test_app.py` that: (a) scaffolds `.tasks/{active,completed}` + `.context/episodic` under tmp_path, (b) monkeypatches BOTH `web.shared.PROJECT_ROOT` and `web.blueprints.tasks.PROJECT_ROOT`, (c) invalidates `_task_cache["data"] = None`. Verified by `grep -nE "def tmp_project_root|tmp_project_root\(" web/test_app.py` showing definition + uses.'
+  - 'All 5 previously-dual-patch-missing sites (line 1014, 1055, 1061, 1094, 1109 in the migrated file) use `tmp_project_root` instead of manual `tmp_path + monkeypatch` — closes the cache-leak class structurally within those tests.'
+  - '`python3 -m pytest web/test_app.py -q --tb=no` exits 0 (regression-net: pre-baseline pass count is preserved or improved; no new failures introduced).'
+  - '`bin/fw reviewer T-2226 2>&1 \| grep -q "Overall:.*PASS"` — reviewer static-scan PASS (no anti-patterns introduced; T-Test-* IDs not flagged as numeric-task-id collisions because the namespace is distinct).'
+  - 'Inline comment block above the migrated sentinel sites documents the `T-Test-NNN` convention (4-line block: namespace purpose, why isolated from operational tooling, where Slice 3 will add the production-tool skip-list, pointer to T-2225 artifact).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2226-t-2225-slice-1-t-test-nnn-sentinel-names.md'
+  - 'web/test_app.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T11:16:42"
+    action: "T-2226: T-2225 Slice 1 — sentinel namespace + tmp_project_root helper"
+  - time: "2026-06-06T11:20:41"
+    action: "T-2226: tighten AC#2 path reference (drop nonexistent web/conftest.py OR-clause)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 2
+  files_changed: 2
+  lines_added: 338
+  lines_removed: 54
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2226-t-2225-slice-1-t-test-nnn-sentinel-names.md
+generated_by: context-agent-hybrid
