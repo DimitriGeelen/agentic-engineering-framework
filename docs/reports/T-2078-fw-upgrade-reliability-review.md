@@ -242,14 +242,24 @@ The user's word "field" is the missing predicate that L-441/G-019 generalises. E
 
 **Recommendation:** **GO** on T-2078 with a 4-slice V1 + 1-slice V2 sequence. Defer step-driver refactor (F1/F13/F15) to V2 — V1 ships only behavioural / correctness / observability fixes that don't touch the 10-step shape.
 
-### V1 build slices (each filed as `unlocks_inception_decision: T-2078:<slug>`):
+### V1 build slices — **LADDER COMPLETE 2026-06-06**:
 
-| Slice | Closes | Estimated cost | Risk |
+| Slice | Closes | Task | Status |
 |---|---|---|---|
-| **V1-a** Docker-based live-upgrade simulation gate (release-blocking) | F3 | M (writes Dockerfile + bats gate; uses existing `make_upstream_bare` helpers) | Low — additive test, no production-path change |
-| **V1-b** Strict exit-code discipline + rollback on mid-upgrade failure | F4 + F5 + F6 | M | Medium — needs careful step-by-step backup/restore design |
-| **V1-c** Pre-flight tooling check + post-upgrade `fw doctor` advisory | F8 + F10 | S | Low — both are wrappers at function entry/exit |
-| **V1-d** Self-vendor extraction into `fw vendor self` subverb | F2 | S | Low — pure refactor with bats coverage |
+| **V1-a** Docker-based live-upgrade simulation gate (release-blocking) | F3 | T-2092 | **SHIPPED** (2026-06-01) |
+| **V1-b** Strict exit-code discipline + dry-run PARTIAL footer (`--strict`, `failed_steps`, PIPESTATUS, subshell-scoped `force=true`) | F4 + F5 + F6 | T-2093 | **SHIPPED** (2026-06-06) |
+| **V1-c** Pre-flight tooling check (`python3 git diff sed mktemp`) + post-upgrade `fw doctor` advisory (non-blocking, PROJECT_ROOT-scoped) | F8 + F10 | T-2094 | **SHIPPED** (2026-06-06) |
+| **V1-d** Self-vendor extraction (`_self_vendor_libs` helper + `fw vendor self` subcommand + `--no-self-vendor` flag) | F2 (organisational; N×M closure path-forward only) | T-2095 | **SHIPPED** (2026-06-06) |
+| **Out-of-ladder** Durable in-consumer upgrade fix (`.upstream` sentinel + 3-leg fallback chain + self-heal yaml-persist) | T-1542 class | T-2232 | **SHIPPED** (2026-06-06) |
+
+**Regression net at V1 ladder close: 33/33 PASS** across `tests/unit/{t2093,t2094,t2095,t2232}*.bats` + `upgrade_fresh_machine_simulation.bats`.
+
+**V1-D scope decision (per T-2095 §Context / §Recommendation):** narrow refactor — helper extraction + new public verb + opt-out flag — *without* default-flip. T-1217's invariant (framework's `.agentic-framework/lib/` stays in sync) is preserved on every developer machine that hasn't yet wired `fw vendor self` into pre-push. The §F2 N×M closure ("self-vendor fires once per framework commit, not once per consumer upgrade") is **path-forward**, not part of this slice:
+1. Operator wires `bin/fw vendor self` into framework's `.git/hooks/pre-push`
+2. Operator adds `--no-self-vendor` to consumer-upgrade scripts on dev machines
+3. (V2) After field observation, remove the inline call entirely
+
+**V2 gating:** "after V1 ships and stabilizes" — V1 ladder is now shipped; V2 slices can be filed once field telemetry confirms no V1 regression (target: 30 days of clean upgrade-outcome audit cron firings).
 
 ### V2 build slices (after V1 ships and stabilizes):
 
