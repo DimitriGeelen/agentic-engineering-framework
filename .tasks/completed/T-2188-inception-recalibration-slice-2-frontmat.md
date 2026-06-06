@@ -13,20 +13,20 @@ description: >
   T-1890). Bats test pins. Verification: template diff, hook present in .claude/settings.json,
   bats green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [inception, schema, T-2186-slice, frontmatter]
-components: []
+components: [agents/context/check-inception-schema.sh, agents/termlink/bvp-estimator/estimator.py, C-009, tests/unit/check_inception_schema.bats, tools/migrate-inception-schema.py]
 related_tasks: [T-2186, T-2187]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:03:56Z
-last_update: 2026-06-02T22:45:17Z
-date_finished:
+last_update: 2026-06-06T11:42:32Z
+date_finished: 2026-06-06T11:42:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +51,19 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-02T22:15:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -59,6 +72,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
@@ -198,9 +220,12 @@ out=$(bin/fw reviewer T-2188 2>&1); grep -qE "Overall:.*PASS" <<<"$out"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4a381689
-- **Timestamp:** 2026-06-02T22:53:07Z
+- **Scan ID:** R-d64fa951
+- **Timestamp:** 2026-06-06T11:42:35Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-06T11:42:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

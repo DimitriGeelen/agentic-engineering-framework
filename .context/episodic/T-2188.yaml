@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2188: Inception recalibration Slice 2: frontmatter schema — target_blast_radius +
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T11:42:40Z
+# ============================================================================
+
+task_id: T-2188
+task_name: "Inception recalibration Slice 2: frontmatter schema — target_blast_radius +"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T22:03:56Z
+completed: 2026-06-06T11:42:32Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-06-03T00:54:17+02:00
+last_commit: 2026-06-03T00:54:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception frontmatter schema (target_blast_radius + voi_score) + PreToolUse validation
+
+# Key outcomes
+outcomes:
+  - '`.tasks/templates/inception.md` frontmatter carries `target_blast_radius:` (int 0..9, S/M/L/XL/XXL declaration) and `voi_score:` (float 0..1) fields with inline guidance comments'
+  - 'PreToolUse hook `agents/context/check-inception-schema.{sh,py}` validates both fields on Write/Edit to `.tasks/{active,completed}/T-*.md` inception files: blocks when `workflow_type: inception` AND either field missing/out-of-range, allows otherwise'
+  - 'Hook registered in `.claude/settings.json` PreToolUse Write/Edit matcher (via `bin/fw hook-enable`, the framework-sanctioned path through B-005)'
+  - 'Bypass env-var `FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1` skips the check and logs Tier-2 to `.context/working/.gate-bypass-log.yaml` (T-1890 producer/consumer parity — env-var is the external-caller pattern)'
+  - 'Bats test `tests/unit/check_inception_schema.bats` covers: valid inception passes, missing fields blocks, out-of-range blocks, bypass works + logs — 10/10 PASS'
+  - '`050-Inceptions.md` Scoring Exception section cites the implemented fields by exact name and references this hook'
+  - '`bin/fw enforcement baseline` re-run (settings.json edit invalidates the hash per L-398) — hash 97f91170d418644f'
+  - 'Reviewer PASS (`bin/fw reviewer T-2188`) — R-4a381689 2026-06-02T22:53:07Z, Findings: none'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '050-Inceptions.md'
+  - 'agents/context/check-inception-schema.py'
+  - 'agents/context/check-inception-schema.sh'
+  - '.claude/settings.json'
+  - '.context/project/enforcement-baseline.sha256'
+  - '.fabric/components/agents-context-check-inception-schema.yaml'
+  - '.fabric/components/tests-unit-check_inception_schema.yaml'
+  - '.tasks/active/T-2188-inception-recalibration-slice-2-frontmat.md'
+  - '.tasks/templates/inception.md'
+  - 'tests/unit/check_inception_schema.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-03T00:54:17"
+    action: "T-2188: inception frontmatter schema (target_blast_radius + voi_score) + PreToolUse validation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5138 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, schema, T-2186-slice, frontmatter]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5138
+  commits: 1
+  files_changed: 10
+  lines_added: 438
+  lines_removed: 48
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2188-inception-recalibration-slice-2-frontmat.md
+generated_by: context-agent-hybrid
