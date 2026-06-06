@@ -238,13 +238,24 @@ do_upgrade() {
         # collapse — instead of erroring (T-1542 behaviour), try to clone
         # upstream to a tempdir and re-run with that as source.
 
-        # Resolve upstream URL: --from-upstream flag > .framework.yaml upstream_repo
+        # Resolve upstream URL — three-leg fallback chain (T-2232):
+        #   1. --from-upstream flag (explicit operator override)
+        #   2. .framework.yaml upstream_repo: (auto-filled by fw init since T-575)
+        #   3. vendored .agentic-framework/.upstream sentinel (T-2232 self-healing
+        #      for legacy consumers init'd before T-575 or without a framework
+        #      origin at init time — the durable fix for ring20-dashboard's
+        #      .121do field failure class)
+        # _upstream_source records which leg fired, used for the observability
+        # line below and for the self-healing yaml-persist step at the end.
         local _upstream_url="$from_upstream"
+        local _upstream_source=""
+        [ -n "$_upstream_url" ] && _upstream_source="--from-upstream flag"
         if [ -z "$_upstream_url" ] && [ -f "$target_dir/.framework.yaml" ]; then
             _upstream_url=$(grep "^upstream_repo:" "$target_dir/.framework.yaml" 2>/dev/null \
                 | head -1 \
                 | sed -E 's/^upstream_repo:[[:space:]]*//' \
                 | sed -E 's/[[:space:]]+$//')
+            [ -n "$_upstream_url" ] && _upstream_source=".framework.yaml upstream_repo:"
             # Normalise GitHub shorthand (owner/repo) to full URL.
             # Recognised URL prefixes: http(s)://, ssh://, git://, file://,
             # git@host:path (SSH shorthand). Everything else is treated as
@@ -253,6 +264,17 @@ do_upgrade() {
                && ! echo "$_upstream_url" | grep -qE '^(https?|ssh|git|file)://|^git@'; then
                 _upstream_url="https://github.com/${_upstream_url}.git"
             fi
+        fi
+        # T-2232 leg 3: vendored .upstream sentinel (written by do_vendor in
+        # bin/fw — see the parallel block there). Read first line that is not
+        # a comment and not empty; that's the URL.
+        local _sentinel_path="$_consumer_vendor_canon/.upstream"
+        if [ -z "$_upstream_url" ] && [ -f "$_sentinel_path" ]; then
+            _upstream_url=$(grep -v '^[[:space:]]*#' "$_sentinel_path" 2>/dev/null \
+                | grep -v '^[[:space:]]*$' \
+                | head -1 \
+                | sed -E 's/[[:space:]]+$//')
+            [ -n "$_upstream_url" ] && _upstream_source="vendored .agentic-framework/.upstream sentinel (T-2232)"
         fi
 
         if [ -z "$_upstream_url" ]; then
@@ -282,6 +304,7 @@ do_upgrade() {
 
         echo -e "${BOLD}Bare-from-consumer detected — auto-cloning upstream${NC}"
         echo "  Upstream URL:  $_upstream_url"
+        echo "  Resolved via:  $_upstream_source"
         echo "  Target:        $target_dir"
         echo ""
 
@@ -331,6 +354,19 @@ do_upgrade() {
         env FRAMEWORK_ROOT="$_tmpd/fw" PROJECT_ROOT="$target_dir" \
             "$_tmpd/fw/bin/fw" "${_replay_args[@]}"
         local _rc=$?
+        # T-2232 self-healing: if the upstream resolved via the vendored
+        # .upstream sentinel (precedence-3 leg) and the auto-clone succeeded,
+        # persist the URL to .framework.yaml so the next upgrade skips the
+        # sentinel fallback. Operator gets a clean .framework.yaml without
+        # having to remediate by hand. Skipped on dry-run (handled above) and
+        # on failure (we only want to durably commit a known-good URL).
+        if [ "$_rc" -eq 0 ] \
+           && [ "$_upstream_source" = "vendored .agentic-framework/.upstream sentinel (T-2232)" ] \
+           && [ -f "$target_dir/.framework.yaml" ] \
+           && ! grep -q "^upstream_repo:" "$target_dir/.framework.yaml" 2>/dev/null; then
+            echo "upstream_repo: $_upstream_url" >> "$target_dir/.framework.yaml"
+            echo -e "  ${GREEN}Self-heal:${NC} persisted upstream_repo to .framework.yaml (T-2232)"
+        fi
         # trap fires on return — tempdir cleaned up
         return $_rc
     fi

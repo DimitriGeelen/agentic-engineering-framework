@@ -365,6 +365,38 @@ __pycache__/
 GITIGNORE
     echo -e "  ${GREEN}✓${NC} .gitignore"
 
+    # T-2232: write .upstream sentinel so an in-consumer `fw upgrade` can
+    # self-recover when .framework.yaml has no upstream_repo: set (legacy
+    # consumers init'd before T-575's auto-detect, or consumers whose
+    # framework had no git remote at init time). Resolution chain at upgrade
+    # time becomes: --from-upstream flag > .framework.yaml upstream_repo >
+    # this vendored sentinel > error. Symmetric with lib/init.sh:212-228
+    # (same git origin auto-detect; just runs at vendor-time so the answer
+    # travels with the vendored copy). Skip silently when no origin —
+    # vendored-without-sentinel is a legitimate state (file:// checkouts,
+    # detached forks). Origin: ring20-dashboard .121do field failure
+    # (T-2231), durable fix for the in-consumer upgrade path class.
+    local _vendor_origin=""
+    if [ -d "$vendor_source/.git" ]; then
+        _vendor_origin=$(git -C "$vendor_source" remote get-url origin 2>/dev/null) || true
+        if [ -z "$_vendor_origin" ]; then
+            _vendor_origin=$(git -C "$vendor_source" remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}') || true
+        fi
+    fi
+    if [ -n "$_vendor_origin" ]; then
+        cat > "$dest/.upstream" <<UPSTREAM
+# Vendored Agentic Engineering Framework — upstream sentinel (T-2232).
+# Records the framework's git origin URL at vendor-time so an in-consumer
+# \`fw upgrade\` can self-recover when .framework.yaml has no upstream_repo:.
+# Resolution precedence (in lib/upgrade.sh): --from-upstream flag, then
+# .framework.yaml upstream_repo:, then this sentinel. After a successful
+# sentinel-driven recovery, upgrade.sh persists the URL to .framework.yaml
+# so subsequent upgrades skip this fallback. Do not edit by hand.
+$_vendor_origin
+UPSTREAM
+        echo -e "  ${GREEN}✓${NC} .upstream (sentinel: $_vendor_origin)"
+    fi
+
     # Ensure bin/fw is executable
     chmod +x "$dest/bin/fw" 2>/dev/null || true
 
