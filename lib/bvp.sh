@@ -39,6 +39,10 @@ import statistics
 from pathlib import Path
 
 PROJECT_ROOT = Path(os.environ['PROJECT_ROOT'])
+# T-2230 (T-2229 Slice 1): FRAMEWORK_ROOT exposed so `fw bvp driver --init` can
+# locate the canonical template `<FRAMEWORK_ROOT>/policy/value-drivers.yaml`
+# when bootstrapping the consumer's own copy at PROJECT_ROOT.
+FRAMEWORK_ROOT = Path(os.environ.get('FRAMEWORK_ROOT', os.environ.get('PROJECT_ROOT', '.')))
 
 try:
     import yaml
@@ -130,7 +134,8 @@ def load_policy():
     policy_path = PROJECT_ROOT / 'policy' / 'value-drivers.yaml'
     if not policy_path.is_file():
         print(f"ERROR: policy file not found: {policy_path}", file=sys.stderr)
-        print("       Run T-1917 first (or `fw bvp driver --init` once T-1920 ships).", file=sys.stderr)
+        print("       Bootstrap with: fw bvp driver --init", file=sys.stderr)
+        print("       (idempotent; copies the framework template into this project)", file=sys.stderr)
         sys.exit(2)
     return yaml.safe_load(policy_path.read_text()) or {}
 
@@ -636,13 +641,63 @@ def cmd_weight(args):
 
 
 def cmd_driver(args):
+    # T-2230 (T-2229 Slice 1): --init is the bootstrap path. It does not
+    # change policy meaning (just first-writes the template), so it is NOT
+    # §ACD-gated — agents bootstrapping a consumer is sovereignty-neutral.
+    # Subsequent customisation (weight, --add, --remove) IS sovereignty-bearing
+    # and gates appropriately.
+    if '--init' in args:
+        return _driver_init(args)
     if '--add' in args:
         return _driver_add(args)
     if '--remove' in args:
         return _driver_remove(args)
-    print("Usage: fw bvp driver --add \"name\" --weight N --rationale \"...\"", file=sys.stderr)
+    print("Usage: fw bvp driver --init [--force]", file=sys.stderr)
+    print("       fw bvp driver --add \"name\" --weight N --rationale \"...\"", file=sys.stderr)
     print("       fw bvp driver --remove Dn --rationale \"...\" [--drop Dn]", file=sys.stderr)
     return 2
+
+
+def _driver_init(args):
+    """Bootstrap consumer's policy/value-drivers.yaml from the framework template.
+
+    Idempotent by default: refuses to overwrite if the target file already
+    exists. `--force` overrides. NOT §ACD-gated — first-write of a starter
+    file is not a policy decision; subsequent weight/driver mutations are
+    gated separately.
+
+    T-2229 Slice 1. Slice 2 (separate task) wires this into fw init/upgrade/vendor.
+    """
+    target = PROJECT_ROOT / 'policy' / 'value-drivers.yaml'
+    template = FRAMEWORK_ROOT / 'policy' / 'value-drivers.yaml'
+    force = '--force' in args
+
+    if not template.is_file():
+        print(f"ERROR: framework template not found at {template}", file=sys.stderr)
+        print("       This indicates a broken framework install (vendored copy", file=sys.stderr)
+        print("       is missing policy/value-drivers.yaml). Run `fw vendor` or", file=sys.stderr)
+        print("       reinstall the framework.", file=sys.stderr)
+        return 2
+
+    if target.exists() and not force:
+        print(f"OK: policy/value-drivers.yaml already exists at {target}")
+        print("    (idempotent — use `fw bvp driver --init --force` to overwrite from framework template)")
+        return 0
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(template.read_bytes())
+
+    action = "overwritten" if (force and target.exists()) else "created"
+    print(f"OK: policy/value-drivers.yaml {action} from framework template")
+    print(f"  Source: {template}")
+    print(f"  Target: {target}")
+    print("")
+    print("  These are the framework's default value drivers (D1-D4 + free drivers).")
+    print("  Customise via sovereignty-gated verbs:")
+    print("    fw bvp                                    # see current ranking")
+    print("    fw bvp weight --set Dn=N --rationale ...  # tune driver weights")
+    print("    fw bvp driver --add ... | --remove ...    # add/drop free drivers")
+    return 0
 
 
 # ---------------------------------------------------------- confirm (T-1924)
@@ -1197,6 +1252,10 @@ USAGE:
                                   combine with --include-proposed
   fw bvp weight --set Dn=N --rationale "..." [--i-am-human|--from-watchtower]
                                   change driver weight (§ACD-gated, M6)
+  fw bvp driver --init [--force]
+                                  bootstrap policy/value-drivers.yaml from the framework
+                                  template (T-2230, T-2229 Slice 1). Idempotent; --force
+                                  overwrites. NOT §ACD-gated (first-write, not policy edit).
   fw bvp driver --add "name" --weight N --rationale "..." [--drop Dn]
                                   add free driver; --drop required when at cap=9 (M1)
   fw bvp driver --remove Dn --rationale "..."
