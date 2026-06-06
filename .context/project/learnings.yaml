@@ -3525,3 +3525,10 @@ X'` returning empty group."
   date: 2026-06-05
   context: Added via context agent
   application: TBD
+- id: L-461
+  learning: "Stale-partial-complete pattern: agent completes all Agent ACs + writes Recommendation, but forgets to run 'fw task update --status work-completed' — task sits in active/ as started-work, owner:agent for days. Detection: status=started-work, owner=agent, all '### Agent' ACs ticked, '## Recommendation' present, '### Human' has '[REVIEW]' unticked. Action: switch focus to task, run --status work-completed which emits Watchtower handoff URL + flips owner to human. Found 2 of this shape on 2026-06-06: T-2119 (7d stale) + T-2176 (4d stale). Cleanup is genuine HV-LC — 0 code change, just formalizes handoffs operator already nominally has."
+  source: P-009
+  task: T-1687
+  date: 2026-06-06
+  context: Added via context agent
+  application: TBD
