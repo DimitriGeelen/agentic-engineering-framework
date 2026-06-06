@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2095: V1-d fw upgrade: self-vendor extraction into a separate verb (T-2078 GO, closes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T20:34:46Z
+# ============================================================================
+
+task_id: T-2095
+task_name: "V1-d fw upgrade: self-vendor extraction into a separate verb (T-2078 GO, closes"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-29T11:58:39Z
+completed: 2026-06-06T20:34:26Z
+duration_days: 8
+updates_count: 5
+first_commit: 2026-06-06T22:33:17+02:00
+last_commit: 2026-06-06T22:33:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  V1-D fw upgrade — F2 self-vendor extraction (helper + verb + opt-out flag)
+
+# Key outcomes
+outcomes:
+  - '**Helper extracted: `_self_vendor_libs()` in `lib/upgrade.sh`** — Same logic as the prior inline block (lib/upgrade.sh:392-414); inline call site now reads `_self_vendor_libs "$dry_run"`. **Evidence:** `lib/upgrade.sh` — helper at `_self_vendor_libs()`, structural bats `t1` PASS confirms both helper definition and the inline call shape `_self_vendor_libs "$dry_run"`.'
+  - '**`fw vendor self` subcommand wired in `bin/fw`** — Routes to `_self_vendor_libs` (with `--dry-run` passthrough); `fw vendor self --help` advertises the new verb. Other `fw vendor` args pass through to `do_vendor` unchanged. **Evidence:** bats `t5` PASS; manual: `bin/fw vendor self --dry-run` → `Self-vendor: synced 12 file(s) to .agentic-framework/lib/` exit 0.'
+  - '**`--no-self-vendor` flag on `fw upgrade`** — Flag advertised in `do_upgrade --help`; when set, inline call is SKIPPED and `Self-vendor skipped (--no-self-vendor)` line prints; default behavior unchanged. **Evidence:** bats `t6` (help) + `t7` (skip + trip-wire negative) + `t8` (default still calls helper) all PASS.'
+  - '**Helper is structurally consumer-safe** — Early-return on missing `$FRAMEWORK_ROOT/.agentic-framework/lib` (T-1217 structural guard preserved). **Evidence:** bats `t2` PASS — helper produces no output when invoked against a directory that has only `lib/` and no `.agentic-framework/lib/`.'
+  - '**`fw vendor self` runtime test** — synthetic FRAMEWORK_ROOT with same.sh (match) + changed.sh (diff); helper syncs only the diffed file; same.sh untouched. **Evidence:** bats `t3` PASS (synced 1 file; both files diff-OK post-helper).'
+  - '**`--no-self-vendor` runtime test** — `do_upgrade --dry-run --no-self-vendor` emits "Self-vendor skipped" + trip-wire on `_self_vendor_libs` confirms helper was NOT called. **Evidence:** bats `t7` PASS.'
+  - '**Default behaviour runtime test** — `do_upgrade --dry-run` (no flag) calls `_self_vendor_libs` (marker observed) and does NOT emit "Self-vendor skipped". **Evidence:** bats `t8` PASS.'
+  - '**Bats suite passes** — `bats tests/unit/t2095_upgrade_self_vendor_extraction.bats` → **8/8 PASS** on first run.'
+  - '**Sibling regression unaffected** — fresh-machine 3/3 + T-2093 6/6 + T-2094 8/8 + T-2232 8/8 — **25/25 PASS sibling regression** + 8/8 t2095 = **33/33 PASS across the full V1-ladder net**.'
+  - '**Reviewer PASS** — `bin/fw reviewer T-2095 --no-write` → R-070694d5 2026-06-06T20:31:38Z, **Overall: PASS**, Findings: none, Needs Human: no.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2095-v1-d-fw-upgrade-self-vendor-extraction-i.md'
+  - 'tests/unit/t2095_upgrade_self_vendor_extraction.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T22:33:17"
+    action: "T-2095: V1-D fw upgrade — F2 self-vendor extraction (helper + verb + opt-out flag)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 12035 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fw-upgrade, reliability, v1, T-2078-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12035
+  commits: 1
+  files_changed: 4
+  lines_added: 393
+  lines_removed: 59
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2095-v1-d-fw-upgrade-self-vendor-extraction-i.md
+generated_by: context-agent-hybrid

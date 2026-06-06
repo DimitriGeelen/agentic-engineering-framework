@@ -8,20 +8,20 @@ description: >
   fw self-vendor) so upgrade is just orchestration. Spec: docs/reports/T-2078-fw-upgrade-reliability-review.md
   F2. Sequence after V1-c.
 
-status: started-work
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: [fw-upgrade, reliability, v1, T-2078-slice]
-components: []
+components: [C-004, bin/fw, lib/upgrade.sh]
 related_tasks: [T-2078, T-2092]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:58:39Z
-last_update: '2026-06-06T20:30:02Z'
-date_finished:
+last_update: 2026-06-06T20:34:26Z
+date_finished: 2026-06-06T20:34:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -151,8 +151,8 @@ What this slice deliberately does NOT ship (T-2095-follow-on territory):
 grep -qE "^_self_vendor_libs\(\)" lib/upgrade.sh && echo "helper extracted"
 # Inline call site replaced
 grep -qE "_self_vendor_libs.*dry_run" lib/upgrade.sh && echo "inline call uses helper"
-# fw vendor self subcommand wired
-grep -qE 'vendor.*self.*\)|\"self\".*\)' bin/fw | head -1
+# fw vendor self subcommand wired (runtime — verb dispatches and --help exits 0 with new content)
+out=$(bin/fw vendor self --help 2>&1); echo "$out" | grep -q "fw vendor self" && echo "$out" | grep -q "T-2095"
 # --no-self-vendor flag advertised
 out=$(bin/fw upgrade --help 2>&1); echo "$out" | grep -q "no-self-vendor" && echo "flag advertised"
 # Bats coverage
@@ -279,3 +279,15 @@ out=$(bin/fw reviewer T-2095 --no-write 2>&1); echo "$out" | grep -qE "Overall:.
 
 ### 2026-06-06T20:24:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1d3b0bcc
+- **Timestamp:** 2026-06-06T20:34:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-06T20:34:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
