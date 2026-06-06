@@ -6,16 +6,16 @@ description: >
   Inception: Field upgrade failure on .121do — Nth recurrence of upgrade-fragility
   class; should we ship T-2093/2094/2095 now?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-06T13:07:59Z
-last_update: 2026-06-06T13:12:09Z
-date_finished:
+last_update: 2026-06-06T13:14:29Z
+date_finished: 2026-06-06T13:14:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -156,15 +156,15 @@ Resolves IW-4 build path.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -241,7 +241,11 @@ Evidence is strong: T-2078 GO'd a 4-slice v1 hardening 2026-05-29; T-2093/T-2094
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Evidence is strong: T-2078 GO'd a 4-slice v1 hardening 2026-05-29; T-2093/T-2094/T-2095 (V1-B/C/D) have sat captured for 8 days while field upgrades continue to fail (T-2229 GO'd today; .121do reported now; T-1542 started-work 40 days). The agent's recommendation is to escalate the captured prevention chain to horizon=now and triage the .121 failure against the existing 4-slice plan before filing fresh build work. Sovereignty-bearing question (operator-only): do we ship T-2093/2094/2095 BEFORE diagnosing .121, in PARALLEL, or treat .121 as a NEW class that needs its own slice?
+
+**Date**: 2026-06-06T13:14:29Z
 
 ## Updates
 
@@ -250,3 +254,21 @@ Evidence is strong: T-2078 GO'd a 4-slice v1 hardening 2026-05-29; T-2093/T-2094
 
 ### 2026-06-06T13:12:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-06T13:14:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Evidence is strong: T-2078 GO'd a 4-slice v1 hardening 2026-05-29; T-2093/T-2094/T-2095 (V1-B/C/D) have sat captured for 8 days while field upgrades continue to fail (T-2229 GO'd today; .121do reported now; T-1542 started-work 40 days). The agent's recommendation is to escalate the captured prevention chain to horizon=now and triage the .121 failure against the existing 4-slice plan before filing fresh build work. Sovereignty-bearing question (operator-only): do we ship T-2093/2094/2095 BEFORE diagnosing .121, in PARALLEL, or treat .121 as a NEW class that needs its own slice?
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cc519215
+- **Timestamp:** 2026-06-06T13:14:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-06T13:14:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
