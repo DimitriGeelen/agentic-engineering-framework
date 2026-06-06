@@ -116,6 +116,56 @@ print('JSON_END')
     return 0
 }
 
+# T-2095 (T-2078 V1-D, F2): self-vendor extraction.
+#
+# Refreshes the framework's own .agentic-framework/lib/ from FRAMEWORK_ROOT/lib/.
+# Origin: T-1217 — without this, new lib/*.sh files (e.g., watchtower.sh from
+# T-1154) go stale in the vendored copy, causing pre-push audit errors for the
+# framework repo itself.
+#
+# Was inlined in do_upgrade body until T-2095 — extracted so it can be invoked
+# explicitly via `fw vendor self` (cron / pre-push / manual) AND opted out of
+# do_upgrade via `--no-self-vendor` (operators who have wired pre-push and don't
+# want the inline redundancy).
+#
+# Structural consumer-safety: the function early-returns when
+# $FRAMEWORK_ROOT/.agentic-framework/lib does not exist — this is the case for
+# any consumer's vendored copy (no nested .agentic-framework/lib/). T-1217's
+# guard is preserved unchanged; the extraction is pure refactor.
+#
+# Args:
+#   $1 — dry_run flag ("true" / "false"). When "true", reports what would
+#        be synced without copying files.
+# Return:
+#   0 — sync completed (or nothing to sync, or consumer-skip)
+_self_vendor_libs() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    # T-1217 structural guard — consumer's .agentic-framework/ has no nested
+    # .agentic-framework/lib/, so this branch is the consumer-safe early exit.
+    if [ ! -d "$_self_vendor/lib" ]; then
+        return 0
+    fi
+    local _sv_updated=0
+    local _sv_src _sv_name _sv_dst
+    for _sv_src in "$FRAMEWORK_ROOT/lib/"*.sh; do
+        [ -f "$_sv_src" ] || continue
+        _sv_name=$(basename "$_sv_src")
+        _sv_dst="$_self_vendor/lib/$_sv_name"
+        if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1; then
+            if [ "$dry_run" != true ]; then
+                cp "$_sv_src" "$_sv_dst"
+                [ -x "$_sv_src" ] && chmod +x "$_sv_dst"
+            fi
+            _sv_updated=$((_sv_updated + 1))
+        fi
+    done
+    if [ "$_sv_updated" -gt 0 ]; then
+        echo -e "  ${GREEN}Self-vendor:${NC} synced $_sv_updated file(s) to .agentic-framework/lib/"
+    fi
+    return 0
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -136,6 +186,12 @@ do_upgrade() {
     local strict=false
     local failed_steps=0
     local _strict_abort_step=""
+    # T-2095 (T-2078 V1-D, F2): opt-out of the inline self-vendor call. Off by
+    # default — preserves T-1217's invariant (framework's .agentic-framework/lib/
+    # stays in sync with FRAMEWORK_ROOT/lib/) on every developer machine that
+    # hasn't yet wired `fw vendor self` into pre-push. Operators who have wired
+    # pre-push (no inline redundancy needed) opt out via --no-self-vendor.
+    local no_self_vendor=false
 
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -143,6 +199,7 @@ do_upgrade() {
             --force) force=true; shift ;;
             --force-downgrade) force_downgrade=true; shift ;;
             --strict) strict=true; shift ;;
+            --no-self-vendor) no_self_vendor=true; shift ;;
             --dedupe-user-hooks) dedupe_user_hooks=true; shift ;;
             --from-upstream)
                 from_upstream="$2"; shift 2 ;;
@@ -163,6 +220,11 @@ do_upgrade() {
                 echo "                          diagnostic (T-2093 V1-B, F4). Without this flag the"
                 echo "                          upgrade continues on step failure (current behaviour)"
                 echo "                          but a PARTIAL footer surfaces the count."
+                echo "  --no-self-vendor        Skip the inline framework self-vendor refresh"
+                echo "                          (T-2095 V1-D, F2). Default: keep inline (T-1217"
+                echo "                          invariant). Opt-out for operators who fire"
+                echo "                          'fw vendor self' from pre-push and don't want the"
+                echo "                          per-upgrade redundancy."
                 echo "  --force-downgrade       Allow upgrade to rewrite the consumer's pinned version"
                 echo "                          to a LOWER framework version (T-1839 guard bypass)."
                 echo "                          Default: refuse with diagnostic referencing T-1828."
@@ -389,28 +451,16 @@ do_upgrade() {
         return $_rc
     fi
 
-    # T-1217: Self-vendor — refresh framework's own .agentic-framework/ before pushing to consumers.
-    # Without this, new lib/*.sh files (e.g., watchtower.sh from T-1154) go stale in the vendored
-    # copy, causing pre-push audit errors for the framework repo itself.
-    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
-    if [ -d "$_self_vendor/lib" ]; then
-        local _sv_updated=0
-        for _sv_src in "$FRAMEWORK_ROOT/lib/"*.sh; do
-            [ -f "$_sv_src" ] || continue
-            local _sv_name
-            _sv_name=$(basename "$_sv_src")
-            local _sv_dst="$_self_vendor/lib/$_sv_name"
-            if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1; then
-                if [ "$dry_run" != true ]; then
-                    cp "$_sv_src" "$_sv_dst"
-                    [ -x "$_sv_src" ] && chmod +x "$_sv_dst"
-                fi
-                _sv_updated=$((_sv_updated + 1))
-            fi
-        done
-        if [ "$_sv_updated" -gt 0 ]; then
-            echo -e "  ${GREEN}Self-vendor:${NC} synced $_sv_updated file(s) to .agentic-framework/lib/"
-        fi
+    # T-1217 / T-2095 (T-2078 V1-D, F2): self-vendor refresh.
+    # Inline call preserved by default for backward compat (T-1217 invariant).
+    # Operators who have wired `fw vendor self` into pre-push can opt out with
+    # --no-self-vendor to eliminate the per-upgrade redundancy. The helper
+    # itself is structurally consumer-safe: it early-returns when the framework
+    # vendored copy doesn't exist (consumer scenario).
+    if [ "$no_self_vendor" = true ]; then
+        echo -e "  ${YELLOW}Self-vendor skipped${NC} (--no-self-vendor)"
+    else
+        _self_vendor_libs "$dry_run"
     fi
 
     local project_name
