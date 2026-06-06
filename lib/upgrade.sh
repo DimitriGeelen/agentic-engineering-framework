@@ -199,6 +199,24 @@ do_upgrade() {
         esac
     done
 
+    # T-2094 F8 (T-2078 V1-C): pre-flight tooling check. Fail fast BEFORE any
+    # mutation if a required tool is missing — minimal LXC / Alpine containers
+    # can lack one of python3/git/diff/sed/mktemp and the existing flow crashes
+    # mid-step with a generic "command not found" and no rollback. Cheap
+    # insurance per T-2078 §F8 ("Fix shape: explicit pre-flight at the top of
+    # do_upgrade after arg parse").
+    local _t2094_missing=()
+    for _t2094_required in python3 git diff sed mktemp; do
+        command -v "$_t2094_required" >/dev/null 2>&1 || _t2094_missing+=("$_t2094_required")
+    done
+    if [ "${#_t2094_missing[@]}" -gt 0 ]; then
+        for _t2094_t in "${_t2094_missing[@]}"; do
+            echo "ERROR: required tool missing: $_t2094_t" >&2
+        done
+        echo "Aborting before any file mutation. Install the missing tool(s) and re-run." >&2
+        return 1
+    fi
+
     # Default to PROJECT_ROOT or current directory
     if [ -z "$target_dir" ]; then
         target_dir="${PROJECT_ROOT:-$PWD}"
@@ -1454,6 +1472,41 @@ EOF
             echo "  1. Review changes: cd $target_dir && git diff"
             echo "  2. Commit: fw git commit -m 'T-012: fw upgrade — sync framework improvements'"
             echo "  3. Run: fw doctor  # Verify health"
+
+            # T-2094 F10 (T-2078 V1-C): post-upgrade fw doctor advisory.
+            _t2094_emit_doctor_advisory "$target_dir"
         fi
     fi
+}
+
+# T-2094 F10 (T-2078 V1-C): post-upgrade fw doctor advisory helper.
+#
+# Closes the verification loop within the same invocation — operator sees
+# health-check output before the next action, when working memory of "what
+# just upgraded" is still warm. Non-blocking by spec: doctor exit code does
+# NOT affect do_upgrade exit. Per L-387 single-pipe discipline, the
+# trim+indent stage uses awk (reads all input, prints first 20 lines) rather
+# than `head -20 | sed` which closes stdin early and SIGPIPEs the upstream
+# echo.
+#
+# Extracted as a helper so the bats suite can exercise it in isolation
+# without spinning up a 10-step do_upgrade integration (T-2094 tests t3-t5).
+#
+# Args:
+#   $1 — target_dir (consumer project root; passed to fw doctor as PROJECT_ROOT)
+_t2094_emit_doctor_advisory() {
+    local target_dir="$1"
+    local _doctor_out=""
+    local _doctor_rc=0
+    echo ""
+    echo -e "  ${BOLD}Post-upgrade health check (advisory):${NC}"
+    _doctor_out=$(PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" doctor 2>&1) || _doctor_rc=$?
+    echo "$_doctor_out" | awk 'NR<=20 {print "    " $0}'
+    echo ""
+    if [ "$_doctor_rc" -ne 0 ]; then
+        echo -e "  ${YELLOW}Advisory:${NC} doctor exited $_doctor_rc — doctor exit code does not affect upgrade success."
+    else
+        echo -e "  ${GREEN}Advisory:${NC} doctor PASS (exit 0)."
+    fi
+    return 0  # always 0 — F10 is non-blocking by spec
 }

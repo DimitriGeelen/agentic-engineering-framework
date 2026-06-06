@@ -8,7 +8,7 @@ description: >
   Add pre-flight check (jq, python3, etc.) and post-upgrade advisory line. Spec: docs/reports/T-2078-fw-upgrade-reliability-review.md
   F8/F10. Sequence after V1-b.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -20,7 +20,7 @@ related_tasks: [T-2078, T-2092]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:58:34Z
-last_update: 2026-06-06T13:27:33Z
+last_update: '2026-06-06T20:15:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -42,6 +42,15 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-06T20:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-06-05T18:00:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -56,51 +65,42 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-06T20:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 5
+      F-RECALL: 2
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=5 (body:class-neutral); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2094: V1-c fw upgrade: pre-flight tooling check + post-upgrade fw doctor advisory (T-2078 GO, closes F8/F10)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+V1-C slice of T-2078 GO. Closes F8 (no pre-flight tooling check — `fw upgrade` on a minimal LXC / Alpine container crashes mid-step on a missing `python3`/`git`/`diff`/`sed`/`mktemp` with no rollback) and F10 (no post-upgrade verification — `do_upgrade` prints "Upgrade Complete" without ever asking whether the consumer is healthy; first sign of "sideways" is the *next* operator action, by which point working memory is gone).
+
+Spec: `docs/reports/T-2078-fw-upgrade-reliability-review.md` §F8 (line 146) and §F10 (line 162). Sequence after V1-B (T-2093, `failed_steps` + `--strict` + dry-run PARTIAL parity shipped). V1-C composes on that substrate: pre-flight aborts pre-mutation (no `failed_steps` involvement); the post-upgrade `fw doctor` advisory is non-blocking by spec ("doctor exit code does not affect upgrade success"), so it surfaces as a printed advisory rather than incrementing `failed_steps`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] **F8 — pre-flight tooling check loop in `lib/upgrade.sh:do_upgrade`** — Loop names `python3 git diff sed mktemp`; missing tool emits `ERROR: required tool missing: <cmd>` on stderr and returns 1. **Evidence:** `lib/upgrade.sh:202-220`; `grep "required tool missing" lib/upgrade.sh` → line 214.
+- [x] **F8 — missing-tool path aborts before mutation** — Bats stubs PATH to omit `mktemp`; do_upgrade returns non-zero with diagnostic + "Aborting before any file mutation"; trip-wire do_vendor never fires. **Evidence:** `tests/unit/t2094_upgrade_preflight_doctor_advisory.bats:t3` PASS.
+- [x] **F8 — happy path proceeds past pre-flight unchanged** — All 5 tools present; do_vendor stub fires AFTER pre-flight. **Evidence:** `t4` PASS, "do_vendor invoked AFTER pre-flight passed".
+- [x] **F10 — post-upgrade `fw doctor` advisory invoked on live success** — Helper `_t2094_emit_doctor_advisory` runs `PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" doctor` and emits `Post-upgrade health check (advisory):` header. **Evidence:** call site `lib/upgrade.sh:1458` (inside `if [ "$changes" -gt 0 ]` of non-dry-run else); helper at `lib/upgrade.sh:1483-1513`; bats `t5` PASS.
+- [x] **F10 — dry-run skips advisory** — Helper has exactly one call site, gated structurally on `changes > 0` inside the non-dry-run else branch. **Evidence:** structural `t8` PASS (`call_count == 1` and call line > `if [ "$changes" -gt 0 ]` line).
+- [x] **F10 — doctor exit code is non-blocking** — Helper ends `return 0`; stubbed doctor exit 3 surfaces `doctor exited 3 — doctor exit code does not affect upgrade success` and helper still exits 0. **Evidence:** bats `t6` PASS.
+- [x] **F10 — advisory runs in `target_dir` PROJECT_ROOT context** — Single line `PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" doctor` adjacency. **Evidence:** `lib/upgrade.sh:1503`; bats `t7` PASS.
+- [x] **Bats suite passes** — `bats tests/unit/t2094_upgrade_preflight_doctor_advisory.bats` → 8/8 PASS on first run.
+- [x] **Fresh-machine regression unaffected** — `bats tests/unit/upgrade_fresh_machine_simulation.bats` → 3/3 PASS; T-2093 6/6 PASS; T-2232 8/8 PASS — **25/25 PASS across the V1-ladder regression net**.
+- [x] **Reviewer PASS** — `bin/fw reviewer T-2094 --no-write` → R-ceaa883a 2026-06-06T20:14:25Z, **Overall: PASS**, Findings: none, Needs Human: no.
 
 ## Verification
 
@@ -134,6 +134,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# T-2094 verification commands:
+# F8 structural — pre-flight loop names each required tool
+grep -nE "required tool missing" lib/upgrade.sh
+for cmd in python3 git diff sed mktemp; do grep -qE "\\b${cmd}\\b" lib/upgrade.sh || { echo "MISSING required-tool token: ${cmd}"; exit 1; }; done; echo "all 5 required tools named in lib/upgrade.sh"
+# F10 structural — advisory runs in target_dir PROJECT_ROOT context
+grep -nE 'PROJECT_ROOT="\$target_dir"' lib/upgrade.sh
+grep -q "Post-upgrade health check" lib/upgrade.sh && echo "F10 advisory header present"
+grep -q "doctor exit code does not affect upgrade success" lib/upgrade.sh && echo "F10 non-blocking semantic explicit"
+# Bats suites
+bats tests/unit/t2094_upgrade_preflight_doctor_advisory.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
+# Reviewer
+out=$(bin/fw reviewer T-2094 --no-write 2>&1); echo "$out" | grep -qE "Overall: (PASS|CONCERN)" && ! echo "$out" | grep -q "Overall: FAIL"
 
 ## RCA
 
@@ -196,6 +210,30 @@ bvp_scores_proposed:
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** V1-C closes both T-2078 §F8 (no pre-flight tooling check) and §F10 (no post-upgrade verification) in one slice, composes cleanly on the T-2093 V1-B substrate (`failed_steps` counter + `--strict` + dry-run PARTIAL parity, all in place), and ships with a complete regression-net (8 new bats + 17 across siblings, all PASS; reviewer PASS; fresh-machine simulation green under `env -i`). F8 is a pure pre-mutation guard; F10 is a non-blocking advisory by spec — neither changes existing success paths. The framework is now durable against the two field-failure classes T-2078 named as "the High and Medium correctness + observability fixes" for V1, and the next slice (V1-D, T-2095) is a refactor decoupled from this surface.
+
+**Evidence:**
+- **F8 implementation:** `lib/upgrade.sh:202-220` (pre-flight loop names `python3 git diff sed mktemp`, missing tool emits `ERROR: required tool missing: <cmd>` + `Aborting before any file mutation`, returns 1)
+- **F10 implementation:** `lib/upgrade.sh:1457-1458` (call site inside `if [ "$changes" -gt 0 ]` of non-dry-run else) + `:1483-1513` (`_t2094_emit_doctor_advisory` helper — `PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" doctor`, awk single-stage trim+indent per L-387, explicit `return 0` for non-blocking)
+- **New tests:** `tests/unit/t2094_upgrade_preflight_doctor_advisory.bats` — 8/8 PASS first run
+- **Sibling regression:** T-2093 6/6 PASS, T-2232 8/8 PASS, fresh-machine 3/3 PASS — **25/25 across V1 ladder**
+- **Reviewer:** R-ceaa883a — Overall: PASS, Findings: none, Needs Human: no
+- **L-387 discipline:** awk reads-all-print-first-20 rather than `head -20 | sed` (no SIGPIPE risk on the upstream `echo "$_doctor_out"`)
+- **Authority boundary:** PROJECT_ROOT override scopes doctor to the consumer's `.framework.yaml`, not the framework repo's — confirmed by `grep -nE 'PROJECT_ROOT="\$target_dir".*doctor' lib/upgrade.sh` → line 1503
+
+**V1 ladder status after T-2094:**
+- V1-A (F3): docker live-sim coverage — T-2092 SHIPPED
+- V1-B (F4/F5/F6): exit-code discipline — T-2093 SHIPPED (this session, prior leg)
+- **V1-C (F8/F10): pre-flight + post-upgrade advisory — T-2094 SHIPPED (this slice)**
+- V1-D (F2): self-vendor extraction refactor — T-2095 captured + `horizon: now`
+- T-2232 durable in-consumer upgrade fix — SHIPPED (out-of-ladder operator-directed slice; ring20-dashboard recovery awaits operator-call between Option A/B)
+
+**What's next:** V1-D (T-2095) is the natural HV-LC follow-on (last V1 slice). After V1-D ships, V1 closes and V2 (F1+F13+F15 step-driver refactor) can be filed gated on V1 telemetry showing no field regression.
+
 ## Updates
 
 ### 2026-05-29T11:58:34Z — task-created [task-create-agent]
@@ -205,3 +243,6 @@ bvp_scores_proposed:
 
 ### 2026-06-06T13:27:33Z — status-update [task-update-agent]
 - **Change:** horizon: later → now
+
+### 2026-06-06T20:05:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
