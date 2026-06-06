@@ -22,6 +22,34 @@ APP_DIR = Path(__file__).resolve().parent
 FRAMEWORK_ROOT = APP_DIR.parent
 
 
+# ---------------------------------------------------------------------------
+# Test-sentinel filter (T-2228 / T-2225 Slice 3)
+# ---------------------------------------------------------------------------
+# Tests use the `T-Test-NNN` sentinel namespace (T-2226 convention) instead of
+# numeric `T-NNNN` ids to keep test fixtures from colliding with real tasks.
+# Slice 1 (T-2226) introduced `tmp_project_root` to isolate writes to tmp_path.
+# This Layer 3 filter is defense-in-depth: if a test ever leaks a real
+# `.tasks/active/T-Test-001.md` file into PROJECT_ROOT (helper bypassed, future
+# author skips the fixture), production scanners — audit / fabric / episodic /
+# task-list — silently skip it instead of presenting it as a real task.
+#
+# Risk-free: real tasks are filed via `fw work-on` / `fw task create` which
+# emit numeric `T-NNNN` ids; the `T-Test-` prefix is reserved for fixtures.
+def is_test_sentinel(name) -> bool:
+    """True if `name` (path or basename or task-id) is a T-Test-NNN sentinel.
+
+    Matches `T-Test-001`, `T-Test-foo.md`, `T-Test-bar.yaml`, and full paths
+    ending in any of those. Used by production scanners to filter test fixtures
+    that may have leaked into a real `.tasks/active/` or `.context/episodic/`
+    directory. See T-2225 / T-2228, docstring at top of section.
+    """
+    try:
+        basename = Path(str(name)).name
+    except (TypeError, ValueError):
+        return False
+    return basename.startswith("T-Test-")
+
+
 def _discover_project_root(start: Path) -> Path | None:
     """Walk up from `start` looking for `.framework.yaml` (consumer marker).
 
@@ -294,7 +322,11 @@ def build_ambient():
     if current and re_mod.match(r"^T-\d{3,}$", str(current)):
         ambient["focus_task"] = str(current)
     if active_dir.exists():
-        active_tasks = sorted(active_dir.glob("T-*.md"), key=task_id_sort_key)
+        # T-2228: skip T-Test-NNN sentinels (test fixtures leaked into PROJECT_ROOT).
+        active_tasks = sorted(
+            (p for p in active_dir.glob("T-*.md") if not is_test_sentinel(p)),
+            key=task_id_sort_key,
+        )
         if active_tasks:
             if not ambient["focus_task"]:
                 # Fallback: first active task alphabetically.
@@ -863,6 +895,8 @@ def get_all_task_metadata():
         if not task_dir.exists():
             continue
         for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
+            if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
+                continue
             fm, _ = parse_frontmatter(f.read_text())
             if fm:
                 fm["_location"] = location
@@ -898,6 +932,8 @@ def get_episodic_tags():
     episodic_dir = PROJECT_ROOT / ".context" / "episodic"
     if episodic_dir.exists():
         for f in episodic_dir.glob("T-*.yaml"):
+            if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
+                continue
             try:
                 with open(f) as fh:
                     edata = yaml.safe_load(fh)

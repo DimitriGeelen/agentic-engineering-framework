@@ -83,6 +83,9 @@ def find_related_tasks(episodic_dir, location, limit=5):
     if not os.path.isdir(episodic_dir):
         return related
     for ep_file in sorted(glob.glob(os.path.join(episodic_dir, "T-*.yaml")))[-200:]:
+        # T-2228 (T-2225 Slice 3): skip T-Test-NNN test-sentinel fixtures.
+        if os.path.basename(ep_file).startswith("T-Test-"):
+            continue
         try:
             with open(ep_file) as f:
                 ep = yaml.safe_load(f)

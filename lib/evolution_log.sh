@@ -102,5 +102,6 @@ find_arc_tasks_without_evolution_log() {
         # Emit task ID
         task_id=$(basename "$task_file" | grep -oE '^T-[0-9]+')
         [ -n "$task_id" ] && echo "$task_id"
-    done < <(find "$active_dir" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null)
+    done < <(find "$active_dir" -maxdepth 1 -name 'T-*.md' -not -name 'T-Test-*' -type f 2>/dev/null)
+    # T-2228 (T-2225 Slice 3): -not -name 'T-Test-*' filters test-sentinel fixtures.
 }

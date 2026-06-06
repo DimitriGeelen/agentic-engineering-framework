@@ -435,6 +435,18 @@ grace_fail() {
     fi
 }
 
+# T-2228 (T-2225 Slice 3): test-sentinel filter — skip T-Test-NNN files that
+# may have leaked from tests into PROJECT_ROOT (tmp_project_root helper bypass).
+# Real tasks are filed via `fw work-on` / `fw task create` which emit numeric
+# T-NNNN ids; the `T-Test-` prefix is reserved for test fixtures.
+_is_test_sentinel() {
+    local name="${1##*/}"
+    case "$name" in
+        T-Test-*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 # Quiet mode: suppress terminal output (findings still collected for YAML)
 if [ "$QUIET" = true ]; then
     exec 3>&1 1>/dev/null
@@ -637,7 +649,7 @@ sys.exit(0)
                 fm_fail_list="$fm_fail_list\n  $tf_rel  (no/invalid frontmatter delimiters — T-2067 class: components regex mangle)"
             fi
         fi
-    done < <(find "$tdir" -maxdepth 1 -name 'T-*.md' -type f)
+    done < <(find "$tdir" -maxdepth 1 -name 'T-*.md' -not -name 'T-Test-*' -type f)
 done
 if [ "$fm_fail_count" -gt 0 ]; then
     warn "Task frontmatter: $fm_fail_count task(s) have unparseable YAML" \
@@ -708,6 +720,7 @@ if [ -d "$PROJECT_ROOT/.context/arcs" ] && command -v git >/dev/null 2>&1 \
             [ -d "$tdir" ] || continue
             for tf in "$tdir"/T-*.md; do
                 [ -f "$tf" ] || continue
+                _is_test_sentinel "$tf" && continue  # T-2228: skip T-Test-NNN sentinels
                 ttag=$(awk '/^arc_id:/ {sub(/^arc_id:[[:space:]]*/, ""); gsub(/["\x27]/, ""); print; exit}' "$tf" \
                        | tr -d ' ' | head -c 64)
                 if [ -n "$ttag" ] && { [ "$ttag" = "$arc_slug" ] || [ "$ttag" = "$arc_numeric" ]; }; then
@@ -946,6 +959,8 @@ if not arcs_dir.is_dir():
 tasks_by_arc = {}
 for sub in ('active', 'completed'):
     for p in (PROJECT_ROOT / '.tasks' / sub).glob('T-*.md'):
+        if p.name.startswith('T-Test-'):  # T-2228 (T-2225 Slice 3): skip test sentinels
+            continue
         try:
             text = p.read_text()
         except Exception:
