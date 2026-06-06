@@ -5,16 +5,16 @@ description: >
   Inception: test-sentinel isolation — T-Test-NNN namespace + autouse PROJECT_ROOT
   patch
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-06T06:54:02Z
-last_update: 2026-06-06T06:54:58Z
-date_finished:
+last_update: 2026-06-06T08:54:03Z
+date_finished: 2026-06-06T08:54:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -35,6 +35,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-06T07:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -133,15 +143,15 @@ Time-box: 1 hour total exploration; if Spike A reveals >5 production sites needi
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -207,7 +217,30 @@ Partial GO is meaningful — operator may accept 1+2 and defer 3 if invasive-ski
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Class verified LIVE 2026-06-06 (5 missing patch sites; 4 sentinel hardcodes — 7 sites total). Operator weights D1 antifragility + D2 reliability over cost — strongly favours layered steelman over strawman (point fixes). Research artifact `docs/reports/T-2225-test-sentinel-isolation.md` walks the strawman/steelman/hybrid trade-off against all four directives; steelman dominates D1 + D2. Strawman papers over symptom without strengthening; hybrid loses the antifragile detector layer that makes the system learn from this incident.
+
+Path on GO: three independent build slices (each ≤1 session, each reversible):
+1. Layers 1+2 — `T-Test-NNN` namespace + autouse `client_isolation` fixture (target: 145/145 web tests)
+2. Layer 4 — reviewer detector `detect_test_sentinel_dual_patch_missing` + `detect_hardcoded_numeric_task_id`
+3. Layer 3 — production-tool skip-list for `T-Test-` across audit/fabric/episodic/task-list
+
+Partial GO is meaningful — operator may accept 1+2 and defer 3 if invasive-skip risk concerns them.
+
+Evidence:
+
+- `web/test_app.py` — 7 sentinel hardcode sites verified live: lines 170, 282, 1018, 1098, 1106, 1113, 1121
+- `web/test_app.py` — 5 dual-patch-missing sites: lines 1023, 1057, 1066, 1103, 1118
+- ring20-dashboard pickup: channel `framework-agent` artifact `33df8954b2a9b70d`, 2026-05-29
+- Related learnings recalled at filing: L-421 (test-isolation pollution has two module-state causes), L-245 (Playwright tests POST to live PROJECT_ROOT), L-066 (`fw doctor` nested `.agentic-framework`)
+- Research artifact: `docs/reports/T-2225-test-sentinel-isolation.md` (full strawman/steelman/hybrid + directive matrix + dialogue log)
+
+**Date**: 2026-06-06T08:54:03Z
 
 ## Updates
 
@@ -216,3 +249,40 @@ Partial GO is meaningful — operator may accept 1+2 and defer 3 if invasive-ski
 
 ### 2026-06-06T06:54:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-06T08:54:03Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Class verified LIVE 2026-06-06 (5 missing patch sites; 4 sentinel hardcodes — 7 sites total). Operator weights D1 antifragility + D2 reliability over cost — strongly favours layered steelman over strawman (point fixes). Research artifact `docs/reports/T-2225-test-sentinel-isolation.md` walks the strawman/steelman/hybrid trade-off against all four directives; steelman dominates D1 + D2. Strawman papers over symptom without strengthening; hybrid loses the antifragile detector layer that makes the system learn from this incident.
+
+Path on GO: three independent build slices (each ≤1 session, each reversible):
+1. Layers 1+2 — `T-Test-NNN` namespace + autouse `client_isolation` fixture (target: 145/145 web tests)
+2. Layer 4 — reviewer detector `detect_test_sentinel_dual_patch_missing` + `detect_hardcoded_numeric_task_id`
+3. Layer 3 — production-tool skip-list for `T-Test-` across audit/fabric/episodic/task-list
+
+Partial GO is meaningful — operator may accept 1+2 and defer 3 if invasive-skip risk concerns them.
+
+Evidence:
+
+- `web/test_app.py` — 7 sentinel hardcode sites verified live: lines 170, 282, 1018, 1098, 1106, 1113, 1121
+- `web/test_app.py` — 5 dual-patch-missing sites: lines 1023, 1057, 1066, 1103, 1118
+- ring20-dashboard pickup: channel `framework-agent` artifact `33df8954b2a9b70d`, 2026-05-29
+- Related learnings recalled at filing: L-421 (test-isolation pollution has two module-state causes), L-245 (Playwright tests POST to live PROJECT_ROOT), L-066 (`fw doctor` nested `.agentic-framework`)
+- Research artifact: `docs/reports/T-2225-test-sentinel-isolation.md` (full strawman/steelman/hybrid + directive matrix + dialogue log)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e66aaf5b
+- **Timestamp:** 2026-06-06T08:54:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-06T08:54:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
