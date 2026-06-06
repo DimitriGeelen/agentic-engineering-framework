@@ -1,13 +1,19 @@
 ---
 id: T-2224
-name: "T-2223 follow-up: extend bvp rank filter to also skip .tasks/completed/ dir (L-390 drift)"
+name: "T-2223 follow-up: extend bvp rank filter to also skip .tasks/completed/ dir
+  (L-390 drift)"
 description: >
-  T-2223 filtered by status:work-completed but missed L-390 drift cases — tasks moved via git mv to .tasks/completed/ without updating frontmatter status field. T-2196 is the evidence (in completed/, status:started-work). Fix: extend cmd_rank() loop skip-clause to also check path.parent.name == 'completed' when include_completed is False. Single AC + sibling test case to test_bvp_status_filter.py. ~5 LoC, ~10 min.
+  T-2223 filtered by status:work-completed but missed L-390 drift cases — tasks moved
+  via git mv to .tasks/completed/ without updating frontmatter status field. T-2196
+  is the evidence (in completed/, status:started-work). Fix: extend cmd_rank() loop
+  skip-clause to also check path.parent.name == 'completed' when include_completed
+  is False. Single AC + sibling test case to test_bvp_status_filter.py. ~5 LoC, ~10
+  min.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +22,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-05T23:26:19Z
-last_update: 2026-06-05T23:26:19Z
-date_finished: null
+last_update: 2026-06-06T06:04:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,51 +34,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-05T23:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-05T23:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2224: T-2223 follow-up: extend bvp rank filter to also skip .tasks/completed/ dir (L-390 drift)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2223 shipped the actionable-only default for `fw bvp` rank by filtering
+`fm.get('status') == 'work-completed'`. The fresh HV-LC survey one session later
+still showed T-2196 at #2 — because T-2196 lives in `.tasks/completed/` but its
+frontmatter `status:` field is `started-work` (L-390 drift: tasks moved via
+`git mv` without status update). Status-field filter doesn't catch directory
+drift. This task closes the directory leg: when `include_completed=False`,
+ALSO skip any task whose path lives under `.tasks/completed/`.
+
+Same surface, same default, same opt-in flag — composes orthogonally with T-2223.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] `cmd_rank()` skip-clause extended to OR-test `path.parent.name == 'completed'` alongside the status check, gated by `include_completed=False`.
+- [x] `--include-completed` flag continues to restore directory-drift rows (parity with status-drift).
+- [x] New unit test pins the directory leg: a task in `.tasks/completed/` with `status:started-work` is excluded by default and restored under `--include-completed`.
+- [x] T-2223's existing 5 tests still pass (regression net — the status leg is untouched).
+- [x] Reviewer PASS — `bin/fw reviewer T-2224` returns Overall PASS.
 
 ## Verification
 
@@ -106,6 +115,15 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# T-2224 verification — directory leg.
+pytest -q tests/unit/test_bvp_status_filter.py
+pytest -q tests/unit/test_bvp_cli_rank_proposed.py
+# AC#1 structural pin — the directory check is in source.
+grep -q "path.parent.name == 'completed'" lib/bvp.sh
+# Reviewer PASS — file-based L-387 safe pattern. Allows markdown bold
+# (`**Overall:** PASS`) AND plain (`Overall: PASS`) rendering.
+bin/fw reviewer T-2224 > /tmp/.t2224.reviewer 2>&1 && grep -qE "Overall:[*]* *PASS" /tmp/.t2224.reviewer
 
 ## RCA
 
@@ -168,9 +186,33 @@ date_finished: null
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+- **Recommendation:** **GO** — directory leg of the bvp rank filter shipped; closes the L-390 drift class that T-2223 left open.
+- **Rationale:** T-2223 stopped status-field work-completed pollution but the very next HV-LC survey still showed T-2196 at #2 because it lives in `.tasks/completed/` with frontmatter `status: started-work` (canonical L-390 case). The same `--include-completed` flag composes orthogonally — opt-in restores full archival sweep, default lists actionable rows only. ~5 LoC + 2 sibling test cases. All 5 acceptance criteria pass; reviewer R-004dc73d PASS with zero findings.
+- **Evidence:**
+  - `lib/bvp.sh:267-276` — skip-clause extended with `path.parent.name == 'completed'` OR-test, gated by `include_completed=False`.
+  - `tests/unit/test_bvp_status_filter.py` — 7/7 PASS (5 status leg + 2 directory leg). Sibling test file unchanged (5/5 PASS, regression net intact). Combined: **15/15** across T-1938 + T-2223 + T-2224.
+  - Live HV-LC survey before fix: T-2196 at #2 (BVP 98). After fix: T-2196 absent from default rank; restored at #6 under `--include-completed`.
+  - Reviewer R-004dc73d — Overall PASS, Needs Human: no, Findings: none.
+  - Sovereignty parity preserved: T-2223 (`--include-completed` for status leg) + T-2224 (same flag for directory leg) + T-1938 (`--include-proposed` for advisory scores) — three opt-ins, three orthogonal axes, single confirmed-actionable default.
+
 ## Updates
 
 ### 2026-06-05T23:26:19Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2224-t-2223-follow-up-extend-bvp-rank-filter-.md
 - **Context:** Initial task creation
+
+### 2026-06-06T06:04:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-004dc73d
+- **Timestamp:** 2026-06-06T06:09:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

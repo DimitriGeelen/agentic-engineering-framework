@@ -250,15 +250,28 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
     T-2223: --include-completed opt-in folds work-completed tasks back into the
     rank. Actionable-only is the default — the surface answers "what should I
     work on next" by default, not "rank everything we have data for". Set the
-    flag when running an archival/historical sweep."""
+    flag when running an archival/historical sweep.
+
+    T-2224: the --include-completed gate covers both legs — status-field
+    work-completed AND directory-drift (path under .tasks/completed/ with
+    stale frontmatter). L-390 cases (tasks moved via `git mv` without status
+    update) bypass the status check; the path check catches them. T-2196 was
+    the canonical evidence: in completed/, status:started-work, sitting at
+    HV-LC #2 one session after T-2223 shipped."""
     policy = load_policy()
     weights = driver_weights(policy)
     rows = []
     for path, fm in collect_tasks():
-        # T-2223: skip work-completed rows by default so the rank lists actionable
-        # tasks only. Tasks in active/ with status==work-completed (partial-complete
-        # pending Human ACs) are also skipped — they are not the operator's next pick.
-        if not include_completed and fm.get('status') == 'work-completed':
+        # T-2223 + T-2224: skip work-completed rows by default so the rank lists
+        # actionable tasks only. Two legs:
+        #   - status field == 'work-completed' (T-2223): canonical case
+        #   - path under .tasks/completed/ (T-2224): L-390 drift case where
+        #     status field was not updated when the file was moved
+        # Either condition triggers the skip when --include-completed is unset.
+        if not include_completed and (
+            fm.get('status') == 'work-completed'
+            or path.parent.name == 'completed'
+        ):
             continue
         scores = fm.get('bvp_scores') or {}
         source = 'confirmed'
