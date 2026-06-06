@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2224: T-2223 follow-up: extend bvp rank filter to also skip .tasks/completed/ dir
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T06:10:53Z
+# ============================================================================
+
+task_id: T-2224
+task_name: "T-2223 follow-up: extend bvp rank filter to also skip .tasks/completed/ dir"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-05T23:26:19Z
+completed: 2026-06-06T06:10:42Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-06-06T08:10:31+02:00
+last_commit: 2026-06-06T08:10:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw bvp rank skips .tasks/completed/ directory (L-390 drift leg)
+
+# Key outcomes
+outcomes:
+  - '`cmd_rank()` skip-clause extended to OR-test `path.parent.name == ''completed''` alongside the status check, gated by `include_completed=False`.'
+  - '`--include-completed` flag continues to restore directory-drift rows (parity with status-drift).'
+  - 'New unit test pins the directory leg: a task in `.tasks/completed/` with `status:started-work` is excluded by default and restored under `--include-completed`.'
+  - 'T-2223''s existing 5 tests still pass (regression net — the status leg is untouched).'
+  - 'Reviewer PASS — `bin/fw reviewer T-2224` returns Overall PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-2224-t-2223-follow-up-extend-bvp-rank-filter-.md'
+  - 'tests/unit/test_bvp_status_filter.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T08:10:31"
+    action: "T-2224: fw bvp rank skips .tasks/completed/ directory (L-390 drift leg)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 404 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 404
+  commits: 1
+  files_changed: 3
+  lines_added: 153
+  lines_removed: 51
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2224-t-2223-follow-up-extend-bvp-rank-filter-.md
+generated_by: context-agent-hybrid
