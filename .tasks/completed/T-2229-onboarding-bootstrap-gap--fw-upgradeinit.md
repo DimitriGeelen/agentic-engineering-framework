@@ -6,16 +6,16 @@ description: >
   Inception: Onboarding bootstrap gap — fw upgrade/init/vendor don't seed policy/value-drivers.yaml
   + .context/arcs/
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-06T12:13:52Z
-last_update: 2026-06-06T12:17:23Z
-date_finished:
+last_update: 2026-06-06T12:29:24Z
+date_finished: 2026-06-06T12:29:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -214,15 +214,15 @@ fits. Output: chosen surface + rationale.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -279,7 +279,17 @@ Every fresh consumer of fw upgrade/init hits ERROR: policy file not found: <PROJ
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Every fresh consumer of fw upgrade/init hits ERROR: policy file not found: <PROJECT>/policy/value-drivers.yaml the first time anything touches BVP, and 'fw bvp arcs' silently returns empty because .context/arcs/ never gets created. The error message at lib/bvp.sh:133 also points consumers at 'fw bvp driver --init once T-1920 ships' — T-1920 shipped 2026-06-XX with the mutating verbs (weight/driver --add/--remove) but the --init flag was descoped or never built, so the error is a dead reference. Operator confirmed live: /opt/050-email-archive on a vendored 1.6.260 consumer hits this exact failure mode (12 task files carry bvp_scores frontmatter from upstream framework-dev leakage, not consumer scoring runs). Recommendation GO because: (a) bug is operator-confirmed and structural, every consumer hits it; (b) the fix shape is constrained enough to be evaluable now (idempotent bootstrap in fw init for greenfield + fw upgrade/vendor for adoption); (c) sovereignty-respecting because consumer can opt-out or override drivers post-bootstrap; (d) clean composition with T-1633/T-1635 consumer-fresh-machine simulation gate which would have caught this had it covered the BVP surface. Build slices to negotiate post-GO: (1) ship 'fw bvp driver --init' for explicit consumer bootstrap, (2) wire init/upgrade/vendor to call it idempotently, (3) seed .context/arcs/ directory with a README, (4) fix the stale error message, (5) consider an opt-out flag for projects that don't want BVP at all, (6) treat existing-codebase ingest (non-greenfield fw init) separately from upgrade. Spike A: regex audit of what 'policy/' and '.context/arcs/' references already exist in the upgrade/init code paths to identify all the surfaces that need the bootstrap call.
+
+Evidence:
+
+**Date**: 2026-06-06T12:29:24Z
 
 ## Updates
 
@@ -288,3 +298,34 @@ Every fresh consumer of fw upgrade/init hits ERROR: policy file not found: <PROJ
 
 ### 2026-06-06T12:17:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-06T12:29:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Every fresh consumer of fw upgrade/init hits ERROR: policy file not found: <PROJECT>/policy/value-drivers.yaml the first time anything touches BVP, and 'fw bvp arcs' silently returns empty because .context/arcs/ never gets created. The error message at lib/bvp.sh:133 also points consumers at 'fw bvp driver --init once T-1920 ships' — T-1920 shipped 2026-06-XX with the mutating verbs (weight/driver --add/--remove) but the --init flag was descoped or never built, so the error is a dead reference. Operator confirmed live: /opt/050-email-archive on a vendored 1.6.260 consumer hits this exact failure mode (12 task files carry bvp_scores frontmatter from upstream framework-dev leakage, not consumer scoring runs). Recommendation GO because: (a) bug is operator-confirmed and structural, every consumer hits it; (b) the fix shape is constrained enough to be evaluable now (idempotent bootstrap in fw init for greenfield + fw upgrade/vendor for adoption); (c) sovereignty-respecting because consumer can opt-out or override drivers post-bootstrap; (d) clean composition with T-1633/T-1635 consumer-fresh-machine simulation gate which would have caught this had it covered the BVP surface. Build slices to negotiate post-GO: (1) ship 'fw bvp driver --init' for explicit consumer bootstrap, (2) wire init/upgrade/vendor to call it idempotently, (3) seed .context/arcs/ directory with a README, (4) fix the stale error message, (5) consider an opt-out flag for projects that don't want BVP at all, (6) treat existing-codebase ingest (non-greenfield fw init) separately from upgrade. Spike A: regex audit of what 'policy/' and '.context/arcs/' references already exist in the upgrade/init code paths to identify all the surfaces that need the bootstrap call.
+
+Evidence:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-30359928
+- **Timestamp:** 2026-06-06T12:29:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-06T12:29:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
