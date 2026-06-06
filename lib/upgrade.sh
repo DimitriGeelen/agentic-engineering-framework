@@ -129,12 +129,20 @@ do_upgrade() {
     # operator rolling consumer back to an older framework version on purpose).
     # Default refuses ahead→behind direction with diagnostic + T-1828 context.
     local force_downgrade=false
+    # T-2093 F4 (T-2078 V1-B): opt-in strict mode — any per-step non-zero
+    # aborts the upgrade and emits a PARTIAL diagnostic. Off by default for
+    # backward-compat; the same per-step counter (failed_steps) drives a
+    # non-blocking footer warning when off.
+    local strict=false
+    local failed_steps=0
+    local _strict_abort_step=""
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --force) force=true; shift ;;
             --force-downgrade) force_downgrade=true; shift ;;
+            --strict) strict=true; shift ;;
             --dedupe-user-hooks) dedupe_user_hooks=true; shift ;;
             --from-upstream)
                 from_upstream="$2"; shift 2 ;;
@@ -151,6 +159,10 @@ do_upgrade() {
                 echo "Options:"
                 echo "  --dry-run               Show what would change without modifying files"
                 echo "  --force                 Overwrite even if project files are newer"
+                echo "  --strict                Abort on the first per-step failure with a PARTIAL"
+                echo "                          diagnostic (T-2093 V1-B, F4). Without this flag the"
+                echo "                          upgrade continues on step failure (current behaviour)"
+                echo "                          but a PARTIAL footer surfaces the count."
                 echo "  --force-downgrade       Allow upgrade to rewrite the consumer's pinned version"
                 echo "                          to a LOWER framework version (T-1839 guard bypass)."
                 echo "                          Default: refuse with diagnostic referencing T-1828."
@@ -652,10 +664,26 @@ CRONREGEOF
 
     local vendored_dir="$target_dir/.agentic-framework"
     if [ -d "$vendored_dir" ]; then
+        # T-2093 F5 fix: capture do_vendor's exit via PIPESTATUS — the pipe
+        # through `sed` always exits 0 and used to mask vendor failures
+        # (T-1109's enumeration-divergence class). Without this, a vendor
+        # source missing a file produced a silent "Upgrade Complete".
+        local _vendor_rc=0
         if [ "$dry_run" = true ]; then
             do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" --dry-run 2>&1 | sed 's/^/  /'
+            _vendor_rc=${PIPESTATUS[0]}
         else
             do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" 2>&1 | sed 's/^/  /'
+            _vendor_rc=${PIPESTATUS[0]}
+        fi
+        if [ "$_vendor_rc" -ne 0 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  do_vendor exited $_vendor_rc — vendor sync may be partial (F5)"
+            failed_steps=$((failed_steps + 1))
+            if [ "$strict" = true ]; then
+                echo -e "  ${RED}STRICT ABORT${NC}  step 4b (vendor) failed — see T-2093 F4 + spec §F4"
+                _strict_abort_step="4b (vendor)"
+                return 1
+            fi
         fi
         changes=$((changes + 1))
     else
@@ -883,10 +911,13 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
                 echo -e "  ${CYAN}WOULD UPDATE${NC}  $reason"
             else
                 cp "$settings_file" "${settings_file}.bak"
-                local save_force="${force:-false}"
-                force=true
-                generate_claude_code_config "$target_dir"
-                force="$save_force"
+                # T-2093 F6 (T-2078 V1-B): subshell-scope the force=true override.
+                # The old save_force / restore-on-exit pattern leaked force=true into
+                # the rest of do_upgrade if generate_claude_code_config exited via
+                # set -e mid-function — a stuck-on force=true crosses governance
+                # (the flag is a sovereignty bypass). Subshell makes the override
+                # impossible to leak; the parent's `force` stays untouched.
+                ( force=true; generate_claude_code_config "$target_dir" )
                 echo -e "  ${GREEN}UPDATED${NC}  Hooks regenerated ($reason). Backup: settings.json.bak"
             fi
         else
@@ -959,9 +990,9 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
         if [ "$dry_run" = true ]; then
             echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/settings.json ($fw_hook_count hooks)"
         else
-            force=true
-            generate_claude_code_config "$target_dir"
-            force=false
+            # T-2093 F6 (T-2078 V1-B): subshell-scope force=true (see sibling
+            # site ~line 916). Same mutation-leak risk; same fix.
+            ( force=true; generate_claude_code_config "$target_dir" )
             echo -e "  ${GREEN}CREATED${NC}  .claude/settings.json ($fw_hook_count hooks)"
         fi
     fi
@@ -1345,7 +1376,15 @@ EOF
         echo ""
         echo "Run without --dry-run to apply changes."
     else
-        if [ "$changes" -gt 0 ]; then
+        # T-2093 F4 (T-2078 V1-B): PARTIAL footer when failures slipped through
+        # under non-strict mode. Strict mode already aborted inside the failing
+        # step; this footer is the advisory equivalent — the operator sees the
+        # banner and can re-run with --strict to fail-fast next time.
+        if [ "$failed_steps" -gt 0 ] && [ "$strict" != true ]; then
+            echo -e "${YELLOW}=== Upgrade PARTIAL ===${NC}"
+            echo "  $failed_steps step(s) reported failure (non-strict mode — continue)"
+            echo "  Re-run with ${BOLD}--strict${NC} to fail-fast on the first per-step failure."
+        elif [ "$changes" -gt 0 ]; then
             echo -e "${GREEN}=== Upgrade Complete ===${NC}"
         else
             echo -e "${GREEN}=== Already Up To Date ===${NC}"
@@ -1353,6 +1392,9 @@ EOF
         echo ""
         echo "  $changes change(s) applied"
         echo "  $skipped item(s) skipped"
+        if [ "$failed_steps" -gt 0 ]; then
+            echo "  $failed_steps step(s) failed"
+        fi
 
         if [ "$changes" -gt 0 ]; then
             echo ""

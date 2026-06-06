@@ -8,7 +8,7 @@ description: >
   fw state, restore on failure). Spec: docs/reports/T-2078-fw-upgrade-reliability-review.md
   F4-F6. Sequence after V1-a (regression net first).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -20,7 +20,7 @@ related_tasks: [T-2078, T-2092]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:58:28Z
-last_update: 2026-06-06T13:27:21Z
+last_update: 2026-06-06T13:34:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,14 +62,31 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+V1-B of the T-2078 GO'd fw-upgrade reliability hardening — closes F4 (exit-code
+inconsistency + no rollback), F5 (`do_vendor 2>&1 | sed` swallows exit), and
+F6 (`force=true` mutation not subshell-scoped). Substrate for V1-C/V1-D.
+
+Field evidence reinforcing this slice (T-2231): ring20-dashboard at
+192.168.10.121 sits pinned at 1.6.7 vs installed 1.6.260, with the operator
+unable to surface the partial-state via current upgrade behaviour. F5 is
+where invisible failures originate.
+
+Spec: `docs/reports/T-2078-fw-upgrade-reliability-review.md` §F4-F6.
+Sibling slices: V1-C (T-2094, pre-flight + post-upgrade `fw doctor`),
+V1-D (T-2095, self-vendor extraction).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] F5 — PIPESTATUS capture: `lib/upgrade.sh:656` (dry-run branch) and `:658` (live branch) read `${PIPESTATUS[0]}` immediately after the `do_vendor | sed` pipe; failure (non-zero) is surfaced as a WARN line and increments a `failed_steps` counter
+- [ ] F6 — subshell-scoped force: `generate_claude_code_config "$target_dir"` is invoked under a subshell scoping the `force=true` override so an in-call exit cannot leak `force=true` into the rest of `do_upgrade`
+- [ ] F4 — `--strict` flag added to `do_upgrade` arg parser + `--help` (opt-in, off by default for backward-compat)
+- [ ] F4 — under `--strict`, any per-step `failed_steps++` increment causes `do_upgrade` to abort with a PARTIAL diagnostic that names the failed step
+- [ ] F4 — without `--strict`, failure counters still accumulate; the existing footer prints a PARTIAL warning line when `failed_steps > 0` (advisory, exit 0 preserved for backward-compat)
+- [ ] `lib/upgrade.sh` passes `bash -n` syntax check
+- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` passes unchanged (no regression on T-1633/T-1635 gate)
+- [ ] New bats `tests/unit/t2093_upgrade_strict_exit_codes.bats` covers: F5 PIPESTATUS surfaces vendor failure; F6 force=true is subshell-scoped; F4 `--strict` aborts on step failure; F4 non-strict mode prints PARTIAL footer when failures counted; `--help` advertises `--strict`
+- [ ] No `### Agent` AC is ticked until its corresponding work is in place (T-1831 C-4 progressive ticking)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -134,6 +151,14 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bash -n lib/upgrade.sh
+grep -q 'PIPESTATUS\[0\]' lib/upgrade.sh
+grep -q -- '--strict' lib/upgrade.sh
+grep -qE '\(\s*force=true\s*;' lib/upgrade.sh
+out=$(bin/fw upgrade --help 2>&1); echo "$out" | grep -q -- "--strict"
+bats tests/unit/t2093_upgrade_strict_exit_codes.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
 
 ## RCA
 
@@ -205,3 +230,6 @@ bvp_scores_proposed:
 
 ### 2026-06-06T13:27:21Z — status-update [task-update-agent]
 - **Change:** horizon: later → now
+
+### 2026-06-06T13:34:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
