@@ -1,13 +1,17 @@
 ---
 id: T-2094
-name: "V1-c fw upgrade: pre-flight tooling check + post-upgrade fw doctor advisory (T-2078 GO, closes F8/F10)"
+name: "V1-c fw upgrade: pre-flight tooling check + post-upgrade fw doctor advisory
+  (T-2078 GO, closes F8/F10)"
 description: >
-  V1 slice from T-2078 GO. Closes F8, F10: upgrade.sh doesn't validate the host has required tooling before mutating, and doesn't suggest fw doctor after completion. Add pre-flight check (jq, python3, etc.) and post-upgrade advisory line. Spec: docs/reports/T-2078-fw-upgrade-reliability-review.md F8/F10. Sequence after V1-b.
+  V1 slice from T-2078 GO. Closes F8, F10: upgrade.sh doesn't validate the host has
+  required tooling before mutating, and doesn't suggest fw doctor after completion.
+  Add pre-flight check (jq, python3, etc.) and post-upgrade advisory line. Spec: docs/reports/T-2078-fw-upgrade-reliability-review.md
+  F8/F10. Sequence after V1-b.
 
 status: captured
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [fw-upgrade, reliability, v1, T-2078-slice]
 components: []
 related_tasks: [T-2078, T-2092]
@@ -16,8 +20,8 @@ related_tasks: [T-2078, T-2092]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:58:34Z
-last_update: 2026-05-29T11:58:34Z
-date_finished: null
+last_update: 2026-06-06T13:27:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +32,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2094: V1-c fw upgrade: pre-flight tooling check + post-upgrade fw doctor advisory (T-2078 GO, closes F8/F10)
@@ -174,3 +202,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2094-v1-c-fw-upgrade-pre-flight-tooling-check.md
 - **Context:** Initial task creation
+
+### 2026-06-06T13:27:33Z — status-update [task-update-agent]
+- **Change:** horizon: later → now

@@ -84,6 +84,53 @@ questions that resolve under any GO path.
 disposition table. IW-1 / IW-3 / IW-5 block on the operator's paste of the
 .121do failure output. IW-2 / IW-4 / IW-6 are recommendation-ready.)
 
+## Update — 2026-06-06T13:25Z: Operator GO recorded + .121do classified
+
+**Operator decision (Watchtower 2026-06-06T13:14:29Z, commit `28490709c`):** GO.
+
+**.121do shorthand decoded (no operator paste required):** `192.168.10.121` is the **ring20-dashboard host** (per PL-001-004 + `fw recall "121"`). The "do" suffix is `dashboard → do`. The framework already had a live TermLink remote session (`tl-tfjl34mm` on hub `ring20-dashboard:9100`, state=ready); probing it reproduced the failure exactly.
+
+**Live failure (reproduced via `termlink remote exec`):**
+
+```
+$ cd /root/ring20-dashboard && .agentic-framework/bin/fw upgrade
+ERROR: fw upgrade invoked from inside the consumer's vendored framework
+  FRAMEWORK_ROOT: /root/ring20-dashboard/.agentic-framework
+  target_dir:     /root/ring20-dashboard
+  Vendored copy:  /root/ring20-dashboard/.agentic-framework
+  Source and target collapse — do_vendor would self-copy and corrupt state.
+  No changes made.
+Run from an upstream framework repo with explicit target:
+  cd /path/to/agentic-engineering-framework && bin/fw upgrade /root/ring20-dashboard
+```
+
+**fw doctor on ring20-dashboard:**
+
+```
+WARN  Version mismatch: pinned=1.6.7 installed=1.6.260
+WARN  [host] Duplicate framework hook(s) in /root/.claude/settings.json: 14 overlap
+```
+
+The `.framework.yaml` pin says `1.6.7` (init 2026-04-08); installed is `1.6.260`. The operator has been trying to `fw upgrade` from inside the consumer; the vendored shim correctly refuses to self-copy (T-680 collapse check), so the pin stays stuck **253 versions behind** while the current install reports a refreshed shim.
+
+### IW disposition (now resolved with wire-level evidence)
+
+- **IW-1 — answered (confidence 3):** .121do failure IS T-1542's class — `fw upgrade` invoked from inside a consumer's vendored framework, source/target collapse refused, no progress. The vendored shim's refusal is structurally **correct** (preventing self-corruption per do_vendor's T-680 collapse check); the UX gap is that the operator has no in-consumer path to bump the pin and re-vendor.
+- **IW-3 — answered (confidence 2):** .121do is **NOT** a new class. It is a textbook recurrence of T-1542's existing started-work scope (40 days open).
+- **IW-5 — answered (confidence 3):** T-1542 and the V1-B/C/D chain are **the right fix**. Specifically T-2095 (V1-D — self-vendor extraction into a separate verb) directly addresses the in-consumer upgrade path the operator wants. T-1542 is **not subsumed** by V1-B/C/D — it is the **root cause** they share; closing T-1542 means shipping T-2095 (at minimum).
+- **IW-2** (sequential vs parallel ship pace) — remains operator-call.
+- **IW-4** (captured-prevention-stalled audit detector) — answered, agent-buildable as own slice post-V1.
+- **IW-6** (T-2078 inception_decisions/unlocks_inception_decision traceability) — deferred; addressed in a follow-up audit slice.
+
+### Recovery options for ring20-dashboard (operator authorisation needed)
+
+The framework cannot edit cross-repo. The available recoveries:
+
+- **(A) Upstream-side upgrade from this host** (one-shot): `cd /opt/999-Agentic-Engineering-Framework && bin/fw upgrade /root/ring20-dashboard` — this is what the consumer's error already recommends. Cross-machine variant via TermLink: cross-machine, destructive shape — **requires operator GO** (cd /opt/999-Agentic-Engineering-Framework && bin/fw upgrade target via the TermLink-routed shim).
+- **(B) Wait for V1-D (T-2095) to ship**, then the consumer can self-upgrade via the new verb. Right durable fix; takes a build cycle.
+
+The agent's recommendation: ship V1-B → V1-C → V1-D under the existing T-2231 GO (build path enumerated above), use (A) for ring20-dashboard as a one-shot recovery while V1-D is in flight.
+
 ## Dialogue Log
 
 ### 2026-06-06 — Operator bug report (verbatim)
