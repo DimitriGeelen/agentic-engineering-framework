@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2228: T-2225 Slice 3 — production-tool skip-list for T-Test-* sentinel namespace
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T11:34:21Z
+# ============================================================================
+
+task_id: T-2228
+task_name: "T-2225 Slice 3 — production-tool skip-list for T-Test-* sentinel namespace"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-06T11:08:10Z
+completed: 2026-06-06T11:31:43Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-06T13:28:46+02:00
+last_commit: 2026-06-06T13:28:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2225 Slice 3 — production-tool skip-list for T-Test-NNN sentinels
+
+# Key outcomes
+outcomes:
+  - '`is_test_sentinel(name)` Python helper added to `web/shared.py` with docstring referencing T-2225/T-2228 and the `T-Test-` prefix rule'
+  - '`_is_test_sentinel` bash helper added to `agents/audit/audit.sh` matching the same `T-Test-*` basename rule'
+  - 'All 3 `T-*.md` / `T-*.yaml` glob sites in `web/shared.py` filter via `is_test_sentinel`'
+  - '`agents/audit/audit.sh` task-counting + episodic + active/completed loop glob sites filter via `_is_test_sentinel` (key audit surfaces only — minimal-invasive)'
+  - '`lib/evolution_log.sh` `T-*.md` find filters via `-not -name ''T-Test-*''` (or equivalent)'
+  - '`agents/docgen/generate_article.py` + `agents/docgen/generate_component.py` `T-*.yaml` glob sites filter via `is_test_sentinel`'
+  - 'New unit test `tests/unit/test_t2228_sentinel_skip.py` proves a leaked `.tasks/active/T-Test-001.md` is invisible to `web/shared.py` listings (tmp_project_root pattern)'
+  - 'New bats test exercises that `agents/audit/audit.sh` task-count does not include leaked `T-Test-*` files'
+  - 'Existing web suite still 145/145 PASS (no Slice 1/2 regression)'
+  - 'Existing reviewer suite still PASS for the changed files (`fw reviewer T-2228`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - 'agents/docgen/generate_article.py'
+  - 'agents/docgen/generate_component.py'
+  - 'lib/evolution_log.sh'
+  - '.tasks/active/T-2228-t-2225-slice-3--production-tool-skip-lis.md'
+  - 'tests/unit/t2228_audit_sentinel_skip.bats'
+  - 'tests/unit/test_t2228_sentinel_skip.py'
+  - 'web/shared.py'
+  - 'web/test_app.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T13:28:46"
+    action: "T-2228: T-2225 Slice 3 — production-tool skip-list for T-Test-NNN sentinels"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 23
+  commits: 1
+  files_changed: 9
+  lines_added: 577
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2228-t-2225-slice-3--production-tool-skip-lis.md
+generated_by: context-agent-hybrid

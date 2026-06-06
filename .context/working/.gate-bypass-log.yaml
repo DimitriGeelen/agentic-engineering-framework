@@ -2491,3 +2491,197 @@ FW_SWITCH_FOCUS=1 git commit -m "T-2168 + T-2169: drop duplica'
   target: 'T-2177'
   command: 'git add -- .context/project/learnings.yaml .context/working/ 2>/dev/null; git status --short | grep -E "^\s*[MA]\s" | head -5; echo "---"
 FW_SWITCH_FOCUS=1 git commit -m "T-2177: capture L-452 — det'
+- timestamp: '2026-06-05T19:15:54Z'
+  task: 'T-2209'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-05T19:46:20Z'
+  task: 'T-2209'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-05T19:49:27Z'
+  task: 'T-2209'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'diagnostic retry'
+- timestamp: '2026-06-05T20:00:50Z'
+  task: 'T-2217'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-05T20:01:57Z'
+  task: 'T-2217'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'diagnostic — see what blocks'
+- timestamp: '2026-06-05T20:04:35Z'
+  task: 'T-2217'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Operator GO recorded via Watchtower; RC5 mid-RCA fix applied (IW-4 rationale rewording)'
+- timestamp: '2026-06-05T20:05:50Z'
+  task: 'T-2209'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2217'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2217: close — operator GO recorded; mid-RCA RC5 surfaced + worked around
+
+Operator decided GO via Watchtower (commit e2df53f32). Side-effect leg
+(upd'
+- timestamp: '2026-06-05T20:25:40Z'
+  task: 'T-2209'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2218'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2218: anchor IW-N regex in update-task.sh disposition gate (T-2217 Slice 3, RC5)
+
+Closes the recursive parser bug surfaced in T-2217 §8: the unanchored
+IW-[0-9]+ br'
+- timestamp: '2026-06-05T20:34:53Z'
+  task: 'T-2219'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2218'
+  command: 'bin/fw context add-learning "Unanchored alternation in question-marker regex matches the marker name in prose, false-flushing the prior blocks accumulated state. Specifically: (IW-[0-9]+|^[[:space:]'
+- timestamp: '2026-06-05T20:45:57Z'
+  task: 'T-2219'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2220'
+  command: 'bin/fw task update T-2220 --horizon later --switch-focus 2>&1 | tail -3
+echo "---"
+ls .tasks/active/T-2220-* 2>&1'
+- timestamp: '2026-06-05T20:46:11Z'
+  task: 'T-2219'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2220'
+  command: 'git add .tasks/active/T-2220-*.md 2>&1
+FW_SWITCH_FOCUS=1 git commit -m "T-2220: file T-2217 Slice 2 Playwright contract test as captured+later
+
+Completes the T-2217 GO-scope decomposition: Slice 1 (T-'
+- timestamp: '2026-06-05T20:52:39Z'
+  task: 'T-2209'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-05T22:06:24Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2222'
+  command: 'bin/fw context add-learning "When scoping a class-closure task (widening, refactor, audit-WARN reduction), live-grep the class BEFORE writing the AC count. OBS captures are heuristic and may be off-by'
+- timestamp: '2026-06-05T22:06:38Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2222'
+  command: 'bin/fw context add-learning "Reviewer human-ac-mechanical-signal FP on genuine [REVIEW] ACs is defused by REPHRASING the Expected clause, not by overriding the detector. The heuristic matches litera'
+- timestamp: '2026-06-05T22:07:36Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2222'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2222: capture L-458 (live-grep class scoping) + L-459 (recast Expected vs override reviewer FP)
+
+Two learnings extracted from T-2222 closure round:
+
+L-458 — When s'
+- timestamp: '2026-06-05T23:18:54Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2223'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2223: closure metadata + OBS-050 dismissal
+
+- Task file moved active/ → completed/
+- Episodic generated (5 ACs, 1 commit, 13 min duration)
+- OBS-050 dismissed (mal'
+- timestamp: '2026-06-05T23:23:21Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2223'
+  command: 'bin/fw context add-learning "Actionable-survey CLI defaults should filter past-tense status rows (work-completed/done/archived) by default; archival sweep is an explicit --include-completed opt-in. Th'
+- timestamp: '2026-06-05T23:23:56Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2223'
+  command: 'git add -- .context/project/learnings.yaml && FW_SWITCH_FOCUS=1 git commit -m "T-2223: capture L-460 — actionable-survey default ≠ archival sweep
+
+Sovereignty parity with T-1938 --include-proposed'
+- timestamp: '2026-06-06T06:12:33Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2224'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2224: closure metadata + episodic
+
+Move T-2224 to completed/, episodic auto-generated.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>" 2>&1 | tail -5'
+- timestamp: '2026-06-06T06:20:04Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2119'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2119: formalize partial-complete handoff (status:work-completed, owner:human)
+
+Agent-side work was already done in a prior session (4/4 Agent ACs ticked,
+RCA + Recom'
+- timestamp: '2026-06-06T06:20:28Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2119'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2119: formalize partial-complete handoff (status:work-completed, owner:human)
+
+Agent-side work was already done in a prior session (4/4 Agent ACs ticked,
+RCA + Recom'
+- timestamp: '2026-06-06T06:26:16Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2176'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2176: formalize partial-complete handoff + retire stale audit pin
+
+Stale partial-complete from 2026-06-02 batch — all 6 Agent ACs ticked,
+RCA + Recommendation writ'
+- timestamp: '2026-06-06T08:54:03Z'
+  task: 'T-2225'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-06T09:24:43Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2226'
+  command: 'git add .tasks/active/T-2226-t-2225-slice-1-t-test-nnn-sentinel-names.md .tasks/completed/T-2226-t-2225-slice-1-t-test-nnn-sentinel-names.md .context/episodic/T-2226.yaml && FW_SWITCH_FOCUS=1 git comm'
+- timestamp: '2026-06-06T09:25:02Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2226'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2226: closure metadata — move to completed/ + episodic
+
+6/6 Agent ACs ticked + 6/6 Verification gate PASS + reviewer R-02ec481b PASS.
+T-2225 Slice 1 (sentinel name'
+- timestamp: '2026-06-06T09:47:34Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2227'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2227: closure metadata — move to completed/ + episodic
+
+7/7 Agent ACs ticked + 4/4 Verification gate PASS + reviewer PASS.
+T-2225 Slice 2 (pytest invariants for se'
+- timestamp: '2026-06-06T11:34:15Z'
+  task: 'T-2228'
+  flag: '--skip-render-review'
+  caller: 'check_render_surface_human_ac: Pure filter logic on web/shared.py — added is_test_sentinel() string-prefix helper and 3 call sites that exclude T-Test-NNN entries from listings. Zero visual surface (no HTML/template/CSS/markup edits). The render-surface heuristic is correct to flag web/shared.py edits, but this specific change has no rendered-output dimension to review — only a behavioural assertion (sentinels filtered) which is covered by the new pytest invariant + Slice-1 regression test. T-2143 audience rule: this AC''s audience would be the agent verifying filter behaviour, not the operator inspecting layout rhythm.'
+  reason: ''

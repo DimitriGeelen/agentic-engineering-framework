@@ -1941,3 +1941,10 @@ decisions:
     date: 2026-06-02
     task: T-2179
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-280
+    decision: "Inline module-level helper in tasks.py (mirrors cockpit.py:255-258)."
+    scope: project
+    date: 2026-06-05
+    task: T-2222
+    rationale: "Auto-captured from task file on completion"
