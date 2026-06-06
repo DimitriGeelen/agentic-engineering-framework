@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2230: T-2229 Slice 1 — fw bvp driver --init verb (consumer policy bootstrap)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-06T13:01:29Z
+# ============================================================================
+
+task_id: T-2230
+task_name: "T-2229 Slice 1 — fw bvp driver --init verb (consumer policy bootstrap)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-06T12:52:07Z
+completed: 2026-06-06T13:01:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-06T15:01:06+02:00
+last_commit: 2026-06-06T15:01:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship fw bvp driver --init (T-2229 Slice 1)
+
+# Key outcomes
+outcomes:
+  - '`_driver_init()` function added to lib/bvp.sh inside the Python heredoc engine'
+  - '`cmd_driver()` routes `--init` to `_driver_init()` (before --add / --remove)'
+  - '`FRAMEWORK_ROOT` is bound from `os.environ` inside the Python engine (needed to locate the template)'
+  - 'When `policy/value-drivers.yaml` does not exist, `fw bvp driver --init` copies the framework template and exits 0'
+  - 'When the target file already exists, `fw bvp driver --init` is idempotent — no overwrite, exit 0, helpful message'
+  - '`--force` overrides the idempotent guard and overwrites the target'
+  - 'After `--init`, `fw bvp` (rank) no longer emits "policy file not found"'
+  - 'Error message at `lib/bvp.sh:133` no longer says "once T-1920 ships" — points at the working verb'
+  - '`fw bvp driver --help` (or fallback usage) advertises `--init [--force]`'
+  - 'New bats file `tests/unit/t2230_bvp_driver_init.bats` covers: create path, idempotent path, force path, error-message rewrite, help advertisement'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-2230-t-2229-slice-1--fw-bvp-driver---init-ver.md'
+  - 'tests/unit/t2230_bvp_driver_init.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T15:01:06"
+    action: "T-2230: ship fw bvp driver --init (T-2229 Slice 1)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 3
+  lines_added: 450
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2230-t-2229-slice-1--fw-bvp-driver---init-ver.md
+generated_by: context-agent-hybrid
