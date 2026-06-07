@@ -1,25 +1,41 @@
-timestamp: 2026-06-07T19:00:01Z
+timestamp: 2026-06-07T23:00:01Z
 findings:
-  - id: D1
+  - id: D4
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/1956)"
-  - id: D2
+    check: "D4: Audit trend — insufficient history (<3 entries)"
+  - id: D5
     level: WARN
-    check: "D2: Human review queue — 60 task(s) waiting >14d: T-1773(24d) T-1774(24d) T-1775(24d) T-1792(25d) T-1794(25d) T-1795(25d) T-1796(25d) T-1797(25d) T-1799(25d) T-1801(25d) T-1802(25d) T-1803(25d) T-1805(25d) T-1806(25d) T-1807(25d) T-1808(25d) T-1810(25d) T-1811(25d) T-1818(24d) T-1827(16d) T-1834(23d) T-1842(16d) T-1843(16d) T-1844(16d) T-1891(20d) T-1909(18d) T-1910(18d) T-1911(18d) T-1928(19d) T-1929(19d) T-1930(19d) T-1933(19d) T-1934(18d) T-1935(17d) T-1936(17d) T-1939(18d) T-1947(18d) T-1951(16d) T-1954(18d) T-1955(18d) T-1957(18d) T-1960(17d) T-1961(17d) T-1963(17d) T-1964(18d) T-1965(18d) T-1968(17d) T-1969(17d) T-1970(17d) T-1971(17d) T-1976(16d) T-1977(17d) T-1978(16d) T-1980(16d) T-1982(17d) T-1984(16d) T-1985(16d) T-1988(15d) T-1991(15d) T-1999(15d)"
-    mitigation: "Review with: fw task verify"
-  - id: D8
-    level: PASS
-    check: "D8: Handover quality — no [TODO] in LATEST.md"
-  - id: D10
+    check: "D5: Task lifecycle — 14 anomaly(s): T-1820(24d-active) T-544(78d-active) T-1700(35d-active) T-801(65d-active) T-1542(41d-active) T-332(94d-active) T-464(87d-active) T-334(94d-active) T-1274(52d-active) T-1687(36d-active) (+4 more)"
+    mitigation: "Review flagged tasks for process issues"
+  - id: D13
     level: WARN
-    check: "D10: Decision-without-dialogue — 4 task(s): T-1902 T-1846 T-1915 T-1905"
-    mitigation: "Review flagged tasks — human dialogue may have been skipped"
-  - id: D11
+    check: "D13: Inception limbo — 9 task(s): A=5/B=4 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2137(B) T-2201(B) T-2203(B) (+1 more)"
+    mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
+  - id: D3
+    level: WARN
+    check: "D3: Commit velocity — WARN drop today=2 avg=43 ratio=0.0x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+  - id: D7
     level: PASS
-    check: "D11: Gap register staleness — all gaps fresh"
+    check: "D7: Commit bunching — none (PASS 40_commits_24h_no_bunching)"
+  - id: D6
+    level: PASS
+    check: "D6: Completion velocity — normal (PASS recent=12.3 earlier=11.0)"
+  - id: D12
+    level: PASS
+    check: "D12: Bypass log — no log file"
+  - id: D9
+    level: PASS
+    check: "D9: Control drift — normal (PASS 10_audits_checked)"
+  - id: D14
+    level: PASS
+    check: "D14: Empty inception Recommendation — none (PASS no_empty_recommendations)"
+  - id: D15
+    level: PASS
+    check: "D15: Inception limbo state — none (PASS no_limbo)"
 
 summary:
-  pass: 3
-  warn: 2
+  pass: 7
+  warn: 3
   fail: 0
-  total: 5
+  total: 10

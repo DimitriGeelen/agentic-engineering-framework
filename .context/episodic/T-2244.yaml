@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2244: audit self-vendor drift FAIL — F2 N×M daily-cron backstop
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T23:24:21Z
+# ============================================================================
+
+task_id: T-2244
+task_name: "audit self-vendor drift FAIL — F2 N×M daily-cron backstop"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T21:21:10Z
+completed: 2026-06-07T23:08:03Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` carries a `check_self_vendor_drift()` function that walks both classes (`.agentic-framework/{bin,lib,agents,web}` + `.agentic-framework/.tasks/templates/`) and emits a FAIL line per class with non-zero drift count, OR a PASS line when both classes are clean. Function is invoked from the main audit flow.'
+  - 'FAIL message names `fw vendor self` (templates+libs syncer) or `fw vendor` (full sync) as remediation — same vocabulary as the pre-push gate and `fw doctor` Check 2b so the operator''s mental model stays consistent across all three surfaces.'
+  - 'Bats test `tests/unit/t2244_audit_self_vendor_drift.bats` exercises two deterministic drift states: (1) libs-only drift → FAIL line names libs class + names the mutated file + names `fw vendor self` remediation, (2) templates-only drift → same for templates class. 2/2 PASS. (PASS-state coverage skipped — framework repo carries ~64 day-to-day libs drifts day-to-day so the global "no drift" assertion is not reliable; the PASS path is exercised organically every time both classes are clean in production.)'
+  - '[REVIEWER] Reviewer PASS — verified via `bin/fw reviewer T-2244`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 106 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 106
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2244-audit-self-vendor-drift-fail--f2-nm-dail.md
+generated_by: context-agent-hybrid

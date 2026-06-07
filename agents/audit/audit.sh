@@ -1499,6 +1499,73 @@ if [ -x "$LARGE_FILE_SCANNER" ]; then
     fi
 fi
 
+# T-2244: Self-vendor drift FAIL (F2 N×M daily-cron backstop). Mirrors
+# `bin/fw doctor` Check 2b (T-1434 + T-2243) and the pre-push gate
+# (T-2240/T-2241). Audit is the third surface — daily cron catches any
+# drift that slipped past the developer-facing gates (e.g.
+# FW_SKIP_SELF_VENDOR_CHECK=1 push followed by forgotten follow-up).
+#
+# Only runs when PROJECT_ROOT == FRAMEWORK_ROOT (framework-repo audit).
+# On consumer projects, .agentic-framework/ IS the source, not vendored.
+# Per-class counters (libs + templates) so neither class can bury the
+# other in the FAIL report — same pattern as T-2243 doctor leg.
+check_self_vendor_drift() {
+    if [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
+        return 0
+    fi
+    if [ ! -d "$FRAMEWORK_ROOT/.agentic-framework" ]; then
+        return 0
+    fi
+
+    local _sv_libs=0 _sv_tpl=0
+    local _sv_libs_list="" _sv_tpl_list=""
+
+    # libs class: .agentic-framework/{bin,lib,agents,web}/* vs source
+    while IFS= read -r _vf; do
+        [ -f "$_vf" ] || continue
+        local _rel="${_vf#$FRAMEWORK_ROOT/.agentic-framework/}"
+        local _src="$FRAMEWORK_ROOT/$_rel"
+        if [ -f "$_src" ] && ! cmp -s "$_vf" "$_src" 2>/dev/null; then
+            _sv_libs=$((_sv_libs + 1))
+            if [ "$_sv_libs" -le 5 ]; then
+                _sv_libs_list="$_sv_libs_list $_rel"
+            fi
+        fi
+    done < <(find "$FRAMEWORK_ROOT/.agentic-framework/bin" "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" \) 2>/dev/null)
+
+    # templates class: .agentic-framework/.tasks/templates/*.md vs source
+    if [ -d "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" ]; then
+        while IFS= read -r _vf; do
+            [ -f "$_vf" ] || continue
+            local _rel="${_vf#$FRAMEWORK_ROOT/.agentic-framework/}"
+            local _src="$FRAMEWORK_ROOT/$_rel"
+            if [ -f "$_src" ] && ! cmp -s "$_vf" "$_src" 2>/dev/null; then
+                _sv_tpl=$((_sv_tpl + 1))
+                if [ "$_sv_tpl" -le 5 ]; then
+                    _sv_tpl_list="$_sv_tpl_list $_rel"
+                fi
+            fi
+        done < <(find "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" -type f -name "*.md" 2>/dev/null)
+    fi
+
+    if [ "$_sv_libs" -eq 0 ] && [ "$_sv_tpl" -eq 0 ]; then
+        pass "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+        return 0
+    fi
+
+    if [ "$_sv_libs" -gt 0 ]; then
+        fail "Self-vendor drift: libs class — $_sv_libs file(s) out of sync (T-2244)" \
+             "First $([ $_sv_libs -gt 5 ] && echo 5 || echo $_sv_libs):$_sv_libs_list" \
+             "Run: fw vendor self  (sync .agentic-framework/ libs with source)"
+    fi
+    if [ "$_sv_tpl" -gt 0 ]; then
+        fail "Self-vendor drift: templates class — $_sv_tpl file(s) out of sync (T-2244)" \
+             "First $([ $_sv_tpl -gt 5 ] && echo 5 || echo $_sv_tpl):$_sv_tpl_list" \
+             "Run: fw vendor self  (sync .agentic-framework/ templates with source)"
+    fi
+}
+check_self_vendor_drift
+
 echo ""
 fi # end structure
 

@@ -2882,3 +2882,13 @@ T-2238: documents that fabric enrich is a no-op against the 82 edgeless cards
   command: 'git add .tasks/active/T-2240-wire-fw-vendor-self---dry-run-into-pre-p.md .context/working/focus.yaml
 FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
 T-2240: file pre-push self-vendor wiring follow-on ('
+- timestamp: '2026-06-07T21:12:16Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2243'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2243: closure metadata + episodic (F2 N×M doctor inspection surface)
+
+Closes the any-time inspection asymmetry left by T-2240/T-2241: fw doctor
+Check '

@@ -12440,3 +12440,193 @@ scan_id: R-a3ee9cd1
 task_id: T-2239
 payload:
   task_file: .tasks/active/T-2239-selfvendorlibs-dry-run-message-says-sync.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T20:54:23Z'
+scan_id: R-8360819b
+task_id: T-2243
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T20:54:23Z'
+scan_id: R-8360819b
+task_id: T-2243
+payload:
+  task_file: .tasks/active/T-2243-fw-doctor-self-vendor-drift-warn--f2-nm-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T20:55:19Z'
+scan_id: R-98aac8e4
+task_id: T-2243
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T20:55:19Z'
+scan_id: R-98aac8e4
+task_id: T-2243
+payload:
+  task_file: .tasks/active/T-2243-fw-doctor-self-vendor-drift-warn--f2-nm-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T21:02:37Z'
+scan_id: R-06732a8d
+task_id: T-2243
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T21:02:37Z'
+scan_id: R-06732a8d
+task_id: T-2243
+payload:
+  task_file: .tasks/active/T-2243-fw-doctor-self-vendor-drift-warn--f2-nm-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T21:11:07Z'
+scan_id: R-787609d3
+task_id: T-2243
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T21:11:07Z'
+scan_id: R-787609d3
+task_id: T-2243
+payload:
+  task_file: .tasks/active/T-2243-fw-doctor-self-vendor-drift-warn--f2-nm-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T21:11:08Z'
+scan_id: R-d9e09a76
+task_id: T-2243
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T21:11:08Z'
+scan_id: R-d9e09a76
+task_id: T-2243
+payload:
+  task_file: .tasks/active/T-2243-fw-doctor-self-vendor-drift-warn--f2-nm-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T22:43:22Z'
+scan_id: R-6ad5586e
+task_id: T-2244
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T22:43:22Z'
+scan_id: R-6ad5586e
+task_id: T-2244
+payload:
+  task_file: .tasks/active/T-2244-audit-self-vendor-drift-fail--f2-nm-dail.md
+---
+kind: auto_tick
+timestamp: '2026-06-07T22:43:22Z'
+scan_id: R-6ad5586e
+task_id: T-2244
+payload:
+  key: auto_tick:T-2244:4:16e2d70965d4
+  ac_index: 4
+  digest: 16e2d70965d4
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 verified via `bin/fw reviewer T-2244`."
+---
+kind: scan_emitted
+timestamp: '2026-06-07T22:59:29Z'
+scan_id: R-c9a4b6cc
+task_id: T-2244
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T22:59:29Z'
+scan_id: R-c9a4b6cc
+task_id: T-2244
+payload:
+  task_file: .tasks/active/T-2244-audit-self-vendor-drift-fail--f2-nm-dail.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T23:00:15Z'
+scan_id: R-e0fdb3d9
+task_id: T-2244
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T23:00:15Z'
+scan_id: R-e0fdb3d9
+task_id: T-2244
+payload:
+  task_file: .tasks/active/T-2244-audit-self-vendor-drift-fail--f2-nm-dail.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T23:24:15Z'
+scan_id: R-fad32681
+task_id: T-2244
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T23:24:15Z'
+scan_id: R-fad32681
+task_id: T-2244
+payload:
+  task_file: .tasks/active/T-2244-audit-self-vendor-drift-fail--f2-nm-dail.md
+---
+kind: scan_emitted
+timestamp: '2026-06-07T23:24:16Z'
+scan_id: R-89896da1
+task_id: T-2244
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-07T23:24:16Z'
+scan_id: R-89896da1
+task_id: T-2244
+payload:
+  task_file: .tasks/active/T-2244-audit-self-vendor-drift-fail--f2-nm-dail.md
