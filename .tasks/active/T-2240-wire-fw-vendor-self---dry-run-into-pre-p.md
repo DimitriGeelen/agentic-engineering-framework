@@ -1,13 +1,23 @@
 ---
 id: T-2240
-name: "Wire 'fw vendor self --dry-run' into pre-push hook — close F2 N×M leg of durable upgrade-path chain"
+name: "Wire 'fw vendor self --dry-run' into pre-push hook — close F2 N×M leg of durable
+  upgrade-path chain"
 description: >
-  Follow-on to T-2095 (verb extraction) + T-2232 (sentinel) + T-2237 (discoverability) + T-2239 (dry-run wording split). The framework's own .agentic-framework/lib/ goes stale when the dev edits lib/*.sh without running fw vendor self. Pre-push does not catch it today — only fw upgrade does, and upgrade is not part of the push flow. Wire fw vendor self --dry-run into the pre-push hook (agents/git/lib/, source of truth for the installed .git/hooks/pre-push) so the dev sees 'Self-vendor: would sync N file(s)' AND the push is refused with a copy-pasteable fix command. Bypass: --no-verify (logged Tier 2) per existing pattern. Scope: 1 hook template + bats coverage + manual smoke. Risk: blocks all pushes if check is wrong — needs careful test + an opt-out env var (FW_SKIP_SELF_VENDOR_CHECK=1).
+  Follow-on to T-2095 (verb extraction) + T-2232 (sentinel) + T-2237 (discoverability)
+  + T-2239 (dry-run wording split). The framework's own .agentic-framework/lib/ goes
+  stale when the dev edits lib/*.sh without running fw vendor self. Pre-push does
+  not catch it today — only fw upgrade does, and upgrade is not part of the push flow.
+  Wire fw vendor self --dry-run into the pre-push hook (agents/git/lib/, source of
+  truth for the installed .git/hooks/pre-push) so the dev sees 'Self-vendor: would
+  sync N file(s)' AND the push is refused with a copy-pasteable fix command. Bypass:
+  --no-verify (logged Tier 2) per existing pattern. Scope: 1 hook template + bats
+  coverage + manual smoke. Risk: blocks all pushes if check is wrong — needs careful
+  test + an opt-out env var (FW_SKIP_SELF_VENDOR_CHECK=1).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +26,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-07T18:54:11Z
-last_update: 2026-06-07T18:54:11Z
-date_finished: null
+last_update: 2026-06-07T19:05:17Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,51 +38,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-07T19:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-07T19:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2240: Wire 'fw vendor self --dry-run' into pre-push hook — close F2 N×M leg of durable upgrade-path chain
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Follow-on to the durable upgrade-path chain (T-2095 verb extraction → T-2232 sentinel → T-2237 discoverability → T-2239 dry-run wording split). The framework's own `.agentic-framework/lib/` goes stale every time the dev edits `lib/*.sh` without running `fw vendor self`. Today's session surfaced the drift: `fw vendor self --dry-run` reported `would sync 13 file(s)`. There is no structural gate for this class — `fw upgrade` is the only flow that calls `_self_vendor_libs`, and upgrade isn't part of the push flow. Wiring the dry-run check into pre-push closes the N×M leg: every dev push catches the drift before consumers receive the stale lib/.
+
+The hook template lives at `agents/git/lib/hooks.sh:496-734` (heredoc body of `install-hooks` command). Consumer-safe by construction: `_self_vendor_libs` already early-returns when `$FRAMEWORK_ROOT/.agentic-framework/lib` doesn't exist (consumer case). Bypass shape: `FW_SKIP_SELF_VENDOR_CHECK=1` env-var (logged Tier-2 per L-399 producer/consumer parity discipline) OR `git push --no-verify` (Tier 0 protected, existing pattern).
+
+Split into structural slices (filed slices below). This task's body covers the umbrella; each slice carries its own ACs once filed.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Slice 0 (refresh prep, this session): `bin/fw vendor self` real-run executed, 13 stale files synced to `.agentic-framework/lib/`, committed under T-2240. Verified: `bin/fw vendor self --dry-run` after the refresh prints no `would sync` line
+- [ ] Slice 1 (hook insertion): `agents/git/lib/hooks.sh` heredoc gains a new pre-push step that calls `bin/fw vendor self --dry-run`, greps for `would sync`, BLOCKS push with a copy-pasteable fix command + bypass guidance. Insertion site: after the YAML well-formedness gate, before the audit script resolution (so stale lib/ can't corrupt the audit run). Consumer-safe: guarded on `[ -x "$PROJECT_ROOT/bin/fw" ]` so the check no-ops on consumer projects (no root-level `bin/fw`)
+- [ ] Slice 2 (bats coverage): `tests/unit/t2240_pre_push_self_vendor_gate.bats` covers: (a) clean state → push allowed, (b) drift state → push blocked with the canonical message, (c) `FW_SKIP_SELF_VENDOR_CHECK=1` → push allowed with Tier-2 log entry, (d) consumer-shape (`PROJECT_ROOT` without root `bin/fw`) → check skipped. Mocks `bin/fw vendor self` per L-464 contract (real argument shape enforced)
+- [ ] Slice 3 (install-hooks parity): `bin/fw git install-hooks --force` from the framework repo installs the new hook variant. After install, `head -200 .git/hooks/pre-push` includes the self-vendor block. The hook's `# VERSION=` marker bumps so existing consumers re-install on next `fw upgrade`
+- [ ] Slice 4 (smoke + reviewer): live smoke — touch a `lib/*.sh`, attempt `git push origin master`, verify the hook blocks with the canonical message. Restore the lib/ change. Reviewer scan: `bin/fw reviewer T-2240` → Overall PASS
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [ ] [REVIEW] Pre-push block message reads cleanly to the framework dev — message names the bypass mechanisms (`FW_SKIP_SELF_VENDOR_CHECK=1`, `git push --no-verify`) and the fix command (`bin/fw vendor self && git add .agentic-framework/lib/`) without jargon overload.
+  **Steps:**
+  1. Read the block-message text as printed by the hook when self-vendor drift is detected.
+  2. Check: does the dev understand within 5 seconds what to do?
+  3. Check: does the message mention both bypass mechanisms (env var + --no-verify)?
+  **Expected:** Message reads actionable; bypass + fix paths both visible.
+  **If not:** Note the wording that confused you; reviewer rewrites and re-spawns.
 
 ## Verification
 
@@ -174,3 +192,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2240-wire-fw-vendor-self---dry-run-into-pre-p.md
 - **Context:** Initial task creation
+
+### 2026-06-07T19:05:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

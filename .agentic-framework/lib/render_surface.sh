@@ -64,16 +64,41 @@ _render_surface_path_matches() {
 }
 
 
-task_touches_render_surface() {
+_render_surface_extract_task_id() {
+    # Echo the task id (e.g. T-2056) from a task file's frontmatter or filename.
     local task_file="$1"
-    [[ -f "$task_file" ]] || return 1
+    local tid
+    # Prefer frontmatter id: T-NNN
+    tid=$(awk '/^---$/{n++; next} n==1 && /^id:[[:space:]]*T-[0-9]+/{print $2; exit}' "$task_file" 2>/dev/null)
+    if [[ -z "$tid" ]]; then
+        # Fall back to filename T-NNN-*.md
+        tid=$(basename "$task_file" 2>/dev/null | grep -oE '^T-[0-9]+' | head -1)
+    fi
+    echo "$tid"
+}
 
-    # Extract candidate file paths from:
-    #   1. frontmatter `components: [...]` list
-    #   2. body file references (anything matching path-like patterns)
-    # Then test each against RENDER_SURFACE_PATTERNS.
-    local found
-    found=$(python3 - "$task_file" <<'PY'
+_render_surface_git_touched_paths() {
+    # Echo (one per line) every file touched by any commit whose message
+    # references the given task id. Searches all branches/reflog so we don't
+    # miss commits made on side branches before merge. Returns empty when:
+    #   - $1 is empty
+    #   - git is unavailable or cwd is not a git tree
+    #   - no commits reference the task id (brand-new task, first-close case)
+    local task_id="$1"
+    [[ -z "$task_id" ]] && return 0
+    # --all sweeps every ref; --pretty=format: suppresses commit headers so
+    # only file names print; -- . scopes to tracked paths.
+    git log --all --pretty=format: --name-only --grep "$task_id" -- . 2>/dev/null \
+        | awk 'NF' | sort -u
+}
+
+_render_surface_body_candidates() {
+    # Fallback: body + components scan (the legacy primary signal).
+    # Used only when git evidence is empty — preserves first-close and test
+    # fixture behaviour. Body-text mentions on tasks WITH git history are
+    # ignored to fix L-435 false-positive class (T-2061).
+    local task_file="$1"
+    python3 - "$task_file" <<'PY'
 import re, sys, yaml
 fp = sys.argv[1]
 with open(fp) as f:
@@ -101,7 +126,38 @@ body_paths = re.findall(
 candidates = list(dict.fromkeys(components + body_paths))
 print("\n".join(candidates))
 PY
-)
+}
+
+task_touches_render_surface() {
+    local task_file="$1"
+    [[ -f "$task_file" ]] || return 1
+
+    # Primary signal: git history (T-2061, L-435 fix). The body-text scan
+    # cannot distinguish "task modifies X" from "task discusses X" — a task
+    # whose entire point is "X is intentionally untouched" still trips the
+    # gate because the path token appears in prose. Commits are authoritative:
+    # they reflect what was actually modified, not what was talked about.
+    local task_id
+    task_id=$(_render_surface_extract_task_id "$task_file")
+    local git_files
+    git_files=$(_render_surface_git_touched_paths "$task_id")
+
+    if [[ -n "$git_files" ]]; then
+        local p
+        while IFS= read -r p; do
+            [[ -z "$p" ]] && continue
+            if _render_surface_path_matches "$p"; then
+                return 0
+            fi
+        done <<< "$git_files"
+        return 1
+    fi
+
+    # Fallback: body + components scan (legacy behaviour). Fires when git
+    # evidence is empty — brand-new task being closed in the same commit
+    # it's filed, test fixtures with synthetic task ids not in git log.
+    local found
+    found=$(_render_surface_body_candidates "$task_file")
     [[ -z "$found" ]] && return 1
 
     local p
@@ -119,31 +175,19 @@ render_surface_files_in() {
     local task_file="$1"
     [[ -f "$task_file" ]] || return 1
 
+    # Mirror task_touches_render_surface's source-selection: git evidence
+    # is primary; body+components is fallback when git has nothing.
+    local task_id git_files
+    task_id=$(_render_surface_extract_task_id "$task_file")
+    git_files=$(_render_surface_git_touched_paths "$task_id")
+
     local found
-    found=$(python3 - "$task_file" <<'PY'
-import re, sys, yaml
-fp = sys.argv[1]
-with open(fp) as f:
-    text = f.read()
-fm_match = re.match(r"^---\s*\n(.*?)\n---\s*\n", text, re.DOTALL)
-components = []
-if fm_match:
-    try:
-        fm = yaml.safe_load(fm_match.group(1)) or {}
-        comps = fm.get("components", []) or []
-        if isinstance(comps, list):
-            components = [str(c).strip() for c in comps if c]
-    except Exception:
-        pass
-body = text[fm_match.end():] if fm_match else text
-body_paths = re.findall(
-    r"(?:^|[\s`'\"\(])((?:web|lib|bin|agents|tests|tools|prompts|policy|deploy|docs|\.tasks|\.context|\.fabric)/[A-Za-z0-9_/.-]+\.(?:html|j2|css|js|py|md|yaml|yml|sh|bats|json|toml))",
-    body
-)
-candidates = list(dict.fromkeys(components + body_paths))
-print("\n".join(candidates))
-PY
-)
+    if [[ -n "$git_files" ]]; then
+        found="$git_files"
+    else
+        found=$(_render_surface_body_candidates "$task_file")
+    fi
+
     local p
     while IFS= read -r p; do
         [[ -z "$p" ]] && continue

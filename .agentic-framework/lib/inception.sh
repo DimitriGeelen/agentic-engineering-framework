@@ -138,8 +138,13 @@ do_inception_start() {
     # Create inception task using create-task.sh
     # T-554: Inception tasks start as captured (not started-work).
     # Use fw work-on T-XXX to explicitly start work when ready.
+    #
+    # T-2207 (T-2204 Slice B'): signal "upstream trusted caller — already gated"
+    # to create-task.sh so the CLI-mirror filing gate doesn't double-fire on this
+    # path. The recommendation has already been validated above and will be
+    # injected via _inject_recommendation_block after creation.
     local output
-    output=$("$AGENTS_DIR/task-create/create-task.sh" \
+    output=$(FW_INCEPTION_PRE_GATED=1 "$AGENTS_DIR/task-create/create-task.sh" \
         --name "$name" \
         --description "Inception: $name" \
         --type inception \
@@ -426,11 +431,14 @@ do_inception_decide() {
         echo -e "${RED}ERROR: Agents must not invoke 'fw inception decide' directly (T-679, T-1259)${NC}" >&2
         echo "" >&2
         echo -e "You appear to be running inside Claude Code (\$CLAUDECODE=1)." >&2
-        echo -e "Inception decisions belong to the human, recorded via Watchtower." >&2
+        echo -e "Inception decisions (workflow_type: inception → GO/NO-GO/DEFER on /inception/${task_id})" >&2
+        echo -e "belong to the human. This is structurally distinct from partial-complete review" >&2
+        echo -e "(build task with unchecked Human ACs → /review/<id>) — both look like 'reviews' but" >&2
+        echo -e "route to different Watchtower pages and answer different operator questions (T-2125, T-2141)." >&2
         echo "" >&2
-        echo -e "Correct flow:" >&2
+        echo -e "Correct flow for inception decide:" >&2
         echo -e "  1. Agent: $(_emit_user_command "task review $task_id")" >&2
-        echo -e "  2. Human: open the Watchtower URL, record GO/NO-GO there" >&2
+        echo -e "  2. Human: open the Watchtower URL, record GO/NO-GO/DEFER there" >&2
         echo "" >&2
         echo -e "If this is a human running inside an agent session (rare), pass --i-am-human." >&2
         echo -e "See CLAUDE.md §Presenting Work for Human Review." >&2

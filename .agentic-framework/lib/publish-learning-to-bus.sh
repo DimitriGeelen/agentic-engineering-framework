@@ -12,9 +12,11 @@
 #
 # Design (mirrors T-1165 pickup-channel-bridge pattern):
 #   - Non-fatal: any error path exits 0 so context add-learning stays safe.
-#   - Capability-probing: `termlink channel post` (Tier-A, T-1160) first;
-#     fall back to `termlink event broadcast` (universally present).
-#   - Silent no-op if neither is available (old termlink, no termlink).
+#   - Posts via `termlink channel post` (Tier-A, T-1160, with --ensure-topic
+#     auto-heal where supported). The legacy `event.broadcast` fallback was
+#     removed (T-1814) — it emitted a primitive being retired (T-1166). Silent
+#     no-op when channel.post is unavailable or fails (old termlink, no
+#     termlink, transient hub error).
 #   - Opt-out: FW_LEARNINGS_BUS_PUBLISH=0 disables entirely.
 #
 # See: T-1168 (this task), T-1074 (design rationale), T-1214 (federation
@@ -107,17 +109,14 @@ if termlink channel post --help >/dev/null 2>&1; then
         exit 0
     fi
     rm -f "$TMP_PAY" 2>/dev/null || true
-    _log "channel.post-failed id=$L_ID — falling back to event.broadcast"
+    # T-1814: channel.post failed. Do NOT fall back to event.broadcast — that
+    # legacy primitive is being retired (T-1166). The bridge is a non-fatal
+    # enhancement, so a channel.post failure degrades to a logged no-op. Run an
+    # --ensure-topic-capable binary (T-1443+) to auto-heal the topic-loss case
+    # this fallback used to cover.
+    _log "channel.post-failed id=$L_ID — bus mirror skipped (event.broadcast fallback removed, T-1166/T-1814)"
+    exit 0
 fi
 
-# Fallback: event.broadcast (Tier-A, present in all known lineages)
-if termlink event broadcast --help >/dev/null 2>&1; then
-    if termlink event broadcast "$TOPIC" -p "$PAYLOAD" >/dev/null 2>&1; then
-        _log "posted via=event.broadcast topic=$TOPIC msg_type=$MSG_TYPE id=$L_ID origin=$ORIGIN"
-        exit 0
-    fi
-    _log "event.broadcast-failed id=$L_ID"
-fi
-
-_log "skip-no-method id=$L_ID — neither channel.post nor event.broadcast usable"
+_log "skip-no-channel-post id=$L_ID — channel.post unavailable (pre-T-1160 binary); bus mirror skipped"
 exit 0

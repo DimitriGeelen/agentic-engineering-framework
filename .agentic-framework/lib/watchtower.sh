@@ -18,6 +18,36 @@ source "${FRAMEWORK_ROOT:-.}/lib/config.sh"
 [[ -n "${_FW_WATCHTOWER_LOADED:-}" ]] && return 0
 _FW_WATCHTOWER_LOADED=1
 
+# _watchtower_identity_matches URL
+#
+# Returns 0 iff the service at URL identifies (via /api/_identity) as THIS
+# project's Watchtower: service=="watchtower" AND project_root==our root
+# (PROJECT_ROOT, else FRAMEWORK_ROOT). Single source of truth for the identity
+# handshake used by both the reader (_watchtower_url) and the writer
+# (bin/watchtower.sh's port-kill guard + triple-write gate). T-1803.
+_watchtower_identity_matches() {
+    local _u="$1"
+    local _our_root="${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}"
+    local _json _svc _proot
+    _json=$(curl -sf --max-time 2 "${_u}/api/_identity" 2>/dev/null) || return 1
+    _svc=$(printf '%s' "$_json" | grep -oE '"service"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')
+    _proot=$(printf '%s' "$_json" | grep -oE '"project_root"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')
+    [ "$_svc" = "watchtower" ] && [ -n "$_our_root" ] && [ "$_proot" = "$_our_root" ]
+}
+
+# _watchtower_port_holder_is_ours PORT
+#
+# Returns 0 iff the service listening on localhost:PORT identifies as THIS
+# project's Watchtower. The launcher uses this to tell its own stale instance
+# (safe to recycle) from a FOREIGN service that happens to hold the port (must
+# NOT be killed — the T-1802 wrong-dashboard / neighbor-kill hazard). A holder
+# that does not answer /api/_identity as ours is treated as foreign. T-1803.
+_watchtower_port_holder_is_ours() {
+    local _port="$1"
+    [ -n "$_port" ] || return 1
+    _watchtower_identity_matches "http://localhost:${_port}"
+}
+
 # _watchtower_url [TASK_ID]
 #
 # Returns the base Watchtower URL (e.g., http://192.168.10.107:3000) on stdout.
@@ -48,15 +78,10 @@ _watchtower_url() {
 
     local _our_root="${PROJECT_ROOT:-${FRAMEWORK_ROOT:-}}"
 
-    # Helper: verify a url is OUR Watchtower via /api/_identity. Returns 0 iff match.
-    _wt_identity_matches() {
-        local _u="$1"
-        local _json _svc _proot
-        _json=$(curl -sf --max-time 2 "${_u}/api/_identity" 2>/dev/null) || return 1
-        _svc=$(printf '%s' "$_json" | grep -oE '"service"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')
-        _proot=$(printf '%s' "$_json" | grep -oE '"project_root"[[:space:]]*:[[:space:]]*"[^"]*"' | sed -E 's/.*"([^"]*)"$/\1/')
-        [ "$_svc" = "watchtower" ] && [ -n "$_our_root" ] && [ "$_proot" = "$_our_root" ]
-    }
+    # Helper: verify a url is OUR Watchtower via /api/_identity. Returns 0 iff
+    # match. Delegates to the top-level _watchtower_identity_matches (T-1803) so
+    # reader and writer share one identity-handshake implementation.
+    _wt_identity_matches() { _watchtower_identity_matches "$1"; }
 
     # -----------------------------------------------------------------
     # Layer 1 — authoritative triple (.pid/.port/.url), verified by identity

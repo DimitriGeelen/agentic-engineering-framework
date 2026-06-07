@@ -40,6 +40,18 @@ has_evolution_section() {
     grep -q '^## Evolution\b' "$task_file" 2>/dev/null
 }
 
+# T-1879 (T-NEW-14) / T-1880 (T-NEW-15): `task_has_arc_membership` is
+# now exported from the shared `lib/arc_membership.sh` module. Source it
+# here so existing callers (find_arc_tasks_without_evolution_log below,
+# and the source-from-update-task.sh entrypoint) continue to work.
+#
+# Helper script may be sourced before paths are wired — guard the path
+# resolution so we don't fail if FRAMEWORK_ROOT isn't yet set.
+__el_lib_dir="${BASH_SOURCE[0]%/*}"
+# shellcheck disable=SC1091
+. "$__el_lib_dir/arc_membership.sh"
+unset __el_lib_dir
+
 has_real_evolution_log() {
     local task_file="$1"
     [ -f "$task_file" ] || return 1
@@ -79,8 +91,10 @@ find_arc_tasks_without_evolution_log() {
         [ -z "$task_file" ] && continue
         # Only build tasks
         grep -q '^workflow_type:[[:space:]]*build' "$task_file" 2>/dev/null || continue
-        # Only arc-tagged
-        grep -q 'arc:' "$task_file" 2>/dev/null || continue
+        # T-1879 (T-NEW-14): Only arc-member tasks — use frontmatter helper
+        # that recognizes both arc_id (T-1849 canonical, T-1850 migrated)
+        # AND legacy arc:<slug> tag.
+        task_has_arc_membership "$task_file" || continue
         # Skip if no Evolution section (backward-compat)
         has_evolution_section "$task_file" || continue
         # Flag if section exists but empty/template
@@ -88,5 +102,6 @@ find_arc_tasks_without_evolution_log() {
         # Emit task ID
         task_id=$(basename "$task_file" | grep -oE '^T-[0-9]+')
         [ -n "$task_id" ] && echo "$task_id"
-    done < <(find "$active_dir" -maxdepth 1 -name 'T-*.md' -type f 2>/dev/null)
+    done < <(find "$active_dir" -maxdepth 1 -name 'T-*.md' -not -name 'T-Test-*' -type f 2>/dev/null)
+    # T-2228 (T-2225 Slice 3): -not -name 'T-Test-*' filters test-sentinel fixtures.
 }

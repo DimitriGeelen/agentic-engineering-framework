@@ -7,9 +7,12 @@
 #
 # Design (per T-1165 / T-1214 GO Option B — federate, don't converge):
 #   - Non-fatal: any error path exits 0 so shell pickup stays portable.
-#   - Capability-probing: prefer `termlink channel post` (Tier-A, T-1160);
-#     fall back to `termlink event broadcast` (universally present pre-channel).
-#     Silent no-op if neither is available (old termlink, no termlink, etc.).
+#   - Posts via `termlink channel post` (Tier-A, T-1160, with --ensure-topic
+#     auto-heal where supported). The legacy `event.broadcast` fallback was
+#     removed (T-1814) — it emitted a primitive being retired (T-1166) and was
+#     the lone live emitter resetting the cut's clean-window gate. Silent no-op
+#     when channel.post is unavailable or fails (old termlink, no termlink,
+#     transient hub error).
 #   - Idempotent: SHA-256 of envelope contents is the dedup key. Re-invoking
 #     on the same file is a recorded no-op.
 #   - Opt-out: `FW_PICKUP_CHANNEL_BRIDGE=0` disables entirely.
@@ -89,31 +92,15 @@ if termlink channel post --help >/dev/null 2>&1; then
         : > "$DEDUP_DIR/$SHA"
         exit 0
     fi
-    _log "channel.post-failed envelope=$BASENAME — falling back to event.broadcast"
+    # T-1814: channel.post failed. Do NOT fall back to event.broadcast — that
+    # legacy primitive is being retired (T-1166) and the fallback was the lone
+    # live emitter resetting the cut's clean-window gate. The bridge is a
+    # non-fatal enhancement (T-1214), so a channel.post failure degrades to a
+    # logged no-op. Run an --ensure-topic-capable binary (T-1443+) to auto-heal
+    # the topic-loss case this fallback used to cover.
+    _log "channel.post-failed envelope=$BASENAME — bus mirror skipped (event.broadcast fallback removed, T-1166/T-1814)"
+    exit 0
 fi
 
-# Fallback: event.broadcast (Tier-A, present in all known termlink lineages)
-# Payload must be a JSON object, not a raw YAML dump.
-if termlink event broadcast --help >/dev/null 2>&1; then
-    # Read envelope contents + escape for JSON. Keep payload compact.
-    # If jq is unavailable, fall back to a simple ref-only payload.
-    JSON=""
-    if command -v jq >/dev/null 2>&1; then
-        JSON=$(jq -Rs --arg m "$MSG_TYPE" --arg s "$SHA" --arg b "$BASENAME" \
-                 '{msg_type: $m, sha: $s, basename: $b, envelope: .}' < "$ENVELOPE" 2>/dev/null || true)
-    fi
-    if [ -z "$JSON" ]; then
-        # Minimal payload — consumers can fetch the envelope out-of-band
-        JSON=$(printf '{"msg_type":"%s","sha":"%s","basename":"%s"}' "$MSG_TYPE" "$SHA" "$BASENAME")
-    fi
-
-    if termlink event broadcast "$TOPIC" -p "$JSON" >/dev/null 2>&1; then
-        _log "posted via=event.broadcast topic=$TOPIC msg_type=$MSG_TYPE sha=$SHA"
-        : > "$DEDUP_DIR/$SHA"
-        exit 0
-    fi
-    _log "event.broadcast-failed envelope=$BASENAME"
-fi
-
-_log "skip-no-method envelope=$BASENAME — neither channel.post nor event.broadcast usable"
+_log "skip-no-channel-post envelope=$BASENAME — channel.post unavailable (pre-T-1160 binary); bus mirror skipped"
 exit 0
