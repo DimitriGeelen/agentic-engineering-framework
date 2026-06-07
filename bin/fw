@@ -622,6 +622,7 @@ show_help() {
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}hook-enable${NC} <args>   Register a hook in .claude/settings.json (idempotent)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
+    echo -e "  ${GREEN}consumer-recover${NC} <host> [path]  Recover legacy vendored consumer (pre-T-2232). Dry-run default; --apply executes."
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}build${NC}                Compile TypeScript sources (lib/ts/src → lib/ts/dist)"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
@@ -5092,6 +5093,12 @@ PYREVQ
         source "$FW_LIB_DIR/init.sh"
         source "$FW_LIB_DIR/upgrade.sh"
         do_upgrade "$@"
+        ;;
+    consumer-recover)
+        # T-2233 / T-2235 — one-command recovery for legacy vendored consumers
+        # (pre-T-1634 / pre-T-2232 consumers that cannot self-heal via fw upgrade).
+        source "$FW_LIB_DIR/consumer-recover.sh"
+        do_consumer_recover "$@"
         ;;
     setup)
         echo -e "${YELLOW}NOTE: 'fw setup' is deprecated — use 'fw init' instead.${NC}"
