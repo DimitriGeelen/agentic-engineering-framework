@@ -4,16 +4,16 @@ name: "incept consumer-update dispatch exercise — fold into AEF"
 description: >
   Inception: incept consumer-update dispatch exercise — fold into AEF
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-07T11:45:18Z
-last_update: 2026-06-07T11:45:47Z
-date_finished:
+last_update: 2026-06-07T11:52:20Z
+date_finished: 2026-06-07T11:52:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -108,7 +108,7 @@ A consumer-side dispatch prompt exercise (refactor for vendored-update routing) 
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -198,7 +198,11 @@ The brief routes these for human decide. Each below: gate · arc · recommendati
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Brief routes incorporation properly (inception A1-A5 → Initiative-safe B1/B2/B3 → surface C). PART A produces verifiable dispositions per item with file:line evidence; PART B1 is additive doc (new dispatch-template file, conventions matched to iw-*-worker.md); PART B2 files a real defect upstream (lib/update.sh --rollback help/code asymmetry). Sovereign items (A2 shape verb, A3 cross-template preflight, A4 envelope schema, A5 capability-overlay routing, and A1 if divergent) are surfaced not actioned. No new CLI route or governance edit within Initiative scope. Risk low; reversible.
+
+**Date**: 2026-06-07T11:52:20Z
 
 ## Updates
 
@@ -207,3 +211,26 @@ The brief routes these for human decide. Each below: gate · arc · recommendati
 
 ### 2026-06-07T11:45:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-07T11:52:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Brief routes incorporation properly (inception A1-A5 → Initiative-safe B1/B2/B3 → surface C). PART A produces verifiable dispositions per item with file:line evidence; PART B1 is additive doc (new dispatch-template file, conventions matched to iw-*-worker.md); PART B2 files a real defect upstream (lib/update.sh --rollback help/code asymmetry). Sovereign items (A2 shape verb, A3 cross-template preflight, A4 envelope schema, A5 capability-overlay routing, and A1 if divergent) are surfaced not actioned. No new CLI route or governance edit within Initiative scope. Risk low; reversible.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-39fa8b76
+- **Timestamp:** 2026-06-07T11:52:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#6 (Agent)** — PART B1 — template uses `fw upgrade` (per IW-1 disposition); `fw init --upstream` corrected to plain `fw init` (no such flag exists; auto-detects from framework git remote per lib/init.sh:209-237); MI
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/init.sh in: PART B1 — template uses `fw upgrade` (per IW-1 disposition); `fw init --upstream` corrected to plain `fw init` (no such flag exists; auto-detects from`
+
+### 2026-06-07T11:52:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

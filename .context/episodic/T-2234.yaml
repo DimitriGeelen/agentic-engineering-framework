@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2234: incept consumer-update dispatch exercise — fold into AEF
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T11:52:25Z
+# ============================================================================
+
+task_id: T-2234
+task_name: "incept consumer-update dispatch exercise — fold into AEF"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T11:45:18Z
+completed: 2026-06-07T11:52:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-06-07T13:52:16+02:00
+last_commit: 2026-06-07T13:52:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  incorporation inception — consumer-update dispatch exercise folded into AEF
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - 'PART A — all 5 IW questions disposed with file:line evidence (IW-1 answered, IW-2/3/4 deferred to Sovereign, IW-5 answered)'
+  - 'PART B1 — refactored consumer-update worker template landed at `docs/dispatch-templates/consumer-update-worker.md` (263 lines), conventions matched to iw-spike-worker.md / iw-slice-worker.md (no frontmatter, opening Worker contract, dispatcher-substituted variables, cited file:line evidence)'
+  - 'PART B1 — template uses `fw upgrade` (per IW-1 disposition); `fw init --upstream` corrected to plain `fw init` (no such flag exists; auto-detects from framework git remote per lib/init.sh:209-237); MIN_FW_VERSION set to 1.5.0 with rationale'
+  - 'PART B2 — `--rollback` global-path asymmetry filed via `fw upstream report --label field-report --force`. Issue: https://github.com/DimitriGeelen/agentic-engineering-framework/issues/15'
+  - 'PART C — Sovereign surface compiled in Recommendation (5 items, each with arc, gate, and recommendation)'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/.upstream-issues-sent'
+  - 'docs/dispatch-templates/consumer-update-worker.md'
+  - '.tasks/active/T-2234-incept-consumer-update-dispatch-exercise.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-07T13:52:16"
+    action: "T-2234: incorporation inception — consumer-update dispatch exercise folded into AEF"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 3
+  lines_added: 473
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2234-incept-consumer-update-dispatch-exercise.md
+generated_by: context-agent-hybrid
