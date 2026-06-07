@@ -19,7 +19,7 @@ components: []
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-04-27T13:19:34Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: '2026-06-05T18:00:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -57,6 +57,19 @@ bvp_scores_proposed:
       D3=4 (body:framework-level-ux); D4=2 (body:env-class-handled); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 1
+      D3: 4
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=1 (body:log-or-error-line); 
+      D3=4 (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -88,21 +101,6 @@ Origin: OBS-032 (S-2026-0427-0908 against `/opt/050-email-archive`).
 - [x] No partial-state damage on failure: steps 1-4a do not write changes if 4b will inevitably fail — guard fires before line 195 self-vendor; bats test asserts pre/post md5 of vendored file unchanged
 - [x] Bats regression test reproduces the bare-from-consumer scenario and asserts the chosen behaviour — `tests/unit/test_upgrade_self_target_guard.bats` (4/4 pass)
 - [x] Same-class sweep: any other `fw` subcommand whose source resolution can collapse to target gets the same guard (or is documented as not applicable) — `do_vendor` already has its own guard at `bin/fw:223` (T-680); `do_init` requires `.framework.yaml` absence so cannot collapse; no other subcommand performs cross-tree copy operations
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
--->
 
 ## Verification
 

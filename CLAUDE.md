@@ -1051,6 +1051,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 
 **Setup and upgrade:**
 - `fw init [dir]` / `fw upgrade [dir]` / `fw update` / `fw vendor`
+- `fw consumer-recover <host> [path] [--apply] [--via {ssh,termlink}] [--session ID] [--upstream URL]` — recover a legacy vendored consumer (pre-T-2232 / pre-T-1634) via SSH or TermLink + fresh-clone + env-scoped upgrade. Dry-run default; `--apply` executes. Refuses with exit 2 when the target already has the `.upstream` sentinel (use plain `fw upgrade` instead). See memory `feedback_t2232_forward_looking_recovery` for boundary and rationale (T-2232 protects forward-looking only).
 - `fw serve [--port N]` — start Watchtower
 - `fw watchtower port|url|status`
 
