@@ -161,7 +161,15 @@ _self_vendor_libs() {
         fi
     done
     if [ "$_sv_updated" -gt 0 ]; then
-        echo -e "  ${GREEN}Self-vendor:${NC} synced $_sv_updated file(s) to .agentic-framework/lib/"
+        # T-2239: dry-run reports what WOULD happen; real-run reports what DID.
+        # Same prefix, distinct verb — preserves the count semantic for both modes
+        # and prevents the message from lying about state when the cp guard above
+        # is honoured. Pre-push wiring (the F2 N×M follow-on) depends on this split.
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_sv_updated file(s) to .agentic-framework/lib/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_sv_updated file(s) to .agentic-framework/lib/"
+        fi
     fi
     return 0
 }

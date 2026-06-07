@@ -110,7 +110,10 @@ make_synthetic_fw_with_diff() {
     diff -q "$syn_fw/lib/same.sh" "$syn_fw/.agentic-framework/lib/same.sh"
 }
 
-@test "t2095 t4: helper dry-run reports the would-sync count without copying" {
+@test "t2095 t4: helper dry-run reports 'would sync' count without copying" {
+    # T-2239: dry-run wording asserts "would sync" — distinct verb from t3's
+    # "synced". Locks the dry-run/real-run wording split into the spec so the
+    # message can no longer lie about state. Pre-push wiring depends on this.
     local syn_fw
     syn_fw=$(make_synthetic_fw_with_diff)
     local saved="$FRAMEWORK_ROOT"
@@ -119,7 +122,9 @@ make_synthetic_fw_with_diff() {
     FRAMEWORK_ROOT="$saved"
 
     [ "$status" -eq 0 ]
-    [[ "$output" == *"synced 1 file"* ]]
+    [[ "$output" == *"would sync 1 file"* ]]
+    # Dry-run must NOT print the real-run verb (catches regression of the split)
+    [[ "$output" != *"Self-vendor:"*" synced 1 file"* ]]
     # Dry-run: the vendored copy is NOT mutated (still differs from source)
     ! diff -q "$syn_fw/lib/changed.sh" "$syn_fw/.agentic-framework/lib/changed.sh" >/dev/null 2>&1
 }
