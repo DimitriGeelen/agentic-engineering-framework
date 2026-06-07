@@ -14,20 +14,20 @@ description: >
   coverage + manual smoke. Risk: blocks all pushes if check is wrong — needs careful
   test + an opt-out env var (FW_SKIP_SELF_VENDOR_CHECK=1).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-07T18:54:11Z
-last_update: 2026-06-07T19:05:17Z
-date_finished:
+last_update: 2026-06-07T19:52:22Z
+date_finished: 2026-06-07T19:52:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -201,6 +201,22 @@ rev_out=$(bin/fw reviewer T-2240 2>&1); echo "$rev_out" | grep -qE "Overall:.*(P
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Slices 0-4 shipped end-to-end. The F2 N×M closure now has a structural gate at the dev push surface — the original failure mode (edit `lib/*.sh`, push, consumers inherit stale vendored libs) cannot recur without one of two explicit bypass paths. Both bypass paths are named in the block message per L-399 producer/consumer parity. Agent ACs verify mechanically; the open `[REVIEW]` is a human taste-call on whether the block-message prose reads cleanly in 5 seconds — readability, not correctness.
+
+**Evidence:**
+- Hook source: `agents/git/lib/hooks.sh` — new T-2240 block (between YAML gate and audit resolve), `# VERSION=1.4` → `1.5`
+- Installed hook: `.git/hooks/pre-push:159+` carries the new block (verified by `grep -q "T-2240: Self-vendor drift gate"`)
+- Bats: `tests/unit/t2240_pre_push_self_vendor_gate.bats` — 5/5 PASS, covers clean / drift / env-bypass / consumer-no-bin-fw / no-vendored-lib
+- Live smoke: drift introduced via `lib/upgrade.sh` append → hook exit 1 with canonical message + both bypasses named → drift reverted → dry-run empty
+- Reviewer: R-90f94a2e Overall PASS, 0 findings
+- Commit: `fc369439d` (Slices 1-4) + `d1154eabc` (Slice 0 refresh)
+- Verification gate: 8/8 PASS
+- Sibling chain: T-2095 (verb) → T-2232 (sentinel) → T-2237 (doc) → T-2239 (wording) → **T-2240 (gate)** — full F2 N×M leg closed
+
 ## Updates
 
 ### 2026-06-07T18:54:11Z — task-created [task-create-agent]
@@ -214,9 +230,12 @@ rev_out=$(bin/fw reviewer T-2240 2>&1); echo "$rev_out" | grep -qE "Overall:.*(P
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-90f94a2e
-- **Timestamp:** 2026-06-07T19:51:16Z
+- **Scan ID:** R-b17c27b2
+- **Timestamp:** 2026-06-07T19:52:24Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-07T19:52:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
