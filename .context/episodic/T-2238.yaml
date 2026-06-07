@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2238: fabric enrich pass: 82 edgeless cards (post-T-2237)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T17:00:32Z
+# ============================================================================
+
+task_id: T-2238
+task_name: "fabric enrich pass: 82 edgeless cards (post-T-2237)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T16:52:49Z
+completed: 2026-06-07T17:00:25Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`bin/fw fabric enrich` runs to completion. Result: 804 cards processed, 0 enriched, 0 edges added — the 82 edgeless cards are at auto-detect equilibrium.'
+  - 'Equilibrium documented. Future enrich passes on this set will continue to be no-ops unless the cards'' source files acquire detectable imports/refs. The audit WARN is permanent until either (a) auto-detect heuristics improve or (b) the cards are re-tagged as standalone/manual.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [fabric, maintenance, audit-warn-reduction]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2238-fabric-enrich-pass-82-edgeless-cards-pos.md
+generated_by: context-agent-hybrid

@@ -1962,3 +1962,24 @@ decisions:
     date: 2026-06-06
     task: T-2232
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-283
+    decision: "`fw consumer-recover <host> [<project-path>]` as a sibling verb to `fw upgrade`"
+    scope: project
+    date: 2026-06-07
+    task: T-2233
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-284
+    decision: "SSH is the default transport. TermLink is selected when `--via termlink` is passed OR `termlink remote list` resolves the host."
+    scope: project
+    date: 2026-06-07
+    task: T-2233
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-285
+    decision: "Wrapper prints the recipe (with concrete substituted values) by default; only `--apply` (or `--execute`) actually runs the SSH/TermLink commands."
+    scope: project
+    date: 2026-06-07
+    task: T-2233
+    rationale: "Auto-captured from task file on completion"

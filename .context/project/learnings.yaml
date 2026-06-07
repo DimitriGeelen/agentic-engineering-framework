@@ -3546,3 +3546,10 @@ X'` returning empty group."
   date: 2026-06-07
   context: Added via context agent
   application: TBD
+- id: L-464
+  learning: "Bats mocks must enforce real CLI argument-count shape; permissive mocks pass tests while production code has wrong shape (T-2236 origin: termlink remote exec/list wrapper code missed required positional args, but bats mock accepted any args so 16/16 passed while real CLI rejected). Fix pattern: in mocks, assert exact arg count with case+[ -z \"${N:-}\" ] && exit 64, returning a clear MOCK ERROR message — let mismatches surface as test failures."
+  source: P-001
+  task: T-2236
+  date: 2026-06-07
+  context: Added via context agent
+  application: TBD
