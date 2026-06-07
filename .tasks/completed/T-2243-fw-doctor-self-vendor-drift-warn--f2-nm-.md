@@ -4,10 +4,10 @@ name: "fw doctor self-vendor drift WARN — F2 N×M any-time inspection surface"
 description: >
   fw doctor self-vendor drift WARN — F2 N×M any-time inspection surface
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +16,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-07T20:28:24Z
-last_update: '2026-06-07T20:30:03Z'
-date_finished:
+last_update: 2026-06-07T21:03:28Z
+date_finished: 2026-06-07T21:03:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -104,8 +104,13 @@ Scope: extend Check 2b to also walk `.tasks/templates/*.md`. One file, one helpe
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# Verify the templates path is in Check 2b's find arglist (L-387 capture-then-grep)
-fw_src=$(cat bin/fw); echo "$fw_src" | grep -q ".tasks/templates"
+# Verify the templates path is in Check 2b's find arglist.
+# Direct grep on file — no pipe, no SIGPIPE risk. `bin/fw` is large enough
+# that even the L-387 capture-then-grep pattern (`out=$(cat bin/fw); echo
+# "$out" | grep -q PATTERN`) SIGPIPEs at exit 141 because grep closes stdin
+# the instant it finds the match while echo is still writing. Direct file
+# grep avoids the pipe entirely.
+grep -q ".tasks/templates" bin/fw
 
 # Bats coverage for both classes (libs + templates)
 bats tests/unit/t2243_doctor_self_vendor_templates.bats
@@ -203,9 +208,12 @@ out=$(bin/fw reviewer T-2243 2>&1); echo "$out" | grep -qE "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-98aac8e4
-- **Timestamp:** 2026-06-07T20:55:19Z
+- **Scan ID:** R-d9e09a76
+- **Timestamp:** 2026-06-07T21:11:08Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-07T21:03:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

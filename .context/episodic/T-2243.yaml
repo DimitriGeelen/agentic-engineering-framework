@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2243: fw doctor self-vendor drift WARN — F2 N×M any-time inspection surface
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T21:11:13Z
+# ============================================================================
+
+task_id: T-2243
+task_name: "fw doctor self-vendor drift WARN — F2 N×M any-time inspection surface"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T20:28:24Z
+completed: 2026-06-07T21:03:28Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Check 2b in `bin/fw` `do_doctor` (around line 794-849) also walks `$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates/*.md` and counts diffs against `$FRAMEWORK_ROOT/.tasks/templates/*.md`.'
+  - 'WARN message stays class-agnostic (`Vendored-source drift: N file(s) out of sync` + `Run: fw vendor` hint). Per-class breakdown (`libs (N)` / `templates (N)` first-5 lines) makes both classes visible regardless of which one drifted more — pre-T-2243 the global "first 5" bucket could bury small templates drift behind large libs drift.'
+  - 'Bats test `tests/unit/t2243_doctor_self_vendor_templates.bats` exercises four states: no-templates-drift (templates class absent from WARN), templates-only drift (templates count==1 named), per-class split (libs and templates counted separately), remediation hint preserved — 4/4 PASS.'
+  - '[REVIEWER] Reviewer PASS — verified via `bin/fw reviewer T-2243` after L-387 Verification cleanup.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-07 — Per-class split vs. global counter'
+    chose: 'Split Check 2b into `_vdrift_libs` and `_vdrift_tpl` counters with separate WARN lines (`libs (N) — first M: ...` and `templates (N) — first M: ...`).'
+    rationale: 'A single global "first 5" bucket let large libs drift bury small templates drift entirely (the framework''s `.agentic-framework/` carries 64 pre-existing libs drifts day-to-day; 1 templates drift would land at position 65 and never appear in the list). Per-class lists mirror the pre-push gate''s `would sync N <class>(s)` shape from T-2240/T-2241, so dev mental model is identical between the inspection (doctor) and gate (pre-push) surfaces.'
+    alternatives_rejected: ['Bump the global cap from 5 to 20 — keeps the bury risk just one regression away; doesn''t structurally fix the asymmetry.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 35 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 35
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2243-fw-doctor-self-vendor-drift-warn--f2-nm-.md
+generated_by: context-agent-hybrid
