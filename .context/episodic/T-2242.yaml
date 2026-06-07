@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2242: Class-agnostic wording for T-2240 self-vendor drift block message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T20:10:44Z
+# ============================================================================
+
+task_id: T-2242
+task_name: "Class-agnostic wording for T-2240 self-vendor drift block message"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T20:06:57Z
+completed: 2026-06-07T20:10:37Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-07T22:10:31+02:00
+last_commit: 2026-06-07T22:10:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  class-agnostic wording for T-2240 self-vendor block message
+
+# Key outcomes
+outcomes:
+  - 'Slice 1 (hook source): `agents/git/lib/hooks.sh` — the BLOCK branch''s diagnostic line and fix command, plus the WARN branch''s class note, all read class-agnostically (no hard-coded "lib/" in the surface text). The strings "is stale relative to lib/" and "may diverge from lib/" no longer appear in the source; the `git add .agentic-framework/lib/` fix command becomes `git add .agentic-framework/`'
+  - 'Slice 2 (installed hook parity): after `bin/fw git install-hooks --force`, `.git/hooks/pre-push` contains the new class-agnostic strings; the lib-only strings no longer appear in the installed hook'
+  - 'Slice 3 (bats coverage updated): `tests/unit/t2240_pre_push_self_vendor_gate.bats:t2` asserts the class-agnostic `git add .agentic-framework/` plus the existing checks (canonical block sentence, both bypass mechanisms named, fix command copy-pasteable). 5/5 PASS'
+  - 'Slice 4 (live smoke + reviewer): touch a template-only drift (no lib/ drift); invoke the installed hook with synthetic stdin; verify the block message no longer hard-codes "lib/" but the `would sync N template(s)` line still names the class. Restore the template. Reviewer scan: `bin/fw reviewer T-2242` → Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/git/lib/hooks.sh'
+  - '.tasks/active/T-2242-class-agnostic-wording-for-t-2240-self-v.md'
+  - 'tests/unit/t2240_pre_push_self_vendor_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-07T22:10:31"
+    action: "T-2242: class-agnostic wording for T-2240 self-vendor block message"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 3
+  lines_added: 203
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2242-class-agnostic-wording-for-t-2240-self-v.md
+generated_by: context-agent-hybrid
