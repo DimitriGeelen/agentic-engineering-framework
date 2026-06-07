@@ -357,3 +357,17 @@ observations:
     tags: [forensics]
     status: dismissed
     promoted_to: null
+  - id: OBS-051
+    text: "status"
+    captured: 2026-06-07T12:02:45Z
+    context_task: T-1687
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-052
+    text: "resolve"
+    captured: 2026-06-07T12:05:26Z
+    context_task: T-1687
+    tags: []
+    status: dismissed
+    promoted_to: null
