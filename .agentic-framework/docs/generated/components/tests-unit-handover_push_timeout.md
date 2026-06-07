@@ -14,13 +14,13 @@ hours. Default bound 15s, override via FW_HANDOVER_PUSH_TIMEOUT.
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/handover/handover.sh` | calls |
-| `agents/context/checkpoint.sh` | calls |
-| `C-008` | calls |
-| `agents/handover/handover.sh` | tests |
-| `C-008` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [handover](/docs/generated/agents-handover-handover) | tests | Handover Agent - Mechanical Operations |
+| [checkpoint](/docs/generated/checkpoint) | tests | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-handover_push_timeout.yaml`*

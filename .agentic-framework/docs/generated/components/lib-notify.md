@@ -21,17 +21,17 @@ Design: Fire-and-forget, backgrounded, never blocks the calling script.
 
 ## Used By (9)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `agents/context/check-tier0.sh` | called_by |
-| `agents/task-create/update-task.sh` | called_by |
-| `agents/audit/audit.sh` | called_by |
-| `tests/unit/lib_notify.bats` | called-by |
-| `agents/handover/handover.sh` | called_by |
-| `tests/unit/lib_notify.bats` | called_by |
-| `lib/pending.sh` | called_by |
-| `tests/unit/lib_notify.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [check-tier0](/docs/generated/agents-context-check-tier0) | called_by | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [lib_notify](/docs/generated/tests-unit-lib_notify) | called-by | Unit tests for notify (7 tests) |
+| [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
+| [lib_notify](/docs/generated/tests-unit-lib_notify) | called_by | Unit tests for notify (7 tests) |
+| [pending](/docs/generated/lib-pending) | called_by | TODO: describe what this component does |
+| [lib_notify](/docs/generated/tests-unit-lib_notify) | tests_by | Unit tests for notify (7 tests) |
 
 ## Related
 

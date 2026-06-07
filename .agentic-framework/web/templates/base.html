@@ -1,5 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en"
+      data-theme="{{ wt_appearance.mode | default('light') }}"
+      data-wt-palette="{{ wt_appearance.palette | default('stone') }}"
+      data-wt-type="{{ wt_appearance.type | default('inter') }}"
+      data-wt-density="{{ wt_appearance.density | default('compact') }}"
+      data-wt-nav="{{ wt_appearance.nav | default('topbar') }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,9 +14,19 @@
         (function(){var t=localStorage.getItem('wt-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);})();
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
+    <!-- arc-007 S0 (T-1991): foundation tokens + Pico-bridge. MUST load after pico. -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/foundations.css') }}">
+    {#- T-2033 F4b: preload all type-pairing webfonts so switching a preset/type does
+        NOT trigger a font-swap reflow (font-display:swap renders fallback first, then
+        re-lays-out when the woff2 arrives — the "layout switches several times" the
+        appearance picker showed). Self-hosted on LAN, woff2-subset (~20KB each). -#}
+    {%- for f in ['inter-400','inter-600','geist-400','geist-600','plex-400','plex-600','manrope-400','manrope-600','newsreader-400','newsreader-600','jetbrainsmono-400'] %}
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="{{ url_for('static', filename='fonts/' + f + '.woff2') }}">
+    {%- endfor %}
     <script src="{{ url_for('static', filename='htmx.min.js') }}"></script>
     <script src="{{ url_for('static', filename='htmx-ext-sse.js') }}"></script>
     <script src="{{ url_for('static', filename='csrf-htmx.js') }}"></script>
+    <script src="{{ url_for('static', filename='htmx-toast.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='highlight-github-dark.min.css') }}">
     <script src="{{ url_for('static', filename='highlight.min.js') }}"></script>
     <script src="{{ url_for('static', filename='marked.min.js') }}"></script>
@@ -84,20 +99,35 @@
             color: var(--pico-primary);
             font-weight: 600;
         }
+        /* Subsection label inside a grouped dropdown (T-2008, arc-007 S2a) */
+        nav.site-nav details.dropdown ul li.nav-subsection-label {
+            font-family: var(--wt-font-mono, monospace);
+            font-size: 0.68rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--pico-muted-color);
+            padding: 0.55rem 0.75rem 0.2rem;
+            pointer-events: none;
+            user-select: none;
+        }
+        nav.site-nav details.dropdown ul li.nav-subsection-label:first-child { padding-top: 0.25rem; }
 
-        /* Search link */
-        nav.site-nav .nav-search a {
+        /* Search + settings icon links (share styling) */
+        nav.site-nav .nav-search a,
+        nav.site-nav .nav-settings a {
             display: flex; align-items: center;
             padding: 0.4rem 0.6rem;
             text-decoration: none;
-            color: var(--pico-color);
+            color: var(--wt-text);
             border-radius: var(--pico-border-radius);
             font-size: 0.925rem;
         }
-        nav.site-nav .nav-search a:hover {
+        nav.site-nav .nav-search a:hover,
+        nav.site-nav .nav-settings a:hover {
             background: var(--pico-primary-focus);
         }
-        nav.site-nav .nav-search svg {
+        nav.site-nav .nav-search svg,
+        nav.site-nav .nav-settings svg {
             width: 1rem; height: 1rem;
             stroke: currentColor; stroke-width: 2; fill: none;
         }
@@ -155,6 +185,157 @@
             border-radius: var(--pico-border-radius); margin-top: 1.5rem;
         }
         .coming-soon h3 { color: var(--pico-muted-color); }
+        /* ── Breadcrumb (T-2009, arc-007 S2b) ───────────────── */
+        nav.wt-breadcrumb {
+            /* override Pico's default nav { justify-content: space-between } */
+            display: flex; justify-content: flex-start;
+            align-items: center; flex-wrap: wrap; gap: 0.4rem;
+            font-family: var(--wt-font-mono, monospace);
+            font-size: 0.72rem; letter-spacing: 0.02em;
+            color: var(--pico-muted-color);
+            margin-bottom: 1rem;
+        }
+        nav.wt-breadcrumb > * { margin: 0; padding: 0; }
+        nav.wt-breadcrumb a { color: var(--pico-muted-color); text-decoration: none; }
+        nav.wt-breadcrumb a:hover { color: var(--pico-primary); text-decoration: underline; }
+        nav.wt-breadcrumb [aria-current="page"] { color: var(--pico-color); font-weight: 600; }
+        nav.wt-breadcrumb .wt-breadcrumb-sep { color: var(--pico-muted-border-color); }
+        /* ── Pinned pages (T-2010, arc-007 S2c) ─────────────── */
+        /* Star toggle in the breadcrumb bar */
+        nav.wt-breadcrumb .wt-breadcrumb-spacer { flex: 1; }
+        .wt-pin-toggle {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            background: none; border: 1px solid var(--pico-muted-border-color);
+            border-radius: 999px; padding: 0.1rem 0.5rem; margin: 0;
+            font-family: var(--wt-font-mono, monospace); font-size: 0.7rem;
+            color: var(--pico-muted-color); cursor: pointer; width: auto; line-height: 1.5;
+        }
+        .wt-pin-toggle:hover {
+            color: var(--pico-primary); border-color: var(--pico-primary);
+            background: var(--pico-primary-focus);
+        }
+        .wt-pin-toggle.pinned { color: var(--pico-primary); border-color: var(--pico-primary); }
+        /* Pinned strip in the top nav */
+        nav.site-nav .nav-pins { display: inline-flex; align-items: center; gap: 0.2rem; }
+        nav.site-nav .nav-pins:not(:empty) { margin-right: 0.4rem; }
+        nav.site-nav .nav-pin {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.3rem 0.55rem; font-size: 0.82rem; text-decoration: none;
+            color: var(--pico-color); border-radius: var(--pico-border-radius);
+            background: var(--pico-primary-focus); white-space: nowrap;
+        }
+        nav.site-nav .nav-pin:hover { opacity: 0.82; text-decoration: none; }
+        nav.site-nav .nav-pin .nav-pin-star { color: var(--pico-primary); font-size: 0.78rem; line-height: 1; }
+
+        /* ── Nav layouts (T-2011, arc-007 S2d) ──────────────────
+           Three layouts share ONE DOM, switched via the html[data-wt-nav]
+           attribute (mirrors the S0 data-wt-* axes). Default = topbar (the
+           horizontal bar above). Sidebar + rail are desktop affordances —
+           below 769px every layout falls back to the hamburger (mobile rules
+           further down still apply). Group icons render only in the rail. */
+        nav.site-nav details.dropdown > summary { display: inline-flex; align-items: center; gap: 0.35rem; }
+        nav.site-nav .nav-group-icon { display: none; width: 1.1rem; height: 1.1rem; stroke: currentColor; stroke-width: 2; fill: none; }
+
+        @media (min-width: 769px) {
+            /* ── Layout B: persistent left sidebar ──────────────── */
+            html[data-wt-nav="sidebar"] nav.site-nav {
+                position: fixed; top: 0; left: 0; bottom: 0; width: 232px;
+                z-index: 100; overflow-y: auto; overflow-x: hidden;
+                border-right: 1px solid var(--pico-muted-border-color); border-bottom: none;
+                padding: 0.75rem 0.6rem;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul { flex-direction: column; align-items: stretch; gap: 0.1rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li { width: 100%; }
+            html[data-wt-nav="sidebar"] nav.site-nav .brand { margin: 0 0 0.6rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav .spacer { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown { width: 100%; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown > summary { width: 100%; }
+            /* groups render as in-place accordions (collapsed until clicked) —
+               this is why the 16-item Govern list is no longer a flat wall */
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown ul {
+                position: static; box-shadow: none; border: none; min-width: 0;
+                margin: 0; padding: 0.1rem 0 0.2rem 0.7rem; background: transparent;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav .nav-pins { flex-direction: column; align-items: stretch; gap: 0.1rem; }
+            html[data-wt-nav="sidebar"] nav.site-nav .nav-pin { width: 100%; }
+            /* T-2033 F2: offset content via body padding (not margin-left on full-width
+               children). margin-left on a width:100% block pushes it off-screen by the
+               margin width → a permanent horizontal scrollbar. padding-left on the
+               (border-box) body shrinks the content area instead, so no overflow. The
+               fixed nav sits in the padding gutter, unaffected. */
+            html[data-wt-nav="sidebar"] body { padding-left: 232px; }
+            /* T-2033 F2 residual: percentage-width content can round 1-2px past the
+               padded box, leaving a hair-line horizontal scroll. Clip on the ROOT
+               (not body — body clip leaves the document scroller free) removes it with
+               no visible scrollbar. Vertical scroll is untouched; intentional wide
+               content (tables) scrolls in its own .table-responsive wrapper. */
+            html[data-wt-nav="sidebar"],
+            html[data-wt-nav="rail"] { overflow-x: clip; }
+            /* T-2033 F3: drop the mobile-only hamburger row and the empty pins row —
+               on desktop they reserve ~56px each in the column (158px of dead space
+               under the logo). NOTE: split into single-level :has rules — :has() may
+               NOT be nested inside :has(), and one invalid selector drops the whole
+               grouped rule. Pins are hidden by default in the column, then re-shown
+               only when an actual pin exists. */
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(> .nav-toggle),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(> .nav-toggle) { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(> .nav-pins),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(> .nav-pins) { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav > ul > li:has(.nav-pin),
+            html[data-wt-nav="rail"]    nav.site-nav > ul > li:has(.nav-pin) { display: block; }
+            /* T-2033 F5: make the sidebar accordion sub-items reliably clickable.
+               Two pre-existing faults compounded: (1) Pico's `nav ul{display:flex}`
+               overrides the native <details> collapse, so a CLOSED group's <ul> stayed
+               displayed (in a 0-height/content-hidden limbo) instead of cleanly hidden;
+               (2) the <summary>'s hit area extends ~50px past its 40px box (a Pico
+               dropdown artifact), so it swallowed clicks on the OPEN sub-links beneath
+               it — clicks toggled the group instead of routing. Fix: drive display off
+               [open] explicitly, and lift the open list into its own stacking context
+               above the summary so the <a> is the hit target. Proven: a real pointer
+               click on a sub-item now navigates (was intercepted by the summary). */
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown:not([open]) > ul { display: none; }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown[open] > ul {
+                display: flex; flex-direction: column;
+                position: relative; z-index: 2;
+            }
+            html[data-wt-nav="sidebar"] nav.site-nav details.dropdown > summary { position: relative; z-index: 1; }
+
+            /* ── Layout C: slim icon rail + group flyouts ───────── */
+            html[data-wt-nav="rail"] nav.site-nav {
+                position: fixed; top: 0; left: 0; bottom: 0; width: 60px;
+                z-index: 100;
+                /* T-2033 F1: must be `overflow: visible` so the group flyouts (absolute,
+                   left:56px) escape the 60px rail. The previous `overflow-y:auto;
+                   overflow-x:visible` was a no-op: per CSS spec overflow-x is FORCED to
+                   compute as `auto` when overflow-y is non-visible — so every flyout was
+                   clipped to nothing (the "subitems not wired" bug). The rail holds only
+                   ~9 icons (≤400px), well within any desktop height, so dropping the
+                   scroll container is safe. */
+                overflow: visible;
+                border-right: 1px solid var(--pico-muted-border-color); border-bottom: none;
+                padding: 0.6rem 0;
+            }
+            html[data-wt-nav="rail"] nav.site-nav > ul { flex-direction: column; align-items: center; gap: 0.2rem; }
+            html[data-wt-nav="rail"] nav.site-nav .brand { margin: 0 0 0.6rem; font-size: 0; }  /* hide brand text, keep logo img */
+            html[data-wt-nav="rail"] nav.site-nav .spacer { display: none; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-group-label { display: none; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-group-icon { display: inline-block; }
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown > summary {
+                justify-content: center; width: 40px; height: 40px; padding: 0;
+            }
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown > summary::after { display: none; }  /* drop the ▾ marker */
+            /* groups open as flyout menus to the right of the rail */
+            html[data-wt-nav="rail"] nav.site-nav details.dropdown ul {
+                position: absolute; left: 56px; top: auto; min-width: 12rem;
+                box-shadow: 0 4px 14px rgba(0,0,0,.16);
+            }
+            html[data-wt-nav="rail"] nav.site-nav .nav-docs a { padding: 0.4rem 0.3rem; font-size: 0.78rem; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pins { flex-direction: column; align-items: center; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pin { padding: 0.3rem; }
+            html[data-wt-nav="rail"] nav.site-nav .nav-pin .nav-pin-star ~ * { display: none; }  /* star only, drop label in rail */
+            /* T-2033 F2: offset via body padding, not margin-left (see sidebar note). */
+            html[data-wt-nav="rail"] body { padding-left: 60px; }
+        }
         footer.site-footer {
             text-align: center; padding: 1.5rem 0;
             color: var(--pico-muted-color); font-size: 0.875rem;
@@ -270,6 +451,57 @@
 
         /* Components */
         .btn-sm { width: auto; padding: 0.3rem 0.5rem; font-size: 0.8rem; margin: 0; }
+
+        /* T-1909: arc-membership badge — surfaced wherever a task is rendered. */
+        .arc-badge {
+            /* T-1968 v2: Playwright check showed v1 (color: var(--pico-color))
+               resolved to the Pico LINK color inside <a> (the badge is an <a>),
+               not the page text color — still produced dark-blue-on-dark-slate.
+               Real fix: --pico-secondary-inverse (white) — the actual contrast
+               partner of --pico-secondary-background. Same color as the
+               existing :hover rule, so rest and hover match in legibility. */
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            background: var(--pico-secondary-background);
+            color: var(--pico-secondary-inverse);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            border: 1px solid var(--pico-muted-border-color);
+            white-space: nowrap;
+        }
+        .arc-badge:hover {
+            background: var(--pico-secondary);
+            color: var(--pico-secondary-inverse);
+            text-decoration: none;
+        }
+
+        /* T-1982: BVP_norm chip — surfaced on /tasks listing cards + list. */
+        .bvp-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            background: var(--pico-muted-background, #e8e8e8);
+            color: var(--pico-color);
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+            border: 1px solid var(--pico-muted-border-color);
+            white-space: nowrap;
+            margin-left: 0.25rem;
+        }
+        .bvp-badge:hover {
+            background: var(--pico-secondary-background);
+            text-decoration: none;
+        }
+        .bvp-badge-proposed em {
+            font-style: italic;
+        }
     </style>
 </head>
 <body hx-boost="true" hx-target="#content" hx-swap="innerHTML">
@@ -288,25 +520,57 @@
                 </button>
             </li>
 
+            {#- Pinned-pages strip (T-2010, arc-007 S2c): user-starred nav
+                destinations as quick-links. Outside .nav-items so pins stay
+                visible on mobile. #wt-pins is oob-refreshed on pin toggle. -#}
+            <li>{% include "_pins.html" %}</li>
+
+            {#- Nav items may be leaves (label, endpoint, icon) or subsections
+                (label, [items]). These macros render + active-detect both shapes.
+                Discriminator: a leaf's 2nd element is the endpoint string; a
+                subsection's 2nd element is a list. (T-2008, arc-007 S2a) -#}
+            {%- macro nav_render(items) -%}
+                {%- for item in items -%}
+                    {%- if item[1] is string -%}
+                        <li>
+                            <a href="{{ url_for(item[1]) }}"
+                               {% if item[1] == active_endpoint %}aria-current="page"{% endif %}
+                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ item[0] }}</a>
+                        </li>
+                    {%- else -%}
+                        <li class="nav-subsection-label">{{ item[0] }}</li>
+                        {{ nav_render(item[1]) }}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endmacro -%}
+            {%- macro nav_active(items) -%}
+                {%- for item in items -%}
+                    {%- if item[1] is string -%}
+                        {%- if item[1] == active_endpoint -%}x{%- endif -%}
+                    {%- else -%}
+                        {{- nav_active(item[1]) -}}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endmacro -%}
+            {#- Group icons (T-2011, arc-007 S2d): shown only in the icon-rail
+                layout, where group labels are hidden. Keyed by group name; an
+                unknown group falls back to a generic dot. -#}
+            {%- set nav_group_icons = {
+                'Work': '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+                'Knowledge': '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+                'Architecture': '<line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/>',
+                'Govern': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'
+            } -%}
             <span class="nav-items">
             {% for group_name, items in nav_groups %}
             <li>
-                {%- set ns = namespace(active=false) -%}
-                {%- for label, endpoint, icon in items -%}
-                    {%- if endpoint == active_endpoint -%}{%- set ns.active = true -%}{%- endif -%}
-                {%- endfor -%}
-                <details class="dropdown{% if ns.active %} active-group{% endif %}">
-                    <summary>{{ group_name }}</summary>
+                <details class="dropdown{% if 'x' in nav_active(items) %} active-group{% endif %}">
+                    <summary title="{{ group_name }}">
+                        <svg class="nav-group-icon" viewBox="0 0 24 24" aria-hidden="true">{{ nav_group_icons.get(group_name, '<circle cx="12" cy="12" r="3"/>') | safe }}</svg>
+                        <span class="nav-group-label">{{ group_name }}</span>
+                    </summary>
                     <ul dir="ltr">
-                        {% for label, endpoint, icon in items %}
-                        <li>
-                            <a href="{{ url_for(endpoint) }}"
-                               {% if endpoint == active_endpoint %}aria-current="page"{% endif %}
-                               hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
-                                {{ label }}
-                            </a>
-                        </li>
-                        {% endfor %}
+                        {{ nav_render(items) }}
                     </ul>
                 </details>
             </li>
@@ -321,9 +585,9 @@
             </li>
 
             <li class="nav-search">
-                <a href="{{ url_for('discovery.search_view') }}" title="Search"
-                   {% if active_endpoint == 'discovery.search_view' %}aria-current="page"{% endif %}
-                   hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+                <a href="{{ url_for('discovery.search_view') }}" title="Search or jump  (⌘K)"
+                   data-palette-open
+                   {% if active_endpoint == 'discovery.search_view' %}aria-current="page"{% endif %}>
                     <svg viewBox="0 0 24 24" aria-hidden="true">
                         <circle cx="11" cy="11" r="7"></circle>
                         <line x1="16.5" y1="16.5" x2="22" y2="22"></line>
@@ -331,9 +595,19 @@
                 </a>
             </li>
 
+            <li class="nav-settings">
+                <a href="{{ url_for('settings.appearance_page') }}" title="Settings — appearance"
+                   {% if active_endpoint == 'settings.appearance_page' %}aria-current="page"{% endif %}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </a>
+            </li>
+
             <li>
                 <button class="theme-toggle" onclick="wtToggleTheme()" aria-label="Toggle dark mode"
-                        title="Toggle dark mode" style="background:none;border:none;padding:0.4rem;cursor:pointer;color:var(--pico-color);line-height:1;font-size:1.1rem;">
+                        title="Toggle dark mode" style="background:none;border:none;padding:0.4rem;cursor:pointer;color:var(--wt-text);line-height:1;font-size:1.1rem;">
                     <span class="theme-icon-light" style="display:none;">&#9790;</span>
                     <span class="theme-icon-dark" style="display:none;">&#9728;</span>
                 </button>
@@ -379,6 +653,76 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- ⌘K Command Palette (T-2012, arc-007 S6a) — lives in the shell so the
+         document-level keydown listener survives htmx #content swaps. -->
+    <script type="application/json" id="wt-nav-items">{{ wt_palette_items | default([]) | tojson }}</script>
+    <div id="wt-command-palette" class="wt-palette" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Command palette">
+        <div class="wt-palette-backdrop" data-palette-close></div>
+        <div class="wt-palette-box" role="document">
+            <input id="wt-palette-input" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="Search or jump to…  (Esc to close)" aria-label="Search or jump to a page" />
+            <ul id="wt-palette-results" class="wt-palette-results" role="listbox"></ul>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='command-palette.js') }}" defer></script>
+
+    <!-- ? Keyboard-shortcuts overlay (T-2013, arc-007 S6b) — shell-level, like the
+         palette, so its listener survives htmx swaps. Static cheat-sheet (no backend). -->
+    <div id="wt-shortcuts-overlay" class="wt-shortcuts" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+        <div class="wt-shortcuts-backdrop" data-shortcuts-close></div>
+        <div class="wt-shortcuts-box" role="document">
+            <h3 class="wt-shortcuts-title">Keyboard shortcuts</h3>
+            <dl class="wt-shortcuts-list">
+                <div><dt><kbd>⌘</kbd><kbd>K</kbd> <span class="wt-kbd-alt">/ <kbd>Ctrl</kbd><kbd>K</kbd></span></dt><dd>Open command palette — search or jump to any page</dd></div>
+                <div><dt><kbd>?</kbd></dt><dd>Show this shortcuts overlay</dd></div>
+                <div><dt><kbd>Esc</kbd></dt><dd>Close the palette or this overlay</dd></div>
+                <div><dt><kbd>↑</kbd><kbd>↓</kbd></dt><dd>Move the highlighted result in the palette</dd></div>
+                <div><dt><kbd>Enter</kbd></dt><dd>Jump to / open the highlighted result</dd></div>
+            </dl>
+            <p class="wt-shortcuts-hint">Press <kbd>Esc</kbd> to close</p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='shortcuts-overlay.js') }}" defer></script>
+
+    <!-- Slide-in task side panel (T-2015, arc-007 S4a) — shell-level, like the
+         palette/overlay, so its open/dock/Esc listeners survive htmx #content
+         swaps. Clicking a task card/row on /tasks loads the lean read fragment
+         (/tasks/<id>/panel) into #wt-task-panel-body. Initial dock from prefs
+         (wt_panel_dock) is applied server-side so it never flashes the wrong dock. -->
+    <div id="wt-task-panel" class="wt-task-panel dock-{{ wt_panel_dock | default('right') }}" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Task detail">
+        <div class="wt-task-panel-backdrop" data-task-panel-close></div>
+        <div class="wt-task-panel-box" role="document">
+            <div class="wt-task-panel-dockbar">
+                <div class="wt-task-panel-docks" role="group" aria-label="Dock position">
+                    <button type="button" class="wt-dock-btn" data-dock="left"   title="Dock left"        aria-label="Dock left">&#9612;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="right"  title="Dock right"       aria-label="Dock right">&#9616;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="bottom" title="Dock bottom"      aria-label="Dock bottom">&#9620;</button>
+                    <button type="button" class="wt-dock-btn" data-dock="full"   title="Fullscreen"       aria-label="Fullscreen">&#9633;</button>
+                </div>
+                <button type="button" class="wt-task-panel-x" data-task-panel-close title="Close (Esc)" aria-label="Close panel">&times;</button>
+            </div>
+            <div id="wt-task-panel-body" class="wt-task-panel-body" aria-live="polite">
+                <p class="muted" style="padding:1rem;">Loading…</p>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='task-panel.js') }}" defer></script>
+
+    {# arc-007 S4e/S6c (T-2018): bulk-action floating bar. Shell-level (outside
+       #content) so its delegated listeners survive every htmx swap. Hidden until a
+       task checkbox is ticked; fans out to /api/task/<id>/horizon per selection. #}
+    <div id="wt-bulk-bar" class="wt-bulk-bar" hidden aria-hidden="true" role="region" aria-label="Bulk actions">
+        <span id="wt-bulk-count" class="wt-bulk-count">0 selected</span>
+        <span class="wt-bulk-label">Set horizon:</span>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="now">Now</button>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="next">Next</button>
+        <button type="button" class="wt-bulk-btn" data-bulk-horizon="later">Later</button>
+        <button type="button" class="wt-bulk-clear" data-bulk-clear title="Clear selection">Clear</button>
+    </div>
+    <script src="{{ url_for('static', filename='bulk-actions.js') }}" defer></script>
+    {# S4d (T-2019): kanban drag-to-reorder — shell-level, document-delegated, survives swaps. #}
+    <script src="{{ url_for('static', filename='kanban-drag.js') }}" defer></script>
+
     <!-- Footer -->
     <footer class="site-footer container">
         Watchtower {{ fw_version }} &mdash; {{ project_name | default("Agentic Engineering Framework") }}
@@ -408,6 +752,196 @@
             animation: blink 1s steps(3, end) infinite;
         }
         @keyframes blink { to { opacity: 0.3; } }
+        /* ── ⌘K Command Palette (T-2012, arc-007 S6a) ─────────── */
+        .wt-palette[hidden] { display: none; }
+        .wt-palette {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: flex-start; justify-content: center;
+            padding-top: 12vh;
+        }
+        .wt-palette-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            animation: wt-palette-fade 0.12s ease-out;
+        }
+        .wt-palette-box {
+            position: relative; width: min(92vw, 580px);
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            border: 1px solid var(--pico-card-border-color, var(--pico-muted-border-color));
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            overflow: hidden;
+            animation: wt-palette-pop 0.12s ease-out;
+        }
+        #wt-palette-input {
+            width: 100%; margin: 0; border: 0; border-radius: 0;
+            padding: 1rem 1.1rem; font-size: 1.05rem; line-height: 1.3;
+            background: transparent; color: var(--pico-color);
+            border-bottom: 1px solid var(--pico-muted-border-color);
+        }
+        #wt-palette-input:focus { outline: none; box-shadow: none; }
+        .wt-palette-results { list-style: none; margin: 0; padding: 0.35rem; max-height: 52vh; overflow-y: auto; }
+        .wt-palette-results li {
+            display: flex; align-items: baseline; gap: 0.6rem;
+            padding: 0.55rem 0.75rem; border-radius: 8px; cursor: pointer;
+            font-size: 0.92rem; color: var(--pico-color);
+        }
+        .wt-palette-results li[aria-selected="true"],
+        .wt-palette-results li:hover { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+        .wt-palette-results li .wt-palette-group { margin-left: auto; font-size: 0.72rem; opacity: 0.6; }
+        .wt-palette-results li[aria-selected="true"] .wt-palette-group { opacity: 0.85; }
+        .wt-palette-results li.wt-palette-search { font-style: italic; opacity: 0.95; }
+        .wt-palette-empty { padding: 0.75rem; font-size: 0.85rem; opacity: 0.6; text-align: center; }
+        @keyframes wt-palette-fade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes wt-palette-pop  { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+        /* ── ? Keyboard-shortcuts overlay (T-2013, arc-007 S6b) ─── */
+        .wt-shortcuts[hidden] { display: none; }
+        .wt-shortcuts {
+            position: fixed; inset: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .wt-shortcuts-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            animation: wt-palette-fade 0.12s ease-out;
+        }
+        .wt-shortcuts-box {
+            position: relative; width: min(92vw, 460px);
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            border: 1px solid var(--pico-card-border-color, var(--pico-muted-border-color));
+            border-radius: 12px;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+            padding: 1.1rem 1.3rem 1rem;
+            animation: wt-palette-pop 0.12s ease-out;
+        }
+        .wt-shortcuts-title { margin: 0 0 0.8rem; font-size: 1.05rem; }
+        .wt-shortcuts-list { margin: 0; display: grid; gap: 0.55rem; }
+        .wt-shortcuts-list > div { display: flex; align-items: baseline; gap: 1rem; }
+        .wt-shortcuts-list dt { flex: 0 0 auto; min-width: 6.5rem; }
+        .wt-shortcuts-list dd { margin: 0; font-size: 0.9rem; opacity: 0.9; }
+        .wt-shortcuts kbd {
+            display: inline-block; padding: 0.1rem 0.4rem; margin: 0 0.1rem;
+            font-size: 0.78rem; font-family: var(--pico-font-family, monospace);
+            line-height: 1.4; color: var(--pico-color);
+            background: var(--pico-code-background-color, rgba(127,127,127,0.15));
+            border: 1px solid var(--pico-muted-border-color);
+            border-radius: 5px; box-shadow: 0 1px 0 var(--pico-muted-border-color);
+        }
+        .wt-shortcuts .wt-kbd-alt { font-size: 0.78rem; opacity: 0.6; }
+        .wt-shortcuts-hint { margin: 0.9rem 0 0; font-size: 0.78rem; opacity: 0.55; text-align: right; }
+
+        /* ── Slide-in task side panel (T-2015, arc-007 S4a) ───── */
+        .wt-task-panel[hidden] { display: none; }
+        .wt-task-panel { position: fixed; inset: 0; z-index: 1090; }
+        .wt-task-panel-backdrop {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.32);
+            animation: wt-panel-fade 0.15s ease-out;
+        }
+        @keyframes wt-panel-fade { from { opacity: 0; } to { opacity: 1; } }
+        .wt-task-panel-box {
+            position: absolute; display: flex; flex-direction: column;
+            background: var(--pico-card-background-color, var(--pico-background-color));
+            box-shadow: 0 0 40px rgba(0,0,0,0.28);
+            border: 1px solid var(--pico-muted-border-color);
+        }
+        /* Dock positions — class on the container, box positioned per dock. */
+        .wt-task-panel.dock-right .wt-task-panel-box {
+            top: 0; bottom: 0; right: 0; width: min(46rem, 92vw);
+            border-right: none; animation: wt-panel-in-right 0.2s ease-out;
+        }
+        .wt-task-panel.dock-left .wt-task-panel-box {
+            top: 0; bottom: 0; left: 0; width: min(46rem, 92vw);
+            border-left: none; animation: wt-panel-in-left 0.2s ease-out;
+        }
+        .wt-task-panel.dock-bottom .wt-task-panel-box {
+            left: 0; right: 0; bottom: 0; height: min(70vh, 44rem);
+            border-bottom: none; animation: wt-panel-in-bottom 0.2s ease-out;
+        }
+        .wt-task-panel.dock-full .wt-task-panel-box {
+            inset: 2.5vh 2.5vw; width: auto; height: auto; border-radius: 0.6rem;
+            animation: wt-panel-fade 0.15s ease-out;
+        }
+        @keyframes wt-panel-in-right  { from { transform: translateX(100%); } to { transform: none; } }
+        @keyframes wt-panel-in-left   { from { transform: translateX(-100%); } to { transform: none; } }
+        @keyframes wt-panel-in-bottom { from { transform: translateY(100%); } to { transform: none; } }
+        .wt-task-panel-dockbar {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--pico-muted-border-color);
+            background: var(--pico-background-color); flex: 0 0 auto;
+        }
+        .wt-task-panel-docks { display: flex; gap: 0.15rem; }
+        .wt-dock-btn, .wt-task-panel-x {
+            background: transparent; border: 1px solid transparent; cursor: pointer;
+            color: var(--pico-muted-color); padding: 0.15rem 0.45rem; margin: 0;
+            font-size: 0.95rem; line-height: 1.2; border-radius: 5px; width: auto;
+        }
+        .wt-dock-btn:hover, .wt-task-panel-x:hover {
+            background: var(--pico-code-background-color, rgba(127,127,127,0.15));
+            color: var(--pico-color);
+        }
+        .wt-task-panel.dock-left  .wt-dock-btn[data-dock="left"],
+        .wt-task-panel.dock-right .wt-dock-btn[data-dock="right"],
+        .wt-task-panel.dock-bottom .wt-dock-btn[data-dock="bottom"],
+        .wt-task-panel.dock-full  .wt-dock-btn[data-dock="full"] {
+            background: var(--pico-primary); color: var(--pico-primary-inverse);
+            border-color: var(--pico-primary);
+        }
+        .wt-task-panel-x { margin-left: auto; font-size: 1.3rem; }
+        .wt-task-panel-body { flex: 1 1 auto; overflow-y: auto; padding: 1.1rem 1.4rem; }
+        .wt-task-panel-titlebar { display: flex; align-items: baseline; gap: 0.75rem; }
+        .wt-task-panel-id { font-family: monospace; font-weight: 600; color: var(--pico-primary); }
+        .wt-task-panel-fullpage { margin-left: auto; font-size: 0.8rem; white-space: nowrap; }
+        .wt-task-panel-name { margin: 0.2rem 0 0.9rem; font-size: 1.25rem; line-height: 1.3; }
+        .wt-task-panel-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem 1rem; margin: 0 0 1rem; }
+        .wt-task-panel-meta > div { display: flex; gap: 0.5rem; align-items: baseline; }
+        .wt-task-panel-meta dt { flex: 0 0 4.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; color: var(--pico-muted-color); margin: 0; }
+        .wt-task-panel-meta dd { margin: 0; font-size: 0.9rem; }
+        /* S4b (T-2017): inline-edit cells in the panel meta grid */
+        .wt-task-panel-meta dd.wt-panel-edit-cell { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .wt-task-panel-meta .wt-panel-edit-cell form { margin: 0; }
+        .wt-task-panel-meta .wt-panel-edit-cell select { margin: 0; padding: 0.1rem 1.4rem 0.1rem 0.4rem; font-size: 0.85rem; height: auto; min-height: 0; width: auto; }
+        .wt-panel-edit-result { font-size: 0.75rem; color: var(--pico-muted-color); }
+        .wt-task-panel-detail section { margin: 1.1rem 0; }
+        .wt-task-panel-detail h3 { font-size: 0.95rem; margin: 0 0 0.5rem; }
+        .wt-task-panel-acs .ac-list { list-style: none; padding-left: 0; margin: 0; }
+        .wt-task-panel-acs .ac-list li { display: flex; gap: 0.5rem; align-items: flex-start; padding: 0.2rem 0; font-size: 0.88rem; }
+        .wt-ac-box {
+            flex: 0 0 auto; width: 1.05rem; height: 1.05rem; margin-top: 0.1rem;
+            border: 1px solid var(--pico-muted-border-color); border-radius: 3px;
+            text-align: center; line-height: 1rem; font-size: 0.8rem;
+        }
+        .wt-ac-box-checked { background: #10b981; border-color: #10b981; color: #fff; }
+        .wt-task-panel-acs .ac-checked { text-decoration: line-through; color: var(--pico-muted-color); }
+
+        /* arc-007 S4e/S6c (T-2018): bulk multi-select + floating action bar */
+        .wt-bulk-select { flex: 0 0 auto; margin: 0; cursor: pointer; }
+        .wt-bulk-bar {
+            position: fixed; left: 50%; bottom: 1.25rem; transform: translateX(-50%);
+            z-index: 1000; display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 0.85rem; border-radius: 999px;
+            background: var(--pico-card-background-color, #1f2430);
+            border: 1px solid var(--pico-muted-border-color);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35); font-size: 0.85rem;
+            animation: wt-bulk-rise 0.18s ease-out;
+        }
+        .wt-bulk-bar[hidden] { display: none; }
+        @keyframes wt-bulk-rise { from { opacity: 0; transform: translate(-50%, 0.5rem); } to { opacity: 1; transform: translate(-50%, 0); } }
+        .wt-bulk-count { font-weight: 600; }
+        .wt-bulk-label { color: var(--pico-muted-color); }
+        .wt-bulk-btn, .wt-bulk-clear {
+            margin: 0; padding: 0.2rem 0.7rem; font-size: 0.82rem; line-height: 1.3;
+            border-radius: 999px; width: auto; height: auto; cursor: pointer;
+        }
+        .wt-bulk-clear { background: transparent; border: 1px solid var(--pico-muted-border-color); color: var(--pico-muted-color); }
+
+        /* arc-007 S4d (T-2019): kanban drag-to-reorder (cross-column status change) */
+        .kanban-card[draggable="true"] { cursor: grab; }
+        .kanban-card.kanban-dragging { opacity: 0.45; cursor: grabbing; }
+        .kanban-column.kanban-drop-target {
+            outline: 2px dashed var(--pico-primary, #7aa2f7);
+            outline-offset: -4px;
+            background: color-mix(in srgb, var(--pico-primary, #7aa2f7) 8%, transparent);
+        }
     </style>
 
     <script>
@@ -435,14 +969,10 @@
         }
 
         /* ── htmx error handling → toast ─────────────────────── */
-        document.body.addEventListener('htmx:responseError', function(evt) {
-            var msg = 'Save failed';
-            try { msg = evt.detail.xhr.responseText.replace(/<[^>]*>/g, '').trim().substring(0, 100) || msg; } catch(e) {}
-            showToast(msg, 'error');
-        });
-        document.body.addEventListener('htmx:sendError', function() {
-            showToast('Network error — check server', 'error');
-        });
+        // Listeners moved to web/static/htmx-toast.js (T-2074) so standalone
+        // templates (review.html — see L-269/L-316) get the same handlers.
+        // The inline showToast() above stays for non-htmx callers; htmx-toast.js
+        // detects window.showToast and re-uses it rather than redefining.
 
         /* ── Loading state on htmx forms ─────────────────────── */
         document.body.addEventListener('htmx:beforeRequest', function(evt) {

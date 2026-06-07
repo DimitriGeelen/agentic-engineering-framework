@@ -19,15 +19,15 @@ Exempt dispatches:
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/dispatch/preamble.md` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [preamble](/docs/generated/agents-dispatch-preamble) | reads | Mandatory dispatch preamble — output rules for sub-agents to prevent context explosion (T-073). Requires disk writes, <=5 line responses. |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/check-agent-dispatch.sh` | complements |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-agent-dispatch](/docs/generated/agents-context-check-agent-dispatch) | complements | Agent Dispatch Gate — PreToolUse hook for Agent tool. Tracks dispatches per session, blocks 3rd+ unless approved or TermLink not installed. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-dispatch-pre.yaml`*

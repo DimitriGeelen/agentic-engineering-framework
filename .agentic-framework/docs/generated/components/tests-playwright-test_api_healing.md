@@ -13,10 +13,10 @@ regardless of whether the task exists (diagnosis output shows the error)
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/session.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [session](/docs/generated/web-blueprints-session) | calls | Flask blueprint: Session |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_healing.yaml`*

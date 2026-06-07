@@ -114,7 +114,77 @@ def learnings():
 def gaps():
     gaps_list = load_concerns()
 
-    return render_page("gaps.html", page_title="Gaps", gaps=gaps_list)
+    # T-2185: surface gauge state for each gap so the template can render
+    # the Close button enabled/disabled based on closure_check_command verdict.
+    # Bounded — only run gauges for status:watching gaps with a command set.
+    try:
+        from lib.gaps import gauge_state as _gauge_state
+    except ImportError:
+        _gauge_state = None
+
+    gauge_by_id = {}
+    if _gauge_state:
+        for g in gaps_list:
+            if g.get("status") == "watching" and g.get("closure_check_command"):
+                try:
+                    gauge_by_id[g["id"]] = _gauge_state(g["id"], project_root=PROJECT_ROOT)
+                except Exception as e:
+                    log.warning("gauge_state failed for %s: %s", g.get("id"), e)
+
+    return render_page(
+        "gaps.html",
+        page_title="Gaps",
+        gaps=gaps_list,
+        gauge_by_id=gauge_by_id,
+    )
+
+
+@bp.route("/gaps/<gap_id>/close", methods=["POST"])
+def gaps_close(gap_id):
+    """T-2185: flip a status:watching gap to status:closed via gauge check.
+
+    Body (form or JSON): optional `rationale` (required if `override=on`/true)
+    and `override` flag. Returns JSON on success, JSON with `error` on refuse.
+    HTMX-aware: when HX-Request header is present, returns an HTML fragment
+    for inline row swap.
+    """
+    from lib.gaps import close_gap, GapCloseError
+
+    rationale = (request.form.get("rationale") or request.json and request.json.get("rationale") if request.is_json else request.form.get("rationale")) or None
+    override_raw = (request.form.get("override") or (request.json or {}).get("override") if request.is_json else request.form.get("override")) or ""
+    override = str(override_raw).lower() in ("true", "1", "on", "yes")
+
+    actor = "web"
+    try:
+        result = close_gap(
+            gap_id,
+            rationale=rationale,
+            override=override,
+            actor=actor,
+            project_root=PROJECT_ROOT,
+        )
+    except GapCloseError as e:
+        from flask import jsonify
+        if request.headers.get("HX-Request"):
+            return (
+                f'<div class="error" data-gap-id="{gap_id}">Refused ({e.code}): {e.message}</div>',
+                e.code,
+                {"Content-Type": "text/html"},
+            )
+        return jsonify({"ok": False, "gap_id": gap_id, "code": e.code, "error": e.message}), e.code
+
+    if request.headers.get("HX-Request"):
+        # Inline row swap fragment — minimal markup, server-rendered.
+        return (
+            f'<div class="success" data-gap-id="{gap_id}">'
+            f'<strong>Closed</strong> {gap_id} — '
+            f'verdict={result["verdict"]}, closed {result["closed_date"]}'
+            f'</div>',
+            200,
+            {"Content-Type": "text/html"},
+        )
+    from flask import jsonify
+    return jsonify(result), 200
 
 
 @bp.route("/api/learnings")

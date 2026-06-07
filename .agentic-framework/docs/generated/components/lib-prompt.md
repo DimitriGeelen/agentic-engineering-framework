@@ -31,15 +31,15 @@ When dispatching sub-agents, include in the prompt:
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `prompts/` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `prompts/` | reads | — |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | sourced_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | sourced_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-prompt.yaml`*

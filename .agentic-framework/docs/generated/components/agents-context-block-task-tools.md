@@ -12,16 +12,16 @@ task list. Use fw work-on to create real framework tasks instead.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/paths.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/block_task_tools.bats` | called_by |
-| `tests/unit/block_task_tools.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [block_task_tools](/docs/generated/tests-unit-block_task_tools) | called_by | TODO: describe what this component does |
+| [block_task_tools](/docs/generated/tests-unit-block_task_tools) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-block-task-tools.yaml`*

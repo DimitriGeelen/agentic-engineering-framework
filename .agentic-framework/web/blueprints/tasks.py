@@ -5,8 +5,9 @@ from datetime import datetime, timezone
 
 import markdown2
 import yaml
-from flask import Blueprint, abort, request
+from flask import Blueprint, abort, request, render_template
 
+from lib.arc_membership import task_dict_in_arc
 from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
     get_all_task_metadata, get_episodic_tags, task_id_sort_key,
@@ -16,6 +17,134 @@ from web.shared import (
 from web.subprocess_utils import run_fw_command
 
 bp = Blueprint("tasks", __name__)
+
+
+# T-2222 (OBS-049 full closure): _escape helper for error-fragment renders.
+# Mirrors the cockpit.py:255 shape; used by the 6 action-error renders at
+# ~L972/990/1006/1022/1045/1061 below to defuse XSS on raw stderr interpolation.
+def _escape(text):
+    """Escape HTML in error-render fragments. Mirrors cockpit.py:_escape."""
+    return (text.replace("&", "&amp;").replace("<", "&lt;")
+            .replace(">", "&gt;").replace('"', "&quot;"))
+
+
+# ---------------------------------------------------------------------------
+# T-1980: per-task BVP/Cost computation reused from /bvp and /arcs/<id> helpers.
+# Same math path → numbers cannot drift between surfaces.
+# ---------------------------------------------------------------------------
+
+def _task_bvp_data(task_data: dict) -> dict:
+    """Compute BVP scores + cost composite for a task frontmatter dict.
+
+    Returns shape: {mode, scores, bvp_raw, bvp_norm, cost, cost_source, weights}.
+    mode is 'confirmed' / 'proposed' / 'none'.
+    """
+    from web.blueprints.bvp import (
+        _load_policy, _driver_weights, _compute_bvp, _compute_cost,
+        _resolve_cost_estimate, _latest_proposed_scores,
+    )
+
+    policy = _load_policy()
+    weights = _driver_weights(policy)
+    # T-1981: human-readable driver names from policy (D1 → "Antifragility" etc).
+    driver_names: dict[str, str] = {}
+    for d in (policy.get("protected_drivers") or []):
+        if d.get("id") and d.get("name"):
+            driver_names[d["id"]] = d["name"]
+    for d in (policy.get("free_drivers") or []):
+        if d.get("id") and d.get("name"):
+            driver_names[d["id"]] = d["name"]
+
+    scores = task_data.get("bvp_scores") if isinstance(task_data.get("bvp_scores"), dict) else None
+    if scores:
+        mode = "confirmed"
+    else:
+        proposed = _latest_proposed_scores(task_data) if isinstance(task_data, dict) else None
+        if proposed:
+            scores = proposed
+            mode = "proposed"
+        else:
+            return {
+                "mode": "none",
+                "scores": None,
+                "bvp_raw": None,
+                "bvp_norm": None,
+                "cost": None,
+                "cost_source": "none",
+                "weights": weights,
+                "driver_names": driver_names,
+            }
+
+    is_proposed = mode == "proposed"
+    raw, norm = _compute_bvp(scores, weights)
+    ce, _ce_mode = _resolve_cost_estimate(task_data, is_proposed=is_proposed)
+    cost, _br, _tier, _effort, src = _compute_cost(ce, default_when_absent=is_proposed)
+
+    return {
+        "mode": mode,
+        "scores": scores,
+        "bvp_raw": raw,
+        "bvp_norm": norm,
+        "cost": cost,
+        "cost_source": src,
+        "weights": weights,
+        "driver_names": driver_names,
+    }
+
+
+def _attach_bvp_to_tasks(tasks: list[dict]) -> None:
+    """T-1982: batch-attach `t["_bvp"] = {mode, norm}` to each task in-place.
+
+    Loads policy ONCE (cheaper than 1200 _task_bvp_data calls). Skips cost
+    computation — listing cards just need the norm chip. Tasks with no
+    scores get `_bvp = None` (template renders nothing for none-mode).
+    """
+    from web.blueprints.bvp import (
+        _load_policy, _driver_weights, _compute_bvp, _latest_proposed_scores,
+    )
+    policy = _load_policy()
+    weights = _driver_weights(policy)
+    for t in tasks:
+        scores = t.get("bvp_scores") if isinstance(t.get("bvp_scores"), dict) else None
+        if scores:
+            mode = "confirmed"
+        else:
+            proposed = _latest_proposed_scores(t) if isinstance(t, dict) else None
+            if proposed:
+                scores = proposed
+                mode = "proposed"
+            else:
+                t["_bvp"] = None
+                continue
+        _raw, norm = _compute_bvp(scores, weights)
+        t["_bvp"] = {"mode": mode, "norm": norm}
+
+
+def _task_arc_data(task_data: dict) -> dict | None:
+    """T-1982: load arc YAML for a task with arc_id.
+
+    Returns {arc_id, arc_name, scoped_drivers: [{name, weight, rationale?}, ...]}
+    or None if no arc_id / arc file missing.
+
+    Surfaces scoped drivers so the per-task BVP block can show "these arc
+    drivers have weights but no per-task score" — making the design gap
+    that T-1981 will resolve visible instead of silent.
+    """
+    arc_id = task_data.get("arc_id")
+    if not arc_id:
+        return None
+    arc_path = PROJECT_ROOT / ".context" / "arcs" / f"{arc_id}.yaml"
+    if not arc_path.exists():
+        return None
+    try:
+        arc = yaml.safe_load(arc_path.read_text()) or {}
+    except yaml.YAMLError:
+        return None
+    return {
+        "arc_id": arc_id,
+        "arc_name": arc.get("name") or "",
+        "scoped_drivers": arc.get("scoped_drivers") or [],
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -488,6 +617,35 @@ def _toggle_ac_line(file_path, line_idx):
     return True, new_state, None
 
 
+def _build_active_filter_chips(active: dict, view: str) -> list[dict]:
+    """arc-007 S4c (T-2016): one removable chip per active filter.
+
+    `active` maps filter-key -> value (only non-empty entries). Each chip's
+    `clear_url` is the current filter set minus that one key (plus `view`), so
+    clicking × drops just that filter and keeps the rest — and the URL stays
+    shareable. Per-chip clear-URL logic lives here (testable), not in Jinja.
+    """
+    from urllib.parse import urlencode
+
+    labels = {
+        "q": "search", "owner": "owner", "horizon": "horizon", "tag": "tag",
+        "status": "status", "type": "type", "component": "component", "arc": "arc",
+    }
+    chips = []
+    for key in labels:  # stable, deterministic order
+        val = active.get(key)
+        if not val:
+            continue
+        rest = {k: v for k, v in active.items() if k != key and v}
+        rest["view"] = view
+        chips.append({
+            "key": key,
+            "label": f"{labels[key]}: {val}",
+            "clear_url": "/tasks?" + urlencode(rest),
+        })
+    return chips
+
+
 @bp.route("/tasks")
 def tasks():
     # T-1233: Use cached task metadata (avoids re-reading 1200+ files per request)
@@ -524,14 +682,24 @@ def tasks():
     if tag_filter:
         all_tasks = [t for t in all_tasks if tag_filter.lower() in [str(tg).lower() for tg in t.get("_tags", [])]]
     if arc_filter:
-        # T-1661: arc:<id> namespace. Match canonical OR legacy from-T-XXXX alias
-        # if the arc YAML has an anchor_task. Cheapest path: just look at the canonical tag.
-        arc_tag = f"arc:{arc_filter}".lower()
-        all_tasks = [t for t in all_tasks if arc_tag in [str(tg).lower() for tg in t.get("_tags", [])]]
+        # T-1661: arc:<id> namespace.
+        # T-1880 (T-NEW-15): delegated to shared helper (lib/arc_membership.py).
+        # Membership check unions canonical `arc_id:` frontmatter (T-1849) with
+        # legacy `arc:<slug>` tag (pre-T-1850 migration). Future storage-format
+        # changes update one place instead of three blueprints.
+        all_tasks = [t for t in all_tasks if task_dict_in_arc(t, arc_filter)]
     if owner_filter:
         all_tasks = [t for t in all_tasks if t.get("owner") == owner_filter]
+    # T-2160 (arc-009 horizon-axis-hardening, Slice 1): horizon='past' is a
+    # derived render-time value computed from file location, per T-2159 Q1=(b).
+    # Storage enum stays {now, next, later}; past matches _location == 'completed'.
+    # Past is never stored in YAML, only derived at read-time.
     if horizon_filter:
-        all_tasks = [t for t in all_tasks if t.get("horizon") == horizon_filter]
+        if horizon_filter == "past":
+            all_tasks = [t for t in all_tasks if t.get("_location") == "completed"]
+        else:
+            all_tasks = [t for t in all_tasks if t.get("horizon") == horizon_filter
+                         and t.get("_location") != "completed"]
     if search_query:
         q_lower = search_query.lower()
         all_tasks = [t for t in all_tasks if q_lower in t.get("id", "").lower()
@@ -558,13 +726,24 @@ def tasks():
         "specification", "design",
     ]
 
+    # T-1982: attach BVP_norm per task so kanban cards + list view can render a chip.
+    _attach_bvp_to_tasks(all_tasks)
+
     view = request.args.get("view", "board")
     if view not in ("board", "list"):
         view = "board"
 
+    # arc-007 S4c (T-2016): removable chip per active filter.
+    active_filter_chips = _build_active_filter_chips({
+        "q": search_query, "owner": owner_filter, "horizon": horizon_filter,
+        "tag": tag_filter, "status": status_filter, "type": type_filter,
+        "component": component_filter, "arc": arc_filter,
+    }, view)
+
     enums = _load_enums()
     return render_page(
         "tasks.html",
+        active_filter_chips=active_filter_chips,
         page_title="Tasks",
         tasks=all_tasks,
         statuses=statuses,
@@ -584,6 +763,10 @@ def tasks():
         view=view,
         enum_types=enums["workflow_types"],
         enum_horizons=enums["horizons"],
+        # T-2160 (arc-009 Slice 1): render-only horizon list includes 'past'
+        # (derived from .tasks/completed/). Edit endpoints use enum_horizons
+        # (storage enum: now/next/later); past has no write-path.
+        enum_render_horizons=enums["horizons"] + ["past"],
         enum_owners=enums["owners"],
         enum_statuses=enums["statuses"],
     )
@@ -648,6 +831,13 @@ def task_detail(task_id):
     rec_rationale_html = render_markdown_safe(rec["rationale"])
     rec_evidence_html = render_markdown_safe(rec["evidence"])
 
+    # T-1980: per-task BVP block (parity with /bvp scatter + /arcs/<id> table).
+    bvp = _task_bvp_data(task_data)
+    # T-1982: arc membership + scoped-driver visibility on per-task surface.
+    arc_data = _task_arc_data(task_data)
+    arc_name = arc_data["arc_name"] if arc_data else None
+    arc_scoped_drivers = arc_data["scoped_drivers"] if arc_data else []
+
     return render_page(
         "task_detail.html",
         page_title=f"Task {task_id}",
@@ -665,6 +855,85 @@ def task_detail(task_id):
         rec_rationale_html=rec_rationale_html,
         rec_evidence_html=rec_evidence_html,
         reviewer=reviewer,
+        bvp=bvp,
+        arc_name=arc_name,
+        arc_scoped_drivers=arc_scoped_drivers,
+    )
+
+
+@bp.route("/tasks/<task_id>/panel")
+def task_panel(task_id):
+    """arc-007 S4a/S4b (T-2015, T-2017): fragment for the slide-in side panel.
+
+    Deliberately NOT `task_detail.html`: that template's inline scripts add a
+    document-level `htmx:afterRequest` listener (would accumulate per panel load)
+    and reload `#content` on desc-save (the board, not the panel).
+
+    S4b (T-2017) makes the meta cells (status/owner/horizon/type) inline-editable
+    for *active* tasks via the shared `inline_select` macro + the existing
+    `/api/task/<id>/<field>` endpoints — zero new JS, so nothing accumulates.
+    Completed tasks render read-only (their status falls outside the active enum).
+    Rendered via `render_template` (not `render_page`) so no shell chrome wraps it.
+    """
+    if not re_mod.match(r"^T-\d{3,}$", task_id):
+        abort(404)
+
+    task_data = None
+    task_content = ""
+    task_active = False
+    for location in ["active", "completed"]:
+        task_dir = PROJECT_ROOT / ".tasks" / location
+        if task_dir.exists():
+            for f in task_dir.glob(f"{task_id}-*.md"):
+                task_data, task_content = parse_frontmatter(f.read_text())
+                if not task_data:
+                    task_data = None
+                else:
+                    task_active = location == "active"
+                break
+        if task_data:
+            break
+
+    if not task_data:
+        abort(404)
+
+    ac_items = _parse_acceptance_criteria(task_content)
+
+    artifacts = []
+    reports_dir = PROJECT_ROOT / "docs" / "reports"
+    if reports_dir.exists():
+        tid_lower = task_id.lower().replace("-", "")
+        for f in sorted(reports_dir.glob("*.md")):
+            if tid_lower in f.name.lower().replace("-", ""):
+                artifacts.append({"name": f.name, "path": f"docs/reports/{f.name}"})
+
+    rec = extract_recommendation(task_content)
+    rec_complete = rec["verdict"] != "?" and bool(rec["rationale"].strip())
+
+    bvp = _task_bvp_data(task_data)
+    arc_data = _task_arc_data(task_data)
+    arc_name = arc_data["arc_name"] if arc_data else None
+
+    enums = _load_enums()
+
+    return render_template(
+        "_task_panel.html",
+        task=task_data,
+        task_id=task_id,
+        editable=task_active,
+        ac_items=ac_items,
+        artifacts=artifacts,
+        verdict=rec["verdict"],
+        rec_complete=rec_complete,
+        rec_rationale_html=render_markdown_safe(rec["rationale"]),
+        rec_evidence_html=render_markdown_safe(rec["evidence"]),
+        description_html=render_markdown_safe(task_data.get("description", "") or ""),
+        bvp=bvp,
+        arc_name=arc_name,
+        status_options=enums["statuses"],
+        enum_owners=enums["owners"],
+        enum_horizons=enums["horizons"],
+        enum_types=enums["workflow_types"],
     )
 
 
@@ -708,8 +977,10 @@ def create_task():
         task_id = id_match.group(1) if id_match else "new task"
         return f'<p style="color: var(--pico-ins-color);">Created {task_id}: {name}</p>'
     else:
+        # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
         return (
-            f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>',
+            f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+            f'Error: {_escape((stderr or stdout)[:1500])}</p>',
             500,
         )
 
@@ -727,7 +998,12 @@ def update_task_horizon(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--horizon", horizon])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Horizon set to {horizon}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/owner", methods=["POST"])
@@ -743,7 +1019,12 @@ def update_task_owner(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--owner", owner])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Owner set to {owner}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/type", methods=["POST"])
@@ -759,7 +1040,12 @@ def update_task_type(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--type", wtype])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Type set to {wtype}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/complete", methods=["POST"])
@@ -782,7 +1068,12 @@ def complete_task(task_id):
             '<p style="color: var(--pico-ins-color);">Task completed.</p>'
             f'<div id="complete-button" hx-swap-oob="innerHTML"></div>'
         )
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/task/<task_id>/status", methods=["POST"])
@@ -798,7 +1089,12 @@ def update_task_status(task_id):
     stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--status", status])
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Status updated to {status}</p>'
-    return f'<p style="color: var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+    # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
+    return (
+        f'<p style="color: var(--pico-del-color); white-space:pre-wrap;">'
+        f'Error: {_escape((stderr or stdout)[:1500])}</p>',
+        500,
+    )
 
 
 # ---------------------------------------------------------------------------

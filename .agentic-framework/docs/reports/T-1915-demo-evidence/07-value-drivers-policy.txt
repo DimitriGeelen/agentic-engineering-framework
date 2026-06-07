@@ -1,0 +1,22 @@
+=== arc-006 headline-mechanic Leg 6 confirmation: auto-promote OFF by default + D1-D4 weights 9/7/5/3 ===
+
+Source: policy/value-drivers.yaml (T-1917, BVP T-NEW-2)
+
+--- auto_promote (M5) ---
+auto_promote:
+  enabled: false           ← Leg 6 confirmed: OFF by default
+  bvp_norm_min: 0.85
+  cost_max: 1
+  max_concurrent: 1
+
+--- protected_drivers (Four Constitutional Directives) ---
+  D1 Antifragility  weight: 9   protected: true
+  D2 Reliability    weight: 7   protected: true
+  D3 Usability      weight: 5   protected: true
+  D4 Portability    weight: 3   protected: true
+
+--- free_drivers (M1 cap: protected + free ≤ 9) ---
+free_drivers: []  (none registered globally; arc-006 has 3 proposed scoped drivers
+                   awaiting human approval — see 05-arc-yaml-head.txt)
+
+All headline-mechanic numerical contracts verified against shipped policy file.

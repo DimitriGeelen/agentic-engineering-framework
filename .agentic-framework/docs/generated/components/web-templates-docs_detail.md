@@ -8,15 +8,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/_wrapper.html` | wrapped_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_wrapper](/docs/generated/web-templates-_wrapper) | wrapped_by | Base layout wrapper: nav, header, footer, htmx/CSS includes |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/docs.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [docs](/docs/generated/web-blueprints-docs) | rendered_by | Watchtower docs blueprint: file viewer for docs/reports/ and docs/articles/ — renders markdown with syntax highlighting. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-docs_detail.yaml`*

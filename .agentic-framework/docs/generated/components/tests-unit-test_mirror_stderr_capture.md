@@ -13,6 +13,13 @@ a consumer pickup to surface the actual blocking error (T-1603 hook).
 This test pins that mirror_sync_one captures push stderr into the log on
 failure so the next stall is diagnosable from logs alone.
 
+## Dependencies (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [mirror](/docs/generated/lib-mirror) | calls | TODO: describe what this component does |
+| [mirror](/docs/generated/lib-mirror) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_mirror_stderr_capture.yaml`*
 *Last verified: 2026-05-14*

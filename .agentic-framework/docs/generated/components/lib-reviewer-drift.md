@@ -12,17 +12,17 @@ and common stems mentioned in test/grep/python -c contexts.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/reviewer/audit.py` | called_by |
-| `lib/reviewer/drift_cli.py` | called_by |
-| `tests/unit/test_reviewer_audit_pass_a.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit](/docs/generated/lib-reviewer-audit) | called_by | TODO: describe what this component does |
+| [drift_cli](/docs/generated/lib-reviewer-drift_cli) | called_by | TODO: describe what this component does |
+| [test_reviewer_audit_pass_a](/docs/generated/tests-unit-test_reviewer_audit_pass_a) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-drift.yaml`*

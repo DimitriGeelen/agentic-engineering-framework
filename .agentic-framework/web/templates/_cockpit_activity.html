@@ -1,0 +1,28 @@
+{# arc-007 S6d (T-2020): recent-activity fragment — polled by the cockpit card.
+   Read-only; reuses the existing wt-queue-item tokens so it restyles with T-1990.
+
+   T-2113 (sibling of T-2112): explicit hx-target="#content" override on the
+   task-link anchor. The wrapping #wt-activity div sets hx-target="this" for
+   its own 15s polling; htmx INHERITS that to descendant anchors. Without
+   this override, clicking a task ID swaps the /tasks/T-XXX response INTO
+   the activity widget (cockpit shell stays visible above) and ≤15s later
+   the polling cycle overwrites the swapped content — "bounces back". Triplet =
+   target + swap + push-url so the URL bar updates. #}
+{% if events %}
+<ul class="wt-activity-list">
+    {% for ev in events %}
+    <li class="wt-queue-item wt-activity-item">
+        {% if ev.task_id %}
+        <a class="wt-activity-task" href="/tasks/{{ ev.task_id }}"
+           hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ ev.task_id }}</a>
+        {% else %}
+        <span class="wt-activity-task wt-activity-untraced" title="no task reference">{{ ev.hash }}</span>
+        {% endif %}
+        <span class="wt-activity-msg" title="{{ ev.message }}">{{ ev.message }}</span>
+        <span class="wt-activity-when">{{ ev.when }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p class="wt-allclear">No recent activity.</p>
+{% endif %}

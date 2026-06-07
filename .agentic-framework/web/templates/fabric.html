@@ -92,6 +92,27 @@
     Showing {{ components|length }} of {{ total_components }} components
 </p>
 
+<style>
+/* T-2039: bound page height — table scrolls inside a fixed-height container so the
+   page scrollHeight stays under the _safe_shot cap regardless of component count.
+   All rows stay in the DOM (reachable by scrolling); sticky header keeps columns
+   labelled while scrolling. */
+.fabric-table-scroll {
+    max-height: calc(100vh - 320px);
+    min-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+}
+.fabric-table-scroll table { margin-bottom: 0; }
+.fabric-table-scroll thead th {
+    position: sticky;
+    top: 0;
+    background: var(--pico-card-background-color);
+    z-index: 2;
+}
+</style>
+<div class="fabric-table-scroll">
 <table role="grid">
     <thead>
         <tr>
@@ -132,3 +153,4 @@
         {% endfor %}
     </tbody>
 </table>
+</div><!-- /fabric-table-scroll (T-2039) -->

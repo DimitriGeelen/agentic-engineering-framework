@@ -10,9 +10,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/app.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-web-test_inception_decide_hardening.yaml`*

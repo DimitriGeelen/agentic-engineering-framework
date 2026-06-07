@@ -10,10 +10,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/docgen/generate-component.sh` | calls |
-| `agents/docgen/generate-component.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [generate-component](/docs/generated/agents-docgen-generate-component) | calls | Generates component reference documentation from fabric cards |
+| [generate-component](/docs/generated/agents-docgen-generate-component) | called_by | Generates component reference documentation from fabric cards |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate_component.yaml`*

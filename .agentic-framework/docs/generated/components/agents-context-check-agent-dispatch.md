@@ -21,17 +21,17 @@ Enforcement:
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/dispatch.sh` | calls |
-| `lib/paths.sh` | calls |
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [dispatch](/docs/generated/lib-dispatch) | calls | fw dispatch subcommand: cross-machine SSH-based result dispatch. Serializes bus envelopes and pipes via SSH to remote fw bus receive. |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
 
 ## Related
 

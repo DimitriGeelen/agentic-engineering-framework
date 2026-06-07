@@ -13,10 +13,10 @@ Origin: T-921
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/task-create/create-task.sh` | calls |
-| `agents/task-create/create-task.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
+| [create-task](/docs/generated/agents-task-create-create-task) | tests | Task Creation Agent - Mechanical Operations |
 
 ## Related
 

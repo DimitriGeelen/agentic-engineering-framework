@@ -12,10 +12,10 @@ Part of: Agentic Engineering Framework (T-110 spike)
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/bus.sh` | reads |
-| `lib/paths.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [bus](/docs/generated/lib-bus) | reads | fw bus - Task-scoped result ledger for sub-agent communication — _Processes messages in .context/bus/inbox/ written by the bus system_ |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-bus-handler.yaml`*

@@ -19,9 +19,9 @@ Design (mirrors T-1165 pickup-channel-bridge pattern):
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/subscribe-learnings-from-bus.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [subscribe-learnings-from-bus](/docs/generated/lib-subscribe-learnings-from-bus) | called_by | Consumer-side poller for channel:learnings — drains new learning envelopes from a TermLink hub session's event bus via 'event poll' and appends de-duplicated entries to .context/project/received-learnings.yaml. Runs every 5 minutes via cron. Cron-safe: silent no-op when termlink missing, hub down, or no sessions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-publish-learning-to-bus.yaml`*

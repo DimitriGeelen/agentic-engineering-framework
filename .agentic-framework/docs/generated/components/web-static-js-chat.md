@@ -10,18 +10,18 @@
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/static/js/utils.js` | calls |
-| `web/static/js/markdown-render.js` | calls |
-| `web/blueprints/discovery.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [utils](/docs/generated/web-static-js-utils) | calls | Shared JS utilities — StreamFetcher for SSE streaming, showToast for notifications, CSRF helpers |
+| [markdown-render](/docs/generated/web-static-js-markdown-render) | calls | Markdown rendering utility — converts markdown text to safe HTML using marked.js and DOMPurify |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | calls | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/_partials/chat_tab.html` | renders |
-| `web/templates/_partials/chat_tab.html` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [chat_tab](/docs/generated/web-templates-_partials-chat_tab) | renders | Ask AI chat tab HTML partial — message thread, input bar, model/provider selector, scope filter, saved conversations sidebar |
+| [chat_tab](/docs/generated/web-templates-_partials-chat_tab) | rendered_by | Ask AI chat tab HTML partial — message thread, input bar, model/provider selector, scope filter, saved conversations sidebar |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-static-js-chat.yaml`*

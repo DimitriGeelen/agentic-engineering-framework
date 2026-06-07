@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/review.html` | included_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [review](/docs/generated/web-templates-review) | included_by | Full page template: task review — recommendation, evidence, AC list, approval/reject actions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_review_acs.yaml`*

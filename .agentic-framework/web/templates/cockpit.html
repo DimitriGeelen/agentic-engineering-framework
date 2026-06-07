@@ -1,36 +1,48 @@
 {# web/templates/cockpit.html — Watchtower Cockpit (Phase 4) #}
 <style>
-    .wt-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .wt-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:calc(1.5rem * var(--wt-density-scale)); }
     .wt-header h1 { margin:0; font-size:1.6rem; letter-spacing:0.05em; text-transform:uppercase; }
-    .wt-scan-meta { display:flex; gap:1rem; align-items:center; font-size:0.85rem; color:var(--pico-muted-color); }
-    .wt-section { margin-bottom:1rem; }
-    .wt-section-title { margin:0 0 0.75rem 0; font-size:1rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--pico-muted-color); }
-    .wt-card { border-left:4px solid var(--pico-muted-border-color); padding:0.75rem 1rem; margin-bottom:0.5rem; background:var(--pico-card-background-color); border-radius:0 4px 4px 0; }
-    .wt-card-amber { border-left-color:#f9a825; }
-    .wt-card-blue { border-left-color:#1565c0; }
-    .wt-card-green { border-left-color:#2e7d32; }
-    .wt-card-red { border-left-color:#c62828; }
-    .wt-card-summary { font-weight:600; margin-bottom:0.25rem; }
-    .wt-card-detail { font-size:0.85rem; color:var(--pico-muted-color); margin-bottom:0.5rem; }
-    .wt-card-actions { display:flex; gap:0.5rem; flex-wrap:wrap; }
+    .wt-scan-meta { display:flex; gap:calc(1rem * var(--wt-density-scale)); align-items:center; font-size:0.85rem; color:var(--pico-muted-color); }
+    .wt-section { margin-bottom:calc(1rem * var(--wt-density-scale)); }
+    .wt-section-title { margin:0 0 calc(0.75rem * var(--wt-density-scale)) 0; font-size:1rem; letter-spacing:0.04em; text-transform:uppercase; color:var(--pico-muted-color); }
+    .wt-card { border-left:4px solid var(--pico-muted-border-color); padding:calc(0.75rem * var(--wt-density-scale)) calc(1rem * var(--wt-density-scale)); margin-bottom:calc(0.5rem * var(--wt-density-scale)); background:var(--pico-card-background-color); border-radius:0 4px 4px 0; }
+    /* arc-007 S3a2 (T-2024): card accent borders via semantic tokens so they re-theme */
+    .wt-card-amber { border-left-color:var(--wt-warn); }
+    .wt-card-blue { border-left-color:var(--wt-info); }
+    .wt-card-green { border-left-color:var(--wt-success); }
+    .wt-card-red { border-left-color:var(--wt-danger); }
+    .wt-card-summary { font-weight:600; margin-bottom:calc(0.25rem * var(--wt-density-scale)); }
+    .wt-card-detail { font-size:0.85rem; color:var(--pico-muted-color); margin-bottom:calc(0.5rem * var(--wt-density-scale)); }
+    .wt-card-actions { display:flex; gap:calc(0.5rem * var(--wt-density-scale)); flex-wrap:wrap; }
     .wt-card-actions button, .wt-card-actions a[role="button"] { font-size:0.75rem; padding:0.2em 0.6em; }
-    .wt-columns { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+    .wt-columns { display:grid; grid-template-columns:1fr 1fr; gap:calc(1rem * var(--wt-density-scale)); margin-bottom:calc(1rem * var(--wt-density-scale)); }
     @media (max-width:768px) { .wt-columns { grid-template-columns:1fr; } }
-    .wt-pulse { display:flex; flex-wrap:wrap; gap:1.5rem; padding:0; margin:0; list-style:none; font-size:0.9rem; }
+    .wt-pulse { display:flex; flex-wrap:wrap; gap:calc(1.5rem * var(--wt-density-scale)); padding:0; margin:0; list-style:none; font-size:0.9rem; }
     .wt-pulse-value { font-weight:700; }
     .wt-badge { display:inline-block; padding:0.25em 0.75em; border-radius:4px; font-size:0.8rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; }
-    .wt-badge-pass { background:#2e7d32; color:#fff; }
-    .wt-badge-warn { background:#f9a825; color:#000; }
-    .wt-badge-fail { background:#c62828; color:#fff; }
-    .wt-allclear { text-align:center; padding:2rem; color:var(--pico-muted-color); font-style:italic; }
+    /* T-2023: status colours via per-palette semantic tokens so the badge re-themes */
+    .wt-badge-pass { background:var(--wt-success); color:#fff; }
+    .wt-badge-warn { background:var(--wt-warn); color:#1a1a1a; }
+    .wt-badge-fail { background:var(--wt-danger); color:#fff; }
+    .wt-allclear { text-align:center; padding:calc(2rem * var(--wt-density-scale)); color:var(--pico-muted-color); font-style:italic; }
     .wt-show-all { font-size:0.8rem; float:right; }
     .wt-queue-item { display:flex; justify-content:space-between; align-items:center; padding:0.5em 0; border-bottom:1px solid var(--pico-muted-border-color); }
     .wt-queue-item:last-child { border-bottom:none; }
-    .wt-queue-rank { font-weight:700; margin-right:0.75rem; color:var(--pico-muted-color); min-width:1.5em; }
+    .wt-queue-rank { font-weight:700; margin-right:calc(0.75rem * var(--wt-density-scale)); color:var(--pico-muted-color); min-width:1.5em; }
     .wt-queue-name { flex:1; }
-    .wt-queue-status { font-size:0.8rem; margin-left:0.5rem; }
-    .wt-queue-status.issues { color:#c62828; }
-    .wt-queue-status.started-work { color:#1565c0; }
+    /* T-2023: work-queue status as theme-respecting pills (per-palette semantic tokens) */
+    .wt-queue-status { display:inline-block; font-size:0.72rem; font-weight:600; margin-left:calc(0.5rem * var(--wt-density-scale)); padding:0.12em 0.6em; border-radius:999px; background:color-mix(in srgb, var(--wt-muted) 16%, transparent); color:var(--wt-muted); }
+    .wt-queue-status.issues { background:color-mix(in srgb, var(--wt-danger) 16%, transparent); color:var(--wt-danger); }
+    .wt-queue-status.started-work { background:color-mix(in srgb, var(--wt-info) 16%, transparent); color:var(--wt-info); }
+    .wt-queue-status.captured { background:color-mix(in srgb, var(--wt-muted) 16%, transparent); color:var(--wt-muted); }
+    .wt-queue-status.work-completed { background:color-mix(in srgb, var(--wt-success) 16%, transparent); color:var(--wt-success); }
+    /* arc-007 S6d (T-2020): recent-activity feed */
+    .wt-activity-list { list-style:none; margin:0; padding:0; font-size:0.85rem; }
+    .wt-activity-item { gap:calc(0.75rem * var(--wt-density-scale)); }
+    .wt-activity-task { font-weight:700; min-width:5em; font-variant-numeric:tabular-nums; }
+    .wt-activity-untraced { color:var(--pico-muted-color); font-family:monospace; font-weight:400; }
+    .wt-activity-msg { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .wt-activity-when { color:var(--pico-muted-color); font-size:0.78rem; white-space:nowrap; }
 </style>
 
 {# --- Header ------------------------------------------------ #}
@@ -57,8 +69,8 @@
 
 {# --- Focus Task (T-398) ------------------------------------ #}
 {% if focus_task %}
-<article style="padding: 0.6rem 1rem; margin-bottom: 1rem; border-left: 3px solid var(--pico-primary);">
-    <div style="display: flex; align-items: center; gap: 0.5rem;">
+<article style="padding: calc(0.6rem * var(--wt-density-scale)) calc(1rem * var(--wt-density-scale)); margin-bottom: calc(1rem * var(--wt-density-scale)); border-left: 3px solid var(--pico-primary);">
+    <div style="display: flex; align-items: center; gap: calc(0.5rem * var(--wt-density-scale));">
         <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--pico-muted-color); font-weight: 600; letter-spacing: 0.04em;">Focus</span>
         <a href="/tasks/{{ focus_task.id }}"
            hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
@@ -70,13 +82,13 @@
 
 {# --- Arcs in flight (T-1661) -------------------------------- #}
 {% if arcs_in_flight %}
-<article style="padding: 0.8rem 1rem; margin-bottom: 1rem; border-left: 3px solid var(--pico-secondary);">
-    <header style="margin-bottom: 0.4rem; padding: 0;">
+<article style="padding: calc(0.8rem * var(--wt-density-scale)) calc(1rem * var(--wt-density-scale)); margin-bottom: calc(1rem * var(--wt-density-scale)); border-left: 3px solid var(--pico-secondary);">
+    <header style="margin-bottom: calc(0.4rem * var(--wt-density-scale)); padding: 0;">
         <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--pico-muted-color); font-weight: 600; letter-spacing: 0.04em;">Arcs in flight</span>
     </header>
-    <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+    <div style="display: flex; flex-direction: column; gap: calc(0.35rem * var(--wt-density-scale));">
         {% for arc in arcs_in_flight %}
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <div style="display: flex; align-items: center; gap: calc(0.6rem * var(--wt-density-scale));">
             {% if arc.focused %}<span title="focused arc" style="color: var(--pico-primary); font-weight: 700;">●</span>{% else %}<span style="color: var(--pico-muted-color);">○</span>{% endif %}
             <a href="/tasks?arc={{ arc.id }}"
                style="font-weight: 600; color: var(--pico-primary); text-decoration: none;">{{ arc.id }}</a>
@@ -90,8 +102,8 @@
 
 {# --- Token Usage Widget (T-803) ------------------------------ #}
 {% if token_usage %}
-<article style="padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-    <div style="display: flex; align-items: center; gap: 0.5rem;">
+<article style="padding: calc(0.6rem * var(--wt-density-scale)) calc(1rem * var(--wt-density-scale)); margin-bottom: calc(1rem * var(--wt-density-scale)); display: flex; align-items: center; gap: calc(1.5rem * var(--wt-density-scale)); flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: calc(0.5rem * var(--wt-density-scale));">
         <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--pico-muted-color); font-weight: 600; letter-spacing: 0.04em;">Tokens</span>
         <span style="font-weight: 700; font-size: 1.1rem;">{{ token_usage.current_tokens }}</span>
         <span style="font-size: 0.8rem; color: var(--pico-muted-color);">this session ({{ token_usage.current_turns }} turns)</span>
@@ -105,7 +117,7 @@
 {% endif %}
 
 {% if scan_status == 'partial' %}
-<article style="border-left:4px solid #f9a825; padding:0.5rem 1rem; margin-bottom:1rem;">
+<article style="border-left:4px solid var(--wt-warn); padding:calc(0.5rem * var(--wt-density-scale)) calc(1rem * var(--wt-density-scale)); margin-bottom:calc(1rem * var(--wt-density-scale));">
     <small>Scan partially completed — some data sources were unavailable.</small>
 </article>
 {% endif %}
@@ -155,34 +167,34 @@
         Action Required
         <a href="/approvals" class="wt-show-all" style="text-decoration:none;">View all in Approvals &rarr;</a>
     </h4>
-    <div class="wt-card" style="border-left: 3px solid #f59e0b;">
-        <div style="display:flex; gap:1.5rem; flex-wrap:wrap; margin-bottom:0.5rem;">
+    <div class="wt-card" style="border-left: 3px solid var(--wt-warn);">
+        <div style="display:flex; gap:calc(1.5rem * var(--wt-density-scale)); flex-wrap:wrap; margin-bottom:calc(0.5rem * var(--wt-density-scale));">
             {% if action_summary.tier0_count %}
-            <span><strong style="color:#f59e0b;">{{ action_summary.tier0_count }}</strong> Tier 0</span>
+            <span><strong style="color:var(--wt-warn);">{{ action_summary.tier0_count }}</strong> Tier 0</span>
             {% endif %}
             {% if action_summary.go_count %}
-            <span><strong style="color:#1565c0;">{{ action_summary.go_count }}</strong> GO Decisions</span>
+            <span><strong style="color:var(--wt-info);">{{ action_summary.go_count }}</strong> GO Decisions</span>
             {% endif %}
             {% if action_summary.human_ac_count %}
-            <span><strong style="color:#7c3aed;">{{ action_summary.human_ac_count }}</strong> Human ACs
+            <span><strong style="color:var(--wt-accent);">{{ action_summary.human_ac_count }}</strong> Human ACs
                 <small style="color:var(--pico-muted-color);">({{ action_summary.human_ac_task_count }} tasks)</small>
                 {# T-1533: per-verdict count pills next to the AC count #}
                 {% if action_summary.go_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="GO"
-                       style="margin-left:0.4rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#1b5e20; color:#fff; font-size:0.65rem; font-weight:600;"
+                       style="margin-left:calc(0.4rem * var(--wt-density-scale)); padding:calc(0.05rem * var(--wt-density-scale)) calc(0.3rem * var(--wt-density-scale)); border-radius:3px;
+                              background:var(--wt-success); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends GO — likely rubber-stamp">{{ action_summary.go_ac_count }} GO</small>
                 {% endif %}
                 {% if action_summary.defer_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="DEFER"
-                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#e65100; color:#fff; font-size:0.65rem; font-weight:600;"
+                       style="margin-left:calc(0.25rem * var(--wt-density-scale)); padding:calc(0.05rem * var(--wt-density-scale)) calc(0.3rem * var(--wt-density-scale)); border-radius:3px;
+                              background:var(--wt-warn); color:#1a1a1a; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends DEFER — needs strategic decision">{{ action_summary.defer_ac_count }} DEFER</small>
                 {% endif %}
                 {% if action_summary.nogo_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="NO-GO"
-                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#b71c1c; color:#fff; font-size:0.65rem; font-weight:600;"
+                       style="margin-left:calc(0.25rem * var(--wt-density-scale)); padding:calc(0.05rem * var(--wt-density-scale)) calc(0.3rem * var(--wt-density-scale)); border-radius:3px;
+                              background:var(--wt-danger); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks the agent recommends NO-GO">{{ action_summary.nogo_ac_count }} NO-GO</small>
                 {% endif %}
                 {# T-1577: NO-REC distinguishes 'agent owes a recommendation' (no Recommendation
@@ -190,23 +202,23 @@
                    /approvals filter buttons (T-1576). #}
                 {% if action_summary.no_rec_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="NO-REC"
-                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#0e7490; color:#fff; font-size:0.65rem; font-weight:600;"
+                       style="margin-left:calc(0.25rem * var(--wt-density-scale)); padding:calc(0.05rem * var(--wt-density-scale)) calc(0.3rem * var(--wt-density-scale)); border-radius:3px;
+                              background:var(--wt-info); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks where the agent has not written a Recommendation block — not yet ready for review (T-1576/T-1577)">{{ action_summary.no_rec_ac_count }} NO-REC</small>
                 {% endif %}
                 {# T-1540 iter1: ? verdict was unaccounted for in pill sum (count vs pill mismatch). Surface it.
                    T-1577: now means 'Recommendation block present but verdict unparseable' — NO-REC is split out above. #}
                 {% if action_summary.unknown_ac_count %}
                 <small class="verdict-pill" data-verdict-pill="?"
-                       style="margin-left:0.25rem; padding:0.05rem 0.3rem; border-radius:3px;
-                              background:#616161; color:#fff; font-size:0.65rem; font-weight:600;"
+                       style="margin-left:calc(0.25rem * var(--wt-density-scale)); padding:calc(0.05rem * var(--wt-density-scale)) calc(0.3rem * var(--wt-density-scale)); border-radius:3px;
+                              background:var(--wt-muted); color:#fff; font-size:0.65rem; font-weight:600;"
                        title="Tasks with a Recommendation block whose verdict line is missing or unparseable">{{ action_summary.unknown_ac_count }} ?</small>
                 {% endif %}
             </span>
             {% endif %}
         </div>
         {% for task in action_summary.top_tasks %}
-        <div class="wt-card-detail" style="padding:0.15rem 0;">
+        <div class="wt-card-detail" style="padding:calc(0.15rem * var(--wt-density-scale)) 0;">
             <a href="/tasks/{{ task.task_id }}">{{ task.task_id }}</a>: {{ task.name[:60] }}{% if task.name|length > 60 %}...{% endif %}
             <small style="color:var(--pico-muted-color);">({{ task.total - task.checked }} unchecked)</small>
         </div>
@@ -301,11 +313,11 @@
 
 {# --- Mobile Approvals QR (T-671) ------------------------------ #}
 {% if approval_summary and approval_summary.total > 0 and qr_approvals_data %}
-<article style="padding: 0.6rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+<article style="padding: calc(0.6rem * var(--wt-density-scale)) calc(1rem * var(--wt-density-scale)); margin-bottom: calc(1rem * var(--wt-density-scale)); display: flex; align-items: center; gap: calc(1rem * var(--wt-density-scale));">
     <img src="{{ qr_approvals_data }}" width="80" height="80" alt="QR: /approvals"
          title="{{ qr_approvals_url }}" style="flex-shrink: 0; border-radius: 4px;">
     <div>
-        <h4 class="wt-section-title" style="margin-bottom: 0.25rem;">Mobile Approvals</h4>
+        <h4 class="wt-section-title" style="margin-bottom: calc(0.25rem * var(--wt-density-scale));">Mobile Approvals</h4>
         <p style="font-size: 0.85rem; margin: 0; color: var(--pico-muted-color);">
             Scan to review <strong>{{ approval_summary.total }}</strong> pending item{{ 's' if approval_summary.total != 1 }} on your phone
         </p>
@@ -315,19 +327,36 @@
 </article>
 {% endif %}
 
+{# --- Recent activity (arc-007 S6d, T-2020) ----------------- #}
+{# Polled htmx fragment — recent commits as the framework activity feed. Read-only;
+   refreshes every 15s without a page reload. #}
+<div class="wt-section">
+    <h4 class="wt-section-title">Recent Activity</h4>
+    <div id="wt-activity"
+         hx-get="/cockpit/activity"
+         hx-trigger="load, every 15s"
+         hx-target="this"
+         hx-swap="innerHTML">
+        <p class="wt-allclear">Loading activity…</p>
+    </div>
+</div>
+
 {# --- System Health + Concerns (T-398) ---------------------- #}
 <div class="wt-columns">
     <article>
         <h4 class="wt-section-title">System Health</h4>
         <ul class="wt-pulse">
-            <li>Traceability: <span class="wt-pulse-value">{{ health.get('traceability', '?') }}</span></li>
+            {% set _trace = health.get('traceability') %}
+            <li>Traceability: <span class="wt-pulse-value">{% if _trace is mapping %}{{ (_trace.get('score', 0) * 100) | round | int }}%{% elif _trace is not none %}{{ _trace }}{% else %}?{% endif %}</span></li>
+            {# T-2022: source from helpers (knowledge_counts / pattern_summary), matching index.html;
+               the scan does not write project_health.knowledge so the old health.get(...) was always 0 #}
             <li>Knowledge:
-                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('learnings', 0) }}</span>L,
-                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('patterns', 0) }}</span>P,
-                <span class="wt-pulse-value">{{ health.get('knowledge', {}).get('decisions', 0) }}</span>D
+                <span class="wt-pulse-value">{{ knowledge_counts.get('learnings', 0) if knowledge_counts else 0 }}</span>L,
+                <span class="wt-pulse-value">{{ (pattern_summary.get('failure', 0) + pattern_summary.get('success', 0) + pattern_summary.get('antifragile', 0) + pattern_summary.get('workflow', 0)) if pattern_summary else 0 }}</span>P,
+                <span class="wt-pulse-value">{{ knowledge_counts.get('decisions', 0) if knowledge_counts else 0 }}</span>D
             </li>
             {% if antifragility.get('patterns_added_since_last_scan', 0) > 0 %}
-            <li>Strength: <span class="wt-pulse-value" style="color:#2e7d32;">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
+            <li>Strength: <span class="wt-pulse-value" style="color:var(--wt-success);">+{{ antifragility.patterns_added_since_last_scan }}</span> patterns</li>
             {% endif %}
             {% if test_counts %}
             <li>Tests:
@@ -338,34 +367,34 @@
             {% endif %}
         </ul>
         {% if concerns_summary %}
-        <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid var(--pico-muted-border-color);">
+        <div style="display: flex; gap: calc(1.5rem * var(--wt-density-scale)); flex-wrap: wrap; margin-top: calc(0.75rem * var(--wt-density-scale)); padding-top: calc(0.5rem * var(--wt-density-scale)); border-top: 1px solid var(--pico-muted-border-color);">
             <div>
                 <div style="font-size: 1.3rem; font-weight: 700;">{{ concerns_summary.total_watching }}</div>
                 <div class="text-muted text-xs">Concerns</div>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #1565c0;">{{ concerns_summary.gaps }}</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--wt-info);">{{ concerns_summary.gaps }}</div>
                 <div class="text-muted text-xs">Gaps</div>
             </div>
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #e65100;">{{ concerns_summary.risks }}</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--wt-warn);">{{ concerns_summary.risks }}</div>
                 <div class="text-muted text-xs">Risks</div>
             </div>
             {% if concerns_summary.high > 0 %}
             <div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #c62828;">{{ concerns_summary.high }}</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--wt-danger);">{{ concerns_summary.high }}</div>
                 <div class="text-muted text-xs">High</div>
             </div>
             {% endif %}
         </div>
         {% endif %}
         {% if stale_tasks %}
-        <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #e65100;">
+        <div style="margin-top: calc(0.5rem * var(--wt-density-scale)); font-size: 0.8rem; color: var(--wt-warn);">
             {{ stale_tasks | length }} stale task{{ 's' if stale_tasks | length != 1 }}:
             {% for t in stale_tasks[:3] %}{{ t.id }}{% if not loop.last %}, {% endif %}{% endfor %}
         </div>
         {% endif %}
-        <p style="margin-top:0.5rem;">
+        <p style="margin-top:calc(0.5rem * var(--wt-density-scale));">
             <a href="/metrics" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" class="text-sm">Full metrics &rarr;</a>
             &nbsp;
             <a href="/risks" hx-target="#content" hx-swap="innerHTML" hx-push-url="true" class="text-sm">Concerns &rarr;</a>
@@ -376,9 +405,9 @@
         <h4 class="wt-section-title">Scan Summary</h4>
         <p style="font-size:0.9rem; white-space:pre-line;">{{ summary }}</p>
         {% if risks %}
-        <h5 style="color:#c62828; font-size:0.85rem; margin-top:0.75rem;">Risks</h5>
+        <h5 style="color:var(--wt-danger); font-size:0.85rem; margin-top:calc(0.75rem * var(--wt-density-scale));">Risks</h5>
         {% for risk in risks %}
-        <div class="wt-card wt-card-red" style="padding:0.5rem 0.75rem;">
+        <div class="wt-card wt-card-red" style="padding:calc(0.5rem * var(--wt-density-scale)) calc(0.75rem * var(--wt-density-scale));">
             <div class="text-sm">{{ risk.summary }}</div>
         </div>
         {% endfor %}

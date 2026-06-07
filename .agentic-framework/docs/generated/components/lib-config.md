@@ -23,46 +23,47 @@ Agent-relevant settings:
 - `FW_PORT` (3000) — Watchtower listen port (also resolved via triple-file; see Watchtower Port section)
 - `FW_SAFE_MODE` (0) — bypass task gate (escape hatch)
 - `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
+- `FW_STALE_ARC_DAYS` (30) — T-1855: stale-arc audit WARN threshold. In-progress arcs whose constituent tasks
 
 *(truncated — see CLAUDE.md for full section)*
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Used By (27)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/verify-acs.sh` | called-by |
-| `tests/unit/lib_config.bats` | called-by |
-| `web/templates/config.html` | used-by |
-| `lib/config.sh` | called-by |
-| `agents/context/check-active-task.sh` | called_by |
-| `agents/context/check-agent-dispatch.sh` | called_by |
-| `agents/context/check-project-boundary.sh` | called_by |
-| `agents/context/check-tier0.sh` | called_by |
-| `agents/context/pre-compact.sh` | called_by |
-| `agents/termlink/termlink.sh` | called_by |
-| `C-004` | called_by |
-| `bin/fw` | called_by |
-| `bin/watchtower.sh` | called_by |
-| `C-007` | called_by |
-| `C-008` | called_by |
-| `lib/keylock.sh` | called_by |
-| `lib/config.sh` | called_by |
-| `lib/verify-acs.sh` | called_by |
-| `tests/unit/lib_config.bats` | called_by |
-| `web/templates/config.html` | read_by |
-| `agents/git/lib/hooks.sh` | called_by |
-| `agents/monitor/liveness-check.sh` | called_by |
-| `tests/unit/fabric.bats` | tests_by |
-| `tests/unit/lib_config.bats` | tests_by |
-| `tests/unit/yaml_pipefail.bats` | called_by |
-| `tests/unit/yaml_pipefail.bats` | tests_by |
-| `web/blueprints/config.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [verify-acs](/docs/generated/lib-verify-acs) | called-by | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
+| [lib_config](/docs/generated/tests-unit-lib_config) | called-by | TODO: describe what this component does |
+| [config](/docs/generated/web-templates-config) | used-by | Watchtower /config page — show all FW_* settings with current values and sources |
+| [config](/docs/generated/lib-config) | called-by | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | called_by | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [check-agent-dispatch](/docs/generated/agents-context-check-agent-dispatch) | called_by | Agent Dispatch Gate — PreToolUse hook for Agent tool. Tracks dispatches per session, blocks 3rd+ unless approved or TermLink not installed. |
+| [check-project-boundary](/docs/generated/agents-context-check-project-boundary) | called_by | PreToolUse hook that blocks Write/Edit/Bash operations targeting paths outside PROJECT_ROOT. Prevents cross-project edits. Part of the project boundary enforcement gate (T-559). |
+| [check-tier0](/docs/generated/agents-context-check-tier0) | called_by | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
+| [pre-compact](/docs/generated/agents-context-pre-compact) | called_by | Pre-Compaction Hook — Save structured context before lossy compaction |
+| [termlink](/docs/generated/agents-termlink-termlink) | called_by | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [watchtower](/docs/generated/bin-watchtower) | called_by | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
+| [budget-gate](/docs/generated/budget-gate) | called_by | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
+| [checkpoint](/docs/generated/checkpoint) | called_by | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [keylock](/docs/generated/lib-keylock) | called_by | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
+| [config](/docs/generated/lib-config) | called_by | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [verify-acs](/docs/generated/lib-verify-acs) | called_by | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
+| [lib_config](/docs/generated/tests-unit-lib_config) | called_by | TODO: describe what this component does |
+| [config](/docs/generated/web-templates-config) | read_by | Watchtower /config page — show all FW_* settings with current values and sources |
+| [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
+| [liveness-check](/docs/generated/agents-monitor-liveness-check) | called_by | TODO: describe what this component does |
+| [fabric](/docs/generated/tests-unit-fabric) | tests_by | Unit tests for agents/fabric/fabric.sh (10 tests) |
+| [lib_config](/docs/generated/tests-unit-lib_config) | tests_by | TODO: describe what this component does |
+| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | called_by | TODO: describe what this component does |
+| [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | tests_by | TODO: describe what this component does |
+| [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
 
 ## Related
 

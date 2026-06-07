@@ -13,16 +13,16 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/capture/read-transcript.py` | calls |
-| `agents/context/lib/focus.sh` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [JSONL Transcript Reader](/docs/generated/capture-reader) | calls | Extracts human/agent conversation turns from the current Claude Code session's JSONL transcript. Used by the /capture skill to save volatile conversation content to disk before it is lost. |
+| [focus](/docs/generated/agents-context-lib-focus) | reads | Context Agent - focus command |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/capture/read-transcript.py` | used-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [JSONL Transcript Reader](/docs/generated/capture-reader) | used-by | Extracts human/agent conversation turns from the current Claude Code session's JSONL transcript. Used by the /capture skill to save volatile conversation content to disk before it is lost. |
 
 ---
 *Auto-generated from Component Fabric. Card: `capture-skill.yaml`*

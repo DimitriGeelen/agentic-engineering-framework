@@ -19,9 +19,9 @@ The restart signal file is .context/working/.restart-requested
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `C-008` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [checkpoint](/docs/generated/checkpoint) | reads | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. — _Reads .context/working/.restart-requested signal file written by checkpoint.sh_ |
 
 ---
 *Auto-generated from Component Fabric. Card: `bin-claude-fw.yaml`*

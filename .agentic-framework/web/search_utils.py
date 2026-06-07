@@ -13,7 +13,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-from web.shared import PROJECT_ROOT
+from web.shared import PROJECT_ROOT, mtime_cached_get
 
 
 def categorize(path_str: str) -> str:
@@ -101,6 +101,39 @@ import time as _time_mod
 _tag_cache = {"data": None, "ts": 0}
 _TAG_CACHE_TTL = 60  # seconds
 
+# T-2107/T-2109: per-file tag cache keyed on (path, mtime_ns). Survives the outer
+# _TAG_CACHE_TTL — when the 60s wrapper expires, we only re-parse files whose
+# mtime_ns changed (typically 0-2) instead of re-walking all 1166 episodic
+# files. Cold path still pays 5-6s once; warm rebuild now <100ms.
+# T-2109: migrated from local stat+cache logic to shared.mtime_cached_get.
+_TAG_FM_CACHE: dict[str, tuple[int, list[str]]] = {}
+
+
+def _parse_tags_from_path(path: Path) -> list[str]:
+    """Read one episodic YAML and extract its tag list. Empty list on any failure."""
+    import yaml as _yaml
+    try:
+        with open(path) as fh:
+            data = _yaml.safe_load(fh)
+    except Exception as e:
+        logger.warning("Failed to parse episodic file %s: %s", path, e)
+        return []
+    tags: list[str] = []
+    if isinstance(data, dict):
+        for tag in data.get("tags", []) or []:
+            t = str(tag).strip()
+            if t:
+                tags.append(t)
+    return tags
+
+
+def _episodic_tags_for(path: Path) -> list[str]:
+    """Return tag list for one episodic file, mtime-invalidated.
+
+    T-2109: migrated to shared.mtime_cached_get; semantics unchanged.
+    """
+    return mtime_cached_get(path, _parse_tags_from_path, _TAG_FM_CACHE, default=[])
+
 
 def aggregate_tags(limit: int = 30) -> list[dict]:
     """Aggregate tags from episodic memory for the tag cloud (T-392).
@@ -108,28 +141,19 @@ def aggregate_tags(limit: int = 30) -> list[dict]:
     Returns a list of {"tag": str, "count": int} sorted by count descending.
     Excludes low-value tags (single-char, pure IDs like D-001, P-001).
     T-1235: Cached for 60s to avoid re-reading 1166 files per request.
+    T-2107: per-file mtime cache (_TAG_FM_CACHE) survives TTL — when the
+    wrapper expires we only re-parse changed files.
     """
     now = _time_mod.monotonic()
     if _tag_cache["data"] is not None and (now - _tag_cache["ts"]) < _TAG_CACHE_TTL:
         return _tag_cache["data"][:limit]
 
-    import yaml as _yaml
-
     counts: dict[str, int] = {}
     ep_dir = PROJECT_ROOT / ".context" / "episodic"
     if ep_dir.exists():
         for f in ep_dir.glob("T-*.yaml"):
-            try:
-                with open(f) as fh:
-                    data = _yaml.safe_load(fh)
-                if isinstance(data, dict):
-                    for tag in data.get("tags", []):
-                        t = str(tag).strip()
-                        if t:
-                            counts[t] = counts.get(t, 0) + 1
-            except Exception as e:
-                logger.warning("Failed to parse episodic file %s: %s", f, e)
-                continue
+            for tag in _episodic_tags_for(f):
+                counts[tag] = counts.get(tag, 0) + 1
 
     # Filter out noise: single-char, pure directive refs (D1, D2), policy refs (P-xxx)
     skip = re.compile(r'^(D\d|P-\d|[A-Z]-\d|.{0,2})$')

@@ -13,10 +13,10 @@ Origin: T-896
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/config-file.sh` | calls |
-| `lib/config-file.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config-file](/docs/generated/lib-config-file) | calls | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
+| [config-file](/docs/generated/lib-config-file) | tests | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
 
 ## Related
 

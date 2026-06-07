@@ -15,20 +15,20 @@ ensure_firewall_open 3000
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/firewall.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [firewall](/docs/generated/lib-firewall) | calls | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
 
 ## Used By (6)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/lib_firewall.bats` | called-by |
-| `lib/firewall.sh` | called-by |
-| `bin/watchtower.sh` | called_by |
-| `lib/firewall.sh` | called_by |
-| `tests/unit/lib_firewall.bats` | called_by |
-| `tests/unit/lib_firewall.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [lib_firewall](/docs/generated/tests-unit-lib_firewall) | called-by | Unit tests for lib/firewall.sh — ensure_firewall_open and UFW port management |
+| [firewall](/docs/generated/lib-firewall) | called-by | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
+| [watchtower](/docs/generated/bin-watchtower) | called_by | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
+| [firewall](/docs/generated/lib-firewall) | called_by | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
+| [lib_firewall](/docs/generated/tests-unit-lib_firewall) | called_by | Unit tests for lib/firewall.sh — ensure_firewall_open and UFW port management |
+| [lib_firewall](/docs/generated/tests-unit-lib_firewall) | tests_by | Unit tests for lib/firewall.sh — ensure_firewall_open and UFW port management |
 
 ## Related
 

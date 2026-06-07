@@ -11,10 +11,10 @@ Origin: T-819
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/config.sh` | calls |
-| `lib/config.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [config](/docs/generated/lib-config) | tests | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Related
 

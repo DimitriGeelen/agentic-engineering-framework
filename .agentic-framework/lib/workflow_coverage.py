@@ -90,6 +90,11 @@ def _parse_workflows(workflows_dir: Path) -> Dict[str, Dict[str, str]]:
         out[path.stem] = {
             "worker_kind": str(data.get("worker_kind") or ""),
             "provider": str(data.get("provider") or ""),
+            # T-1872: `inline: true` workflows are driven by non-resolver flows
+            # (fw inception start, fw grill, fw design-dialogue) and will never
+            # appear in dispatches.jsonl. The staleness detector must skip them
+            # or every inline workflow surfaces as a permanent false-positive WARN.
+            "inline": bool(data.get("inline")),
         }
     return out
 
@@ -118,7 +123,12 @@ def check_workflow_dispatcher_coverage(
     valid = _import_valid_worker_kinds()
 
     workflows = [
-        {"name": name, "worker_kind": d["worker_kind"], "provider": d["provider"]}
+        {
+            "name": name,
+            "worker_kind": d["worker_kind"],
+            "provider": d["provider"],
+            "inline": d.get("inline", False),  # T-1872: carry inline through
+        }
         for name, d in workflow_data.items()
     ]
     unroutable_workflows = [
@@ -302,6 +312,11 @@ def flag_stale_workflows(
 
     stale: list = []
     for w in report.get("workflows", []):
+        # T-1872: inline workflows (fw inception start, fw grill, etc.) are
+        # driven by non-resolver flows and will never appear in dispatches.jsonl.
+        # They are not stale "by design" — exclude from the staleness premise.
+        if w.get("inline"):
+            continue
         last = w.get("last_dispatched")
         if last is None:
             stale.append({

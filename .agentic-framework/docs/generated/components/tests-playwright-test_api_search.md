@@ -10,10 +10,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/api.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [api](/docs/generated/web-blueprints-api) | calls | Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_search.yaml`*

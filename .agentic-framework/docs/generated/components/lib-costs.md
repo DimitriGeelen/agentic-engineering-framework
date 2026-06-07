@@ -19,23 +19,23 @@ Follows T-799 (GO) and T-800 (GO) inception decisions.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/colors.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 
 ## Used By (9)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | calls |
-| `web/blueprints/costs.py` | calls |
-| `agents/handover/handover.sh` | calls |
-| `tests/unit/lib_costs.bats` | called-by |
-| `agents/handover/handover.sh` | called_by |
-| `bin/fw` | called_by |
-| `tests/unit/lib_costs.bats` | called_by |
-| `tests/unit/lib_costs.bats` | tests_by |
-| `web/terminal/adapters/claude_code.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [costs](/docs/generated/web-blueprints-costs) | calls | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [lib_costs tests](/docs/generated/tests-unit-lib_costs) | called-by | 26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807) |
+| [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_costs tests](/docs/generated/tests-unit-lib_costs) | called_by | 26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807) |
+| [lib_costs tests](/docs/generated/tests-unit-lib_costs) | tests_by | 26 bats unit tests for lib/costs.sh — path computation, routing, JSONL parsing, edge cases (T-807) |
+| [claude_code](/docs/generated/web-terminal-adapters-claude_code) | called_by | Terminal adapter that spawns Claude Code agent sessions via PTY using claude -p (prompt) or claude -c (interactive) commands |
 
 ## Related
 

@@ -15,15 +15,15 @@ beyond PROJECT_ROOT export and argv passthrough.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/resolver.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-resolver-sh.yaml`*

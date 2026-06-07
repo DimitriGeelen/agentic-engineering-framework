@@ -21,17 +21,17 @@ SubagentStop cannot mutate the orchestrator-visible response (Claude Code docs:
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | calls |
-| `.context/working/subagent-returns.jsonl` | writes |
-| `.context/bus/blobs/` | writes |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| `.context/working/subagent-returns.jsonl` | writes | — |
+| `.context/bus/blobs/` | writes | — |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/tests/subagent-stop-stub-test.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `agents/context/tests/subagent-stop-stub-test.sh` | called_by | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-subagent-stop.yaml`*

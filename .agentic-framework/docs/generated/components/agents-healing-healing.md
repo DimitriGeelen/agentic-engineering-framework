@@ -19,24 +19,24 @@ Usage:
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/healing/lib/diagnose.sh` | calls |
-| `agents/healing/lib/resolve.sh` | calls |
-| `agents/healing/lib/patterns.sh` | calls |
-| `agents/healing/lib/suggest.sh` | calls |
-| `lib/paths.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [diagnose](/docs/generated/agents-healing-lib-diagnose) | calls | Healing Agent - diagnose command |
+| [resolve](/docs/generated/agents-healing-lib-resolve) | calls | Healing Agent - resolve command |
+| [patterns](/docs/generated/agents-healing-lib-patterns) | calls | Healing Agent - patterns command |
+| [suggest](/docs/generated/agents-healing-lib-suggest) | calls | Healing Agent - suggest command |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ## Used By (6)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/task-create/update-task.sh` | called_by |
-| `bin/fw` | called_by |
-| `tests/unit/healing_diagnose.bats` | called-by |
-| `tests/unit/healing_suggest.bats` | called-by |
-| `tests/unit/healing_diagnose.bats` | called_by |
-| `tests/unit/healing_suggest.bats` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [healing_diagnose](/docs/generated/tests-unit-healing_diagnose) | called-by | Unit tests for healing diagnose (26 tests) |
+| [healing_suggest](/docs/generated/tests-unit-healing_suggest) | called-by | Unit tests for healing suggest (9 tests) |
+| [healing_diagnose](/docs/generated/tests-unit-healing_diagnose) | called_by | Unit tests for healing diagnose (26 tests) |
+| [healing_suggest](/docs/generated/tests-unit-healing_suggest) | called_by | Unit tests for healing suggest (9 tests) |
 
 ## Documentation
 

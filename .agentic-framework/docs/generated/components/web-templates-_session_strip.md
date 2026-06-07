@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/session.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [session](/docs/generated/web-blueprints-session) | rendered_by | Flask blueprint: Session — _HTMX fragment rendered by /api/session/status endpoint_ |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_session_strip.yaml`*

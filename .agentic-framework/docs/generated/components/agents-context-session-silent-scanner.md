@@ -21,18 +21,18 @@ Together with session-end.sh this closes the SessionEnd gap for:
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/handover/handover.sh` | calls |
-| `.context/handovers/` | reads |
-| `.context/working/.session-silent-scanner.log` | writes |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| `.context/handovers/` | reads | — |
+| `.context/working/.session-silent-scanner.log` | writes | — |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `/etc/cron.d/agentic-framework` | scheduled_by |
-| `agents/context/tests/session-silent-scanner-stub-test.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `/etc/cron.d/agentic-framework` | scheduled_by | — |
+| `agents/context/tests/session-silent-scanner-stub-test.sh` | called_by | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-session-silent-scanner.yaml`*

@@ -41,7 +41,56 @@ DEFER. Re-evaluate when:
 2. A `_typing`-style naming-shape misclassification is reported, OR
 3. The framework gets a generic per-MCP-server convention-based classifier (cross-cutting infrastructure)
 
-## Recommendation
+## Re-evaluation — 2026-05-31 (S-2026-0531-2025+1)
+
+The DEFER decision listed three triggers. **Trigger #1 has fired twice.**
+
+### Batch cadence since filing
+
+| Batch | Task | Date | Tools | Gap from prior |
+|-------|------|------|-------|----------------|
+| 1 | T-1755 | 2026-05-06 | 59 | (filing) |
+| 1b | T-1755 f/u | 2026-05-06 | 2 | same day |
+| 2 | T-1760 | 2026-05-06 | 18 | same day |
+| 3 | T-1867 | 2026-05-15 | 14 | 9 days |
+| 4 | T-2073 | 2026-05-28 | 74 | 13 days |
+| 4b | T-2073 f/u | 2026-05-28 | 4 | same day |
+| 5 | T-2150 | 2026-05-31 | 5 | **3 days** |
+
+**Cadence is sustained.** The filing-time assumption ("3 batches in one day looks like a pulse") was wrong — the third batch was followed by 4 more over 25 days. Trigger #1 (4th batch in <14 days) is satisfied by T-2073 (13 days post T-1867) AND by T-2150 (3 days post T-2073).
+
+### Cumulative toil vs implementation cost
+
+| | Filing estimate | Actual to date |
+|--|----------------|----------------|
+| Toil per batch | ~15 min | ~15 min (consistent) |
+| Implementation | ~30-45 min | unchanged |
+| Batches | 3 | 7 (5 main + 2 follow-ons) |
+| Cumulative toil | ~45 min | **~105 min** |
+
+We have now spent **2.3× the implementation estimate** on the toil. Status quo is no longer cost-neutral.
+
+### Misclassification record
+
+In 7 batches across ~196 tools, zero `_typing`-style misclassifications have been reported. The naming convention is holding. Filing-time concern ("conservative manual review catches naming-shape ambiguities") proved over-weighted — the convention is robust enough that manual review is mostly rubber-stamping.
+
+### Revised recommendation
+
+**Recommendation:** GO (implement the heuristic)
+
+**Rationale:** Both the cadence trigger AND the cost ratio have crossed. Adding the heuristic now (~30-45 min) saves all future ~15min batches; the misclassification fear that justified DEFER is no longer evidence-supported after 196 correct classifications. Lower-risk alternative (ratchet command) from the original artifact remains a viable implementation shape — see §Implementation shapes below.
+
+### Implementation shapes (for build follow-up)
+
+If GO is approved, the build task should consider:
+
+1. **Auto-classify mode (default off)**: Heuristic runs in `orchestrator-mcp-scan.sh`, emits suggested classification per new tool, requires `--apply` to write to baseline. Keeps human in the loop, removes YAML editing toil.
+2. **Ratchet command**: `fw orchestrator-mcp ratchet --apply` reads current scan output, applies the convention, opens a diff for human review. Slightly more lifting for the operator.
+3. **Hybrid**: Convention auto-applies for `termlink_agent_*` / `termlink_channel_*` namespaces (proven safe); other namespaces continue to require manual classification (where ambiguity is higher).
+
+Option 3 minimizes blast radius — keeps manual review where it adds value (new namespaces), removes it where it doesn't (sustained `termlink_agent_*` and `termlink_channel_*` growth).
+
+## Original DEFER recommendation (2026-05-06 — historical)
 
 **Recommendation:** DEFER
 
@@ -51,3 +100,5 @@ DEFER. Re-evaluate when:
 - T-1755 + T-1755 follow-up + T-1760 cumulative ~35 min effort across 3 commits
 - Naming convention works but is informal — codifying it formalizes an assumption that may not hold for non-`termlink_agent_*` namespaces
 - Lower-risk alternative (ratchet command) noted above
+
+(Superseded by the 2026-05-31 re-evaluation above.)

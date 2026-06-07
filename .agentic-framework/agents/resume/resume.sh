@@ -100,6 +100,21 @@ cmd_status() {
     echo -e "${BOLD}Focus:${NC} ${focus:-none}"
     echo ""
 
+    # T-1923: BVP estimator synchronous SLA fallback (Q4 default 10s).
+    # Score the focus task if any; on timeout/error, the task is marked
+    # `unscored: true` and the async sweep picks it up later. This call
+    # NEVER blocks resume (cmd_with_sla always exits 0; output silent unless
+    # the SLA was exceeded). Runs in background so even a hung subprocess
+    # cannot delay status output.
+    if [ -n "$focus" ] && [ -x "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
+        (
+            PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            timeout 10 "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
+                with-sla "$focus" --timeout 10 >/dev/null 2>&1 || true
+        ) &
+        disown 2>/dev/null || true
+    fi
+
     # Git state
     IFS='|' read -r uncommitted last_commit branch <<< "$(get_git_state)"
     echo -e "${BOLD}Git:${NC}"

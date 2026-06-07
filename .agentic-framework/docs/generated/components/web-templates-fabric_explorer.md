@@ -10,17 +10,17 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/static/d3.v7.min.js` | calls |
-| `web/blueprints/fabric.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [d3.v7.min](/docs/generated/web-static-d3) | calls | Vendored D3.js v7 library — force-directed graph, SVG rendering, zoom/pan. Used by fabric_explorer.html. No CDN dependency. |
+| [fabric](/docs/generated/web-blueprints-fabric) | rendered_by | Flask blueprint: Fabric |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/fabric.py` | used-by |
-| `web/blueprints/fabric.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fabric](/docs/generated/web-blueprints-fabric) | used-by | Flask blueprint: Fabric |
+| [fabric](/docs/generated/web-blueprints-fabric) | rendered_by | Flask blueprint: Fabric |
 
 ## Related
 

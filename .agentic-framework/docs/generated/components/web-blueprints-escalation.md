@@ -22,16 +22,16 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-escalation.yaml`*

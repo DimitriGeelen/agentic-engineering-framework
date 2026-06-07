@@ -18,10 +18,10 @@ T-1752 generalises so any future watching gap can declare its own check.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | tests |
-| `tools/g064-readiness.py` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [g064-readiness](/docs/generated/tools-g064-readiness) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_fw_gaps_closure_check.yaml`*

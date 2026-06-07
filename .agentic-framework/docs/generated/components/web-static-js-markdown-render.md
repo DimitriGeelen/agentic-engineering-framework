@@ -8,10 +8,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/static/js/chat.js` | calls |
-| `web/static/js/chat.js` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [chat](/docs/generated/web-static-js-chat) | calls | Ask AI chat tab JavaScript — streaming SSE client, conversation state management, save/load conversations, provider/model switching |
+| [chat](/docs/generated/web-static-js-chat) | called_by | Ask AI chat tab JavaScript — streaming SSE client, conversation state management, save/load conversations, provider/model switching |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-static-js-markdown-render.yaml`*

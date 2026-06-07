@@ -8,8 +8,8 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_navigation.yaml`*

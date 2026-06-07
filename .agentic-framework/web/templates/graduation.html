@@ -90,6 +90,27 @@
 }
 .app-dot.filled { background: #27ae60; }
 .app-dot.empty { background: #34495e; opacity: 0.3; }
+/* T-2046: bound rendered height — the pipeline table grows unbounded as learnings
+   accumulate (70k px at 462 rows). Same table class as T-2044 /learnings & T-2045
+   /decisions: a max-height scroll container with sticky header keeps every row in the
+   DOM, reached by internal scroll. (<details> can't legally wrap <tr>.) */
+.graduation-table-scroll {
+    max-height: calc(100vh - 380px);
+    min-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+}
+.graduation-table-scroll table { margin-bottom: 0; }
+.graduation-table-scroll thead th {
+    position: sticky;
+    top: 0;
+    background: var(--pico-card-background-color);
+    z-index: 2;
+}
+/* T-2046 review feedback: keep the learning ID (e.g. L-001) on one line — the narrow
+   first column was breaking it at the hyphen into multiple rows. Single line, like a task ID. */
+.graduation-table-scroll tbody td:first-child { white-space: nowrap; }
 </style>
 
 <div class="page-header">
@@ -159,6 +180,7 @@
 </div>
 
 <!-- Pipeline table -->
+<div class="graduation-table-scroll">
 <table role="grid">
     <thead>
         <tr>
@@ -199,6 +221,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div><!-- /graduation-table-scroll (T-2046) -->
 
 {% if not pipeline %}
 <p class="text-muted italic">No learnings match the current filter.</p>

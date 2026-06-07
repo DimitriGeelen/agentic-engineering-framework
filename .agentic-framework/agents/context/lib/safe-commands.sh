@@ -19,6 +19,17 @@
 is_bash_safe_command() {
     local cmd="$1"
 
+    # T-1908: strip leading env-var prefixes (`KEY=val [KEY2=val2 ...] cmd args`).
+    # Without this, the L-399 / T-1890 bypass-mechanism contract that promises
+    # `FW_SWITCH_FOCUS=1 fw work-on T-XXX` works actually fails — the awk
+    # extraction below returns `FW_SWITCH_FOCUS=1` as the base, no case
+    # matches, the safe-command path is skipped, and the downstream
+    # captured-status check blocks the very command the focus-drift block
+    # message recommended. Strip one prefix at a time until none remain.
+    while [[ "$cmd" =~ ^[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]+[[:space:]]+(.*)$ ]]; do
+        cmd="${BASH_REMATCH[1]}"
+    done
+
     # Extract the base command (first word, strip path).
     # For compound commands, the first word is still the primary command.
     local base
@@ -31,6 +42,16 @@ is_bash_safe_command() {
             git_sub=$(echo "$cmd" | awk '{print $2}')
             case "$git_sub" in
                 status|log|diff|show|branch|remote|describe|rev-parse|tag|stash|shortlog|blame|ls-files|ls-tree|cat-file|name-rev|reflog)
+                    return 0
+                    ;;
+                # T-2054: `git add` is task-agnostic — it stages already-produced
+                # content (the Write/Edit gate ensured that content was created
+                # under a task) and carries no T-XXX reference, so it cannot drift.
+                # Safe with no active task. `git commit` is deliberately NOT here:
+                # it must reach the focus-drift gate (T-1730) in check-active-task.sh
+                # when a focus exists, so its post-completion (null-focus) allow is
+                # handled there instead — see the T-2054 block in check-active-task.sh.
+                add)
                     return 0
                     ;;
             esac
@@ -67,7 +88,10 @@ is_bash_safe_command() {
                     local task_sub
                     task_sub=$(echo "$cmd" | awk '{print $3}')
                     case "$task_sub" in
-                        list|verify|review)
+                        # T-2052: `create` is task-bootstrap (writes only to the
+                        # exempt .tasks/ dir) — must be allowed with no active task,
+                        # else the gate deadlocks its own "create a task" advice.
+                        list|verify|review|create)
                             return 0
                             ;;
                     esac

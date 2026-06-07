@@ -10,16 +10,16 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/_wrapper.html` | wrapped_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_wrapper](/docs/generated/web-templates-_wrapper) | wrapped_by | Base layout wrapper: nav, header, footer, htmx/CSS includes |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/discovery.py` | rendered_by |
-| `C-003` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | rendered_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [learnings-route](/docs/generated/learnings-route) | rendered_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-feedback_analytics.yaml`*

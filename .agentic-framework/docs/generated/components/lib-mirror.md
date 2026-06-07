@@ -17,12 +17,14 @@ Public functions (called from bin/fw dispatcher):
 mirror_main <subcommand> [args...]
 Subcommands:
 
-## Used By (2)
+## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/test_mirror_sync.bats` | called_by |
-| `tests/unit/test_mirror_sync.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | called_by | TODO: describe what this component does |
+| [test_mirror_sync](/docs/generated/tests-unit-test_mirror_sync) | tests_by | TODO: describe what this component does |
+| [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | called_by | TODO: describe what this component does |
+| [test_mirror_stderr_capture](/docs/generated/tests-unit-test_mirror_stderr_capture) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-mirror.yaml`*

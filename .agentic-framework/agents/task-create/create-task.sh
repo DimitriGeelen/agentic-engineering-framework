@@ -36,6 +36,11 @@ TAGS=""
 RELATED=""
 HORIZON="now"
 START_WORK=false
+# T-2207 (T-2204 Slice B'): filing-time recommendation gate for inception
+# tasks — CLI mirror of T-1716's contract on do_inception_start.
+RECOMMENDATION=""
+RATIONALE=""
+I_AM_HUMAN=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -47,24 +52,41 @@ while [[ $# -gt 0 ]]; do
         --related) RELATED="$2"; shift 2 ;;
         --horizon) HORIZON="$2"; shift 2 ;;
         --start) START_WORK=true; shift ;;
+        --recommendation) RECOMMENDATION="$2"; shift 2 ;;
+        --rationale) RATIONALE="$2"; shift 2 ;;
+        --i-am-human) I_AM_HUMAN=true; shift ;;
         -h|--help)
             echo "Usage: create-task.sh [options]"
             echo ""
             echo "Options:"
-            echo "  --name        Task name (required)"
-            echo "  --description Task description (required)"
-            echo "  --type        Workflow type: $VALID_TYPES"
-            echo "  --owner       Task owner (required)"
-            echo "  --tags        Comma-separated tags (e.g. \"watchtower,ui,inception\")"
-            echo "  --related     Comma-separated related task IDs (e.g. \"T-084,T-085\")"
-            echo "  --horizon     Priority horizon: now (default), next, later"
-            echo "  --start       Set status to started-work instead of captured"
-            echo "  -h, --help    Show this help"
+            echo "  --name             Task name (required)"
+            echo "  --description      Task description (required)"
+            echo "  --type             Workflow type: $VALID_TYPES"
+            echo "  --owner            Task owner (required)"
+            echo "  --tags             Comma-separated tags (e.g. \"watchtower,ui,inception\")"
+            echo "  --related          Comma-separated related task IDs (e.g. \"T-084,T-085\")"
+            echo "  --horizon          Priority horizon: now (default), next, later"
+            echo "  --start            Set status to started-work instead of captured"
+            echo "  --recommendation   GO|NO-GO|DEFER — required for inception under \$CLAUDECODE=1 (T-1716, T-2207)"
+            echo "  --rationale        Evidence-cited reason — required for inception under \$CLAUDECODE=1"
+            echo "  --i-am-human       Bypass agent gate (scripts/tests/Watchtower) — logged Tier-2"
+            echo "  -h, --help         Show this help"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
+
+# T-2207: validate --recommendation value if provided (parity with do_inception_start)
+if [ -n "$RECOMMENDATION" ]; then
+    case "$RECOMMENDATION" in
+        GO|NO-GO|DEFER) ;;
+        *)
+            echo -e "${RED}Invalid --recommendation: '$RECOMMENDATION' (must be GO, NO-GO, or DEFER)${NC}" >&2
+            exit 1
+            ;;
+    esac
+fi
 
 # Interactive mode if required fields missing
 if [ -z "$NAME" ]; then
@@ -116,6 +138,12 @@ if ! is_valid_type "$WORKFLOW_TYPE"; then
 fi
 
 # Validate horizon
+# T-2160 (arc-009 Slice 1): explicit guard against --horizon past at creation too.
+if [ "$HORIZON" = "past" ]; then
+    error "'--horizon past' rejected — past is a derived render-time value, not settable"
+    error "  Past is computed from file location: .tasks/completed/ → renders as past."
+    die "  Storage enum is now/next/later. Per T-2159 Q1=(b); arc-009."
+fi
 if ! is_valid_horizon "$HORIZON"; then
     error "Invalid horizon '$HORIZON'"
     die "Valid horizons: $VALID_HORIZONS"
@@ -151,6 +179,84 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 # T-1424: unconditional — the source above already guaranteed the primitive is loaded.
 keylock_acquire "task-id-allocation"
 trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
+
+# T-2207 (T-2204 Slice B'): filing-time recommendation gate — CLI mirror of
+# T-1716. Fires before ID allocation so a blocked filing leaves no orphan
+# T-NNNN reserved. Producer/consumer parity with T-2205 (Write/Edit hook)
+# and T-2206 (emit_review/batch) via shared env-var bypass name.
+#
+# Triggers: workflow_type=inception AND $CLAUDECODE=1 AND no --i-am-human
+# AND no FW_ALLOW_EMPTY_RECOMMENDATION=1 AND no FW_INCEPTION_PRE_GATED=1
+# (the trusted-caller signal from do_inception_start) AND missing rec/rationale.
+#
+# Bypass mechanisms (all logged Tier-2 except the trusted-caller env signal):
+#   --i-am-human                          → scripts/tests/Watchtower
+#   FW_ALLOW_EMPTY_RECOMMENDATION=1       → agent override (parity w/ T-2205/T-2206)
+#   FW_INCEPTION_PRE_GATED=1              → do_inception_start trusted caller (silent)
+_log_recommendation_bypass() {
+    local _flag="${1:-unknown}"
+    local _reason="${2:-filing-time recommendation gate (T-2207)}"
+    local _log_dir="${PROJECT_ROOT:-.}/.context/working"
+    mkdir -p "$_log_dir" 2>/dev/null || return 0
+    local _log_file="$_log_dir/.gate-bypass-log.yaml"
+    local _ts
+    _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    {
+        echo "- timestamp: '$_ts'"
+        echo "  task: '<filing: ${NAME}>'"
+        echo "  flag: '$_flag'"
+        echo "  caller: 'create-task.sh'"
+        echo "  reason: '$_reason'"
+    } >> "$_log_file" 2>/dev/null || true
+}
+
+if [ "$WORKFLOW_TYPE" = "inception" ] \
+   && [ "${CLAUDECODE:-}" = "1" ] \
+   && [ "$I_AM_HUMAN" != "true" ] \
+   && [ "${FW_INCEPTION_PRE_GATED:-}" != "1" ]; then
+    if [ -z "$RECOMMENDATION" ] || [ -z "$RATIONALE" ]; then
+        if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ]; then
+            _log_recommendation_bypass "FW_ALLOW_EMPTY_RECOMMENDATION" \
+                "empty-recommendation bypass (create-task.sh inception filing)"
+            echo "" >&2
+            echo -e "  ${YELLOW}NOTE: filing inception '$NAME' without --recommendation —${NC}" >&2
+            echo -e "  ${YELLOW}allowed via FW_ALLOW_EMPTY_RECOMMENDATION=1 (logged).${NC}" >&2
+            echo "" >&2
+        else
+            echo "" >&2
+            echo -e "  ${RED}══════════════════════════════════════════${NC}" >&2
+            echo -e "  ${RED}BLOCKED: filing inception under \$CLAUDECODE=1 requires${NC}" >&2
+            echo -e "  ${RED}         --recommendation GO|NO-GO|DEFER + --rationale${NC}" >&2
+            echo -e "  ${RED}══════════════════════════════════════════${NC}" >&2
+            echo "" >&2
+            echo -e "  Origin: T-679 (governance rule — agent advisory at filing time)," >&2
+            echo -e "  T-1715/T-1716 (filing-time gate on fw inception start)," >&2
+            echo -e "  T-2204/T-2205/T-2206/T-2207 (producer/consumer parity)." >&2
+            echo "" >&2
+            echo -e "  To proceed, choose ONE:" >&2
+            echo "" >&2
+            echo -e "    1. Refile with the recommendation flags:" >&2
+            echo -e "         fw task create --type inception --name '$NAME' \\" >&2
+            echo -e "           --recommendation GO|NO-GO|DEFER \\" >&2
+            echo -e "           --rationale '<one-paragraph reason citing evidence>'" >&2
+            echo -e "       (or use the canonical: fw inception start '$NAME' --recommendation ... --rationale ...)" >&2
+            echo "" >&2
+            echo -e "    2. Override for scripts/tests/Watchtower:" >&2
+            echo -e "         --i-am-human   (logged Tier 2)" >&2
+            echo "" >&2
+            echo -e "    3. Agent override (logged Tier 2):" >&2
+            echo -e "         FW_ALLOW_EMPTY_RECOMMENDATION=1 fw task create --type inception ..." >&2
+            echo "" >&2
+            exit 1
+        fi
+    fi
+fi
+
+# Log --i-am-human bypass (parity with do_inception_start lines 124-136)
+if [ "$WORKFLOW_TYPE" = "inception" ] && [ "$I_AM_HUMAN" = "true" ]; then
+    _log_recommendation_bypass "--i-am-human" \
+        "filing-time recommendation gate (T-2207, CLI parity)"
+fi
 
 # Generate ID and filename
 TASK_ID=$(generate_id)
@@ -303,6 +409,31 @@ if [ "$WORKFLOW_TYPE" = "inception" ]; then
         rm -f "$FILEPATH"
         exit 1
     fi
+fi
+
+# T-2207 (T-2204 Slice B'): when --recommendation + --rationale were provided
+# at filing time, populate the ## Recommendation block of the just-created
+# task file. Mirrors lib/inception.sh:_inject_recommendation_block — same shape
+# so the populated block is byte-identical regardless of producer path.
+if [ "$WORKFLOW_TYPE" = "inception" ] && [ -n "$RECOMMENDATION" ] && [ -n "$RATIONALE" ]; then
+    python3 - "$FILEPATH" "$RECOMMENDATION" "$RATIONALE" <<'PYEOF'
+import re, sys
+path, rec, rationale = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path, 'r') as f:
+    text = f.read()
+# Strategy: locate the ## Recommendation heading, replace everything between
+# it and the next ## heading with our populated block. Idempotent: re-running
+# with the same values produces the same body.
+new_block = f"## Recommendation\n\n**Recommendation:** {rec}\n\n**Rationale:** {rationale}\n\n"
+pattern = re.compile(r'^## Recommendation[ \t]*\n.*?(?=^## )', re.MULTILINE | re.DOTALL)
+if pattern.search(text):
+    text = pattern.sub(new_block, text, count=1)
+else:
+    # No Recommendation block — append before ## Decision (T-1263 guarantees it exists)
+    text = re.sub(r'(^## Decision)', new_block + r'\1', text, count=1, flags=re.MULTILINE)
+with open(path, 'w') as f:
+    f.write(text)
+PYEOF
 fi
 
 # Success output

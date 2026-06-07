@@ -16,11 +16,11 @@ new add-learning call issued an ID that collided with historical IDs.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/lib/learning.sh` | calls |
-| `.context/project/learnings.yaml` | reads |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [add-learning](/docs/generated/add-learning) | calls | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+| [learnings-data](/docs/generated/learnings-data) | reads | Persistent store of all project learnings. Read by web UI and audit. Written by add-learning command. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-add_learning_id_allocator.yaml`*

@@ -29,10 +29,10 @@ def _fmt_tokens(n):
     return str(n)
 
 
-def _parse_session(filepath):
-    """Parse a single JSONL file, return session stats dict."""
+def _fresh_stats(filepath):
+    """Zeroed stats accumulator for a session file."""
     session = os.path.basename(filepath).replace(".jsonl", "")
-    stats = {
+    return {
         "id": session[:8],
         "id_full": session,
         "turns": 0,
@@ -43,49 +43,121 @@ def _parse_session(filepath):
         "first_ts": None,
         "last_ts": None,
         "model": "",
-        "file_size": os.path.getsize(filepath),
+        "file_size": 0,
     }
 
-    with open(filepath, "r") as f:
-        for line in f:
-            try:
-                e = json.loads(line)
-            except (json.JSONDecodeError, ValueError):
-                continue
 
-            ts = e.get("timestamp")
-            if ts:
-                if stats["first_ts"] is None:
-                    stats["first_ts"] = ts
-                stats["last_ts"] = ts
-
-            msg = e.get("message", {})
-            if not isinstance(msg, dict):
-                continue
-
-            usage = msg.get("usage")
-            if not usage or not isinstance(usage, dict):
-                continue
-
-            model = msg.get("model", "")
-            if model == "<synthetic>" or model.startswith("<"):
-                continue
-
-            if not stats["model"] and model:
-                stats["model"] = model
-
-            stats["turns"] += 1
-            stats["input_tokens"] += usage.get("input_tokens", 0)
-            stats["cache_read"] += usage.get("cache_read_input_tokens", 0)
-            stats["cache_create"] += usage.get("cache_creation_input_tokens", 0)
-            stats["output_tokens"] += usage.get("output_tokens", 0)
-
+def _finalize_total(stats):
+    """Recompute the derived `total` from the additive fields."""
     stats["total"] = (
         stats["input_tokens"]
         + stats["cache_read"]
         + stats["cache_create"]
         + stats["output_tokens"]
     )
+    return stats
+
+
+def _accumulate(filepath, start_offset, stats):
+    """Fold complete (newline-terminated) JSONL records from `start_offset`
+    into `stats` (all fields are additive sums or set-once). Returns the byte
+    offset after the last COMPLETE line consumed — any trailing partial line
+    (a record still being written) is left unconsumed so it is re-read intact
+    on the next call. This is what makes incremental append-parsing exact."""
+    with open(filepath, "rb") as f:
+        f.seek(start_offset)
+        data = f.read()
+    if not data:
+        return start_offset
+    last_nl = data.rfind(b"\n")
+    if last_nl == -1:
+        return start_offset  # no complete line available yet
+    chunk = data[: last_nl + 1]
+    consumed = start_offset + last_nl + 1
+
+    for raw in chunk.split(b"\n"):
+        if not raw:
+            continue
+        try:
+            e = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            continue
+
+        ts = e.get("timestamp")
+        if ts:
+            if stats["first_ts"] is None:
+                stats["first_ts"] = ts
+            stats["last_ts"] = ts
+
+        msg = e.get("message", {})
+        if not isinstance(msg, dict):
+            continue
+
+        usage = msg.get("usage")
+        if not usage or not isinstance(usage, dict):
+            continue
+
+        model = msg.get("model", "")
+        if model == "<synthetic>" or model.startswith("<"):
+            continue
+
+        if not stats["model"] and model:
+            stats["model"] = model
+
+        stats["turns"] += 1
+        stats["input_tokens"] += usage.get("input_tokens", 0)
+        stats["cache_read"] += usage.get("cache_read_input_tokens", 0)
+        stats["cache_create"] += usage.get("cache_creation_input_tokens", 0)
+        stats["output_tokens"] += usage.get("output_tokens", 0)
+
+    return consumed
+
+
+def _parse_session(filepath):
+    """Parse a single JSONL file from scratch, return session stats dict."""
+    stats = _fresh_stats(filepath)
+    _accumulate(filepath, 0, stats)
+    stats["file_size"] = os.path.getsize(filepath)
+    return _finalize_total(stats)
+
+
+# T-2035: per-file memo keyed on (mtime, size). Historical transcripts never change,
+# so they parse once per process; the growing current-session file is parsed
+# INCREMENTALLY (seek to last offset, fold only appended complete lines). Fixes the
+# 22s cockpit load — the T-1235 count-keyed cache re-parsed all ~1.5GB on every expiry.
+_parse_memo = {}
+
+
+def _parse_session_cached(filepath):
+    """Memoized `_parse_session`. Returns cached stats when (mtime, size) are
+    unchanged; folds only appended bytes when the file grew; re-parses from
+    scratch when the file shrank (truncation/rotation) or is unseen."""
+    try:
+        st = os.stat(filepath)
+    except OSError:
+        return _parse_session(filepath)
+
+    cached = _parse_memo.get(filepath)
+    if cached and cached["mtime"] == st.st_mtime and cached["size"] == st.st_size:
+        return cached["stats"]
+
+    if cached and st.st_size >= cached["size"]:
+        # append-only growth → incremental fold from the last consumed offset
+        stats = cached["stats"]
+        offset = _accumulate(filepath, cached["offset"], stats)
+    else:
+        # cold, shrunk, or rotated → full re-parse
+        stats = _fresh_stats(filepath)
+        offset = _accumulate(filepath, 0, stats)
+
+    stats["file_size"] = st.st_size
+    _finalize_total(stats)
+    _parse_memo[filepath] = {
+        "mtime": st.st_mtime,
+        "size": st.st_size,
+        "offset": offset,
+        "stats": stats,
+    }
     return stats
 
 
@@ -117,7 +189,7 @@ def _load_all_sessions():
 
     sessions = []
     for f in files:
-        sessions.append(_parse_session(str(f)))
+        sessions.append(_parse_session_cached(str(f)))
 
     _session_cache["data"] = sessions
     _session_cache["count"] = current_count

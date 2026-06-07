@@ -10,10 +10,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `cross-repo:termlink/crates/termlink-session/src/governance_subscriber.rs` | emitted_by |
-| `cross-repo:termlink/crates/termlink-session/src/governance_subscriber.rs` | emits_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink-governance-subscriber](/docs/generated/cross-repo-termlink-governance-subscriber) | emitted_by | T-1066 data plane governance subscriber — watches PTY Output frames asynchronously, emits Governance frames (0x8) on pattern match. Opt-in, non-blocking, bounded queue. Reconsideration finding: run_with_governance has zero non-test callers; subscriber is wired but unused. |
+| [termlink-governance-subscriber](/docs/generated/cross-repo-termlink-governance-subscriber) | emits_by | T-1066 data plane governance subscriber — watches PTY Output frames asynchronously, emits Governance frames (0x8) on pattern match. Opt-in, non-blocking, bounded queue. Reconsideration finding: run_with_governance has zero non-test callers; subscriber is wired but unused. |
 
 ---
 *Auto-generated from Component Fabric. Card: `cross-repo-termlink-governance-frame.yaml`*

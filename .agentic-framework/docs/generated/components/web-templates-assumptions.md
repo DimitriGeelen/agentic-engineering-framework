@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/inception.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [inception](/docs/generated/web-blueprints-inception) | rendered_by | Blueprint 'inception' — routes: /inception |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-assumptions.yaml`*

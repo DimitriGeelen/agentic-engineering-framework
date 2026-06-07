@@ -10,9 +10,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/fabric_explorer.html` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fabric_explorer](/docs/generated/web-templates-fabric_explorer) | called_by | Interactive D3.js Fabric Explorer — force-directed graph with subsystem bubbles, component expansion, source/report viewers, search, and pathfinding. 1,584 LOC template with CSS isolation (all: initial) to prevent Pico CSS bleeding. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-static-d3.yaml`*

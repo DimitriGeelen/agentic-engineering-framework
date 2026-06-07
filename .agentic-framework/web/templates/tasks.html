@@ -1,4 +1,6 @@
 {% from '_partials/inline_select.html' import inline_select %}
+{% from '_partials/arc_badge.html' import arc_badge %}
+{% from '_partials/bvp_badge.html' import bvp_badge %}
 <style>
 /* ── Full-width override for tasks page ────────────────── */
 main.container:has(.kanban-board),
@@ -436,7 +438,10 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="[name='q'],[name='owner'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
         <option value="">All Horizons</option>
-        {% for h in ['now','next','later'] %}
+        {# T-2160 (arc-009 Slice 1): render-only list includes 'past' (derived
+           from .tasks/completed/). Storage enum stays now/next/later — past
+           is filter-only, not editable. #}
+        {% for h in enum_render_horizons %}
         <option value="{{ h }}" {% if horizon_filter == h %}selected{% endif %}>{{ h }}</option>
         {% endfor %}
     </select>
@@ -451,16 +456,22 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     </select>
     {% endif %}
     <input type="hidden" name="view" value="{{ view }}">
-    {% if arc_filter %}
-    <span style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--pico-secondary-background); font-size: 0.78rem; font-weight: 600;">
-        arc: {{ arc_filter }}
+    {# ── arc-007 S4c (T-2016): one removable chip per active filter ──────── #}
+    {% if active_filter_chips %}
+    <div class="filter-chips" style="display: inline-flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;">
+        {% for chip in active_filter_chips %}
+        <span class="filter-chip" data-filter-chip="{{ chip.key }}"
+              style="display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.15rem 0.55rem; border-radius: 999px; background: var(--pico-secondary-background); font-size: 0.78rem; font-weight: 600;">
+            {{ chip.label }}
+            <a href="{{ chip.clear_url }}" hx-get="{{ chip.clear_url }}" hx-target="#content" hx-push-url="true"
+               class="filter-chip-clear" title="Clear {{ chip.label }}" aria-label="Clear {{ chip.label }}"
+               style="text-decoration: none; color: inherit;">&times;</a>
+        </span>
+        {% endfor %}
         <a href="/tasks?view={{ view }}" hx-get="/tasks?view={{ view }}" hx-target="#content" hx-push-url="true"
-           title="Clear arc filter" style="text-decoration: none; color: inherit;">&times;</a>
-    </span>
-    {% endif %}
-    {% if search_query or owner_filter or horizon_filter or tag_filter or arc_filter %}
-    <a href="/tasks?view={{ view }}" hx-get="/tasks?view={{ view }}" hx-target="#content" hx-push-url="true"
-       style="font-size: 0.75rem; color: var(--pico-muted-color); text-decoration: none; cursor: pointer;">&times; Clear filters</a>
+           class="filter-chips-clear-all"
+           style="font-size: 0.75rem; color: var(--pico-muted-color); text-decoration: none; cursor: pointer;">&times; Clear all</a>
+    </div>
     {% endif %}
 </div>
 
@@ -478,10 +489,17 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 <div class="kanban-board">
     {# ── Kanban card macro ─────────────────────────────────── #}
     {% macro kanban_card(task) %}
-    <article class="kanban-card">
+    {# S4d (T-2019): draggable + data-task-id → kanban-drag.js drags the card onto another
+       .kanban-column and POSTs the target column's status to /api/task/<id>/status. #}
+    <article class="kanban-card" draggable="true" data-task-id="{{ task.id }}">
         <div class="kanban-card-header">
+            {# S4e (T-2018): bulk multi-select checkbox — bulk-actions.js owns it. #}
+            <input type="checkbox" class="wt-bulk-select" data-bulk-select="{{ task.id }}"
+                   title="Select for bulk action" aria-label="Select {{ task.id }}">
+            {# S4a (T-2015): data-task-panel opens the slide-in panel; hx-boost=false
+               keeps the href as the no-JS full-page fallback (task-panel.js owns the click). #}
             <a href="/tasks/{{ task.id }}" class="kanban-card-id"
-               hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a>
+               data-task-panel="{{ task.id }}" hx-boost="false">{{ task.id }}</a>
             {{ inline_select(task.id, 'status', enum_statuses|default(['captured','started-work','issues','work-completed']), task.status, select_class='inline-kanban-status-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
         </div>
         <span class="kanban-card-name editable-kanban-name" title="{{ task.name }}"
@@ -490,6 +508,8 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
             {{ inline_select(task.id, 'type', enum_types, task.workflow_type, select_class='inline-type-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
             {{ inline_select(task.id, 'horizon', enum_horizons, task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
             {{ inline_select(task.id, 'owner', enum_owners, task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ arc_badge(task) }}
+            {{ bvp_badge(task) }}
         </div>
     </article>
     {% endmacro %}
@@ -642,20 +662,26 @@ document.addEventListener('htmx:afterRequest', function(event) {
 <table>
     <thead>
         <tr>
+            <th></th>
             <th>ID</th>
             <th>Name</th>
             <th>Status</th>
             <th>Horizon</th>
             <th>Type</th>
             <th>Owner</th>
+            <th>Arc</th>
+            <th>BVP</th>
             <th>Tags</th>
         </tr>
     </thead>
     <tbody>
         {% for task in tasks %}
         <tr>
+            {# S4e (T-2018): bulk multi-select checkbox #}
+            <td><input type="checkbox" class="wt-bulk-select" data-bulk-select="{{ task.id }}"
+                       title="Select for bulk action" aria-label="Select {{ task.id }}"></td>
             <td><a href="/tasks/{{ task.id }}"
-                   hx-get="/tasks/{{ task.id }}" hx-target="#content" hx-push-url="true">{{ task.id }}</a></td>
+                   data-task-panel="{{ task.id }}" hx-boost="false">{{ task.id }}</a></td>
             <td><span class="editable-kanban-name" style="white-space:normal;"
                       onclick="startKanbanNameEdit(this, '{{ task.id }}')"
                       title="Click to edit">{{ task.name }}</span></td>
@@ -675,6 +701,8 @@ document.addEventListener('htmx:afterRequest', function(event) {
                 {{ inline_select(task.id, 'owner', enum_owners, task.owner, hx_target='next .owner-update-result', form_class='inline-flex-center gap-xs') }}
                 <span class="owner-update-result"></span>
             </td>
+            <td>{{ arc_badge(task) }}</td>
+            <td>{{ bvp_badge(task) }}</td>
             <td><small>{{ task._tags[:3]|join(', ') }}</small></td>
         </tr>
         {% endfor %}

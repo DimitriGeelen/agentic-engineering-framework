@@ -19,12 +19,12 @@ consumer-mode (.agentic-framework/bin/fw), emit absolute path either way.
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/hook-enable.sh` | calls |
-| `bin/hook-enable.sh` | tests |
-| `lib/init.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-enable](/docs/generated/bin-hook-enable) | calls | Register framework hooks in .claude/settings.json idempotently — adds { type "command", command ".agentic-framework/bin/fw hook <name>" } entries under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015). |
+| [hook-enable](/docs/generated/bin-hook-enable) | tests | Register framework hooks in .claude/settings.json idempotently — adds { type "command", command ".agentic-framework/bin/fw hook <name>" } entries under specified event/matcher pair. Built under T-1189 to repair T-977 false-complete (G-015). |
+| [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_enable_absolute_path.yaml`*

@@ -365,6 +365,38 @@ __pycache__/
 GITIGNORE
     echo -e "  ${GREEN}✓${NC} .gitignore"
 
+    # T-2232: write .upstream sentinel so an in-consumer `fw upgrade` can
+    # self-recover when .framework.yaml has no upstream_repo: set (legacy
+    # consumers init'd before T-575's auto-detect, or consumers whose
+    # framework had no git remote at init time). Resolution chain at upgrade
+    # time becomes: --from-upstream flag > .framework.yaml upstream_repo >
+    # this vendored sentinel > error. Symmetric with lib/init.sh:212-228
+    # (same git origin auto-detect; just runs at vendor-time so the answer
+    # travels with the vendored copy). Skip silently when no origin —
+    # vendored-without-sentinel is a legitimate state (file:// checkouts,
+    # detached forks). Origin: ring20-dashboard .121do field failure
+    # (T-2231), durable fix for the in-consumer upgrade path class.
+    local _vendor_origin=""
+    if [ -d "$vendor_source/.git" ]; then
+        _vendor_origin=$(git -C "$vendor_source" remote get-url origin 2>/dev/null) || true
+        if [ -z "$_vendor_origin" ]; then
+            _vendor_origin=$(git -C "$vendor_source" remote -v 2>/dev/null | grep "(push)" | head -1 | awk '{print $2}') || true
+        fi
+    fi
+    if [ -n "$_vendor_origin" ]; then
+        cat > "$dest/.upstream" <<UPSTREAM
+# Vendored Agentic Engineering Framework — upstream sentinel (T-2232).
+# Records the framework's git origin URL at vendor-time so an in-consumer
+# \`fw upgrade\` can self-recover when .framework.yaml has no upstream_repo:.
+# Resolution precedence (in lib/upgrade.sh): --from-upstream flag, then
+# .framework.yaml upstream_repo:, then this sentinel. After a successful
+# sentinel-driven recovery, upgrade.sh persists the URL to .framework.yaml
+# so subsequent upgrades skip this fallback. Do not edit by hand.
+$_vendor_origin
+UPSTREAM
+        echo -e "  ${GREEN}✓${NC} .upstream (sentinel: $_vendor_origin)"
+    fi
+
     # Ensure bin/fw is executable
     chmod +x "$dest/bin/fw" 2>/dev/null || true
 
@@ -495,7 +527,15 @@ if [ -z "$PROJECT_ROOT" ]; then
 fi
 
 # Resolve FRAMEWORK_ROOT
-FRAMEWORK_ROOT=$(resolve_framework) || true
+# T-2099 (fork-bomb fix, SEV-1): respect a caller-supplied FRAMEWORK_ROOT instead
+# of unconditionally re-resolving. Without this, `fw upgrade` from a consumer
+# auto-clones upstream, hands off to the cloned bin/fw, and the cloned fw
+# re-resolves back to the CONSUMER's vendored copy (T-498 preference) → infinite
+# recursion → fork bomb. lib/upgrade.sh now passes env-scoped FRAMEWORK_ROOT to
+# the handoff; this branch lets the cloned fw honour it.
+if [ -z "${FRAMEWORK_ROOT:-}" ]; then
+    FRAMEWORK_ROOT=$(resolve_framework) || true
+fi
 
 # Validate we have what we need
 if [ -z "$FRAMEWORK_ROOT" ]; then
@@ -582,6 +622,7 @@ show_help() {
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}hook-enable${NC} <args>   Register a hook in .claude/settings.json (idempotent)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
+    echo -e "  ${GREEN}consumer-recover${NC} <host> [path]  Recover legacy vendored consumer (pre-T-2232). Dry-run default; --apply executes."
     echo -e "  ${YELLOW}setup${NC} [dir]          Deprecated — alias for init"
     echo -e "  ${GREEN}build${NC}                Compile TypeScript sources (lib/ts/src → lib/ts/dist)"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
@@ -754,8 +795,14 @@ do_doctor() {
     # Consumer projects don't have both copies; their .agentic-framework IS the framework.
     # Drift = consumers pulling via `fw upgrade` get stale hooks/libs (T-1432, T-1433).
     if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && [ -d "$FRAMEWORK_ROOT/.agentic-framework" ]; then
-        local _vdrift=0
-        local _vdrift_list=""
+        # T-2243: count libs and templates classes separately so each class
+        # always gets visibility in the WARN list — pre-T-2243 the global
+        # "first 5" bucket let large libs drift bury small templates drift
+        # (4-test exploration found 64 libs drifts could mask 1 templates
+        # drift entirely). Per-class lists mirror the pre-push gate's
+        # "would sync N <class>(s)" shape from T-2240/T-2241.
+        local _vdrift_libs=0 _vdrift_tpl=0
+        local _vdrift_libs_list="" _vdrift_tpl_list=""
         local _f _vf _rel
         # T-1521: Walk the vendored tree itself, not a hand-curated source glob.
         # T-1434's original glob list missed agents/handover, agents/audit,
@@ -766,21 +813,45 @@ do_doctor() {
             _f="$FRAMEWORK_ROOT/$_rel"
             [ -f "$_f" ] || continue
             if ! diff -q "$_f" "$_vf" >/dev/null 2>&1; then
-                _vdrift=$((_vdrift + 1))
-                if [ "$_vdrift" -le 5 ]; then
-                    _vdrift_list="$_vdrift_list\n           - $_rel"
+                _vdrift_libs=$((_vdrift_libs + 1))
+                if [ "$_vdrift_libs" -le 5 ]; then
+                    _vdrift_libs_list="$_vdrift_libs_list\n           - $_rel"
                 fi
             fi
         done < <(find "$FRAMEWORK_ROOT/.agentic-framework"/{bin,lib,agents,web} -type f \
                     \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "*.html" \) \
                     -not -path "*/__pycache__/*" \
                     2>/dev/null)
+        # T-2243: templates class (T-2241 sibling). _self_vendor_templates()
+        # syncs .tasks/templates/*.md into .agentic-framework/.tasks/templates/.
+        # Separate find — adding `.md` to the libs find pattern above would
+        # also flag lib/templates/*.md and agents/*/AGENT.md files, which
+        # aren't part of the self-vendor scope.
+        if [ -d "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" ]; then
+            while IFS= read -r _vf; do
+                _rel="${_vf#$FRAMEWORK_ROOT/.agentic-framework/}"
+                _f="$FRAMEWORK_ROOT/$_rel"
+                [ -f "$_f" ] || continue
+                if ! diff -q "$_f" "$_vf" >/dev/null 2>&1; then
+                    _vdrift_tpl=$((_vdrift_tpl + 1))
+                    if [ "$_vdrift_tpl" -le 5 ]; then
+                        _vdrift_tpl_list="$_vdrift_tpl_list\n           - $_rel"
+                    fi
+                fi
+            done < <(find "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" -type f -name "*.md" 2>/dev/null)
+        fi
+        local _vdrift=$((_vdrift_libs + _vdrift_tpl))
         if [ "$_vdrift" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  No vendored-source drift"
         else
             echo -e "  ${YELLOW}WARN${NC}  Vendored-source drift: $_vdrift file(s) out of sync"
             echo -e "         Run: fw vendor  (sync .agentic-framework/ with source)"
-            [ -n "$_vdrift_list" ] && echo -e "         First $([ $_vdrift -gt 5 ] && echo 5 || echo $_vdrift):$_vdrift_list"
+            if [ "$_vdrift_libs" -gt 0 ]; then
+                echo -e "         libs ($_vdrift_libs) — first $([ $_vdrift_libs -gt 5 ] && echo 5 || echo $_vdrift_libs):$_vdrift_libs_list"
+            fi
+            if [ "$_vdrift_tpl" -gt 0 ]; then
+                echo -e "         templates ($_vdrift_tpl) — first $([ $_vdrift_tpl -gt 5 ] && echo 5 || echo $_vdrift_tpl):$_vdrift_tpl_list"
+            fi
             warnings=$((warnings + 1))
         fi
     fi
@@ -1700,6 +1771,30 @@ else:
         local cron_slug
         cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
         local cron_target="$cron_target_dir/agentic-audit-${cron_slug}"
+
+        # T-1942: registry → generated drift detection (third leg of the
+        # three-step sync registry → generated → deployed). The existing
+        # checks below cover generated → deployed. Without this, a registry
+        # edit that's never regenerated stays invisible to doctor (T-1935
+        # origin: bvp-cost-estimator-sweep entry sat 3+ days drifted while
+        # doctor reported "in sync"). Approach: dry-run the same generate
+        # logic via lib/cron_dry_run.py, content-compare against the on-disk
+        # source. T-1944: helper extracted to a real file per L-332/L-408
+        # (heredoc-in-$() in bin/fw is the canonical self-lockout shape).
+        if [ -f "$cron_source" ]; then
+            local _cron_dry_run
+            _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$cron_registry" "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "__SKIP__")
+            if [ "$_cron_dry_run" != "__SKIP__" ] && [ -n "$_cron_dry_run" ]; then
+                local _cron_on_disk
+                _cron_on_disk=$(cat "$cron_source" 2>/dev/null)
+                if [ "$_cron_dry_run" != "$_cron_on_disk" ]; then
+                    echo -e "  ${YELLOW}WARN${NC}  Cron registry edited but not generated: $cron_registry is ahead of $cron_source"
+                    echo -e "        Run: fw cron generate"
+                    warnings=$((warnings + 1))
+                fi
+            fi
+        fi
+
         if [ -f "$cron_source" ] && [ -f "$cron_target" ]; then
             if diff -q "$cron_source" "$cron_target" >/dev/null 2>&1; then
                 echo -e "  ${GREEN}OK${NC}  Cron registry in sync with $cron_target"
@@ -1882,34 +1977,11 @@ else:
     # T-1734 closed a 5-month silent drift between these two tables; this check is
     # the runtime witness that prevents recurrence. After T-1807 the lint logic
     # moved from bin/fw heredoc into lib/workflow_lint.py — the parity comparison
-    # now lives between the two python modules directly.
+    # now lives between the two python modules directly. T-1946 (2026-05-20)
+    # extracted the inline heredoc to lib/worker_kinds_parity.py per L-332/L-408
+    # (last remaining heredoc-in-command-substitution site in bin/fw).
     local _wkp_out
-    _wkp_out=$(python3 - <<PYEOF 2>/dev/null
-import sys
-sys.path.insert(0, "$FW_LIB_DIR")
-try:
-    from resolver import VALID_WORKER_KINDS as resolver_set
-except Exception as e:
-    print(f"FAIL|cannot import lib/resolver.py: {e}")
-    sys.exit(0)
-try:
-    from workflow_lint import VALID_WORKER_KINDS as lint_set
-except Exception as e:
-    print(f"FAIL|cannot import lib/workflow_lint.py: {e}")
-    sys.exit(0)
-only_lint = lint_set - resolver_set
-only_resolver = resolver_set - lint_set
-if not only_lint and not only_resolver:
-    print(f"OK|{sorted(lint_set)}")
-else:
-    diff_parts = []
-    if only_lint:
-        diff_parts.append(f"only in lib/workflow_lint.py: {sorted(only_lint)}")
-    if only_resolver:
-        diff_parts.append(f"only in lib/resolver.py: {sorted(only_resolver)}")
-    print(f"WARN|drift detected — {'; '.join(diff_parts)}")
-PYEOF
-)
+    _wkp_out=$(python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$FW_LIB_DIR" 2>/dev/null)
     case "$_wkp_out" in
         OK\|*)
             local _wkp_set="${_wkp_out#OK|}"
@@ -1930,6 +2002,35 @@ PYEOF
             warnings=$((warnings + 1))
             ;;
     esac
+
+    # T-2185: stale gauge-READY gaps — surface operator-procrastination class.
+    # WARN when ≥1 gap has closure_check_command + gauge currently READY for
+    # ≥7 days (created/last_reviewed). Mirrors OBS-048 (G-064 READY since
+    # 2026-05-15, surfaced by T-2184 handoff doc; closure path now exists
+    # via `fw gaps close G-XXX` and the /gaps Close button).
+    local _stale_gaps_out _stale_gaps_count
+    _stale_gaps_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+import sys; sys.path.insert(0, '$FRAMEWORK_ROOT')
+try:
+    from lib.gaps import stale_ready_gaps
+    out = stale_ready_gaps(threshold_days=7)
+    for g in out:
+        print(f\"{g['gap_id']}\t{g['age_days']}\t{g['title'][:60]}\")
+except Exception as e:
+    print(f'ERROR\t{e}', file=sys.stderr)
+" 2>/dev/null)
+    _stale_gaps_count=$(echo "$_stale_gaps_out" | grep -c "^G-" || true)
+    if [ "${_stale_gaps_count:-0}" -gt 0 ]; then
+        echo -e "  ${YELLOW}WARN${NC}  Gauge-READY gaps not closed: $_stale_gaps_count gap(s) ≥7 days READY"
+        while IFS=$'\t' read -r _gid _age _title; do
+            [ -n "$_gid" ] || continue
+            echo -e "         $_gid (${_age}d READY) — $_title"
+        done <<< "$_stale_gaps_out"
+        echo -e "         Close via: fw gaps close <gap_id> (or /gaps Close button)"
+        warnings=$((warnings + 1))
+    else
+        echo -e "  ${GREEN}OK${NC}  No stale gauge-READY gaps"
+    fi
 
     # Summary (T-1707: break out host_warnings count when > 0)
     local _scope_breakdown=""
@@ -2477,14 +2578,53 @@ else:
 PYTASK_VERIFY
             fi
             ;;
+        review-batch)
+            # T-2182 / T-2181 Slice 1: emit a markdown table of full Watchtower URLs
+            # for multi-task handoff in chat. Composes from emit_review_batch in
+            # lib/review.sh. The single-task `fw task review T-XXX` form is unchanged.
+            if [ $# -lt 1 ]; then
+                echo -e "${RED}Usage: fw task review-batch T-A T-B [...]${NC}" >&2
+                exit 1
+            fi
+            source "$FW_LIB_DIR/review.sh"
+            emit_review_batch "$@"
+            ;;
         review)
             # T-631/T-634: Print clickable URL + QR code for Human AC review
-            local task_id="${1:-}"
-            local poll_flag="${2:-}"
+            # T-2139: --skip-review-link-check "rationale" Tier-2 bypass for the
+            # review-link homework gate (per T-2138 GO, Candidate E + Q3-both).
+            local task_id=""
+            local poll_flag=""
+            local skip_link_check_rationale=""
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    --skip-review-link-check)
+                        skip_link_check_rationale="${2:-unspecified}"
+                        shift 2
+                        ;;
+                    --poll)
+                        poll_flag="--poll"
+                        shift
+                        ;;
+                    *)
+                        if [ -z "$task_id" ]; then
+                            task_id="$1"
+                        fi
+                        shift
+                        ;;
+                esac
+            done
 
             if [ -z "$task_id" ]; then
-                echo -e "${RED}Usage: fw task review T-XXX [--poll]${NC}" >&2
+                echo -e "${RED}Usage: fw task review T-XXX [--poll] [--skip-review-link-check \"rationale\"]${NC}" >&2
                 exit 1
+            fi
+
+            # T-2139 bypass: propagate to emit_review via env + record rationale
+            # for the validator's Tier-2 log.
+            if [ -n "$skip_link_check_rationale" ]; then
+                export FW_ALLOW_REVIEW_LINK_HOMEWORK=1
+                export FW_BYPASS_RATIONALE="$skip_link_check_rationale"
             fi
 
             # Find task file
@@ -2561,6 +2701,7 @@ PYTASK_VERIFY
             echo "                    Triage flags (T-1628): --compact, --by-age,"
             echo "                    --rubber-stamp-only, --review-only"
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
+            echo "  review-batch T-A T-B [...]  Emit markdown table of full URLs for multi-task chat handoff (T-2182)"
             echo "  revisit-due       Show tasks whose revisit_at is <= today UTC (G-053 / T-1452)"
             echo ""
             echo "Usage:"
@@ -2571,6 +2712,7 @@ PYTASK_VERIFY
             echo '  fw task verify T-XXX  # Run verification commands from task'
             echo '  fw task review T-631  # Print URL + QR for Human AC review'
             echo '  fw task review T-631 --poll  # Poll until all Human ACs checked'
+            echo '  fw task review-batch T-A T-B T-C  # Markdown table of full URLs (chat handoff)'
             echo '  fw task list --status captured --type build'
             echo '  fw task list --tag watchtower'
             echo '  fw task show T-001'
@@ -2684,6 +2826,129 @@ for t in stale_tasks:
     color = RED if t['age'] > 30 else YELLOW if t['age'] > 14 else NC
     print(f'  {t["id"]:<8} {color}{age_str:>5}{NC} {t["last_update"]:<12} {t["status"]:<18} {t["horizon"]:<6} {t["name"][:50]}')
 PYTASK_STALE
+            ;;
+        archive-eligible)
+            # T-1903 / L-403: sweep active/ for status: work-completed tasks whose
+            # acceptance criteria are fully ticked (after HTML-comment strip).
+            # These got stuck in active/ when a later re-class (T-1894-style:
+            # [REVIEW] → [REVIEWER]) drained the Human-AC count to zero — the
+            # partial-complete recheck only re-fires when --status work-completed
+            # is invoked again. This sweep does that invocation for each candidate.
+            FW_TASK_ARCHIVE_ARGS="$*" python3 - << 'PYTASK_ARCHIVE'
+import os, sys, re, shlex, subprocess
+
+args = shlex.split(os.environ.get('FW_TASK_ARCHIVE_ARGS', ''))
+dry_run = False
+verbose = False
+i = 0
+while i < len(args):
+    if args[i] in ('-n', '--dry-run'):
+        dry_run = True; i += 1
+    elif args[i] in ('-v', '--verbose'):
+        verbose = True; i += 1
+    elif args[i] in ('-h', '--help'):
+        print("Usage: fw task archive-eligible [--dry-run] [--verbose]")
+        print("  Sweep .tasks/active/ for status: work-completed tasks whose")
+        print("  acceptance criteria are all ticked. Re-runs the partial-complete")
+        print("  recheck on each, which moves them to completed/.")
+        print("  --dry-run lists candidates without invoking the recheck.")
+        print("  Origin: L-403 (T-1903) — re-class operations can leave tasks stuck.")
+        sys.exit(0)
+    else:
+        i += 1
+
+GREEN = '\033[0;32m'; YELLOW = '\033[1;33m'; CYAN = '\033[0;36m'
+RED = '\033[0;31m'; BOLD = '\033[1m'; NC = '\033[0m'
+
+project_root = os.environ.get('PROJECT_ROOT', '.')
+active_dir = os.path.join(project_root, '.tasks', 'active')
+fw_bin = os.environ.get('FW_BIN', os.path.join(project_root, 'bin', 'fw'))
+if not os.path.isfile(fw_bin):
+    fw_bin = os.path.join(project_root, '.agentic-framework', 'bin', 'fw')
+
+if not os.path.isdir(active_dir):
+    print(f'{YELLOW}No active/ directory — nothing to sweep.{NC}')
+    sys.exit(0)
+
+def is_archive_eligible(path):
+    """Return (eligible, task_id, reason) for a task file."""
+    try:
+        text = open(path).read()
+    except OSError:
+        return (False, '?', 'unreadable')
+    m = re.search(r'^id:\s*(T-\d+)', text, re.MULTILINE)
+    task_id = m.group(1) if m else os.path.basename(path)
+    m = re.search(r'^status:\s*(\S+)', text, re.MULTILINE)
+    if not m or m.group(1) != 'work-completed':
+        return (False, task_id, f'status={m.group(1) if m else "?"}')
+    ac_match = re.search(r'^## Acceptance Criteria\b(.*?)(?=^## )', text, re.MULTILINE | re.DOTALL)
+    if not ac_match:
+        return (False, task_id, 'no AC section')
+    ac = re.sub(r'<!--.*?-->', '', ac_match.group(1), flags=re.DOTALL)
+    unchecked = len(re.findall(r'^\s*-\s*\[ \]', ac, re.MULTILINE))
+    total = len(re.findall(r'^\s*-\s*\[[ x]\]', ac, re.MULTILINE))
+    if total > 0 and unchecked == 0:
+        return (True, task_id, f'{total} AC all ticked')
+    return (False, task_id, f'{unchecked}/{total} unchecked')
+
+candidates = []
+for fn in sorted(os.listdir(active_dir)):
+    if not (fn.startswith('T-') and fn.endswith('.md')):
+        continue
+    path = os.path.join(active_dir, fn)
+    eligible, task_id, reason = is_archive_eligible(path)
+    if eligible:
+        candidates.append((task_id, path, reason))
+    elif verbose:
+        print(f'  {CYAN}skip{NC} {task_id}: {reason}')
+
+if not candidates:
+    print(f'{GREEN}No stuck partial-complete tasks — sweep is a no-op.{NC}')
+    sys.exit(0)
+
+print(f'{BOLD}{len(candidates)} archive-eligible task(s):{NC}')
+for task_id, _, reason in candidates:
+    print(f'  {YELLOW}•{NC} {task_id} ({reason})')
+
+if dry_run:
+    print()
+    print(f'{CYAN}(dry-run — no changes made){NC}')
+    print(f'Run without --dry-run to invoke partial-complete recheck on each.')
+    sys.exit(0)
+
+print()
+moved = 0
+failed = 0
+for task_id, path, _ in candidates:
+    print(f'{CYAN}→ {task_id}{NC}: invoking partial-complete recheck...')
+    # Re-invoke --status work-completed on the same task. update-task.sh's
+    # OLD_STATUS == NEW_STATUS branch (line ~941) re-checks AC totals and
+    # moves to completed/ if all are ticked. Pass --switch-focus to bypass
+    # the focus-drift hook in case the current focus is some other task.
+    r = subprocess.run(
+        [fw_bin, 'task', 'update', task_id, '--status', 'work-completed', '--switch-focus'],
+        cwd=project_root,
+        capture_output=True, text=True
+    )
+    if r.returncode == 0 and 'Moved to completed/' in r.stdout:
+        print(f'  {GREEN}✓ archived{NC}')
+        moved += 1
+    elif r.returncode == 0:
+        print(f'  {YELLOW}? recheck ran but no move — task may still have unchecked ACs{NC}')
+        if verbose:
+            print('  --- stdout ---'); print(r.stdout)
+        failed += 1
+    else:
+        print(f'  {RED}✗ recheck failed (exit {r.returncode}){NC}')
+        if verbose:
+            print('  --- stderr ---'); print(r.stderr)
+        failed += 1
+
+print()
+print(f'{BOLD}Sweep complete:{NC} {GREEN}{moved} moved{NC}, {YELLOW}{failed} skipped{NC}')
+if failed > 0:
+    sys.exit(1)
+PYTASK_ARCHIVE
             ;;
         reid)
             # T-1367: Safely rename a task's ID — updates filename + frontmatter atomically.
@@ -2822,7 +3087,8 @@ case "$cmd" in
         # T-1443 v1.0–v1.4: machine-reviewer (anti-pattern static-scan + audit + overrides)
         if [ "${1:-}" = "" ] || [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
             echo "Usage:"
-            echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task"
+            echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task (inline)"
+            echo "  fw reviewer T-XXX --dispatch [--timeout N] [--json]         Scan via isolated TermLink worker (T-1951)"
             echo "  fw reviewer audit [--pass-a [--baseline [--force]] | --pass-b]"
             echo "                    [--limit N] [--quiet] [--timeout N]"
             echo "                                                               Layer 3 daily corpus re-scan"
@@ -2850,28 +3116,60 @@ case "$cmd" in
             echo "  for a bounded window; suppressions are logged to feedback-stream.yaml."
             exit 0
         fi
+        # T-1642: PYTHONPATH=$FRAMEWORK_ROOT so `python3 -m lib.reviewer.*` resolves
+        # in vendored consumer projects where lib/ lives at .agentic-framework/lib/
+        # rather than at the project root. Framework-repo-self is unaffected
+        # (PROJECT_ROOT == FRAMEWORK_ROOT there, no behaviour change).
+        # T-1951: dispatch mode — forward to dispatch_cli if --dispatch is in any arg
+        _has_dispatch=0
+        for _rarg in "$@"; do
+            if [ "$_rarg" = "--dispatch" ]; then _has_dispatch=1; break; fi
+        done
+        if [ "$_has_dispatch" = "1" ]; then
+            # Strip --dispatch from args before forwarding (dispatch_cli argparse
+            # does not know about --dispatch; bin/fw owns the routing decision).
+            _dispatch_args=()
+            for _rarg in "$@"; do
+                [ "$_rarg" != "--dispatch" ] && _dispatch_args+=("$_rarg")
+            done
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.dispatch_cli "${_dispatch_args[@]}"
+        fi
         if [ "${1:-}" = "audit" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.audit "$@"
         fi
         if [ "${1:-}" = "override" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.override_cli "$@"
         fi
         if [ "${1:-}" = "drift" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.drift_cli "$@"
         fi
         if [ "${1:-}" = "reverify" ]; then
             shift
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.reverify_cli "$@"
         fi
         exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            PYTHONPATH="$FRAMEWORK_ROOT" \
             python3 -m lib.reviewer.static_scan "$@"
+        ;;
+    ux-review)
+        # T-2002: UX-review capture engine (approach C of inception T-2000) —
+        # browser-driving console + interaction + guide-coherence review of an
+        # interactive render surface. Executes page JS; informs the human [REVIEW].
+        exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+            python3 "$AGENTS_DIR/ux-review/ux-review.py" "$@"
         ;;
     self-audit)
         exec "$AGENTS_DIR/audit/self-audit.sh" "$@"
@@ -2915,6 +3213,15 @@ case "$cmd" in
         # shellcheck disable=SC1091
         . "$FRAMEWORK_ROOT/lib/arc.sh"
         arc_dispatch "$@"
+        exit $?
+        ;;
+    bvp)
+        # T-1919 (arc-006): Business Value Points read-only CLI.
+        # Verbs: <empty>=rank, T-<id>=detail, arcs, --quadrant FILTER, --help
+        # Mutating verbs (weight/driver/confirm) land in T-1920/T-1924.
+        # shellcheck disable=SC1091
+        . "$FRAMEWORK_ROOT/lib/bvp.sh"
+        bvp_dispatch "$@"
         exit $?
         ;;
     cron)
@@ -4464,7 +4771,7 @@ from datetime import datetime
 # T-1533: shared helper. Robust to running from /opt/999-... where web/ is on the path.
 sys.path.insert(0, os.environ.get("PROJECT_ROOT", "."))
 try:
-    from web.shared import extract_recommendation_state
+    from web.shared import extract_recommendation_state, count_unchecked_human_acs
 except ImportError:
     # Inline fallback if web/ isn't importable (e.g. consumer project).
     # T-1576: emit NO-REC when section is missing/empty so callers can
@@ -4481,6 +4788,21 @@ except ImportError:
             return "NO-REC"
         v = re.search(r"\*\*Recommendation:\*\*\s*(NO-GO|GO|DEFER)\b", body2, re.IGNORECASE)
         return v.group(1).upper() if v else "?"
+    # T-2075 (T-2064 GO) inline fallback — kept in sync with web.shared.count_unchecked_human_acs.
+    # Same predicate the queue uses; consumer projects without web/ get equivalent behaviour.
+    def count_unchecked_human_acs(body):
+        if not body:
+            return 0
+        ac_m = re.search(r"^## Acceptance Criteria\s*$(.*?)(?=^## |\Z)", body,
+                         re.MULTILINE | re.DOTALL)
+        if not ac_m:
+            return 0
+        human_m = re.search(r"^### Human\s*$(.*?)(?=^### |\Z)", ac_m.group(1),
+                            re.MULTILINE | re.DOTALL)
+        if not human_m:
+            return 0
+        human_text = re.sub(r"<!--.*?-->", "", human_m.group(1), flags=re.DOTALL)
+        return len(re.findall(r"^\s*-\s*\[ \]", human_text, re.MULTILINE))
 
 ROOT = Path(os.environ.get("PROJECT_ROOT", ".")).resolve()
 ACTIVE = ROOT / ".tasks" / "active"
@@ -4531,21 +4853,13 @@ for f in sorted(ACTIVE.glob("*.md")):
             d_verdict = extract_recommendation_state(text)
             decision_rows.append((d_verdict, d_age_days, tid_v, name))
 
-    # VERDICT pass — find ### Human section with unchecked ACs
-    ac_m = re.search(r"^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)", text,
-                     re.MULTILINE | re.DOTALL)
-    if not ac_m:
-        continue
-    human_m = re.search(r"### Human\s*\n(.*?)(?=\n### |\Z)", ac_m.group(1), re.DOTALL)
-    if not human_m:
-        continue
-    # T-1581: strip HTML comments before the unchecked-AC count, otherwise the
-    # template's example AC (`- [ ] [REVIEW] Dashboard renders correctly` inside
-    # the placeholder `<!-- -->`) is counted as a real unchecked AC, falsely
-    # admitting template-only Human sections (T-1274, T-1542) into the queue.
-    # Mirror of L-298 — same class as the cockpit fix, different surface.
-    human_text = re.sub(r"<!--.*?-->", "", human_m.group(1), flags=re.DOTALL)
-    unchecked = len(re.findall(r"^\s*-\s*\[ \]", human_text, re.MULTILINE))
+    # VERDICT pass — find ### Human section with unchecked ACs.
+    # T-2075 (T-2064 GO): predicate now shared with /approvals via web.shared.
+    # The previous inline scan accumulated three drift-prone rules (HTML-comment
+    # strip, Human-subsection regex, unchecked-`[ ]` count) — each surface
+    # owned a copy. Centralised at the queue-build layer so both /approvals
+    # and `fw review-queue` see the same set of tasks.
+    unchecked = count_unchecked_human_acs(text)
     if unchecked == 0:
         continue
     # T-1540 iter1 originally filtered to (owner=human OR status=work-completed) so
@@ -4670,9 +4984,57 @@ PYREVQ
         fi
 
         if [[ "$wo_target" =~ ^T-[0-9]+$ ]]; then
+            # T-2036: Detect "completed before commit" deadlock before falling into
+            # the silent swallow. work-completed is a terminal lifecycle state
+            # (lib/enums.sh) — work-on cannot reopen it, so previously the
+            # update-task.sh call would fail invisibly (`2>/dev/null || true`),
+            # work-on would print "Ready to work on..." (false success), and the
+            # agent would assume focus was restored.
+            # L-387: no pipe — `ls ... | head -1` SIGPIPEs the upstream under
+            # `set -eo pipefail` when the glob misses. Use a bounded for-loop.
+            wo_active_file=""
+            for wo_glob in "$PROJECT_ROOT"/.tasks/active/"$wo_target"-*.md; do
+                if [ -e "$wo_glob" ]; then wo_active_file="$wo_glob"; break; fi
+            done
+            wo_completed_file=""
+            for wo_glob in "$PROJECT_ROOT"/.tasks/completed/"$wo_target"-*.md; do
+                if [ -e "$wo_glob" ]; then wo_completed_file="$wo_glob"; break; fi
+            done
+            unset wo_glob
+            if [ -z "$wo_active_file" ] && [ -n "$wo_completed_file" ]; then
+                echo -e "${RED}=== work-on refused: $wo_target is in .tasks/completed/ ===${NC}" >&2
+                echo "" >&2
+                echo "  File: $wo_completed_file" >&2
+                echo "  Status: work-completed (terminal — no transition back to started-work)" >&2
+                echo "" >&2
+                echo "  This is the T-2036 / P-002 'completed before commit' deadlock pattern:" >&2
+                echo "  the task was closed before its code was committed; focus is now nulled" >&2
+                echo "  and the active-task gate blocks Bash mutations." >&2
+                echo "" >&2
+                echo "  Recovery options:" >&2
+                echo "    1. Anchor on a DIFFERENT active task and commit the orphaned changes:" >&2
+                echo "         bin/fw work-on T-<other-active>" >&2
+                echo "         git add <files>" >&2
+                echo "         FW_SWITCH_FOCUS=1 git commit -m \"$wo_target: ...\"" >&2
+                echo "    2. If the close was premature (work not actually done), reopen by hand:" >&2
+                echo "         mv $wo_completed_file .tasks/active/" >&2
+                echo "         # edit frontmatter status: work-completed → started-work, clear date_finished" >&2
+                echo "" >&2
+                exit 1
+            fi
+            if [ -z "$wo_active_file" ] && [ -z "$wo_completed_file" ]; then
+                echo -e "${RED}work-on: task $wo_target not found in .tasks/active/ or .tasks/completed/${NC}" >&2
+                exit 1
+            fi
             # Resume existing task
             echo -e "${CYAN}=== Resuming $wo_target ===${NC}"
-            "$AGENTS_DIR/task-create/update-task.sh" "$wo_target" --status started-work 2>/dev/null || true
+            # T-2036: Surface real update-task.sh failures instead of swallowing them
+            # (legitimate idempotent re-resume — already started-work — exits 0 in
+            # update-task.sh, so we only swallow nothing critical here).
+            if ! "$AGENTS_DIR/task-create/update-task.sh" "$wo_target" --status started-work; then
+                echo -e "${YELLOW}work-on: status transition for $wo_target failed (see message above) — focus will NOT be set${NC}" >&2
+                exit 1
+            fi
             "$AGENTS_DIR/context/context.sh" focus "$wo_target"
             echo ""
             echo -e "${GREEN}Ready to work on $wo_target${NC}"
@@ -4761,6 +5123,12 @@ PYREVQ
         source "$FW_LIB_DIR/init.sh"
         source "$FW_LIB_DIR/upgrade.sh"
         do_upgrade "$@"
+        ;;
+    consumer-recover)
+        # T-2233 / T-2235 — one-command recovery for legacy vendored consumers
+        # (pre-T-1634 / pre-T-2232 consumers that cannot self-heal via fw upgrade).
+        source "$FW_LIB_DIR/consumer-recover.sh"
+        do_consumer_recover "$@"
         ;;
     setup)
         echo -e "${YELLOW}NOTE: 'fw setup' is deprecated — use 'fw init' instead.${NC}"
@@ -4864,6 +5232,50 @@ with open('$BYPASS_LOG', 'w') as f:
             echo -e "${YELLOW}No gaps register found${NC}"
             echo "Create one at: .context/project/concerns.yaml"
             exit 0
+        fi
+        # T-2185: subcommand routing — `fw gaps close <id>` flips gauge-READY gaps.
+        if [ "${1:-}" = "close" ]; then
+            shift
+            GAP_ID="${1:-}"
+            RATIONALE=""
+            OVERRIDE_FLAG=""
+            shift 2>/dev/null || true
+            while [ $# -gt 0 ]; do
+                case "$1" in
+                    --rationale) RATIONALE="${2:-}"; shift 2 ;;
+                    --override)  OVERRIDE_FLAG="1"; shift ;;
+                    *)           shift ;;
+                esac
+            done
+            if [ -z "$GAP_ID" ]; then
+                echo -e "${YELLOW}Usage:${NC} fw gaps close <gap_id> [--rationale \"...\"] [--override]"
+                echo
+                echo "Closure-eligible gaps (status:watching with gauge=READY):"
+                PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+import sys; sys.path.insert(0, '$FRAMEWORK_ROOT')
+from lib.gaps import stale_ready_gaps
+for g in stale_ready_gaps(threshold_days=0):
+    print(f'  {g[\"gap_id\"]}  ({g[\"age_days\"]}d READY)  {g[\"title\"][:60]}')
+" 2>/dev/null
+                exit 2
+            fi
+            PROJECT_ROOT="$PROJECT_ROOT" GAP_ID="$GAP_ID" RATIONALE="$RATIONALE" OVERRIDE_FLAG="$OVERRIDE_FLAG" python3 -c "
+import json, os, sys
+sys.path.insert(0, '$FRAMEWORK_ROOT')
+from lib.gaps import close_gap, GapCloseError
+gap_id = os.environ['GAP_ID']
+rationale = os.environ.get('RATIONALE') or None
+override = bool(os.environ.get('OVERRIDE_FLAG'))
+try:
+    result = close_gap(gap_id, rationale=rationale, override=override, actor='cli')
+    print(f'\033[0;32mClosed\033[0m {gap_id} — verdict={result[\"verdict\"]}, closed_date={result[\"closed_date\"]}')
+    print(f'Audit: {result[\"audit_path\"]}')
+    sys.exit(0)
+except GapCloseError as e:
+    print(f'\033[0;31mRefused\033[0m ({e.code}) {e.message}', file=sys.stderr)
+    sys.exit(1)
+"
+            exit $?
         fi
         python3 << PYEOF
 import yaml, json, os, subprocess
@@ -5475,6 +5887,43 @@ else:
 PYSEARCH
         ;;
     vendor)
+        # T-2095 (T-2078 V1-D, F2): `fw vendor self` subcommand routes to the
+        # self-vendor helper extracted from lib/upgrade.sh:do_upgrade. Provides
+        # an explicit entry point for cron / pre-push / manual invocation
+        # without firing the full 10-step do_upgrade flow. All other `fw vendor`
+        # args pass through to do_vendor unchanged (consumer-direction vendor).
+        if [ "${1:-}" = "self" ]; then
+            shift
+            # Source lib/upgrade.sh to pick up _self_vendor_libs() — already
+            # sourced at bin/fw startup for do_upgrade, but be defensive in
+            # case this code path runs before that.
+            command -v _self_vendor_libs >/dev/null 2>&1 || source "$FRAMEWORK_ROOT/lib/upgrade.sh"
+            if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+                echo "fw vendor self - Refresh framework's vendored copies from FRAMEWORK_ROOT/"
+                echo ""
+                echo "Usage: fw vendor self [--dry-run]"
+                echo ""
+                echo "Refreshes both vendored classes from \$FRAMEWORK_ROOT:"
+                echo "  - .agentic-framework/lib/                 ← lib/*.sh           (T-2095 V1-D)"
+                echo "  - .agentic-framework/.tasks/templates/    ← .tasks/templates/  (T-2241)"
+                echo ""
+                echo "T-1217 / T-2078 §F2 / T-2095 V1-D / T-2241. Extracted from do_upgrade so it can be"
+                echo "invoked explicitly (cron, pre-push, manual) without firing the full upgrade flow."
+                echo ""
+                echo "Structural consumer-safety: when invoked from a consumer's vendored bin/fw,"
+                echo "each helper early-returns because consumer's .agentic-framework/ has no nested"
+                echo ".agentic-framework/lib/ or .agentic-framework/.tasks/templates/. Idempotent —"
+                echo "only touches files that diff."
+                exit 0
+            fi
+            _vs_dry=false
+            [ "${1:-}" = "--dry-run" ] && _vs_dry=true
+            _self_vendor_libs "$_vs_dry"
+            # T-2241: sibling — templates drift class. T-2240 pre-push gate
+            # greps for "would sync" across BOTH helpers' output with one regex.
+            _self_vendor_templates "$_vs_dry"
+            exit $?
+        fi
         do_vendor "$@"
         ;;
     hook)

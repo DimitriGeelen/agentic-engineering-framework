@@ -23,9 +23,9 @@ All architectural decisions must trace back to these directives:
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/init.sh` | read_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [init](/docs/generated/lib-init) | read_by | fw init - Bootstrap a new project with the Agentic Engineering Framework |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-directives.yaml`*

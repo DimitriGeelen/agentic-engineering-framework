@@ -15,9 +15,9 @@ Part of: Agentic Engineering Framework (T-371)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/fabric/fabric.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fabric](/docs/generated/agents-fabric-fabric) | calls | Fabric Agent - Component topology system for codebase self-awareness |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-check-fabric-new-file.yaml`*

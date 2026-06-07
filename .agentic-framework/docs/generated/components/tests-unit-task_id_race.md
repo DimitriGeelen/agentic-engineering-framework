@@ -15,11 +15,11 @@ Fix: keylock around the read-compute-write sequence.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/task-create/create-task.sh` | calls |
-| `agents/task-create/create-task.sh` | tests |
-| `lib/keylock.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
+| [create-task](/docs/generated/agents-task-create-create-task) | tests | Task Creation Agent - Mechanical Operations |
+| [keylock](/docs/generated/lib-keylock) | tests | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-task_id_race.yaml`*

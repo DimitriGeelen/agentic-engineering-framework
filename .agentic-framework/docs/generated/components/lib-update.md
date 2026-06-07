@@ -14,12 +14,12 @@ to latest upstream (legacy path, pre-T-499).
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/lib_update.bats` | called-by |
-| `tests/unit/lib_update.bats` | called_by |
-| `tests/unit/lib_update.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_update](/docs/generated/tests-unit-lib_update) | called-by | Unit tests for update (3 tests) |
+| [lib_update](/docs/generated/tests-unit-lib_update) | called_by | Unit tests for update (3 tests) |
+| [lib_update](/docs/generated/tests-unit-lib_update) | tests_by | Unit tests for update (3 tests) |
 
 ## Related
 

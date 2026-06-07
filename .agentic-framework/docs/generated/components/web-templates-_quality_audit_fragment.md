@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/quality.html` | included_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [quality](/docs/generated/web-templates-quality) | included_by | Watchtower UI page: Quality |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_quality_audit_fragment.yaml`*

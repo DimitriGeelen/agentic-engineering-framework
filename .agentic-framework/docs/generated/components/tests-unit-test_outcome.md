@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/outcome.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [outcome](/docs/generated/lib-outcome) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_outcome.yaml`*

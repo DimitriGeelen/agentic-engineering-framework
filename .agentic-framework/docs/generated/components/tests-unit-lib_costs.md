@@ -13,10 +13,10 @@ Tests: _costs_jsonl_dir, costs_main routing, Python JSONL parsing, edge cases
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/costs.sh` | calls |
-| `lib/costs.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [costs](/docs/generated/lib-costs) | calls | Token usage tracking from JSONL transcripts — parses Claude Code session data for cost reporting (T-801) |
+| [costs](/docs/generated/lib-costs) | tests | Token usage tracking from JSONL transcripts — parses Claude Code session data for cost reporting (T-801) |
 
 ## Related
 

@@ -8,10 +8,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/reviewer/audit.py` | called_by |
-| `lib/reviewer/reverify_cli.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit](/docs/generated/lib-reviewer-audit) | called_by | TODO: describe what this component does |
+| [reverify_cli](/docs/generated/lib-reviewer-reverify_cli) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-reverify.yaml`*

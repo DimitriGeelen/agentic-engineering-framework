@@ -12,11 +12,11 @@ Exit code: always 0 (advisory). Output: JSON additionalContext when banned tool 
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/audit-task-tools.sh` | calls |
-| `agents/context/audit-task-tools.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-task-tools](/docs/generated/agents-context-audit-task-tools) | calls | PostToolUse hook detecting TodoWrite/TaskCreate bypass (T-1115/T-1118). Advisory — warns agent when banned task tools are used. |
+| [audit-task-tools](/docs/generated/agents-context-audit-task-tools) | tests | PostToolUse hook detecting TodoWrite/TaskCreate bypass (T-1115/T-1118). Advisory — warns agent when banned task tools are used. |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_task_tools.yaml`*

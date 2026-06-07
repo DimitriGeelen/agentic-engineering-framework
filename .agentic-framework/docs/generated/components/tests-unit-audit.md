@@ -13,11 +13,11 @@ Origin: T-924
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/audit/audit.sh` | calls |
-| `C-004` | calls |
-| `C-004` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ## Related
 

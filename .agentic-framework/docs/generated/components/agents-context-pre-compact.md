@@ -16,23 +16,23 @@ Updated: T-177 (manual-only cleanup, D-027 documentation)
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/handover/handover.sh` | calls |
-| `lib/paths.sh` | calls |
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Used By (7)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/audit/self-audit.sh` | read_by |
-| `C-009` | triggers_by |
-| `.claude/settings.json` | used-by |
-| `tests/unit/pre_compact_flock.bats` | called_by |
-| `tests/unit/pre_compact_flock.bats` | tests_by |
-| `tests/unit/pre_compact_timewindow_dedup.bats` | called_by |
-| `tests/unit/pre_compact_timewindow_dedup.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [self-audit](/docs/generated/agents-audit-self-audit) | read_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
+| [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [hook-config](/docs/generated/hook-config) | used-by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [pre_compact_flock](/docs/generated/tests-unit-pre_compact_flock) | called_by | TODO: describe what this component does |
+| [pre_compact_flock](/docs/generated/tests-unit-pre_compact_flock) | tests_by | TODO: describe what this component does |
+| [pre_compact_timewindow_dedup](/docs/generated/tests-unit-pre_compact_timewindow_dedup) | called_by | TODO: describe what this component does |
+| [pre_compact_timewindow_dedup](/docs/generated/tests-unit-pre_compact_timewindow_dedup) | tests_by | TODO: describe what this component does |
 
 ## Related
 

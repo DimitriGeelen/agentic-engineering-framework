@@ -10,9 +10,9 @@ Resolve framework root from this test file so PROJECT_ROOT works in CI.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/resolver.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_resolver.yaml`*

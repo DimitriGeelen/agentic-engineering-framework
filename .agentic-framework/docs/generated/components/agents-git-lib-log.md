@@ -11,11 +11,11 @@ Task-filtered git log
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/git.sh` | called_by |
-| `tests/unit/git_log.bats` | called_by |
-| `tests/unit/git_log.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | called_by | Git Agent - Structural Enforcement for Git Operations |
+| [git_log](/docs/generated/tests-unit-git_log) | called_by | Unit tests for git log (14 tests) |
+| [git_log](/docs/generated/tests-unit-git_log) | tests_by | Unit tests for git log (14 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-log.yaml`*

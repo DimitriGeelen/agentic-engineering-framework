@@ -14,10 +14,10 @@ in-sync, ancestor (fast-forward), diverged, unreachable.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/mirror.sh` | calls |
-| `lib/mirror.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [mirror](/docs/generated/lib-mirror) | calls | TODO: describe what this component does |
+| [mirror](/docs/generated/lib-mirror) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_mirror_sync.yaml`*

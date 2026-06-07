@@ -12,11 +12,11 @@ Exit code: always 2 (block). Redirects to bin/fw work-on.
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/block-task-tools.sh` | calls |
-| `agents/context/block-task-tools.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [block-task-tools](/docs/generated/agents-context-block-task-tools) | calls | PreToolUse hook that blocks Claude Code built-in task/todo tools to prevent bypassing framework task governance |
+| [block-task-tools](/docs/generated/agents-context-block-task-tools) | tests | PreToolUse hook that blocks Claude Code built-in task/todo tools to prevent bypassing framework task governance |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-block_task_tools.yaml`*

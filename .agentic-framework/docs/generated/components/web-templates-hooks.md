@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/hooks.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hooks](/docs/generated/web-blueprints-hooks) | rendered_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-hooks.yaml`*

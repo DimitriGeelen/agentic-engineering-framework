@@ -27,26 +27,26 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 
 ## Dependencies (7)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/fabric/lib/register.sh` | calls |
-| `agents/fabric/lib/query.sh` | calls |
-| `agents/fabric/lib/traverse.sh` | calls |
-| `agents/fabric/lib/ui.sh` | calls |
-| `agents/fabric/lib/drift.sh` | calls |
-| `agents/fabric/lib/summary.sh` | calls |
-| `lib/paths.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [register](/docs/generated/agents-fabric-lib-register) | calls | Fabric Agent - register and scan commands |
+| [query](/docs/generated/agents-fabric-lib-query) | calls | Fabric Agent - query commands |
+| [traverse](/docs/generated/agents-fabric-lib-traverse) | calls | Fabric Agent - graph traversal commands |
+| [ui](/docs/generated/agents-fabric-lib-ui) | calls | Fabric Agent - UI query commands |
+| [drift](/docs/generated/agents-fabric-lib-drift) | calls | Fabric Agent - drift detection commands |
+| [summary](/docs/generated/agents-fabric-lib-summary) | calls | Fabric Agent - summary and onboarding commands |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ## Used By (6)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/post-compact-resume.sh` | called_by |
-| `bin/fw` | called_by |
-| `agents/context/check-fabric-new-file.sh` | called_by |
-| `tests/unit/fabric.bats` | tested_by |
-| `tests/unit/fabric.bats` | called_by |
-| `tests/unit/fabric.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [post-compact-resume](/docs/generated/agents-context-post-compact-resume) | called_by | Session Resume Hook — Reinject structured context on session recovery |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [check-fabric-new-file](/docs/generated/agents-context-check-fabric-new-file) | called_by | PostToolUse hook: detect new files created by Write tool — prompts fabric registration for structural tracking. |
+| [fabric](/docs/generated/tests-unit-fabric) | tested_by | Unit tests for agents/fabric/fabric.sh (10 tests) |
+| [fabric](/docs/generated/tests-unit-fabric) | called_by | Unit tests for agents/fabric/fabric.sh (10 tests) |
+| [fabric](/docs/generated/tests-unit-fabric) | tests_by | Unit tests for agents/fabric/fabric.sh (10 tests) |
 
 ## Documentation
 

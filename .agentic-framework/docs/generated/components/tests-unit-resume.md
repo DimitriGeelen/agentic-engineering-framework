@@ -13,10 +13,10 @@ Origin: T-922
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/resume/resume.sh` | calls |
-| `agents/resume/resume.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resume](/docs/generated/agents-resume-resume) | calls | Resume Agent - Post-compaction recovery and state synchronization |
+| [resume](/docs/generated/agents-resume-resume) | tests | Resume Agent - Post-compaction recovery and state synchronization |
 
 ## Related
 

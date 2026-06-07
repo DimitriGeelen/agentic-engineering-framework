@@ -10,9 +10,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `plugins/wezterm/README.md` | read_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [README](/docs/generated/plugins-wezterm-README) | read_by | Installation guide and configuration reference for the WezTerm TermLink chrome plugin |
 
 ---
 *Auto-generated from Component Fabric. Card: `plugins-wezterm-termlink-chrome.yaml`*

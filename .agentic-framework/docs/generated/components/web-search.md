@@ -12,22 +12,22 @@ Index lives in /tmp — ephemeral, rebuilt as needed
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | imports |
-| `web/blueprints/discovery.py` | imported_by |
-| `web/search_utils.py` | calls |
-| `web/shared.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | imports | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | imported_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [search_utils](/docs/generated/web-search_utils) | calls | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-003` | called_by |
-| `web/blueprints/api.py` | called_by |
-| `web/embeddings.py` | called_by |
-| `web/blueprints/discovery.py` | called_by |
-| `web/search_utils.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [learnings-route](/docs/generated/learnings-route) | called_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
+| [api](/docs/generated/web-blueprints-api) | called_by | Watchtower API blueprint: JSON endpoints for AJAX/htmx — task data, metrics, approval actions. |
+| [embeddings](/docs/generated/web-embeddings) | called_by | sqlite-vec semantic search — embeds framework knowledge files (874 docs) using all-MiniLM-L6-v2, provides semantic + hybrid (RRF) search |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | called_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [search_utils](/docs/generated/web-search_utils) | called_by | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-search.yaml`*

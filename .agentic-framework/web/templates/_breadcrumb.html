@@ -1,0 +1,15 @@
+{#- Breadcrumb trail (T-2009, arc-007 S2b). Rendered inside #content (full loads
+    via _wrapper.html, htmx loads via render_page prepend) so it stays fresh on
+    every navigation. `breadcrumb` is a list of (label, url|None); url=None renders
+    plain text (the current page or a non-link group). Empty list → nothing. -#}
+{%- if breadcrumb %}
+<nav class="wt-breadcrumb" aria-label="Breadcrumb">
+  {%- for label, url in breadcrumb -%}
+    {%- if not loop.first %}<span class="wt-breadcrumb-sep" aria-hidden="true">›</span>{% endif -%}
+    {%- if url %}<a href="{{ url }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ label }}</a>
+    {%- else %}<span{% if loop.last %} aria-current="page"{% endif %}>{{ label }}</span>{% endif -%}
+  {%- endfor -%}
+  {#- Pin toggle (T-2010, arc-007 S2c) — pushed to the right on pinnable nav pages. -#}
+  {%- if wt_pinnable %}<span class="wt-breadcrumb-spacer"></span>{% include "_star.html" %}{% endif -%}
+</nav>
+{%- endif %}

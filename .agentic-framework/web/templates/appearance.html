@@ -1,0 +1,213 @@
+{# arc-007 S1 (T-1988): Appearance picker — 6 presets + foundation axes.
+   Fragment (rendered inside _wrapper.html → base.html). #}
+<div class="page-header">
+    <h1>Appearance</h1>
+    <p>Pick a preset, or tune palette, type, and density. Changes apply instantly and persist to this browser.</p>
+</div>
+
+<style>
+  .wt-presets { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:0.75rem; margin:0 0 1.5rem; }
+  .wt-preset {
+    cursor:pointer; text-align:left; padding:0; border:1px solid var(--wt-border);
+    border-radius:10px; overflow:hidden; background:var(--wt-surface); color:var(--wt-text);
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .wt-preset:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.10); }
+  .wt-preset[aria-pressed="true"] { outline:2px solid var(--wt-accent); outline-offset:1px; }
+  .wt-preset .pv { height:46px; display:flex; align-items:center; gap:6px; padding:0 10px; }
+  .wt-preset .pv .dot { width:14px; height:14px; border-radius:50%; }
+  .wt-preset .pv .bar { height:8px; border-radius:4px; flex:1; }
+  .wt-preset .nm { padding:7px 10px; font-size:.82rem; font-weight:600; }
+  .wt-axes { display:grid; gap:1.25rem; }
+  .wt-swatches { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:0.6rem; }
+  .wt-swatch {
+    cursor:pointer; border:1px solid var(--wt-border); border-radius:8px; padding:6px;
+    background:var(--wt-surface); color:var(--wt-text); display:flex; flex-direction:column; gap:5px;
+  }
+  .wt-swatch[aria-pressed="true"] { outline:2px solid var(--wt-accent); outline-offset:1px; }
+  .wt-swatch .chip { height:30px; border-radius:5px; display:flex; align-items:flex-end; padding:4px; }
+  .wt-swatch .chip .acc { width:16px; height:16px; border-radius:50%; }
+  .wt-swatch .lbl { font-size:.74rem; text-align:center; }
+  .wt-seg { display:inline-flex; border:1px solid var(--wt-border); border-radius:8px; overflow:hidden; }
+  .wt-seg button { border:0; background:var(--wt-surface); color:var(--wt-text); padding:.4rem .9rem; cursor:pointer; font-size:.85rem; }
+  .wt-seg button[aria-pressed="true"] { background:var(--wt-accent); color:var(--wt-accent-ink); }
+  .wt-typecard .samp { font-size:1.05rem; }
+  .wt-typecard .samp .mono { font-size:.78rem; opacity:.8; }
+  #wt-status { font-size:.8rem; color:var(--wt-muted); min-height:1.2em; }
+</style>
+
+<!-- Presets -->
+<article>
+  <header><strong>Presets</strong></header>
+  <div class="wt-presets" id="wt-presets">
+    {% for pid, p in presets.items() %}
+    {# T-2033 F4a: presets no longer carry a nav layout — nav is an independent axis
+       (human decision 2026-05-24). Picking a preset must not move the sidebar/rail. #}
+    <button class="wt-preset" data-preset="{{ pid }}"
+            data-palette="{{ p.palette }}" data-type="{{ p.type }}"
+            data-density="{{ p.density }}" data-mode="{{ p.mode }}"
+            aria-pressed="{{ 'true' if appearance.preset == pid else 'false' }}">
+      <span class="pv" data-wt-palette="{{ p.palette }}" {% if p.mode == 'dark' %}data-theme="dark"{% endif %}
+            style="background:var(--wt-bg)">
+        <span class="dot" style="background:var(--wt-accent)"></span>
+        <span class="bar" style="background:var(--wt-surface);border:1px solid var(--wt-border)"></span>
+        <span class="bar" style="background:var(--wt-muted)"></span>
+      </span>
+      <span class="nm">{{ p.label }}</span>
+    </button>
+    {% endfor %}
+  </div>
+</article>
+
+<div class="wt-axes">
+  <!-- Mode -->
+  <article>
+    <header><strong>Mode</strong></header>
+    <div class="wt-seg" id="wt-mode" data-axis="mode">
+      {% for m in modes %}
+      <button data-value="{{ m }}" aria-pressed="{{ 'true' if appearance.mode == m else 'false' }}">{{ m | capitalize }}</button>
+      {% endfor %}
+    </div>
+  </article>
+
+  <!-- Palette -->
+  <article>
+    <header><strong>Palette</strong></header>
+    <div class="wt-swatches" id="wt-palette" data-axis="palette">
+      {% for pal in palettes %}
+      <button class="wt-swatch" data-value="{{ pal }}"
+              aria-pressed="{{ 'true' if appearance.palette == pal else 'false' }}">
+        <span class="chip" data-wt-palette="{{ pal }}" style="background:var(--wt-bg);border:1px solid var(--wt-border)">
+          <span class="acc" style="background:var(--wt-accent)"></span>
+        </span>
+        <span class="lbl">{{ pal | capitalize }}</span>
+      </button>
+      {% endfor %}
+    </div>
+  </article>
+
+  <!-- Typography -->
+  <article>
+    <header><strong>Typography</strong></header>
+    <div class="wt-swatches" id="wt-type" data-axis="type">
+      {% for t in types %}
+      <button class="wt-swatch wt-typecard" data-value="{{ t }}"
+              aria-pressed="{{ 'true' if appearance.type == t else 'false' }}">
+        <span class="samp" data-wt-type="{{ t }}" style="font-family:var(--wt-font-head)">
+          Ag <span class="mono" style="font-family:var(--wt-font-mono)">{x}</span>
+        </span>
+        <span class="lbl">{{ t | capitalize }}</span>
+      </button>
+      {% endfor %}
+    </div>
+  </article>
+
+  <!-- Density -->
+  <article>
+    <header><strong>Density</strong></header>
+    <div class="wt-seg" id="wt-density" data-axis="density">
+      {% for d in densities %}
+      <button data-value="{{ d }}" aria-pressed="{{ 'true' if appearance.density == d else 'false' }}">{{ d | capitalize }}</button>
+      {% endfor %}
+    </div>
+  </article>
+
+  <!-- Nav layout (T-2011, arc-007 S2d) -->
+  <article>
+    <header><strong>Layout</strong></header>
+    <p style="margin:0 0 0.6rem;color:var(--wt-muted);font-size:.82rem">How the navigation is arranged. Sidebar &amp; rail are desktop layouts; on small screens all fall back to the menu.</p>
+    <div class="wt-seg" id="wt-nav" data-axis="nav">
+      {% set nav_labels = {'topbar': 'Top bar', 'sidebar': 'Sidebar', 'rail': 'Icon rail'} %}
+      {% for n in nav_layouts %}
+      <button data-value="{{ n }}" aria-pressed="{{ 'true' if appearance.nav == n else 'false' }}">{{ nav_labels.get(n, n | capitalize) }}</button>
+      {% endfor %}
+    </div>
+  </article>
+</div>
+
+<p id="wt-status" style="margin-top:1rem"></p>
+
+<script>
+(function(){
+  var SAVE_URL = "{{ url_for('settings.save_appearance') }}";
+  var state = {
+    preset:  "{{ appearance.preset }}",
+    palette: "{{ appearance.palette }}",
+    type:    "{{ appearance.type }}",
+    density: "{{ appearance.density }}",
+    mode:    "{{ appearance.mode }}",
+    nav:     "{{ appearance.nav }}"
+  };
+
+  function csrf(){
+    var m = document.querySelector('meta[name=csrf-token]');
+    return m ? m.getAttribute('content') : '';
+  }
+
+  function apply(){
+    var el = document.documentElement;
+    el.setAttribute('data-wt-palette', state.palette);
+    el.setAttribute('data-wt-type', state.type);
+    el.setAttribute('data-wt-density', state.density);
+    el.setAttribute('data-wt-nav', state.nav);
+    el.setAttribute('data-theme', state.mode);
+    // keep the existing fast-path dark toggle (wt-theme) in sync — no parallel mechanism
+    try { localStorage.setItem('wt-theme', state.mode); } catch(e){}
+    reflect();
+  }
+
+  function reflect(){
+    document.querySelectorAll('#wt-presets .wt-preset').forEach(function(b){
+      b.setAttribute('aria-pressed', b.dataset.preset === state.preset ? 'true' : 'false');
+    });
+    [['#wt-mode','mode'],['#wt-palette','palette'],['#wt-type','type'],['#wt-density','density'],['#wt-nav','nav']].forEach(function(pair){
+      document.querySelectorAll(pair[0]+' button').forEach(function(b){
+        b.setAttribute('aria-pressed', b.dataset.value === state[pair[1]] ? 'true' : 'false');
+      });
+    });
+  }
+
+  function save(){
+    var status = document.getElementById('wt-status');
+    var body = new URLSearchParams();
+    Object.keys(state).forEach(function(k){ body.append(k, state[k]); });
+    body.append('_csrf_token', csrf());
+    fetch(SAVE_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token':csrf()},
+      body: body.toString()
+    }).then(function(r){ return r.json(); })
+      .then(function(d){ status.textContent = d && d.ok ? 'Saved · ' + (state.preset === 'custom' ? 'custom' : state.preset) : 'Save failed'; })
+      .catch(function(){ status.textContent = 'Could not save — theme applied for this session only.'; });
+  }
+
+  // Preset click → apply the whole combo
+  document.querySelectorAll('#wt-presets .wt-preset').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.preset  = btn.dataset.preset;
+      state.palette = btn.dataset.palette;
+      state.type    = btn.dataset.type;
+      state.density = btn.dataset.density;
+      state.mode    = btn.dataset.mode;
+      // T-2033 F4a: nav is independent — a preset must NOT change the layout.
+      apply(); save();
+    });
+  });
+
+  // Axis click → set that axis; combo becomes "custom"
+  ['#wt-mode','#wt-palette','#wt-type','#wt-density','#wt-nav'].forEach(function(sel){
+    var group = document.querySelector(sel);
+    if(!group) return;
+    var axis = group.dataset.axis;
+    group.querySelectorAll('button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        state[axis] = btn.dataset.value;
+        state.preset = 'custom';
+        apply(); save();
+      });
+    });
+  });
+
+  apply(); // sync UI to current server state on load
+})();
+</script>

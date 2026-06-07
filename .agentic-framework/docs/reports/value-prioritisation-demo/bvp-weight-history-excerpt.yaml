@@ -1,0 +1,11 @@
+entries:
+- verb: driver_add
+  driver: F1
+  name: t2079probe
+  weight: 3
+  rationale: "T-2079 Playwright guard \u2014 verifying form submit does not navigate\
+    \ URL away from /bvp."
+  dropped: null
+  who: root
+  agent_session: true
+  ts: '2026-05-29T22:12:30Z'

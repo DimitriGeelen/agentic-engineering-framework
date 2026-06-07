@@ -19,8 +19,8 @@ If the log fills up after Task* tool calls → A1 (hookability) TRUE
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-spikes-taskcreate-hook-probe.yaml`*

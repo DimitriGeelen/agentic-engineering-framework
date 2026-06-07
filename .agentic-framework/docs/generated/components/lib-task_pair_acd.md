@@ -19,15 +19,15 @@ Print one promised deliverable per line from the inception's
 
 ## Used By (7)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/task-create/update-task.sh` | called_by |
-| `tests/playwright/test_review_code_inline.py` | called_by |
-| `tests/unit/test_file_route_extensions.py` | called_by |
-| `tests/unit/test_task_pair_acd_gate.bats` | called_by |
-| `tests/unit/test_task_pair_acd_gate.bats` | tests_by |
-| `tests/unit/test_task_pair_acd_parser.bats` | called_by |
-| `tests/unit/test_task_pair_acd_parser.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [test_review_code_inline](/docs/generated/tests-playwright-test_review_code_inline) | called_by | TODO: describe what this component does |
+| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | called_by | TODO: describe what this component does |
+| [test_task_pair_acd_gate](/docs/generated/tests-unit-test_task_pair_acd_gate) | called_by | TODO: describe what this component does |
+| [test_task_pair_acd_gate](/docs/generated/tests-unit-test_task_pair_acd_gate) | tests_by | TODO: describe what this component does |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | called_by | TODO: describe what this component does |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-task_pair_acd.yaml`*

@@ -139,6 +139,10 @@ def create_app() -> Flask:
     from markupsafe import Markup
     app.jinja_env.filters["linkify_tasks"] = lambda text: Markup(linkify_tasks(text))
 
+    # Jinja2 global: arc dual-form display "arc-NNN · slug" (T-1969)
+    from web.blueprints.arcs import arc_display
+    app.jinja_env.globals["arc_display"] = arc_display
+
     # -------------------------------------------------------------------
     # Register blueprints (centralized in __init__.py — T-431/A2)
     # -------------------------------------------------------------------

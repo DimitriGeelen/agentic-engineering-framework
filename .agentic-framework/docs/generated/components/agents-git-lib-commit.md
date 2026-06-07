@@ -18,15 +18,15 @@ Validates task references before committing
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/git/lib/bypass.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [bypass](/docs/generated/agents-git-lib-bypass) | calls | Git Agent - Bypass logging subcommand |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/git.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | called_by | Git Agent - Structural Enforcement for Git Operations |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-commit.yaml`*

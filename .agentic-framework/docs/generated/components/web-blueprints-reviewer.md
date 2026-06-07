@@ -8,19 +8,19 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
-| `lib/reviewer/overrides.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [overrides](/docs/generated/lib-reviewer-overrides) | calls | TODO: describe what this component does |
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/test_reviewer_audit_blueprint.py` | called_by |
-| `tests/unit/test_reviewer_audit_blueprint.py` | registered_by |
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_reviewer_audit_blueprint](/docs/generated/tests-unit-test_reviewer_audit_blueprint) | called_by | TODO: describe what this component does |
+| [test_reviewer_audit_blueprint](/docs/generated/tests-unit-test_reviewer_audit_blueprint) | registered_by | TODO: describe what this component does |
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-reviewer.yaml`*

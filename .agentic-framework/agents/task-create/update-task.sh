@@ -25,6 +25,9 @@ source "$FRAMEWORK_ROOT/lib/enums.sh"
 # Per-key locking for concurrent task updates (T-587)
 source "$FRAMEWORK_ROOT/lib/keylock.sh" 2>/dev/null || true
 
+# Render-surface predicate (T-1766)
+source "$FRAMEWORK_ROOT/lib/render_surface.sh" 2>/dev/null || true
+
 # === Extracted gate functions (T-415) ===
 # Each function accesses outer-scope variables: TASK_FILE, TASK_ID, SKIP_*, colors
 
@@ -80,8 +83,12 @@ check_acceptance_criteria() {
     local human_acs placeholder_acs placeholder_count
 
     ac_section=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
-    # Strip HTML comments — template examples contain checkbox patterns that get miscounted
-    ac_section=$(echo "$ac_section" | sed '/<!--/,/-->/d')
+    # Strip HTML comments — template examples contain checkbox patterns that get miscounted.
+    # T-1967 (L-414 root cause): sed range matching does NOT close on the same line where
+    # it opens — `/<!--/,/-->/d` on a one-line `<!-- ... -->` enters delete-mode at that
+    # line and stays there until the NEXT `-->` later in the file, swallowing Agent ACs.
+    # Fix: strip one-line comments first, then run the range strip for genuine multi-line.
+    ac_section=$(echo "$ac_section" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
     [ -z "$ac_section" ] && return 0
 
     has_agent_header=$(echo "$ac_section" | grep -c '^### Agent' || true)
@@ -317,14 +324,27 @@ check_rca_for_bugfix() {
     task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
     task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
 
+    # Non-bug workflow types never gate on RCA, regardless of title keywords
+    # (T-2132: "fix request" / "feature request" tasks are not bug fixes).
     case "$task_type" in
-        inception|specification|design) return 0 ;;
+        inception|specification|design|request|feature|enhancement|decommission) return 0 ;;
     esac
+
+    # Explicit feature/request tags also suppress bug-class (T-2132).
+    if echo "$task_tags" | grep -qiE '\b(feature|request|enhancement)\b'; then
+        return 0
+    fi
+
+    # Strip request/ask/proposal/feature contexts before keyword classification
+    # so "fix request", "feature request", etc. don't trip the "fix" substring
+    # match (T-2132). Order matters: longer phrases first.
+    local title_for_classify
+    title_for_classify=$(echo "$task_title" | sed -E 's/\b(upstream )?(fix request|request to fix|ask to fix|fix proposal|proposal to fix|feature request|enhancement request|feature[^.]*fix)\b//gi')
 
     is_bug=false
     if echo "$task_tags" | grep -qiE '\b(bug|bugfix|hotfix|rca|incident)\b'; then
         is_bug=true
-    elif echo "$task_title" | grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'; then
+    elif echo "$title_for_classify" | grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'; then
         is_bug=true
     fi
     [ "$is_bug" = true ] || return 0
@@ -377,6 +397,106 @@ PYRCA
     esac
 }
 
+# Render-surface Human-AC Gate (T-1766, P-013)
+# Fires on --status work-completed for build tasks whose components or body
+# references touch a render surface (web/templates, web/static, web/blueprints,
+# web/shared.py, etc.). Requires at least one Human AC prefixed with
+# [REVIEW] — visual/UX correctness is inherently subjective and cannot
+# be settled by curl/grep alone.
+#
+# Origin: T-1763, T-1764, T-1765 — three render-surface bug fixes shipped
+# with zero Human ACs. Each fix verified technically (HTTP code, computed
+# style, regex) but no human looked at the rendered output. The user caught
+# the omission and asked for RCA + structural fix.
+#
+# Predicate lives in lib/render_surface.sh (single source of truth for
+# RENDER_SURFACE_PATTERNS). [RUBBER-STAMP] does NOT satisfy the gate —
+# rubber-stamp is mechanical; render judgment is what makes Human ACs
+# load-bearing here.
+check_render_surface_human_ac() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    # Library may have failed to source (defensive — should not happen in normal flow).
+    if ! declare -F task_touches_render_surface >/dev/null 2>&1; then
+        return 0
+    fi
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    case "$task_type" in
+        inception|specification|design|decommission) return 0 ;;
+    esac
+    [ "$task_type" = "build" ] || [ "$task_type" = "refactor" ] || [ "$task_type" = "test" ] || return 0
+
+    if ! task_touches_render_surface "$TASK_FILE"; then
+        return 0
+    fi
+
+    local review_state
+    review_state=$(python3 - "$TASK_FILE" <<'PYREV' 2>/dev/null || echo "error"
+import sys, re
+try:
+    text = open(sys.argv[1]).read()
+except OSError:
+    print("error"); sys.exit(0)
+# T-1901: scan ALL `### Human` blocks (not just the first). When a task has
+# a template-comment Human block + a separate ACs Human block, the prior
+# `re.search` only saw the template block and returned "empty". `re.finditer`
+# captures every block; we union their content before scanning for [REVIEW].
+matches = list(re.finditer(r'^### Human\s*$(.*?)(?=^#{2,} |\Z)', text, re.MULTILINE | re.DOTALL))
+if not matches:
+    print("no_section"); sys.exit(0)
+human = "\n".join(m.group(1) for m in matches)
+human = re.sub(r'<!--.*?-->', '', human, flags=re.DOTALL)
+review_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]\s*\[REVIEW\]', l)]
+if review_lines:
+    print("has_review"); sys.exit(0)
+ac_lines = [l for l in human.splitlines() if re.match(r'\s*-\s*\[[ x]\]', l)]
+print("only_other" if ac_lines else "empty")
+PYREV
+)
+
+    case "$review_state" in
+        has_review)
+            echo -e "${GREEN}Render-surface gate: [REVIEW] Human AC present ✓${NC}"
+            return 0 ;;
+        error)
+            return 0 ;;
+        *)
+            if [ "$SKIP_RENDER_REVIEW" = true ]; then
+                echo -e "${YELLOW}WARNING: render-surface task without [REVIEW] Human AC (--skip-render-review bypass)${NC}"
+                log_gate_bypass "--skip-render-review" "check_render_surface_human_ac: $SKIP_RENDER_REVIEW_REASON"
+                return 0
+            fi
+            local matched
+            # T-1900: was `... | head -3 | sed`. Under set -eo pipefail, head's
+            # stdin-close after 3 lines sent SIGPIPE upstream → exit 141 →
+            # set -e killed the script BEFORE printing the error below.
+            # awk reads to EOF and never closes its stdin early, so no SIGPIPE.
+            matched=$(render_surface_files_in "$TASK_FILE" 2>/dev/null | awk 'NR<=3 { print "    - " $0 }')
+            echo -e "${RED}ERROR: Cannot complete build task — touches render surface but has no [REVIEW] Human AC.${NC}" >&2
+            echo "" >&2
+            echo "T-1766 (P-013): Visual/UX changes need eyes, not only tests." >&2
+            echo "Origin: T-1763/T-1764/T-1765 — three render fixes shipped without any human" >&2
+            echo "looking at the rendered output. Subjective judgment cannot be deferred to curl/grep." >&2
+            echo "" >&2
+            echo "This task touches:" >&2
+            echo "$matched" >&2
+            echo "" >&2
+            echo "Add a [REVIEW] Human AC to $TASK_FILE describing what the human should look at," >&2
+            echo "for example:" >&2
+            echo "  - [ ] [REVIEW] Rendered output on /review/T-XXX looks correct (no layout break, no orphan inline code)" >&2
+            echo "    **Steps:** 1. Open the URL  2. Compare with the screenshot in Evidence" >&2
+            echo "    **Expected:** Element renders as inline block, no wrap, no stray punctuation" >&2
+            echo "    **If not:** Note the diff and reopen for follow-up" >&2
+            echo "" >&2
+            echo "Options:" >&2
+            echo "  1. Add the [REVIEW] Human AC, then retry" >&2
+            echo "  2. Use --skip-render-review \"rationale\" to bypass (logged Tier-2, T-1766)" >&2
+            exit 1 ;;
+    esac
+}
+
 # Inception-decision Gate (T-1626, structural remediation for G-052)
 # Fires on --status work-completed for inception tasks. Requires a
 # `**Decision**: GO|NO-GO|DEFER` line in the task body — i.e. the operator
@@ -417,6 +537,137 @@ check_inception_decision() {
     exit 1
 }
 
+# Inception GO-scope Trace Gate (T-1984, structural prevention for G-066)
+# Fires on --status work-completed for workflow_type: inception tasks that
+# have a non-empty inception_decisions: frontmatter field.
+# Parses each decision's ships_in: referent and validates reachability:
+#   - file path        → PROJECT_ROOT/<path> must exist
+#   - module.function  → symbol grepped in lib/ / agents/ / bin/
+#   - path::test_func  → file exists + function in it
+#   - T-XXX            → task in .tasks/completed/
+#   - deferred:T-YYYY  → task in .tasks/{active,completed}/
+#
+# Grandfathering: if inception_decisions: is empty/missing, gate is silent.
+# Bypass parity (L-399, T-1890):
+#   Direct invocation:  --skip-inception-scope-trace "rationale"
+#   Indirect/git-hook:  FW_SKIP_INCEPTION_SCOPE_TRACE=1
+#
+# Origin: T-1983 GO — closes G-066 (T-1442/T-1443 drifted 26 days after
+# inception close; no gate existed for GO-scope vs shipped deliverables).
+check_inception_scope_trace() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 \
+        | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+    [ "$task_type" = "inception" ] || return 0
+
+    # Grandfather: if python3 unavailable, skip silently (don't block on missing toolchain)
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo -e "${YELLOW}WARN: python3 not found — skip inception-scope-trace check${NC}"
+        return 0
+    fi
+
+    # Grandfather: if lib/inception_decisions.py unavailable, skip silently
+    local lib_py="$FRAMEWORK_ROOT/lib/inception_decisions.py"
+    [ -f "$lib_py" ] || return 0
+
+    # Run reachability check via Python helper
+    # Returns: "OK" or one failure per line prefixed with "FAIL:"
+    local py_output failures
+    py_output=$(python3 - "$TASK_FILE" "$PROJECT_ROOT" <<'PYEOF'
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# argv[0] = "-" (stdin), argv[1] = task_file, argv[2] = project_root
+# But when called via bash heredoc, sys.argv may differ. Use env instead.
+import os
+task_file = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("TASK_FILE", "")
+project_root = sys.argv[2] if len(sys.argv) > 2 else os.environ.get("PROJECT_ROOT", ".")
+
+from pathlib import Path
+from lib.inception_decisions import parse_inception_decisions, check_ships_in_reachable
+
+try:
+    content = Path(task_file).read_text()
+except Exception as e:
+    print(f"IOERR: {e}")
+    sys.exit(0)
+
+result = parse_inception_decisions(content)
+if not result.decisions:
+    print("OK_EMPTY")
+    sys.exit(0)
+
+failures = []
+for dec in result.decisions:
+    if not dec.ships_in:
+        continue
+    err = check_ships_in_reachable(dec.ships_in, dec.id, Path(project_root))
+    if err:
+        failures.append(f"FAIL:{err}")
+
+if failures:
+    for f in failures:
+        print(f)
+else:
+    print("OK")
+PYEOF
+    2>&1) || true
+
+    # Parse output
+    if echo "$py_output" | grep -q "^IOERR:"; then
+        echo -e "${YELLOW}WARN: inception-scope-trace: could not read task file — skipping${NC}"
+        return 0
+    fi
+
+    if echo "$py_output" | grep -q "^OK"; then
+        echo -e "${GREEN}Inception GO-scope trace: all decisions have reachable ships_in \xE2\x9C\x93${NC}"
+        return 0
+    fi
+
+    # Collect failures
+    failures=$(echo "$py_output" | grep "^FAIL:" | sed 's/^FAIL://')
+
+    # Check overrides (L-399 parity — both flag and env-var accepted)
+    if [ "$SKIP_INCEPTION_SCOPE_TRACE" = true ]; then
+        echo -e "${YELLOW}WARNING: inception-scope-trace bypassed (--skip-inception-scope-trace)${NC}"
+        log_gate_bypass "--skip-inception-scope-trace" "check_inception_scope_trace"
+        return 0
+    fi
+
+    if [ "${FW_SKIP_INCEPTION_SCOPE_TRACE:-0}" = "1" ]; then
+        echo -e "${YELLOW}WARNING: inception-scope-trace bypassed (FW_SKIP_INCEPTION_SCOPE_TRACE=1)${NC}"
+        log_gate_bypass "FW_SKIP_INCEPTION_SCOPE_TRACE" "check_inception_scope_trace"
+        return 0
+    fi
+
+    local task_id_short
+    task_id_short=$(basename "$TASK_FILE" | grep -oE '^T-[0-9]+')
+
+    echo -e "${RED}ERROR: INCEPTION-SCOPE-TRACE gate (T-1984, G-066) — ships_in referents unresolved.${NC}" >&2
+    echo "" >&2
+    echo "Inception task $task_id_short has inception_decisions: entries whose" >&2
+    echo "ships_in: referents are not yet reachable. The gate fires at close time" >&2
+    echo "to confirm GO-scope actually landed before the inception is archived." >&2
+    echo "" >&2
+    echo "Failing decision(s):" >&2
+    while IFS= read -r line; do
+        echo "  - $line" >&2
+    done <<< "$failures"
+    echo "" >&2
+    echo "To resolve: ensure each decision's ships_in: referent is reachable." >&2
+    echo "  - file path      → create/ship the file" >&2
+    echo "  - T-XXX          → task must be in .tasks/completed/" >&2
+    echo "  - deferred:T-YYY → target task must exist in .tasks/{active,completed}/" >&2
+    echo "" >&2
+    echo "To override (Tier-2 logged, both required per L-399):" >&2
+    echo "  Direct fw task update:  --skip-inception-scope-trace \"rationale\"" >&2
+    echo "  Via git commit/wrapper: FW_SKIP_INCEPTION_SCOPE_TRACE=1 <command>" >&2
+    echo "  When to pick which: use --skip flag when calling fw task update directly;" >&2
+    echo "  use env-var when the call goes through git commit or other wrappers." >&2
+    exit 1
+}
+
 # Evolution-log Gate (T-1718, structural counter to §ACD/G-062 family)
 # Fires on --status work-completed for arc-tagged build tasks IF the task
 # body already contains a `## Evolution` section (template opt-in: tasks
@@ -430,21 +681,22 @@ check_inception_decision() {
 check_evolution_log() {
     [ "$NEW_STATUS" = "work-completed" ] || return 0
 
-    local task_type task_tags
+    local task_type
     task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
-    task_tags=$(grep '^tags:' "$TASK_FILE" | head -1 | sed 's/tags:[[:space:]]*//')
 
     # Only build tasks
     [ "$task_type" = "build" ] || return 0
 
-    # Only arc-tagged
-    echo "$task_tags" | grep -q 'arc:' || return 0
-
-    # Source detection helper
+    # Source detection helper (provides task_has_arc_membership + log helpers)
     local lib_path="$FRAMEWORK_ROOT/lib/evolution_log.sh"
     [ -f "$lib_path" ] || return 0
     # shellcheck source=/dev/null
     source "$lib_path"
+
+    # T-1879 (T-NEW-14): Only arc-member tasks — recognize both arc_id
+    # (T-1849 canonical, T-1850 migrated) AND legacy arc:<slug> tag.
+    # Pre-T-1879 grep on the tags line missed 162 migrated tasks.
+    task_has_arc_membership "$TASK_FILE" || return 0
 
     # Backward-compat: if section absent, no-op
     has_evolution_section "$TASK_FILE" || return 0
@@ -478,6 +730,99 @@ check_evolution_log() {
     echo "Options:" >&2
     echo "  1. Add the Evolution entry, then retry" >&2
     echo "  2. Use --skip-evolution to bypass (logged Tier-2, T-1718)" >&2
+    exit 1
+}
+
+# Disposition-completeness gate (T-2190, T-2186 Slice 4)
+# Inception tasks must dispose every declared question in the ## Open Questions
+# body section. Each question gets answered / dissolved / deferred with cited
+# evidence — never a bare checkbox. Refuses on under-disposed inceptions.
+#
+# Bypass family per T-1890 producer/consumer parity:
+#   --skip-disposition-gate "rationale"  (direct CLI invocations)
+#   FW_SKIP_DISPOSITION_GATE=1           (git/wrapper / env-only callers)
+# Both logged Tier-2 to .context/working/.gate-bypass-log.yaml.
+check_disposition_gate() {
+    # Only fires on inception tasks
+    local wf
+    wf=$(grep -E "^workflow_type:" "$TASK_FILE" | head -1 | awk '{print $2}' | tr -d '"' | tr -d "'")
+    if [ "$wf" != "inception" ]; then
+        return 0
+    fi
+
+    # Backward-compat: if ## Open Questions section absent, no-op (grandfathered)
+    if ! grep -qE "^## Open Questions" "$TASK_FILE"; then
+        return 0
+    fi
+
+    # Extract the Open Questions section between '## Open Questions' and the next '## '
+    local oq
+    oq=$(awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag' "$TASK_FILE")
+
+    # Find IW-N (or any question marker) lines; for each, look for a sibling
+    # "disposition:" and "rationale:" within the same block.
+    # A "block" = lines from one question marker to the next (or section end).
+    local missing=0 missing_list=""
+    local current_q="" has_disposition=false has_rationale=false
+
+    while IFS= read -r line; do
+        # Match question markers (T-2218 RC5 fix): anchored to start-of-line marker
+        # forms only. The previous unanchored `IW-[0-9]+` branch matched IW-N
+        # mentions in prose (e.g. rationale text "depends on IW-1's answer"),
+        # causing a false flush of the prior question's disposition/rationale.
+        #   Valid: "- **IW-1: text**", "- IW-1: text", "### IW-1 title"
+        #   Plus the legacy Q-N list-item form (unchanged).
+        if echo "$line" | grep -qE "(^[[:space:]]*-[[:space:]]*\*?\*?IW-[0-9]+|^###[[:space:]]+IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)"; then
+            # Flush previous question's verdict
+            if [ -n "$current_q" ] && { [ "$has_disposition" = false ] || [ "$has_rationale" = false ]; }; then
+                missing=$((missing + 1))
+                missing_list="$missing_list\n    - $current_q (disposition=$has_disposition rationale=$has_rationale)"
+            fi
+            current_q=$(echo "$line" | grep -oE "IW-[0-9]+|Q-?[0-9]+" | head -1)
+            has_disposition=false
+            has_rationale=false
+            continue
+        fi
+        # Match dispositions
+        if echo "$line" | grep -qE "disposition:[[:space:]]*(answered|deferred|dissolved)"; then
+            has_disposition=true
+        fi
+        if echo "$line" | grep -qE "rationale:[[:space:]]*.+"; then
+            has_rationale=true
+        fi
+    done <<< "$oq"
+
+    # Flush the last question
+    if [ -n "$current_q" ] && { [ "$has_disposition" = false ] || [ "$has_rationale" = false ]; }; then
+        missing=$((missing + 1))
+        missing_list="$missing_list\n    - $current_q (disposition=$has_disposition rationale=$has_rationale)"
+    fi
+
+    if [ "$missing" -eq 0 ]; then
+        echo -e "${GREEN}Disposition gate: all Open Questions disposed ✓${NC}"
+        return 0
+    fi
+
+    if [ "$SKIP_DISPOSITION_GATE" = true ]; then
+        echo -e "${YELLOW}WARNING: $missing Open Question(s) under-disposed (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE bypass)${NC}"
+        log_gate_bypass "--skip-disposition-gate" "check_disposition_gate"
+        return 0
+    fi
+
+    echo -e "${RED}ERROR: Cannot complete inception — $missing Open Question(s) under-disposed.${NC}" >&2
+    echo "" >&2
+    echo "T-2190 (T-2186 Slice 4): every IW-N question in ## Open Questions must carry" >&2
+    echo "  disposition: answered|deferred|dissolved" >&2
+    echo "  rationale: <evidence>" >&2
+    echo "Never binary. See 050-Inceptions.md §Disposition Gate." >&2
+    echo "" >&2
+    echo "Missing:" >&2
+    echo -e "$missing_list" >&2
+    echo "" >&2
+    echo "Options:" >&2
+    echo "  1. Add disposition + rationale lines per missing question" >&2
+    echo "  2. --skip-disposition-gate \"rationale\"  (direct, logged Tier-2)" >&2
+    echo "  3. FW_SKIP_DISPOSITION_GATE=1 <command>  (env-var, logged Tier-2)" >&2
     exit 1
 }
 
@@ -708,7 +1053,15 @@ SKIP_HUMAN_OWNERSHIP=false
 SKIP_RECOMMENDATION=false
 SKIP_RCA=false
 SKIP_EVOLUTION=false
+# T-2190: disposition-completeness gate (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE=1)
+SKIP_DISPOSITION_GATE=false
+if [ "${FW_SKIP_DISPOSITION_GATE:-0}" = "1" ]; then
+    SKIP_DISPOSITION_GATE=true
+fi
 SKIP_INCEPTION_DECISION=false
+SKIP_INCEPTION_SCOPE_TRACE=false
+SKIP_RENDER_REVIEW=false
+SKIP_RENDER_REVIEW_REASON=""
 SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
 
 while [[ $# -gt 0 ]]; do
@@ -727,7 +1080,25 @@ while [[ $# -gt 0 ]]; do
         --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
         --skip-rca) SKIP_RCA=true; shift ;;
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
+        --skip-disposition-gate)
+            SKIP_DISPOSITION_GATE=true
+            if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]]; then
+                REASON="${REASON:-$2}"
+                shift
+            fi
+            shift ;;
         --skip-inception-decision) SKIP_INCEPTION_DECISION=true; shift ;;
+        --skip-inception-scope-trace)
+            SKIP_INCEPTION_SCOPE_TRACE=true
+            if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]]; then
+                REASON="${REASON:-$2}"
+                shift
+            fi
+            shift ;;
+        --skip-render-review)
+            SKIP_RENDER_REVIEW=true
+            SKIP_RENDER_REVIEW_REASON="${2:-no rationale}"
+            shift 2 ;;
         --scope-reduction-acknowledged)
             SCOPE_REDUCTION_ACK="$2"
             if [ -z "$SCOPE_REDUCTION_ACK" ]; then
@@ -744,9 +1115,11 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
+            echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)" >&2
+            echo "  --skip-render-review \"...\" Bypass render-surface Human AC gate (T-1766)" >&2
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SCOPE_REDUCTION_ACK="--force bypass"
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -766,6 +1139,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)"
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)"
+            echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)"
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
@@ -777,6 +1151,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         T-*) TASK_ID="$1"; shift ;;
+        --switch-focus) shift ;;  # T-1890: focus-drift hook sentinel; consumed silently
         *) echo -e "${RED}Unknown option: $1${NC}"; exit 1 ;;
     esac
 done
@@ -830,8 +1205,9 @@ if [ -n "$NEW_STATUS" ]; then
             # T-193: Partial-complete re-run — check if human ACs now satisfied
             echo -e "${CYAN}Re-checking partial-complete status...${NC}"
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
-            # Strip HTML comments — template examples contain checkbox patterns
-            AC_SECTION=$(echo "$AC_SECTION" | sed '/<!--/,/-->/d')
+            # Strip HTML comments — template examples contain checkbox patterns.
+            # T-1967: two-step strip (one-line first, then range) — see line ~87.
+            AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
             ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
             ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))
@@ -929,6 +1305,78 @@ if [ -n "$NEW_STATUS" ]; then
             fi
         fi
 
+        # === L-387 SIGPIPE Advisory at started-work (T-2059) ===
+        # Non-blocking heuristic: warn if the task's ## Verification block
+        # already contains a `<streaming-cmd> | grep -q "..."` shape. P-011
+        # runs verification under set -eo pipefail; SIGPIPE on grep early-match
+        # makes the upstream exit 141 → pipefail fails the verification even
+        # though the pattern was present. Captured 7+ times (T-1716, T-1838,
+        # T-1862, T-1863, T-2008, T-1701, T-1707). The safer form is documented
+        # in CLAUDE.md and policy/anti-patterns.yaml#l387-sigpipe-risk.
+        #
+        # Bypass: FW_SKIP_L387_ADVISORY=1 (advisory anyway — does NOT block).
+        # Skipping is logged Tier-2 only for tracking adoption; not punitive.
+        if [ "$NEW_STATUS" = "started-work" ] && [ -z "${FW_SKIP_L387_ADVISORY:-}" ]; then
+            if command -v python3 >/dev/null 2>&1; then
+                _l387_findings=$(python3 - "$TASK_FILE" 2>/dev/null <<'PY' || true
+import sys
+from pathlib import Path
+ROOT = Path(__file__).resolve()
+# Walk up from script dir to find lib/reviewer
+for parent in [Path(sys.argv[0]).resolve()] + list(Path(sys.argv[0]).resolve().parents):
+    if (parent / "lib" / "reviewer" / "static_scan.py").exists():
+        sys.path.insert(0, str(parent))
+        break
+else:
+    sys.exit(0)
+try:
+    from lib.reviewer import static_scan as ss
+except Exception:
+    sys.exit(0)
+tf = sys.argv[1]
+try:
+    text = Path(tf).read_text()
+except Exception:
+    sys.exit(0)
+verif = ss.extract_section(text, "Verification") or ""
+if not verif:
+    sys.exit(0)
+findings = ss.detect_l387_sigpipe_risk(verif)
+for f in findings:
+    print(f"  - {f.location}: {f.evidence}")
+PY
+                )
+                if [ -n "$_l387_findings" ]; then
+                    echo ""
+                    echo -e "${YELLOW}ADVISORY (L-387 SIGPIPE risk): Verification contains pipe-to-grep-q shape${NC}"
+                    echo "$_l387_findings"
+                    echo "  Safe pattern: out=\$(cmd 2>&1); echo \"\$out\" | grep -q \"PATTERN\""
+                    echo "  Or:           cmd > /tmp/.out 2>&1; grep -q \"PATTERN\" /tmp/.out"
+                    echo "  Suppress (does not block):  FW_SKIP_L387_ADVISORY=1 bin/fw task update ..."
+                    echo "  Reviewer pattern: l387-sigpipe-risk (policy/anti-patterns.yaml)"
+                    echo ""
+                fi
+            fi
+        fi
+
+        # === BVP Estimator Trigger (T-1922) ===
+        # On transition to started-work ("ready"), fire the BVP estimator
+        # in the background. Heuristic engine is ~10ms so the update latency
+        # impact is negligible, but we background it anyway in case a future
+        # v2-LLM engine lands and goes over the budget. Failures are silent —
+        # the estimator's output is advisory; a missing proposed score does
+        # not block any downstream gate.
+        if [ "$NEW_STATUS" = "started-work" ] && [ -n "$TASK_ID" ]; then
+            if [ -x "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" ]; then
+                (
+                    PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                    "$FRAMEWORK_ROOT/agents/termlink/bvp-estimator/bvp-estimator.sh" \
+                        one "$TASK_ID" >/dev/null 2>&1
+                ) &
+                disown 2>/dev/null || true
+            fi
+        fi
+
         # === Concurrent Started-Work Advisory (T-554) ===
         # Warn when starting work if other tasks are already started-work.
         # Advisory only — does not block. Helps maintain single-task focus.
@@ -988,10 +1436,31 @@ if [ -n "$NEW_STATUS" ]; then
             check_rca_for_bugfix
         fi
 
+        # === Disposition Gate (T-2190, T-2186 Slice 4) ===
+        # Inception tasks with ## Open Questions must dispose every question.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_disposition_gate
+        fi
+
+        # === Render-surface Human-AC Gate (T-1766, P-013) ===
+        # Build/refactor/test tasks touching web render surfaces must
+        # carry at least one [REVIEW] Human AC — visual verification
+        # cannot be automated.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_render_surface_human_ac
+        fi
+
         # === Inception-decision Gate (T-1626, G-052 structural remediation) ===
         # Inception tasks must record a go/no-go/defer decision before completion.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_inception_decision
+        fi
+
+        # === Inception GO-scope Trace Gate (T-1984, G-066 prevention) ===
+        # Inception tasks with inception_decisions: populated must have all
+        # ships_in: referents reachable before the inception archives.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_inception_scope_trace
         fi
 
         # === Evolution-log Gate (T-1718, T-1717 grill Q4 remediation) ===
@@ -1079,6 +1548,19 @@ fi
 
 # Update horizon
 if [ -n "$NEW_HORIZON" ]; then
+    # T-2160 (arc-009 horizon-axis-hardening, Slice 1): explicit guard against
+    # --horizon past. 'past' is a derived render-time value (computed from file
+    # location in .tasks/completed/) per T-2159 Q1=(b). It has no write-path:
+    # storing past in YAML would let task be horizon: past + status: started-work
+    # — the exact coherence failure §ACD warns about (status and horizon
+    # contradict each other on "is work done"). Storage enum stays now/next/later.
+    if [ "$NEW_HORIZON" = "past" ]; then
+        echo -e "${RED}ERROR: '--horizon past' rejected — past is a derived render-time value, not settable${NC}" >&2
+        echo "  Past is computed from file location: .tasks/completed/ → renders as past." >&2
+        echo "  Storage enum is now/next/later. To mark a task done: --status work-completed" >&2
+        echo "  (Per T-2159 inception Q1=(b); arc-009 horizon-axis-hardening.)" >&2
+        exit 1
+    fi
     if ! is_valid_horizon "$NEW_HORIZON"; then
         echo -e "${RED}ERROR: Invalid horizon '$NEW_HORIZON'${NC}" >&2
         echo "Valid horizons: $VALID_HORIZONS" >&2
@@ -1286,6 +1768,16 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             fi
             echo -e "${GREEN}Moved to completed/${NC}"
 
+            # T-2163 (arc-009 horizon-axis-hardening, Slice 4): null the stored
+            # horizon now that the file is in .tasks/completed/. Render derives
+            # `past` from _location (T-2160 Q1=(b)) so the stored value is
+            # behaviorally irrelevant — but a non-null value here is a YAML lie
+            # that CTL-030 (T-2162) would catch. Plug the source: write `null`
+            # in the same atomic move so no drift is ever introduced.
+            # Partial-complete branch does NOT touch this — that file stays in
+            # active/ and renders via the stored horizon.
+            _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
+
             # T-709: Push notification — task completed
             if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
                 source "$FRAMEWORK_ROOT/lib/notify.sh"
@@ -1381,9 +1873,27 @@ resolved = sys.argv[1]
 path = sys.argv[2]
 with open(path) as f:
     content = f.read()
-# Match 'components:' line plus any block-style continuation lines that follow
-# (lines starting with whitespace + '-'). Stops at first non-list line.
-pattern = re.compile(r'^components:[^\n]*\n(?:[ \t]+-[^\n]*\n)*', re.MULTILINE)
+# Match 'components:' line plus any continuation lines that follow.
+# Two continuation shapes (T-2067, T-1469):
+#   - block-style: '  - item'  (lines starting whitespace + '-')
+#   - flow-style:  '  item]'    (indented continuation of a wrapped flow list)
+# A continuation is any indented line that isn't itself a YAML key (no
+# '<word>:' at start). Stops at the next YAML key or blank line. Without
+# the flow-style branch, a pre-existing wrapped list left an orphan
+# closing-bracket continuation that produced invalid YAML — Watchtower
+# /review/T-XXX rendered the not-found page because parse_frontmatter failed.
+# 4 corpus victims repaired in 1e0c98b4 (T-2018, T-2059, T-2060, T-2061).
+# NOTE (T-2068): never embed the double-quote character (ASCII 0x22) in
+# this comment block. The surrounding python3 -c uses that character as
+# its bash string delimiter; an inline occurrence here prematurely
+# terminates the bash string at runtime and shifts argv positions.
+# Use single quotes or rephrase. bash -n does NOT catch this (syntax is
+# valid at parse time, only breaks at expansion).
+pattern = re.compile(
+    r'^components:[^\n]*\n'              # the components: line
+    r'(?:[ \t]+(?!\w+:)[^\n]*\n)*',       # indented continuation lines (not starting a new key)
+    re.MULTILINE,
+)
 new_block = 'components: [' + resolved + ']\n'
 if pattern.search(content):
     content = pattern.sub(new_block, content, count=1)

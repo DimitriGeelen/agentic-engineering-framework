@@ -1,19 +1,172 @@
-{% extends "base.html" %}
-{% block content %}
-
 <style>
+    /* T-1904: Arc kanban — mirrors /tasks kanban (web/templates/tasks.html
+       lines 106-198). Class names duplicated rather than shared so each
+       page can evolve independently; visual parity is the contract, not
+       structural reuse. Keep these in sync if /tasks ever changes. */
+    .arc-kanban-board {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.5rem;
+        align-items: start;
+    }
+    @media (max-width: 992px) {
+        .arc-kanban-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 576px) {
+        .arc-kanban-board { grid-template-columns: 1fr; }
+    }
+    .kanban-column {
+        min-height: 4rem;
+        background: var(--pico-card-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+        padding: 0.5rem;
+        overflow: hidden;
+    }
+    .kanban-column-header {
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.35rem;
+        border-bottom: 2px solid var(--pico-muted-border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-transform: capitalize;
+    }
+    .kanban-column-header .count {
+        font-weight: 400;
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+    }
+    /* Left-border accent per lifecycle state — preserve the legacy colour map */
+    .kanban-column[data-state="draft"]       { border-left: 4px solid var(--pico-secondary, #888); }
+    .kanban-column[data-state="in-progress"] { border-left: 4px solid var(--pico-primary); }
+    .kanban-column[data-state="closed"]      { border-left: 4px solid var(--wt-success); }
+    .kanban-column[data-state="abandoned"]   { border-left: 4px solid var(--pico-muted-color); }
+
+    .arc-card {
+        margin: 0 0 0.4rem 0;
+        padding: 0.4rem 0.55rem;
+        font-size: 0.8rem;
+        border-radius: var(--pico-border-radius);
+        border: 1px solid var(--pico-muted-border-color);
+        background: var(--pico-background-color);
+    }
+    .arc-card:last-child { margin-bottom: 0; }
+    .arc-card.focused {
+        border-left: 4px solid var(--pico-primary);
+        padding-left: calc(0.55rem - 3px);
+    }
+    .arc-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.2rem;
+    }
+    .arc-card-id {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--pico-primary);
+        text-decoration: none;
+    }
+    .arc-card-id:hover { text-decoration: underline; }
+    .arc-card-name {
+        display: block;
+        line-height: 1.25;
+        color: var(--pico-color);
+        font-size: 0.78rem;
+        margin-bottom: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .arc-card-meta {
+        font-size: 0.72rem;
+        color: var(--pico-muted-color);
+    }
+    .focus-dot {
+        display: inline-block;
+        width: 0.55em;
+        height: 0.55em;
+        border-radius: 50%;
+        margin-right: 0.3em;
+        vertical-align: middle;
+    }
+    .focus-dot.on { background: var(--pico-primary); }
+    .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
+    .badge { display: inline-block; padding: 0.05em 0.4em; border-radius: 3px; font-size: 0.7em; }
+    .badge-warn { background: var(--wt-warn); color: white; }
+    /* T-1910: status badge variants (match arc_detail.html) */
+    /* T-1970: contrast fix — see arc_detail.html comment for rationale. */
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
+    .badge-ok { background: var(--wt-success); color: white; }
+    .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
+    /* T-1910: inline-editable arc name affordance */
+    .editable-arc-name { cursor: text; }
+    .editable-arc-name:hover { text-decoration: underline dotted; text-decoration-thickness: 1px; }
+    .arc-name-input {
+        width: 100%;
+        font-size: 0.78rem;
+        padding: 0.1rem 0.3rem;
+        margin: 0;
+        line-height: 1.25;
+    }
+    /* T-1910: focus-dot interactive form (no full reload) */
+    .focus-dot-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+    }
+    .focus-dot-btn:hover .focus-dot { box-shadow: 0 0 0 2px var(--pico-primary-focus, rgba(0,127,255,0.3)); }
+    /* T-1910: filter chip row */
+    .arc-filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin: 0.75rem 0;
+        font-size: 0.85rem;
+    }
+    .arc-filter-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        background: var(--pico-card-sectioning-background-color);
+        border: 1px solid var(--pico-muted-border-color);
+        color: var(--pico-color);
+        text-decoration: none;
+        font-size: 0.8rem;
+    }
+    .arc-filter-chip:hover { background: var(--pico-secondary-background); text-decoration: none; }
+    .arc-filter-chip.active { background: var(--pico-primary); color: var(--pico-primary-inverse); border-color: var(--pico-primary); }
+    .arc-card-decision { font-size: 0.7rem; color: var(--pico-muted-color); font-style: italic; margin-top: 0.15rem; }
+    .empty-column {
+        font-size: 0.75rem;
+        color: var(--pico-muted-color);
+        font-style: italic;
+        text-align: center;
+        padding: 0.5rem 0;
+    }
+    /* Legacy flat-list mode (kanban_mode=false) retains the old card style */
     .arc-row { padding: 1rem; margin-bottom: 0.75rem; border-left: 3px solid var(--pico-primary); border-radius: 4px; background: var(--pico-card-background-color); }
     .arc-row.closed { border-left-color: var(--pico-muted-color); opacity: 0.7; }
+    .arc-row.abandoned { border-left-color: var(--pico-muted-color); opacity: 0.55; }
+    .arc-row.draft { border-left-color: var(--pico-secondary, #888); }
     .arc-row.focused { border-left-color: var(--pico-primary); border-left-width: 6px; }
     .arc-row a.arc-name { font-size: 1.1rem; font-weight: bold; }
     .arc-meta { font-size: 0.85rem; color: var(--pico-muted-color); margin-top: 0.25rem; }
-    .focus-dot { display: inline-block; width: 0.6em; height: 0.6em; border-radius: 50%; margin-right: 0.3em; vertical-align: middle; }
-    .focus-dot.on { background: var(--pico-primary); }
-    .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
-    .badge { display: inline-block; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; }
-    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
-    .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
-    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+    /* T-1970: contrast fix — duplicated for HTMX swap-context list mode. */
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
+    .badge-ok { background: var(--wt-success); color: white; }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
+    .badge-draft { background: var(--pico-card-sectioning-background-color, #444); color: var(--pico-muted-color); border: 1px solid var(--pico-muted-border-color); }
 </style>
 
 <header>
@@ -22,33 +175,196 @@
     Run <code>fw arc create</code> to register one. See <a href="/docs/CLAUDE">CLAUDE.md</a> §Arc Completion Discipline for the closure check.</p>
 </header>
 
+{# T-1910 Slice 4: filter chips + view toggle. #}
+{% set _focused_on = focused_only|default(false) %}
+{% set _stale_on = stale_only|default(false) %}
+{% set _view = view|default('board') %}
+<div class="arc-filter-bar" aria-label="Arc filters">
+    <strong style="font-size: 0.78rem; color: var(--pico-muted-color);">FILTERS:</strong>
+    <a class="arc-filter-chip {% if _focused_on %}active{% endif %}"
+       href="/arcs?{% if not _focused_on %}focused=true{% if _stale_on %}&amp;stale=true{% endif %}{% if _view == 'list' %}&amp;view=list{% endif %}{% else %}{% if _stale_on %}stale=true{% endif %}{% if _view == 'list' %}{% if _stale_on %}&amp;{% endif %}view=list{% endif %}{% endif %}"
+       hx-get="..." hx-target="#content" hx-push-url="true">Focused only</a>
+    <a class="arc-filter-chip {% if _stale_on %}active{% endif %}"
+       href="/arcs?{% if not _stale_on %}stale=true{% if _focused_on %}&amp;focused=true{% endif %}{% if _view == 'list' %}&amp;view=list{% endif %}{% else %}{% if _focused_on %}focused=true{% endif %}{% if _view == 'list' %}{% if _focused_on %}&amp;{% endif %}view=list{% endif %}{% endif %}"
+       hx-target="#content" hx-push-url="true">Stale only</a>
+    {% if _focused_on or _stale_on %}
+    <a class="arc-filter-chip" href="/arcs{% if _view == 'list' %}?view=list{% endif %}"
+       hx-target="#content" hx-push-url="true" title="Clear filters">&times; clear</a>
+    {% endif %}
+    <span style="flex: 1;"></span>
+    <strong style="font-size: 0.78rem; color: var(--pico-muted-color);">VIEW:</strong>
+    <a class="arc-filter-chip {% if _view != 'list' %}active{% endif %}"
+       href="/arcs{% if _focused_on or _stale_on %}?{% endif %}{% if _focused_on %}focused=true{% endif %}{% if _focused_on and _stale_on %}&amp;{% endif %}{% if _stale_on %}stale=true{% endif %}"
+       hx-target="#content" hx-push-url="true">Kanban</a>
+    <a class="arc-filter-chip {% if _view == 'list' %}active{% endif %}"
+       href="/arcs?view=list{% if _focused_on %}&amp;focused=true{% endif %}{% if _stale_on %}&amp;stale=true{% endif %}"
+       hx-target="#content" hx-push-url="true">List</a>
+</div>
+
+{% if kanban_mode %}
+{# T-1904: 4-column kanban — one column per lifecycle state. Replaces T-1853 tabs. #}
+<p class="muted">
+    {{ all_arcs_count }} arc(s) total. <strong>Bold left border</strong> = currently focused.
+</p>
+<div class="arc-kanban-board" role="region" aria-label="Arcs grouped by lifecycle state">
+    {% for col in columns %}
+    <section class="kanban-column" data-state="{{ col.status }}" aria-label="{{ col.status }} arcs">
+        <div class="kanban-column-header">
+            <span>{{ col.status }}</span>
+            <span class="count">{{ col.count }}</span>
+        </div>
+        {% if col.arcs %}
+            {% for a in col.arcs %}
+            <article class="arc-card {% if a.focused %}focused{% endif %}" data-arc-slug="{{ a.slug }}" data-arc-id="{{ a.id }}">
+                <div class="arc-card-header">
+                    {# T-1910 Slice 2: focus dot is a click-to-toggle htmx button #}
+                    <form hx-post="/api/arc/{{ a.slug }}/focus" hx-target="this" hx-swap="outerHTML"
+                          style="display: inline; margin: 0;">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="focus-dot-btn"
+                                aria-label="{% if a.focused %}Clear focus{% else %}Focus this arc{% endif %}">
+                            <span class="focus-dot {% if a.focused %}on{% else %}off{% endif %}"
+                                  title="{% if a.focused %}Focused (click to clear){% else %}Click to focus{% endif %}"
+                                  data-focused="{{ 'true' if a.focused else 'false' }}"></span>
+                        </button>
+                    </form>
+                    <a class="arc-card-id" href="/arcs/{{ a.id }}"
+                       hx-get="/arcs/{{ a.id }}" hx-target="#content" hx-push-url="true">{{ a.id }}</a>
+                    {# T-1910 Slice 1: status badge label + stale badge #}
+                    {% if a.status == 'in-progress' %}<span class="badge badge-info" title="status">{{ a.status }}</span>
+                    {% elif a.status == 'closed' %}<span class="badge badge-ok" title="status">closed</span>
+                    {% elif a.status == 'draft' %}<span class="badge badge-draft" title="status">{{ a.status }}</span>
+                    {% elif a.status == 'abandoned' %}<span class="badge badge-muted" title="status">{{ a.status }}</span>
+                    {% endif %}
+                    {% if a.stale %}<span class="badge badge-warn" title="No task commits in the last {{ stale_days }} days (T-1855)">stale</span>{% endif %}
+                </div>
+                {# T-1910 Slice 2: inline editable name #}
+                <span class="arc-card-name editable-arc-name" title="{{ a.name }}"
+                      onclick="startArcNameEdit(this, '{{ a.slug }}')">{{ a.name }}</span>
+                <div class="arc-card-meta">
+                    {{ a.task_count }} task(s){% if a.anchor_task %} · anchor: <a href="/tasks/{{ a.anchor_task }}">{{ a.anchor_task }}</a>{% endif %}{% if a.created %} · <span title="Created">{{ a.created[:10] }}</span>{% endif %}
+                </div>
+                {# T-1910 Slice 1: decision snippet on closed arcs #}
+                {% if a.status == 'closed' and a.decision %}
+                <div class="arc-card-decision" title="Closure decision">decision: {{ a.decision }}</div>
+                {% endif %}
+            </article>
+            {% endfor %}
+        {% else %}
+            <div class="empty-column">none</div>
+        {% endif %}
+    </section>
+    {% endfor %}
+</div>
+{% else %}
+{# Legacy flat-list — preserved for `?status=…` query-param callers (backward compat). #}
 {% if arcs %}
-<p class="muted">{{ arcs|length }} arc(s) registered. <strong>Bold dot</strong> = currently focused.</p>
+<p class="muted">
+    Showing {{ arcs|length }} of {{ all_arcs_count }} arc(s) — filter: <strong>{{ current_filter }}</strong>.
+    <a href="/arcs">← back to kanban</a>.
+</p>
 {% for a in arcs %}
-<article class="arc-row {% if a.status == 'closed' %}closed{% endif %} {% if a.focused %}focused{% endif %}">
+<article class="arc-row {{ a.status }} {% if a.focused %}focused{% endif %}" data-arc-slug="{{ a.slug }}" data-arc-id="{{ a.id }}">
     <div>
-        <span class="focus-dot {% if a.focused %}on{% else %}off{% endif %}" title="{% if a.focused %}Focused (fw arc focus){% else %}Not focused{% endif %}"></span>
-        <a class="arc-name" href="/arcs/{{ a.id }}">{{ a.id }}</a>
-        — {{ a.name }}
+        {# T-1910: focus dot toggle in list view too #}
+        <form hx-post="/api/arc/{{ a.slug }}/focus" hx-target="this" hx-swap="outerHTML"
+              style="display: inline; margin: 0;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="focus-dot-btn"
+                    aria-label="{% if a.focused %}Clear focus{% else %}Focus this arc{% endif %}">
+                <span class="focus-dot {% if a.focused %}on{% else %}off{% endif %}"
+                      title="{% if a.focused %}Focused (click to clear){% else %}Click to focus{% endif %}"
+                      data-focused="{{ 'true' if a.focused else 'false' }}"></span>
+            </button>
+        </form>
+        <a class="arc-name" href="/arcs/{{ a.id }}"
+           hx-get="/arcs/{{ a.id }}" hx-target="#content" hx-push-url="true">{{ a.id }}</a>
+        — <span class="arc-card-name editable-arc-name" title="{{ a.name }}"
+                 onclick="startArcNameEdit(this, '{{ a.slug }}')"
+                 style="display: inline; font-weight: bold;">{{ a.name }}</span>
+        {% if a.stale %}<span class="badge badge-warn" title="No task commits in the last {{ stale_days }} days (T-1855)">stale</span>{% endif %}
     </div>
     <div class="arc-meta">
         status:
         {% if a.status == 'in-progress' %}<span class="badge badge-info">{{ a.status }}</span>
         {% elif a.status == 'closed' %}<span class="badge badge-ok">{{ a.status }}{% if a.decision %} / {{ a.decision }}{% endif %}</span>
+        {% elif a.status == 'draft' %}<span class="badge badge-draft">{{ a.status }}</span>
+        {% elif a.status == 'abandoned' %}<span class="badge badge-muted">{{ a.status }}</span>
         {% else %}<span class="badge badge-muted">{{ a.status }}</span>{% endif %}
         · {{ a.task_count }} constituent task(s)
         {% if a.anchor_task %} · anchor: <a href="/tasks/{{ a.anchor_task }}">{{ a.anchor_task }}</a>{% endif %}
-        {% if a.created %} · created: <small>{{ a.created }}</small>{% endif %}
+        {% if a.created %} · created: <small>{{ a.created[:10] }}</small>{% endif %}
     </div>
 </article>
 {% endfor %}
 {% else %}
 <article>
+    {% if all_arcs_count == 0 %}
     <p>No arcs registered. Create one with:</p>
     <pre><code>cd {{ project_root }} && bin/fw arc create &lt;id&gt; --name "Description" --anchor T-XXXX</code></pre>
+    {% else %}
+    <p>No arcs match filter <strong>{{ current_filter }}</strong>. <a href="/arcs?status=all">Show all {{ all_arcs_count }}</a>.</p>
+    {% endif %}
 </article>
+{% endif %}
 {% endif %}
 
 <p style="margin-top:1.5rem;"><em>See also:</em> <a href="/orchestrator">/orchestrator</a> for the orchestrator-arc-specific drill-down (MCP audit, live sessions, recent dispatches).</p>
 
-{% endblock %}
+<script>
+/* T-1910 Slice 2: inline-edit arc card name (mirrors /tasks startKanbanNameEdit). */
+function startArcNameEdit(span, arcSlug) {
+    var current = span.textContent.trim();
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = current;
+    input.className = 'arc-name-input';
+    var done = false;
+
+    function finish(newText) {
+        if (done) return;
+        done = true;
+        span.textContent = newText;
+        span.title = newText;
+        if (input.parentNode) input.replaceWith(span);
+    }
+
+    function save() {
+        if (done) return;
+        var newName = input.value.trim();
+        if (!newName || newName === current) { finish(current); return; }
+        var fd = new FormData();
+        fd.append('name', newName);
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) fd.append('_csrf_token', meta.content);
+        fetch('/api/arc/' + arcSlug + '/name', { method: 'POST', body: fd })
+            .then(function(r) {
+                if (r.ok) {
+                    finish(newName);
+                    if (typeof showToast === 'function') showToast('Arc name saved', 'success');
+                } else {
+                    r.text().then(function(t) {
+                        var msg = t.replace(/<[^>]*>/g,'').trim() || 'Save failed';
+                        if (typeof showToast === 'function') showToast(msg, 'error');
+                    });
+                    finish(current);
+                }
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') showToast('Network error', 'error');
+                finish(current);
+            });
+    }
+
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { finish(current); }
+    });
+    input.addEventListener('click', function(e) { e.stopPropagation(); });
+
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+}
+</script>

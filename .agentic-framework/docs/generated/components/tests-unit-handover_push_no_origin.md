@@ -14,10 +14,10 @@ every time. Fix: gate the skip on `_has_origin = true`.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/handover/handover.sh` | calls |
-| `agents/handover/handover.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [handover](/docs/generated/agents-handover-handover) | tests | Handover Agent - Mechanical Operations |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-handover_push_no_origin.yaml`*

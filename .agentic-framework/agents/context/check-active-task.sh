@@ -74,6 +74,15 @@ except:
     elif type is_bash_safe_command &>/dev/null && is_bash_safe_command "$BASH_CMD"; then
         # Safe command with no write patterns — allow without task
         exit 0
+    elif [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception)([[:space:]]|$) ]]; then
+        # Task-bootstrap commands always allowed (T-2052) — they ESTABLISH the
+        # active task, so gating them on one is a deadlock; the "No active task"
+        # block message below even lists them as the unblock path. Whole-command
+        # match survives a `cd … && bin/fw …` prefix and multi-line forms, which
+        # is_bash_safe_command's first-word base extraction misses (that fragility
+        # is what caused the deadlock). Reached only when no write pattern is
+        # present — the if-branch above already caught those.
+        exit 0
     fi
 
     # Non-safe or write-pattern Bash commands: fall through to active-task check.
@@ -179,6 +188,27 @@ if [ -f "$SESSION_FILE" ]; then
     CURRENT_SESSION=$({ grep "^session_id:" "$SESSION_FILE" 2>/dev/null || true; } | head -1 | awk '{print $2}')
 fi
 
+# T-2054: post-completion commit deadlock. `--status work-completed` nulls
+# focus.yaml current_task AND moves the task active/→completed/, so it can no
+# longer be re-focused (G-013 requires the focused task in active/), yet its own
+# completion file-move + episodic must still be committed (P-009 commit cadence).
+# When focus is null, allow `git commit` so that checkpoint can land. Committing
+# persists work already produced under the Write/Edit task gate — it is not new
+# work — and the commit-msg hook still enforces P-002 (refuses a message lacking
+# T-XXX). `--no-verify`/`-n` is excluded: it would skip that hook, so it falls
+# through to the block below (a Tier-2 emergency needing explicit authorisation).
+# This lives here, NOT in is_bash_safe_command, on purpose: when focus is NON-null
+# git commit must still reach the focus-drift gate (T-1730) — a context-free
+# allowlist entry would short-circuit that. `git add` (task-agnostic, no drift)
+# stays in is_bash_safe_command.
+if [ -z "$CURRENT_TASK" ] && [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ]; then
+    if [[ "$BASH_CMD" =~ (^|[[:space:]])git[[:space:]]+commit($|[[:space:]]) ]] && \
+       ! [[ "$BASH_CMD" =~ (^|[[:space:]])(--no-verify|-n)([[:space:]]|$) ]]; then
+        echo "NOTE: no active task — allowing 'git commit' to checkpoint completed work (T-2054). commit-msg hook still enforces T-XXX." >&2
+        exit 0
+    fi
+fi
+
 if [ -z "$CURRENT_TASK" ]; then
     echo "" >&2
     echo "BLOCKED: No active task. Framework rule: nothing gets done without a task." >&2
@@ -269,27 +299,34 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
 
     # If a target was identified and differs from focused task: drift
     if [ -n "$TARGET_TASK" ] && [ "$TARGET_TASK" != "$CURRENT_TASK" ]; then
-        # --switch-focus override allows + logs (mirrors T-1671 closure-gate pattern)
+        # T-1890: two bypass mechanisms.
+        # (a) --switch-focus flag in BASH_CMD — works for fw commands whose
+        #     downstream parsers accept the no-op token (update-task.sh,
+        #     agents/context/lib/{learning,pattern,decision}.sh).
+        # (b) FW_SWITCH_FOCUS=1 env-var prefix — works universally including
+        #     `git commit ... T-X: ...` (git rejects unknown flags so the
+        #     flag mechanism fundamentally can't cover that pattern).
+        _bypass_mechanism=""
         if [[ "$BASH_CMD" =~ (^|[[:space:]])--switch-focus([[:space:]]|=|$) ]]; then
+            _bypass_mechanism="--switch-focus"
+        elif [[ "$BASH_CMD" =~ (^|[[:space:]])FW_SWITCH_FOCUS=1([[:space:]]|$) ]]; then
+            _bypass_mechanism="FW_SWITCH_FOCUS=1"
+        fi
+        if [ -n "$_bypass_mechanism" ]; then
             BYPASS_LOG="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
             mkdir -p "$(dirname "$BYPASS_LOG")"
             # T-1861: escape embedded single quotes per YAML single-quoted-scalar rule.
-            # CURRENT_TASK/TARGET_TASK won't have quotes in practice but uniform
-            # escaping is the correct shape. `command` retains tr -d "'" because
-            # truncating a command's quotes is the safer audit-trail behaviour
-            # (don't preserve foreign apostrophes in arbitrary user commands).
             _t1861_esc_task="${CURRENT_TASK//\'/\'\'}"
             _t1861_esc_target="${TARGET_TASK//\'/\'\'}"
             {
                 echo "- timestamp: '$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
                 echo "  task: '$_t1861_esc_task'"
-                echo "  flag: '--switch-focus'"
+                echo "  flag: '$_bypass_mechanism'"
                 echo "  caller: 'check-active-task focus-drift'"
                 echo "  target: '$_t1861_esc_target'"
                 echo "  command: '$(echo "$BASH_CMD" | head -c 200 | tr -d "'")'"
             } >> "$BYPASS_LOG" 2>/dev/null || true
-            # Allow with informational note on stderr
-            echo "NOTE: focus-drift override (--switch-focus) — target $TARGET_TASK ≠ focus $CURRENT_TASK. Logged." >&2
+            echo "NOTE: focus-drift override ($_bypass_mechanism) — target $TARGET_TASK ≠ focus $CURRENT_TASK. Logged." >&2
         elif _under_agent_control; then
             echo "" >&2
             echo "══════════════════════════════════════════════════════════" >&2
@@ -305,10 +342,16 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
             echo "    1. Switch focus first:" >&2
             echo "       $(_fw_cmd) context focus $TARGET_TASK" >&2
             echo "" >&2
-            echo "    2. Append --switch-focus to the command (logged Tier 2)." >&2
+            echo "    2. Append --switch-focus to a fw command (logged Tier 2)." >&2
+            echo "       Works for: fw task update, fw context add-*." >&2
+            echo "" >&2
+            echo "    3. Prefix FW_SWITCH_FOCUS=1 to any command (logged Tier 2)." >&2
+            echo "       Works universally including git commit (where git rejects" >&2
+            echo "       unknown flags). Use this when option 2 isn't accepted." >&2
             echo "" >&2
             echo "  Attempting to run: $(echo "$BASH_CMD" | head -c 120)" >&2
             echo "  Policy: T-1730 (Focus-Target Drift Gate, closes G3 from T-1729)" >&2
+            echo "  Bypass-mechanism contract: T-1890 (flag + env-var dual path)" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
             exit 2
@@ -428,6 +471,64 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
     if ! grep -q '^\*\*Decision\*\*: \(GO\|NO-GO\|DEFER\)' "$ACTIVE_FILE" 2>/dev/null; then
         echo "NOTE: Active task $CURRENT_TASK is inception (no decision yet)." >&2
         echo "  Ensure you are doing exploration, not building." >&2
+    fi
+fi
+
+# --- Inception Open Questions readiness gate (T-2194, G-067) ---
+# Filing-time mirror of G-020 for inceptions: if the active inception has a
+# ## Open Questions section but ZERO filed `- **IW-N:**` entries, source-file
+# Write/Edit is blocked. The task file itself is `.tasks/*` exempt above, so
+# the agent can still add questions to unblock. Grandfather: inceptions with
+# no Open Questions section at all pass through (older inceptions pre-T-2190).
+# Bypass: FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 (logged Tier-2).
+if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2>/dev/null; then
+    # Only check if the section exists at all (grandfather older inceptions)
+    if grep -q "^## Open Questions" "$ACTIVE_FILE" 2>/dev/null; then
+        # Extract Open Questions section content (between header and next ## heading)
+        OQ_SECTION=$(awk '/^## Open Questions/{f=1; next} /^## /{f=0} f' "$ACTIVE_FILE" 2>/dev/null)
+        # Strip HTML comments so the template guidance does not count
+        OQ_STRIPPED=$(echo "$OQ_SECTION" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
+        # Count real IW-N entries
+        HAS_IW=$(echo "$OQ_STRIPPED" | grep -cE '^\s*-\s*\*\*IW-[0-9]+:' 2>/dev/null || true)
+        if [ "${HAS_IW:-0}" -eq 0 ]; then
+            if [ "${FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT:-0}" = "1" ]; then
+                # Bypass — log Tier-2
+                LOG_DIR="$PROJECT_ROOT/.context/working"
+                mkdir -p "$LOG_DIR" 2>/dev/null || true
+                LOG_FILE="$LOG_DIR/.gate-bypass-log.yaml"
+                _ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                {
+                    echo "- timestamp: '$_ts'"
+                    echo "  task: '$CURRENT_TASK'"
+                    echo "  flag: 'FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT'"
+                    echo "  caller: 'check-active-task:inception-open-questions'"
+                    echo "  file: '$FILE_PATH'"
+                } >> "$LOG_FILE" 2>/dev/null || true
+                echo "NOTE: Inception $CURRENT_TASK has no filed Open Questions; write allowed via FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 — logged." >&2
+            else
+                echo "" >&2
+                echo "BLOCKED: Inception $CURRENT_TASK has '## Open Questions' but zero filed questions." >&2
+                echo "" >&2
+                echo "Filing-time mirror of G-020 — inception build-readiness." >&2
+                echo "Inception work cannot edit source files until at least one Open Question is declared." >&2
+                echo "" >&2
+                echo "To unblock:" >&2
+                echo "  1. Edit $CURRENT_TASK and add at least one entry under '## Open Questions':" >&2
+                echo "       - **IW-1: <question text>**" >&2
+                echo "         confidence: 0-3" >&2
+                echo "         disposition: answered|deferred|dissolved   # filled later" >&2
+                echo "         rationale: <one-line evidence>              # filled later" >&2
+                echo "" >&2
+                echo "  2. Or remove the '## Open Questions' section entirely (grandfathered)." >&2
+                echo "" >&2
+                echo "  3. Override (logged Tier 2):  FW_ALLOW_INCEPTION_OPEN_QUESTIONS_DRIFT=1 <command>" >&2
+                echo "" >&2
+                echo "Attempting to modify: $FILE_PATH" >&2
+                echo "Policy: T-2194 / G-067 (Inception Open Questions readiness gate)" >&2
+                echo "See: 050-Inceptions.md §Disposition Gate, CLAUDE.md §Inception Discipline" >&2
+                exit 2
+            fi
+        fi
     fi
 fi
 

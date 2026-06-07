@@ -21,8 +21,8 @@ from flask import Blueprint, request, render_template
 
 logger = logging.getLogger(__name__)
 
-from web.shared import PROJECT_ROOT, render_page, load_scan, extract_recommendation_verdict, extract_recommendation_state
-from web.subprocess_utils import run_fw_command
+from web.shared import PROJECT_ROOT, render_page, load_scan, extract_recommendation_verdict, extract_recommendation_state, mtime_cached_get
+from web.subprocess_utils import run_fw_command, run_git_command
 
 bp = Blueprint("cockpit", __name__)
 
@@ -49,6 +49,73 @@ def get_scan_age(scan_data: dict) -> str:
         return "unknown"
 
 
+# T-2108: per-file cache for human-verify scanning.
+# get_human_verify_tasks() walks all 171 active task .md files on every cockpit
+# render, reading + parsing each. Same shape as T-1954/T-2102/T-2106/T-2107.
+# Cache stores the per-task verify entry (or None if no unchecked human ACs);
+# re-walks ALL files but only re-reads + re-parses those whose mtime changed
+# (typically 0). Result: cold ~800ms, warm <10ms.
+_HUMAN_VERIFY_CACHE: dict[str, tuple[int, dict | None]] = {}
+
+
+def _parse_human_verify_from_path(fn: Path) -> dict | None:
+    """Build the verify-task entry for one task file, or None if no unchecked human ACs.
+
+    Returns None on read failure, no human ACs, or all-checked (matches the
+    cache-an-absence semantics the original site needed: walking 171 files
+    every render means we must remember "no work here" too).
+    """
+    from web.blueprints.tasks import _parse_acceptance_criteria
+
+    try:
+        text = fn.read_text(errors="replace")
+    except OSError:
+        return None
+
+    fm = {}
+    body = text
+    if text.startswith("---"):
+        try:
+            end = text.index("---", 3)
+            fm = yaml.safe_load(text[3:end]) or {}
+            body = text[end + 3:]
+        except Exception as e:
+            logger.warning("Failed to parse frontmatter in %s: %s", fn, e)
+
+    all_acs = _parse_acceptance_criteria(body)
+    human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
+    if not human_acs:
+        return None
+
+    total = len(human_acs)
+    checked = sum(1 for ac in human_acs if ac["checked"])
+    if total == 0 or checked >= total:
+        return None
+
+    unchecked = [ac["text"] for ac in human_acs if not ac["checked"]]
+    verdict = extract_recommendation_verdict(text)
+    state = extract_recommendation_state(text)
+    return {
+        "task_id": fm.get("id", fn.stem),
+        "name": fm.get("name", ""),
+        "status": fm.get("status", "?"),
+        "total": total,
+        "checked": checked,
+        "unchecked_items": unchecked,
+        "verdict": verdict,
+        "state": state,
+    }
+
+
+def _human_verify_for(fn: Path) -> dict | None:
+    """Return the verify-task entry for one task file, mtime-invalidated.
+
+    T-2109: migrated to shared.mtime_cached_get; semantics unchanged
+    (None caches "no unchecked human ACs here", same as before).
+    """
+    return mtime_cached_get(fn, _parse_human_verify_from_path, _HUMAN_VERIFY_CACHE, default=None)
+
+
 def get_human_verify_tasks() -> list:
     """Find active tasks with unchecked ### Human ACs (T-193).
 
@@ -56,9 +123,8 @@ def get_human_verify_tasks() -> list:
     instead of a local regex. The local regex matched checkboxes inside HTML
     template comments, over-counting against /approvals' canonical parser
     (L-298 cross-surface count divergence). One parser, one source of truth.
+    T-2108: per-file mtime cache (_HUMAN_VERIFY_CACHE) — only re-parses changed files.
     """
-    from web.blueprints.tasks import _parse_acceptance_criteria
-
     active_dir = PROJECT_ROOT / ".tasks" / "active"
     results = []
     if not active_dir.is_dir():
@@ -67,58 +133,21 @@ def get_human_verify_tasks() -> list:
     for fn in sorted(active_dir.iterdir()):
         if not fn.name.endswith(".md"):
             continue
-        text = fn.read_text(errors="replace")
-
-        # Parse frontmatter
-        fm = {}
-        if text.startswith("---"):
-            try:
-                end = text.index("---", 3)
-                fm = yaml.safe_load(text[3:end]) or {}
-            except Exception as e:
-                logger.warning("Failed to parse frontmatter in %s: %s", fn, e)
-
-        # Body = text minus frontmatter (canonical parser expects body only)
-        body = text
-        if text.startswith("---"):
-            try:
-                end = text.index("---", 3)
-                body = text[end + 3:]
-            except ValueError:
-                pass
-
-        all_acs = _parse_acceptance_criteria(body)
-        human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
-        if not human_acs:
-            continue
-
-        total = len(human_acs)
-        checked = sum(1 for ac in human_acs if ac["checked"])
-        if total > 0 and checked < total:
-            unchecked = [ac["text"] for ac in human_acs if not ac["checked"]]
-            # T-1533: surface agent recommendation verdict for landing-page widget
-            # T-1577: also surface state to distinguish NO-REC from unparseable `?`
-            verdict = extract_recommendation_verdict(text)
-            state = extract_recommendation_state(text)
-            results.append({
-                "task_id": fm.get("id", fn.stem),
-                "name": fm.get("name", ""),
-                "status": fm.get("status", "?"),
-                "total": total,
-                "checked": checked,
-                "unchecked_items": unchecked,
-                "verdict": verdict,
-                "state": state,
-            })
+        entry = _human_verify_for(fn)
+        if entry is not None:
+            results.append(entry)
     return results
 
 
-def get_action_summary() -> dict:
+def get_action_summary(human_verify: list | None = None) -> dict:
     """Build unified action summary: Tier 0 + GO decisions + Human ACs (T-645).
 
     Returns dict with counts and top tasks for the landing page summary card.
+    T-2108: accept pre-computed `human_verify` from caller to avoid
+    re-walking 171 active tasks twice per cockpit render.
     """
-    human_verify = get_human_verify_tasks()
+    if human_verify is None:
+        human_verify = get_human_verify_tasks()
     human_ac_count = sum(t["total"] - t["checked"] for t in human_verify)
 
     # Count pending Tier 0 approvals
@@ -190,7 +219,12 @@ def _get_test_counts() -> dict:
 
 
 def get_cockpit_context(scan_data: dict) -> dict:
-    """Build template context from scan data."""
+    """Build template context from scan data.
+
+    T-2108: compute `human_verify` once and reuse for `action_summary` — the
+    inner walk over 171 active tasks was running twice per render.
+    """
+    human_verify = get_human_verify_tasks()
     return {
         "scan": scan_data,
         "scan_age": get_scan_age(scan_data),
@@ -208,8 +242,8 @@ def get_cockpit_context(scan_data: dict) -> dict:
         "warnings": scan_data.get("warnings", []),
         "recent_failures": scan_data.get("recent_failures", []),
         "scan_status": scan_data.get("scan_status", "unknown"),
-        "human_verify": get_human_verify_tasks(),
-        "action_summary": get_action_summary(),
+        "human_verify": human_verify,
+        "action_summary": get_action_summary(human_verify=human_verify),
         "test_counts": _get_test_counts(),
     }
 
@@ -234,7 +268,13 @@ def scan_refresh():
             ctx = get_cockpit_context(scan_data)
             return render_template("cockpit.html", **ctx)
         return '<p style="color:var(--pico-del-color)">Scan succeeded but output not found.</p>', 500
-    return f'<p style="color:var(--pico-del-color)">Scan failed: {_escape(stderr[:300])}</p>', 500
+    # T-2221: widen 300 → 1500 + pre-wrap so multi-line gate stderr renders fully
+    # (T-2219 sibling pattern; OBS-049 class closure).
+    return (
+        f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+        f'Scan failed: {_escape(stderr[:1500])}</p>',
+        500,
+    )
 
 
 @bp.route("/api/scan/approve/<rec_id>", methods=["POST"])
@@ -264,7 +304,12 @@ def scan_approve(rec_id):
                  "--source", "scan",
                  "--recommendation-type", rec_type])
             return f'<p style="color:var(--pico-ins-color)">Approved: {_escape(rec.get("summary", rec_id)[:100])}</p>'
-        return f'<p style="color:var(--pico-del-color)">Action failed: {_escape(stderr[:200])}</p>', 500
+        # T-2221: widen 200 → 1500 + pre-wrap (T-2219 sibling pattern).
+        return (
+            f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+            f'Action failed: {_escape(stderr[:1500])}</p>',
+            500,
+        )
 
     return f'<p style="color:var(--pico-del-color)">No executable action for {_escape(rec_id)}.</p>', 400
 
@@ -317,7 +362,12 @@ def scan_apply(rec_id):
         stdout, stderr, ok = run_fw_command(cmd_parts)
         if ok:
             return f'<p style="color:var(--pico-ins-color)">Applied: {_escape(rec.get("summary", rec_id)[:100])}</p>'
-        return f'<p style="color:var(--pico-del-color)">Failed: {_escape(stderr[:200])}</p>', 500
+        # T-2221: widen 200 → 1500 + pre-wrap (T-2219 sibling pattern).
+        return (
+            f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+            f'Failed: {_escape(stderr[:1500])}</p>',
+            500,
+        )
 
     return f'<p style="color:var(--pico-del-color)">No action for {_escape(rec_id)}.</p>', 400
 
@@ -330,4 +380,50 @@ def scan_focus(task_id):
     stdout, stderr, ok = run_fw_command(["context", "focus", task_id])
     if ok:
         return f'<p style="color:var(--pico-ins-color)">Focus set to {_escape(task_id)}</p>'
-    return f'<p style="color:var(--pico-del-color)">Failed: {_escape(stderr[:200])}</p>', 500
+    # T-2221: widen 200 → 1500 + pre-wrap (T-2219 sibling pattern).
+    return (
+        f'<p style="color:var(--pico-del-color); white-space:pre-wrap;">'
+        f'Failed: {_escape(stderr[:1500])}</p>',
+        500,
+    )
+
+
+# ---------------------------------------------------------------------------
+# arc-007 S6d (T-2020): live activity feed — recent commits via htmx polling
+# ---------------------------------------------------------------------------
+
+def _get_recent_commits(limit: int = 10) -> list:
+    """Recent commits as activity events: {hash, when, message, task_id}.
+
+    Git commits are the canonical framework activity record (P-002: every commit
+    references a T-XXX), so the log is the activity feed. Read-only; degrades to an
+    empty list when git returns nothing.
+    """
+    # \x1f (unit separator) is safe inside commit subjects, unlike a literal char.
+    output, ok = run_git_command(
+        ["log", f"-{int(limit)}", "--pretty=format:%h\x1f%ar\x1f%s"]
+    )
+    if not ok or not output:
+        return []
+    events = []
+    for line in output.split("\n"):
+        if not line.strip():
+            continue
+        parts = line.split("\x1f")
+        if len(parts) < 3:
+            continue
+        h, when, msg = parts[0], parts[1], parts[2]
+        m = re_mod.search(r"T-\d{3,}", msg)
+        events.append({
+            "hash": h,
+            "when": when,
+            "message": msg,
+            "task_id": m.group(0) if m else None,
+        })
+    return events
+
+
+@bp.route("/cockpit/activity")
+def cockpit_activity():
+    """htmx polling fragment — recent framework activity (read-only, no page chrome)."""
+    return render_template("_cockpit_activity.html", events=_get_recent_commits(10))

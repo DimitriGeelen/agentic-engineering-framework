@@ -11,12 +11,12 @@ Tests do_upgrade argument parsing, help, and guards
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/upgrade.sh` | calls |
-| `lib/colors.sh` | calls |
-| `lib/upgrade.sh` | tests |
-| `lib/colors.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
+| [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_upgrade.yaml`*

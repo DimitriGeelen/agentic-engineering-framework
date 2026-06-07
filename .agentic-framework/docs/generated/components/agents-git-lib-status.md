@@ -11,9 +11,9 @@ Task-aware git status
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/git.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | called_by | Git Agent - Structural Enforcement for Git Operations |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-git-lib-status.yaml`*

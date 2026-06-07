@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/reviewer/overrides.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [overrides](/docs/generated/lib-reviewer-overrides) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-override_cli.yaml`*

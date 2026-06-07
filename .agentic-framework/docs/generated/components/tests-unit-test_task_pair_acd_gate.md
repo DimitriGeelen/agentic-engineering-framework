@@ -19,12 +19,12 @@ Pins gate behaviour:
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/task_pair_acd.sh` | calls |
-| `agents/task-create/update-task.sh` | calls |
-| `agents/task-create/update-task.sh` | tests |
-| `lib/task_pair_acd.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | calls | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_task_pair_acd_gate.yaml`*

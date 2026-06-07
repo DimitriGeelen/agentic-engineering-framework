@@ -1,0 +1,202 @@
+<style>
+    .arc-close-hdr {
+        padding: 1rem; border-left: 4px solid var(--pico-primary);
+        margin-bottom: 1rem; background: var(--pico-card-background-color);
+    }
+    .acd-prompt {
+        padding: 0.6rem 1rem; background: var(--pico-card-sectioning-background-color);
+        border-radius: 4px; margin: 0.75rem 0;
+    }
+    .acd-prompt ol { margin: 0.4em 0 0 1em; }
+    .demo-modes label {
+        display: block; margin: 0.4rem 0; cursor: pointer;
+    }
+    .form-error {
+        padding: 0.7rem 1rem; background: var(--wt-danger);
+        color: white; border-radius: 4px; margin-bottom: 1rem;
+    }
+    .field-row { margin-bottom: 1rem; }
+    .field-row label { display: block; font-weight: 600; margin-bottom: 0.3rem; }
+    .field-row .hint { font-size: 0.8rem; color: var(--pico-muted-color); }
+    .form-actions { display: flex; gap: 0.6rem; align-items: center; margin-top: 1.2rem; }
+    .form-actions button { margin: 0; }
+    /* T-2116: was color: var(--pico-primary) on background: var(--pico-primary-background) —
+       accent-on-accent-tint = same hue family = unreadable across most palettes
+       (Calm/Editorial/Bone/Paper all failed contrast). Same shape as T-2110 (arc_review.html)
+       and T-2111 (approvals.html). If a 4th consumer lands, promote to shared CSS —
+       T-2102 applied the same "no premature promotion" rule. */
+    .headline-mechanic-box {
+        padding: 0.6rem 1rem; background: var(--pico-primary-background);
+        color: var(--pico-color); border-left: 3px solid var(--pico-primary);
+        border-radius: 4px; margin: 0.5rem 0 1rem 0;
+        font-style: italic; line-height: 1.4;
+    }
+    .anchor-rec {
+        padding: 0.8rem 1rem; margin-bottom: 1rem;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 4px; background: var(--pico-card-sectioning-background-color);
+    }
+    .anchor-rec h2 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+    .anchor-rec .verdict-badge {
+        display: inline-block; padding: 0.15rem 0.55rem; border-radius: 3px;
+        font-weight: 600; font-size: 0.78rem; letter-spacing: 0.04em;
+        text-transform: uppercase; margin-right: 0.5rem;
+    }
+    .anchor-rec .verdict-CLOSE { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+    .anchor-rec .verdict-GO { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+    .anchor-rec .verdict-KEEP-OPEN { background: var(--pico-muted-color); color: var(--pico-background-color); }
+    .anchor-rec .verdict-NO-GO { background: var(--wt-danger); color: white; }
+    .anchor-rec .verdict-DEFER { background: var(--pico-muted-background); color: var(--pico-color); border: 1px solid var(--pico-muted-border-color); }
+    .anchor-rec .anchor-rec-sub { color: var(--pico-muted-color); font-size: 0.85rem; }
+    .anchor-rec .rec-body { margin: 0.5rem 0 0 0; }
+    .anchor-rec .rec-body p { margin: 0.3rem 0; }
+    .anchor-rec .rec-body ul { margin: 0.3rem 0 0.3rem 1.2rem; padding: 0; }
+</style>
+
+<p><a href="/arcs/{{ arc_slug }}">← Back to arc detail</a></p>
+
+<article class="arc-close-hdr">
+    <h1>Close arc: {{ arc.get('name', arc_id) }}</h1>
+    <p class="muted">id: <code>{{ arc.get('id', arc_id) }}</code> · slug: <code>{{ arc_slug }}</code> · status: <strong>{{ arc.status }}</strong></p>
+    {% if arc.get('headline_mechanic') %}
+    <p style="margin: 0.5rem 0 0.25rem 0; font-weight: 600;">Headline mechanic (the deliverable that must have fired):</p>
+    <div class="headline-mechanic-box">{{ arc.headline_mechanic }}</div>
+    {% else %}
+    <p class="muted"><em>No headline_mechanic recorded on this arc.</em> Use <code>--demo none</code> + a ≥30-char justification.</p>
+    {% endif %}
+    <p>
+        anchor: {% if arc.anchor_task %}<a href="/tasks/{{ arc.anchor_task }}">{{ arc.anchor_task }}</a>{% else %}<em>none</em>{% endif %}
+        · constituent tasks: <strong>{{ stats.completed }}/{{ stats.total }}</strong> completed ({{ "%.0f%%" % (stats.ratio * 100) }})
+    </p>
+</article>
+
+{% if error_msg %}
+<div class="form-error" role="alert">
+    <strong>Submit rejected:</strong> {{ error_msg }}
+</div>
+{% endif %}
+
+{% if recommendation and recommendation.present %}
+<section class="anchor-rec" data-verdict="{{ recommendation.verdict }}">
+    <h2>
+        Agent Recommendation
+        <span class="verdict-badge verdict-{{ recommendation.verdict }}">{{ recommendation.verdict }}</span>
+        {% if recommendation.anchor_id %}
+        <span class="anchor-rec-sub">from anchor task <a href="/tasks/{{ recommendation.anchor_id }}">{{ recommendation.anchor_id }}</a></span>
+        {% endif %}
+    </h2>
+    {% if recommendation.rationale_html %}
+    <div class="rec-body">
+        <strong>Rationale</strong>
+        {{ recommendation.rationale_html | safe }}
+    </div>
+    {% endif %}
+    {% if recommendation.evidence_html %}
+    <div class="rec-body">
+        <strong>Evidence</strong>
+        {{ recommendation.evidence_html | safe }}
+    </div>
+    {% endif %}
+    {% if recommendation.suggested_demo %}
+    <p class="anchor-rec-sub" style="margin: 0.6rem 0 0 0;">
+        Demo pre-fill: <code>{{ recommendation.suggested_demo }}</code> — edit below if not the right one.
+    </p>
+    {% endif %}
+</section>
+{% endif %}
+
+<div class="acd-prompt">
+    <p style="margin: 0; font-weight: 600;">§Arc Completion Discipline — three-question check (CLAUDE.md)</p>
+    <ol>
+        <li><strong>Did the integrated system run end-to-end on a fresh substrate?</strong> (Wire-level observation, not "tests pass".)</li>
+        <li><strong>Did any silently-defaulted constants escape human review?</strong></li>
+        <li><strong>Does the framework that built the arc actually USE the arc?</strong></li>
+    </ol>
+    <p class="muted" style="margin: 0.5rem 0 0 0;">You answer these in the decision text below. The demo evidence (file/URL) is the wire-level proof; the decision is your narrative answer.</p>
+</div>
+
+<form method="post" action="/arcs/{{ arc_slug }}/close">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+    <div class="field-row demo-modes">
+        <label>Demo evidence (required — §ACD/G-062)</label>
+        <label>
+            <input type="radio" name="demo_mode" value="path"
+                   {% if prev_demo_mode == 'path' or not prev_demo_mode %}checked{% endif %}>
+            File path — e.g. <code>docs/reports/{{ arc.get('id', arc_id) }}-headline-mechanic-demo.md</code>
+        </label>
+        <label>
+            <input type="radio" name="demo_mode" value="url"
+                   {% if prev_demo_mode == 'url' %}checked{% endif %}>
+            URL — wire-level Watchtower / screencast / external evidence
+        </label>
+        <label>
+            <input type="radio" name="demo_mode" value="none"
+                   {% if prev_demo_mode == 'none' %}checked{% endif %}>
+            None — arc has no runtime mechanic (requires justification below)
+        </label>
+    </div>
+
+    <div class="field-row">
+        <label for="demo_value">Demo path or URL</label>
+        <input type="text" id="demo_value" name="demo_value"
+               value="{{ prev_demo_value }}"
+               placeholder="docs/reports/{{ arc.get('id', arc_id) }}-demo.md  or  https://watchtower.../arcs/{{ arc_slug }}">
+        <p class="hint">Path must exist (≥256 bytes, extension in evidence allowlist) and either reference an arc-constituent task id or the arc id itself. URLs must return 2xx and reference the arc id in the first 32KB.</p>
+    </div>
+
+    <div class="field-row" id="justification-field">
+        <label for="justification">Justification — required when demo=none (≥30 chars)</label>
+        <textarea id="justification" name="justification" rows="2"
+                  placeholder="Why does no runtime demo apply to this arc?">{{ prev_justification }}</textarea>
+        <p class="hint">Logged to <code>.context/audits/arc-bypass.jsonl</code> when used.</p>
+    </div>
+
+    <div class="field-row">
+        <label for="decision">Decision narrative (the GO/NO-GO outcome — your answer to the three §ACD questions)</label>
+        <textarea id="decision" name="decision" rows="4"
+                  placeholder="Short narrative — what shipped, what fired, what's left as known gap.">{{ prev_decision }}</textarea>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit">Close arc</button>
+        <a href="/arcs/{{ arc_slug }}" role="button" class="secondary">Cancel</a>
+        <span class="hint" style="margin-left: 0.6rem;">
+            Submit invokes <code>fw arc close {{ arc_slug }} --from-watchtower</code> on your behalf.
+        </span>
+    </div>
+</form>
+
+<script>
+/* T-1911: enable/disable Submit + Justification visibility based on demo_mode. */
+(function() {
+    var modes = document.getElementsByName('demo_mode');
+    var demoVal = document.getElementById('demo_value');
+    var jField = document.getElementById('justification-field');
+    var jText = document.getElementById('justification');
+    var submitBtn = document.querySelector('.form-actions button[type="submit"]');
+
+    function sync() {
+        var mode = 'path';
+        for (var i = 0; i < modes.length; i++) if (modes[i].checked) mode = modes[i].value;
+        if (mode === 'none') {
+            jField.style.display = '';
+            demoVal.disabled = true;
+            demoVal.style.opacity = '0.5';
+        } else {
+            jField.style.display = 'none';
+            demoVal.disabled = false;
+            demoVal.style.opacity = '1';
+        }
+        // Submit gate: demo=none requires 30+ chars justification.
+        var disable = false;
+        if (mode === 'none' && (jText.value || '').trim().length < 30) disable = true;
+        if (mode !== 'none' && !((demoVal.value || '').trim())) disable = true;
+        submitBtn.disabled = disable;
+    }
+    for (var i = 0; i < modes.length; i++) modes[i].addEventListener('change', sync);
+    demoVal.addEventListener('input', sync);
+    jText.addEventListener('input', sync);
+    sync();
+})();
+</script>

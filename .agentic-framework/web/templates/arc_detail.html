@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-{% block content %}
-
+{% from '_partials/arc_badge.html' import arc_badge %}
 <style>
     .arc-header { padding: 1rem; border-left: 4px solid var(--pico-primary); margin-bottom: 1rem; }
     .arc-header.closed { border-left-color: var(--pico-muted-color); }
@@ -9,21 +7,53 @@
     .stat-box .v { font-size: 1.4rem; font-weight: bold; }
     .stat-box .l { font-size: 0.8rem; color: var(--pico-muted-color); }
     .badge { display: inline-block; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; }
-    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary); }
-    .badge-ok { background: var(--pico-form-element-valid-active-border-color, #2e7d32); color: white; }
-    .badge-warn { background: #f9a825; color: white; }
-    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-muted-color); }
+    /* T-1970: contrast fix — --pico-primary-background and --pico-primary
+       resolve to the same blue in dark mode; pair with -inverse for
+       guaranteed contrast against background. Same anti-pattern as T-1968 v1. */
+    .badge-info { background: var(--pico-primary-background); color: var(--pico-primary-inverse); }
+    .badge-ok { background: var(--wt-success); color: white; }
+    .badge-warn { background: var(--wt-warn); color: white; }
+    .badge-muted { background: var(--pico-muted-border-color); color: var(--pico-color); }
     .completion-check { padding: 0.5rem 1rem; background: var(--pico-card-sectioning-background-color); border-radius: 4px; margin: 0.5rem 0; }
     .completion-check ol { margin: 0.3em 0 0 1em; }
     .focus-pill { background: var(--pico-primary); color: white; padding: 0.1em 0.5em; border-radius: 3px; font-size: 0.8em; vertical-align: middle; }
     .missing { color: var(--pico-muted-color); font-style: italic; }
+    /* T-1910: inline-editable h1 name */
+    .editable-arc-h1 { cursor: text; }
+    .editable-arc-h1:hover { text-decoration: underline dotted; text-decoration-thickness: 1px; }
+    .arc-h1-input { width: 100%; font-size: inherit; font-weight: inherit; padding: 0.1rem 0.3rem; margin: 0; }
+    /* T-1910: focus toggle button mirrors arcs_index */
+    .focus-dot-btn {
+        background: none; border: none; padding: 0; margin: 0 0.4rem 0 0;
+        cursor: pointer; display: inline-flex; align-items: center;
+        vertical-align: middle;
+    }
+    .focus-dot {
+        display: inline-block; width: 0.75em; height: 0.75em;
+        border-radius: 50%; vertical-align: middle;
+    }
+    .focus-dot.on { background: var(--pico-primary); }
+    .focus-dot.off { background: transparent; border: 1px solid var(--pico-muted-color); }
+    .focus-dot-btn:hover .focus-dot { box-shadow: 0 0 0 2px var(--pico-primary-focus, rgba(0,127,255,0.3)); }
 </style>
 
 <p><a href="/arcs">← All arcs</a></p>
 
-<article class="arc-header {% if arc.status == 'closed' %}closed{% endif %}">
+<article class="arc-header {% if arc.status == 'closed' %}closed{% endif %}" data-arc-slug="{{ arc_slug }}">
     <h1>
-        {{ arc.get('name', arc_id) }}
+        {# T-1910 Slice 2: focus toggle + inline-editable name #}
+        <form hx-post="/api/arc/{{ arc_slug }}/focus" hx-target="this" hx-swap="outerHTML"
+              style="display: inline; margin: 0; vertical-align: middle;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="focus-dot-btn"
+                    aria-label="{% if focused %}Clear focus{% else %}Focus this arc{% endif %}">
+                <span class="focus-dot {% if focused %}on{% else %}off{% endif %}"
+                      title="{% if focused %}Focused (click to clear){% else %}Click to focus{% endif %}"
+                      data-focused="{{ 'true' if focused else 'false' }}"></span>
+            </button>
+        </form>
+        <span class="editable-arc-h1" title="{{ arc.get('name', arc_id) }}"
+              onclick="startArcH1Edit(this, '{{ arc_slug }}')">{{ arc.get('name', arc_id) }}</span>
         {% if focused %}<span class="focus-pill">FOCUSED</span>{% endif %}
     </h1>
     <p class="muted">id: <code>{{ arc_id }}</code></p>
@@ -62,6 +92,258 @@
 <p><strong>Specialized view available:</strong> <a href="/orchestrator">→ /orchestrator</a> (MCP audit, live sessions, recent dispatches).</p>
 {% endif %}
 
+{# ── T-1930 (arc-006): BVP signals — arc-level scores, coherence, proposed drivers ── #}
+{% if bvp_info %}
+<section id="bvp-signals" data-arc-bvp="{{ arc_slug }}" style="margin: 1rem 0 1.5rem 0;">
+    <h2>BVP signals</h2>
+
+    {# Arc-level BVP numeric + per-driver breakdown #}
+    <div class="stats-strip">
+        <div class="stat-box">
+            <div class="v">
+                {% if bvp_info.has_scores %}{{ "%.3f"|format(bvp_info.norm) }}{% else %}—{% endif %}
+            </div>
+            <div class="l">Arc BVP_norm</div>
+        </div>
+        <div class="stat-box">
+            <div class="v">
+                {% if bvp_info.has_scores %}{{ bvp_info.raw }}{% else %}—{% endif %}
+            </div>
+            <div class="l">Arc BVP_raw (Σ score×weight)</div>
+        </div>
+    </div>
+
+    {% if not bvp_info.has_scores %}
+    <p class="muted">Arc has no <code>bvp_scores:</code> set and no constituent task scores to roll up. Score via <code>fw bvp confirm</code> or edit <code>.context/arcs/{{ arc_slug }}.yaml</code> directly.</p>
+    {% elif bvp_info.bvp_mode and bvp_info.bvp_mode != 'direct-confirmed' %}
+    <p class="muted">
+        <small>Source: <code>{{ bvp_info.bvp_mode }}</code>
+        {% if bvp_info.bvp_mode == 'direct-proposed' %}— arc has estimator-proposed scores (advisory; no direct confirmation yet).
+        {% elif bvp_info.bvp_mode == 'derived-confirmed' %}— rolled up from constituent task <code>bvp_scores:</code> (no arc-level scores set yet).
+        {% elif bvp_info.bvp_mode == 'derived-proposed' %}— rolled up from constituent task scores; at least one input is estimator-proposed (advisory).
+        {% endif %}
+        </small>
+    </p>
+    {% endif %}
+
+    {# T-1956: surface driver weights above the fold as a compact inline list,
+       so reviewers don't miss them. The full table stays in <details open> for
+       per-task contribution numbers. #}
+    {% if bvp_info.per_driver %}
+    <p class="muted" style="margin: 0.25rem 0 0.5rem 0;">
+        <strong>Drivers:</strong>
+        {% for d in bvp_info.per_driver -%}
+        <code>{{ d.id }}={{ d.weight }}</code>{% if not loop.last %} · {% endif %}
+        {%- endfor %}
+    </p>
+    {% endif %}
+
+    <details open>
+        <summary>Per-driver breakdown ({{ bvp_info.per_driver|length }} drivers)</summary>
+        <table>
+            <thead>
+                <tr><th>Driver</th><th>Weight</th><th>Score</th><th>Contribution</th></tr>
+            </thead>
+            <tbody>
+                {% for d in bvp_info.per_driver %}
+                <tr>
+                    <td><code>{{ d.id }}</code></td>
+                    <td>{{ d.weight }}</td>
+                    <td>{% if d.score is not none %}{{ d.score }}{% else %}<span class="missing">—</span>{% endif %}</td>
+                    <td>{% if d.contrib is not none %}{{ d.contrib }}{% else %}<span class="missing">—</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+
+    {# Coherence warnings — per-driver (T-1927, M4). Empty = passing. #}
+    {% if bvp_info.coherence_findings %}
+    <h3>Coherence warnings</h3>
+    <p class="muted">Arc claims a driver as important, but the constituent tasks don't support it. Either revise the arc claim or revise the rubric (R2 detection — systematic single-driver warnings indicate rubric bias).</p>
+    <ul>
+        {% for f in bvp_info.coherence_findings %}
+        <li>
+            <span class="badge badge-warn">{{ f.driver }} = {{ f.claim }}</span>
+            but {{ f.n_low }} of {{ f.n_total }} constituents score ≤ {{ f.task_max }}
+            ({{ "%.0f%%"|format(f.frac * 100) }}, threshold {{ "%.0f%%"|format(f.fraction_threshold * 100) }})
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p class="muted"><em>No coherence warnings — arc claims align with constituent scores (or the arc has no in-progress status / no scoring constituents to compare against).</em></p>
+    {% endif %}
+
+    {# Currently approved scoped drivers — with per-row Remove (T-1976) + live weight sliders (T-1977) #}
+    {% if bvp_info.scoped_drivers %}
+    <h3>Scoped drivers ({{ bvp_info.scoped_drivers|length }} / 3 max)</h3>
+    <p class="muted"><small>Drag a slider to preview the new weight (no commit). Press <strong>Commit weight changes</strong> below to persist via <code>fw arc set-scoped-weight --from-watchtower</code> (§ACD, D8). Rationale ≥30 chars required (R6). [T-1977]</small></p>
+    <table id="scoped-sliders-table">
+        <thead><tr><th>Name</th><th>Server</th><th>Slider</th><th>Current</th><th>Rationale</th><th>Approved</th><th></th></tr></thead>
+        <tbody>
+            {% for sd in bvp_info.scoped_drivers %}
+            <tr>
+                {# T-2117: humanized title + kebab slug for at-a-glance reading,
+                   consistent with the proposed-drivers section below and T-2080's
+                   /bvp pattern. Arc-scoped drivers have no F-id (they live in
+                   scoped_drivers: with only the kebab name as identifier), so the
+                   /bvp 'F1 — Antifragility' shape is approximated as
+                   'Humanized Name' + muted kebab. Jinja replace+title is cheap. #}
+                <td><strong>{{ sd.get('name', '?')|replace('-', ' ')|title }}</strong>
+                    <code class="muted" style="margin-left: 0.4rem; font-size: 0.85em; opacity: 0.7;">{{ sd.get('name', '?') }}</code></td>
+                <td class="scoped-server-weight" data-server-weight="{{ sd.get('weight', 3) }}">{{ sd.get('weight', '—') }}</td>
+                <td>
+                    <input type="range" name="slider-{{ sd.get('name', '') }}"
+                           min="1" max="6" value="{{ sd.get('weight', 3) }}"
+                           class="scoped-slider" data-driver="{{ sd.get('name', '') }}"
+                           style="width: 100%; max-width: 200px;">
+                </td>
+                <td><span class="scoped-live-weight" data-driver="{{ sd.get('name', '') }}">{{ sd.get('weight', '—') }}</span></td>
+                <td>{{ sd.get('rationale', '')|truncate(120, True) }}</td>
+                <td><small>{{ sd.get('approved_ts', sd.get('ts', sd.get('approved_at', '—'))) }}</small></td>
+                <td>
+                    <details>
+                        <summary style="cursor: pointer; color: var(--pico-del-color); font-weight: 600;">🗑 Remove driver</summary>
+                        <form method="POST" action="/api/arc/{{ arc_slug }}/remove-driver" style="margin-top: 0.6rem;">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="name" value="{{ sd.get('name', '') }}">
+                            <label style="font-size: 0.85em;">Rationale (≥30 chars):
+                                <input type="text" name="rationale" minlength="30" required style="width: 22em;"
+                                       placeholder="Why is this driver being removed?">
+                            </label>
+                            <button type="submit" class="secondary outline">Confirm remove</button>
+                        </form>
+                    </details>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# T-1977: batched commit for changed sliders, single rationale per commit. #}
+    <form id="scoped-commit-form" method="POST" action="/api/arc/{{ arc_slug }}/set-scoped-weight" style="margin-top: 0.6rem;">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="changes" id="scoped-changes-payload" value="[]">
+        <label>Rationale (≥30 characters, R6):
+            <textarea name="rationale" rows="2" minlength="30" required style="width: 100%;"
+                      placeholder="Why are you changing these weights? Cite evidence (incident, decision, re-weighting cycle)."></textarea>
+        </label>
+        <button type="submit" id="scoped-commit-btn" disabled>Commit weight changes (<span id="scoped-changes-count">0</span>)</button>
+        <small id="scoped-commit-hint" class="muted" style="margin-left: 0.5rem;">Drag a slider to enable.</small>
+    </form>
+
+    <script>
+    (function() {
+        const sliders = document.querySelectorAll(".scoped-slider");
+        const payloadInput = document.getElementById("scoped-changes-payload");
+        const commitBtn = document.getElementById("scoped-commit-btn");
+        const changesCount = document.getElementById("scoped-changes-count");
+        const commitHint = document.getElementById("scoped-commit-hint");
+        if (!sliders.length || !payloadInput) return;
+
+        function recompute() {
+            const changes = [];
+            sliders.forEach(slider => {
+                const driver = slider.getAttribute("data-driver");
+                const newWeight = Number(slider.value);
+                const row = slider.closest("tr");
+                const serverCell = row.querySelector(".scoped-server-weight");
+                const serverWeight = Number(serverCell.getAttribute("data-server-weight"));
+                if (newWeight !== serverWeight) {
+                    changes.push({ name: driver, weight: newWeight });
+                }
+            });
+            payloadInput.value = JSON.stringify(changes);
+            changesCount.textContent = changes.length;
+            commitBtn.disabled = (changes.length === 0);
+            commitHint.textContent = changes.length === 0
+                ? "Drag a slider to enable."
+                : `${changes.length} change(s) staged. Provide rationale and commit.`;
+        }
+
+        sliders.forEach(slider => {
+            slider.addEventListener("input", evt => {
+                const driver = slider.getAttribute("data-driver");
+                const liveSpan = document.querySelector(`.scoped-live-weight[data-driver="${driver}"]`);
+                if (liveSpan) liveSpan.textContent = slider.value;
+                recompute();
+            });
+        });
+        recompute();
+    })();
+    </script>
+    {% endif %}
+
+    {# Add a custom scoped driver — T-1976 parity with /bvp add-driver form.
+       Gated by cap (M2 max 3); estimator-proposed drivers use the Approve form below. #}
+    {% if (bvp_info.scoped_drivers|length if bvp_info.scoped_drivers else 0) < 3 %}
+    <details>
+        <summary>Add a custom scoped driver</summary>
+        <p class="muted">For drivers the estimator hasn't proposed but you want to track. M2 cap: max 3 scoped drivers per arc; weight 1-6.</p>
+        <form method="POST" action="/api/arc/{{ arc_slug }}/add-driver">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <div class="grid">
+                <label>Name (regex <code>[A-Za-z][A-Za-z0-9_-]*</code>):
+                    <input type="text" name="name" pattern="[A-Za-z][A-Za-z0-9_\-]*" maxlength="64" required
+                           placeholder="e.g. determinism">
+                </label>
+                <label>Weight (1-6):
+                    <input type="number" name="weight" min="1" max="6" value="3" required style="width: 6em;">
+                </label>
+            </div>
+            <label>Rationale (≥30 chars, R6 — what does this driver distinguish that D1-D4 don't?):
+                <textarea name="rationale" rows="2" minlength="30" required style="width: 100%;"
+                          placeholder="One line explaining what this arc-specific driver captures that the four constitutional directives already covering"></textarea>
+            </label>
+            <button type="submit">Add driver</button>
+        </form>
+    </details>
+    {% endif %}
+
+    {# Proposed drivers — agent-suggested, awaiting approve / approve-none #}
+    {% if bvp_info.proposed_drivers %}
+    <h3>Proposed scoped drivers ({{ bvp_info.proposed_drivers|length }} awaiting approval)</h3>
+    <p class="muted">Estimator-proposed drivers. Approve up to 3 (M2; weight ≤6), or approve none with justification (R6: ≥30 chars).</p>
+    {% for p in bvp_info.proposed_drivers %}
+    <article style="margin-bottom: 1rem; padding: 0.8rem;">
+        <header style="margin-bottom: 0.5rem;">
+            {# T-2117: same humanized-title + kebab-slug pair used for approved
+               scoped drivers above. Proposed drivers don't yet have an
+               approved_at timestamp, but the identifier shape is the same. #}
+            <strong>{{ p.get('name', '?')|replace('-', ' ')|title }}</strong>
+            <code class="muted" style="margin-left: 0.4rem; font-size: 0.85em; opacity: 0.7;">{{ p.get('name', '?') }}</code>
+            <small class="muted">· proposed {{ p.get('ts', '—') }} by {{ p.get('source', 'agent') }}</small>
+        </header>
+        {% if p.get('rationale') %}<p>{{ p.rationale }}</p>{% endif %}
+        <form method="POST" action="/api/arc/{{ arc_slug }}/approve-driver" style="display: inline;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="name" value="{{ p.get('name', '') }}">
+            <label>Weight (1-6): <input type="number" name="weight" min="1" max="6" value="{{ p.get('weight', 4) }}" style="width: 5em;" required></label>
+            <label>Rationale: <input type="text" name="rationale" value="{{ p.get('rationale', '') }}" minlength="10" style="width: 22em;" required></label>
+            <button type="submit">Approve</button>
+        </form>
+    </article>
+    {% endfor %}
+    {% else %}
+    <p class="muted"><em>No proposed scoped drivers awaiting approval. (When the BVP estimator T-1922 runs against this arc's anchor task, candidates will appear here.)</em></p>
+    {% endif %}
+
+    {# Approve none — also flips status draft → in-progress per T-1926 #}
+    <details>
+        <summary>Approve none (mark "no scoped drivers needed")</summary>
+        <p class="muted">For arcs where global D1-D4 already capture the value dimensions and no arc-specific driver would add signal.</p>
+        <form method="POST" action="/api/arc/{{ arc_slug }}/approve-none">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <label>Justification (≥30 characters, R6):
+                <textarea name="justification" rows="2" minlength="30" required style="width: 100%;"
+                  placeholder="Why no scoped drivers — what distinguishes this arc that the four constitutional directives already cover?"></textarea>
+            </label>
+            <button type="submit">Approve none</button>
+        </form>
+    </details>
+</section>
+{% endif %}
+
 {% if reports %}
 <h2>Reports &amp; evidence</h2>
 <p class="muted">Arc-keyed reports under <code>docs/reports/{{ arc_id }}-*.md</code>:</p>
@@ -72,22 +354,32 @@
 </ul>
 {% endif %}
 
-<h2>Constituent tasks</h2>
+<h2>Constituent tasks{% if constituents %} <small class="muted" style="font-weight:normal;">({{ constituents|length }})</small>{% endif %}</h2>
 {% if constituents %}
-<table>
-    <thead>
+<p class="muted"><small>BVP_norm = score weighted by drivers / max-possible, [0,1]. BVP_raw = unscaled sum. Cost = composite F8. Italic + <code>*</code> = estimator-proposed (not yet human-confirmed). <code>—</code> = no score data yet. Numbers match <a href="/bvp">/bvp</a> scatter (same compute helpers). [T-1978]</small></p>
+{#- T-2087: max-height scroll container + sticky thead so growing arcs
+    (121-task orchestrator-rethink hit 15kpx) stay within the 8000px guard.
+    Same fix shape as T-2038/T-2044/T-2045 used for unbounded tables. -#}
+<div class="constituents-scroll" style="max-height:60vh; overflow-y:auto; border:1px solid var(--pico-muted-border-color, #444); border-radius:0.3rem;">
+<table style="margin-bottom:0;">
+    <thead style="position:sticky; top:0; background:var(--pico-card-background-color, #1a1a1a); z-index:1;">
         <tr>
             <th>ID</th>
+            <th>Arc</th>
             <th>Name</th>
             <th>Type</th>
             <th>Status</th>
             <th>Horizon</th>
+            <th title="Normalised BVP, weighted by drivers / max-possible, [0,1]">BVP_norm</th>
+            <th title="Raw BVP — unscaled weighted sum">BVP_raw</th>
+            <th title="Composite cost F8 = 0.6·blast_radius + 0.3·tier + 0.1·effort (T-shirt fallback)">Cost</th>
         </tr>
     </thead>
     <tbody>
         {% for c in constituents %}
         <tr>
             <td>{% if c.missing %}<span class="missing">{{ c.id }}</span>{% else %}<a href="/tasks/{{ c.id }}">{{ c.id }}</a>{% endif %}</td>
+            <td>{{ arc_badge(c) }}</td>
             <td>{% if c.missing %}<span class="missing">{{ c.name }}</span>{% else %}{{ c.name }}{% endif %}</td>
             <td>{{ c.type }}</td>
             <td>
@@ -97,10 +389,27 @@
                 {% else %}<span class="badge badge-muted">{{ c.status }}</span>{% endif %}
             </td>
             <td>{{ c.horizon }}</td>
+            <td>
+                {% if c.bvp_norm is not none %}
+                    {% if c.bvp_mode == 'proposed' %}<em>{{ '%.3f'|format(c.bvp_norm) }}*</em>
+                    {% else %}{{ '%.3f'|format(c.bvp_norm) }}{% endif %}
+                {% else %}<span class="muted">—</span>{% endif %}
+            </td>
+            <td>
+                {% if c.bvp_raw is not none %}
+                    {% if c.bvp_mode == 'proposed' %}<em>{{ c.bvp_raw }}*</em>
+                    {% else %}{{ c.bvp_raw }}{% endif %}
+                {% else %}<span class="muted">—</span>{% endif %}
+            </td>
+            <td>
+                {% if c.cost is not none %}{{ '%.2f'|format(c.cost) }}
+                {% else %}<span class="muted">—</span>{% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>{#- /constituents-scroll (T-2087) -#}
 {% else %}
 <p class="muted">No constituent tasks. Tag tasks with <code>arc:{{ arc_id }}</code> or run <code>fw arc tag {{ arc_id }} T-XXXX</code>.</p>
 {% endif %}
@@ -145,4 +454,53 @@
 <p>Decision: <strong>{{ arc.decision or 'unspecified' }}</strong>{% if arc.closed_at %} · {{ arc.closed_at }}{% endif %}</p>
 {% endif %}
 
-{% endblock %}
+<script>
+/* T-1910 Slice 2: inline-edit the arc h1 name (mirrors arcs_index.html). */
+function startArcH1Edit(span, arcSlug) {
+    var current = span.textContent.trim();
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = current;
+    input.className = 'arc-h1-input';
+    var done = false;
+
+    function finish(newText) {
+        if (done) return;
+        done = true;
+        span.textContent = newText;
+        span.title = newText;
+        if (input.parentNode) input.replaceWith(span);
+    }
+    function save() {
+        if (done) return;
+        var newName = input.value.trim();
+        if (!newName || newName === current) { finish(current); return; }
+        var fd = new FormData();
+        fd.append('name', newName);
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta) fd.append('_csrf_token', meta.content);
+        fetch('/api/arc/' + arcSlug + '/name', { method: 'POST', body: fd })
+            .then(function(r) {
+                if (r.ok) {
+                    finish(newName);
+                    if (typeof showToast === 'function') showToast('Arc name saved', 'success');
+                } else {
+                    if (typeof showToast === 'function') showToast('Save failed', 'error');
+                    finish(current);
+                }
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') showToast('Network error', 'error');
+                finish(current);
+            });
+    }
+    input.addEventListener('blur', save);
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { finish(current); }
+    });
+    span.replaceWith(input);
+    input.focus();
+    input.select();
+}
+</script>

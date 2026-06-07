@@ -10,11 +10,11 @@
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/risks.py` | read_by |
-| `agents/audit/audit.sh` | read_by |
-| `agents/handover/handover.sh` | read_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [risks](/docs/generated/web-blueprints-risks) | read_by | Flask blueprint 'risks' serving routes: /risks |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | read_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [handover](/docs/generated/agents-handover-handover) | read_by | Handover Agent - Mechanical Operations |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-concerns.yaml`*

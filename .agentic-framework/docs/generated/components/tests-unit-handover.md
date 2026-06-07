@@ -20,10 +20,10 @@ Origin: T-923, T-944 (isolation fix)
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/handover/handover.sh` | calls |
-| `agents/handover/handover.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [handover](/docs/generated/agents-handover-handover) | tests | Handover Agent - Mechanical Operations |
 
 ## Related
 

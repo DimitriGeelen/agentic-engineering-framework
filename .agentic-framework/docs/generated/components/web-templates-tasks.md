@@ -20,9 +20,9 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/tasks.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [tasks](/docs/generated/web-blueprints-tasks) | rendered_by | Flask blueprint: Tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-tasks.yaml`*

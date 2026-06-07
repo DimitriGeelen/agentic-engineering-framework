@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/core.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [core](/docs/generated/web-blueprints-core) | rendered_by | Flask blueprint: Core |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-project_doc.yaml`*

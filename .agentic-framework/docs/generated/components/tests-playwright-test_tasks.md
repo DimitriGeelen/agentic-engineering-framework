@@ -10,8 +10,8 @@ Tasks page should have task entries (table rows, cards, or list items)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
 
 ## Related
 

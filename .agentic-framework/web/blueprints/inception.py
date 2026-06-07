@@ -359,6 +359,14 @@ def inception_detail(task_id):
         "structural_upgrade": _md(all_raw_sections.get("Structural Upgrade", "")),
         "decision": _md(all_raw_sections.get("Decision", "")),
         "updates": _md(all_raw_sections.get("Updates", "")),
+        # T-2077 (T-2066 GO): 5 sections previously extracted but dropped on
+        # the floor. /inception/<id> now mirrors task_detail.html section set
+        # so Context/RCA/AC/Verification/Decisions surface when present.
+        "context": _md(all_raw_sections.get("Context", "")),
+        "acceptance_criteria": _md(all_raw_sections.get("Acceptance Criteria", "")),
+        "verification": _md(all_raw_sections.get("Verification", "")),
+        "decisions": _md(all_raw_sections.get("Decisions", "")),
+        "rca": _md(all_raw_sections.get("RCA", "")),
     }
 
     # Extra sections not in the known set — rendered generically (G-036 fix)
@@ -516,6 +524,20 @@ def record_decision(task_id):
             task_id, primary_landed, stdout[:500], stderr[:500]
         )
 
+    # T-2053: commit the decision so it is P-002-traceable. fw inception decide
+    # writes + moves the file but does not git-commit; the Watchtower path has no
+    # agent follow-up, so without this every Watchtower decision is left
+    # uncommitted (T-2030). Graceful: a commit failure is non-fatal — surfaced as
+    # a warning, never a 500, and the decision stays on disk.
+    commit_ok, commit_msg = True, ""
+    if ok or primary_landed:
+        commit_ok, commit_msg = _commit_decision(task_id, decision)
+        if not commit_ok:
+            import logging
+            logging.getLogger(__name__).warning(
+                "decision %s recorded but not committed: %s", task_id, commit_msg
+            )
+
     # If called via htmx (e.g., from /approvals page), return inline fragment (T-643)
     if request.headers.get("HX-Request"):
         if ok or primary_landed:
@@ -523,10 +545,30 @@ def record_decision(task_id):
             label = decision.upper()
             warning_html = ""
             if not ok and primary_landed:
-                # T-1470: side-effect failure — show warning, not error
+                # T-1470: side-effect failure — show warning, not error.
+                # T-2219 (T-2217 Slice 1): widen 150 → 1500, HTML-escape, and use
+                # white-space:pre-wrap so multi-line stderr (e.g. the disposition
+                # gate's block message with bullet list + bypass options) renders
+                # readably instead of getting clipped at the first sentence.
+                # Mirrors the sibling escape+pre-wrap pattern at line ~579 (the
+                # pre-decision validation rejection path).
+                import html as _html
                 warning_html = (
-                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px;">'
-                    f'⚠ Decision recorded; side-effect warning: {(stderr or stdout)[:150]}'
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
+                    f'white-space:pre-wrap;">'
+                    f'⚠ Decision recorded; side-effect warning: '
+                    f'{_html.escape((stderr or stdout)[:1500])}'
+                    f'</div>'
+                )
+            if not commit_ok:
+                # T-2053: decision recorded but the auto-commit failed — surface it
+                # (no silent failure); the decision is still on disk for a later commit.
+                # T-2219: widen 150 → 1500 + pre-wrap, matching sibling above.
+                import html as _html
+                warning_html += (
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
+                    f'white-space:pre-wrap;">'
+                    f'⚠ Decision recorded but not committed: {_html.escape(commit_msg[:1500])}'
                     f'</div>'
                 )
             return (
@@ -536,7 +578,25 @@ def record_decision(task_id):
                 f'{warning_html}'
                 f'</div>'
             )
-        return f'<p style="color:var(--pico-del-color);">Error: {(stderr or stdout)[:200]}</p>', 500
+        # T-2051: the htmx failure path previously returned the reason with HTTP 500.
+        # htmx (hx-swap="outerHTML") does not swap non-2xx responses, so .go-decision
+        # was never replaced — the human saw the unchanged GO button and re-clicked
+        # (T-2030: 2× 500 before a 200). A pre-decision validation rejection (e.g.
+        # "## Recommendation section required") is an expected outcome, not a server
+        # fault. Return 200 with a swappable error fragment so htmx replaces the block
+        # and the reason is visible inline. The logging.error above preserves
+        # server-side observability regardless of the client-facing status.
+        import html as _html
+        reason = _html.escape((stderr or stdout or "Unknown error from fw inception decide")[:300])
+        return (
+            f'<div class="go-decision" style="border:1px solid #ef4444; border-radius:6px; padding:0.6rem;">'
+            f'<strong>{task_id}</strong>: '
+            f'<span style="color:#ef4444; font-weight:700;">Decision not recorded</span>'
+            f'<div style="color:#ef4444; font-size:0.85rem; margin-top:4px; white-space:pre-wrap;">{reason}</div>'
+            f'<div style="color:var(--pico-muted-color); font-size:0.8rem; margin-top:4px;">'
+            f'Resolve the issue above, then reload to retry.</div>'
+            f'</div>'
+        )
 
     # T-1454 (OBS-017): non-htmx form path — surface failure via ?error= query param
     # so the rendered inception_detail page can show a banner. Without this,
@@ -549,6 +609,12 @@ def record_decision(task_id):
         err = (stderr or stdout or "Unknown error from fw inception decide")[:300]
         return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
 
+    # T-2053: success — surface a commit failure as a warning (no silent failure).
+    if not commit_ok:
+        return redirect(url_for(
+            "inception.inception_detail", task_id=task_id,
+            warning=f"Decision recorded but not committed: {commit_msg[:200]}",
+        ))
     return redirect(url_for("inception.inception_detail", task_id=task_id))
 
 
@@ -613,6 +679,100 @@ def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
             if verdict_match.group(1).upper() == decision.upper():
                 return True
     return False
+
+
+def _is_decision_file(task_id: str, path: str) -> bool:
+    """T-2053: is `path` one of the decision's OWN files (task md + episodic)?
+
+    Used to scope the post-decision commit to exactly the files the decision
+    touched — the task file (in active/ for DEFER, completed/ for GO/NO-GO) and
+    the generated episodic — and nothing else (no unrelated working-tree churn).
+    """
+    import re as _re
+    return bool(
+        _re.match(rf"^\.tasks/(active|completed)/{_re.escape(task_id)}-.*\.md$", path)
+        or _re.match(rf"^\.context/episodic/{_re.escape(task_id)}(-.*)?\.yaml$", path)
+    )
+
+
+def _commit_decision(task_id: str, decision: str):
+    """T-2053: commit the recorded inception decision so it is P-002-traceable.
+
+    `fw inception decide` writes the `## Decision` block, moves the task file
+    (active→completed for GO/NO-GO) and generates the episodic, but it does NOT
+    git-commit — the CLI relies on the agent's commit-cadence to commit. The
+    Watchtower path has no agent follow-up, so without this the decision is left
+    as uncommitted working-tree changes (T-2030).
+
+    Stages ONLY the decision's own files (matched by `_is_decision_file`) — never
+    `git add -A`, which would sweep unrelated churn — and commits with an explicit
+    pathspec so any pre-staged churn is left out. Graceful: returns
+    `(committed: bool, message: str)`; a commit failure (e.g. a commit-msg hook
+    rejecting a DEFER without a research artifact) is non-fatal.
+
+    The active→completed move is a filesystem `mv` (not `git mv`), so git sees a
+    delete + an untracked add (two porcelain lines, no rename arrow).
+    """
+    import subprocess
+    try:
+        status = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=all"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        if status.returncode != 0:
+            return False, (status.stderr or status.stdout or "git status failed").strip()[:200]
+
+        wanted = []
+        for line in status.stdout.splitlines():
+            if not line.strip():
+                continue
+            path = line[3:]  # strip the 2-char XY status + the separating space
+            if " -> " in path:  # defensive: handle rename form if ever produced
+                path = path.split(" -> ", 1)[1]
+            path = path.strip().strip('"')
+            if _is_decision_file(task_id, path):
+                wanted.append(path)
+
+        if not wanted:
+            # Nothing of ours to commit (already committed, or no files found).
+            return True, "nothing to commit"
+
+        # Guard against bundling unrelated work: if the index already has staged
+        # changes that aren't this decision's files (e.g. an agent session staged
+        # a commit concurrently), skip rather than sweep them into the decision
+        # commit. Graceful — the decision stays on disk for a later commit.
+        pre = subprocess.run(
+            ["git", "diff", "--cached", "--name-only"],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        foreign = [
+            p for p in pre.stdout.splitlines()
+            if p.strip() and not _is_decision_file(task_id, p.strip())
+        ]
+        if foreign:
+            return False, f"index has {len(foreign)} unrelated staged file(s); skipped to avoid bundling"
+
+        add = subprocess.run(
+            ["git", "add", "--"] + wanted,
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        if add.returncode != 0:
+            return False, (add.stderr or add.stdout or "git add failed").strip()[:200]
+
+        # Commit the index — now exactly this decision's files, including the
+        # active→completed deletion (a `git commit -- pathspec` cannot capture a
+        # deletion once the path is gone from the working tree; the foreign-staged
+        # guard above keeps a whole-index commit scoped).
+        msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
+        commit = subprocess.run(
+            ["git", "commit", "-m", msg],
+            cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        if commit.returncode != 0:
+            return False, (commit.stderr or commit.stdout or "git commit failed").strip()[:200]
+        return True, msg
+    except Exception as e:  # never let a commit problem break the decision response
+        return False, str(e)[:200]
 
 
 @bp.route("/assumptions")

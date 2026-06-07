@@ -11,9 +11,9 @@ Origin: T-1202/T-1200 — startswith('## Decision') matched both ## Decisions an
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/inception.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [inception](/docs/generated/lib-inception) | tests | fw inception - Inception phase workflow |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-lint-inception-decision-exact-match.yaml`*

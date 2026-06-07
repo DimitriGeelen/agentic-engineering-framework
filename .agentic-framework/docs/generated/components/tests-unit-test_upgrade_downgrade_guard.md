@@ -17,6 +17,15 @@ differ. Consumer at 1.6.260 + framework at 1.6.170 → silent downgrade,
 only post-facto forensic trail in `upgraded_from` + audit YAML.
 These tests pin:
 
+## Dependencies (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
+| [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_upgrade_downgrade_guard.yaml`*
 *Last verified: 2026-05-14*

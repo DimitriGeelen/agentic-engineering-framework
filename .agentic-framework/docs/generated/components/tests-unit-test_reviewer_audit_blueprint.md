@@ -8,11 +8,11 @@
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/reviewer.py` | calls |
-| `web/app.py` | calls |
-| `web/blueprints/reviewer.py` | registers |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [reviewer](/docs/generated/web-blueprints-reviewer) | calls | TODO: describe what this component does |
+| [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [reviewer](/docs/generated/web-blueprints-reviewer) | registers | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_reviewer_audit_blueprint.yaml`*

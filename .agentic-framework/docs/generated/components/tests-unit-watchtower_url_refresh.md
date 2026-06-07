@@ -15,10 +15,10 @@ enp5s0 between .123 and .107 8x in one day; file held .123 for hours.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/watchtower.sh` | calls |
-| `bin/watchtower.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [watchtower](/docs/generated/bin-watchtower) | calls | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
+| [watchtower](/docs/generated/bin-watchtower) | tests | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-watchtower_url_refresh.yaml`*

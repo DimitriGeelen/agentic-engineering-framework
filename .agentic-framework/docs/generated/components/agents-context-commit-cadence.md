@@ -19,15 +19,15 @@ Output: JSON with additionalContext when warning threshold reached
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/checkpoint.sh` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [checkpoint](/docs/generated/checkpoint) | reads | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/checkpoint.sh` | complements |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [checkpoint](/docs/generated/checkpoint) | complements | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-commit-cadence.yaml`*

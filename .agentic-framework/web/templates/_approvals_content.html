@@ -14,6 +14,13 @@
         <span class="stat-breakdown">Workers awaiting answer</span>
     </a>
     {% endif %}
+    {% if arc_close_count and arc_close_count > 0 %}
+    <a href="#section-arc-closure" class="approval-stat approval-stat-group decisions-active" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ arc_close_count }}</span>
+        <span class="stat-label">Arc Closure</span>
+        <span class="stat-breakdown">Close-ready arcs</span>
+    </a>
+    {% endif %}
     <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
         <span class="stat-label">Verifications</span>
@@ -87,10 +94,10 @@
             {% set _v = t.verdict %}
             <span class="verdict-badge" data-verdict="{{ _v }}"
                   style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.7rem; font-weight:700; letter-spacing:0.05em;
-                  {% if _v == 'GO' %}background:#1b5e20; color:#fff;
-                  {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
-                  {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
-                  {% else %}background:#616161; color:#fff;
+                  {% if _v == 'GO' %}background:var(--wt-success); color:#fff;
+                  {% elif _v == 'DEFER' %}background:var(--wt-warn); color:#1a1a1a;
+                  {% elif _v == 'NO-GO' %}background:var(--wt-danger); color:#fff;
+                  {% else %}background:var(--wt-muted); color:#fff;
                   {% endif %}"
                   title="Agent recommendation: {{ _v }}">{{ _v }}</span>
             {% endif %}
@@ -100,7 +107,7 @@
             {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
             <span class="reviewer-badge" data-overall="{{ _r.overall }}"
                   style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.65rem; font-weight:600;
-                  {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                  {% if _bad %}background:var(--wt-danger); color:#fff;{% else %}background:var(--wt-success); color:#fff;{% endif %}"
                   title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
                 Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }}{% endif %}{% if _r.needs_human %} ⚠{% endif %}
             </span>
@@ -130,11 +137,11 @@
         <summary style="font-weight:600; cursor:pointer;">
             Agent Recommendation:
             {% if t.rec_decision == 'GO' %}
-            <span style="color:#10b981;">GO</span>
+            <span style="color:var(--wt-success);">GO</span>
             {% elif t.rec_decision == 'NO-GO' %}
-            <span style="color:#ef4444;">NO-GO</span>
+            <span style="color:var(--wt-danger);">NO-GO</span>
             {% elif t.rec_decision == 'DEFER' %}
-            <span style="color:#6b7280;">DEFER</span>
+            <span style="color:var(--wt-muted);">DEFER</span>
             {% else %}
             {{ t.rec_decision }}
             {% endif %}
@@ -143,8 +150,8 @@
     </details>
     {% else %}
     {# T-1214: Fallback context when agent recommendation is missing #}
-    <div style="margin-top:0.5rem; background:#f59e0b11; border:1px solid #f59e0b44; padding:0.5rem 0.75rem; border-radius:4px;">
-        <div style="font-size:0.8rem; font-weight:600; color:#b45309; margin-bottom:0.3rem;">
+    <div style="margin-top:0.5rem; background:color-mix(in srgb, var(--wt-warn) 7%, transparent); border:1px solid color-mix(in srgb, var(--wt-warn) 27%, transparent); padding:0.5rem 0.75rem; border-radius:4px;">
+        <div style="font-size:0.8rem; font-weight:600; color:var(--wt-warn); margin-bottom:0.3rem;">
             No agent recommendation written yet
         </div>
         {% if t.problem_full %}
@@ -158,7 +165,7 @@
             <div style="font-size:0.85rem; margin-top:0.3rem; white-space:pre-wrap; line-height:1.4;">{{ t.go_nogo_criteria }}</div>
         </details>
         {% endif %}
-        <div style="font-size:0.75rem; color:#b45309; margin-top:0.4rem;">
+        <div style="font-size:0.75rem; color:var(--wt-warn); margin-top:0.4rem;">
             Review the <a href="/inception/{{ t.task_id }}">full task</a> for research findings,
             or ask the agent to write a recommendation.
         </div>
@@ -187,6 +194,68 @@
 {% endfor %}
 {% endif %}
 
+<!-- T-1961: Arc closure — arcs that are close-ready (in-progress + ≥80% complete + anchor Recommendation) -->
+{% if arcs_close_ready %}
+<h2 id="section-arc-closure" class="approvals-group-heading">Arc Closure</h2>
+<div class="section-header">
+    <h3>Arcs ready for review</h3>
+    <small>{{ arc_close_count }} arc{{ '' if arc_close_count == 1 else 's' }} — completion ≥80% with agent <code>## Recommendation</code> on anchor</small>
+</div>
+{% for a in arcs_close_ready %}
+<div class="approval-card arc-closure" data-arc-slug="{{ a.slug }}" data-verdict="{{ a.verdict }}">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            {% set _v = a.verdict %}
+            <span class="verdict-badge" data-verdict="{{ _v }}"
+                  style="display:inline-block; padding:0.15rem 0.55rem; border-radius:3px; font-size:0.72rem; font-weight:700; letter-spacing:0.05em;
+                  {% if _v == 'CLOSE' %}background:var(--wt-success); color:#fff;
+                  {% elif _v == 'GO' %}background:var(--wt-success); color:#fff;
+                  {% elif _v == 'KEEP-OPEN' %}background:var(--wt-muted); color:#fff;
+                  {% elif _v == 'NO-GO' %}background:var(--wt-danger); color:#fff;
+                  {% elif _v == 'DEFER' %}background:var(--wt-warn); color:#1a1a1a;
+                  {% else %}background:var(--wt-muted); color:#fff;
+                  {% endif %}"
+                  title="Anchor-task agent recommendation: {{ _v }}">{{ _v }}</span>
+            {# T-2112: explicit hx-target="#content" on every cross-page navigation link
+               inside this template. The wrapping #approvals-content div sets
+               hx-target="this" for its own 10s polling (T-669 / T-2060); htmx INHERITS
+               that to descendant anchors. Without these overrides, clicking Review or
+               an anchor-task link swaps the destination INTO the polling div (so the
+               old approvals shell breadcrumb/heading stays above it) and the next
+               polling cycle (≤10s) overwrites the swapped content with /approvals/content
+               — i.e. "bounces back". Triplet here = target + swap + push-url so the
+               browser URL also updates correctly. #}
+            <a href="/arcs/{{ a.slug }}"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"><strong>{{ a.name }}</strong></a>
+            <span style="font-size:0.8rem; color:var(--pico-muted-color);">
+                {{ a.completed }}/{{ a.total }} — {{ "%.0f%%" % (a.completion_ratio * 100) }}
+            </span>
+            {% if a.anchor %}
+            <span style="font-size:0.78rem; color:var(--pico-muted-color);">
+                · anchor <a href="/tasks/{{ a.anchor }}"
+                            hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ a.anchor }}</a>
+            </span>
+            {% endif %}
+        </div>
+        <div style="display:flex; gap:0.4rem;">
+            <a href="/arcs/{{ a.slug }}/review" role="button" class="secondary outline"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="margin:0; font-size:0.78rem;">Review</a>
+            <a href="/arcs/{{ a.slug }}/close" role="button"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="margin:0; font-size:0.78rem;">Approve / Override</a>
+        </div>
+    </div>
+    {% if a.headline_mechanic %}
+    {# T-2111: headline_mechanic moved out of .approval-meta (0.75rem muted) into
+       the readable .headline-mechanic-box callout — body text + accent stripe on
+       tinted primary bg. Same class as T-2110's arc_review.html. #}
+    <div class="headline-mechanic-box">{{ a.headline_mechanic }}</div>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
 <!-- T-1808 (dispatch-safety slice 4): Paused dispatches — Workers awaiting operator answer -->
 {% if paused_dispatches %}
 <h2 id="section-paused" class="approvals-group-heading">Paused Dispatches</h2>
@@ -197,10 +266,10 @@
 {% for pd in paused_dispatches %}
 <div class="approval-card pending">
     <div class="approval-risk">
-        {% if pd.severity == 'high' %}<span style="color:#ef4444;">[HIGH]</span>
-        {% elif pd.severity == 'medium' %}<span style="color:#f59e0b;">[MED]</span>
-        {% elif pd.severity == 'low' %}<span style="color:#6b7280;">[LOW]</span>
-        {% else %}<span style="color:#6b7280;">[?]</span>{% endif %}
+        {% if pd.severity == 'high' %}<span style="color:var(--wt-danger);">[HIGH]</span>
+        {% elif pd.severity == 'medium' %}<span style="color:var(--wt-warn);">[MED]</span>
+        {% elif pd.severity == 'low' %}<span style="color:var(--wt-muted);">[LOW]</span>
+        {% else %}<span style="color:var(--wt-muted);">[?]</span>{% endif %}
         <a href="/review/{{ pd.task_id }}" style="text-decoration:none;">{{ pd.task_id }}</a>
         <span style="color:var(--pico-muted-color); font-weight:normal; font-size:0.85rem;">— {{ pd.question_short or '(no question)' }}</span>
     </div>
@@ -235,7 +304,7 @@
     <form hx-post="/api/approvals/complete-batch" hx-target="#batch-complete-result" hx-swap="innerHTML"
           hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked?" style="display:inline;">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
+        <button type="submit" style="background:var(--wt-success); border-color:var(--wt-success); color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
             Complete {{ ready_count }} Ready Task{{ 's' if ready_count != 1 }}
         </button>
     </form>
@@ -261,7 +330,7 @@
     </button>
     {% if go_count %}
     <button class="ac-filter-btn outline" data-filter="go"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#1b5e20; color:#1b5e20;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-success); color:var(--wt-success);"
             onclick="filterACs('go')"
             title="Tasks the agent recommends GO — likely rubber-stamp">
         GO ({{ go_count }})
@@ -269,7 +338,7 @@
     {% endif %}
     {% if defer_count %}
     <button class="ac-filter-btn outline" data-filter="defer"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#e65100; color:#e65100;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-warn); color:var(--wt-warn);"
             onclick="filterACs('defer')"
             title="Tasks the agent recommends DEFER — needs strategic decision">
         DEFER ({{ defer_count }})
@@ -277,7 +346,7 @@
     {% endif %}
     {% if nogo_count %}
     <button class="ac-filter-btn outline" data-filter="nogo"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b71c1c; color:#b71c1c;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-danger); color:var(--wt-danger);"
             onclick="filterACs('nogo')"
             title="Tasks the agent recommends NO-GO">
         NO-GO ({{ nogo_count }})
@@ -286,7 +355,7 @@
     {% if norec_count %}
     {# T-1576: NO-REC = agent owes a recommendation (no `## Recommendation` section). #}
     <button class="ac-filter-btn outline" data-filter="norec"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#0e7490; color:#0e7490;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-info); color:var(--wt-info);"
             onclick="filterACs('norec')"
             title="Agent has not written a Recommendation block — task not ready for review yet (T-679/T-1576).">
         NO-REC ({{ norec_count }})
@@ -294,25 +363,25 @@
     {% endif %}
     {% if unknown_count %}
     <button class="ac-filter-btn outline" data-filter="unknown"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#616161; color:#616161;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-muted); color:var(--wt-muted);"
             onclick="filterACs('unknown')"
             title="Recommendation section exists but verdict line is missing/unparseable.">
         ? ({{ unknown_count }})
     </button>
     {% endif %}
     <button class="ac-filter-btn outline" data-filter="review"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#b45309; color:#b45309;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-warn); color:var(--wt-warn);"
             onclick="filterACs('review')">
         Review ({{ review_count }})
     </button>
     <button class="ac-filter-btn outline" data-filter="rubber-stamp"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#047857; color:#047857;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-success); color:var(--wt-success);"
             onclick="filterACs('rubber-stamp')">
         Rubber-stamp ({{ rubber_stamp_count }})
     </button>
     {% if stale_count %}
     <button class="ac-filter-btn outline" data-filter="stale"
-            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:#e65100; color:#e65100;"
+            style="padding:0.3rem 0.8rem; font-size:0.75rem; margin:0; border-color:var(--wt-warn); color:var(--wt-warn);"
             onclick="filterACs('stale')">
         Stale >7d ({{ stale_count }})
     </button>
@@ -320,6 +389,8 @@
 </div>
 <script>
 function filterACs(filter) {
+    // T-2038: a filtered card may live in the collapsed overflow — open it so the match shows.
+    if (filter !== 'all') { var _ov = document.querySelector('.ac-overflow'); if (_ov) _ov.open = true; }
     document.querySelectorAll('.human-ac-group').forEach(function(card) {
         var priority = card.dataset.priority;
         var stale = card.dataset.stale === 'true';
@@ -342,7 +413,22 @@ function filterACs(filter) {
     });
 }
 </script>
+{# T-2038: bound rendered height. Render the first _ac_cap (most-actionable, list is
+   sorted by priority,age) normally; wrap the overflow in a collapsed <details> so it
+   is display:none — excluded from scrollHeight and from full_page screenshots — yet
+   still in the DOM and one click away (nothing dropped).
+
+   T-2103: lowered cap 15 → 10. With 4 pending inception cards (~760px each, full
+   Recommendation rendered open by default) + verbose AC cards (~285px each),
+   the 15-AC cap pushed total to 8926px (>8000 cap). Cap=10 saves ~1425px →
+   total ~7500px, comfortably under cap. Overflow group still surfaces N-10
+   remaining; sort already prioritises REVIEW + stale so top 10 are right 10. #}
+{% set _ac_cap = 10 %}
 {% for t in pending_acs %}
+{% if loop.index == _ac_cap + 1 %}
+<details class="ac-overflow" style="margin:0.75rem 0;">
+<summary style="cursor:pointer; font-weight:600; padding:0.5rem 0.6rem; color:var(--wt-accent); border:1px dashed var(--pico-muted-border-color); border-radius:6px;">Show {{ pending_acs|length - _ac_cap }} more verification{{ 's' if (pending_acs|length - _ac_cap) != 1 }} — lower priority, all still actionable</summary>
+{% endif %}
 <div class="approval-card human-ac-group" data-priority="{{ t.sort_priority }}" data-stale="{{ 'true' if t.is_stale else 'false' }}" data-verdict="{{ t.verdict|default('?') }}" data-state="{{ t.state|default('?') }}">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
         <div>
@@ -355,10 +441,10 @@ function filterACs(filter) {
             {% set _v = t.state if (t.state is defined and t.state == 'NO-REC') else (t.verdict if t.verdict is defined else '?') %}
             <span class="verdict-badge" data-verdict="{{ _v }}"
                   style="font-size:0.65rem; font-weight:600; padding:0.1rem 0.35rem; border-radius:3px; white-space:nowrap;
-                         {% if _v == 'GO' %}background:#1b5e20; color:#fff;
-                         {% elif _v == 'DEFER' %}background:#e65100; color:#fff;
-                         {% elif _v == 'NO-GO' %}background:#b71c1c; color:#fff;
-                         {% elif _v == 'NO-REC' %}background:#0e7490; color:#fff;
+                         {% if _v == 'GO' %}background:var(--wt-success); color:#fff;
+                         {% elif _v == 'DEFER' %}background:var(--wt-warn); color:#1a1a1a;
+                         {% elif _v == 'NO-GO' %}background:var(--wt-danger); color:#fff;
+                         {% elif _v == 'NO-REC' %}background:var(--wt-info); color:#fff;
                          {% else %}background:var(--pico-muted-border-color); color:var(--pico-muted-color);{% endif %}"
                   title="{% if _v == 'NO-REC' %}Agent has not written a Recommendation block — task not ready for review yet (T-1576).{% else %}Agent recommendation: {{ _v }}{% endif %}">{{ _v }}</span>
             {# T-1569 / F3: reviewer mechanical verdict — parity with inception cards #}
@@ -367,13 +453,13 @@ function filterACs(filter) {
             {% set _bad = (_r.findings and _r.findings > 0) or _r.needs_human or _r.overall in ('FAIL', 'WARN') %}
             <span class="reviewer-badge" data-overall="{{ _r.overall }}"
                   style="font-size:0.6rem; font-weight:600; padding:0.1rem 0.3rem; border-radius:3px; white-space:nowrap;
-                         {% if _bad %}background:#7f1d1d; color:#fff;{% else %}background:#14532d; color:#fff;{% endif %}"
+                         {% if _bad %}background:var(--wt-danger); color:#fff;{% else %}background:var(--wt-success); color:#fff;{% endif %}"
                   title="Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }} findings{% endif %}{% if _r.needs_human %} · needs human{% endif %}">
                 R:{{ _r.overall }}{% if _r.findings %}·{{ _r.findings }}{% endif %}{% if _r.needs_human %}⚠{% endif %}
             </span>
             {% endif %}
             {% if t.age_days is defined %}
-            <span style="font-size:0.65rem; color:{% if t.is_stale %}#e65100{% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"
+            <span style="font-size:0.65rem; color:{% if t.is_stale %}var(--wt-warn){% else %}var(--pico-muted-color){% endif %}; white-space:nowrap;"
                   {% if t.is_stale %}title="Stale: waiting >7 days"{% endif %}>
                 {{ t.age_days }}d{% if t.is_stale %} &#9888;{% endif %}
             </span>
@@ -427,7 +513,7 @@ function filterACs(filter) {
     <div style="margin-top:0.5rem;">
         <form hx-post="/api/task/{{ t.task_id }}/complete" hx-target="closest .human-ac-group" hx-swap="outerHTML">
             <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" style="background:#10b981; border-color:#10b981; color:white; padding:0.3rem 1rem; font-size:0.8rem;">
+            <button type="submit" style="background:var(--wt-success); border-color:var(--wt-success); color:white; padding:0.3rem 1rem; font-size:0.8rem;">
                 Complete Task
             </button>
         </form>
@@ -435,6 +521,7 @@ function filterACs(filter) {
     {% endif %}
 </div>
 {% endfor %}
+{% if pending_acs|length > _ac_cap %}</details>{% endif %}
 {% endif %}
 
 <!-- Empty state -->

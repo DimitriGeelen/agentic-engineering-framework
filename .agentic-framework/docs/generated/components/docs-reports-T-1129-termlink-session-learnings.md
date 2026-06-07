@@ -10,9 +10,9 @@ T-1129: 4 Learnings from TermLink Session (010-termlink T-944)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/inception.sh` | produced-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [inception](/docs/generated/lib-inception) | produced-by | fw inception - Inception phase workflow |
 
 ---
 *Auto-generated from Component Fabric. Card: `docs-reports-T-1129-termlink-session-learnings.yaml`*

@@ -7,6 +7,7 @@ import re as re_mod
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Callable, TypeVar
 
 import yaml
 from flask import render_template, request
@@ -19,6 +20,34 @@ logger = logging.getLogger(__name__)
 
 APP_DIR = Path(__file__).resolve().parent
 FRAMEWORK_ROOT = APP_DIR.parent
+
+
+# ---------------------------------------------------------------------------
+# Test-sentinel filter (T-2228 / T-2225 Slice 3)
+# ---------------------------------------------------------------------------
+# Tests use the `T-Test-NNN` sentinel namespace (T-2226 convention) instead of
+# numeric `T-NNNN` ids to keep test fixtures from colliding with real tasks.
+# Slice 1 (T-2226) introduced `tmp_project_root` to isolate writes to tmp_path.
+# This Layer 3 filter is defense-in-depth: if a test ever leaks a real
+# `.tasks/active/T-Test-001.md` file into PROJECT_ROOT (helper bypassed, future
+# author skips the fixture), production scanners — audit / fabric / episodic /
+# task-list — silently skip it instead of presenting it as a real task.
+#
+# Risk-free: real tasks are filed via `fw work-on` / `fw task create` which
+# emit numeric `T-NNNN` ids; the `T-Test-` prefix is reserved for fixtures.
+def is_test_sentinel(name) -> bool:
+    """True if `name` (path or basename or task-id) is a T-Test-NNN sentinel.
+
+    Matches `T-Test-001`, `T-Test-foo.md`, `T-Test-bar.yaml`, and full paths
+    ending in any of those. Used by production scanners to filter test fixtures
+    that may have leaked into a real `.tasks/active/` or `.context/episodic/`
+    directory. See T-2225 / T-2228, docstring at top of section.
+    """
+    try:
+        basename = Path(str(name)).name
+    except (TypeError, ValueError):
+        return False
+    return basename.startswith("T-Test-")
 
 
 def _discover_project_root(start: Path) -> Path | None:
@@ -99,9 +128,16 @@ def task_id_sort_key(value):
 # Navigation — grouped for Watchtower command center
 # ---------------------------------------------------------------------------
 
+# NAV_GROUPS: top-level nav groups, each a (group_name, items) pair.
+# An item is EITHER a leaf  ("Label", "blueprint.endpoint", icon|None)  — a 3-tuple,
+# OR a subsection  ("Subsection Label", [leaf, leaf, ...])  — a 2-tuple whose second
+# element is a list. Subsections let an oversized group (Govern) render as labelled
+# blocks instead of one flat list (T-2008, arc-007 S2a). NAV_ITEMS flattens recursively.
 NAV_GROUPS = [
     ("Work", [
         ("Tasks",       "tasks.tasks",              None),
+        ("Arcs",        "arcs.arcs_index",          None),
+        ("BVP",         "bvp.bvp_scatter",          None),
         ("Inception",   "inception.inception_list",  None),
         ("Assumptions", "inception.assumptions_list", None),
         ("Timeline",    "timeline.timeline",         None),
@@ -116,34 +152,152 @@ NAV_GROUPS = [
     ("Architecture", [
         ("Fabric",      "fabric.fabric_overview",   None),
         ("Explorer",    "fabric.fabric_graph",      None),
-        ("Arcs",        "arcs.arcs_index",          None),
         ("Terminal",    "terminal.terminal_page",    None),
         ("Sessions",    "sessions_page.sessions_page", None),
     ]),
+    # Govern is subsectioned (T-2008): 16 items → 4 function-based blocks so the
+    # dropdown is scannable rather than a flat wall.
     ("Govern", [
-        ("Approvals",     "approvals.approvals",                   None),
-        ("Directives",    "core.directives",                       None),
-        ("Enforcement",   "enforcement.enforcement_dashboard",     None),
-        ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
-        ("Hooks",         "hooks.hooks_page",                      None),
-        ("Risks",         "risks.risk_register",                   None),
-        ("Gaps",          "discovery.gaps",                        None),
-        ("Quality",       "quality.quality_gate",                  None),
-        ("Reviewer Audit", "reviewer.reviewer_audit",              None),
-        ("Reviewer Overrides", "reviewer.reviewer_overrides",      None),
-        ("Escalation Drift", "escalation.escalation_drift",        None),
-        ("Metrics",       "metrics.project_metrics",               None),
-        ("Costs",         "costs.costs_dashboard",                 None),
-        ("Config",        "config.config_page",                    None),
-        ("Cron",          "cron.cron_registry",                    None),
-        ("Pending",       "pending.pending_page",                  None),
+        ("Approvals & Decisions", [
+            ("Approvals",     "approvals.approvals",                   None),
+            ("Directives",    "core.directives",                       None),
+            ("Pending",       "pending.pending_page",                  None),
+        ]),
+        ("Enforcement", [
+            ("Enforcement",   "enforcement.enforcement_dashboard",     None),
+            ("Hooks",         "hooks.hooks_page",                      None),
+            ("Reviewer Audit", "reviewer.reviewer_audit",              None),
+            ("Reviewer Overrides", "reviewer.reviewer_overrides",      None),
+        ]),
+        ("Health", [
+            ("Risks",         "risks.risk_register",                   None),
+            ("Gaps",          "discovery.gaps",                        None),
+            ("Quality",       "quality.quality_gate",                  None),
+            ("Discoveries",   "discoveries_bp.discoveries_dashboard",  None),
+            ("Escalation Drift", "escalation.escalation_drift",        None),
+        ]),
+        ("Operations", [
+            ("Metrics",       "metrics.project_metrics",               None),
+            ("Costs",         "costs.costs_dashboard",                 None),
+            ("Config",        "config.config_page",                    None),
+            ("Cron",          "cron.cron_registry",                    None),
+        ]),
     ]),
 ]
 
-# Flat list for backward compat (used in error handlers, etc.)
+
+def _nav_flatten(items):
+    """Yield leaf (label, endpoint, icon) tuples from a group's items, recursing
+    into any (subsection_label, [items]) subsections. A subsection is a 2-tuple
+    whose second element is a list; a leaf is a 3-tuple."""
+    out = []
+    for it in items:
+        if len(it) == 2 and isinstance(it[1], list):  # subsection
+            out.extend(_nav_flatten(it[1]))
+        else:  # leaf
+            out.append(it)
+    return out
+
+
+def nav_group_labels(group_name):
+    """Flat list of leaf labels under a top-level nav group (recursing into
+    subsections). Returns [] if the group is absent. Used by verification + tests."""
+    for name, items in NAV_GROUPS:
+        if name == group_name:
+            return [leaf[0] for leaf in _nav_flatten(items)]
+    return []
+
+
+# Flat list for backward compat (used in error handlers, search/jump, etc.)
 NAV_ITEMS = []
 for _group_name, _items in NAV_GROUPS:
-    NAV_ITEMS.extend(_items)
+    NAV_ITEMS.extend(_nav_flatten(_items))
+
+
+# ---------------------------------------------------------------------------
+# Breadcrumbs (T-2009, arc-007 S2b)
+# ---------------------------------------------------------------------------
+_BREADCRUMB_INDEX = None  # lazily built: first-path-segment -> (group, label, leaf_endpoint)
+
+
+def _breadcrumb_index():
+    """Map a URL's first path segment -> (group, label, leaf_endpoint), built from
+    the *actual* URLs of nav leaves. Path-based (not blueprint-name) so mixed
+    blueprints resolve correctly (e.g. `discovery` serves both Knowledge and Govern).
+    Cached after first build; requires an app/request context for url_for."""
+    global _BREADCRUMB_INDEX
+    if _BREADCRUMB_INDEX is not None:
+        return _BREADCRUMB_INDEX
+    from flask import url_for
+
+    idx = {}
+    for gname, items in NAV_GROUPS:
+        for label, ep, _icon in _nav_flatten(items):
+            try:
+                url = url_for(ep)
+            except Exception:
+                continue
+            seg = url.strip("/").split("/", 1)[0]
+            if seg:
+                idx.setdefault(seg, (gname, label, ep))
+    _BREADCRUMB_INDEX = idx
+    return idx
+
+
+def nav_breadcrumb(endpoint, path=""):
+    """Build a breadcrumb trail [(label, url|None), ...] for the current page.
+
+    Derived from the request URL's first path segment matched against nav-leaf URLs.
+    The final crumb is always the current page (url=None). Returns [] for home and
+    for pages under no nav section (better silent than a misleading crumb).
+        /tasks          -> [(Work, None), (Tasks, None)]
+        /tasks/T-2008   -> [(Work, None), (Tasks, /tasks), (T-2008, None)]
+        /arcs/arc-007   -> [(Work, None), (Arcs, /arcs), (arc-007, None)]
+        /               -> []
+    """
+    segs = [s for s in (path or "").split("/") if s]
+    if not segs:
+        return []
+    idx = _breadcrumb_index()
+    first = segs[0]
+    if first not in idx:
+        return []
+    group, label, leaf_ep = idx[first]
+    crumbs = [(group, None)]
+    if len(segs) == 1:
+        crumbs.append((label, None))  # the section list is the current page
+    else:
+        from flask import url_for
+
+        try:
+            crumbs.append((label, url_for(leaf_ep)))  # section, linked to its list
+        except Exception:
+            crumbs.append((label, None))
+        crumbs.append((segs[-1], None))  # detail token = current page
+    return crumbs
+
+
+# ---------------------------------------------------------------------------
+# Command palette (T-2012, arc-007 S6a) — jump destinations
+# ---------------------------------------------------------------------------
+def palette_destinations():
+    """Jump destinations for the ⌘K command palette: NAV_ITEMS resolved to URLs.
+
+    One source of truth — the same nav whitelist S2c pins use (T-2010). Returns a
+    list of {label, url, group} dicts, url_for resolved server-side (try/except so a
+    parametrised endpoint never breaks the page). Requires an app/request context.
+    """
+    from flask import url_for
+
+    out = []
+    for gname, items in NAV_GROUPS:
+        for label, ep, _icon in _nav_flatten(items):
+            try:
+                url = url_for(ep)
+            except Exception:
+                continue
+            out.append({"label": label, "url": url, "group": gname})
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -168,7 +322,11 @@ def build_ambient():
     if current and re_mod.match(r"^T-\d{3,}$", str(current)):
         ambient["focus_task"] = str(current)
     if active_dir.exists():
-        active_tasks = sorted(active_dir.glob("T-*.md"), key=task_id_sort_key)
+        # T-2228: skip T-Test-NNN sentinels (test fixtures leaked into PROJECT_ROOT).
+        active_tasks = sorted(
+            (p for p in active_dir.glob("T-*.md") if not is_test_sentinel(p)),
+            key=task_id_sort_key,
+        )
         if active_tasks:
             if not ambient["focus_task"]:
                 # Fallback: first active task alphabetically.
@@ -281,6 +439,71 @@ def parse_frontmatter(content):
     if not isinstance(fm, dict):
         return {}, content
     return fm, fm_match.group(2)
+
+
+# ---------------------------------------------------------------------------
+# Per-file mtime-keyed cache (T-2109)
+# ---------------------------------------------------------------------------
+# Promoted from 5 re-implementations across the Watchtower blueprints:
+#   T-1954 (web/blueprints/bvp.py:_FM_CACHE)        — frontmatter dict
+#   T-2102 (web/blueprints/approvals.py:_BODY_CACHE) — body string
+#   T-2106 (web/blueprints/timeline.py:_FM_CACHE)    — (fm, body) tuple
+#   T-2107 (web/search_utils.py:_TAG_FM_CACHE)       — tag list
+#   T-2108 (web/blueprints/cockpit.py:_HUMAN_VERIFY_CACHE) — verify entry
+#
+# Each variant kept the same shape — `dict[str, tuple[int_mtime_ns, T]]` keyed
+# on `str(path)` — but with slight drift on what T is (the 5th site stored a
+# dict entry instead of a parsed tuple; the 3rd carried `(fm, body)` not just
+# fm). The next consumer should reach for this helper instead of re-implementing.
+# L-362 (helper-vs-consumer drift) pins the test contract — see
+# tests/unit/test_shared_mtime_cache.py.
+
+T = TypeVar("T")
+
+
+def mtime_cached_get(
+    path: Path,
+    parse_fn: Callable[[Path], T],
+    cache: dict[str, tuple[int, T]],
+    default: T,
+) -> T:
+    """Return parse_fn(path), cached by (path, st_mtime_ns).
+
+    On warm hits with unchanged mtime, returns the cached parsed value
+    without re-invoking `parse_fn`. On cold call, file change, or
+    `stat()` OSError (file missing), falls back to `parse_fn` — except
+    that an OSError on stat short-circuits to `default` without calling
+    `parse_fn` (mirrors all 5 origin sites' behaviour: a missing file is
+    not a parse error, it is "no data").
+
+    `parse_fn` is responsible for its own read/parse error handling — it
+    must NOT raise on malformed content, but return a sensible fallback
+    of the same type T (use `default` for consistency). Raising from
+    parse_fn will propagate and bypass the cache write.
+
+    `cache` is a per-consumer dict; callers keep one per distinct
+    parse_fn / value-type pair to avoid keying clashes.
+
+    Args:
+        path: file whose parsed value to cache.
+        parse_fn: callable(path) -> T. Must handle I/O + parse errors.
+        cache: per-consumer dict[str, tuple[mtime_ns, T]].
+        default: value returned when path.stat() raises OSError.
+
+    Returns:
+        Parsed value of type T (possibly cached).
+    """
+    try:
+        mtime_ns = path.stat().st_mtime_ns
+    except OSError:
+        return default
+    key = str(path)
+    cached = cache.get(key)
+    if cached is not None and cached[0] == mtime_ns:
+        return cached[1]
+    value = parse_fn(path)
+    cache[key] = (mtime_ns, value)
+    return value
 
 
 _TASK_REF_RE_SHARED = re_mod.compile(r"(?<![\w/-])(T-\d{3,5})(?![\w/-])")
@@ -503,7 +726,7 @@ def extract_recommendation(body: str) -> dict:
         end = matches[idx + 1].start() if idx + 1 < len(matches) else len(section)
         body_span = section[start:end].strip()
         if bucket == "recommendation":
-            v = re_mod.match(r"\s*(NO-GO|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
+            v = re_mod.match(r"\s*(KEEP-OPEN|NO-GO|CLOSE|GO|DEFER)\b", body_span, re_mod.IGNORECASE)
             if v:
                 out["verdict"] = v.group(1).upper()
         elif bucket == "rationale":
@@ -555,6 +778,61 @@ def extract_recommendation_state(body: str) -> str:
     if not rec["raw"].strip():
         return "NO-REC"
     return rec["verdict"]
+
+
+def count_unchecked_human_acs(body: str) -> int:
+    """Count unchecked `- [ ]` AC lines inside the `### Human` block.
+
+    Returns 0 if no Human block exists, or if every Human AC is checked. This
+    is the canonical "needs human review" predicate (T-2075, T-2064 GO scope):
+    both `/approvals` (web) and `fw review-queue` (CLI) call this rather than
+    re-implement their own scan — otherwise the two surfaces silently drift.
+
+    Rules (must stay aligned with `_parse_acceptance_criteria` in tasks.py and
+    the inline CLI regex this replaces at bin/fw):
+
+    - Only `- [ ]` lines INSIDE the `### Human` subsection of `## Acceptance Criteria`
+      count. `### Agent` ACs, `## Verification`, and decorative checklists elsewhere
+      are ignored.
+    - HTML comment blocks (`<!-- ... -->`) are stripped before counting, so the
+      `[REVIEW] Voice/tone…` placeholder in the template comment never inflates
+      the count (T-1581 fix, also the L-298 cockpit class).
+    - Tasks where the `### Human` subsection is absent return 0.
+    - Empty `body` returns 0.
+
+    The predicate does NOT classify by `[REVIEW] / [REVIEWER] / [RUBBER-STAMP]`
+    confidence — that's a downstream display concern (verdict colour, sort
+    priority). The "show this task in the queue?" question is independent of
+    the prefix.
+    """
+    if not body:
+        return 0
+    ac_m = re_mod.search(
+        r"^## Acceptance Criteria\s*$(.*?)(?=^## |\Z)",
+        body, re_mod.MULTILINE | re_mod.DOTALL,
+    )
+    if not ac_m:
+        return 0
+    ac_block = ac_m.group(1)
+    human_m = re_mod.search(
+        r"^### Human\s*$(.*?)(?=^### |\Z)",
+        ac_block, re_mod.MULTILINE | re_mod.DOTALL,
+    )
+    if not human_m:
+        return 0
+    human_text = re_mod.sub(r"<!--.*?-->", "", human_m.group(1), flags=re_mod.DOTALL)
+    return len(re_mod.findall(r"^\s*-\s*\[ \]", human_text, re_mod.MULTILINE))
+
+
+def needs_human_review(body: str) -> bool:
+    """Boolean wrapper over `count_unchecked_human_acs`.
+
+    True iff the task body has ≥1 unchecked `### Human` acceptance criterion.
+    Use this in queue-build code paths (`_load_pending_human_acs`, `fw
+    review-queue`) to decide whether a task appears in the review queue at all.
+    See T-2075 / T-2064 GO scope.
+    """
+    return count_unchecked_human_acs(body) > 0
 
 
 def extract_reviewer_verdict(body: str) -> dict:
@@ -617,6 +895,8 @@ def get_all_task_metadata():
         if not task_dir.exists():
             continue
         for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
+            if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
+                continue
             fm, _ = parse_frontmatter(f.read_text())
             if fm:
                 fm["_location"] = location
@@ -652,6 +932,8 @@ def get_episodic_tags():
     episodic_dir = PROJECT_ROOT / ".context" / "episodic"
     if episodic_dir.exists():
         for f in episodic_dir.glob("T-*.yaml"):
+            if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
+                continue
             try:
                 with open(f) as fh:
                     edata = yaml.safe_load(fh)
@@ -709,6 +991,67 @@ def linkify_tasks(text):
     )
 
 
+_FRAGMENT_CONVENTION_VIOLATION = (
+    "render_page() template {tmpl!r} starts with `{{% extends \"base.html\" %}}`, "
+    "but render_page() wraps templates inside _wrapper.html which already extends base.html. "
+    "Rendering through this path produces a double-base.html chain (two Watchtower nav stacks). "
+    "Convention: page templates rendered via render_page() are pure HTML fragments — "
+    "no `<html>`, no `{{% extends %}}`. See sibling examples: inception.html, decisions.html, "
+    "fabric_explorer.html, tasks.html. Either remove the extends/block wrapping, or switch "
+    "the route to use `render_template()` directly (see escalation_drift.html, reviewer_audit.html). "
+    "Convention documented in web/shared.py:render_page() docstring. "
+    "Origin: T-1898 fix + T-1899 prevention."
+)
+
+
+def _check_render_page_fragment_convention(template_name):
+    """Raise RuntimeError if `template_name` violates the fragment convention.
+
+    Reads the template source via the active Flask app's jinja_env loader and
+    examines the first non-empty, non-Jinja-comment line. If it starts with
+    `{% extends "base.html"`, the convention is violated — render_page()
+    cannot safely wrap such a template.
+
+    The check is best-effort: if the source cannot be read (e.g. test-time
+    string loader), the guard silently passes. Real violations live on disk.
+    """
+    try:
+        from flask import current_app
+        loader = current_app.jinja_env.loader
+        source, _path, _uptodate = loader.get_source(current_app.jinja_env, template_name)
+    except Exception:
+        return  # best-effort — bail rather than mask real Jinja errors
+
+    # Find first non-empty, non-Jinja-comment line.
+    in_comment = False
+    for raw in source.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if in_comment:
+            if "#}" in line:
+                in_comment = False
+                rest = line.split("#}", 1)[1].strip()
+                if not rest:
+                    continue
+                line = rest
+            else:
+                continue
+        if line.startswith("{#"):
+            if "#}" in line[2:]:
+                rest = line.split("#}", 1)[1].strip()
+                if not rest:
+                    continue
+                line = rest
+            else:
+                in_comment = True
+                continue
+        # First substantive line found
+        if line.startswith('{% extends "base.html"') or line.startswith("{% extends 'base.html'"):
+            raise RuntimeError(_FRAGMENT_CONVENTION_VIOLATION.format(tmpl=template_name))
+        return  # convention satisfied (or unrelated content) — done
+
+
 def render_page(template_name, **context):
     """Render a full page or an htmx content fragment.
 
@@ -716,6 +1059,10 @@ def render_page(template_name, **context):
     For full page loads, we render it inside _wrapper.html which extends
     base.html. For htmx requests (HX-Request header present), we return
     just the fragment.
+
+    T-1899 guard: full-page loads check that the template begins as a fragment
+    (no `{% extends "base.html" %}`) and raise RuntimeError otherwise — closes
+    the convention-violation detection window opened by T-1898.
     """
     context.setdefault("nav_groups", NAV_GROUPS)
     context.setdefault("nav_items", NAV_ITEMS)
@@ -723,9 +1070,25 @@ def render_page(template_name, **context):
     context.setdefault("project_root", str(PROJECT_ROOT))
     context.setdefault("ambient", build_ambient())
     context.setdefault("yaml_errors", get_yaml_errors())
+    # Breadcrumb (T-2009, arc-007 S2b): path-derived, rendered inside #content so
+    # it survives htmx swaps (the chrome outside #content goes stale on htmx nav).
+    context.setdefault("breadcrumb", nav_breadcrumb(context["active_endpoint"], request.path))
+    # Pin toggle state (T-2010, arc-007 S2c): the current page's pin metadata for
+    # the breadcrumb-bar star (None on non-nav pages → no toggle). Function-level
+    # import avoids a settings↔shared circular at module load.
+    if "wt_pinnable" not in context:
+        try:
+            from web.blueprints.settings import pin_state_for
+
+            context["wt_pinnable"] = pin_state_for(context["active_endpoint"])
+        except Exception:
+            context["wt_pinnable"] = None
 
     if request.headers.get("HX-Request"):
-        return render_template(template_name, **context)
+        # Prepend the breadcrumb partial so an htmx #content swap also refreshes it.
+        crumb = render_template("_breadcrumb.html", **context)
+        return crumb + render_template(template_name, **context)
     else:
+        _check_render_page_fragment_convention(template_name)
         context["_content_template"] = template_name
         return render_template("_wrapper.html", **context)

@@ -8,15 +8,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/costs.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [costs](/docs/generated/lib-costs) | calls | Token usage tracking from JSONL transcripts — parses Claude Code session data for cost reporting (T-801) |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/terminal.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [terminal](/docs/generated/web-blueprints-terminal) | called_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
 
 ## Related
 

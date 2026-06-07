@@ -10,10 +10,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/approvals.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [approvals](/docs/generated/web-blueprints-approvals) | calls | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_approvals.yaml`*

@@ -32,9 +32,9 @@ When `TERMLINK_TASK_GOVERNANCE=1` is set (configured in `.mcp.json`), TermLink M
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/audit/audit.sh` | read_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | read_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `context-project-governance.yaml`*

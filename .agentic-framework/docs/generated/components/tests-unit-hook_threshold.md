@@ -19,10 +19,10 @@ Pins the contract that:
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/hook-threshold.py` | calls |
-| `lib/hook-threshold.py` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-threshold](/docs/generated/lib-hook-threshold) | calls | TODO: describe what this component does |
+| [hook-threshold](/docs/generated/lib-hook-threshold) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_threshold.yaml`*

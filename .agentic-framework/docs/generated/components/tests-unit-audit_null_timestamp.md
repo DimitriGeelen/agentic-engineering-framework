@@ -15,12 +15,12 @@ Origin: handover S-2026-0423-1623 emitted
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/audit/audit.sh` | calls |
-| `.context/project/metrics-history.yaml` | reads |
-| `C-004` | calls |
-| `C-004` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [metrics-history](/docs/generated/context-project-metrics-history) | reads | Historical metrics snapshots tracking task completion rates, commit velocity, and project health over time. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_null_timestamp.yaml`*

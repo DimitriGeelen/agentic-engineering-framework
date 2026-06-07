@@ -10,8 +10,8 @@ Find a task ID from the tasks page to test review
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
 
 ## Related
 

@@ -27,10 +27,10 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/termlink/termlink.sh` | calls |
-| `agents/termlink/termlink.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
+| [termlink](/docs/generated/agents-termlink-termlink) | tests | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 
 ## Related
 

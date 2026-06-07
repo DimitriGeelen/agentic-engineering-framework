@@ -1,0 +1,7 @@
+  ✗ Review-link check (T-2139) — BLOCK — review-handoff homework in this task:
+      homework pattern in Steps: `URL from bin/fw watchtower url`
+      bare-path bullet in Steps (no http:// prefix): - `/bvp`
+      This task is an inception. Inception handoffs go to /inception/T-XXXX, NOT /review/T-XXXX.
+      Replace homework with concrete absolute URLs (e.g. http://192.168.10.107:3000/inception/T-XXXX).
+      Bypass: FW_ALLOW_REVIEW_LINK_HOMEWORK=1 <command>  (logged Tier-2)
+      Or:     bin/fw task review T-XXX --skip-review-link-check "rationale"

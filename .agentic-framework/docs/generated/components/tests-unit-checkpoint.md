@@ -21,11 +21,11 @@ When fixing a bug discovered through real-world usage (user testing, production 
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/checkpoint.sh` | calls |
-| `C-008` | calls |
-| `C-008` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [checkpoint](/docs/generated/checkpoint) | tests | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
 
 ## Related
 

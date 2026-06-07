@@ -17,9 +17,9 @@ Show known failure patterns and mitigations
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/healing/healing.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [healing](/docs/generated/agents-healing-healing) | called_by | Healing Agent - Antifragile error recovery and pattern learning |
 
 ## Documentation
 

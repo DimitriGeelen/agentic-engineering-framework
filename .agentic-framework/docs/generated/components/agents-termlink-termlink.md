@@ -31,25 +31,26 @@ The Task tool and TermLink dispatch are two different mechanisms for parallel wo
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/config.sh` | calls |
-| `tools/ollama-tool-loop.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | TODO: describe what this component does |
 
-## Used By (10)
+## Used By (11)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/termlink.bats` | tested_by |
-| `tests/unit/termlink.bats` | called_by |
-| `tests/unit/termlink.bats` | tests_by |
-| `tests/unit/test_worker_kind_drift.bats` | called_by |
-| `tests/unit/test_worker_kind_drift.bats` | tests_by |
-| `tests/unit/test_workflow_env_isolation.bats` | called_by |
-| `tests/unit/test_workflow_env_isolation.bats` | tests_by |
-| `tests/unit/test_termlink_dispatch_task_type.py` | called_by |
-| `web/blueprints/orchestrator.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [termlink](/docs/generated/tests-unit-termlink) | tested_by | Unit tests for agents/termlink/termlink.sh (8 tests) |
+| [termlink](/docs/generated/tests-unit-termlink) | called_by | Unit tests for agents/termlink/termlink.sh (8 tests) |
+| [termlink](/docs/generated/tests-unit-termlink) | tests_by | Unit tests for agents/termlink/termlink.sh (8 tests) |
+| [test_worker_kind_drift](/docs/generated/tests-unit-test_worker_kind_drift) | called_by | TODO: describe what this component does |
+| [test_worker_kind_drift](/docs/generated/tests-unit-test_worker_kind_drift) | tests_by | TODO: describe what this component does |
+| [test_workflow_env_isolation](/docs/generated/tests-unit-test_workflow_env_isolation) | called_by | TODO: describe what this component does |
+| [test_workflow_env_isolation](/docs/generated/tests-unit-test_workflow_env_isolation) | tests_by | TODO: describe what this component does |
+| [test_termlink_dispatch_task_type](/docs/generated/tests-unit-test_termlink_dispatch_task_type) | called_by | Unit tests for fw termlink dispatch/spawn orchestrator-substrate wiring (T-1643/W1-W4) — pins _derive_task_type, _resolve_dispatch_model fallback chain, --task-type flag handlers in cmd_spawn/cmd_dispatch, and meta.json schema (task_type/model_used/fallback_used). |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | called_by | TODO: describe what this component does |
+| [ollama_loop](/docs/generated/lib-ollama_loop) | called_by | TODO: describe what this component does |
 
 ## Related
 

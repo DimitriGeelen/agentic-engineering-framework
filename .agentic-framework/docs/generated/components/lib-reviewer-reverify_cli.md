@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/reviewer/reverify.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [reverify](/docs/generated/lib-reviewer-reverify) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-reverify_cli.yaml`*

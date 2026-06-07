@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict
+from web.shared import PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 sys.path.insert(0, str(PROJECT_ROOT / "lib"))
@@ -38,6 +38,39 @@ APPROVAL_FILE = PROJECT_ROOT / ".context" / "working" / ".tier0-approval"
 
 # Approvals older than this are considered expired (seconds)
 EXPIRY_SECONDS = 3600  # 1 hour
+
+# T-2102: per-file body cache keyed on path -> (mtime_ns, body).
+# /approvals scans ~170 active task bodies per request through three hot loaders
+# (_load_pending_go_decisions, _load_pending_human_acs, _load_close_ready_arcs).
+# Profile (S-2026-0529): disk read all = 9ms; parse_frontmatter all = 571ms;
+# section extracts on already-parsed body = 48-85ms. The yaml.safe_load on the
+# frontmatter chunk is the dominant cost. Caching the body (after frontmatter
+# strip) keyed by (path, mtime_ns) eliminates the repeat yaml parse and brings
+# /approvals from 14.8s → <3s on warm cache. Memory cost: ~170 body strings
+# (a few MB) in the long-running Flask process — amortises across requests.
+# Same shape as T-1954 _FM_CACHE in web/blueprints/bvp.py.
+_BODY_CACHE: dict[str, tuple[int, str]] = {}
+
+
+def _parse_body_from_path(p: Path) -> str:
+    """Read file, strip frontmatter, return body. Empty string on read failure."""
+    try:
+        content = p.read_text()
+    except OSError:
+        return ""
+    _, body = parse_frontmatter(content)
+    return body
+
+
+def _get_body_cached(path: Path | str) -> str:
+    """Return task body (after frontmatter strip), mtime-invalidated.
+
+    Returns "" on any read or parse failure (matches existing callers'
+    behaviour of skipping the task on continue).
+
+    T-2109: migrated to shared.mtime_cached_get; semantics unchanged.
+    """
+    return mtime_cached_get(Path(path), _parse_body_from_path, _BODY_CACHE, default="")
 
 
 def _load_pending_approvals():
@@ -130,11 +163,10 @@ def _load_pending_go_decisions():
         path = fm.get("_path")
         if not path:
             continue
-        try:
-            content = Path(path).read_text()
-        except OSError:
+        # T-2102: use mtime-keyed body cache (was: re-read + parse_frontmatter per request).
+        body = _get_body_cached(path)
+        if not body:
             continue
-        _, body = parse_frontmatter(content)
         if _extract_decision(body) != "pending":
             continue
 
@@ -268,18 +300,23 @@ def _load_pending_human_acs():
         path = fm.get("_path")
         if not path:
             continue
-        try:
-            content = Path(path).read_text()
-        except OSError:
+        # T-2102: use mtime-keyed body cache (was: re-read + parse_frontmatter per request).
+        body = _get_body_cached(path)
+        if not body:
             continue
-        _, body = parse_frontmatter(content)
+
+        # T-2075 (T-2064 GO): canonical predicate — shared with `fw review-queue`.
+        # Gate FIRST on the cheap predicate, then run the full per-AC parse for
+        # display detail. Previously this used `_parse_acceptance_criteria` →
+        # filter on `section == "human"` → filter on `not checked` — which
+        # drifted from the CLI's inline regex on tasks with HTML-commented
+        # template stubs. Centralising the predicate kills the drift class.
+        if not needs_human_review(body):
+            continue
 
         all_acs = _parse_acceptance_criteria(body)
         human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
         unchecked = [ac for ac in human_acs if not ac["checked"]]
-
-        if not unchecked:
-            continue
 
         # Calculate age from date_finished or last_update
         age_days = 0
@@ -365,6 +402,49 @@ def _load_paused_dispatches():
     return out
 
 
+def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
+    """T-1961: arcs ready for closure review on /approvals.
+
+    Filters: status=='in-progress' AND completion_ratio >= threshold AND
+    anchor-task `## Recommendation` block present. Returns one dict per
+    qualifying arc with the fields the template needs to render a row.
+    """
+    import glob
+    import yaml as _yaml
+    from web.blueprints.arcs import (
+        _resolve_constituents,
+        _completion_stats,
+        _anchor_recommendation,
+    )
+    out: list[dict] = []
+    for f in sorted(glob.glob(str(PROJECT_ROOT / ".context" / "arcs" / "*.yaml"))):
+        try:
+            arc = _yaml.safe_load(open(f).read()) or {}
+        except (OSError, _yaml.YAMLError):
+            continue
+        if str(arc.get("status") or "").strip() != "in-progress":
+            continue
+        constituents = _resolve_constituents(arc)
+        stats = _completion_stats(constituents)
+        if stats["ratio"] < threshold:
+            continue
+        rec = _anchor_recommendation(arc)
+        if not rec.get("present"):
+            continue
+        out.append({
+            "slug": str(arc.get("slug") or "").strip(),
+            "id": str(arc.get("id") or "").strip(),
+            "name": str(arc.get("name") or arc.get("slug") or ""),
+            "anchor": rec.get("anchor_id", ""),
+            "verdict": rec.get("verdict", "?"),
+            "completion_ratio": stats["ratio"],
+            "completed": stats["completed"],
+            "total": stats["total"],
+            "headline_mechanic": str(arc.get("headline_mechanic") or ""),
+        })
+    return out
+
+
 def _build_approvals_context():
     """Build template context for approvals page."""
     pending_tier0 = _load_pending_approvals()
@@ -373,6 +453,7 @@ def _build_approvals_context():
     pending_acs = _load_pending_human_acs()
     deferred_count = _count_deferred_inceptions()
     paused_dispatches = _load_paused_dispatches()  # T-1808
+    arcs_close_ready = _load_close_ready_arcs()  # T-1961
 
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
@@ -381,7 +462,8 @@ def _build_approvals_context():
         for t in pending_acs
     )
     paused_count = len(paused_dispatches)  # T-1808
-    total = tier0_count + go_count + len(pending_acs) + paused_count
+    arc_close_count = len(arcs_close_ready)  # T-1961
+    total = tier0_count + go_count + len(pending_acs) + paused_count + arc_close_count
 
     # Count tasks ready for batch completion (all human ACs checked)
     ready_count = sum(
@@ -395,11 +477,13 @@ def _build_approvals_context():
         pending_go=pending_go,
         pending_acs=pending_acs,
         paused_dispatches=paused_dispatches,
+        arcs_close_ready=arcs_close_ready,
         tier0_count=tier0_count,
         go_count=go_count,
         ac_count=ac_count,
         ac_task_count=len(pending_acs),
         paused_count=paused_count,
+        arc_close_count=arc_close_count,
         total_count=total,
         active_count=tier0_count,
         ready_count=ready_count,

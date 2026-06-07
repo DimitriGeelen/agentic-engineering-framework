@@ -21,11 +21,11 @@ events broadcast by the collector's own session — missed cross-session
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/publish-learning-to-bus.sh` | calls |
-| `.context/project/received-learnings.yaml` | writes |
-| `.context/working/.subscribe-learnings-bus.cursor` | writes |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [publish-learning-to-bus](/docs/generated/lib-publish-learning-to-bus) | calls | TODO: describe what this component does |
+| `.context/project/received-learnings.yaml` | writes | — |
+| `.context/working/.subscribe-learnings-bus.cursor` | writes | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-subscribe-learnings-from-bus.yaml`*

@@ -18,21 +18,21 @@ Origin: T-889 (foundation for T-885 service registry)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/config-file.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config-file](/docs/generated/lib-config-file) | calls | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
 
 ## Used By (7)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/config-file.sh` | called-by |
-| `tests/unit/lib_config_file.bats` | called-by |
-| `tests/integration/fw_config.bats` | tested_by |
-| `lib/config-file.sh` | called_by |
-| `tests/integration/fw_config.bats` | called_by |
-| `tests/unit/lib_config_file.bats` | called_by |
-| `tests/unit/lib_config_file.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config-file](/docs/generated/lib-config-file) | called-by | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
+| [lib_config_file](/docs/generated/tests-unit-lib_config_file) | called-by | Unit tests for lib/config-file.sh — fw config set/get/list commands |
+| [fw_config](/docs/generated/tests-integration-fw_config) | tested_by | Integration tests for fw config CLI (9 tests) |
+| [config-file](/docs/generated/lib-config-file) | called_by | Reads and writes persistent project-level settings in .framework.yaml with round-trip YAML editing that preserves comments |
+| [fw_config](/docs/generated/tests-integration-fw_config) | called_by | Integration tests for fw config CLI (9 tests) |
+| [lib_config_file](/docs/generated/tests-unit-lib_config_file) | called_by | Unit tests for lib/config-file.sh — fw config set/get/list commands |
+| [lib_config_file](/docs/generated/tests-unit-lib_config_file) | tests_by | Unit tests for lib/config-file.sh — fw config set/get/list commands |
 
 ## Related
 

@@ -13,10 +13,10 @@ Tests: early exits (no src, no .ts), stale guard, verbose flag, npx missing
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/build.sh` | calls |
-| `lib/build.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [build](/docs/generated/lib-build) | calls | fw build subcommand: placeholder for future build orchestration. Currently unused. |
+| [build](/docs/generated/lib-build) | tests | fw build subcommand: placeholder for future build orchestration. Currently unused. |
 
 ## Related
 

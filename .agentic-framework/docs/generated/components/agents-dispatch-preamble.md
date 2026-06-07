@@ -12,11 +12,11 @@ Mandatory Dispatch Preamble
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/check-dispatch.sh` | referenced_by |
-| `agents/context/check-dispatch.sh` | references_by |
-| `agents/context/check-dispatch-pre.sh` | read_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-dispatch](/docs/generated/agents-context-check-dispatch) | referenced_by | Dispatch Guard — PostToolUse hook for Task/TaskOutput result size. Warns when sub-agent results exceed safe thresholds (G-008 enforcement). — _check-dispatch.sh warning messages direct users to this preamble_ |
+| [check-dispatch](/docs/generated/agents-context-check-dispatch) | references_by | Dispatch Guard — PostToolUse hook for Task/TaskOutput result size. Warns when sub-agent results exceed safe thresholds (G-008 enforcement). |
+| [check-dispatch-pre](/docs/generated/agents-context-check-dispatch-pre) | read_by | PreToolUse hook: gate agent dispatch count — blocks Agent tool when parallel limit reached (max 5). Prevents T-073-class context explosions. |
 
 ## Related
 

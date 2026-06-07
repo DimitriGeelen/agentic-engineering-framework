@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="/static/pico.min.css">
     <script src="/static/htmx.min.js"></script>
     <script src="/static/csrf-htmx.js"></script>
+    <!-- T-2074: htmx error→toast handler. Standalone template (doesn't extend base.html)
+         needed its own load — origin T-2063 (Complete button silent 4xx fail). -->
+    <script src="/static/htmx-toast.js"></script>
     <style>
         /* Mobile-first: single column, large touch targets */
         * { box-sizing: border-box; }
@@ -586,10 +589,13 @@
     </div>
     {% endfor %}
 
-    <!-- Human ACs with polling -->
+    <!-- Human ACs with polling
+         hx-target="this" override required — base.html sets body-level hx-target="#content",
+         which would otherwise swap the AC fragment into the whole content area (T-2060). -->
     <div id="ac-container"
          hx-get="/review/{{ task_id }}/acs"
          hx-trigger="every 5s"
+         hx-target="this"
          hx-swap="innerHTML">
         {% include '_review_acs.html' %}
     </div>
@@ -604,7 +610,13 @@
     </div>
     {% endif %}
 
-    <!-- Toast container + htmx error handler (T-1582, T-1574 follow-up) -->
+    <!-- Toast container + showToast helper (T-1582, T-1574 follow-up).
+         T-2119 (2026-05-30): inline htmx:responseError + htmx:sendError listeners
+         removed — web/static/htmx-toast.js (loaded in <head>) now owns wiring.
+         Inline showToast STAYS so htmx-toast.js's getShowToast() picks it up via
+         window.showToast and uses this CSS-styled implementation in preference
+         to its minimal fallback. Closes the double-toast regression T-2074
+         introduced (its init() wired a second listener pair on top of these). -->
     <div id="toast-container" style="position:fixed;top:1rem;right:1rem;z-index:9999;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;"></div>
     <script>
         function showToast(msg, type) {
@@ -620,14 +632,7 @@
                 setTimeout(function() { toast.remove(); }, 300);
             }, 3000);
         }
-        document.body.addEventListener('htmx:responseError', function(evt) {
-            var msg = 'Save failed';
-            try { msg = evt.detail.xhr.responseText.replace(/<[^>]*>/g, '').trim().substring(0, 100) || msg; } catch(e) {}
-            showToast(msg, 'error');
-        });
-        document.body.addEventListener('htmx:sendError', function() {
-            showToast('Network error — check server', 'error');
-        });
+        /* htmx:responseError + htmx:sendError listeners → web/static/htmx-toast.js (T-2074, T-2119). */
     </script>
 
 </body>

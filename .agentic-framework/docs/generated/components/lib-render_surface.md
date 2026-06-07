@@ -17,6 +17,15 @@ subjective question — "does this look right?" — must be answered by
 eyes, not by tests. Tasks touching these files must declare at least
 one [REVIEW] Human AC so the human review path catches the visual
 
+## Used By (4)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | called_by | TODO: describe what this component does |
+| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | TODO: describe what this component does |
+| [check_render_surface_human_ac_sigpipe](/docs/generated/tests-unit-check_render_surface_human_ac_sigpipe) | tests_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-render_surface.yaml`*
 *Last verified: 2026-05-09*

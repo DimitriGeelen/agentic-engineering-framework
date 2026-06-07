@@ -10,12 +10,12 @@ Unit tests for audit scan scripts (T-961)
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/audit/active-task-scan.py` | calls |
-| `agents/audit/completed-task-scan.py` | calls |
-| `agents/audit/active-task-scan.py` | tests |
-| `agents/audit/completed-task-scan.py` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [active-task-scan](/docs/generated/agents-audit-active-task-scan) | calls | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
+| [completed-task-scan](/docs/generated/agents-audit-completed-task-scan) | calls | Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria |
+| [active-task-scan](/docs/generated/agents-audit-active-task-scan) | tests | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
+| [completed-task-scan](/docs/generated/agents-audit-completed-task-scan) | tests | Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria |
 
 ## Related
 

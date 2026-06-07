@@ -13,10 +13,10 @@ Tests fw_run_ts() — TypeScript/Python runtime fallback
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/runtime.sh` | calls |
-| `lib/runtime.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [runtime](/docs/generated/lib-runtime) | calls | Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution. |
+| [runtime](/docs/generated/lib-runtime) | tests | Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_runtime.yaml`*

@@ -10,10 +10,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/tasks.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [tasks](/docs/generated/web-blueprints-tasks) | calls | Flask blueprint: Tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_task_inline.yaml`*

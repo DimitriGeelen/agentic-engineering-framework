@@ -18,12 +18,12 @@ block → returns 8 items (B1..B8)
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/task_pair_acd.sh` | calls |
-| `lib/task_pair_acd.py` | calls |
-| `lib/task_pair_acd.py` | tests |
-| `lib/task_pair_acd.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | calls | TODO: describe what this component does |
+| [task_pair_acd-py](/docs/generated/lib-task_pair_acd-py) | calls | Task-pair §ACD gate (P-012, T-1762) — Python core. Parses inception Recommendation->Decomposition headings, verifies promised follow-up build tasks shipped via related_tasks chain. Mirror of T-1668/T-1671 arc-level §ACD gate at task-pair level (G-066 prong 2 implementation per T-1713 GO). |
+| [task_pair_acd-py](/docs/generated/lib-task_pair_acd-py) | tests | Task-pair §ACD gate (P-012, T-1762) — Python core. Parses inception Recommendation->Decomposition headings, verifies promised follow-up build tasks shipped via related_tasks chain. Mirror of T-1668/T-1671 arc-level §ACD gate at task-pair level (G-066 prong 2 implementation per T-1713 GO). |
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_task_pair_acd_parser.yaml`*

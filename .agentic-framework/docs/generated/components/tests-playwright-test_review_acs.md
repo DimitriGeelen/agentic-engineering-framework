@@ -10,10 +10,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/review.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [review](/docs/generated/web-blueprints-review) | calls | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_review_acs.yaml`*

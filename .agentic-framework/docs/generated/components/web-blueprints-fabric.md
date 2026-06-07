@@ -19,25 +19,25 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
-| `web/templates/fabric.html` | renders |
-| `web/templates/fabric_detail.html` | renders |
-| `web/templates/fabric_explorer.html` | renders |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [fabric](/docs/generated/web-templates-fabric) | renders | Watchtower UI page: Fabric |
+| [fabric_detail](/docs/generated/web-templates-fabric_detail) | renders | Watchtower UI page: Fabric Detail |
+| [fabric_explorer](/docs/generated/web-templates-fabric_explorer) | renders | Interactive D3.js Fabric Explorer — force-directed graph with subsystem bubbles, component expansion, source/report viewers, search, and pathfinding. 1,584 LOC template with CSS isolation (all: initial) to prevent Pico CSS bleeding. |
 
 ## Used By (9)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/app.py` | called_by |
-| `web/app.py` | registered_by |
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
-| `web/templates/fabric_explorer.html` | used-by |
-| `web/templates/fabric_explorer.html` | rendered_by_by |
-| `tests/playwright/test_api_fabric_source.py` | called_by |
-| `tests/playwright/test_fabric_detail.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | called_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [app](/docs/generated/web-app) | registered_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
+| [fabric_explorer](/docs/generated/web-templates-fabric_explorer) | used-by | Interactive D3.js Fabric Explorer — force-directed graph with subsystem bubbles, component expansion, source/report viewers, search, and pathfinding. 1,584 LOC template with CSS isolation (all: initial) to prevent Pico CSS bleeding. |
+| [fabric_explorer](/docs/generated/web-templates-fabric_explorer) | rendered_by_by | Interactive D3.js Fabric Explorer — force-directed graph with subsystem bubbles, component expansion, source/report viewers, search, and pathfinding. 1,584 LOC template with CSS isolation (all: initial) to prevent Pico CSS bleeding. |
+| [test_api_fabric_source](/docs/generated/tests-playwright-test_api_fabric_source) | called_by | Playwright tests for fabric file APIs (T-1025). |
+| [test_fabric_detail](/docs/generated/tests-playwright-test_fabric_detail) | called_by | Playwright tests for fabric component detail page (T-1041). |
 
 ## Related
 

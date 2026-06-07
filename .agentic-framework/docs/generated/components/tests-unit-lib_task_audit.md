@@ -12,10 +12,10 @@ and does not flag legitimate authored content.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/task-audit.sh` | calls |
-| `lib/task-audit.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [task-audit](/docs/generated/lib-task-audit) | calls | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
+| [task-audit](/docs/generated/lib-task-audit) | tests | Scans task files for literal placeholder content that should have been replaced during authoring, blocking review and inception decisions until resolved |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_task_audit.yaml`*

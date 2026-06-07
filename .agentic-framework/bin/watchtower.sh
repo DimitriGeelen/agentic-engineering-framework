@@ -18,6 +18,9 @@ FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
 source "$FRAMEWORK_ROOT/lib/config.sh"
 source "$FRAMEWORK_ROOT/lib/firewall.sh"
+# T-1803: shared identity helpers (_watchtower_port_holder_is_ours,
+# _watchtower_identity_matches) so the writer reuses the reader's identity check.
+source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 # PID/LOG in PROJECT_ROOT so review.sh and watchtower.sh find them in the same place (T-1154)
 PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"
 # T-1287: port + url triple alongside pid (foundation for T-1284 3-layer discovery)
@@ -141,7 +144,21 @@ do_start() {
 
     # Check port availability
     if port_in_use "$port"; then
-        log_warn "Port $port is in use. Attempting to free it..."
+        # T-1803: NEVER signal a port holder that isn't THIS project's Watchtower.
+        # On a multi-project host the holder may be a neighbor's live service
+        # (the T-1802 wrong-dashboard / neighbor-kill incident). Only recycle our
+        # OWN stale instance — one that still identifies as ours via /api/_identity.
+        # A holder we can't positively identify as ours is treated as foreign and
+        # left untouched; clear our own hung instance with `stop` (PID-based).
+        if ! _watchtower_port_holder_is_ours "$port"; then
+            log_error "Port $port is held by a FOREIGN service (not this project's Watchtower)."
+            log_error "  Refusing to send it any signal. Identify it with:"
+            log_error "    ss -tlnp | grep ':${port} '"
+            log_error "  Then start on another port (--port N) or stop that service yourself."
+            exit 1
+        fi
+
+        log_warn "Port $port held by this project's own (stale) Watchtower. Freeing it..."
         local retry=0
         while port_in_use "$port" && [ "$retry" -lt 3 ]; do
             retry=$((retry + 1))
@@ -190,7 +207,18 @@ do_start() {
 
         # Check HTTP response
         if curl -sf "http://localhost:${port}/" > /dev/null 2>&1; then
-            log_info "Health check passed."
+            # T-1803: triple self-validation — the 200 must come from OUR instance,
+            # not a foreign service that grabbed the port in a race. Only then is
+            # the watchtower.{port,url} triple trustworthy. On mismatch, refuse to
+            # write a triple pointing at a neighbor; kill our process and abort.
+            if ! _watchtower_port_holder_is_ours "$port"; then
+                log_error "Port $port responds but identifies as a FOREIGN service, not this project's Watchtower."
+                log_error "  Refusing to write a triple pointing at it. Aborting."
+                kill -KILL "$new_pid" 2>/dev/null || true
+                rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+                exit 1
+            fi
+            log_info "Health check passed (identity verified)."
             ensure_firewall_open "$port"
 
             local lan_ip

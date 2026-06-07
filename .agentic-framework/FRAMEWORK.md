@@ -76,6 +76,60 @@ Four statuses: `captured`, `started-work`, `issues`, `work-completed`.
 | Decommission | Remove obsolete code |
 | Inception | Explore problem space, validate assumptions, go/no-go decision |
 
+## Arc System
+
+An **arc** is a multi-task workspace grouping work by theme — the
+longitudinal narrative around multiple tasks pursuing one
+user-observable mechanic. Where a task answers "what are we doing
+right now," an arc answers "what is the whole thing this row of
+tasks is in service of, and how will we know when it's done?"
+
+Arcs are **optional**. Standalone tasks remain first-class. Use an
+arc when work spans more than ~3 tasks with a shared headline mechanic.
+
+### Arc File Structure
+
+Arcs live as YAML files in `.context/arcs/`. The filename stem is
+the *slug* (human-readable); the YAML `id:` field is the *immutable
+numeric id* (`arc-NNN`, allocated sequentially at create-time).
+Either form routes to the same arc.
+
+### Arc Lifecycle (Four States)
+
+```
+draft  ──── fw arc start ────► in-progress ──── fw arc close ────► closed
+   │                                │
+   └── fw arc abandon ──┐  ┌── fw arc abandon ┘
+                        ▼  ▼
+                    abandoned
+```
+
+| State | Meaning |
+|-------|---------|
+| `draft` | Created, not yet active. Use for arcs spec'd ahead of pickup. |
+| `in-progress` | Active work. Default after `fw arc start`. |
+| `closed` | Shipped. `demo_evidence` captured. Terminal. |
+| `abandoned` | No longer pursued. `abandonment_reason` captured. Terminal. |
+
+Terminal transitions (`close`, `abandon`) are refused under
+`$CLAUDECODE=1` — closure decisions belong to the human via Watchtower
+review (T-1671 §ACD/G-062 Default-to-OPEN gate).
+
+### Task ↔ Arc Membership
+
+A task joins an arc via `arc_id:` in its frontmatter (slug or arc-NNN
+form). A PreToolUse hook refuses edits to tasks whose `arc_id:` does
+not resolve to a registered arc (bypass: `FW_ALLOW_ARC_ID_DRIFT=1`).
+
+### D-Immutability
+
+Arc identifiers are append-only: no renumber, no reuse, no delete.
+Slug rename is permitted but rare. The historical record is the
+artefact. See `012-ArcSystem.md` for the full invariant.
+
+For the complete reference (fields, audit checks, Watchtower surface,
+CLI verbs), see **[012-ArcSystem.md](012-ArcSystem.md)**.
+
 ## Enforcement Tiers
 
 | Tier | Description | Bypass | Implementation |
@@ -202,22 +256,45 @@ fw tier0 approve     # Approve a blocked destructive command
 | Read last handover | `cat .context/handovers/LATEST.md` |
 | Approve Tier 0 | `fw tier0 approve` |
 | Project health | `fw doctor` |
+| Create arc | `fw arc create <slug> --name "..." --headline-mechanic "..." --anchor T-XXXX` |
+| Start arc (draft → in-progress) | `fw arc start <slug>` |
+| Close arc (ship) | `fw arc close <slug> --demo <path\|url\|none> --decision "..."` |
+| Abandon arc (no longer pursued) | `fw arc abandon <slug> --reason "<≥30 chars>"` |
+| Focus arc | `fw arc focus <slug>` |
+| List arcs | `fw arc list` |
+| Show arc detail | `fw arc show <slug>` |
+| Rank tasks by BVP | `fw bvp` |
+| Show per-driver detail for a task | `fw bvp T-XXX` |
+| Filter ranking by quadrant | `fw bvp --quadrant {hv-lc\|hv-hc\|lv-lc\|lv-hc}` |
+| Change driver weight (§ACD) | `fw bvp weight --set Dn=N --rationale "..."` |
+| Confirm task scores | `fw bvp confirm T-XXX` |
+| Approve arc-scoped driver (§ACD) | `fw arc approve-driver <arc> "<name>" [--weight N]` |
+| Surface estimator-proposed scoped drivers | `fw arc show-suggestions <arc>` |
+| Recover legacy consumer (pre-T-2232) | `fw consumer-recover <host> [path] [--apply] [--via {ssh,termlink}]` |
 
 ## Glossary
 
 | Term | Definition |
 |------|------------|
 | **Antifragility** | Constitutional directive #1. The system strengthens under stress — failures become learning events that improve future behavior, not just errors to recover from. |
+| **Arc** | A multi-task workspace grouping work by theme. Holds the longitudinal narrative around several tasks pursuing one user-observable mechanic. Has a four-state lifecycle (`draft → in-progress → closed/abandoned`), an immutable `arc-NNN` id, and a human-readable slug. Optional — tasks without an arc remain first-class. See `012-ArcSystem.md`. |
+| **D-Immutability** | The arc-system axiom that identifiers are append-only: no renumber, no reuse, no delete. Slug rename is permitted but rare. The historical record (including closed and abandoned arcs) is the artefact. |
 | **Blast Radius** | The set of downstream components affected by a change. Computed by the Component Fabric via `fw fabric blast-radius`. |
 | **Context Fabric** | The persistent memory system managed by the Context Agent. Stores working memory (session state), project memory (patterns, decisions), and episodic memory (task histories). Lives in `.context/`. |
 | **Enforcement Tiers** | Four levels of action governance. Tier 0: human-approved destructive actions. Tier 1: standard operations (require active task). Tier 2: human situational overrides. Tier 3: pre-approved safe operations. |
 | **Episodic Memory** | Condensed history of completed tasks — what was done, what worked, what failed. Auto-generated on task completion. Stored in `.context/episodic/`. Used by agents to learn from past experience. |
 | **Healing Loop** | The antifragile error-recovery cycle: classify failure, look up similar patterns, suggest recovery, log resolution. Triggered when a task enters `issues` status. See `fw healing`. |
 | **Horizon** | Priority scheduling field on tasks. `now` = ready to work on, `next` = ready after current work, `later` = parked/backlog. Controls handover suggestions and task ordering. |
-| **Inception** | A workflow type for exploring a problem space before committing to build. Produces a go/no-go decision with evidence. Build tasks are created separately after a GO decision. |
+| **Inception** | A workflow type for exploring a problem space before committing to build. Produces a go/no-go decision with evidence. Build tasks are created separately after a GO decision. See `050-Inceptions.md` for the lifecycle, disposition gate, scoring exception (`target_blast_radius` + VoI), three-tier adjudication, and park-state semantics. |
 | **Project Memory** | Patterns, decisions, and learnings accumulated across all tasks. Persists between sessions. Stored in `.context/project/`. |
 | **Sovereignty** | The human's absolute authority in the Authority Model. Humans can override anything but are accountable for the outcome. Structural gates enforce sovereignty — agents cannot bypass them. |
 | **Working Memory** | Active session state: current focus, pending actions, recent context. Lives in `.context/working/`. Refreshed each session via `fw context init`. |
+| **BVP (Business Value Points)** | A directive-weighted score on tasks/arcs: `Σ(driver_weight × driver_score)` where score is 0–5 and weight is 0–9. Surfaces high-value/low-cost work in the quadrant view. Adapted from Geelen 2019; see `040-ValueDrivers.md`. |
+| **Value Driver** | A named dimension along which work is scored. Carries a weight (integer 0–9). Total drivers (protected + free) ≤ 9. See `040-ValueDrivers.md`. |
+| **Free Driver** | A project-level value driver beyond the four constitutional directives. Up to 5 per project; adding a 6th triggers M1 add-one-drop-one. Managed via `fw bvp driver --add/--remove` (§ACD). |
+| **Arc-Scoped Driver** | A driver registered on a single arc, distinguishing what the global directives don't capture. Cap 3 per arc, weight ≤ 6 (M2). Managed via `fw arc approve-driver` (§ACD). |
+| **Directive Scoring** | The per-task act of assigning 0–5 to each driver. Calibrated to ±1 across independent scorers; rubric in `policy/bvp-scoring-rubric.md`. |
+| **Quadrant** | The split of the task list on median BVP × median cost (`hv-lc`, `hv-hc`, `lv-lc`, `lv-hc`). Medians are recomputed live each invocation — no calibration thresholds to set. |
 
 ## Installation
 

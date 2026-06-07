@@ -17,17 +17,17 @@ Designed to be run from cron on a weekly schedule and manually via `fw release`.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | called_by |
-| `gh` | calls |
-| `git` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| `gh` | calls | — |
+| `git` | calls | — |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `.context/cron-registry.yaml` | triggers |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `.context/cron-registry.yaml` | triggers | — |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-release.yaml`*

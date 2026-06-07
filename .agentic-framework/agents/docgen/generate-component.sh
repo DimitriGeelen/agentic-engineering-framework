@@ -29,13 +29,10 @@ mkdir -p "$OUTPUT_DIR"
 
 if [ "${1:-}" = "--all" ]; then
     echo -e "${CYAN}Generating reference docs for all components...${NC}"
-    count=0
-    for card in "$COMPONENTS_DIR"/*.yaml; do
-        [ -f "$card" ] || continue
-        python3 "$GENERATOR" "$card" "$FRAMEWORK_ROOT" "$OUTPUT_DIR"
-        count=$((count + 1))
-    done
-    echo -e "${GREEN}Generated $count component reference docs in $OUTPUT_DIR${NC}"
+    # Batch mode (T-2049): one process builds the card index once, then loops —
+    # avoids rebuilding the 768-card index per card (O(n²)).
+    python3 "$GENERATOR" --all "$FRAMEWORK_ROOT" "$OUTPUT_DIR"
+    echo -e "${GREEN}Done — docs in $OUTPUT_DIR${NC}"
 elif [ -n "${1:-}" ]; then
     card="$1"
     [ -f "$card" ] || card="$COMPONENTS_DIR/$1"

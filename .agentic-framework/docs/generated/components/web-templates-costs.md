@@ -8,10 +8,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/costs.py` | renders |
-| `web/blueprints/costs.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [costs](/docs/generated/web-blueprints-costs) | renders | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
+| [costs](/docs/generated/web-blueprints-costs) | rendered_by | Watchtower /costs page — token usage dashboard with session table and project summary (T-802) |
 
 ## Related
 

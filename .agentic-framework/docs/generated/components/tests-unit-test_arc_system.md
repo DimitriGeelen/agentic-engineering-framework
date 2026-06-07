@@ -14,11 +14,11 @@ explicit env_extra={"CLAUDECODE": "1"} where needed).
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | calls |
-| `lib/arc.sh` | calls |
-| `agents/handover/handover.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_arc_system.yaml`*

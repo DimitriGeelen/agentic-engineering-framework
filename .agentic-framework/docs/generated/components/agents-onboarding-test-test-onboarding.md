@@ -21,22 +21,22 @@ From T-307 inception GO → T-317 build task.
 
 ## Dependencies (8)
 
-| Target | Relationship |
-|--------|-------------|
-| `?` | uses |
-| `?` | uses |
-| `lib/paths.sh` | calls |
-| `agents/context/check-active-task.sh` | calls |
-| `C-007` | calls |
-| `C-004` | calls |
-| `agents/audit/self-audit.sh` | calls |
-| `agents/handover/handover.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `?` | uses | — |
+| `?` | uses | — |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [check-active-task](/docs/generated/agents-context-check-active-task) | calls | Task-First Enforcement Hook — PreToolUse gate for Write/Edit tools |
+| [budget-gate](/docs/generated/budget-gate) | calls | Block Write/Edit/Bash tool execution when context budget reaches critical level (>=170K tokens). Primary enforcement for P-009. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [self-audit](/docs/generated/agents-audit-self-audit) | calls | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ## Related
 

@@ -14,11 +14,11 @@ the symptom in pre-compact.sh).
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/upgrade.sh` | calls |
-| `lib/upgrade.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_duplicate_hook_detection.yaml`*

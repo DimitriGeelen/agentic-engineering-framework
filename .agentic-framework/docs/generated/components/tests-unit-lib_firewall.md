@@ -13,10 +13,10 @@ Origin: T-910
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/firewall.sh` | calls |
-| `lib/firewall.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [firewall](/docs/generated/lib-firewall) | calls | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
+| [firewall](/docs/generated/lib-firewall) | tests | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
 
 ## Related
 

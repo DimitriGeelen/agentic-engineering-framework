@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/prompts.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [prompts](/docs/generated/web-blueprints-prompts) | rendered_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-prompt_detail.yaml`*

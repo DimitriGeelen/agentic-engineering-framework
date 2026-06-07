@@ -17,19 +17,19 @@ Output: docs/generated/components/{card-name}.md
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/docgen/generate_component.py` | calls |
-| `lib/paths.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [generate_component](/docs/generated/agents-docgen-generate_component) | calls | Python implementation for component reference documentation generation from fabric cards |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/docgen_component.bats` | tested_by |
-| `tests/unit/docgen_component.bats` | called_by |
-| `tests/unit/docgen_component.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [docgen_component](/docs/generated/tests-unit-docgen_component) | tested_by | Unit tests for agents/docgen/generate-component.sh (6 tests) |
+| [docgen_component](/docs/generated/tests-unit-docgen_component) | called_by | Unit tests for agents/docgen/generate-component.sh (6 tests) |
+| [docgen_component](/docs/generated/tests-unit-docgen_component) | tests_by | Unit tests for agents/docgen/generate-component.sh (6 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-docgen-generate-component.yaml`*

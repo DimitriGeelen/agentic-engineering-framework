@@ -13,9 +13,9 @@ Source termlink.sh inside a subshell that ignores its trailing
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/termlink/termlink.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_termlink_dispatch_task_type.yaml`*

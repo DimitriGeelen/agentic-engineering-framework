@@ -117,6 +117,33 @@ if [ -f "$FRAMEWORK_ROOT/lib/paths.sh" ]; then
 fi
 INCEPTION_COMMIT_LIMIT=$(fw_config "INCEPTION_COMMIT_LIMIT" 2 2>/dev/null || echo 2)
 
+# --- Inception commit classifier (T-2195) ---
+# An inception commit is "exploration" (counts toward budget) if its diff touches
+# anything OUTSIDE the inception's own task file in .tasks/{active,completed}/.
+# A "storage" commit (filing-only, status flip, demote, frontmatter edit) is
+# exempt — these are bookkeeping, not exploration. Origin: T-2186 hit the
+# budget at its 3rd commit (Step 0 findings) because filing + demote consumed
+# 2/2 with zero exploration. Same scoring-shaped rigidity the inception was
+# trying to recalibrate.
+#
+# Returns the count on stdout. Assumes TASK_REF is set.
+_count_inception_exploration_commits() {
+    local task_ref="$1"
+    local total=0
+    local sha files
+    # Subject-anchored match (T-1328) avoids counting body-mentions.
+    while IFS= read -r sha; do
+        [ -z "$sha" ] && continue
+        files=$(git show --name-only --format= "$sha" 2>/dev/null || echo "")
+        # If ANY file is outside .tasks/{active,completed}/T-XXX-*, this is exploration.
+        # grep -v matches storage-pattern lines; if anything remains, we count.
+        if echo "$files" | grep -vE "^\.tasks/(active|completed)/${task_ref}-" | grep -q '[^[:space:]]'; then
+            total=$((total + 1))
+        fi
+    done < <(git log --oneline 2>/dev/null | grep -E "^[0-9a-f]+ ${task_ref}:" | awk '{print $1}')
+    echo "$total"
+}
+
 # --- Inception Gate (T-126, T-1176) ---
 # Block commits on inception tasks after exploration threshold unless decision recorded
 # Threshold configurable via FW_INCEPTION_COMMIT_LIMIT (default: 2)
@@ -130,12 +157,14 @@ if [ -n "$TASK_REF" ]; then
         fi
 
         if [ "$HAS_DECISION" = false ]; then
-            # Count existing commits for this inception task.
-            # Match only commits whose SUBJECT starts with "T-XXX:" (T-1328) —
-            # using --grep against the full message would match body mentions of
-            # the same ID in unrelated commits. --oneline gives "<sha> <subject>"
-            # so anchor on the subject after the sha.
-            INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
+            # Count existing exploration commits for this inception task (T-2195).
+            # Storage commits (task-file-only edits: filing, demote, status flips,
+            # frontmatter changes) are exempt. The classifier looks at each commit's
+            # diff and counts only those touching files outside the task's own .md.
+            # Origin: T-2186 hit the limit at commit 3 (Step 0 findings) because
+            # filing + demote consumed 2/2 with zero exploration — a scoring-shaped
+            # rigidity in the very system the inception was recalibrating.
+            INCEPTION_COMMITS=$(_count_inception_exploration_commits "$TASK_REF")
 
             if [ "$INCEPTION_COMMITS" -ge "$INCEPTION_COMMIT_LIMIT" ]; then
                 echo ""
@@ -170,8 +199,8 @@ fi
 # First commit is allowed (task creation). Subsequent commits must have the artifact
 # either on disk already or in the staged changes.
 if [ -n "$TASK_REF" ] && [ -n "$TASK_FILE" ] && grep -q "^workflow_type: inception" "$TASK_FILE" 2>/dev/null; then
-    # T-1328: anchor on subject prefix so body-mentions don't inflate the count
-    INCEPTION_COMMITS=$(git log --oneline 2>/dev/null | grep -cE "^[0-9a-f]+ ${TASK_REF}:" || true)
+    # T-2195: exploration-only counter; storage commits exempt.
+    INCEPTION_COMMITS=$(_count_inception_exploration_commits "$TASK_REF")
     if [ "$INCEPTION_COMMITS" -gt 0 ]; then
         # Check if docs/reports/ changes are in this commit
         HAS_STAGED_RESEARCH=$(git diff --cached --name-only | grep -c "^docs/reports/" || true)
@@ -467,10 +496,10 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603, T-1829)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.4
+# VERSION=1.5
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
@@ -622,6 +651,52 @@ if [ -n "$_yaml_failures" ]; then
     echo "Fix the YAML, then push again." >&2
     echo "Bypass: git push --no-verify (Tier 0 protected, logged)" >&2
     exit 1
+fi
+
+# T-2240: Self-vendor drift gate (F2 N×M closure).
+# Origin: T-2095 extracted _self_vendor_libs() into `fw vendor self`; T-2232 made
+# the in-consumer upgrade path durable via .upstream sentinel; T-2239 split the
+# dry-run wording ("would sync" vs "synced"). The gap T-2240 closes: editing
+# lib/*.sh without running `fw vendor self` leaves the vendored copy at
+# .agentic-framework/lib/ stale. `fw upgrade` is the only flow that catches it,
+# and upgrade is not part of the push flow — so consumers that vendor from
+# origin/master inherit the stale lib/ silently.
+#
+# Guard 1: only run in the framework repo (consumers have no root-level bin/fw —
+# their fw lives at .agentic-framework/bin/fw and they don't have a vendored
+# .agentic-framework/lib/ to drift). Consumer-safe by construction.
+# Guard 2: FW_SKIP_SELF_VENDOR_CHECK=1 bypass for legitimate skip scenarios
+# (e.g. release prep where vendor refresh is the next commit). Tier-2 visibility
+# via stderr WARN — matches existing hook pattern (no separate log writes).
+if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" ]; then
+    if [ "${FW_SKIP_SELF_VENDOR_CHECK:-0}" = "1" ]; then
+        echo "" >&2
+        echo "WARN: Self-vendor drift check skipped (FW_SKIP_SELF_VENDOR_CHECK=1)" >&2
+        echo "  Class: T-2240/T-2241 — vendored .agentic-framework/ may diverge from source" >&2
+        echo "" >&2
+    else
+        _sv_out=$("$PROJECT_ROOT/bin/fw" vendor self --dry-run 2>&1 || true)
+        if echo "$_sv_out" | grep -q "would sync"; then
+            echo "" >&2
+            echo "ERROR: Push blocked — self-vendor drift detected (T-2240):" >&2
+            echo "" >&2
+            echo "$_sv_out" | grep "would sync" | head -3 >&2
+            echo "" >&2
+            echo "Vendored .agentic-framework/ is stale; see the 'would sync' line(s)" >&2
+            echo "above for the affected class(es). Consumers that vendor from origin" >&2
+            echo "would inherit the divergence silently." >&2
+            echo "" >&2
+            echo "Fix:" >&2
+            echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/ && git commit -m 'T-XXX: refresh vendored copies'" >&2
+            echo "" >&2
+            echo "Bypass (logged Tier-2):" >&2
+            echo "  FW_SKIP_SELF_VENDOR_CHECK=1 git push" >&2
+            echo "Bypass (Tier 0):" >&2
+            echo "  git push --no-verify" >&2
+            echo "" >&2
+            exit 1
+        fi
+    fi
 fi
 
 # Resolve audit script. Priority (T-1396):

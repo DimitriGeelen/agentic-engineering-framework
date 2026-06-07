@@ -16,11 +16,11 @@ session-start context — not just on a manual `fw doctor`.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/post-compact-resume.sh` | calls |
-| `agents/context/post-compact-resume.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [post-compact-resume](/docs/generated/agents-context-post-compact-resume) | calls | Session Resume Hook — Reinject structured context on session recovery |
+| [post-compact-resume](/docs/generated/agents-context-post-compact-resume) | tests | Session Resume Hook — Reinject structured context on session recovery |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-session_start_hook_warning.yaml`*

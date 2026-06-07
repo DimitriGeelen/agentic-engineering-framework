@@ -1,0 +1,226 @@
+/* =============================================================================
+ * Watchtower Foundation Tokens  —  arc-007 (watchtower-redesign) slice S0, T-1991
+ * Source: docs/design/watchtower-redesign-2026-05-13/project/foundations.jsx
+ *
+ * Layer model:
+ *   1. Palette token sets (--wt-*), keyed by [data-wt-palette]; :root defaults to slate.
+ *   2. Dark variants, driven off the EXISTING [data-theme="dark"] toggle
+ *      (base.html wtToggleTheme + wt-theme localStorage) AND the future
+ *      [data-wt-mode="dark"] picker selector. Both supported — no parallel mechanism.
+ *   3. Pico-bridge: re-points core --pico-* vars at --wt-* so the 400+ existing
+ *      Pico-var usages across 30+ templates follow the active palette for free.
+ *      MUST be loaded after pico.min.css (base.html link order).
+ *   4. Type-pairing font tokens, keyed by [data-wt-type]; default inter.
+ *      @font-face webfont loading is DEFERRED — stacks fall back to system fonts.
+ *   5. Density scale tokens, keyed by [data-wt-density]; default compact.
+ *
+ * Scope fence (S0): NO page-level edits. Picker that sets the data-* attributes
+ * ships in S1 (T-1988). Application of density across pages is S3-S5.
+ * ========================================================================== */
+
+/* ---- 1. Palette token sets (light). :root = slate default ---------------- */
+:root,
+[data-wt-palette="slate"] {
+  --wt-bg: #fafafa; --wt-surface: #ffffff; --wt-border: #e5e7eb;
+  --wt-text: #0f172a; --wt-muted: #64748b;
+  --wt-accent: #4f46e5; --wt-accent-ink: #ffffff;
+  --wt-success: #10b981; --wt-warn: #f59e0b; --wt-danger: #ef4444; --wt-info: #0ea5e9;
+}
+[data-wt-palette="linen"] {
+  --wt-bg: #f7f4ec; --wt-surface: #fbf8f1; --wt-border: #e8e1d2;
+  --wt-text: #1f1b16; --wt-muted: #7a7163;
+  --wt-accent: #b35636; --wt-accent-ink: #fbf8f1; /* T-2006: darkened terracotta #c4623f→#b35636 for WCAG AA (ink/accent 3.83→4.60) */
+  --wt-success: #5b8a5a; --wt-warn: #c98a2b; --wt-danger: #b1503e; --wt-info: #3a7088;
+}
+[data-wt-palette="stone"] {
+  --wt-bg: #f5f4f0; --wt-surface: #ffffff; --wt-border: #e6e4dd;
+  --wt-text: #1a1a17; --wt-muted: #6b685e;
+  --wt-accent: #5a6b3a; --wt-accent-ink: #ffffff;
+  --wt-success: #5a8a3a; --wt-warn: #c08418; --wt-danger: #a44a2d; --wt-info: #36647a;
+}
+[data-wt-palette="paper"] {
+  --wt-bg: #fafafa; --wt-surface: #ffffff; --wt-border: #ececec;
+  --wt-text: #111111; --wt-muted: #6b6b6b;
+  --wt-accent: #1f4ed8; --wt-accent-ink: #ffffff;
+  --wt-success: #0e8a4f; --wt-warn: #cf8a14; --wt-danger: #d33232; --wt-info: #1f4ed8;
+}
+[data-wt-palette="bone"] {
+  --wt-bg: #f6f2eb; --wt-surface: #fbf8f1; --wt-border: #e6dfd0;
+  --wt-text: #1b1814; --wt-muted: #7a7160;
+  --wt-accent: #b87a17; --wt-accent-ink: #1b1814;
+  --wt-success: #5e8a3a; --wt-warn: #c98a2b; --wt-danger: #a8442e; --wt-info: #3a6a82;
+}
+[data-wt-palette="console"] {
+  --wt-bg: #fafafa; --wt-surface: #ffffff; --wt-border: #e5e7eb;
+  --wt-text: #0b0d10; --wt-muted: #5a6270;
+  --wt-accent: #22c55e; --wt-accent-ink: #06140b;
+  --wt-success: #22c55e; --wt-warn: #f5b73c; --wt-danger: #f87171; --wt-info: #67e8f9;
+}
+
+/* ---- 2. Dark variants (driven off existing data-theme + future wt-mode) -- */
+/* Only bg/surface/border/text/muted shift in dark; accent set stays.        */
+[data-theme="dark"],
+[data-wt-mode="dark"] {
+  --wt-bg: #0b0f17; --wt-surface: #11161f; --wt-border: #1f2937;
+  --wt-text: #e5e7eb; --wt-muted: #94a3b8;
+}
+[data-theme="dark"][data-wt-palette="slate"],
+[data-wt-mode="dark"][data-wt-palette="slate"] {
+  --wt-bg: #0b0f17; --wt-surface: #11161f; --wt-border: #1f2937;
+  --wt-text: #e5e7eb; --wt-muted: #94a3b8;
+}
+[data-theme="dark"][data-wt-palette="linen"],
+[data-wt-mode="dark"][data-wt-palette="linen"] {
+  --wt-bg: #16130e; --wt-surface: #1d1913; --wt-border: #2d2820;
+  --wt-text: #ebe5d8; --wt-muted: #9b9180;
+}
+[data-theme="dark"][data-wt-palette="stone"],
+[data-wt-mode="dark"][data-wt-palette="stone"] {
+  --wt-bg: #15150f; --wt-surface: #1c1c16; --wt-border: #2a2a22;
+  --wt-text: #e8e7df; --wt-muted: #a09c8e;
+}
+[data-theme="dark"][data-wt-palette="paper"],
+[data-wt-mode="dark"][data-wt-palette="paper"] {
+  --wt-bg: #0a0a0a; --wt-surface: #141414; --wt-border: #222222;
+  --wt-text: #ededed; --wt-muted: #9c9c9c;
+}
+[data-theme="dark"][data-wt-palette="bone"],
+[data-wt-mode="dark"][data-wt-palette="bone"] {
+  --wt-bg: #14110b; --wt-surface: #1c1810; --wt-border: #2b2517;
+  --wt-text: #ece5d2; --wt-muted: #a59a7f;
+}
+[data-theme="dark"][data-wt-palette="console"],
+[data-wt-mode="dark"][data-wt-palette="console"] {
+  --wt-bg: #0a0c0e; --wt-surface: #101316; --wt-border: #1a1f24;
+  --wt-text: #dbe5e0; --wt-muted: #79858c;
+}
+
+/* ---- 3. Pico-bridge: re-point Pico vars at --wt-* (load AFTER pico) ------ */
+/* This is the keystone (review-A1/A7): every existing var(--pico-*) usage     */
+/* now follows the active palette without touching any page.                   */
+/* T-2003 fix: declared at :root:not([data-theme=dark]),[data-theme=dark] so it  */
+/* matches/beats Pico v2's light selector :root:not([data-theme=dark]) (0,2,0).  */
+/* A bare :root (0,1,0) lost in light mode, leaving content-page chrome on Pico   */
+/* defaults (--pico-primary #0172ad) regardless of palette. Both arms keep the    */
+/* bridge winning in light AND dark (dark already worked via source order).       */
+:root:not([data-theme="dark"]),
+[data-theme="dark"] {
+  --pico-background-color: var(--wt-bg);
+  --pico-card-background-color: var(--wt-surface);
+  --pico-card-sectioning-background-color: var(--wt-surface);
+  --pico-card-border-color: var(--wt-border);
+  --pico-color: var(--wt-text);
+  --pico-h1-color: var(--wt-text);
+  --pico-h2-color: var(--wt-text);
+  --pico-h3-color: var(--wt-text);
+  --pico-h4-color: var(--wt-text);
+  --pico-h5-color: var(--wt-text);
+  --pico-h6-color: var(--wt-text);
+  --pico-muted-color: var(--wt-muted);
+  --pico-muted-border-color: var(--wt-border);
+  --pico-border-color: var(--wt-border);
+  --pico-contrast: var(--wt-text);
+  --pico-contrast-background: var(--wt-text);
+  --pico-contrast-inverse: var(--wt-bg);
+  /* primary = accent */
+  --pico-primary: var(--wt-accent);
+  --pico-primary-background: var(--wt-accent);
+  --pico-primary-border: var(--wt-accent);
+  --pico-primary-underline: var(--wt-accent);
+  --pico-primary-hover: var(--wt-accent);
+  --pico-primary-hover-background: color-mix(in srgb, var(--wt-accent) 88%, black);
+  --pico-primary-focus: color-mix(in srgb, var(--wt-accent) 25%, transparent);
+  --pico-primary-inverse: var(--wt-accent-ink);
+  /* secondary = muted */
+  --pico-secondary: var(--wt-muted);
+  --pico-secondary-background: var(--wt-muted);
+  --pico-secondary-border: var(--wt-muted);
+  --pico-secondary-hover: var(--wt-text);
+  --pico-secondary-hover-background: color-mix(in srgb, var(--wt-muted) 85%, black);
+  --pico-secondary-focus: color-mix(in srgb, var(--wt-muted) 25%, transparent);
+  --pico-secondary-inverse: var(--wt-accent-ink);
+  /* form + state colors */
+  --pico-form-element-background-color: var(--wt-surface);
+  --pico-form-element-border-color: var(--wt-border);
+  --pico-form-element-color: var(--wt-text);
+  --pico-form-element-placeholder-color: var(--wt-muted);
+  --pico-del-color: var(--wt-danger);
+  --pico-ins-color: var(--wt-success);
+  --pico-mark-background-color: var(--wt-warn);
+  /* fonts (bridge to type pairing) */
+  --pico-font-family-sans-serif: var(--wt-font-sans);
+  --pico-font-family-monospace: var(--wt-font-mono);
+  --pico-font-family: var(--wt-font-sans);
+}
+
+/* ---- 4. Type-pairing font tokens. :root = inter default ------------------ */
+/* T-2004: webfonts SELF-HOSTED under /static/fonts (OFL, fetched from          */
+/* fontsource) — no external CDN, no runtime dependency. Without these the type */
+/* options all fell back to identical system-ui. 400 + 600 per sans family;     */
+/* 700 synthesises from 600. font-display:swap avoids invisible-text on load.   */
+@font-face { font-family:"Inter";        font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/inter-400.woff2") format("woff2"); }
+@font-face { font-family:"Inter";        font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/inter-600.woff2") format("woff2"); }
+@font-face { font-family:"Geist";        font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/geist-400.woff2") format("woff2"); }
+@font-face { font-family:"Geist";        font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/geist-600.woff2") format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/plex-400.woff2") format("woff2"); }
+@font-face { font-family:"IBM Plex Sans"; font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/plex-600.woff2") format("woff2"); }
+@font-face { font-family:"Manrope";      font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/manrope-400.woff2") format("woff2"); }
+@font-face { font-family:"Manrope";      font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/manrope-600.woff2") format("woff2"); }
+@font-face { font-family:"Newsreader";   font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/newsreader-400.woff2") format("woff2"); }
+@font-face { font-family:"Newsreader";   font-style:normal; font-weight:600; font-display:swap; src:url("/static/fonts/newsreader-600.woff2") format("woff2"); }
+@font-face { font-family:"JetBrains Mono"; font-style:normal; font-weight:400; font-display:swap; src:url("/static/fonts/jetbrainsmono-400.woff2") format("woff2"); }
+
+:root,
+[data-wt-type="inter"] {
+  --wt-font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --wt-font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --wt-font-head: var(--wt-font-sans);
+}
+[data-wt-type="geist"] {
+  --wt-font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --wt-font-mono: "Geist Mono", ui-monospace, Menlo, monospace;
+  --wt-font-head: var(--wt-font-sans);
+}
+[data-wt-type="plex"] {
+  --wt-font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --wt-font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --wt-font-head: var(--wt-font-sans);
+}
+[data-wt-type="manrope"] {
+  --wt-font-sans: "Manrope", system-ui, -apple-system, sans-serif;
+  --wt-font-mono: "DM Mono", ui-monospace, Menlo, monospace;
+  --wt-font-head: var(--wt-font-sans);
+}
+[data-wt-type="newsreader"] {
+  --wt-font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --wt-font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --wt-font-head: "Newsreader", Georgia, "Times New Roman", serif;
+}
+[data-wt-type="system"] {
+  --wt-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --wt-font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --wt-font-head: var(--wt-font-sans);
+}
+
+/* ---- 4b. Headings + mono follow the type pairing (T-2004) ---------------- */
+/* Pico headings inherit --pico-font-family (the sans bridge), so the serif     */
+/* pairings (newsreader → --wt-font-head) never reached h1-h6. Element selector */
+/* + source order (foundations loads after pico) makes these win.               */
+h1, h2, h3, h4, h5, h6,
+hgroup > :first-child {
+  font-family: var(--wt-font-head);
+}
+code, kbd, samp, pre, .mono, [class*="mono"] {
+  font-family: var(--wt-font-mono);
+}
+
+/* ---- 5. Density scale tokens. :root = compact default -------------------- */
+/* T-2004: each density also drives --pico-font-size (the root font-size Pico   */
+/* applies). Because Pico sizes everything in rem, scaling the root font-size   */
+/* scales BOTH text and spacing across all pages — one lever, global effect.    */
+/* This overrides Pico's viewport-responsive --pico-font-size (foundations      */
+/* loads after pico), trading responsive sizing for explicit user density.      */
+:root,
+[data-wt-density="compact"]    { --wt-density-scale: 0.875; --wt-space: 0.5rem;  --wt-font-size: 0.875rem; --wt-row-pad: 0.35rem; --pico-font-size: 100%; }
+[data-wt-density="cozy"]        { --wt-density-scale: 1;     --wt-space: 0.75rem; --wt-font-size: 1rem;     --wt-row-pad: 0.6rem; --pico-font-size: 112.5%; }
+[data-wt-density="comfortable"] { --wt-density-scale: 1.125; --wt-space: 1rem;   --wt-font-size: 1.0625rem; --wt-row-pad: 0.85rem; --pico-font-size: 125%; }

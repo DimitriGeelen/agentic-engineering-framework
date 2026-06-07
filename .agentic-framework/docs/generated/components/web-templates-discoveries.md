@@ -10,15 +10,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `?` | uses |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `?` | uses | — |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/discoveries.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [discoveries](/docs/generated/web-blueprints-discoveries) | rendered_by | Flask blueprint serving /discoveries route. Displays audit discovery findings with WARN/FAIL status from cron and manual audits. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-discoveries.yaml`*

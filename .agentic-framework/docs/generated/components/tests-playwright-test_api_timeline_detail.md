@@ -12,10 +12,10 @@ Episodic data renders task summary, outcomes, decisions etc
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/timeline.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [timeline](/docs/generated/web-blueprints-timeline) | calls | Blueprint 'timeline' — routes: /timeline |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_timeline_detail.yaml`*

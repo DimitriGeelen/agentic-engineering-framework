@@ -6,15 +6,17 @@
 
 ## What It Does
 
-Pre-build report file list for research artifact check
+## Used By (7)
 
-## Used By (3)
-
-| Component | Relationship |
-|-----------|-------------|
-| `C-004` | called_by |
-| `tests/unit/audit_scan.bats` | called_by |
-| `tests/unit/audit_scan.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit_scan](/docs/generated/tests-unit-audit_scan) | called_by | TODO: describe what this component does |
+| [audit_scan](/docs/generated/tests-unit-audit_scan) | tests_by | TODO: describe what this component does |
+| [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | called_by | TODO: describe what this component does |
+| [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | tests_by | TODO: describe what this component does |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | called_by | TODO: describe what this component does |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
 
 ## Related
 

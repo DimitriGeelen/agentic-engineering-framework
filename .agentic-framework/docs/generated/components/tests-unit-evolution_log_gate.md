@@ -15,10 +15,10 @@ with mocked NEW_STATUS / TASK_FILE / SKIP_EVOLUTION.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/evolution_log.sh` | calls |
-| `lib/evolution_log.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [evolution_log](/docs/generated/lib-evolution_log) | calls | TODO: describe what this component does |
+| [evolution_log](/docs/generated/lib-evolution_log) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-evolution_log_gate.yaml`*

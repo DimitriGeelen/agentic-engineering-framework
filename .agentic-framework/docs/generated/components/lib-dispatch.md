@@ -31,14 +31,14 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 
 ## Used By (6)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `lib/bus.sh` | called_by |
-| `agents/context/check-agent-dispatch.sh` | called_by |
-| `tests/unit/lib_dispatch.bats` | called-by |
-| `tests/unit/lib_dispatch.bats` | called_by |
-| `tests/unit/lib_dispatch.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [bus](/docs/generated/lib-bus) | called_by | fw bus - Task-scoped result ledger for sub-agent communication |
+| [check-agent-dispatch](/docs/generated/agents-context-check-agent-dispatch) | called_by | Agent Dispatch Gate — PreToolUse hook for Agent tool. Tracks dispatches per session, blocks 3rd+ unless approved or TermLink not installed. |
+| [lib_dispatch](/docs/generated/tests-unit-lib_dispatch) | called-by | Unit tests for dispatch (9 tests) |
+| [lib_dispatch](/docs/generated/tests-unit-lib_dispatch) | called_by | Unit tests for dispatch (9 tests) |
+| [lib_dispatch](/docs/generated/tests-unit-lib_dispatch) | tests_by | Unit tests for dispatch (9 tests) |
 
 ## Related
 

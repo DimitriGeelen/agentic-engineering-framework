@@ -1,5 +1,25 @@
 <!-- AC fragment for /review/T-XXX — rendered inline and via htmx polling (T-667) -->
 
+{# T-2114 (third sibling of T-2112, T-2113):
+   The wrapping #ac-container DIV (review.html:592-598) declares hx-target="this"
+   for its own 5s polling cycle. htmx INHERITS hx-target to descendants — so the
+   explicit "Reload page" link below, AND every URL emitted by render_markdown_safe
+   inside AC Steps/Expected/If-not text, would otherwise swap their boost-response
+   INTO this small fragment area (cockpit-shell-stays-visible-above-and-bounces-back-
+   in-5s — same bug class as T-2112 /approvals + T-2113 /cockpit).
+
+   Wrapper-reset pattern (chosen over per-anchor triplet because markdown-rendered
+   URLs would otherwise need to be patched at render_markdown_safe level —
+   broader blast radius): a top-level reset div tells all descendants to swap
+   into #content (the page shell). The polling DIV's hx-target="this" resolves
+   on the polling DIV itself, not on this reset wrapper — so the polling cycle
+   continues to target #ac-container correctly. One reset > N per-anchor overrides.
+
+   If a future maintainer thinks this reset is redundant: read T-2112 RCA first.
+   The first hx-boost'ed anchor inside the polling div that loses its override
+   re-introduces the bounce-back. #}
+<div hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+
 <!-- Progress bar -->
 <div class="ac-progress">
     Human ACs: {{ checked_count }}/{{ total_count }}
@@ -12,8 +32,19 @@
 {% for ac in human_acs %}
 <div class="ac-card {% if ac.checked %}checked{% endif %}">
     <div class="ac-card-header">
+        {# T-2134 (T-2133 GO slice A): explicit hx-target="this" overrides the
+           outer wrapper's hx-target="#content" (T-2114). Standalone review.html
+           has no #content element; without this override, htmx fires
+           htmx:targetError and ABORTS the POST before any of configRequest /
+           beforeRequest, so CSRF never runs and the click silently no-ops.
+           hx-swap="none" makes the actual target irrelevant for response
+           handling — `this` (the form) always resolves and satisfies htmx's
+           target-must-exist precondition. The two sibling forms below
+           (inception decide, build complete) already declare their own
+           hx-target; this restores that contract for ac-check. #}
         <form class="ac-check" hx-post="/api/task/{{ task_id }}/toggle-ac"
               hx-vals='{"line": "{{ ac.line_idx }}"}'
+              hx-target="this"
               hx-swap="none"
               hx-on::after-request="htmx.ajax('GET', '/review/{{ task_id }}/acs', {target:'#ac-container', swap:'innerHTML'})">
             <input type="checkbox" {% if ac.checked %}checked{% endif %}
@@ -72,6 +103,17 @@
         <span style="color: {{ _dec_color }}; font-weight: 700;">{{ _dec_upper }}</span>
     </div>
 </div>
+{% elif task_completed %}
+{# T-2081 / T-2082 (L-441 sibling of T-1575): non-inception sibling guard.
+   Without this, the 5-second poll on #ac-container wipes the POST-swap
+   response and re-renders the Complete button for a task that has ALREADY
+   been work-completed. Surface the completion state instead. #}
+<div class="complete-section" id="task-completed-marker">
+    <div style="border-left: 4px solid #10b981; padding: 0.75rem 1rem; background: rgba(0,0,0,0.02); border-radius: 4px;">
+        <strong style="color: #10b981;">✓ Task completed.</strong>
+        <a href="/review/{{ task_id }}" style="margin-left: 0.5rem; font-size: 0.85rem;">Reload page</a> for fresh view.
+    </div>
+</div>
 {% elif all_checked and total_count > 0 %}
 {% if workflow_type == 'inception' %}
 <div class="decide-section" id="inception-decide-form">
@@ -105,3 +147,5 @@
 </div>
 {% endif %}
 {% endif %}
+
+</div>{# T-2114: end of hx-target="#content" reset wrapper #}

@@ -11,15 +11,15 @@ Initializes working memory for a new session
 
 ## Used By (7)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-001` | called_by |
-| `agents/context/session-metrics.sh` | used-by |
-| `agents/context/context.sh` | called-by |
-| `agents/context/session-metrics.sh` | read_by |
-| `tests/lint/no-bare-fw-in-gate-scripts.bats` | tests_by |
-| `tests/unit/context_init.bats` | called_by |
-| `tests/unit/context_init.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | called_by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [session-metrics](/docs/generated/agents-context-session-metrics) | used-by | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
+| [context-dispatcher](/docs/generated/context-dispatcher) | called-by | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [session-metrics](/docs/generated/agents-context-session-metrics) | read_by | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
+| [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [context_init](/docs/generated/tests-unit-context_init) | called_by | Unit tests for context init (16 tests) |
+| [context_init](/docs/generated/tests-unit-context_init) | tests_by | Unit tests for context init (16 tests) |
 
 ## Documentation
 

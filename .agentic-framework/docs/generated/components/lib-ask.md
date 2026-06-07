@@ -33,28 +33,24 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
 **Required frontmatter fields:**
 - `id`, `name`, `description`, `status`, `workflow_type`, `horizon`, `owner`, `created`, `last_update`
 
-### Horizon (Priority Scheduling)
-
-The `horizon` field controls when a task should be considered for work:
-
 *(truncated — see CLAUDE.md for full section)*
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `?` | uses |
-| `lib/paths.sh` | calls |
-| `lib/ask.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `?` | uses | — |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [ask-py](/docs/generated/lib-ask-py) | calls | Python implementation of fw ask subcommand (sibling of lib/ask.sh) |
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/lib_ask.bats` | tested_by |
-| `tests/unit/lib_ask.bats` | called_by |
-| `tests/unit/lib_ask.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_ask](/docs/generated/tests-unit-lib_ask) | tested_by | Unit tests for lib/ask.sh (5 tests) |
+| [lib_ask](/docs/generated/tests-unit-lib_ask) | called_by | Unit tests for lib/ask.sh (5 tests) |
+| [lib_ask](/docs/generated/tests-unit-lib_ask) | tests_by | Unit tests for lib/ask.sh (5 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ask.yaml`*

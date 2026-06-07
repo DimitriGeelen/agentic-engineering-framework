@@ -19,19 +19,19 @@ Usage:
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/task-create/create-task.sh` | calls |
-| `lib/paths.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/observe.bats` | tested_by |
-| `tests/unit/observe.bats` | called_by |
-| `tests/unit/observe.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [observe](/docs/generated/tests-unit-observe) | tested_by | Unit tests for agents/observe/observe.sh (7 tests) |
+| [observe](/docs/generated/tests-unit-observe) | called_by | Unit tests for agents/observe/observe.sh (7 tests) |
+| [observe](/docs/generated/tests-unit-observe) | tests_by | Unit tests for agents/observe/observe.sh (7 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-observe-observe.yaml`*

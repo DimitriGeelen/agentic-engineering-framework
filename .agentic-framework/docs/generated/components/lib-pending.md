@@ -12,9 +12,9 @@ not complete in-session. Resolved entries are flagged, not deleted.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/notify.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [notify](/docs/generated/lib-notify) | calls | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pending.yaml`*

@@ -14,10 +14,10 @@ this fixture pins it.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tools/escalation-scan-v0.5.py` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_cron_generate_shape.yaml`*

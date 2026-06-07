@@ -18,17 +18,17 @@ Steps:
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `?` | uses |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `?` | uses | — |
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/lib_first_run.bats` | called-by |
-| `tests/unit/lib_first_run.bats` | called_by |
-| `tests/unit/lib_first_run.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [lib_first_run](/docs/generated/tests-unit-lib_first_run) | called-by | Unit tests for lib/first-run.sh (4 tests) |
+| [lib_first_run](/docs/generated/tests-unit-lib_first_run) | called_by | Unit tests for lib/first-run.sh (4 tests) |
+| [lib_first_run](/docs/generated/tests-unit-lib_first_run) | tests_by | Unit tests for lib/first-run.sh (4 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-first-run.yaml`*

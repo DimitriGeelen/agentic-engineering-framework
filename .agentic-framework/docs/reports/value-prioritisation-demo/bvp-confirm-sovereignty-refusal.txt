@@ -1,0 +1,11 @@
+Error: agents must not invoke 'fw bvp confirm' directly (§ACD, M6).
+
+  You appear to be running inside Claude Code ($CLAUDECODE=1).
+  Weight/driver changes carry policy-edit authority (D8 — sovereignty
+  at policy-edit time) and belong to the human, recorded via Watchtower.
+
+  Correct flow: human reviews proposed scores in Watchtower or runs `fw bvp confirm T-<id> --i-am-human`
+
+  Overrides (mirror T-1259 inception-decide / T-1671 arc-close):
+    --i-am-human       human typing into an agent session (rare)
+    --from-watchtower  Flask backend POST

@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/spawn.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [spawn](/docs/generated/lib-spawn) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-pi_worker.yaml`*

@@ -10,20 +10,20 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `.tasks/completed` | reads |
-| `.tasks/active` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `.tasks/completed` | reads | — |
+| `.tasks/active` | reads | — |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/task_pair_acd.sh` | called_by |
-| `agents/task-create/update-task.sh` | called_by |
-| `tests/unit/test_file_route_extensions.py` | called_by |
-| `tests/unit/test_task_pair_acd_parser.bats` | called_by |
-| `tests/unit/test_task_pair_acd_parser.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [task_pair_acd](/docs/generated/lib-task_pair_acd) | called_by | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | called_by | Task Update Agent - Status transitions with auto-triggers |
+| [test_file_route_extensions](/docs/generated/tests-unit-test_file_route_extensions) | called_by | TODO: describe what this component does |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | called_by | TODO: describe what this component does |
+| [test_task_pair_acd_parser](/docs/generated/tests-unit-test_task_pair_acd_parser) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-task_pair_acd-py.yaml`*

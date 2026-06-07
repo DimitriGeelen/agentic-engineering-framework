@@ -5,7 +5,17 @@
 </div>
 
 {% if gaps %}
-{% for g in gaps %}
+{# T-2043: bound rendered height — order active (non-closed) gaps first so they're always
+   inline, then render the first _gaps_cap and wrap the overflow (mostly closed/resolved)
+   in a collapsed <details> (display:none → excluded from scrollHeight and full_page
+   screenshots, every gap still in the DOM one click away). Same card-list class as T-2040. #}
+{% set _gaps_ordered = (gaps|rejectattr('status','equalto','closed')|list) + (gaps|selectattr('status','equalto','closed')|list) %}
+{% set _gaps_cap = 20 %}
+{% for g in _gaps_ordered %}
+{% if loop.index == _gaps_cap + 1 %}
+<details class="gaps-overflow" style="margin:0.75rem 0;">
+<summary style="cursor:pointer; font-weight:600; padding:0.5rem 0.6rem; color:var(--wt-accent); border:1px dashed var(--pico-muted-border-color); border-radius:6px;">Show {{ _gaps_ordered|length - _gaps_cap }} more gap{{ 's' if (_gaps_ordered|length - _gaps_cap) != 1 }} — mostly closed / resolved</summary>
+{% endif %}
 <article>
     <header>
         <div class="flex-between">
@@ -67,6 +77,33 @@
     </details>
     {% endif %}
 
+    {# T-2185: Close action — surfaces when gap has a closure_check_command and gauge=READY.
+       Disabled tooltip when gauge=NOT_READY/UNKNOWN; absent when no command configured.
+       Inline result via HTMX swap. #}
+    {% set _gs = gauge_by_id.get(g.id) %}
+    {% if g.status == 'watching' and _gs and _gs.has_gauge %}
+    <div class="gap-close-action" data-gap-id="{{ g.id }}" style="margin-top: 0.5rem;">
+        {% if _gs.verdict == 'READY' %}
+        <form hx-post="/gaps/{{ g.id }}/close"
+              hx-target="closest .gap-close-action"
+              hx-swap="innerHTML"
+              hx-confirm="Close {{ g.id }}? Gauge verdict={{ _gs.verdict }}."
+              style="display:inline;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="contrast" style="padding:0.25rem 0.75rem; font-size:0.85rem;">
+                Close ({{ _gs.verdict }})
+            </button>
+        </form>
+        {% else %}
+        <button type="button" disabled
+                title="Gauge verdict={{ _gs.verdict }} — closure refused until READY"
+                style="padding:0.25rem 0.75rem; font-size:0.85rem; opacity:0.6; cursor:not-allowed;">
+            Close ({{ _gs.verdict }})
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <footer style="text-align: left; border-top: 1px solid var(--pico-muted-border-color); padding-top: 0.5rem; margin-top: 0.5rem; font-size: 0.8rem; color: var(--pico-muted-color);">
         {% if g.related_directives %}Directives: {{ g.related_directives | join(', ') }} | {% endif %}
         Created: {{ g.created | default('unknown') }}
@@ -74,6 +111,7 @@
     </footer>
 </article>
 {% endfor %}
+{% if _gaps_ordered|length > _gaps_cap %}</details><!-- /gaps-overflow (T-2043) -->{% endif %}
 {% else %}
 <div class="coming-soon">
     <h3>No Gaps Found</h3>

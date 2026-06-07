@@ -19,10 +19,10 @@ A live spawn test is intentionally avoided (slow, requires hub running).
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/termlink/termlink.sh` | calls |
-| `agents/termlink/termlink.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
+| [termlink](/docs/generated/agents-termlink-termlink) | tests | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_workflow_env_isolation.yaml`*

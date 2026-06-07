@@ -18,13 +18,13 @@ Tests the do_add_learning() function:
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/context.sh` | calls |
-| `lib/compat.sh` | calls |
-| `C-002` | calls |
-| `C-002` | tests |
-| `lib/compat.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | calls | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [add-learning](/docs/generated/add-learning) | calls | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+| [add-learning](/docs/generated/add-learning) | tests | Add a learning entry to project memory (learnings.yaml). Assigns next L-XXX ID, formats YAML, inserts before candidates section. |
+| [compat](/docs/generated/lib-compat) | tests | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_learning.yaml`*

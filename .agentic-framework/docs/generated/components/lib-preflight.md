@@ -20,19 +20,19 @@ Exit codes:
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `?` | uses |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `?` | uses | — |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `lib/init.sh` | called_by |
-| `tests/unit/lib_preflight.bats` | called-by |
-| `tests/unit/lib_preflight.bats` | called_by |
-| `tests/unit/lib_preflight.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [init](/docs/generated/lib-init) | called_by | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [lib_preflight](/docs/generated/tests-unit-lib_preflight) | called-by | Unit tests for preflight (11 tests) |
+| [lib_preflight](/docs/generated/tests-unit-lib_preflight) | called_by | Unit tests for preflight (11 tests) |
+| [lib_preflight](/docs/generated/tests-unit-lib_preflight) | tests_by | Unit tests for preflight (11 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-preflight.yaml`*

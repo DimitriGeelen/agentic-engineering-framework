@@ -8,15 +8,15 @@
     background: var(--pico-card-background-color);
 }
 .approval-card.pending {
-    border-color: #f59e0b;
-    background: #f59e0b08;
+    border-color: var(--wt-warn);
+    background: color-mix(in srgb, var(--wt-warn) 3%, transparent);
 }
 .approval-card.approved {
-    border-color: #10b981;
+    border-color: var(--wt-success);
     opacity: 0.7;
 }
 .approval-card.rejected {
-    border-color: #ef4444;
+    border-color: var(--wt-danger);
     opacity: 0.7;
 }
 .approval-card.expired {
@@ -42,6 +42,18 @@
     color: var(--pico-muted-color);
     margin-bottom: 0.5rem;
 }
+/* T-2111: callout for arc headline_mechanic in the Arc Closure section.
+   Previously rendered inside .approval-meta (0.75rem muted) — visually a
+   footnote despite being the central reviewer artefact. Same shape as
+   T-2110's arc_review.html: body text + left accent stripe on tinted
+   primary background. If a 3rd consumer lands, promote to shared CSS
+   (T-2102 applied the same "no premature promotion" rule). */
+.headline-mechanic-box {
+    padding: 0.6rem 1rem; background: var(--pico-primary-background);
+    color: var(--pico-color); border-left: 3px solid var(--pico-primary);
+    border-radius: 4px; margin: 0.5rem 0 0 0;
+    font-style: italic; line-height: 1.4;
+}
 .approval-actions {
     display: flex;
     gap: 0.5rem;
@@ -54,17 +66,17 @@
     margin: 0;
 }
 .btn-approve {
-    background: #10b981;
-    border-color: #10b981;
+    background: var(--wt-success);
+    border-color: var(--wt-success);
     color: white;
 }
-.btn-approve:hover { background: #059669; border-color: #059669; }
+.btn-approve:hover { background: color-mix(in srgb, var(--wt-success) 82%, #000); border-color: color-mix(in srgb, var(--wt-success) 82%, #000); }
 .btn-reject {
     background: transparent;
-    border: 1px solid #ef4444;
-    color: #ef4444;
+    border: 1px solid var(--wt-danger);
+    color: var(--wt-danger);
 }
-.btn-reject:hover { background: #ef444422; }
+.btn-reject:hover { background: color-mix(in srgb, var(--wt-danger) 13%, transparent); }
 .approval-feedback {
     width: 100%;
     font-size: 0.8rem;
@@ -81,10 +93,10 @@
     padding: 0.1rem 0.4rem;
     border-radius: 3px;
 }
-.badge-pending { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }
-.badge-approved { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
-.badge-rejected { background: #ef444422; color: #dc2626; border: 1px solid #ef444455; }
-.badge-expired { background: #6b728022; color: #6b7280; border: 1px solid #6b728055; }
+.badge-pending { background: color-mix(in srgb, var(--wt-warn) 13%, transparent); color: var(--wt-warn); border: 1px solid color-mix(in srgb, var(--wt-warn) 33%, transparent); }
+.badge-approved { background: color-mix(in srgb, var(--wt-success) 13%, transparent); color: var(--wt-success); border: 1px solid color-mix(in srgb, var(--wt-success) 33%, transparent); }
+.badge-rejected { background: color-mix(in srgb, var(--wt-danger) 13%, transparent); color: var(--wt-danger); border: 1px solid color-mix(in srgb, var(--wt-danger) 33%, transparent); }
+.badge-expired { background: color-mix(in srgb, var(--wt-muted) 13%, transparent); color: var(--wt-muted); border: 1px solid color-mix(in srgb, var(--wt-muted) 33%, transparent); }
 .empty-state {
     text-align: center;
     padding: 2rem;
@@ -121,11 +133,11 @@
 .approval-stat.total {
     border-color: var(--pico-primary);
 }
-.approval-stat.tier0-active .stat-value { color: #f59e0b; }
-.approval-stat.go-active .stat-value { color: #1565c0; }
-.approval-stat.ac-active .stat-value { color: #7c3aed; }
+.approval-stat.tier0-active .stat-value { color: var(--wt-warn); }
+.approval-stat.go-active .stat-value { color: var(--wt-info); }
+.approval-stat.ac-active .stat-value { color: var(--wt-accent); }
 /* T-1416 (T-1388 B6 / F5): Decisions vs Verifications group visual */
-.approval-stat.decisions-active .stat-value { color: #1565c0; }
+.approval-stat.decisions-active .stat-value { color: var(--wt-info); }
 .approval-stat-group { cursor: pointer; transition: border-color 0.15s; }
 .approval-stat-group:hover { border-color: var(--pico-primary); }
 .approval-stat .stat-breakdown {
@@ -147,8 +159,8 @@
 
 /* GO decision card */
 .approval-card.go-decision {
-    border-color: #1565c0;
-    background: #1565c008;
+    border-color: var(--wt-info);
+    background: color-mix(in srgb, var(--wt-info) 3%, transparent);
 }
 .decision-inline {
     display: flex;
@@ -165,14 +177,14 @@
     cursor: pointer;
     margin: 0;
 }
-.dec-go { color: #10b981; font-weight: 700; }
-.dec-nogo { color: #ef4444; font-weight: 700; }
-.dec-defer { color: #6b7280; font-weight: 700; }
+.dec-go { color: var(--wt-success); font-weight: 700; }
+.dec-nogo { color: var(--wt-danger); font-weight: 700; }
+.dec-defer { color: var(--wt-muted); font-weight: 700; }
 
 /* Human AC group card */
 .approval-card.human-ac-group {
-    border-color: #7c3aed44;
-    background: #7c3aed04;
+    border-color: color-mix(in srgb, var(--wt-accent) 27%, transparent);
+    background: color-mix(in srgb, var(--wt-accent) 2%, transparent);
 }
 .ac-list {
     list-style: none;
@@ -198,10 +210,10 @@
     border-radius: 2px;
     white-space: nowrap;
 }
-.badge-review { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }
-.badge-rubber-stamp { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
-.badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
-.badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+.badge-review { background: color-mix(in srgb, var(--wt-warn) 13%, transparent); color: var(--wt-warn); border: 1px solid color-mix(in srgb, var(--wt-warn) 33%, transparent); }
+.badge-rubber-stamp { background: color-mix(in srgb, var(--wt-success) 13%, transparent); color: var(--wt-success); border: 1px solid color-mix(in srgb, var(--wt-success) 33%, transparent); }
+.badge-startedwork { background: color-mix(in srgb, var(--wt-info) 13%, transparent); color: var(--wt-info); border: 1px solid color-mix(in srgb, var(--wt-info) 33%, transparent); }
+.badge-workcompleted { background: color-mix(in srgb, var(--wt-success) 13%, transparent); color: var(--wt-success); border: 1px solid color-mix(in srgb, var(--wt-success) 33%, transparent); }
 
 /* Section headers */
 .section-header {
@@ -218,10 +230,14 @@
     <h1>Approvals {% if total_count %}<small>({{ total_count }} pending)</small>{% endif %}</h1>
 </div>
 
-<!-- Polling container: auto-refreshes every 10s (T-669) -->
+<!-- Polling container: auto-refreshes every 10s (T-669)
+     hx-target="this" override required — base.html sets body-level hx-target="#content",
+     which would otherwise swap the polling response into the whole page area, destroying
+     the page-header and surrounding chrome (T-2060). -->
 <div id="approvals-content"
      hx-get="/approvals/content"
      hx-trigger="every 10s"
+     hx-target="this"
      hx-swap="innerHTML">
 {% include '_approvals_content.html' %}
 </div><!-- /approvals-content polling container (T-669) -->

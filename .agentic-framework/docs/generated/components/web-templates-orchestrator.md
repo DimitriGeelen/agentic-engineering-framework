@@ -8,15 +8,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/base.html` | extends |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [base](/docs/generated/web-templates-base) | extends | Template: {{ page_title \| default("Watchtower") }} — Agentic Engineering Framework |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/orchestrator.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | rendered_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-orchestrator.yaml`*

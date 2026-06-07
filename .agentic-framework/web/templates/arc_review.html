@@ -1,0 +1,119 @@
+<style>
+    .arc-review-hdr {
+        padding: 1rem; border-left: 4px solid var(--pico-primary);
+        margin-bottom: 1rem; background: var(--pico-card-background-color);
+    }
+    /* T-2110: was color: var(--pico-primary) on background: var(--pico-primary-background) —
+       accent-on-accent-tint = same hue family = unreadable across most palettes
+       (Calm/Editorial/Bone/Paper all failed contrast). Now body text on the tinted
+       primary background, with a left accent stripe to keep the "primary-flavoured"
+       visual signal. Same shape as T-1968 (arc badge dark-on-dark fix). */
+    .headline-mechanic-box {
+        padding: 0.6rem 1rem; background: var(--pico-primary-background);
+        color: var(--pico-color); border-left: 3px solid var(--pico-primary);
+        border-radius: 4px; margin: 0.5rem 0 1rem 0;
+        font-style: italic; line-height: 1.4;
+    }
+    .anchor-rec {
+        padding: 0.8rem 1rem; margin-bottom: 1rem;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 4px; background: var(--pico-card-sectioning-background-color);
+    }
+    .anchor-rec h2 { margin: 0 0 0.5rem 0; font-size: 1rem; }
+    .anchor-rec .verdict-badge {
+        display: inline-block; padding: 0.15rem 0.55rem; border-radius: 3px;
+        font-weight: 600; font-size: 0.78rem; letter-spacing: 0.04em;
+        text-transform: uppercase; margin-right: 0.5rem;
+    }
+    .anchor-rec .verdict-CLOSE { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+    .anchor-rec .verdict-GO { background: var(--pico-primary); color: var(--pico-primary-inverse); }
+    .anchor-rec .verdict-KEEP-OPEN { background: var(--pico-muted-color); color: var(--pico-background-color); }
+    .anchor-rec .verdict-NO-GO { background: var(--wt-danger); color: white; }
+    .anchor-rec .verdict-DEFER { background: var(--pico-muted-background); color: var(--pico-color); border: 1px solid var(--pico-muted-border-color); }
+    .anchor-rec .anchor-rec-sub { color: var(--pico-muted-color); font-size: 0.85rem; }
+    .anchor-rec .rec-body { margin: 0.5rem 0 0 0; }
+    .anchor-rec .rec-body p { margin: 0.3rem 0; }
+    .anchor-rec .rec-body ul { margin: 0.3rem 0 0.3rem 1.2rem; padding: 0; }
+    .review-actions {
+        display: flex; gap: 0.6rem; align-items: center; margin-top: 1.2rem;
+    }
+    .review-actions a[role="button"] { margin: 0; }
+    .empty-rec {
+        padding: 0.8rem 1rem; margin-bottom: 1rem;
+        border: 1px dashed var(--pico-muted-border-color);
+        border-radius: 4px;
+        font-size: 0.9rem; color: var(--pico-muted-color);
+    }
+</style>
+
+<p><a href="/arcs/{{ arc_slug }}">← Back to arc detail</a></p>
+
+<article class="arc-review-hdr">
+    <h1>Review arc: {{ arc.get('name', arc_id) }}</h1>
+    <p class="muted">id: <code>{{ arc.get('id', arc_id) }}</code> · slug: <code>{{ arc_slug }}</code> · status: <strong>{{ arc.status }}</strong></p>
+    {% if arc.get('headline_mechanic') %}
+    <p style="margin: 0.5rem 0 0.25rem 0; font-weight: 600;">Headline mechanic (the deliverable that must have fired):</p>
+    <div class="headline-mechanic-box">{{ arc.headline_mechanic }}</div>
+    {% endif %}
+    <p>
+        anchor: {% if arc.anchor_task %}<a href="/tasks/{{ arc.anchor_task }}">{{ arc.anchor_task }}</a>{% else %}<em>none</em>{% endif %}
+        · constituent tasks: <strong>{{ stats.completed }}/{{ stats.total }}</strong> completed ({{ "%.0f%%" % (stats.ratio * 100) }})
+    </p>
+</article>
+
+{% if recommendation and recommendation.present %}
+<section class="anchor-rec" data-verdict="{{ recommendation.verdict }}">
+    <h2>
+        Agent Recommendation
+        <span class="verdict-badge verdict-{{ recommendation.verdict }}">{{ recommendation.verdict }}</span>
+        {% if recommendation.anchor_id %}
+        <span class="anchor-rec-sub">from anchor task <a href="/tasks/{{ recommendation.anchor_id }}">{{ recommendation.anchor_id }}</a></span>
+        {% endif %}
+    </h2>
+    {% if recommendation.rationale_html %}
+    <div class="rec-body">
+        <strong>Rationale</strong>
+        {{ recommendation.rationale_html | safe }}
+    </div>
+    {% endif %}
+    {% if recommendation.evidence_html %}
+    <div class="rec-body">
+        <strong>Evidence</strong>
+        {{ recommendation.evidence_html | safe }}
+    </div>
+    {% endif %}
+    {% if recommendation.suggested_demo %}
+    <p class="anchor-rec-sub" style="margin: 0.6rem 0 0 0;">
+        Suggested demo: <code>{{ recommendation.suggested_demo }}</code>
+    </p>
+    {% endif %}
+</section>
+{% else %}
+<div class="empty-rec">
+    <strong>No agent recommendation yet.</strong>
+    The anchor task does not have a <code>## Recommendation</code> block.
+    {% if arc.anchor_task %}
+    Open <a href="/tasks/{{ arc.anchor_task }}">{{ arc.anchor_task }}</a> and write one before closing.
+    {% endif %}
+</div>
+{% endif %}
+
+{% if reports %}
+<div style="margin: 1rem 0;">
+    <strong>Reports:</strong>
+    {% for r in reports %}<a href="/file/{{ r.path }}">{{ r.name }}</a>{% if not loop.last %}, {% endif %}{% endfor %}
+</div>
+{% endif %}
+
+<div class="review-actions">
+    {% set _closed = arc.status in ('closed', 'abandoned') %}
+    {% if not _closed %}
+    <a href="/arcs/{{ arc_slug }}/close" role="button">Approve / Override → Close form</a>
+    {% endif %}
+    <a href="/arcs/{{ arc_slug }}" role="button" class="secondary outline">Back to detail</a>
+    {% if _closed %}
+    <span class="muted" style="margin-left: 0.4rem; font-size: 0.85rem;">
+        Arc is <strong>{{ arc.status }}</strong>; close form is no longer available.
+    </span>
+    {% endif %}
+</div>

@@ -1,0 +1,30 @@
+T-2193 inception schema migration — mode: DRY-RUN
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+Defaults: target_blast_radius=3, voi_score=0.5
+Inception tasks found: 378
+
+already-set: 0
+needs-backfill: 378
+
+Files needing backfill (sample, up to 20):
+  .tasks/active/T-1265-export-docs-section-as-pdfdocxother-form.md
+  .tasks/active/T-1271-cross-agent-peer-learning--15-min-termli.md
+  .tasks/active/T-1309-ship-watchtowerservice-systemd-template-.md
+  .tasks/active/T-1611-replace-local-flask-dev-watchtower-with-.md
+  .tasks/active/T-1685-fw-audit-refactor--first-real-consumer-o.md
+  .tasks/active/T-2062-watchtower-review-t-xxx-404-on-completed.md
+  .tasks/active/T-2063-watchtower-complete-button-silent-fail.md
+  .tasks/active/T-2064-task-surfaced-for-review-despite-zero-human-acs.md
+  .tasks/active/T-2065-arc-driver-approve-no-member-bvp-recalc.md
+  .tasks/active/T-2066-inception-detail-template-silently-drops.md
+  .tasks/active/T-2137-multi-option-ac-pattern--choice-spawns-c.md
+  .tasks/active/T-2158-continuous-run-arc--agent-driven-compact.md
+  .tasks/active/T-550-composition-based-adapter-pattern--evalu.md
+  .tasks/active/T-558-build-task-risk-signal-detection--pretoo.md
+  .tasks/active/T-682-termlink-product-feedback----working-dir.md
+  .tasks/active/T-704-dag-federation-for-cross-machine-knowled.md
+  .tasks/active/T-705-kcp-integration--knowledgeyaml-generatio.md
+  .tasks/active/T-844-ssd-evaluation--simple-self-distillation.md
+  .tasks/completed/T-084-watchtower-inception-ui-integration.md
+  .tasks/completed/T-097-deep-reflection-type-a-multi-agent-optim.md
+  ... and 358 more

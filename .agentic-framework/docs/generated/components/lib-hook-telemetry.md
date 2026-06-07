@@ -19,11 +19,11 @@ Files (in $PROJECT_ROOT/.context/working/):
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/hook_telemetry.bats` | called_by |
-| `tests/unit/hook_telemetry.bats` | tests_by |
-| `lib/hook-threshold.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | called_by | TODO: describe what this component does |
+| [hook_telemetry](/docs/generated/tests-unit-hook_telemetry) | tests_by | TODO: describe what this component does |
+| [hook-threshold](/docs/generated/lib-hook-threshold) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-hook-telemetry.yaml`*

@@ -18,13 +18,13 @@ acceptor. Adding a kind to one without the other now fails loudly.
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/termlink/termlink.sh` | calls |
-| `tools/ollama-tool-loop.py` | calls |
-| `agents/termlink/termlink.sh` | tests |
-| `tools/ollama-tool-loop.py` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
+| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | calls | TODO: describe what this component does |
+| [termlink](/docs/generated/agents-termlink-termlink) | tests | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
+| [ollama-tool-loop](/docs/generated/tools-ollama-tool-loop) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_worker_kind_drift.yaml`*

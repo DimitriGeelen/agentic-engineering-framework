@@ -10,24 +10,24 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ## Used By (10)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/discovery.py` | calls |
-| `web/blueprints/core.py` | calls |
-| `web/blueprints/metrics.py` | calls |
-| `web/blueprints/risks.py` | calls |
-| `C-003` | called_by |
-| `web/blueprints/core.py` | called_by |
-| `web/blueprints/metrics.py` | called_by |
-| `web/blueprints/risks.py` | called_by |
-| `web/blueprints/quality.py` | called_by |
-| `web/blueprints/discovery.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | calls | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
+| [core](/docs/generated/web-blueprints-core) | calls | Flask blueprint: Core |
+| [metrics](/docs/generated/web-blueprints-metrics) | calls | Flask blueprint: Metrics |
+| [risks](/docs/generated/web-blueprints-risks) | calls | Flask blueprint 'risks' serving routes: /risks |
+| [learnings-route](/docs/generated/learnings-route) | called_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
+| [core](/docs/generated/web-blueprints-core) | called_by | Flask blueprint: Core |
+| [metrics](/docs/generated/web-blueprints-metrics) | called_by | Flask blueprint: Metrics |
+| [risks](/docs/generated/web-blueprints-risks) | called_by | Flask blueprint 'risks' serving routes: /risks |
+| [quality](/docs/generated/web-blueprints-quality) | called_by | Flask blueprint: Quality |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | called_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-context_loader.yaml`*

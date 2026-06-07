@@ -12,10 +12,10 @@ Origin: 003-NTB-ATC-Plugin pickup envelope P-015 / T-146
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/keylock.sh` | calls |
-| `lib/keylock.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [keylock](/docs/generated/lib-keylock) | calls | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
+| [keylock](/docs/generated/lib-keylock) | tests | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-keylock_subshell_close.yaml`*

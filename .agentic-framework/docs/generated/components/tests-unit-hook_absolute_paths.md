@@ -16,13 +16,13 @@ $target_dir is canonicalized via `cd && pwd` in both entry points.
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/init.sh` | calls |
-| `lib/upgrade.sh` | calls |
-| `.claude/settings.json` | reads |
-| `lib/init.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [init](/docs/generated/lib-init) | calls | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [upgrade](/docs/generated/lib-upgrade) | calls | fw upgrade - Sync framework improvements to a consumer project |
+| [hook-config](/docs/generated/hook-config) | reads | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [init](/docs/generated/lib-init) | tests | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_absolute_paths.yaml`*

@@ -28,14 +28,15 @@ Resolution order (T-885, T-1287, T-1376):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (4)
+## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/check-tier0.sh` | called_by |
-| `C-004` | called_by |
-| `bin/fw` | called_by |
-| `lib/verify-acs.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-tier0](/docs/generated/agents-context-check-tier0) | called_by | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [verify-acs](/docs/generated/lib-verify-acs) | called_by | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
+| [watchtower](/docs/generated/bin-watchtower) | called_by | Launcher script for Watchtower web dashboard. Starts Flask app on configured port with optional debug mode. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-watchtower.yaml`*

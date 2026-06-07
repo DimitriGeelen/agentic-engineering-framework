@@ -16,21 +16,21 @@ Origin: T-823 GO decision — 63% of Human ACs can be verified programmatically.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/verify-acs.sh` | calls |
-| `lib/config.sh` | calls |
-| `lib/watchtower.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [verify-acs](/docs/generated/lib-verify-acs) | calls | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/verify-acs.sh` | called-by |
-| `tests/unit/verify_acs.bats` | called-by |
-| `lib/verify-acs.sh` | called_by |
-| `tests/unit/verify_acs.bats` | called_by |
-| `tests/unit/verify_acs.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [verify-acs](/docs/generated/lib-verify-acs) | called-by | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
+| [verify_acs](/docs/generated/tests-unit-verify_acs) | called-by | Unit tests for verify acs (6 tests) |
+| [verify-acs](/docs/generated/lib-verify-acs) | called_by | Scans work-completed tasks with unchecked Human ACs and runs automated evidence collection where programmatic verification is possible |
+| [verify_acs](/docs/generated/tests-unit-verify_acs) | called_by | Unit tests for verify acs (6 tests) |
+| [verify_acs](/docs/generated/tests-unit-verify_acs) | tests_by | Unit tests for verify acs (6 tests) |
 
 ## Related
 

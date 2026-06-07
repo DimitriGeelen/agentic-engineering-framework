@@ -10,10 +10,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/quality.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [quality](/docs/generated/web-blueprints-quality) | calls | Flask blueprint: Quality |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_quality.yaml`*

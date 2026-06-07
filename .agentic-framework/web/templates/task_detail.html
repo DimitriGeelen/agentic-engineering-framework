@@ -254,6 +254,12 @@
             {{ inline_select(task_id, 'type', ['build','test','refactor','specification','design','decommission','inception'], task.workflow_type, hx_target='#type-result', form_class='inline-flex-center gap-md') }}
             <span id="type-result" class="detail-inline-result"></span>
         </td></tr>
+        {% if task.arc_id %}
+        <tr><th>Arc</th><td>
+            <a href="/arcs/{{ task.arc_id }}"><code>{{ task.arc_id }}</code></a>
+            {% if arc_name %}<span class="muted" style="margin-left: 0.4em;">{{ arc_name }}</span>{% endif %}
+        </td></tr>
+        {% endif %}
         <tr><th>Created</th><td>{{ task.created or '' }}</td></tr>
         <tr><th>Last Update</th><td>{{ task.last_update or '' }}</td></tr>
         {% if task.date_finished %}
@@ -311,6 +317,95 @@
     </div>
 </section>
 {% endif %}
+
+{# T-1980: BVP block — parity with /bvp scatter and /arcs/<id> constituent table.
+   Uses the same _compute_bvp / _compute_cost helpers, so numbers cannot drift. #}
+<section class="bvp-block" data-bvp-mode="{{ bvp.mode }}" style="border: 1px solid var(--pico-muted-border-color); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; background: var(--pico-card-background-color);">
+    <h3 style="margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">
+        BVP
+        {% if bvp.mode == 'confirmed' %}
+            <span style="font-size: 0.7em; padding: 0.1em 0.5em; border-radius: 0.25em; background: #065f46; color: white;">Confirmed</span>
+        {% elif bvp.mode == 'proposed' %}
+            <span style="font-size: 0.7em; padding: 0.1em 0.5em; border-radius: 0.25em; background: #92400e; color: white;"><em>Proposed*</em></span>
+        {% else %}
+            <span style="font-size: 0.7em; padding: 0.1em 0.5em; border-radius: 0.25em; background: var(--pico-muted-border-color); color: var(--pico-muted-color);">No scores</span>
+        {% endif %}
+        <a href="/bvp" style="font-size: 0.7em; margin-left: auto;">View on /bvp →</a>
+    </h3>
+    {% if bvp.mode == 'none' %}
+        <p class="muted" style="margin: 0;">No BVP scores yet. The estimator worker proposes scores periodically (see <a href="/bvp">/bvp</a>); humans confirm via <code>fw bvp confirm {{ task_id }}</code>.</p>
+    {% else %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9em;">Per-driver scores</h4>
+                <table style="margin: 0; font-size: 0.9em;">
+                    <thead><tr><th>Driver</th><th>Score</th><th>Weight</th></tr></thead>
+                    <tbody>
+                    {% for d, s in bvp.scores.items() %}
+                        <tr>
+                            <td>
+                                <code>{{ d }}</code>
+                                {% if bvp.driver_names.get(d) %}<span class="muted" style="margin-left: 0.4em;">{{ bvp.driver_names[d] }}</span>{% endif %}
+                            </td>
+                            <td>{% if bvp.mode == 'proposed' %}<em>{{ s }}*</em>{% else %}{{ s }}{% endif %}</td>
+                            <td>{{ bvp.weights.get(d, '—') }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9em;">Composite</h4>
+                <table style="margin: 0; font-size: 0.9em;">
+                    <tbody>
+                        <tr><th style="text-align: left;">BVP_norm</th><td>
+                            {% if bvp.mode == 'proposed' %}<em>{{ '%.3f'|format(bvp.bvp_norm) }}*</em>{% else %}<strong>{{ '%.3f'|format(bvp.bvp_norm) }}</strong>{% endif %}
+                        </td></tr>
+                        <tr><th style="text-align: left;">BVP_raw</th><td>{{ bvp.bvp_raw }}</td></tr>
+                        <tr><th style="text-align: left;">Cost</th><td>
+                            {% if bvp.cost is not none %}
+                                {% if bvp.mode == 'proposed' %}<em>{{ '%.3f'|format(bvp.cost) }}*</em>{% else %}{{ '%.3f'|format(bvp.cost) }}{% endif %}
+                                <span class="muted" style="font-size: 0.85em;">({{ bvp.cost_source }})</span>
+                            {% else %}<span class="muted">—</span>{% endif %}
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% if bvp.mode == 'proposed' %}
+            <p class="muted" style="font-size: 0.85em; margin: 0.5rem 0 0 0;"><em>*</em> Estimator-proposed (not yet human-confirmed). Confirm via <code>fw bvp confirm {{ task_id }}</code>.</p>
+        {% endif %}
+    {% endif %}
+
+    {# T-1982: arc-scoped drivers — surface the gap T-1981 will resolve.
+       These have weights from the arc YAML but no per-task scores yet, so
+       _compute_bvp silently excludes them. Show them explicitly with their
+       weight + "no score" muted indicator so the gap is visible, not silent. #}
+    {% if arc_scoped_drivers %}
+    <details style="margin-top: 0.8rem;">
+        <summary style="cursor: pointer; font-size: 0.9em;">
+            Arc-scoped drivers
+            <span class="muted">({{ arc_scoped_drivers|length }} weighted but unscored on this task — see <a href="/tasks/T-1981">T-1981</a>)</span>
+        </summary>
+        <table style="margin: 0.5rem 0 0 0; font-size: 0.9em;">
+            <thead><tr><th>Driver</th><th>Score</th><th>Weight</th><th>Rationale</th></tr></thead>
+            <tbody>
+                {% for sd in arc_scoped_drivers %}
+                <tr>
+                    <td><code>{{ sd.get('name', '?') }}</code></td>
+                    <td><span class="muted">— (no score)</span></td>
+                    <td>{{ sd.get('weight', '—') }}</td>
+                    <td class="muted" style="font-size: 0.9em;">{{ sd.get('rationale', '')|truncate(80, True) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p class="muted" style="font-size: 0.85em; margin: 0.5rem 0 0 0;">
+            These drivers contribute weight from the arc YAML but no per-task scores exist yet, so they're excluded from the BVP calculation above. Design question parked at <a href="/tasks/T-1981">T-1981</a> (extend estimator, manual scoring, or rollup-only).
+        </p>
+    </details>
+    {% endif %}
+</section>
 
 <!-- Research Artifacts (T-632) -->
 {% if artifacts %}

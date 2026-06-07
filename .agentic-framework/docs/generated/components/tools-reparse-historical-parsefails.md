@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `tools/escalation-scan-v0.5.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [escalation-scan-v0.5](/docs/generated/tools-escalation-scan-v0-5) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-reparse-historical-parsefails.yaml`*

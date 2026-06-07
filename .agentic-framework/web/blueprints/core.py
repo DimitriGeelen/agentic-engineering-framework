@@ -6,6 +6,7 @@ import time as _time_mod
 import markdown2
 from flask import Blueprint, abort
 
+from lib.arc_membership import scan_tasks_by_arc_membership
 from web.context_loader import load_concerns, load_decisions, load_directives, load_patterns, load_practices
 from web.shared import (
     PROJECT_ROOT, render_page, load_yaml as _load_yaml, load_scan,
@@ -215,6 +216,9 @@ def _get_arcs_in_flight():
             focused = None
 
     arcs = []
+    # T-1880 (T-NEW-15): single pass over .tasks/, shared across all arc
+    # cards on this page. Replaces N×O(tasks) inline loop with 1×O(tasks).
+    _by_arc_id, _by_tag = scan_tasks_by_arc_membership(PROJECT_ROOT)
     for f in sorted(arcs_dir.glob("*.yaml")):
         try:
             d = _load_yaml(f) or {}
@@ -222,30 +226,27 @@ def _get_arcs_in_flight():
             continue
         if d.get("status") != "in-progress":
             continue
-        arc_id = d.get("id") or f.stem
-        # Count tasks tagged arc:<id> across active+completed.
-        task_count = 0
-        tag = f"arc:{arc_id}"
-        for tasks_dir in (PROJECT_ROOT / ".tasks" / "active", PROJECT_ROOT / ".tasks" / "completed"):
-            if not tasks_dir.exists():
-                continue
-            for tf in tasks_dir.glob("T-*.md"):
-                try:
-                    text = tf.read_text(errors="replace")
-                except Exception:
-                    continue
-                # cheap tag presence check (frontmatter line `tags: [...]`)
-                for line in text.splitlines():
-                    if line.startswith("tags:"):
-                        if tag in line:
-                            task_count += 1
-                        break
+        # T-1848: slug (filename stem) is the tag namespace; `id:` is the
+        # immutable arc-NNN. Tasks tagged `arc:dispatch-safety` would not
+        # match `arc:arc-001`.
+        slug = d.get("slug") or f.stem
+        arc_numeric_id = d.get("id") or slug
+        # T-1879/T-1880: union of arc_id frontmatter (slug or arc-NNN form)
+        # + legacy arc:<slug> tag, deduplicated. Shared helper guarantees
+        # parity with /arcs and /tasks?arc filter (which call the same
+        # function from lib/arc_membership.py).
+        union: set[str] = set()
+        union.update(_by_arc_id.get(slug, []))
+        union.update(_by_arc_id.get(arc_numeric_id, []))
+        union.update(_by_tag.get(f"arc:{slug}", []))
+        task_count = len(union)
         arcs.append({
-            "id": arc_id,
-            "name": d.get("name", arc_id),
+            "id": arc_numeric_id,
+            "slug": slug,
+            "name": d.get("name", slug),
             "status": d.get("status", "in-progress"),
             "task_count": task_count,
-            "focused": (arc_id == focused),
+            "focused": (arc_numeric_id == focused or slug == focused),
         })
     return arcs
 
@@ -405,6 +406,10 @@ def index():
         ctx["qr_approvals_url"] = qr_url
         # T-803: Token usage widget
         ctx["token_usage"] = _get_token_usage()
+        # T-2022: knowledge counts for System Health (scan omits project_health.knowledge;
+        # source from helpers like the index.html fallback does)
+        ctx["knowledge_counts"] = _get_knowledge_counts()
+        ctx["pattern_summary"] = _get_pattern_summary()
         return render_page("cockpit.html", page_title="Watchtower", **ctx)
 
     # Fallback: existing dashboard (no scan data)

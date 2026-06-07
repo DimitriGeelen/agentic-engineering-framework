@@ -19,18 +19,18 @@ Metrics extracted (P0 from T-830 Agent B design):
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/checkpoint.sh` | calls |
-| `agents/context/lib/init.sh` | reads |
-| `lib/paths.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [checkpoint](/docs/generated/checkpoint) | calls | Post-tool budget monitoring. Warns at thresholds, auto-triggers handover at critical, detects compaction, manages inception checkpoints. |
+| [init](/docs/generated/agents-context-lib-init) | reads | Context Agent - init command |
+| [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/handover/handover.sh` | calls |
-| `agents/handover/handover.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [handover](/docs/generated/agents-handover-handover) | calls | Handover Agent - Mechanical Operations |
+| [handover](/docs/generated/agents-handover-handover) | called_by | Handover Agent - Mechanical Operations |
 
 ## Related
 

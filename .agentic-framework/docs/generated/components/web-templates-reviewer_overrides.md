@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/base.html` | extends |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [base](/docs/generated/web-templates-base) | extends | Template: {{ page_title \| default("Watchtower") }} — Agentic Engineering Framework |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-reviewer_overrides.yaml`*

@@ -19,13 +19,13 @@ Detection strategy (conservative to avoid false positives):
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `C-004` | called_by |
-| `agents/audit/self-audit.sh` | read_by |
-| `C-009` | triggers_by |
-| `.claude/settings.json` | used-by |
-| `agents/audit/audit.sh` | called-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [self-audit](/docs/generated/agents-audit-self-audit) | read_by | Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git hooks. |
+| [hook-config](/docs/generated/hook-config) | triggers_by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [hook-config](/docs/generated/hook-config) | used-by | Claude Code hook wiring. Defines which scripts run on PreToolUse and PostToolUse events, with matcher patterns. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called-by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-error-watchdog.yaml`*

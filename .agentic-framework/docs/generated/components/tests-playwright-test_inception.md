@@ -10,10 +10,10 @@ Should have inception task cards or table rows
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/approvals.py` | calls |
-| `web/blueprints/approvals.py` | registers |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [approvals](/docs/generated/web-blueprints-approvals) | calls | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
+| [approvals](/docs/generated/web-blueprints-approvals) | registers | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 
 ## Related
 

@@ -5,6 +5,30 @@
 </div>
 
 {% if decisions %}
+<style>
+    /* T-2045: bound rendered height — the decisions table grows unbounded as decisions
+       accumulate (13k px at 198 rows). Same table class as T-2044 /learnings & T-2039
+       /fabric: a max-height scroll container with sticky header keeps every row in the
+       DOM, reached by internal scroll. (<details> can't legally wrap <tr>.) */
+    .decisions-table-scroll {
+        max-height: calc(100vh - 220px);
+        min-height: 240px;
+        overflow-y: auto;
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: var(--pico-border-radius);
+    }
+    .decisions-table-scroll table { margin-bottom: 0; }
+    .decisions-table-scroll thead th {
+        position: sticky;
+        top: 0;
+        background: var(--pico-card-background-color);
+        z-index: 2;
+    }
+    /* T-2045 review feedback: keep the ID (e.g. AD-001) on one line — the narrow
+       first column was breaking it at the hyphen into two rows. */
+    .decisions-table-scroll tbody td:first-child { white-space: nowrap; }
+</style>
+<div class="decisions-table-scroll">
 <table role="grid">
     <thead>
         <tr>
@@ -29,6 +53,7 @@
         {% endfor %}
     </tbody>
 </table>
+</div><!-- /decisions-table-scroll (T-2045) -->
 
 {% if rationale_map %}
 <details class="mt-3">

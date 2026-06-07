@@ -19,12 +19,12 @@ fw promote status
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/lib_promote.bats` | called-by |
-| `tests/unit/lib_promote.bats` | called_by |
-| `tests/unit/lib_promote.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_promote](/docs/generated/tests-unit-lib_promote) | called-by | TODO: describe what this component does |
+| [lib_promote](/docs/generated/tests-unit-lib_promote) | called_by | TODO: describe what this component does |
+| [lib_promote](/docs/generated/tests-unit-lib_promote) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-promote.yaml`*

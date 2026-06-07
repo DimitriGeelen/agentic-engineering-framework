@@ -10,17 +10,17 @@ Try PATH first
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
-| `web/templates/fleet.html` | renders |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [fleet](/docs/generated/web-templates-fleet) | renders | Watchtower /fleet dashboard template — renders fleet health summary, per-host status badges, last-seen timestamps, and TermLink reachability, consuming data assembled by web/blueprints/fleet.py |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-fleet.yaml`*
