@@ -672,7 +672,7 @@ if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" 
     if [ "${FW_SKIP_SELF_VENDOR_CHECK:-0}" = "1" ]; then
         echo "" >&2
         echo "WARN: Self-vendor drift check skipped (FW_SKIP_SELF_VENDOR_CHECK=1)" >&2
-        echo "  Class: T-2240 — vendored .agentic-framework/lib/ may diverge from lib/" >&2
+        echo "  Class: T-2240/T-2241 — vendored .agentic-framework/ may diverge from source" >&2
         echo "" >&2
     else
         _sv_out=$("$PROJECT_ROOT/bin/fw" vendor self --dry-run 2>&1 || true)
@@ -682,11 +682,12 @@ if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" 
             echo "" >&2
             echo "$_sv_out" | grep "would sync" | head -3 >&2
             echo "" >&2
-            echo ".agentic-framework/lib/ is stale relative to lib/. Consumers that" >&2
-            echo "vendor from origin would inherit the divergence silently." >&2
+            echo "Vendored .agentic-framework/ is stale; see the 'would sync' line(s)" >&2
+            echo "above for the affected class(es). Consumers that vendor from origin" >&2
+            echo "would inherit the divergence silently." >&2
             echo "" >&2
             echo "Fix:" >&2
-            echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/lib/ && git commit -m 'T-XXX: refresh vendored libs'" >&2
+            echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/ && git commit -m 'T-XXX: refresh vendored copies'" >&2
             echo "" >&2
             echo "Bypass (logged Tier-2):" >&2
             echo "  FW_SKIP_SELF_VENDOR_CHECK=1 git push" >&2

@@ -119,9 +119,13 @@ STUB
     # Both bypass mechanisms must be named in the block message (L-399 parity)
     [[ "$output" == *"FW_SKIP_SELF_VENDOR_CHECK=1"* ]]
     [[ "$output" == *"--no-verify"* ]]
-    # Fix command must be copy-pasteable (cd + bin/fw vendor self + git add)
+    # Fix command must be copy-pasteable. T-2242: class-agnostic — `.agentic-framework/`
+    # (not `.agentic-framework/lib/`) so the same fix command covers BOTH classes
+    # (libs + templates, T-2241) without misdirecting the reader.
     [[ "$output" == *"bin/fw vendor self"* ]]
-    [[ "$output" == *"git add .agentic-framework/lib/"* ]]
+    [[ "$output" == *"git add .agentic-framework/ "* ]]
+    # T-2242: lib-only diagnostic prose must NOT appear (regression guard)
+    [[ "$output" != *"is stale relative to lib/"* ]]
 }
 
 # ─────────────────────────────────────────────────────────────────────────
