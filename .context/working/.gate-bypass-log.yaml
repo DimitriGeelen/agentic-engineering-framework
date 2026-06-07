@@ -2892,3 +2892,13 @@ T-2243: closure metadata + episodic (F2 N×M doctor inspection surface)
 
 Closes the any-time inspection asymmetry left by T-2240/T-2241: fw doctor
 Check '
+- timestamp: '2026-06-07T23:25:18Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2244'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2244: audit self-vendor drift FAIL — F2 N×M daily-cron backstop
+
+Closes the third surface in the F2 N×M chain: T-2240 (pre-push BLOCK,
+developer-tr'

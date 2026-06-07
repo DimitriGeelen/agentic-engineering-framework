@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-06-07T21:57:06Z
-last_update: 2026-06-07T22:04:00Z
+last_update: 2026-06-07T23:52:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,9 +62,11 @@ cost_estimate_proposed:
 ## Open Questions
 
 - **IW-1: Should the bundle file contents (`policy/prompts/README.md`, `bvp-driver-session.md`, 6× references) be authored by this agent from the §6 design specs, OR held until operator pastes the actual file contents from the upstream session?**
-  confidence: 1
-  disposition: deferred
-  rationale: Operator pivoted directive mid-session to "focus on bvp driver prompt bundle" but did not paste the bundle file contents. Authoring from §6 specs is feasible (~1490 LoC, the design dialogue gives enough material) but the upstream session may have authored canonical versions worth preserving. Hold for explicit operator direction.
+  confidence: 4
+  disposition: answered
+  resolved_at: 2026-06-08
+  resolution: Path B — agent authors bundle from §6 design specs. Operator answered "b" 2026-06-08 in direct response to surfaced A/B/C options.
+  rationale: Operator selected Path B after surfaced trade-offs (Path A clean but operator never pasted bundle contents; Path B derives ~1490 LoC of bundle text from §6 dialogue+decisions; Path C holds). Execution moves to sibling build task; T-2245 itself awaits Sovereign Watchtower decide-go (CLAUDECODE blocks `fw inception decide`).
 
 - **IW-2: Should HANDOFF-value-prioritisation-2026-05-15 v2 revision (per §5) be drafted by this framework agent, OR returned to the original researcher (Claude + Dimitri jointly) for revision?**
   confidence: 2
@@ -136,9 +138,20 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — Path B (agent-authored bundle from §6)
 
-**Rationale:** Per the pickup document's own §7 step 5: 'Do not auto-build the v2 handoff or the inception. That requires human direction.' + §8 pickup safety: 'do not file build tasks for the new verbs without the v2 handoff revision and the inception decide-go transition.' Document filing itself is §3-reversible and is being done in this turn. CLI verb build work (4 new verbs: fw bvp driver suggest|create, fw bvp recompute, fw bvp init; 7+ new files under policy/prompts/; new audit log .context/bvp-recompute-log.jsonl) is G-020 inception territory. Bundle file CONTENTS not in the pickup message — only the ingestion document body. Waiting on operator direction to: (a) provide the bundle file contents, (b) revise HANDOFF-value-prioritisation-2026-05-15 to v2, (c) file the value-prioritisation inception with decide-go transition.
+**Rationale:** Operator answered "b" 2026-06-08 in direct response to surfaced A/B/C options for IW-1, authorizing agent to author bundle contents from §6 design specs (~1490 LoC across 8 files). This consummates §7 step 2 of the pickup ("file the bundle into `policy/prompts/`... reversible"). The §6 dialogue + decisions ledger + rejected paths give enough material to derive coherent prose; canonical upstream-session bundle was never pasted. Bundle is documentation/prompt material; no executable code; reversible. Authoring proceeds under a sibling build task (G-020 threshold satisfied — operator is the explicit authority). T-2245 itself partial-completes once authoring lands; Sovereign Watchtower decide-go formalizes the inception (CLAUDECODE blocks agent-side decide).
+
+**Out of scope (still operator-only per pickup §7 step 5 + §8):**
+- HANDOFF-value-prioritisation-2026-05-15 v2 revision (IW-2 still deferred)
+- CLI verb build inception (`fw bvp driver suggest|create|recompute|init`) — IW-3 still deferred
+- New audit log `.context/bvp-recompute-log.jsonl` (CLI scope)
+
+**Evidence:**
+- Operator pivot to "focus on bvp driver prompt bundl" repeated twice in this session
+- Operator explicit "b" reply 2026-06-08 to surfaced Path A/B/C question
+- Pickup doc §7 step 2: "file the bundle into `policy/prompts/`... reversible"
+- Pickup doc §1: 8 files listed, ~1490 LoC total
 
 ## Decisions
 
