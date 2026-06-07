@@ -6,16 +6,16 @@ description: >
   Inception: fw consumer-recover wrapper — one-command SSH + clone + env-scoped upgrade
   for legacy consumers
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-06T21:04:07Z
-last_update: 2026-06-07T12:05:58Z
-date_finished:
+last_update: 2026-06-07T12:12:46Z
+date_finished: 2026-06-07T12:12:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -142,15 +142,15 @@ Total budget ≈ 2 hours. Reviewer + close on landing.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -220,7 +220,11 @@ Field-validated need 2026-06-06: ring20-dashboard recovery required SSH + git cl
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Field-validated need 2026-06-06: ring20-dashboard recovery required SSH + git clone + explicit FRAMEWORK_ROOT=/PROJECT_ROOT= env scoping + fresh fw upgrade + cleanup — a 4-step recipe (per feedback_t2232_forward_looking_recovery memory). Shape is clear, evidence is the successful ring20 recovery this session, the wrapper is mechanical. No design ambiguity — needs only to be filed and scheduled. GO so the recipe becomes a one-liner before the next legacy-consumer incident; low priority (horizon:later) so V2 step-driver refactor (T-2078) gets priority. NOT a DEFER: not an evidence gap, just a priority call.
+
+**Date**: 2026-06-07T12:12:46Z
 
 ## Updates
 
@@ -229,3 +233,30 @@ Field-validated need 2026-06-06: ring20-dashboard recovery required SSH + git cl
 
 ### 2026-06-07T12:05:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-07T12:12:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Field-validated need 2026-06-06: ring20-dashboard recovery required SSH + git clone + explicit FRAMEWORK_ROOT=/PROJECT_ROOT= env scoping + fresh fw upgrade + cleanup — a 4-step recipe (per feedback_t2232_forward_looking_recovery memory). Shape is clear, evidence is the successful ring20 recovery this session, the wrapper is mechanical. No design ambiguity — needs only to be filed and scheduled. GO so the recipe becomes a one-liner before the next legacy-consumer incident; low priority (horizon:later) so V2 step-driver refactor (T-2078) gets priority. NOT a DEFER: not an evidence gap, just a priority call.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a6844b33
+- **Timestamp:** 2026-06-07T12:12:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-6
+     - evidence: `IW-6 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-07T12:12:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

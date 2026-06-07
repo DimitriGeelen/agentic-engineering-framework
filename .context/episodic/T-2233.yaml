@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2233: fw consumer-recover wrapper — one-command SSH + clone + env-scoped upgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T12:12:52Z
+# ============================================================================
+
+task_id: T-2233
+task_name: "fw consumer-recover wrapper — one-command SSH + clone + env-scoped upgrade"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-06T21:04:07Z
+completed: 2026-06-07T12:12:46Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-06-06T23:06:14+02:00
+last_commit: 2026-06-07T14:11:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file fw consumer-recover wrapper inception (GO, horizon:later). fill inception body + write consumer-recover wrapper design spec
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-07 — Separate verb over flag-on-existing-verb'
+    chose: '`fw consumer-recover <host> [<project-path>]` as a sibling verb to `fw upgrade`'
+    rationale: 'clean mental separation — `fw upgrade` is "this fw, this consumer"; `fw consumer-recover` is "this fw, remote-bootstrap-then-upgrade *that* consumer". The two have different transport, different cleanup, different idempotency rules.'
+    alternatives_rejected: ['`fw upgrade --recover --host HOST --project PATH` — would muddy `lib/upgrade.sh`''s 1562 LOC and the T-1542 guard which exists precisely to refuse the bare-from-consumer case the wrapper has to perform.']
+  - decision: '2026-06-07 — SSH default with TermLink as opt-in upgrade'
+    chose: 'SSH is the default transport. TermLink is selected when `--via termlink` is passed OR `termlink remote list` resolves the host.'
+    rationale: 'SSH is the universal floor (key auth, no dependency on TermLink hub liveness). TermLink is the richer option (observability, replay via the bus) but its absence shouldn''t block recovery — recovery is the moment you most need a transport that always works.'
+    alternatives_rejected: ['TermLink-only — would refuse to recover hosts without TermLink listeners, defeating the wrapper''s purpose. SSH-only — would lose the bus-envelope reply path that this session demonstrated as a clean evidence channel.']
+  - decision: '2026-06-07 — Dry-run is the default; `--apply` opts in to execute'
+    chose: 'Wrapper prints the recipe (with concrete substituted values) by default; only `--apply` (or `--execute`) actually runs the SSH/TermLink commands.'
+    rationale: 'matches `fw upgrade --dry-run` precedent (safety-by-default for mutating verbs) and turns the wrapper into a teaching artifact — the operator gets a runbook line they can paste, audit, or share before the irreversible step.'
+    alternatives_rejected: ['execute-by-default with `--dry-run` opt-out — inverts the safety polarity for a verb that operates on a remote host; one typo on `--host` could re-vendor the wrong consumer.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/inbox.yaml'
+  - '.context/working/focus.yaml'
+  - 'docs/reports/T-2233-consumer-recover-design.md'
+  - '.tasks/active/T-2233-fw-consumer-recover-wrapper--one-command.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-06T23:06:14"
+    action: "T-2233: file fw consumer-recover wrapper inception (GO, horizon:later)"
+  - time: "2026-06-07T14:11:11"
+    action: "T-2233: fill inception body + write consumer-recover wrapper design spec"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 908 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 908
+  commits: 2
+  files_changed: 4
+  lines_added: 497
+  lines_removed: 40
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2233-fw-consumer-recover-wrapper--one-command.md
+generated_by: context-agent-hybrid
