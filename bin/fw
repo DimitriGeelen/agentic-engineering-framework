@@ -795,8 +795,14 @@ do_doctor() {
     # Consumer projects don't have both copies; their .agentic-framework IS the framework.
     # Drift = consumers pulling via `fw upgrade` get stale hooks/libs (T-1432, T-1433).
     if [ "$PROJECT_ROOT" = "$FRAMEWORK_ROOT" ] && [ -d "$FRAMEWORK_ROOT/.agentic-framework" ]; then
-        local _vdrift=0
-        local _vdrift_list=""
+        # T-2243: count libs and templates classes separately so each class
+        # always gets visibility in the WARN list — pre-T-2243 the global
+        # "first 5" bucket let large libs drift bury small templates drift
+        # (4-test exploration found 64 libs drifts could mask 1 templates
+        # drift entirely). Per-class lists mirror the pre-push gate's
+        # "would sync N <class>(s)" shape from T-2240/T-2241.
+        local _vdrift_libs=0 _vdrift_tpl=0
+        local _vdrift_libs_list="" _vdrift_tpl_list=""
         local _f _vf _rel
         # T-1521: Walk the vendored tree itself, not a hand-curated source glob.
         # T-1434's original glob list missed agents/handover, agents/audit,
@@ -807,21 +813,45 @@ do_doctor() {
             _f="$FRAMEWORK_ROOT/$_rel"
             [ -f "$_f" ] || continue
             if ! diff -q "$_f" "$_vf" >/dev/null 2>&1; then
-                _vdrift=$((_vdrift + 1))
-                if [ "$_vdrift" -le 5 ]; then
-                    _vdrift_list="$_vdrift_list\n           - $_rel"
+                _vdrift_libs=$((_vdrift_libs + 1))
+                if [ "$_vdrift_libs" -le 5 ]; then
+                    _vdrift_libs_list="$_vdrift_libs_list\n           - $_rel"
                 fi
             fi
         done < <(find "$FRAMEWORK_ROOT/.agentic-framework"/{bin,lib,agents,web} -type f \
                     \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "*.html" \) \
                     -not -path "*/__pycache__/*" \
                     2>/dev/null)
+        # T-2243: templates class (T-2241 sibling). _self_vendor_templates()
+        # syncs .tasks/templates/*.md into .agentic-framework/.tasks/templates/.
+        # Separate find — adding `.md` to the libs find pattern above would
+        # also flag lib/templates/*.md and agents/*/AGENT.md files, which
+        # aren't part of the self-vendor scope.
+        if [ -d "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" ]; then
+            while IFS= read -r _vf; do
+                _rel="${_vf#$FRAMEWORK_ROOT/.agentic-framework/}"
+                _f="$FRAMEWORK_ROOT/$_rel"
+                [ -f "$_f" ] || continue
+                if ! diff -q "$_f" "$_vf" >/dev/null 2>&1; then
+                    _vdrift_tpl=$((_vdrift_tpl + 1))
+                    if [ "$_vdrift_tpl" -le 5 ]; then
+                        _vdrift_tpl_list="$_vdrift_tpl_list\n           - $_rel"
+                    fi
+                fi
+            done < <(find "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" -type f -name "*.md" 2>/dev/null)
+        fi
+        local _vdrift=$((_vdrift_libs + _vdrift_tpl))
         if [ "$_vdrift" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  No vendored-source drift"
         else
             echo -e "  ${YELLOW}WARN${NC}  Vendored-source drift: $_vdrift file(s) out of sync"
             echo -e "         Run: fw vendor  (sync .agentic-framework/ with source)"
-            [ -n "$_vdrift_list" ] && echo -e "         First $([ $_vdrift -gt 5 ] && echo 5 || echo $_vdrift):$_vdrift_list"
+            if [ "$_vdrift_libs" -gt 0 ]; then
+                echo -e "         libs ($_vdrift_libs) — first $([ $_vdrift_libs -gt 5 ] && echo 5 || echo $_vdrift_libs):$_vdrift_libs_list"
+            fi
+            if [ "$_vdrift_tpl" -gt 0 ]; then
+                echo -e "         templates ($_vdrift_tpl) — first $([ $_vdrift_tpl -gt 5 ] && echo 5 || echo $_vdrift_tpl):$_vdrift_tpl_list"
+            fi
             warnings=$((warnings + 1))
         fi
     fi
