@@ -174,6 +174,57 @@ _self_vendor_libs() {
     return 0
 }
 
+# T-2241 (F2 N×M follow-on): self-vendor the framework's own .tasks/templates/
+# from FRAMEWORK_ROOT/.tasks/templates/ to .agentic-framework/.tasks/templates/.
+# Sibling to _self_vendor_libs — same shape, same dry-run/real-run wording split,
+# same structural consumer-safety. T-2240 pre-push gate greps for "would sync" —
+# this helper's output uses the identical prefix so the gate catches BOTH classes
+# automatically (libs + templates) with one regex.
+#
+# Origin: T-2240 close surfaced template drift as a sibling class — vendored copy
+# of `.tasks/templates/default.md` lacked `arc_id` + `bvp_scores` comment blocks
+# the master had (T-1849 / T-1918). Without this helper, every consumer vendoring
+# from origin would inherit stale templates and miss schema fields.
+#
+# Inputs:
+#   $1 — dry_run ("true" / "false"). When "true", computes what WOULD sync
+#        without copying files.
+# Return:
+#   0 — sync completed (or nothing to sync, or consumer-skip)
+_self_vendor_templates() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    # Structural guard mirror of _self_vendor_libs: consumer's vendored copy has
+    # no nested .agentic-framework/.tasks/templates/, so this branch is the
+    # consumer-safe early exit. Also covers the (unlikely but valid) case of a
+    # fresh framework checkout where .agentic-framework/ exists but the templates
+    # dir hasn't been created yet — fall through silently.
+    if [ ! -d "$_self_vendor/.tasks/templates" ]; then
+        return 0
+    fi
+    local _svt_updated=0
+    local _svt_src _svt_name _svt_dst
+    for _svt_src in "$FRAMEWORK_ROOT/.tasks/templates/"*.md; do
+        [ -f "$_svt_src" ] || continue
+        _svt_name=$(basename "$_svt_src")
+        _svt_dst="$_self_vendor/.tasks/templates/$_svt_name"
+        if [ ! -f "$_svt_dst" ] || ! diff -q "$_svt_src" "$_svt_dst" > /dev/null 2>&1; then
+            if [ "$dry_run" != true ]; then
+                cp "$_svt_src" "$_svt_dst"
+            fi
+            _svt_updated=$((_svt_updated + 1))
+        fi
+    done
+    if [ "$_svt_updated" -gt 0 ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svt_updated template(s) to .agentic-framework/.tasks/templates/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svt_updated template(s) to .agentic-framework/.tasks/templates/"
+        fi
+    fi
+    return 0
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -469,6 +520,8 @@ do_upgrade() {
         echo -e "  ${YELLOW}Self-vendor skipped${NC} (--no-self-vendor)"
     else
         _self_vendor_libs "$dry_run"
+        # T-2241: sibling sync — templates drift class, same flag gates both
+        _self_vendor_templates "$dry_run"
     fi
 
     local project_name

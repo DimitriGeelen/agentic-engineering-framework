@@ -10,11 +10,23 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+# arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
+#                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
+#                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
+#                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created:
 last_update:
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+# ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
+# bvp_scores:                     # confirmed per-driver scores 0-5, set by `fw bvp confirm` (T-1924).
+#                                 # Sovereignty boundary — only set after human or agent confirmation.
+#                                 # Shape: {D1: <int 0-5>, D2: <int 0-5>, D3: <int 0-5>, D4: <int 0-5>, [<free-driver-id>: <int>]...}
+# bvp_scores_proposed:            # estimator-proposed scores (T-1922 worker). Persists when ≥2 delta
+#                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
+# cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
+#                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
 # T-XXX: [Task Name]
@@ -34,8 +46,15 @@ date_finished: null
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-     Optionally prefix with [RUBBER-STAMP] or [REVIEW] for prioritization.
-     Example:
+
+     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
+     If your Expected clause is grep-able / file-exists / structural (a deterministic
+     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
+     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+     verification genuinely needs human taste (tone, feel, layout rhythm).
+     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+
+     [REVIEW] example (genuine human judgment):
        - [ ] [REVIEW] Dashboard renders correctly
          **Steps:**
          1. Open https://example.com/dashboard in browser
@@ -43,6 +62,15 @@ date_finished: null
          3. Check browser console for errors
          **Expected:** All panels visible, no console errors
          **If not:** Screenshot the broken panel and note the console error
+
+     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
+         **Steps:**
+         1. Run `bin/fw reviewer T-XXX`
+         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
+         **If not:** Inspect hook block-message string and add missing mechanism
+       Conversion: this AC should be moved to ### Agent and
+       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
 ## Verification
@@ -64,6 +92,19 @@ date_finished: null
 # Or:
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
 # Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
+#
+# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
+# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
+# the capture step closed off — the middle stage is what `grep -q` slams its
+# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
+# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+#
+# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
+# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
+# Verification block. Otherwise the canonical hash diverges and `fw doctor`
+# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
+# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
+# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
 

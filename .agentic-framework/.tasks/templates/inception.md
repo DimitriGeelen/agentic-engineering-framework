@@ -15,6 +15,12 @@ last_update:
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+# ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
+target_blast_radius: 3            # int 0..9. Anticipated component count of the build work this inception would authorise on GO.
+                                  # Substitutes for the absent components: list in the F8 cost formula (040). Required.
+                                  # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
+voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
+                                  # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
 ---
 
 # T-XXX: [Inception Name]
@@ -26,6 +32,24 @@ date_finished: null
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+
+## Open Questions
+
+<!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
+     --status work-completed. Disposition gate (agents/task-create/update-task.sh
+     check_disposition_gate) refuses on under-disposed inceptions.
+
+     Per-question shape:
+
+       - **IW-1: <question text>**
+         confidence: 0-3      (your confidence in your current answer; 0=guess, 3=verified)
+         disposition: answered | deferred | dissolved
+         rationale: <one-line evidence — file:line, decision id, dialogue ref>
+
+     Never bare yes/no — the gate refuses bare checkboxes. See 050-Inceptions.md
+     §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
+     FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
+-->
 
 ## Exploration Plan
 

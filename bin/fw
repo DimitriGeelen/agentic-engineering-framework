@@ -5869,22 +5869,29 @@ PYSEARCH
             # case this code path runs before that.
             command -v _self_vendor_libs >/dev/null 2>&1 || source "$FRAMEWORK_ROOT/lib/upgrade.sh"
             if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
-                echo "fw vendor self - Refresh framework's vendored copy from FRAMEWORK_ROOT/lib/"
+                echo "fw vendor self - Refresh framework's vendored copies from FRAMEWORK_ROOT/"
                 echo ""
                 echo "Usage: fw vendor self [--dry-run]"
                 echo ""
-                echo "Refreshes \$FRAMEWORK_ROOT/.agentic-framework/lib/ from \$FRAMEWORK_ROOT/lib/."
-                echo "T-1217 / T-2078 §F2 / T-2095 V1-D. Extracted from do_upgrade so it can be"
+                echo "Refreshes both vendored classes from \$FRAMEWORK_ROOT:"
+                echo "  - .agentic-framework/lib/                 ← lib/*.sh           (T-2095 V1-D)"
+                echo "  - .agentic-framework/.tasks/templates/    ← .tasks/templates/  (T-2241)"
+                echo ""
+                echo "T-1217 / T-2078 §F2 / T-2095 V1-D / T-2241. Extracted from do_upgrade so it can be"
                 echo "invoked explicitly (cron, pre-push, manual) without firing the full upgrade flow."
                 echo ""
                 echo "Structural consumer-safety: when invoked from a consumer's vendored bin/fw,"
-                echo "the helper early-returns because consumer's .agentic-framework/ has no nested"
-                echo ".agentic-framework/lib/. Idempotent — only touches files that diff."
+                echo "each helper early-returns because consumer's .agentic-framework/ has no nested"
+                echo ".agentic-framework/lib/ or .agentic-framework/.tasks/templates/. Idempotent —"
+                echo "only touches files that diff."
                 exit 0
             fi
             _vs_dry=false
             [ "${1:-}" = "--dry-run" ] && _vs_dry=true
             _self_vendor_libs "$_vs_dry"
+            # T-2241: sibling — templates drift class. T-2240 pre-push gate
+            # greps for "would sync" across BOTH helpers' output with one regex.
+            _self_vendor_templates "$_vs_dry"
             exit $?
         fi
         do_vendor "$@"
