@@ -496,10 +496,10 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity (T-1593, T-1603, T-1829)
+# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.4
+# VERSION=1.5
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
@@ -651,6 +651,51 @@ if [ -n "$_yaml_failures" ]; then
     echo "Fix the YAML, then push again." >&2
     echo "Bypass: git push --no-verify (Tier 0 protected, logged)" >&2
     exit 1
+fi
+
+# T-2240: Self-vendor drift gate (F2 N×M closure).
+# Origin: T-2095 extracted _self_vendor_libs() into `fw vendor self`; T-2232 made
+# the in-consumer upgrade path durable via .upstream sentinel; T-2239 split the
+# dry-run wording ("would sync" vs "synced"). The gap T-2240 closes: editing
+# lib/*.sh without running `fw vendor self` leaves the vendored copy at
+# .agentic-framework/lib/ stale. `fw upgrade` is the only flow that catches it,
+# and upgrade is not part of the push flow — so consumers that vendor from
+# origin/master inherit the stale lib/ silently.
+#
+# Guard 1: only run in the framework repo (consumers have no root-level bin/fw —
+# their fw lives at .agentic-framework/bin/fw and they don't have a vendored
+# .agentic-framework/lib/ to drift). Consumer-safe by construction.
+# Guard 2: FW_SKIP_SELF_VENDOR_CHECK=1 bypass for legitimate skip scenarios
+# (e.g. release prep where vendor refresh is the next commit). Tier-2 visibility
+# via stderr WARN — matches existing hook pattern (no separate log writes).
+if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" ]; then
+    if [ "${FW_SKIP_SELF_VENDOR_CHECK:-0}" = "1" ]; then
+        echo "" >&2
+        echo "WARN: Self-vendor drift check skipped (FW_SKIP_SELF_VENDOR_CHECK=1)" >&2
+        echo "  Class: T-2240 — vendored .agentic-framework/lib/ may diverge from lib/" >&2
+        echo "" >&2
+    else
+        _sv_out=$("$PROJECT_ROOT/bin/fw" vendor self --dry-run 2>&1 || true)
+        if echo "$_sv_out" | grep -q "would sync"; then
+            echo "" >&2
+            echo "ERROR: Push blocked — self-vendor drift detected (T-2240):" >&2
+            echo "" >&2
+            echo "$_sv_out" | grep "would sync" | head -3 >&2
+            echo "" >&2
+            echo ".agentic-framework/lib/ is stale relative to lib/. Consumers that" >&2
+            echo "vendor from origin would inherit the divergence silently." >&2
+            echo "" >&2
+            echo "Fix:" >&2
+            echo "  cd $PROJECT_ROOT && bin/fw vendor self && git add .agentic-framework/lib/ && git commit -m 'T-XXX: refresh vendored libs'" >&2
+            echo "" >&2
+            echo "Bypass (logged Tier-2):" >&2
+            echo "  FW_SKIP_SELF_VENDOR_CHECK=1 git push" >&2
+            echo "Bypass (Tier 0):" >&2
+            echo "  git push --no-verify" >&2
+            echo "" >&2
+            exit 1
+        fi
+    fi
 fi
 
 # Resolve audit script. Priority (T-1396):

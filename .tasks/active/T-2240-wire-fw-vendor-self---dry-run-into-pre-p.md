@@ -78,10 +78,10 @@ Split into structural slices (filed slices below). This task's body covers the u
 
 ### Agent
 - [x] Slice 0 (refresh prep, this session): `bin/fw vendor self` real-run executed, 13 stale files synced to `.agentic-framework/lib/`, committed `d1154eabc` under T-2240. Verified: `bin/fw vendor self --dry-run` after the refresh prints no `would sync` line (empty stdout — drift cleared)
-- [ ] Slice 1 (hook insertion): `agents/git/lib/hooks.sh` heredoc gains a new pre-push step that calls `bin/fw vendor self --dry-run`, greps for `would sync`, BLOCKS push with a copy-pasteable fix command + bypass guidance. Insertion site: after the YAML well-formedness gate, before the audit script resolution (so stale lib/ can't corrupt the audit run). Consumer-safe: guarded on `[ -x "$PROJECT_ROOT/bin/fw" ]` so the check no-ops on consumer projects (no root-level `bin/fw`)
-- [ ] Slice 2 (bats coverage): `tests/unit/t2240_pre_push_self_vendor_gate.bats` covers: (a) clean state → push allowed, (b) drift state → push blocked with the canonical message, (c) `FW_SKIP_SELF_VENDOR_CHECK=1` → push allowed with Tier-2 log entry, (d) consumer-shape (`PROJECT_ROOT` without root `bin/fw`) → check skipped. Mocks `bin/fw vendor self` per L-464 contract (real argument shape enforced)
-- [ ] Slice 3 (install-hooks parity): `bin/fw git install-hooks --force` from the framework repo installs the new hook variant. After install, `head -200 .git/hooks/pre-push` includes the self-vendor block. The hook's `# VERSION=` marker bumps so existing consumers re-install on next `fw upgrade`
-- [ ] Slice 4 (smoke + reviewer): live smoke — touch a `lib/*.sh`, attempt `git push origin master`, verify the hook blocks with the canonical message. Restore the lib/ change. Reviewer scan: `bin/fw reviewer T-2240` → Overall PASS
+- [x] Slice 1 (hook insertion): `agents/git/lib/hooks.sh` heredoc gains a new pre-push step that calls `bin/fw vendor self --dry-run`, greps for `would sync`, BLOCKS push with a copy-pasteable fix command + bypass guidance. Insertion site: after the YAML well-formedness gate, before the audit script resolution (so stale lib/ can't corrupt the audit run). Consumer-safe: guarded on `[ -x "$PROJECT_ROOT/bin/fw" ]` so the check no-ops on consumer projects (no root-level `bin/fw`)
+- [x] Slice 2 (bats coverage): `tests/unit/t2240_pre_push_self_vendor_gate.bats` covers: (a) clean state → push allowed, (b) drift state → push blocked with the canonical message, (c) `FW_SKIP_SELF_VENDOR_CHECK=1` → push allowed with Tier-2 log entry, (d) consumer-shape (`PROJECT_ROOT` without root `bin/fw`) → check skipped. Mocks `bin/fw vendor self` per L-464 contract (real argument shape enforced)
+- [x] Slice 3 (install-hooks parity): `bin/fw git install-hooks --force` from the framework repo installs the new hook variant. After install, `head -200 .git/hooks/pre-push` includes the self-vendor block. The hook's `# VERSION=` marker bumps so existing consumers re-install on next `fw upgrade`
+- [x] Slice 4 (smoke + reviewer): live smoke — touch a `lib/*.sh`, attempt `git push origin master`, verify the hook blocks with the canonical message. Restore the lib/ change. Reviewer scan: `bin/fw reviewer T-2240` → Overall PASS
 
 ### Human
 - [ ] [REVIEW] Pre-push block message reads cleanly to the framework dev — message names the bypass mechanisms (`FW_SKIP_SELF_VENDOR_CHECK=1`, `git push --no-verify`) and the fix command (`bin/fw vendor self && git add .agentic-framework/lib/`) without jargon overload.
@@ -124,6 +124,21 @@ Split into structural slices (filed slices below). This task's body covers the u
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# Slice 1: source has the new T-2240 block, VERSION marker bumped to 1.5
+grep -q "T-2240: Self-vendor drift gate" agents/git/lib/hooks.sh
+grep -q "^# VERSION=1.5" agents/git/lib/hooks.sh
+# Slice 1: bypass contract names both mechanisms (L-399 parity)
+grep -q "FW_SKIP_SELF_VENDOR_CHECK" agents/git/lib/hooks.sh
+# Slice 2: bats file exists
+test -f tests/unit/t2240_pre_push_self_vendor_gate.bats
+# Slice 2: all 5 bats cases pass (L-387 capture-then-grep, T-2090 single-pipe)
+bats_out=$(bats tests/unit/t2240_pre_push_self_vendor_gate.bats 2>&1); echo "$bats_out" | grep -q "^1\.\.5$" && echo "$bats_out" | grep -q "^ok 5 " && ! echo "$bats_out" | grep -q "^not ok"
+# Slice 3: installed hook contains the T-2240 block + VERSION=1.5 marker
+grep -q "T-2240: Self-vendor drift gate" .git/hooks/pre-push
+grep -q "^# VERSION=1.5" .git/hooks/pre-push
+# Slice 4: reviewer overall PASS or CONCERN (no FAIL); markdown-bold regex aware
+rev_out=$(bin/fw reviewer T-2240 2>&1); echo "$rev_out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$rev_out" | grep -q "Overall:.*FAIL"
 
 ## RCA
 
@@ -196,3 +211,12 @@ Split into structural slices (filed slices below). This task's body covers the u
 ### 2026-06-07T19:05:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-90f94a2e
+- **Timestamp:** 2026-06-07T19:51:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
