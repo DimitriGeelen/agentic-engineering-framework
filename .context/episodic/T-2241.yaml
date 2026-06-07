@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2241: Extend self-vendor to sync .tasks/templates - close template drift class (F2
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T20:00:53Z
+# ============================================================================
+
+task_id: T-2241
+task_name: "Extend self-vendor to sync .tasks/templates - close template drift class (F2"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T19:55:47Z
+completed: 2026-06-07T20:00:44Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-07T22:00:34+02:00
+last_commit: 2026-06-07T22:00:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  extend self-vendor to sync .tasks/templates/ (F2 N×M parity)
+
+# Key outcomes
+outcomes:
+  - 'Slice 1 (helper extracted): `lib/upgrade.sh` gains `_self_vendor_templates()` with the same structural shape as `_self_vendor_libs()` — consumer-safe early-return when `$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates` doesn''t exist, per-file `diff -q` skip, dry-run/real-run wording split ("would sync N template(s)" vs "synced N template(s)") matching T-2239 pattern'
+  - 'Slice 2 (call site): `do_upgrade` invokes `_self_vendor_templates "$dry_run"` immediately after `_self_vendor_libs "$dry_run"`, gated by the same `--no-self-vendor` flag (no separate flag — operator''s intent of "skip self-vendor" covers both classes)'
+  - 'Slice 3 (verb parity): `bin/fw vendor self` invokes BOTH helpers (libs + templates) in sequence; `--help` text mentions both classes'
+  - 'Slice 4 (bats coverage): `tests/unit/t2241_upgrade_self_vendor_templates.bats` mirrors t2095 structure for templates: helper extracted, consumer-safe early-return, syncs only diffed templates (idempotent), dry-run reports "would sync" without copying. Min 5 tests, all PASS'
+  - 'Slice 5 (refresh + smoke): run `bin/fw vendor self` real-run; verify the 2 drifting templates (`default.md` + `inception.md`) are synced; verify subsequent `bin/fw vendor self --dry-run` reports no "would sync" lines (drift cleared); verify pre-push gate from T-2240 still catches a touched template (touch master template, re-run dry-run, see "would sync"). Reviewer scan: `bin/fw reviewer T-2241` → Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/.tasks/templates/inception.md'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2241-extend-self-vendor-to-sync-taskstemplate.md'
+  - 'tests/unit/t2241_upgrade_self_vendor_templates.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-07T22:00:34"
+    action: "T-2241: extend self-vendor to sync .tasks/templates/ (F2 N×M parity)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 7
+  lines_added: 589
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2241-extend-self-vendor-to-sync-taskstemplate.md
+generated_by: context-agent-hybrid
