@@ -19,9 +19,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/enforcement.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [enforcement](/docs/generated/web-blueprints-enforcement) | rendered_by | Flask blueprint: Enforcement |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-enforcement.yaml`*

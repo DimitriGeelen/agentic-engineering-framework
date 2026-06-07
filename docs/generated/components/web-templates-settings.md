@@ -8,15 +8,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/_wrapper.html` | wrapped_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_wrapper](/docs/generated/web-templates-_wrapper) | wrapped_by | Base layout wrapper: nav, header, footer, htmx/CSS includes |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/settings.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [settings](/docs/generated/web-blueprints-settings) | rendered_by | Watchtower settings blueprint: framework configuration display — shows hooks, cron config, notification state. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-settings.yaml`*

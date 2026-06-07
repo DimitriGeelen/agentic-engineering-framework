@@ -14,10 +14,10 @@ is_valid_horizon, is_valid_transition, valid_transitions_for
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/enums.sh` | calls |
-| `lib/enums.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [enums](/docs/generated/lib-enums) | calls | Single source of truth for framework enumerations — valid statuses, workflow types, horizons, and status transitions. Provides is_valid_status(), is_valid_type(), is_valid_horizon(), is_valid_transition() functions. Replaces hardcoded lists previously duplicated across 6+ files. |
+| [enums](/docs/generated/lib-enums) | tests | Single source of truth for framework enumerations — valid statuses, workflow types, horizons, and status transitions. Provides is_valid_status(), is_valid_type(), is_valid_horizon(), is_valid_transition() functions. Replaces hardcoded lists previously duplicated across 6+ files. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_enums.yaml`*

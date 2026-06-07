@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/risks.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [risks](/docs/generated/web-blueprints-risks) | rendered_by | Flask blueprint 'risks' serving routes: /risks |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-risks.yaml`*

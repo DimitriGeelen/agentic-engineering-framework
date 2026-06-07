@@ -10,16 +10,16 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `.context/working/.loop-detect.json` | writes |
-| `transcript` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `.context/working/.loop-detect.json` | writes | — |
+| `transcript` | reads | — |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/context/loop-detect.sh` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [loop-detect](/docs/generated/agents-context-loop-detect) | called_by | PostToolUse hook: detect repetitive tool call patterns — warns when agent appears stuck in a loop (same tool+args repeated). |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-ts-src-loop-detect.yaml`*

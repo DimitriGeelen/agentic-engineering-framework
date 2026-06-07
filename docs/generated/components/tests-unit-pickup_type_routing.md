@@ -18,11 +18,11 @@ captured arguments — no real task is created.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/pickup.sh` | calls |
-| `lib/pickup.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pickup](/docs/generated/lib-pickup) | calls | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
+| [pickup](/docs/generated/lib-pickup) | tests | Cross-project pickup pipeline that validates, deduplicates, and processes incoming YAML envelopes into inception tasks |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-pickup_type_routing.yaml`*

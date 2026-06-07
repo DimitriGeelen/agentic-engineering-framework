@@ -10,9 +10,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/reviewer/__init__.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [__init__](/docs/generated/lib-reviewer-__init__) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_reviewer_human_ac_mechanical_signal.yaml`*

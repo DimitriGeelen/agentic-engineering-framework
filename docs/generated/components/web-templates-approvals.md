@@ -8,15 +8,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/_approvals_content.html` | includes |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_approvals_content](/docs/generated/web-templates-_approvals_content) | includes | htmx partial: approvals content fragment — task list with AC checkboxes, loaded by htmx swap into approvals page. |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/approvals.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [approvals](/docs/generated/web-blueprints-approvals) | rendered_by | Watchtower approvals blueprint: human review queue — lists tasks with unchecked Human ACs, supports checkbox toggling. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-approvals.yaml`*

@@ -18,9 +18,9 @@ That pins the regex/union behavior independent of the full audit run.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `C-004` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_arc_progress_arc_id.yaml`*

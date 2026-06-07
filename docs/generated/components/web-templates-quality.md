@@ -8,15 +8,15 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/_quality_audit_fragment.html` | includes |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_quality_audit_fragment](/docs/generated/web-templates-_quality_audit_fragment) | includes | HTMX fragment: quality audit results panel, loaded dynamically |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/quality.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [quality](/docs/generated/web-blueprints-quality) | rendered_by | Flask blueprint: Quality |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-quality.yaml`*

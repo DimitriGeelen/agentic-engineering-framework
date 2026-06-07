@@ -13,12 +13,12 @@ Origin: T-928
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/task-create/update-task.sh` | calls |
-| `agents/task-create/create-task.sh` | calls |
-| `agents/task-create/update-task.sh` | tests |
-| `agents/task-create/create-task.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [create-task](/docs/generated/agents-task-create-create-task) | tests | Task Creation Agent - Mechanical Operations |
 
 ## Related
 

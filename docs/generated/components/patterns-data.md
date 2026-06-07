@@ -14,13 +14,13 @@ Grows over time as we learn from tasks.
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `learnings-route` | reads |
-| `C-003` | read_by |
-| `C-003` | called_by |
-| `lib/resolver.py` | called_by |
-| `web/blueprints/discovery.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| `learnings-route` | reads | Web UI reads patterns for /learnings page |
+| [learnings-route](/docs/generated/learnings-route) | read_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
+| [learnings-route](/docs/generated/learnings-route) | called_by | Serve the /learnings page showing all project learnings, patterns, and practices. |
+| [resolver](/docs/generated/lib-resolver) | called_by | TODO: describe what this component does |
+| [discovery_blueprint](/docs/generated/web-blueprints-discovery) | called_by | Watchtower discovery page — decisions, learnings, gaps, search, graduation |
 
 ---
 *Auto-generated from Component Fabric. Card: `patterns-data.yaml`*

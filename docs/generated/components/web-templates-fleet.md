@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/fleet.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fleet](/docs/generated/web-blueprints-fleet) | rendered_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-fleet.yaml`*

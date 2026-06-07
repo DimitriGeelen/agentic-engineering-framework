@@ -13,10 +13,10 @@ Origin: T-942
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/docgen/generate-article.sh` | calls |
-| `agents/docgen/generate-article.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [generate-article](/docs/generated/agents-docgen-generate-article) | calls | Generates AI-assisted subsystem articles from component fabric cards |
+| [generate-article](/docs/generated/agents-docgen-generate-article) | tests | Generates AI-assisted subsystem articles from component fabric cards |
 
 ## Related
 

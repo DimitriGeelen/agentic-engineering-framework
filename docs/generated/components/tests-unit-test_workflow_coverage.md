@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/workflow_coverage.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [workflow_coverage](/docs/generated/lib-workflow_coverage) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_workflow_coverage.yaml`*

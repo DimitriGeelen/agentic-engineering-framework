@@ -20,12 +20,14 @@ Git Agent - Hook installation subcommand
 | [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | calls | TODO: describe what this component does |
 | [large-file-scan](/docs/generated/agents-git-lib-large-file-scan) | calls | TODO: describe what this component does |
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [git](/docs/generated/agents-git-git) | called_by | Git Agent - Structural Enforcement for Git Operations |
 | [no-bare-fw-in-gate-scripts](/docs/generated/tests-lint-no-bare-fw-in-gate-scripts) | tests_by | TODO: describe what this component does |
+| [inception_commit_counter](/docs/generated/tests-unit-inception_commit_counter) | called_by | TODO: describe what this component does |
+| [inception_commit_counter](/docs/generated/tests-unit-inception_commit_counter) | tests_by | TODO: describe what this component does |
 
 ## Related
 

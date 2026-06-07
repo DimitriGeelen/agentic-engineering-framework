@@ -19,12 +19,12 @@ Test pins:
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | tests |
-| `web/blueprints/arcs.py` | tests |
-| `agents/task-create/update-task.sh` | tests |
-| `lib/render_surface.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | tests | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [arcs](/docs/generated/web-blueprints-arcs) | tests | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [render_surface](/docs/generated/lib-render_surface) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_render_surface_human_ac_sigpipe.yaml`*

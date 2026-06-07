@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/timeline.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [timeline](/docs/generated/web-blueprints-timeline) | rendered_by | Blueprint 'timeline' — routes: /timeline — _HTMX fragment rendered by timeline task detail endpoint_ |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_timeline_task.yaml`*

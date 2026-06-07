@@ -8,18 +8,18 @@
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
-| `web/terminal/registry.py` | calls |
-| `web/templates/sessions.html` | renders |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [registry](/docs/generated/web-terminal-registry) | calls | Provides CRUD operations and YAML file persistence for terminal session records stored in .context/sessions/ |
+| [sessions](/docs/generated/web-templates-sessions) | renders | Jinja2 template rendering the sessions management page with session cards showing provider, status, and metadata |
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 
 ## Related
 

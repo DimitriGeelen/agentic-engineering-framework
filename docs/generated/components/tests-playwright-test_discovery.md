@@ -10,8 +10,8 @@ Should have at least some learning references (L-XXX or task refs)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
 
 ## Related
 

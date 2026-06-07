@@ -17,10 +17,10 @@ path still exists after the rename (the orphan-creation moment).
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/git/lib/dup-task-scan.sh` | calls |
-| `agents/git/lib/dup-task-scan.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | calls | TODO: describe what this component does |
+| [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-update_task_orphan_guard.yaml`*

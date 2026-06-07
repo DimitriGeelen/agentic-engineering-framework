@@ -10,21 +10,27 @@
 The 6 named presets from the arc headline mechanic. Each is a curated combo
 over the S0 foundation axes (T-1991). Axis values MUST match foundations.css.
 
-## Dependencies (3)
+## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | imports |
-| `web/shared.py` | calls |
-| `web/templates/settings.html` | renders |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | imports | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [settings](/docs/generated/web-templates-settings) | renders | Full page template: settings — hook configuration, notification state, framework paths. |
+| [appearance](/docs/generated/web-templates-appearance) | renders | TODO: describe what this component does |
 
-## Used By (4)
+## Used By (9)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
-| `tests/playwright/test_settings_models.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
+| [test_settings_models](/docs/generated/tests-playwright-test_settings_models) | called_by | Playwright tests for settings models endpoint (T-1025). |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | called_by | TODO: describe what this component does |
+| [test_nav_layout_polish](/docs/generated/tests-unit-test_nav_layout_polish) | registered_by | TODO: describe what this component does |
+| [shared](/docs/generated/web-shared) | called_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [shared](/docs/generated/web-shared) | registered_by | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-settings.yaml`*

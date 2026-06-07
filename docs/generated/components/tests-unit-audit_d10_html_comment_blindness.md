@@ -24,10 +24,10 @@ Pattern matches the canonical strip in lib/inception.sh:517 (sed /<!--/,/-->/d).
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/audit/audit.sh` | tests |
-| `lib/inception.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [inception](/docs/generated/lib-inception) | tests | fw inception - Inception phase workflow |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_d10_html_comment_blindness.yaml`*

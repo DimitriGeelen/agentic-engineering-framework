@@ -17,7 +17,7 @@ Categories (27 patterns):
 2. File reading (7 patterns)
 3. Searching (4 patterns)
 
-## Used By (5)
+## Used By (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -26,6 +26,8 @@ Categories (27 patterns):
 | [context_safe_commands](/docs/generated/tests-unit-context_safe_commands) | tests_by | Unit tests for context safe_commands (35 tests) |
 | [safe_commands_env_prefix](/docs/generated/tests-unit-safe_commands_env_prefix) | called_by | TODO: describe what this component does |
 | [safe_commands_env_prefix](/docs/generated/tests-unit-safe_commands_env_prefix) | tests_by | TODO: describe what this component does |
+| [test_safe_commands_git_commit](/docs/generated/tests-unit-test_safe_commands_git_commit) | called_by | TODO: describe what this component does |
+| [test_safe_commands_git_commit](/docs/generated/tests-unit-test_safe_commands_git_commit) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-context-lib-safe-commands.yaml`*

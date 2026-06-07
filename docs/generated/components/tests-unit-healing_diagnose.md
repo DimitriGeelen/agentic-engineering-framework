@@ -16,11 +16,11 @@ subprocesses to ensure proper scoping of the associative array.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/healing/healing.sh` | calls |
-| `agents/healing/lib/diagnose.sh` | calls |
-| `agents/healing/lib/diagnose.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [healing](/docs/generated/agents-healing-healing) | calls | Healing Agent - Antifragile error recovery and pattern learning |
+| [diagnose](/docs/generated/agents-healing-lib-diagnose) | calls | Healing Agent - diagnose command |
+| [diagnose](/docs/generated/agents-healing-lib-diagnose) | tests | Healing Agent - diagnose command |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-healing_diagnose.yaml`*

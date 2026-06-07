@@ -13,13 +13,13 @@ Tests: do_suggest (scan for tasks with issues/blocked status)
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/healing/healing.sh` | calls |
-| `lib/yaml.sh` | calls |
-| `agents/healing/lib/suggest.sh` | calls |
-| `agents/healing/lib/suggest.sh` | tests |
-| `lib/yaml.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [healing](/docs/generated/agents-healing-healing) | calls | Healing Agent - Antifragile error recovery and pattern learning |
+| [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
+| [suggest](/docs/generated/agents-healing-lib-suggest) | calls | Healing Agent - suggest command |
+| [suggest](/docs/generated/agents-healing-lib-suggest) | tests | Healing Agent - suggest command |
+| [yaml](/docs/generated/lib-yaml) | tests | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-healing_suggest.yaml`*

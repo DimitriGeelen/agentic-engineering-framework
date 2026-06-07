@@ -13,10 +13,10 @@ Tests _sed_i() — portable in-place sed edit
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/compat.sh` | calls |
-| `lib/compat.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [compat](/docs/generated/lib-compat) | tests | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_compat.yaml`*

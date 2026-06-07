@@ -26,30 +26,30 @@ When starting work (**BEFORE reading code, editing files, or invoking skills**):
 
 ## Used By (22)
 
-| Component | Relationship |
-|-----------|-------------|
-| `agents/git/lib/hooks.sh` | called_by |
-| `bin/fw` | called_by |
-| `lib/paths.sh` | called_by |
-| `tests/unit/lib_tasks.bats` | called-by |
-| `tests/unit/lib_tasks.bats` | called_by |
-| `tests/unit/context_episodic.bats` | called_by |
-| `tests/unit/context_episodic.bats` | tests_by |
-| `tests/unit/context_focus.bats` | called_by |
-| `tests/unit/context_focus.bats` | tests_by |
-| `tests/unit/git_common.bats` | called_by |
-| `tests/unit/git_common.bats` | tests_by |
-| `tests/unit/inception_decide_ac_tick.bats` | called_by |
-| `tests/unit/inception_decide_ac_tick.bats` | tests_by |
-| `tests/unit/inception_decide_atomicity.bats` | called_by |
-| `tests/unit/inception_decide_atomicity.bats` | tests_by |
-| `tests/unit/inception_tick_decision_recorded.bats` | called_by |
-| `tests/unit/inception_tick_decision_recorded.bats` | tests_by |
-| `tests/unit/inception_tick_marker.bats` | called_by |
-| `tests/unit/inception_tick_marker.bats` | tests_by |
-| `tests/unit/lib_inception.bats` | called_by |
-| `tests/unit/lib_inception.bats` | tests_by |
-| `tests/unit/lib_tasks.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hooks](/docs/generated/agents-git-lib-hooks) | called_by | Git Agent - Hook installation subcommand |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [paths](/docs/generated/lib-paths) | called_by | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
+| [lib_tasks](/docs/generated/tests-unit-lib_tasks) | called-by | Unit tests for tasks (10 tests) |
+| [lib_tasks](/docs/generated/tests-unit-lib_tasks) | called_by | Unit tests for tasks (10 tests) |
+| [context_episodic](/docs/generated/tests-unit-context_episodic) | called_by | Unit tests for context episodic (11 tests) |
+| [context_episodic](/docs/generated/tests-unit-context_episodic) | tests_by | Unit tests for context episodic (11 tests) |
+| [context_focus](/docs/generated/tests-unit-context_focus) | called_by | Unit tests for context focus (15 tests) |
+| [context_focus](/docs/generated/tests-unit-context_focus) | tests_by | Unit tests for context focus (15 tests) |
+| [git_common](/docs/generated/tests-unit-git_common) | called_by | Unit tests for git common (10 tests) |
+| [git_common](/docs/generated/tests-unit-git_common) | tests_by | Unit tests for git common (10 tests) |
+| [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | called_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
+| [inception_decide_ac_tick](/docs/generated/tests-unit-inception_decide_ac_tick) | tests_by | Unit tests for T-1324 — tick_inception_decide_acs auto-ticks the templated [REVIEW]/[RUBBER-STAMP] Human AC after fw inception decide writes the Decision block, so the work-completed gate does not leave the task in partial-complete forever (G-008; P-039). |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | called_by | TODO: describe what this component does |
+| [inception_decide_atomicity](/docs/generated/tests-unit-inception_decide_atomicity) | tests_by | TODO: describe what this component does |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | called_by | TODO: describe what this component does |
+| [inception_tick_decision_recorded](/docs/generated/tests-unit-inception_tick_decision_recorded) | tests_by | TODO: describe what this component does |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | called_by | TODO: describe what this component does |
+| [inception_tick_marker](/docs/generated/tests-unit-inception_tick_marker) | tests_by | TODO: describe what this component does |
+| [lib_inception](/docs/generated/tests-unit-lib_inception) | called_by | Unit tests for inception (12 tests) |
+| [lib_inception](/docs/generated/tests-unit-lib_inception) | tests_by | Unit tests for inception (12 tests) |
+| [lib_tasks](/docs/generated/tests-unit-lib_tasks) | tests_by | Unit tests for tasks (10 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-tasks.yaml`*

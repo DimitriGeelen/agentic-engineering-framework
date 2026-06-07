@@ -13,9 +13,9 @@ for tests, no config plumbing until pressure (T-819 pattern).
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/test_workflow_coverage.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_workflow_coverage](/docs/generated/tests-unit-test_workflow_coverage) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-workflow_coverage.yaml`*

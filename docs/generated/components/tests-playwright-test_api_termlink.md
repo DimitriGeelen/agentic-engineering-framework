@@ -10,10 +10,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/terminal.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [terminal](/docs/generated/web-blueprints-terminal) | calls | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_api_termlink.yaml`*

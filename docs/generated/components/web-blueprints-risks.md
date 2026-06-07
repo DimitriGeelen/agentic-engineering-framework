@@ -10,21 +10,21 @@ Split by type
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
-| `web/templates/risks.html` | renders |
-| `web/context_loader.py` | calls |
-| `.context/project/controls.yaml` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [risks](/docs/generated/web-templates-risks) | renders | Watchtower UI page: Risks |
+| [context_loader](/docs/generated/web-context_loader) | calls | Centralized YAML loading for context project files (learnings, patterns, decisions, practices, concerns, directives). Replaces duplicated try/except blocks across blueprints. Uses shared.load_yaml() for error collection. |
+| [controls](/docs/generated/context-project-controls) | calls | Control register tracking framework enforcement mechanisms (gates, hooks, checks) and their implementation status. |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/app.py` | called_by |
-| `web/app.py` | registered_by |
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | called_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [app](/docs/generated/web-app) | registered_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-risks.yaml`*

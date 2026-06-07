@@ -20,9 +20,9 @@ When agent ACs are complete and human ACs remain:
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/templates/_review_acs.html` | includes |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_review_acs](/docs/generated/web-templates-_review_acs) | includes | htmx partial: acceptance criteria list — renders agent/human AC sections with checkboxes for review page. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-review.yaml`*

@@ -1,0 +1,21 @@
+=== episodic-gen invocation: 2026-06-07T16:37:50Z ===
+task_id: T-2236
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2236.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: fix consumer-recover TermLink leg
+  Duration: 0 days (227 min)
+  Updates: 1
+  Commits: 0
+  Lines: +0 -0 across 0 files
+  Outcomes: 8 AC checked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2236-fix-consumer-recover-termlink-leg.md
+--- exit code: 0 ---

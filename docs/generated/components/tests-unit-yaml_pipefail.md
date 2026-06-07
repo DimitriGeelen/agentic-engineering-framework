@@ -16,12 +16,12 @@ the trap by writing bare `var=$(get_yaml_field ...)` assignments.
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/yaml.sh` | calls |
-| `lib/config.sh` | calls |
-| `lib/config.sh` | tests |
-| `lib/yaml.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [config](/docs/generated/lib-config) | tests | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [yaml](/docs/generated/lib-yaml) | tests | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-yaml_pipefail.yaml`*

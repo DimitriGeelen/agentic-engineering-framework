@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/review.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [review](/docs/generated/lib-review) | calls | fw task review helper: emit Watchtower URL, QR code, and research artifact links for human review presentation. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_arc_parent_review_gate.yaml`*

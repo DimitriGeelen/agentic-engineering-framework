@@ -8,10 +8,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/tasks.py` | calls |
-| `web/blueprints/tasks.py` | registers |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [tasks](/docs/generated/web-blueprints-tasks) | calls | Flask blueprint: Tasks |
+| [tasks](/docs/generated/web-blueprints-tasks) | registers | Flask blueprint: Tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_ac_body_html_comment.yaml`*

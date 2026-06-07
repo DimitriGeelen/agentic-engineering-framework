@@ -11,12 +11,12 @@ Tests do_harvest argument parsing, help, guards, and sub-functions
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/harvest.sh` | calls |
-| `lib/colors.sh` | calls |
-| `lib/harvest.sh` | tests |
-| `lib/colors.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [harvest](/docs/generated/lib-harvest) | calls | fw harvest - Collect learnings from projects back into the framework |
+| [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [harvest](/docs/generated/lib-harvest) | tests | fw harvest - Collect learnings from projects back into the framework |
+| [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_harvest.yaml`*

@@ -18,11 +18,11 @@ Tests do_init():
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/context.sh` | calls |
-| `agents/context/lib/init.sh` | calls |
-| `agents/context/lib/init.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | calls | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [init](/docs/generated/agents-context-lib-init) | calls | Context Agent - init command |
+| [init](/docs/generated/agents-context-lib-init) | tests | Context Agent - init command |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_init.yaml`*

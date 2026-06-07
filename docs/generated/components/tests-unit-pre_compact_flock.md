@@ -11,10 +11,10 @@ when both user-level and project-level PreCompact hooks fire (OBS-023).
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/pre-compact.sh` | calls |
-| `agents/context/pre-compact.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pre-compact](/docs/generated/agents-context-pre-compact) | calls | Pre-Compaction Hook — Save structured context before lossy compaction |
+| [pre-compact](/docs/generated/agents-context-pre-compact) | tests | Pre-Compaction Hook — Save structured context before lossy compaction |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-pre_compact_flock.yaml`*

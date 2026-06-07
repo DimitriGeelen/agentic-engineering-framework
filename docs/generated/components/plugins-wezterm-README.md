@@ -12,9 +12,9 @@ TermLink Chrome for WezTerm
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `plugins/wezterm/termlink-chrome.lua` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink-chrome](/docs/generated/plugins-wezterm-termlink-chrome) | reads | WezTerm Lua plugin that queries TermLink RPC (termlink list --json) to display task-aware session metadata in the terminal status bar. Groups sessions by task ID, shows roles and counts. |
 
 ---
 *Auto-generated from Component Fabric. Card: `plugins-wezterm-README.yaml`*

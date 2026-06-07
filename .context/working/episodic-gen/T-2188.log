@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-06-06T11:42:39Z ===
+task_id: T-2188
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2188.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Inception recalibration Slice 2: frontmatter schema — target_blast_radius +
+  Duration: 4 days (5138 min)
+  Updates: 2
+  Commits: 1
+  Lines: +438 -48 across 10 files
+  Outcomes: 8 AC checked
+  Artifacts: 10 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2188-inception-recalibration-slice-2-frontmat.md
+--- exit code: 0 ---

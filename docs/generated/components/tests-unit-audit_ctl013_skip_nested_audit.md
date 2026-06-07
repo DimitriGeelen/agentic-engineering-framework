@@ -15,11 +15,11 @@ invocation)").
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | tests |
-| `C-004` | calls |
-| `C-004` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_ctl013_skip_nested_audit.yaml`*

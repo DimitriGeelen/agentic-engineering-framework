@@ -8,10 +8,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/terminal.py` | called_by |
-| `web/terminal/__init__.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [terminal](/docs/generated/web-blueprints-terminal) | called_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
+| [__init__](/docs/generated/web-terminal-__init__) | called_by | Package entry point that manages PTY processes and bridges them to Flask-SocketIO WebSocket connections for the web terminal |
 
 ## Related
 

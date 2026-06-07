@@ -28,7 +28,7 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [tasks](/docs/generated/lib-tasks) | calls | fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts. |
 | [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 
-## Used By (52)
+## Used By (55)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -84,6 +84,9 @@ FRAMEWORK_ROOT — Absolute path to the framework repo root
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | called_by | Unit tests for lib/validate-init.sh (7 tests) |
 | [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | tests_by | Unit tests for lib/validate-init.sh (7 tests) |
 | [test_enrich_bats_parser](/docs/generated/tests-unit-test_enrich_bats_parser) | called_by | TODO: describe what this component does |
+| [check-visual-verification](/docs/generated/agents-context-check-visual-verification) | called_by | TODO: describe what this component does |
+| [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | called_by | TODO: describe what this component does |
+| [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-paths.yaml`*

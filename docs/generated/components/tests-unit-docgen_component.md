@@ -13,10 +13,10 @@ Origin: T-942
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/docgen/generate-component.sh` | calls |
-| `agents/docgen/generate-component.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [generate-component](/docs/generated/agents-docgen-generate-component) | calls | Generates component reference documentation from fabric cards |
+| [generate-component](/docs/generated/agents-docgen-generate-component) | tests | Generates component reference documentation from fabric cards |
 
 ## Related
 

@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/metrics.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [metrics](/docs/generated/web-blueprints-metrics) | rendered_by | Flask blueprint: Metrics |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-metrics.yaml`*

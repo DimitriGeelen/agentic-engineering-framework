@@ -19,7 +19,7 @@ components: []
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-04-27T13:19:34Z
-last_update: '2026-06-05T18:00:02Z'
+last_update: '2026-06-07T16:45:01Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -78,6 +78,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-07T16:45:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---

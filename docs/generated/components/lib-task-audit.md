@@ -19,12 +19,12 @@ source "$FW_LIB_DIR/task-audit.sh"
 
 ## Used By (6)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `lib/inception.sh` | called_by |
-| `tests/unit/lib_task_audit.bats` | called_by |
-| `tests/unit/lib_task_audit.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
+| [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | called_by | TODO: describe what this component does |
+| [lib_task_audit](/docs/generated/tests-unit-lib_task_audit) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-task-audit.yaml`*

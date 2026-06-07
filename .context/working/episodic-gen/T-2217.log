@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-06-05T20:04:41Z ===
+task_id: T-2217
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2217.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Watchtower side-effect-warning truncation — RCA + systemic mitigation (G-068
+  Duration: 0 days (12 min)
+  Updates: 1
+  Commits: 2
+  Lines: +456 -6 across 2 files
+  Outcomes: 4 AC checked
+  Artifacts: 2 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2217-watchtower-side-effect-warning-truncatio.md
+--- exit code: 0 ---

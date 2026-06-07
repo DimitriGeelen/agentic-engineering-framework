@@ -14,13 +14,13 @@ show_log_help, show_traceability
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/git/git.sh` | calls |
-| `agents/git/lib/common.sh` | calls |
-| `agents/git/lib/log.sh` | calls |
-| `agents/git/lib/log.sh` | tests |
-| `agents/git/lib/common.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [git](/docs/generated/agents-git-git) | calls | Git Agent - Structural Enforcement for Git Operations |
+| [common](/docs/generated/agents-git-lib-common) | calls | Common utilities for git agent |
+| [log](/docs/generated/agents-git-lib-log) | calls | Git Agent - Log subcommand |
+| [log](/docs/generated/agents-git-lib-log) | tests | Git Agent - Log subcommand |
+| [common](/docs/generated/agents-git-lib-common) | tests | Common utilities for git agent |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-git_log.yaml`*

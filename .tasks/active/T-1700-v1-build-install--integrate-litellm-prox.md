@@ -16,7 +16,7 @@ components: []
 related_tasks: [T-1691, T-1696, T-1693]
 arc_id: orchestrator-rethink
 created: 2026-05-03T15:46:59Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: '2026-06-05T18:00:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -53,6 +53,19 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=2 
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 3
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=3 (body:typed-io-or-gate)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

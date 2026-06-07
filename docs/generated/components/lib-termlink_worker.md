@@ -8,10 +8,10 @@
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/test_termlink_worker.py` | called_by |
-| `lib/reviewer/dispatch_cli.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_termlink_worker](/docs/generated/tests-unit-test_termlink_worker) | called_by | TODO: describe what this component does |
+| [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-termlink_worker.yaml`*

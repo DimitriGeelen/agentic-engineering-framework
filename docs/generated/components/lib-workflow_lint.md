@@ -8,17 +8,19 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/resolver.py` | calls |
-| `bin/fw` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
-## Used By (2)
+## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/worker_kinds_parity.py` | called_by |
-| `lib/worker_kinds_parity.py` | uses_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | called_by | TODO: describe what this component does |
+| [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | uses_by | TODO: describe what this component does |
+| [test_doctor_scope_tags](/docs/generated/tests-unit-test_doctor_scope_tags) | called_by | TODO: describe what this component does |
+| [test_doctor_scope_tags](/docs/generated/tests-unit-test_doctor_scope_tags) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-workflow_lint.yaml`*

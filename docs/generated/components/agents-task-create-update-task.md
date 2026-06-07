@@ -35,7 +35,7 @@ Usage:
 | [bvp-estimator](/docs/generated/agents-termlink-bvp-estimator-bvp-estimator) | calls | TODO: describe what this component does |
 | [inception_decisions](/docs/generated/lib-inception_decisions) | calls | TODO: describe what this component does |
 
-## Used By (23)
+## Used By (27)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -62,6 +62,10 @@ Usage:
 | [test_render_surface_gate](/docs/generated/tests-unit-test_render_surface_gate) | tests_by | TODO: describe what this component does |
 | [check_active_task_switch_focus](/docs/generated/tests-unit-check_active_task_switch_focus) | called_by | Pins the focus-drift bypass mechanism contract introduced by T-1730 and fixed by T-1890. The check-active-task.sh PreToolUse hook blocks under CLAUDECODE=1 when a Bash command targets a task ≠ focused task. Two bypass mechanisms exist:   (a) --switch-focus flag — for fw commands whose downstream parsers       (update-task.sh, lib/{learning,pattern,decision}.sh) consume it       as a no-op token.   (b) FW_SWITCH_FOCUS=1 env-var prefix — universal, works for `git       commit ... T-X: ...` where git rejects unknown flags.  Origin: T-1890 — last-session closures of T-1854/T-1855 hit "Unknown option: --switch-focus" from update-task.sh; agent worked around via direct-invoke `bash agents/task-create/update-task.sh` which the hook regex doesn't match → silent bypass, no audit trail. Producer/consumer split: hook shipped the contract; consumers never honoured it.  9 tests: block-without-bypass, --switch-focus flag allow+log, FW_SWITCH_FOCUS=1 allow+log, FW_SWITCH_FOCUS=1 unlocks git commit case, block-message names both mechanisms, four downstream consumers each accept --switch-focus without Unknown-option exit. |
 | [check_render_surface_human_ac_sigpipe](/docs/generated/tests-unit-check_render_surface_human_ac_sigpipe) | tests_by | TODO: describe what this component does |
+| [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | called_by | TODO: describe what this component does |
+| [update_task_horizon_null_on_close](/docs/generated/tests-unit-update_task_horizon_null_on_close) | tests_by | TODO: describe what this component does |
+| [disposition_gate](/docs/generated/tests-unit-disposition_gate) | called_by | TODO: describe what this component does |
+| [disposition_gate](/docs/generated/tests-unit-disposition_gate) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

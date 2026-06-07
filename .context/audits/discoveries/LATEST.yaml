@@ -1,24 +1,25 @@
-timestamp: 2026-05-06T18:30:01Z
+timestamp: 2026-06-07T19:00:01Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 1% [TODO] (18/1692)"
+    check: "D1: Episodic quality — 0% [TODO] (18/1956)"
   - id: D2
-    level: PASS
-    check: "D2: Human review queue — 2 task(s) awaiting human action (normal)"
+    level: WARN
+    check: "D2: Human review queue — 60 task(s) waiting >14d: T-1773(24d) T-1774(24d) T-1775(24d) T-1792(25d) T-1794(25d) T-1795(25d) T-1796(25d) T-1797(25d) T-1799(25d) T-1801(25d) T-1802(25d) T-1803(25d) T-1805(25d) T-1806(25d) T-1807(25d) T-1808(25d) T-1810(25d) T-1811(25d) T-1818(24d) T-1827(16d) T-1834(23d) T-1842(16d) T-1843(16d) T-1844(16d) T-1891(20d) T-1909(18d) T-1910(18d) T-1911(18d) T-1928(19d) T-1929(19d) T-1930(19d) T-1933(19d) T-1934(18d) T-1935(17d) T-1936(17d) T-1939(18d) T-1947(18d) T-1951(16d) T-1954(18d) T-1955(18d) T-1957(18d) T-1960(17d) T-1961(17d) T-1963(17d) T-1964(18d) T-1965(18d) T-1968(17d) T-1969(17d) T-1970(17d) T-1971(17d) T-1976(16d) T-1977(17d) T-1978(16d) T-1980(16d) T-1982(17d) T-1984(16d) T-1985(16d) T-1988(15d) T-1991(15d) T-1999(15d)"
+    mitigation: "Review with: fw task verify"
   - id: D8
     level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
   - id: D10
     level: WARN
-    check: "D10: Decision-without-dialogue — 13 task(s): T-815 T-1151 T-608 T-586 T-993"
+    check: "D10: Decision-without-dialogue — 4 task(s): T-1902 T-1846 T-1915 T-1905"
     mitigation: "Review flagged tasks — human dialogue may have been skipped"
   - id: D11
     level: PASS
     check: "D11: Gap register staleness — all gaps fresh"
 
 summary:
-  pass: 4
-  warn: 1
+  pass: 3
+  warn: 2
   fail: 0
   total: 5

@@ -16,10 +16,10 @@ library, run each verb with both forms, assert success + correct routing.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/arc.sh` | calls |
-| `lib/arc.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_dual_identity_verbs.yaml`*

@@ -13,10 +13,10 @@ Origin: T-915
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/upstream.sh` | calls |
-| `lib/upstream.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [upstream](/docs/generated/lib-upstream) | calls | Safe issue creation from field installations to framework upstream repo. Resolves upstream repo from .framework.yaml or git remotes. Supports dry-run, confirmation, fw doctor attachment, patch attachment, and sent-file tracking. |
+| [upstream](/docs/generated/lib-upstream) | tests | Safe issue creation from field installations to framework upstream repo. Resolves upstream repo from .framework.yaml or git remotes. Supports dry-run, confirmation, fw doctor attachment, patch attachment, and sent-file tracking. |
 
 ## Related
 

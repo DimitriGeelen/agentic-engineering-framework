@@ -18,10 +18,10 @@ Refusals exit non-zero with actionable error citing the allowed transitions.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/arc.sh` | calls |
-| `lib/arc.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_lifecycle_state_machine.yaml`*

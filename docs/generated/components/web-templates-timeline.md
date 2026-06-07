@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/timeline.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [timeline](/docs/generated/web-blueprints-timeline) | rendered_by | Blueprint 'timeline' — routes: /timeline |
 
 ## Related
 

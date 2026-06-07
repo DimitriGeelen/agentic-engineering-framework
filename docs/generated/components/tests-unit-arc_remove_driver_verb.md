@@ -19,10 +19,10 @@ Pins the contract (symmetric with fw bvp driver --remove):
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/arc.sh` | calls |
-| `lib/arc.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_remove_driver_verb.yaml`*

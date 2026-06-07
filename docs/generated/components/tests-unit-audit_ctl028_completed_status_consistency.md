@@ -17,14 +17,14 @@ CTL-028 block just renders the scanner's output as WARN lines.
 
 ## Dependencies (6)
 
-| Target | Relationship |
-|--------|-------------|
-| `C-004` | calls |
-| `agents/audit/completed-task-scan.py` | calls |
-| `agents/audit/active-task-scan.py` | calls |
-| `C-004` | tests |
-| `agents/audit/completed-task-scan.py` | tests |
-| `agents/audit/active-task-scan.py` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | calls | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [completed-task-scan](/docs/generated/agents-audit-completed-task-scan) | calls | Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria |
+| [active-task-scan](/docs/generated/agents-audit-active-task-scan) | calls | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [completed-task-scan](/docs/generated/agents-audit-completed-task-scan) | tests | Single-pass scan of completed task files that checks for missing episodic summaries, missing research artifacts, and unchecked acceptance criteria |
+| [active-task-scan](/docs/generated/agents-audit-active-task-scan) | tests | Single-pass scan of active task files that checks compliance, quality, research artifacts, ownership, and review queue status in one efficient pass |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_ctl028_completed_status_consistency.yaml`*

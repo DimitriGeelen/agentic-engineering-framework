@@ -20,13 +20,13 @@ trigger) — tracked separately in concerns.yaml.
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/task-create/update-task.sh` | calls |
-| `agents/context/context.sh` | calls |
-| `C-001` | calls |
-| `agents/task-create/update-task.sh` | tests |
-| `C-001` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [context-dispatcher](/docs/generated/context-dispatcher) | calls | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [context-dispatcher](/docs/generated/context-dispatcher) | calls | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [context-dispatcher](/docs/generated/context-dispatcher) | tests | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-update_task_episodic_gen.yaml`*

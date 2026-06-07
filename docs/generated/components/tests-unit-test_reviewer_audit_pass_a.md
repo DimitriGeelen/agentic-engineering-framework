@@ -8,10 +8,10 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/reviewer/audit.py` | calls |
-| `lib/reviewer/drift.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [audit](/docs/generated/lib-reviewer-audit) | calls | TODO: describe what this component does |
+| [drift](/docs/generated/lib-reviewer-drift) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_reviewer_audit_pass_a.yaml`*

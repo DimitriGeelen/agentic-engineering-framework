@@ -8,11 +8,11 @@
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/fixtures/termlink-list-schema.json` | calls |
-| `web/blueprints/orchestrator.py` | calls |
-| `agents/audit/orchestrator-mcp-scan.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink-list-schema](/docs/generated/tests-fixtures-termlink-list-schema) | calls | TODO: describe what this component does |
+| [orchestrator](/docs/generated/web-blueprints-orchestrator) | calls | TODO: describe what this component does |
+| [orchestrator-mcp-scan](/docs/generated/agents-audit-orchestrator-mcp-scan) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_termlink_list_contract.yaml`*

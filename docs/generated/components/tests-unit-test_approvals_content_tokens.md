@@ -8,6 +8,12 @@
 
 DEFER gets warn + dark text in all three blocks
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_approvals_content_tokens.yaml`*
 *Last verified: 2026-05-24*

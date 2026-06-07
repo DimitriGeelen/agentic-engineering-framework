@@ -8,17 +8,17 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/pi_worker.py` | calls |
-| `lib/resolver.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pi_worker](/docs/generated/lib-pi_worker) | calls | TODO: describe what this component does |
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/resolver.py` | called_by |
-| `tests/unit/test_spawn.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | called_by | TODO: describe what this component does |
+| [test_spawn](/docs/generated/tests-unit-test_spawn) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-spawn.yaml`*

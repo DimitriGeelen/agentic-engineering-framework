@@ -1,0 +1,22 @@
+=== episodic-gen invocation: 2026-06-06T16:43:26Z ===
+task_id: T-2232
+FRAMEWORK_ROOT: /opt/999-Agentic-Engineering-Framework
+PROJECT_ROOT: /opt/999-Agentic-Engineering-Framework
+CONTEXT_DIR: /opt/999-Agentic-Engineering-Framework/.context
+CONTEXT_AGENT: /opt/999-Agentic-Engineering-Framework/agents/context/context.sh
+cwd: /opt/999-Agentic-Engineering-Framework
+--- context.sh output ---
+Episodic generated: /opt/999-Agentic-Engineering-Framework/.context/episodic/T-2232.yaml
+
+  Status: ✓ complete (Auto-generated)
+  Task: Durable in-consumer fw upgrade — vendor .upstream sentinel + upgrade-time fallback chain (T-2078 V1-D pivot for ring20-dashboard class)
+  Duration: 0 days (9 min)
+  Updates: 1
+  Commits: 1
+  Lines: +535 -2 across 5 files
+  Outcomes: 8 AC checked
+  Artifacts: 5 files tracked
+  Decisions: recorded from task file
+
+Source: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2232-durable-in-consumer-fw-upgrade--vendor-u.md
+--- exit code: 0 ---

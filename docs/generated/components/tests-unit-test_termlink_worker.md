@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/termlink_worker.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [termlink_worker](/docs/generated/lib-termlink_worker) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_termlink_worker.yaml`*

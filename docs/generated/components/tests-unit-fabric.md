@@ -21,11 +21,11 @@ The Component Fabric (`.fabric/`) is a structural topology map of every signific
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/fabric/fabric.sh` | calls |
-| `agents/fabric/fabric.sh` | tests |
-| `lib/config.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fabric](/docs/generated/agents-fabric-fabric) | calls | Fabric Agent - Component topology system for codebase self-awareness |
+| [fabric](/docs/generated/agents-fabric-fabric) | tests | Fabric Agent - Component topology system for codebase self-awareness |
+| [config](/docs/generated/lib-config) | tests | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Related
 

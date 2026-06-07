@@ -15,15 +15,15 @@ Tests the do_focus() function:
 
 ## Dependencies (7)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/context.sh` | calls |
-| `lib/compat.sh` | calls |
-| `lib/tasks.sh` | calls |
-| `agents/context/lib/focus.sh` | calls |
-| `agents/context/lib/focus.sh` | tests |
-| `lib/compat.sh` | tests |
-| `lib/tasks.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | calls | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [tasks](/docs/generated/lib-tasks) | calls | fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts. |
+| [focus](/docs/generated/agents-context-lib-focus) | calls | Context Agent - focus command |
+| [focus](/docs/generated/agents-context-lib-focus) | tests | Context Agent - focus command |
+| [compat](/docs/generated/lib-compat) | tests | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [tasks](/docs/generated/lib-tasks) | tests | fw task subcommand dispatcher: routes task create/update/list/verify/review to agents/task-create/ scripts. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_focus.yaml`*

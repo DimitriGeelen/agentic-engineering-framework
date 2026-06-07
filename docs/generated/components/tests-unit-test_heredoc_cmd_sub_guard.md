@@ -13,11 +13,11 @@ task-create → edit-time prevention gap that bit T-1942 twice.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/check-heredoc-cmd-sub.sh` | calls |
-| `agents/context/check-heredoc-cmd-sub.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | calls | TODO: describe what this component does |
+| [check-heredoc-cmd-sub](/docs/generated/agents-context-check-heredoc-cmd-sub) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_heredoc_cmd_sub_guard.yaml`*

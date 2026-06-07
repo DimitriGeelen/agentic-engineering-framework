@@ -19,21 +19,21 @@ Steps:
 
 ## Dependencies (4)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/init.sh` | calls |
-| `agents/git/git.sh` | calls |
-| `C-001` | calls |
-| `agents/task-create/create-task.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [init](/docs/generated/lib-init) | calls | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [git](/docs/generated/agents-git-git) | calls | Git Agent - Structural Enforcement for Git Operations |
+| [context-dispatcher](/docs/generated/context-dispatcher) | calls | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [create-task](/docs/generated/agents-task-create-create-task) | calls | Task Creation Agent - Mechanical Operations |
 
 ## Used By (4)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `tests/unit/lib_setup.bats` | called-by |
-| `tests/unit/lib_setup.bats` | called_by |
-| `tests/unit/lib_setup.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_setup](/docs/generated/tests-unit-lib_setup) | called-by | Unit tests for setup (2 tests) |
+| [lib_setup](/docs/generated/tests-unit-lib_setup) | called_by | Unit tests for setup (2 tests) |
+| [lib_setup](/docs/generated/tests-unit-lib_setup) | tests_by | Unit tests for setup (2 tests) |
 
 ## Related
 

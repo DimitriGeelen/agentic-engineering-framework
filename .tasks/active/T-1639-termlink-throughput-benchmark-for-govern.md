@@ -19,7 +19,7 @@ tags: [from-T-1066, termlink, benchmark, performance]
 components: []
 related_tasks: [T-1066, T-1641]
 created: 2026-05-01T10:45:22Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: '2026-06-05T18:00:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -54,6 +54,19 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 3
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link);
+      F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

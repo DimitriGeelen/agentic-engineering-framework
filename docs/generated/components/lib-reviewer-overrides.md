@@ -8,13 +8,13 @@
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/test_reviewer_overrides.py` | called_by |
-| `lib/reviewer/override_cli.py` | called_by |
-| `web/blueprints/reviewer.py` | called_by |
-| `lib/reviewer/audit.py` | called_by |
-| `lib/reviewer/static_scan.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [test_reviewer_overrides](/docs/generated/tests-unit-test_reviewer_overrides) | called_by | TODO: describe what this component does |
+| [override_cli](/docs/generated/lib-reviewer-override_cli) | called_by | TODO: describe what this component does |
+| [reviewer](/docs/generated/web-blueprints-reviewer) | called_by | TODO: describe what this component does |
+| [audit](/docs/generated/lib-reviewer-audit) | called_by | TODO: describe what this component does |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-reviewer-overrides.yaml`*

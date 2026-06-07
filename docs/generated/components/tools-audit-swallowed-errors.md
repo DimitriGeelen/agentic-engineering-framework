@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/reviewer/static_scan.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tools-audit-swallowed-errors.yaml`*

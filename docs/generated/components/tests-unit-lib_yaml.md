@@ -13,10 +13,10 @@ Tests get_yaml_field() — YAML frontmatter field extraction
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/yaml.sh` | calls |
-| `lib/yaml.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [yaml](/docs/generated/lib-yaml) | calls | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
+| [yaml](/docs/generated/lib-yaml) | tests | YAML manipulation helpers: Python-based read/write for YAML frontmatter in task files. Used by update-task.sh. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_yaml.yaml`*

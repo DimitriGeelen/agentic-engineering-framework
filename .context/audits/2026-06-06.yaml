@@ -1,0 +1,47 @@
+# Audit Results - 2026-06-06-2238
+timestamp: 2026-06-06T20:38:55Z
+sections: "structure"
+summary:
+  pass: 18
+  warn: 1
+  fail: 0
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "No duplicate task IDs across active/ and completed/"
+  - level: PASS
+    check: "All 19 project YAML files parse correctly"
+  - level: PASS
+    check: "All 8 arc anchor_task references resolve to existing tasks"
+  - level: PASS
+    check: "All 7 in-progress arc(s) had task commits within 30 days"
+  - level: PASS
+    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881)"
+  - level: PASS
+    check: "No stale-slice-references (L-417)"
+  - level: PASS
+    check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
+  - level: PASS
+    check: "Fabric: 801 registered, 0 unregistered"
+  - level: WARN
+    check: "Fabric: 84/792 cards have no edges"
+    mitigation: "Run: fw fabric enrich"
+  - level: PASS
+    check: "Fabric drift: All watched source files registered (801 cards)"
+  - level: PASS
+    check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
+  - level: PASS
+    check: "Hook threshold: no hooks failing over threshold"
+  - level: PASS
+    check: "Secret scan: tracked tree clean"
+  - level: PASS
+    check: "Large-file gate: tracked tree clean"

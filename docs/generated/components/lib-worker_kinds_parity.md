@@ -8,19 +8,19 @@
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/resolver.py` | calls |
-| `lib/workflow_lint.py` | calls |
-| `bin/fw` | calls |
-| `lib/resolver.py` | uses |
-| `lib/workflow_lint.py` | uses |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [resolver](/docs/generated/lib-resolver) | calls | TODO: describe what this component does |
+| [workflow_lint](/docs/generated/lib-workflow_lint) | calls | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [resolver](/docs/generated/lib-resolver) | uses | TODO: describe what this component does |
+| [workflow_lint](/docs/generated/lib-workflow_lint) | uses | TODO: describe what this component does |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-worker_kinds_parity.yaml`*

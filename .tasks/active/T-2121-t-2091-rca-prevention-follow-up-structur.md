@@ -1,6 +1,14 @@
 ---
 id: T-2121
-name: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent."
+name: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id
+  collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md
+  that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time
+  block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/
+  before mutating any .tasks/active/ file (prevents masking by metadata churn); (3)
+  bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently
+  doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing
+  as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention
+  are independent."
 description: >
   Promoted from observation OBS-035
 
@@ -16,8 +24,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-30T20:16:09Z
-last_update: 2026-05-30T20:16:09Z
-date_finished: null
+last_update: '2026-06-05T18:00:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +36,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 4
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=4 (body:rubric-routable)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2121: T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent.

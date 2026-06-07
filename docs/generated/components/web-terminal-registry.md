@@ -10,16 +10,16 @@ In-memory cache of active sessions (pid/fd are not persisted across restarts)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/terminal/session.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [session](/docs/generated/web-terminal-session) | calls | Provider-neutral dataclass defining the terminal session descriptor schema with metadata, capabilities, and process info |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/sessions.py` | called_by |
-| `web/blueprints/terminal.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [sessions](/docs/generated/web-blueprints-sessions) | called_by | Flask blueprint that renders the terminal session management page listing active and historical sessions |
+| [terminal](/docs/generated/web-blueprints-terminal) | called_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
 
 ## Related
 

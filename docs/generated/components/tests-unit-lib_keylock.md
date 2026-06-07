@@ -13,10 +13,10 @@ Tests keylock_acquire, keylock_release, _keylock_path, _keylock_clean_stale
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/keylock.sh` | calls |
-| `lib/keylock.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [keylock](/docs/generated/lib-keylock) | calls | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
+| [keylock](/docs/generated/lib-keylock) | tests | Advisory file locking: task-level lock files in .context/locks/ to prevent concurrent task modifications. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_keylock.yaml`*

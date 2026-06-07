@@ -15,9 +15,9 @@ cover the detector in isolation; this bats file pins the higher-level wiring
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-reviewer_human_ac_mechanical_signal.yaml`*

@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `tools/g064-readiness.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [g064-readiness](/docs/generated/tools-g064-readiness) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_g064_readiness.yaml`*

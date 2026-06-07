@@ -13,10 +13,10 @@ Origin: T-945
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/ask.sh` | calls |
-| `lib/ask.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [ask](/docs/generated/lib-ask) | calls | fw ask subcommand. Provides interactive question/answer prompts for framework configuration and user input collection. |
+| [ask](/docs/generated/lib-ask) | tests | fw ask subcommand. Provides interactive question/answer prompts for framework configuration and user input collection. |
 
 ## Related
 

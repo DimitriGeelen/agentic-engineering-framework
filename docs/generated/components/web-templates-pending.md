@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/pending.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pending](/docs/generated/web-blueprints-pending) | rendered_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-pending.yaml`*

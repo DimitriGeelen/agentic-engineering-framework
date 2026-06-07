@@ -73,7 +73,7 @@ When run from inside the framework repo itself, it auto-detects.
 | [cron_dry_run](/docs/generated/lib-cron_dry_run) | calls | TODO: describe what this component does |
 | [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | calls | TODO: describe what this component does |
 
-## Used By (211)
+## Used By (222)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -287,6 +287,17 @@ When run from inside the framework repo itself, it auto-detects.
 | [arcs](/docs/generated/web-blueprints-arcs) | called_by | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 | [bvp](/docs/generated/web-blueprints-bvp) | called_by | TODO: describe what this component does |
 | [dispatch_cli](/docs/generated/lib-reviewer-dispatch_cli) | called_by | TODO: describe what this component does |
+| [ux-review](/docs/generated/agents-ux-review-ux-review) | called_by | TODO: describe what this component does |
+| [test_audit_completable_not_completed](/docs/generated/tests-unit-test_audit_completable_not_completed) | tests_by | TODO: describe what this component does |
+| [test_audit_revert_chain](/docs/generated/tests-unit-test_audit_revert_chain) | tests_by | TODO: describe what this component does |
+| [test_work_on_completed_task](/docs/generated/tests-unit-test_work_on_completed_task) | tests_by | TODO: describe what this component does |
+| [review_link_validator](/docs/generated/lib-review_link_validator) | called_by | TODO: describe what this component does |
+| [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | tests_by | TODO: describe what this component does |
+| [test_review_link_validator](/docs/generated/tests-unit-test_review_link_validator) | called_by | TODO: describe what this component does |
+| [test_audit_retire_when](/docs/generated/tests-unit-test_audit_retire_when) | tests_by | TODO: describe what this component does |
+| [g066_readiness](/docs/generated/tests-unit-g066_readiness) | tests_by | TODO: describe what this component does |
+| [gaps_close](/docs/generated/tests-unit-gaps_close) | tests_by | TODO: describe what this component does |
+| [g066-readiness](/docs/generated/tools-g066-readiness) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

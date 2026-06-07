@@ -16,13 +16,13 @@ Tests the do_status() function:
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/context.sh` | calls |
-| `lib/compat.sh` | calls |
-| `agents/context/lib/status.sh` | calls |
-| `agents/context/lib/status.sh` | tests |
-| `lib/compat.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [context-dispatcher](/docs/generated/context-dispatcher) | calls | Central dispatcher for all context agent commands (init, focus, add-learning, add-pattern, add-decision, status, generate-episodic) |
+| [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [status](/docs/generated/agents-context-lib-status) | calls | Context Agent - status command |
+| [status](/docs/generated/agents-context-lib-status) | tests | Context Agent - status command |
+| [compat](/docs/generated/lib-compat) | tests | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-context_status.yaml`*

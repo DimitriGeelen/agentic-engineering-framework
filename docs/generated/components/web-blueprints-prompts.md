@@ -8,18 +8,18 @@
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
-| `web/templates/prompts_list.html` | renders |
-| `web/templates/prompt_detail.html` | renders |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [prompts_list](/docs/generated/web-templates-prompts_list) | renders | TODO: describe what this component does |
+| [prompt_detail](/docs/generated/web-templates-prompt_detail) | renders | TODO: describe what this component does |
 
 ## Used By (2)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-prompts.yaml`*

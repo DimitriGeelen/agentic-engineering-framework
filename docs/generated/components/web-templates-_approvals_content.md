@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/approvals.html` | included_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [approvals](/docs/generated/web-templates-approvals) | included_by | Full page template: approvals queue — wrapper around _approvals_content partial with nav, filters, bulk actions. |
 
 ## Related
 

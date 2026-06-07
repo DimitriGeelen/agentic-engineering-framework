@@ -10,9 +10,9 @@ A2 — Walk does not climb past FRAMEWORK_ROOT
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_project_root_discovery.yaml`*

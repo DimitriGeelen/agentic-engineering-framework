@@ -28,11 +28,11 @@ NOTE: deliberately no `constituent_tasks:` field — that's the contract.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/arcs.py` | renders |
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/arcs.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arcs](/docs/generated/web-blueprints-arcs) | renders | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_arcs_renders_without_constituent_field.yaml`*

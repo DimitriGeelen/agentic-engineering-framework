@@ -10,8 +10,8 @@ Populated from conftest.py base_url fixture
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
 
 ## Related
 

@@ -18,7 +18,7 @@ components: []
 related_tasks: [T-1741, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-05T09:25:26Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: '2026-06-05T18:00:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -53,6 +53,19 @@ bvp_scores_proposed:
       F2: 0
     rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); D4=2
       (body:env-class-handled); F1=1 (body/tag hits for 'F1': 1); F2=0 (no-signal)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

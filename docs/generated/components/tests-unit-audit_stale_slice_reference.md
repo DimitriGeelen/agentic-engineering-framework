@@ -18,10 +18,10 @@ inline (same pattern as audit_ctl_arc_tag_only_pattern.bats).
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/arcs.py` | calls |
-| `web/blueprints/arcs.py` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arcs](/docs/generated/web-blueprints-arcs) | calls | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [arcs](/docs/generated/web-blueprints-arcs) | tests | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-audit_stale_slice_reference.yaml`*

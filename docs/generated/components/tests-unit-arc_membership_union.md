@@ -15,9 +15,9 @@ semantics.
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/arc.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_membership_union.yaml`*

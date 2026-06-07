@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2236: fix consumer-recover TermLink leg
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T16:37:50Z
+# ============================================================================
+
+task_id: T-2236
+task_name: "fix consumer-recover TermLink leg"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T12:50:27Z
+completed: 2026-06-07T16:37:43Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_cr_pick_transport` calls `termlink remote list <hub>` correctly (with HUB positional arg) when probing for the host'
+  - '`_cr_remote_exec` for transport=termlink takes a session arg and emits `termlink remote exec <hub> <session> <cmd>` (real CLI shape, 3 positional args)'
+  - '`_cr_remote_script` for transport=termlink uses the base64 inject path with the correct hub+session positional args'
+  - 'New `--session SESSION_ID` flag — required when `--via termlink` forces TermLink AND auto-discovery yields no ready session; otherwise auto-discovers a ready session (first STATE=ready row from `termlink remote list HUB`)'
+  - 'Wrapper degrades gracefully when TermLink not installed (`command -v termlink` guards the auto-pick branch; falls through to SSH)'
+  - 'bats tests at `tests/unit/test_consumer_recover.bats` updated to reflect the new CLI shape; mocks enforce the 3-positional-arg form for `exec` and 1-positional-arg for `list` so future regressions fail tests; 16/16 PASS'
+  - 'Local dispatcher smoke test: `bin/fw consumer-recover ring20-management /tmp/proxmox-test --via termlink --upstream <URL> --json` PASSED — printed recipe, JSON envelope `transport=termlink outcome=dry-run exit_code=0`, auto-discovered session on real hub'
+  - '`fw reviewer T-2236` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 227 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 227
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2236-fix-consumer-recover-termlink-leg.md
+generated_by: context-agent-hybrid

@@ -10,11 +10,11 @@
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/terminal/adapters/local_shell.py` | implements |
-| `web/terminal/adapters/claude_code.py` | implements |
-| `web/blueprints/terminal.py` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [local_shell](/docs/generated/web-terminal-adapters-local_shell) | implements | Terminal adapter that spawns local shell sessions via PTY fork for interactive shell access in the web terminal |
+| [claude_code](/docs/generated/web-terminal-adapters-claude_code) | implements | Terminal adapter that spawns Claude Code agent sessions via PTY using claude -p (prompt) or claude -c (interactive) commands |
+| [terminal](/docs/generated/web-blueprints-terminal) | called_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
 
 ## Related
 

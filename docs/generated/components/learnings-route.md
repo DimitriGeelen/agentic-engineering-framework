@@ -8,7 +8,7 @@
 
 ## What It Does
 
-## Dependencies (15)
+## Dependencies (16)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -27,6 +27,7 @@
 | [search_utils](/docs/generated/web-search_utils) | calls | Watchtower search utilities: full-text search across tasks, learnings, decisions for the search page. |
 | [feedback_analytics](/docs/generated/web-templates-feedback_analytics) | renders | Jinja2 template for feedback analytics page. Displays handover quality feedback trends and session statistics. |
 | [patterns-data](/docs/generated/patterns-data) | calls | Stores failure, success, and workflow patterns discovered during project work. |
+| [gaps](/docs/generated/lib-gaps) | calls | TODO: describe what this component does |
 
 ## Used By (6)
 

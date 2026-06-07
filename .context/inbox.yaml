@@ -243,7 +243,7 @@ observations:
     captured: 2026-05-29T11:56:18Z
     context_task: T-2091
     tags: [housekeeping]
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-035
     text: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent."
@@ -341,7 +341,7 @@ observations:
     captured: 2026-06-01T22:34:22Z
     context_task: T-2158
     tags: [gap-readiness]
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-049
     text: "add"

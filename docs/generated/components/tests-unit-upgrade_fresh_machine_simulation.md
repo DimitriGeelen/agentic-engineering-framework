@@ -19,10 +19,10 @@ Slim slice (no docker required, runs in any bats environment):
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/upgrade.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [upgrade](/docs/generated/lib-upgrade) | tests | fw upgrade - Sync framework improvements to a consumer project |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-upgrade_fresh_machine_simulation.yaml`*

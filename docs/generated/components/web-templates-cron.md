@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/cron.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [cron](/docs/generated/web-blueprints-cron) | rendered_by | Watchtower cron blueprint: cron job status display — shows registered jobs, schedule, last run, active/paused state. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-cron.yaml`*

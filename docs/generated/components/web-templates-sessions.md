@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/sessions.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [sessions](/docs/generated/web-blueprints-sessions) | rendered_by | Flask blueprint that renders the terminal session management page listing active and historical sessions |
 
 ## Related
 

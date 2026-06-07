@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/app.py` | used-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | used-by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_partials-badge.yaml`*

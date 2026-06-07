@@ -18,11 +18,11 @@ Sibling to T-1874/T-1875/T-1876/T-1877 (web + CLI + audit).
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/evolution_log.sh` | tests |
-| `agents/task-create/update-task.sh` | tests |
-| `agents/handover/handover.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [evolution_log](/docs/generated/lib-evolution_log) | tests | TODO: describe what this component does |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
+| [handover](/docs/generated/agents-handover-handover) | tests | Handover Agent - Mechanical Operations |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_membership_agent_surfaces.yaml`*

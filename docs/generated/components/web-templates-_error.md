@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/app.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | rendered_by | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port — _Rendered via _wrapper.html include for 403, 404, 500 error handlers_ |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_error.yaml`*

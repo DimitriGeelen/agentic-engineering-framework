@@ -21,17 +21,17 @@ Agent-relevant settings:
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/config.py` | renders |
-| `lib/config.sh` | reads |
-| `web/templates/base.html` | renders |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/web-blueprints-config) | renders | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
+| [config](/docs/generated/lib-config) | reads | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
+| [base](/docs/generated/web-templates-base) | renders | Template: {{ page_title \| default("Watchtower") }} — Agentic Engineering Framework |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/config.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/web-blueprints-config) | rendered_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
 
 ## Related
 

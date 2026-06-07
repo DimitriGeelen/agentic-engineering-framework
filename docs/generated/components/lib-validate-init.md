@@ -18,19 +18,19 @@ Conditions: ?git (requires .git), ?claude,generic (provider match)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/init.sh` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [init](/docs/generated/lib-init) | reads | fw init - Bootstrap a new project with the Agentic Engineering Framework |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | called_by |
-| `lib/init.sh` | called_by |
-| `tests/unit/lib_validate_init.bats` | called-by |
-| `tests/unit/lib_validate_init.bats` | called_by |
-| `tests/unit/lib_validate_init.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [init](/docs/generated/lib-init) | called_by | fw init - Bootstrap a new project with the Agentic Engineering Framework |
+| [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | called-by | Unit tests for lib/validate-init.sh (7 tests) |
+| [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | called_by | Unit tests for lib/validate-init.sh (7 tests) |
+| [lib_validate_init](/docs/generated/tests-unit-lib_validate_init) | tests_by | Unit tests for lib/validate-init.sh (7 tests) |
 
 ## Related
 

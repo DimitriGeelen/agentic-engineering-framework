@@ -14,10 +14,10 @@ marker of authorization; the file state is the artifact.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/task-create/update-task.sh` | calls |
-| `agents/task-create/update-task.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update-task](/docs/generated/agents-task-create-update-task) | calls | Task Update Agent - Status transitions with auto-triggers |
+| [update-task](/docs/generated/agents-task-create-update-task) | tests | Task Update Agent - Status transitions with auto-triggers |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-skip_ac_partial_complete.yaml`*

@@ -28,13 +28,13 @@ finds all (arc-NNN, count) pairs in sequence and joins by adjacency.
 
 ## Dependencies (5)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/core.py` | renders |
-| `web/blueprints/tasks.py` | renders |
-| `tests/playwright/conftest.py` | calls |
-| `web/blueprints/core.py` | calls |
-| `web/blueprints/tasks.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [core](/docs/generated/web-blueprints-core) | renders | Flask blueprint: Core |
+| [tasks](/docs/generated/web-blueprints-tasks) | renders | Flask blueprint: Tasks |
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
+| [core](/docs/generated/web-blueprints-core) | calls | Flask blueprint: Core |
+| [tasks](/docs/generated/web-blueprints-tasks) | calls | Flask blueprint: Tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_landing_arc_cards.yaml`*

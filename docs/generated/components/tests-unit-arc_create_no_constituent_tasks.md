@@ -16,11 +16,11 @@ populations co-exist.
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/arc.sh` | calls |
-| `C-004` | tests |
-| `lib/arc.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [arc](/docs/generated/lib-arc) | calls | TODO: describe what this component does |
+| [audit-yaml-validator](/docs/generated/audit-yaml-validator) | tests | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
+| [arc](/docs/generated/lib-arc) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-arc_create_no_constituent_tasks.yaml`*

@@ -25,7 +25,7 @@ When agent ACs are complete and human ACs remain:
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Used By (7)
+## Used By (9)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -36,6 +36,8 @@ When agent ACs are complete and human ACs remain:
 | [lib_review](/docs/generated/tests-unit-lib_review) | called_by | Unit tests for review (10 tests) |
 | [lib_review](/docs/generated/tests-unit-lib_review) | tests_by | Unit tests for review (10 tests) |
 | [test_arc_parent_review_gate](/docs/generated/tests-unit-test_arc_parent_review_gate) | called_by | TODO: describe what this component does |
+| [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | called_by | TODO: describe what this component does |
+| [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | tests_by | TODO: describe what this component does |
 
 ## Related
 

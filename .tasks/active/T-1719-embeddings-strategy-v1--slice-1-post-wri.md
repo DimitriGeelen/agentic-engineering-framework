@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: '2026-06-05T18:00:02Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -62,6 +62,19 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

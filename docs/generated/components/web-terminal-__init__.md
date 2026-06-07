@@ -10,9 +10,9 @@ Singleton adapter for backward compatibility
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/terminal/adapters/local_shell.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [local_shell](/docs/generated/web-terminal-adapters-local_shell) | calls | Terminal adapter that spawns local shell sessions via PTY fork for interactive shell access in the web terminal |
 
 ## Related
 

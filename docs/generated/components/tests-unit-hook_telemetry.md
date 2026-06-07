@@ -19,11 +19,11 @@ failures flowed past while framework reported clean. Telemetry is the
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/hook-telemetry.sh` | calls |
-| `lib/hook-telemetry.sh` | tests |
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [hook-telemetry](/docs/generated/lib-hook-telemetry) | calls | TODO: describe what this component does |
+| [hook-telemetry](/docs/generated/lib-hook-telemetry) | tests | TODO: describe what this component does |
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-hook_telemetry.yaml`*

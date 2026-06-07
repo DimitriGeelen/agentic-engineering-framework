@@ -10,16 +10,16 @@
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/static/js/chat.js` | renders |
-| `web/templates/search.html` | renders |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [chat](/docs/generated/web-static-js-chat) | renders | Ask AI chat tab JavaScript — streaming SSE client, conversation state management, save/load conversations, provider/model switching |
+| [search](/docs/generated/web-templates-search) | renders | Watchtower UI page: Search |
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/search.html` | included_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [search](/docs/generated/web-templates-search) | included_by | Watchtower UI page: Search |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_partials-chat_tab.yaml`*

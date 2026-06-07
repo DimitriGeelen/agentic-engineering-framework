@@ -17,11 +17,11 @@ Part of: Agentic Engineering Framework (T-606)
 
 ## Used By (3)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/lib_version.bats` | called-by |
-| `tests/unit/lib_version.bats` | called_by |
-| `tests/unit/lib_version.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [lib_version](/docs/generated/tests-unit-lib_version) | called-by | Unit tests for version (16 tests) |
+| [lib_version](/docs/generated/tests-unit-lib_version) | called_by | Unit tests for version (16 tests) |
+| [lib_version](/docs/generated/tests-unit-lib_version) | tests_by | Unit tests for version (16 tests) |
 
 ## Related
 

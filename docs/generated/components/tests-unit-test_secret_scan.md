@@ -19,10 +19,10 @@ below are synthesized to MATCH the patterns but are not real secrets.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/git/lib/secret-scan.sh` | calls |
-| `agents/git/lib/secret-scan.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | TODO: describe what this component does |
+| [secret-scan](/docs/generated/agents-git-lib-secret-scan) | tests | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_secret_scan.yaml`*

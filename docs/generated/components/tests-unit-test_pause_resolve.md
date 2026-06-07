@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/pause_resolve.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [pause_resolve](/docs/generated/lib-pause_resolve) | calls | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_pause_resolve.yaml`*

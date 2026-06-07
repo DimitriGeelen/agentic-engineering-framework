@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/review.py` | used-by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [review](/docs/generated/web-blueprints-review) | used-by | Watchtower review blueprint: task review page — shows ACs, research artifacts, recommendation, approval actions. |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-_review_error.yaml`*

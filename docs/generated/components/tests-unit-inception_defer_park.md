@@ -14,9 +14,9 @@ by sweep + manual smoke against this repo's 6 limbo tasks.)
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | tests | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-inception_defer_park.yaml`*

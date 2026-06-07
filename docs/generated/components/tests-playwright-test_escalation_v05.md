@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `tests/unit/escalation_scan_v05.bats` | called_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [escalation_scan_v05](/docs/generated/tests-unit-escalation_scan_v05) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_escalation_v05.yaml`*

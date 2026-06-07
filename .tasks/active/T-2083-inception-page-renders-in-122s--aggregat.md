@@ -2,7 +2,11 @@
 id: T-2083
 name: "/inception page renders in 12.2s — aggregation perf (T-1954 sibling)"
 description: >
-  Empirical measurement during the broken-link scanner sweep (this session): GET /inception takes 12.24s. Same class as T-1954 (/bvp at 17.9s, fixed by caching _collect_task_points()). Root cause likely the per-inception body-parse + section-extraction loop across all inceptions. Bound: render top-N + lazy-load tail, OR cache aggregation result with disk-mtime invalidation (T-1954 pattern).
+  Empirical measurement during the broken-link scanner sweep (this session): GET /inception
+  takes 12.24s. Same class as T-1954 (/bvp at 17.9s, fixed by caching _collect_task_points()).
+  Root cause likely the per-inception body-parse + section-extraction loop across
+  all inceptions. Bound: render top-N + lazy-load tail, OR cache aggregation result
+  with disk-mtime invalidation (T-1954 pattern).
 
 status: captured
 workflow_type: build
@@ -16,8 +20,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T06:45:38Z
-last_update: 2026-05-29T06:45:38Z
-date_finished: null
+last_update: '2026-06-05T18:00:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +32,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2083: /inception page renders in 12.2s — aggregation perf (T-1954 sibling)

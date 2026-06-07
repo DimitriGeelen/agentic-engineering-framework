@@ -13,16 +13,16 @@ Tests do_update argument parsing and help
 
 ## Dependencies (8)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/update.sh` | calls |
-| `lib/colors.sh` | calls |
-| `lib/errors.sh` | calls |
-| `lib/compat.sh` | calls |
-| `lib/update.sh` | tests |
-| `lib/colors.sh` | tests |
-| `lib/errors.sh` | tests |
-| `lib/compat.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [update](/docs/generated/lib-update) | calls | fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes. |
+| [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [errors](/docs/generated/lib-errors) | calls | Consistent error/warning/info output functions with TTY-aware coloring. Provides die(), error(), warn(), info(), success(), block() with standardized exit codes (0=ok, 1=error, 2=blocking). Auto-sourced by lib/paths.sh. |
+| [compat](/docs/generated/lib-compat) | calls | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
+| [update](/docs/generated/lib-update) | tests | fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes. |
+| [colors](/docs/generated/lib-colors) | tests | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
+| [errors](/docs/generated/lib-errors) | tests | Consistent error/warning/info output functions with TTY-aware coloring. Provides die(), error(), warn(), info(), success(), block() with standardized exit codes (0=ok, 1=error, 2=blocking). Auto-sourced by lib/paths.sh. |
+| [compat](/docs/generated/lib-compat) | tests | Compatibility shims: bash 3.2 (macOS) POSIX-safe replacements for declare -A and other bashisms. |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-lib_update.yaml`*

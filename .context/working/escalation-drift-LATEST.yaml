@@ -1,23 +1,17 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-06-02T03:23:02.337055+00:00
-corpus_total: 1951
-bug_class_total: 433
+generated: 2026-06-06T03:23:01.566526+00:00
+corpus_total: 1986
+bug_class_total: 437
 bug_class_pct: 22
 h1_flagged: 346
 h1_pct_of_bug_class: 79
-h2_repeat_patterns: 105
+h2_repeat_patterns: 106
 h3_flagged: 270
-h3_pct_of_bug_class: 62
-recent_30d_flagged: 23
+h3_pct_of_bug_class: 61
+recent_30d_flagged: 20
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
-  - tid: "T-1729-meta-rca-agent-did-substantive-work-rca-"
-    name: "meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — "
-  - tid: "T-1732-prompt-triage-as-g-064-first-real-consum"
-    name: "prompt-triage as G-064 first real consumer — orchestrator-driven user-prompt cla"
-  - tid: "T-1734-validworkerkinds-drift-between-binfw-and"
-    name: "VALID_WORKER_KINDS drift between bin/fw and lib/resolver.py — ollama-loop accept"
   - tid: "T-1813-audit-arc-completion-check-ignores-tag-t"
     name: "audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks onl"
   - tid: "T-1829-version-stamping-algorithm-not-cross-tag"
@@ -32,24 +26,30 @@ recent_sample:
     name: "ship T-1886 RCA Candidate A — task-template hint to remind .claude/settings.json"
   - tid: "T-1888-ship-t-1886-rca-candidate-b--posttooluse"
     name: "ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits t"
+  - tid: "T-1898-fix-double-render-on-arcsarc-005-and-5-s"
+    name: "fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.ht"
+  - tid: "T-1899-renderpage-runtime-guard--refuse-templat"
+    name: "render_page() runtime guard — refuse template that extends base.html with action"
+  - tid: "T-1900-update-tasksh-checkrendersurfacehumanac-"
+    name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-"
 h2_top:
   - learning: "P-011"
-    task_count: 528
+    task_count: 590
   - learning: "L-387"
-    task_count: 345
+    task_count: 412
   - learning: "L-291"
-    task_count: 299
-  - learning: "P-010"
-    task_count: 155
+    task_count: 332
   - learning: "L-398"
-    task_count: 132
+    task_count: 162
+  - learning: "P-010"
+    task_count: 158
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
     task_count: 38
   - learning: "L-332"
     task_count: 35
+  - learning: "L-364"
+    task_count: 26
   - learning: "PL-007"
     task_count: 24
-  - learning: "L-293"
-    task_count: 23

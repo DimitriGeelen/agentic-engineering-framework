@@ -6,7 +6,7 @@
 
 ## What It Does
 
-## Used By (5)
+## Used By (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -15,6 +15,8 @@
 | [audit_scan](/docs/generated/tests-unit-audit_scan) | tests_by | TODO: describe what this component does |
 | [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | called_by | TODO: describe what this component does |
 | [audit_ctl028_completed_status_consistency](/docs/generated/tests-unit-audit_ctl028_completed_status_consistency) | tests_by | TODO: describe what this component does |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | called_by | TODO: describe what this component does |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
 
 ## Related
 

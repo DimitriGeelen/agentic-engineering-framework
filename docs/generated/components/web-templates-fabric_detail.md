@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/fabric.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fabric](/docs/generated/web-blueprints-fabric) | rendered_by | Flask blueprint: Fabric |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-fabric_detail.yaml`*

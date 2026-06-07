@@ -13,7 +13,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T13:27:15Z
-last_update: '2026-06-02T08:30:03Z'
+last_update: '2026-06-05T18:00:04Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -82,6 +82,18 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -90,6 +102,15 @@ cost_estimate_proposed:
       tier: 4
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)

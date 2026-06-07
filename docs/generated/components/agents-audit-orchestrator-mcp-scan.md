@@ -17,11 +17,14 @@ Exit codes:
 0  baseline match
 1  drift: new unclassified tools (manual classification needed) or ratchet candidates
 
-## Used By (1)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [test_termlink_list_contract](/docs/generated/tests-unit-test_termlink_list_contract) | called_by | TODO: describe what this component does |
+| [test_orchestrator_mcp_classify](/docs/generated/tests-unit-test_orchestrator_mcp_classify) | called_by | TODO: describe what this component does |
+| [test_reviewer_ac_evidence_untick](/docs/generated/tests-unit-test_reviewer_ac_evidence_untick) | called_by | TODO: describe what this component does |
+| [check_termlink_tag_drift](/docs/generated/tools-check_termlink_tag_drift) | called_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `agents-audit-orchestrator-mcp-scan.yaml`*

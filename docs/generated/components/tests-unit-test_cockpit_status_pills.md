@@ -8,6 +8,12 @@
 
 the old hardcoded badge fills are gone
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_cockpit_status_pills.yaml`*
 *Last verified: 2026-05-24*

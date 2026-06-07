@@ -13,10 +13,10 @@ Origin: T-932, T-943 (isolation fix)
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/observe/observe.sh` | calls |
-| `agents/observe/observe.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [observe](/docs/generated/agents-observe-observe) | calls | Observe Agent - Lightweight observation capture |
+| [observe](/docs/generated/agents-observe-observe) | tests | Observe Agent - Lightweight observation capture |
 
 ## Related
 

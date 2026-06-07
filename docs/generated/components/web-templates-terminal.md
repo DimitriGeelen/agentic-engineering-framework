@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/terminal.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [terminal](/docs/generated/web-blueprints-terminal) | rendered_by | Flask blueprint providing the interactive web terminal API with session creation, I/O, resize, and profile-based configuration |
 
 ## Related
 

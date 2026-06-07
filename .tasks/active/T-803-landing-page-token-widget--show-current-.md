@@ -14,7 +14,7 @@ tags: [watchtower, tokens, observability]
 components: [watchtower-web-ui]
 related_tasks: [T-802, T-801, T-799]
 created: 2026-04-03T19:17:34Z
-last_update: '2026-05-28T22:54:12Z'
+last_update: '2026-06-05T18:00:04Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -49,6 +49,19 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=0 
       (no-signal); D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:03Z'

@@ -23,7 +23,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T19:25:55Z
-last_update: 2026-06-02T19:42:29Z
+last_update: '2026-06-05T18:00:04Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -49,6 +49,19 @@ bvp_scores_proposed:
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-02T19:30:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -57,6 +70,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-05T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---

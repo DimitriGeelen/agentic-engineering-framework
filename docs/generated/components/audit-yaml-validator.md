@@ -39,7 +39,7 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | [large-file-scan](/docs/generated/agents-git-lib-large-file-scan) | calls | TODO: describe what this component does |
 | [cron_dry_run](/docs/generated/lib-cron_dry_run) | calls | TODO: describe what this component does |
 
-## Used By (29)
+## Used By (32)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -72,6 +72,9 @@ Sections: structure, compliance, quality, traceability, enforcement,
 | [audit_stale_arc_warning](/docs/generated/tests-unit-audit_stale_arc_warning) | called_by | TODO: describe what this component does |
 | [audit_stale_arc_warning](/docs/generated/tests-unit-audit_stale_arc_warning) | tests_by | TODO: describe what this component does |
 | [arcs](/docs/generated/web-blueprints-arcs) | called_by | Watchtower /arcs (index) + /arcs/<id> (detail) blueprint — generic operator-facing arc surface. Reads .context/arcs/*.yaml registry + .context/working/arc-focus.yaml. Detail page shows constituent task table + section Arc Completion Discipline three-question check + fw arc close snippet for in-progress arcs. |
+| [static_scan](/docs/generated/lib-reviewer-static_scan) | called_by | TODO: describe what this component does |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | called_by | TODO: describe what this component does |
+| [audit_ctl030_completed_horizon_drift](/docs/generated/tests-unit-audit_ctl030_completed_horizon_drift) | tests_by | TODO: describe what this component does |
 
 ## Related
 

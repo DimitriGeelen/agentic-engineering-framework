@@ -8,6 +8,12 @@
 
 --pico-color is overridden to white by Pico's button rule → the original bug.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [app](/docs/generated/web-app) | calls | Flask application entrypoint — creates app, registers all blueprints, serves Watchtower web UI on configurable port |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_theme_toggle_contrast.yaml`*
 *Last verified: 2026-05-24*

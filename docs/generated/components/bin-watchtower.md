@@ -28,7 +28,7 @@ Resolution order (T-885, T-1287, T-1376):
 
 *(truncated — see CLAUDE.md for full section)*
 
-## Dependencies (4)
+## Dependencies (5)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -36,6 +36,7 @@ Resolution order (T-885, T-1287, T-1376):
 | [paths](/docs/generated/lib-paths) | calls | Centralized path resolution for the framework. Sets FRAMEWORK_ROOT, PROJECT_ROOT, TASKS_DIR, CONTEXT_DIR. Replaces the 3-line SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT pattern previously duplicated across 25+ agent scripts. Also sources lib/compat.sh for cross-platform helpers. |
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 | [firewall](/docs/generated/lib-firewall) | calls | Opens UFW firewall ports for TCP traffic when starting network services, with no-op fallback if UFW is not installed or inactive |
+| [watchtower](/docs/generated/lib-watchtower) | calls | Detects the running Watchtower instance URL and provides browser-open helpers for scripts that need to link to the web UI |
 
 ## Used By (3)
 

@@ -14,19 +14,19 @@ fw_run_ts "fw-util" yaml-get "$file" "$key"
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/runtime.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [runtime](/docs/generated/lib-runtime) | calls | Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution. |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `lib/runtime.sh` | called-by |
-| `tests/unit/lib_runtime.bats` | called-by |
-| `lib/runtime.sh` | called_by |
-| `tests/unit/lib_runtime.bats` | called_by |
-| `tests/unit/lib_runtime.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [runtime](/docs/generated/lib-runtime) | called-by | Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution. |
+| [lib_runtime](/docs/generated/tests-unit-lib_runtime) | called-by | Unit tests for runtime (5 tests) |
+| [runtime](/docs/generated/lib-runtime) | called_by | Runtime environment detection: OS type, shell version, Python availability, brew/apt package manager resolution. |
+| [lib_runtime](/docs/generated/tests-unit-lib_runtime) | called_by | Unit tests for runtime (5 tests) |
+| [lib_runtime](/docs/generated/tests-unit-lib_runtime) | tests_by | Unit tests for runtime (5 tests) |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-runtime.yaml`*

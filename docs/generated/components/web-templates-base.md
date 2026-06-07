@@ -6,20 +6,26 @@
 
 ## What It Does
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_pins](/docs/generated/web-templates-_pins) | includes | TODO: describe what this component does |
+
 ## Used By (10)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/_wrapper.html` | extended_by |
-| `web/templates/config.html` | used-by |
-| `web/templates/config.html` | rendered_by |
-| `web/templates/reviewer_audit.html` | extended_by |
-| `web/templates/reviewer_overrides.html` | extended_by |
-| `web/templates/escalation_drift.html` | extended_by |
-| `web/templates/arc_detail.html` | extended_by |
-| `web/templates/arcs_index.html` | extended_by |
-| `web/templates/orchestrator.html` | extended_by |
-| `web/templates/bvp.html` | extended_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [_wrapper](/docs/generated/web-templates-_wrapper) | extended_by | Base layout wrapper: nav, header, footer, htmx/CSS includes |
+| [config](/docs/generated/web-templates-config) | used-by | Watchtower /config page — show all FW_* settings with current values and sources |
+| [config](/docs/generated/web-templates-config) | rendered_by | Watchtower /config page — show all FW_* settings with current values and sources |
+| [reviewer_audit](/docs/generated/web-templates-reviewer_audit) | extended_by | TODO: describe what this component does |
+| [reviewer_overrides](/docs/generated/web-templates-reviewer_overrides) | extended_by | TODO: describe what this component does |
+| [escalation_drift](/docs/generated/web-templates-escalation_drift) | extended_by | TODO: describe what this component does |
+| [arc_detail](/docs/generated/web-templates-arc_detail) | extended_by | Renders /arcs/<id> detail page — arc metadata, completion stats with G-062 audit-detective threshold call-out (matches T-1656), constituent task table with status badges, section Arc Completion Discipline three-question check inline (in-progress only), fw arc close CLI snippet. |
+| [arcs_index](/docs/generated/web-templates-arcs_index) | extended_by | Renders /arcs index — list of every arc with focus dot indicator, status badge (in-progress/closed), constituent count, anchor task link, link to arc detail. |
+| [orchestrator](/docs/generated/web-templates-orchestrator) | extended_by | TODO: describe what this component does |
+| [bvp](/docs/generated/web-templates-bvp) | extended_by | TODO: describe what this component does |
 
 ## Related
 

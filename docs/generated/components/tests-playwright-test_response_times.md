@@ -12,9 +12,9 @@ Routes to measure — all major GET endpoints
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `tests/playwright/conftest.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [conftest](/docs/generated/tests-playwright-conftest) | calls | Playwright test fixtures for Watchtower (T-969) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-playwright-test_response_times.yaml`*

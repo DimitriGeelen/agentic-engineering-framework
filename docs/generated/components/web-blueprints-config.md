@@ -23,20 +23,20 @@ Agent-relevant settings:
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/shared.py` | calls |
-| `web/templates/config.html` | renders |
-| `lib/config.sh` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
+| [config](/docs/generated/web-templates-config) | renders | Watchtower /config page — show all FW_* settings with current values and sources |
+| [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/templates/config.html` | used-by |
-| `web/blueprints/__init__.py` | called_by |
-| `web/blueprints/__init__.py` | registered_by |
-| `web/templates/config.html` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [config](/docs/generated/web-templates-config) | used-by | Watchtower /config page — show all FW_* settings with current values and sources |
+| [__init__](/docs/generated/web-blueprints-__init__) | called_by | Flask blueprint:   Init |
+| [__init__](/docs/generated/web-blueprints-__init__) | registered_by | Flask blueprint:   Init |
+| [config](/docs/generated/web-templates-config) | rendered_by | Watchtower /config page — show all FW_* settings with current values and sources |
 
 ## Related
 

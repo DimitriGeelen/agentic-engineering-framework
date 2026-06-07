@@ -8,9 +8,9 @@
 
 ## Used By (1)
 
-| Component | Relationship |
-|-----------|-------------|
-| `web/blueprints/tasks.py` | rendered_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [tasks](/docs/generated/web-blueprints-tasks) | rendered_by | Flask blueprint: Tasks |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-templates-task_detail.yaml`*

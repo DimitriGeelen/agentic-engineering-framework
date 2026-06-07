@@ -13,10 +13,10 @@ Origin: T-945
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `lib/first-run.sh` | calls |
-| `lib/first-run.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [first-run](/docs/generated/lib-first-run) | calls | First-run experience walkthrough after fw init. Guides new users through governance cycle: create task, make commit, run audit. Auto-triggered when TTY detected. |
+| [first-run](/docs/generated/lib-first-run) | tests | First-run experience walkthrough after fw init. Guides new users through governance cycle: create task, make commit, run audit. Auto-triggered when TTY detected. |
 
 ## Related
 

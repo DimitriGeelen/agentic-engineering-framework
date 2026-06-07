@@ -8,9 +8,9 @@
 
 ## Dependencies (1)
 
-| Target | Relationship |
-|--------|-------------|
-| `web/blueprints/__init__.py` | calls |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [__init__](/docs/generated/web-blueprints-__init__) | calls | Flask blueprint:   Init |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-test_arc_display_helper.yaml`*

@@ -14,20 +14,20 @@ Inception: T-451 | Build: T-454
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `bin/fw` | calls |
-| `lib/init.sh` | reads |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [init](/docs/generated/lib-init) | reads | fw init - Bootstrap a new project with the Agentic Engineering Framework |
 
 ## Used By (5)
 
-| Component | Relationship |
-|-----------|-------------|
-| `bin/fw` | calls |
-| `bin/fw` | called_by |
-| `tests/unit/lib_upstream.bats` | called-by |
-| `tests/unit/lib_upstream.bats` | called_by |
-| `tests/unit/lib_upstream.bats` | tests_by |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [fw](/docs/generated/bin-fw) | calls | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [fw](/docs/generated/bin-fw) | called_by | Single entry point for all framework operations. Reads .framework.yaml from the project directory to resolve FRAMEWORK_ROOT, then routes commands to the appropriate agent. Supports both in-repo and shared tooling modes. |
+| [lib_upstream](/docs/generated/tests-unit-lib_upstream) | called-by | Unit tests for upstream (22 tests) |
+| [lib_upstream](/docs/generated/tests-unit-lib_upstream) | called_by | Unit tests for upstream (22 tests) |
+| [lib_upstream](/docs/generated/tests-unit-lib_upstream) | tests_by | Unit tests for upstream (22 tests) |
 
 ## Related
 

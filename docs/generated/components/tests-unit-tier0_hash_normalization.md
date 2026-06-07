@@ -18,10 +18,10 @@ same hash regardless of incidental whitespace.
 
 ## Dependencies (2)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/check-tier0.sh` | calls |
-| `agents/context/check-tier0.sh` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-tier0](/docs/generated/agents-context-check-tier0) | calls | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
+| [check-tier0](/docs/generated/agents-context-check-tier0) | tests | Tier 0 Enforcement Hook — PreToolUse gate for Bash tool |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-tier0_hash_normalization.yaml`*

@@ -19,11 +19,11 @@ rejected with "found unknown escape character `\``".
 
 ## Dependencies (3)
 
-| Target | Relationship |
-|--------|-------------|
-| `agents/context/lib/episodic.sh` | calls |
-| `agents/context/lib/episodic.sh` | tests |
-| `web/shared.py` | tests |
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [episodic](/docs/generated/agents-context-lib-episodic) | calls | Context Agent - generate-episodic command |
+| [episodic](/docs/generated/agents-context-lib-episodic) | tests | Context Agent - generate-episodic command |
+| [shared](/docs/generated/web-shared) | tests | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-episodic_yaml_decision_escape.yaml`*
