@@ -4,20 +4,20 @@ name: "build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sent
 description: >
   build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sentinel idempotency
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/consumer-recover.sh, tests/unit/test_consumer_recover.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-07T12:15:54Z
-last_update: 2026-06-07T12:15:54Z
-date_finished: null
+last_update: 2026-06-07T12:24:04Z
+date_finished: 2026-06-07T12:24:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -89,11 +89,14 @@ Purpose: replace the 4-step legacy-consumer recovery recipe (SSH + clone + env-s
 
 # Build verification:
 test -f lib/consumer-recover.sh && bash -n lib/consumer-recover.sh
-test -f lib/consumer-recover/transport-ssh.sh && bash -n lib/consumer-recover/transport-ssh.sh
-test -f lib/consumer-recover/transport-termlink.sh && bash -n lib/consumer-recover/transport-termlink.sh
+# Transport abstraction inlined into lib/consumer-recover.sh (functions
+# _cr_remote_exec / _cr_remote_script) — separate transport-*.sh files
+# from the design were folded as over-engineering for two small functions.
+grep -q "_cr_remote_exec\b" lib/consumer-recover.sh
+grep -q "_cr_remote_script\b" lib/consumer-recover.sh
 # Test suite (mocked transport, no real SSH/network):
 bats tests/unit/test_consumer_recover.bats
-# Dispatcher wiring smoke test (dry-run mode, should print recipe and exit 0):
+# Dispatcher wiring smoke test (--help routes to do_consumer_recover):
 out=$(bin/fw consumer-recover --help 2>&1); echo "$out" | grep -q "consumer-recover"
 # Reviewer static-scan:
 out=$(bin/fw reviewer T-2235 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$out" | grep -q "Overall:.*FAIL"
@@ -168,9 +171,12 @@ out=$(bin/fw reviewer T-2235 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f71b9fd8
-- **Timestamp:** 2026-06-07T12:22:22Z
+- **Scan ID:** R-63c05009
+- **Timestamp:** 2026-06-07T12:24:05Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-07T12:24:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

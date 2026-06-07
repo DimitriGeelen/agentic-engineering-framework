@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2235: build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sentinel idempotency
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-07T12:24:10Z
+# ============================================================================
+
+task_id: T-2235
+task_name: "build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sentinel idempotency"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-07T12:15:54Z
+completed: 2026-06-07T12:24:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-07T14:23:25+02:00
+last_commit: 2026-06-07T14:23:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ship fw consumer-recover wrapper — durable fix for legacy consumers
+
+# Key outcomes
+outcomes:
+  - '`lib/consumer-recover.sh` exists with `do_consumer_recover()` entrypoint, flag parser for the 6 documented flags (`--apply`, `--upstream`, `--via`, `--keep-temp`, `--dry-run`, `--json`), and 4 exit codes (0/1/2/3) per design §3'
+  - 'Transport abstraction shipped: inlined as `_cr_remote_exec` / `_cr_remote_script` shell functions in `lib/consumer-recover.sh` (the design''s §5 split into separate files was over-engineering for two small functions; same surface, fewer files)'
+  - 'Dry-run is the DEFAULT — invoking `fw consumer-recover HOST PATH` without `--apply` prints the recipe (with substituted host/path/upstream values) and exits 0; matches sample in design §7'
+  - 'Sentinel idempotency: if the consumer has `.agentic-framework/.upstream` present and non-empty, wrapper refuses with exit 2 and a redirect to plain `fw upgrade`'
+  - 'Auto-detect upstream URL from the framework repo''s preferred remotes (github first for credential-free canonical mirror, then origin); `--upstream URL` flag overrides; embedded `TOKEN@host` credentials are stripped from URLs before display/execution'
+  - 'bats tests at `tests/unit/test_consumer_recover.bats` cover the 8 cases in design §8 (plus 6 additional regression cases for credential-strip / --via invalid / --json on refuse / dispatcher wiring); 14/14 PASS via `bats tests/unit/test_consumer_recover.bats`'
+  - '`bin/fw` dispatcher routes `consumer-recover` to `lib/consumer-recover.sh:do_consumer_recover`; `fw help` lists it under setup/upgrade'
+  - '`fw reviewer T-2235` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'ship fw consumer-recover wrapper — durable fix for legacy consumers'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.fabric/components/lib-consumer-recover.yaml'
+  - 'lib/consumer-recover.sh'
+  - '.tasks/active/T-2235-build-fw-consumer-recover-wrapper--sshte.md'
+  - 'tests/unit/test_consumer_recover.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-07T14:23:25"
+    action: "T-2235: ship fw consumer-recover wrapper — durable fix for legacy consumers"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 5
+  lines_added: 820
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2235-build-fw-consumer-recover-wrapper--sshte.md
+generated_by: context-agent-hybrid
