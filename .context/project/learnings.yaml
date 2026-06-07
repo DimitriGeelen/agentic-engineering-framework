@@ -3532,3 +3532,10 @@ X'` returning empty group."
   date: 2026-06-06
   context: Added via context agent
   application: TBD
+- id: L-462
+  learning: "fw consumer-recover wrapper: ring20-dashboard field-test 2026-06-07 confirmed sentinel detection works in vivo. Direct TermLink probe (termlink remote exec ring20-dashboard tl-tfjl34mm cat .upstream) returned the expected T-2232 sentinel marker — wrapper would correctly exit 2 + redirect to plain fw upgrade. Validates the design's idempotency: a post-T-2232 consumer cannot accidentally re-trigger the heavy clone+env-scope recovery path."
+  source: P-001
+  task: T-2235
+  date: 2026-06-07
+  context: Added via context agent
+  application: TBD
