@@ -3539,3 +3539,10 @@ X'` returning empty group."
   date: 2026-06-07
   context: Added via context agent
   application: TBD
+- id: L-463
+  learning: "T-2235 in-consumer deployment validated end-to-end on ring20-dashboard 2026-06-07: (1) in-consumer fw upgrade via T-2232/T-1634 3-leg fallback (auto-clone leg = yaml upstream_repo:) succeeded — 3 changes applied, 2 skipped, T-2094 F10 advisory fired in production; (2) new wrapper landed at ring20:/root/ring20-dashboard/.agentic-framework/lib/consumer-recover.sh; (3) fw consumer-recover --help resolves on the consumer side. The forward-looking durable fix (T-2232) and the legacy-consumer wrapper (T-2235) compose: ring20 self-heals upstream, then ship the new wrapper to itself so it can recover any future legacy peer. Edge note: sentinel-detect probe SSH-to-localhost degrades silently when key not configured; wrapper falls through to recipe-print, which is harmless in dry-run."
+  source: P-001
+  task: T-2235
+  date: 2026-06-07
+  context: Added via context agent
+  application: TBD
