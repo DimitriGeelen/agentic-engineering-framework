@@ -71,7 +71,10 @@ _cr_resolve_upstream() {
     _cr_die "Could not auto-detect upstream from $fw_root (no ${CR_PREFERRED_UPSTREAM_REMOTES[*]} remote). Pass --upstream URL."
 }
 
-# Pick transport: explicit --via wins, else TermLink if registered, else SSH.
+# Pick transport: explicit --via wins, else TermLink if the hub has a ready
+# session for the host, else SSH. T-2236: real CLI is
+# `termlink remote list <HUB>` (HUB positional arg required) — earlier code
+# omitted HUB and matched against header row by accident.
 _cr_pick_transport() {
     local forced="$1"
     local host="$2"
@@ -82,7 +85,9 @@ _cr_pick_transport() {
         esac
     fi
     if command -v termlink >/dev/null 2>&1; then
-        if termlink remote list 2>/dev/null | grep -qw "$host"; then
+        # `termlink remote list <hub>` returns rows when the hub profile resolves.
+        # Use it as the existence probe — a ready session means TermLink is viable.
+        if termlink remote list "$host" 2>/dev/null | grep -q "ready"; then
             echo "termlink"
             return 0
         fi
@@ -90,16 +95,34 @@ _cr_pick_transport() {
     echo "ssh"
 }
 
-# Transport: exec a single command. Args: transport, host, cmd...
+# Auto-discover a ready session on a TermLink hub. Args: hub.
+# Returns: first STATE=ready session ID from `termlink remote list HUB`,
+# preferring sessions tagged with project=<basename of CR_PROJECT_PATH> if set.
+# Empty output if none found.
+_cr_discover_session() {
+    local hub="$1"
+    command -v termlink >/dev/null 2>&1 || return 0
+    local list
+    list=$(termlink remote list "$hub" 2>/dev/null) || return 0
+    # Skip the 2-line header (column row + separator); pick the first
+    # STATE=ready row's ID (first column).
+    echo "$list" | awk 'NR>2 && /ready/ {print $1; exit}'
+}
+
+# Transport: exec a single command. Args: transport, host, session, cmd...
+# session is ignored for SSH. T-2236: real CLI is
+# `termlink remote exec <HUB> <SESSION> <COMMAND>` (3 positional args, not
+# `<HOST> -- <CMD>` which was the earlier bug).
 _cr_remote_exec() {
-    local transport="$1" host="$2"
-    shift 2
+    local transport="$1" host="$2" session="$3"
+    shift 3
     case "$transport" in
         ssh)
             ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$host" "$@"
             ;;
         termlink)
-            termlink remote exec "$host" -- "$@"
+            [[ -z "$session" ]] && _cr_die "TermLink transport needs --session ID (or auto-discover failed for hub '$host')"
+            termlink remote exec "$host" "$session" "$@"
             ;;
         *)
             _cr_die "Unknown transport: $transport"
@@ -107,21 +130,23 @@ _cr_remote_exec() {
     esac
 }
 
-# Transport: feed a script on stdin to bash on the remote. Args: transport, host, positional args.
+# Transport: feed a script on stdin to bash on the remote.
+# Args: transport, host, session, positional args.
 _cr_remote_script() {
-    local transport="$1" host="$2"
-    shift 2
+    local transport="$1" host="$2" session="$3"
+    shift 3
     case "$transport" in
         ssh)
             ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$host" bash -s -- "$@"
             ;;
         termlink)
-            # TermLink remote exec doesn't accept stdin scripts directly; pipe the
-            # script in via base64 to avoid quoting nightmares.
+            [[ -z "$session" ]] && _cr_die "TermLink transport needs --session ID (or auto-discover failed for hub '$host')"
+            # `termlink remote exec` doesn't pass stdin to the remote command,
+            # so pipe the script in via base64 to avoid heredoc quoting.
             local encoded
             encoded=$(base64 -w0)
-            termlink remote exec "$host" -- bash -c \
-                "echo '$encoded' | base64 -d | bash -s -- $*"
+            termlink remote exec "$host" "$session" \
+                bash -c "echo '$encoded' | base64 -d | bash -s -- $*"
             ;;
         *)
             _cr_die "Unknown transport: $transport"
@@ -131,15 +156,15 @@ _cr_remote_script() {
 
 # Probe: is the consumer post-T-2232? Check for .upstream sentinel file.
 _cr_sentinel_present() {
-    local transport="$1" host="$2" project_path="$3"
+    local transport="$1" host="$2" session="$3" project_path="$4"
     local sentinel="$project_path/.agentic-framework/.upstream"
-    _cr_remote_exec "$transport" "$host" "test -s '$sentinel'" >/dev/null 2>&1
+    _cr_remote_exec "$transport" "$host" "$session" "test -s '$sentinel'" >/dev/null 2>&1
 }
 
 # Probe: does the project path exist and contain .framework.yaml?
 _cr_project_path_valid() {
-    local transport="$1" host="$2" project_path="$3"
-    _cr_remote_exec "$transport" "$host" "test -f '$project_path/.framework.yaml'" >/dev/null 2>&1
+    local transport="$1" host="$2" session="$3" project_path="$4"
+    _cr_remote_exec "$transport" "$host" "$session" "test -f '$project_path/.framework.yaml'" >/dev/null 2>&1
 }
 
 # Generate the recovery heredoc that runs on the consumer host.
@@ -210,7 +235,10 @@ Arguments:
 Options:
   --apply              Execute (default is dry-run; print recipe only)
   --upstream URL       Override auto-detected upstream URL
-  --via {ssh,termlink} Force transport (default: termlink if registered, else ssh)
+  --via {ssh,termlink} Force transport (default: termlink if a ready session
+                       exists on hub <host>, else ssh)
+  --session ID         TermLink session ID on hub <host> (required when --via
+                       termlink and auto-discovery finds no ready session)
   --keep-temp          Leave /tmp/fw-fresh.* on consumer after upgrade
   --dry-run            Explicit dry-run (default; included for symmetry)
   --json               Emit structured result to stdout
@@ -250,6 +278,7 @@ do_consumer_recover() {
     local emit_json=0
     local host=""
     local project_path=""
+    local session=""   # T-2236: explicit TermLink session ID
 
     # Parse args
     while [[ $# -gt 0 ]]; do
@@ -274,6 +303,11 @@ do_consumer_recover() {
             --via)
                 via_forced="${2:-}"
                 [[ -z "$via_forced" ]] && _cr_die "--via requires ssh or termlink"
+                shift 2
+                ;;
+            --session)
+                session="${2:-}"
+                [[ -z "$session" ]] && _cr_die "--session requires a session ID"
                 shift 2
                 ;;
             --keep-temp)
@@ -310,6 +344,15 @@ do_consumer_recover() {
     upstream=$(_cr_resolve_upstream "$upstream_override") || return 1
     transport=$(_cr_pick_transport "$via_forced" "$host") || return 1
 
+    # T-2236: auto-discover TermLink session if not explicitly passed.
+    # Empty session for SSH transport is fine — the functions ignore it.
+    if [[ "$transport" == "termlink" ]] && [[ -z "$session" ]]; then
+        session=$(_cr_discover_session "$host")
+        if [[ -z "$session" ]]; then
+            _cr_die "TermLink transport selected but no ready session on hub '$host' — pass --session ID or --via ssh"
+        fi
+    fi
+
     # Resolve project path if missing
     if [[ -z "$project_path" ]]; then
         if [[ -n "${FW_CONSUMER_PATH:-}" ]]; then
@@ -328,7 +371,7 @@ do_consumer_recover() {
 
     if [[ "$can_probe" == "1" ]]; then
         # Sentinel idempotency check
-        if _cr_sentinel_present "$transport" "$host" "$project_path"; then
+        if _cr_sentinel_present "$transport" "$host" "$session" "$project_path"; then
             echo -e "${YELLOW}consumer-recover: $host:$project_path is post-T-2232 (sentinel present).${NC}" >&2
             echo "Use plain fw upgrade instead:" >&2
             echo "  ssh $host 'cd $project_path && .agentic-framework/bin/fw upgrade'" >&2
@@ -338,7 +381,7 @@ do_consumer_recover() {
             return 2
         fi
         # Project path validity (only when applying — dry-run should print the recipe regardless)
-        if [[ "$apply" == "1" ]] && ! _cr_project_path_valid "$transport" "$host" "$project_path"; then
+        if [[ "$apply" == "1" ]] && ! _cr_project_path_valid "$transport" "$host" "$session" "$project_path"; then
             _cr_die "$host:$project_path does not contain .framework.yaml — wrong path?"
         fi
     fi
@@ -353,11 +396,11 @@ do_consumer_recover() {
     fi
 
     # --apply path: execute the script via the transport
-    _cr_log "executing recovery via $transport against $host"
+    _cr_log "executing recovery via $transport against $host${session:+ (session $session)}"
     local script
     script=$(_cr_generate_script "$project_path" "$upstream" "$keep_temp")
     local rc=0
-    echo "$script" | _cr_remote_script "$transport" "$host" || rc=$?
+    echo "$script" | _cr_remote_script "$transport" "$host" "$session" || rc=$?
 
     if [[ "$rc" != "0" ]]; then
         echo -e "${RED}consumer-recover: recovery failed (exit $rc)${NC}" >&2

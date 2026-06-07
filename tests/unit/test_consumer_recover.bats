@@ -34,17 +34,36 @@ MOCK
     chmod +x "$TEST_TEMP_DIR/bin/ssh"
     cat > "$TEST_TEMP_DIR/bin/termlink" <<'MOCK'
 #!/bin/bash
+# T-2236: enforce the real CLI shape so future drift fails tests.
+# Real shapes:
+#   termlink remote list <HUB>              (1 positional after subcmd)
+#   termlink remote exec <HUB> <SESSION> <CMD...>  (≥3 positional after subcmd)
 echo "termlink $*" >> "${CR_MOCK_LOG:-/dev/null}"
 case "$1" in
     remote)
         case "$2" in
             list)
-                if [ "${TERMLINK_HAS_HOST:-0}" = "1" ]; then echo "host:targethost"; fi
+                # Must have HUB arg
+                if [ -z "${3:-}" ]; then
+                    echo "MOCK error: 'termlink remote list' requires <HUB>" >&2
+                    exit 64
+                fi
+                if [ "${TERMLINK_HAS_HOST:-0}" = "1" ]; then
+                    # Emit header + one ready session row in real format
+                    echo "ID             NAME             FP                STATE          PID      TAGS"
+                    echo "----"
+                    echo "tl-mockready   targetsession   abc123             ready          12345    project=test"
+                fi
                 exit 0
                 ;;
             exec)
-                # Mock execution of remote exec - look at remaining args
-                shift 3  # remove "remote exec HOST --"
+                # Must have HUB + SESSION + CMD (≥3 positional after 'exec')
+                if [ -z "${5:-}" ]; then
+                    echo "MOCK error: 'termlink remote exec' requires <HUB> <SESSION> <COMMAND>" >&2
+                    exit 64
+                fi
+                # $3 = HUB, $4 = SESSION, $5+ = COMMAND
+                shift 4  # drop "remote exec HUB SESSION"
                 for arg in "$@"; do
                     case "$arg" in
                         *"test -s"*) [ "${SENTINEL_PRESENT:-0}" = "1" ] && exit 0 || exit 1 ;;
@@ -180,12 +199,30 @@ teardown() {
     echo "$output" | grep -q "Transport:     ssh"
 }
 
-@test "--via termlink forces TermLink transport" {
+@test "--via termlink forces TermLink transport (with --session)" {
+    run env FW_CONSUMER_RECOVER_NO_PROBE=1 \
+        bash "$FRAMEWORK_ROOT/lib/consumer-recover.sh" \
+        testhost /tmp/foo --upstream https://test/repo.git --via termlink --session tl-test
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "Transport:     termlink"
+}
+
+@test "--via termlink auto-discovers session when --session not given" {
+    # TERMLINK_HAS_HOST=1 makes the mock list a ready session row
+    run env FW_CONSUMER_RECOVER_NO_PROBE=1 TERMLINK_HAS_HOST=1 \
+        bash "$FRAMEWORK_ROOT/lib/consumer-recover.sh" \
+        targethost /tmp/foo --upstream https://test/repo.git --via termlink
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "Transport:     termlink"
+}
+
+@test "--via termlink fails when no ready session and no --session" {
+    # TERMLINK_HAS_HOST=0 → mock lists empty session table → auto-discover empty
     run env FW_CONSUMER_RECOVER_NO_PROBE=1 \
         bash "$FRAMEWORK_ROOT/lib/consumer-recover.sh" \
         testhost /tmp/foo --upstream https://test/repo.git --via termlink
-    [ "$status" -eq 0 ]
-    echo "$output" | grep -q "Transport:     termlink"
+    [ "$status" -eq 1 ]
+    echo "$output" | grep -q "no ready session"
 }
 
 @test "--via with invalid value exits 1" {
