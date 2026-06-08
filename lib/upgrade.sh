@@ -800,6 +800,33 @@ CRONREGEOF
         fi
     fi
 
+    # ── 3c. BVP policy files (T-2262 / arc-006 Slice 2B) ──
+    # Sibling of T-2261's lib/init.sh wiring. Seed BVP-policy files on consumers
+    # that pre-date T-2261. Copy-on-missing only — consumer customisation survives.
+    local bvp_seeded=0
+    if [ ! -f "$target_dir/policy/value-drivers.yaml" ] && [ -f "$FRAMEWORK_ROOT/policy/value-drivers.yaml" ]; then
+        bvp_seeded=$((bvp_seeded + 1))
+        if [ "$dry_run" != true ]; then
+            mkdir -p "$target_dir/policy"
+            cp "$FRAMEWORK_ROOT/policy/value-drivers.yaml" "$target_dir/policy/value-drivers.yaml"
+        fi
+    fi
+    if [ ! -f "$target_dir/policy/bvp-scoring-rubric.md" ] && [ -f "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" ]; then
+        bvp_seeded=$((bvp_seeded + 1))
+        if [ "$dry_run" != true ]; then
+            mkdir -p "$target_dir/policy"
+            cp "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" "$target_dir/policy/bvp-scoring-rubric.md"
+        fi
+    fi
+    if [ "$bvp_seeded" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD SEED${NC}  BVP policy files ($bvp_seeded file(s))"
+        else
+            echo -e "  ${GREEN}SEEDED${NC}  BVP policy files ($bvp_seeded file(s))"
+        fi
+    fi
+
     # ── 4. Git hooks ──
     echo -e "${YELLOW}[4/10] Git hooks${NC}"
 
