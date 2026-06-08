@@ -21,7 +21,7 @@ voi_score: 0.4
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T06:14:10Z
-last_update: 2026-06-08T06:22:55Z
+last_update: 2026-06-08T06:30:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -212,13 +212,11 @@ detector, same scope, both surfaces.
 
 ## Decision
 
-<!-- Filled at completion of inception tasks via:
-     fw inception decide T-XXX go|no-go|defer --rationale "..."
+**Decision**: GO
 
-     For non-inception tasks this section is ignored. Kept in template
-     so `fw inception decide` (lib/inception.sh) finds the anchor heading
-     without auto-creating; T-1832 added auto-create as fallback for
-     legacy tasks lacking this section. -->
+**Rationale**: Two of the three originally listed candidates have material drawbacks:
+
+**Date**: 2026-06-08T06:47:37Z
 
 ## Recommendation
 
@@ -281,3 +279,8 @@ hook change.
 
 ### 2026-06-08T06:22:55Z — status-update [task-update-agent]
 - **Change:** workflow_type: build → inception
+
+### 2026-06-08T06:47:37Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Two of the three originally listed candidates have material drawbacks:
