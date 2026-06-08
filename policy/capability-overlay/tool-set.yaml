@@ -39,7 +39,7 @@ version: 1
 filed_by: T-2258
 arc_id: capability-overlay
 inception_decision: T-2209:iw2-verb-scope
-last_update: '2026-06-08'
+last_update: '2026-06-08T20:10Z'
 
 # ---------------------------------------------------------------------------
 # read_only (16 verbs) — passive, safe-everywhere, no governance gates apply
@@ -48,67 +48,67 @@ read_only:
   - name: task_list
     fw_command: task list
     description: List tasks (filterable by --status, --type, --component, --horizon)
-    schema_status: stub
+    schema_status: defined
   - name: task_show
     fw_command: task show
     description: Show task detail (frontmatter, ACs, recommendation, episodic summary)
-    schema_status: stub
+    schema_status: defined
   - name: review_queue
     fw_command: review-queue
     description: List tasks awaiting human review (GO-first sort, includes verdicts)
-    schema_status: stub
+    schema_status: defined
   - name: inception_status
     fw_command: inception status
     description: Show active inceptions with recommendation state and exploration commit counts
-    schema_status: stub
+    schema_status: defined
   - name: bvp_rank
     fw_command: bvp
     description: Rank tasks by BVP (default actionable, --include-proposed/--include-completed flags)
-    schema_status: stub
+    schema_status: defined
   - name: learnings
     fw_command: learnings
     description: Show learnings with task source and pattern links
-    schema_status: stub
+    schema_status: defined
   - name: decisions
     fw_command: decisions
     description: Show all architectural and operational decisions
-    schema_status: stub
+    schema_status: defined
   - name: recall
     fw_command: recall
     description: Query project memory (learnings, patterns, decisions, episodic summaries)
-    schema_status: stub
+    schema_status: defined
   - name: ask
     fw_command: ask
     description: RAG query over project knowledge corpus
-    schema_status: stub
+    schema_status: defined
   - name: gaps
     fw_command: gaps
     description: Show spec-reality gaps from concerns register (status, age, closure conditions)
-    schema_status: stub
+    schema_status: defined
   - name: metrics
     fw_command: metrics
     description: Project metrics dashboard (commits/turn, FTC rate, productive-turn ratio)
-    schema_status: stub
+    schema_status: defined
   - name: doctor
     fw_command: doctor
     description: Framework health check (config, drift, cron, enforcement baseline)
-    schema_status: stub
+    schema_status: defined
   - name: fabric_search
     fw_command: fabric search
     description: Component fabric search by tag, name, or purpose
-    schema_status: stub
+    schema_status: defined
   - name: fabric_deps
     fw_command: fabric deps
     description: Direct dependencies of a fabric component
-    schema_status: stub
+    schema_status: defined
   - name: costs
     fw_command: costs
     description: Token-usage tracking from JSONL transcripts (session or project)
-    schema_status: stub
+    schema_status: defined
   - name: version
     fw_command: version
     description: Show framework version (VERSION file, last git tag)
-    schema_status: stub
+    schema_status: defined
 
 # ---------------------------------------------------------------------------
 # agent_authority (6 verbs) — state-changing, agent-allowed under task_id gate
@@ -121,27 +121,27 @@ agent_authority:
   - name: work_on
     fw_command: work-on
     description: Create task + set focus + start (the one-step task gate, accepts T-XXX or "name")
-    schema_status: stub
+    schema_status: defined
   - name: task_update
     fw_command: task update
     description: Update task status, horizon, ACs, ownership (gated by check-active-task)
-    schema_status: stub
+    schema_status: defined
   - name: note
     fw_command: note
     description: Capture a lightweight observation (writes to .context/observations/)
-    schema_status: stub
+    schema_status: defined
   - name: context_focus
     fw_command: context focus
     description: Set or clear focus on a task (writes .context/working/focus.yaml)
-    schema_status: stub
+    schema_status: defined
   - name: context_add_learning
     fw_command: context add-learning
     description: Record a learning under a task with source pattern reference
-    schema_status: stub
+    schema_status: defined
   - name: assumption_add
     fw_command: assumption add
     description: Register an exploration assumption against a task (validation-tracked)
-    schema_status: stub
+    schema_status: defined
 
 # ---------------------------------------------------------------------------
 # sovereignty_bound_excluded — explicitly NOT exposed in this arc
