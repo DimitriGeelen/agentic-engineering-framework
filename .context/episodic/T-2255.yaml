@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2255: BVP bundle dogfood — Workflow A on arc-001 dispatch-safety
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T11:29:58Z
+# ============================================================================
+
+task_id: T-2255
+task_name: "BVP bundle dogfood — Workflow A on arc-001 dispatch-safety"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T11:24:39Z
+completed: 2026-06-08T11:29:52Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Research artefact written at `docs/reports/T-2255-bvp-driver-arc-001-dispatch-safety.md` with sections: Context (arc summary + why now), Candidates Considered (each with R1 rationale + weight rationale + R5 self-check), Rejected Paths (candidates considered but withdrawn, per R5 manufactured-drivers discipline), Final Spec (YAML mirror of the write), Operational Consequences (how operator engages, what `fw arc approve-driver` would do once the verb lands).'
+  - '`.context/arcs/dispatch-safety.yaml` gains a `proposed_scoped_drivers:` block with 2–3 candidates, each shaped `{name, rationale, source: agent, ts: <UTC ISO8601>}` per bundle Workflow A step 3.'
+  - 'Each candidate''s rationale articulates **R1 (differentiation)** — names what the candidate distinguishes that D1-D4 (and existing free drivers F-RECALL, F-ORCH) do not. No candidate''s rationale paraphrases to "this is about reliability/usability/portability/antifragility".'
+  - 'Weight on each candidate ∈ [1, 6] (arc-scoped cap M2). Candidate count ≤ 3 (per arc cap).'
+  - 'Artefact''s "Final Spec" section quotes the YAML block verbatim — no spec-over-dialogue drift (per `bvp-references/discipline-failure-modes.md` Final Spec discipline).'
+  - '[REVIEWER] `bin/fw reviewer T-2255` returns Overall: PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2255-bvp-bundle-dogfood--workflow-a-on-arc-00.md
+generated_by: context-agent-hybrid

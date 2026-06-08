@@ -14,3 +14,55 @@ demo_evidence: null
 created: 2026-05-13T15:01:42Z
 closed_at: null
 decision: null
+
+# T-2255: agent Workflow A proposal pass (no operator dialogue). Three candidates
+# proposed; operator approves via `fw arc approve-driver` (T-1925/T-1926, currently
+# captured in arc-006) or direct YAML edit promoting entries to `scoped_drivers:`.
+# Research artefact: docs/reports/T-2255-bvp-driver-arc-001-dispatch-safety.md
+proposed_scoped_drivers:
+  - name: uncertainty-recognition
+    weight: 5
+    rationale: >-
+      Distinguishes worker-DECISION-level recognition of "I don't have enough
+      information to proceed safely" from D1 (Antifragility — framework-level
+      stress-strengthening) and D2 (Reliability — framework-level no-silent-
+      failures). arc-001's headline_mechanic scores the worker's epistemic act
+      (pause_requested, severity×likelihood self-assessment, risk-policy preamble),
+      not the framework's robustness around the worker. A task scores high if it
+      builds pause-detection logic, self-assessment rubrics, or worker-side
+      uncertainty signalling. Anchored heavier than arc-006 estimator-fidelity (3)
+      because the distinction is sharper, lighter than D1 (9) because it scores
+      one specific worker decision class.
+    source: agent
+    ts: 2026-06-08T11:27:25Z
+  - name: severity-likelihood-calibration
+    weight: 4
+    rationale: >-
+      Distinguishes how well-calibrated the pause-trigger threshold is from D2's
+      "the worker emits SOMETHING when it can't proceed" floor. D2 is binary
+      (emits / silent); this driver scores the *quality* of when pauses fire —
+      false-positive rate (pause on noise → operator-cost waste) and false-
+      negative rate (silence under real ambiguity → wrong work shipped). Tasks
+      that tune the threshold, audit live pause rates against retrospective
+      "should-have-paused" classification, or revise the risk-policy score high.
+      Heavier than arc-006 estimator-fidelity (3) because calibration here has
+      direct safety consequences (over-confidence ships wrong work); lighter
+      than uncertainty-recognition because recognition is the prerequisite
+      (you can't calibrate something the worker isn't recognising at all).
+    source: agent
+    ts: 2026-06-08T11:27:25Z
+  - name: operator-resolution-latency
+    weight: 3
+    rationale: >-
+      (WEAK candidate per R5 — flagged for operator decision.) Distinguishes the
+      operator-interrupt-cost dimension of pause-to-resolve from D3 (Usability —
+      joy to use/extend/debug overall). D3 covers usability broadly across all
+      framework surfaces; this driver scores specifically the cost of operator
+      attention when a pause fires (Watchtower badge surfacing, push-notification
+      on pause, queue prioritisation of unresolved pauses, time-to-first-glance
+      latency). Tasks reducing operator interrupt-cost score high. Recommended
+      at weight 3 because the boundary with D3 is subtle — operator may prefer
+      to keep this folded into D3 and approve --none on this candidate. See
+      OQ-2 in artefact for the open question.
+    source: agent
+    ts: 2026-06-08T11:27:25Z
