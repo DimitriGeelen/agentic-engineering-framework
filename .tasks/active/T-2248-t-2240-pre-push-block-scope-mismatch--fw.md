@@ -13,7 +13,9 @@ owner: agent
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-2240, T-2244, T-2247]
+target_blast_radius: 3
+voi_score: 0.4
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -217,6 +219,55 @@ detector, same scope, both surfaces.
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO — Candidate 4 (new `fw vendor check` verb with shared scope)
+
+**Rationale:**
+Two of the three originally listed candidates have material drawbacks:
+
+- **Candidate 1 (widen `_self_vendor_libs`):** Conflicts with T-2095's
+  deliberate narrow scope. Docs (T-2078 RCA §V1-D) state the helper was
+  scoped to lib/ on purpose — operators wired pre-push around that
+  contract. Widening retroactively breaks the design intent.
+
+- **Candidate 2 (`fw vendor --check` mode):** Conceptually fine but
+  conflates `do_vendor` (a copy verb) with drift detection (a read-only
+  check). The `--check` flag is non-obvious next to `--dry-run`.
+
+Candidate 4 — surfaced during this evaluation — is the cleanest fit:
+
+- **Candidate 4 (new `fw vendor check` verb):** New top-level subcommand
+  dedicated to drift detection. Same scope as audit's
+  `check_self_vendor_drift` (bin+lib+agents+web + .tasks/templates).
+  Returns one line per class with "would sync N file(s)" prefix that
+  pre-push already greps. Audit can optionally call the same internals
+  later for L-399 producer/consumer parity (not in scope here — keeps
+  the slice small).
+
+**Evidence:**
+- `lib/upgrade.sh:141` — `_self_vendor_libs()` iterates `$FRAMEWORK_ROOT/lib/*.sh` only. Scope cited in T-2078 RCA §V1-D as deliberate.
+- `agents/audit/audit.sh:1523-1548` — `check_self_vendor_drift()` scans bin+lib+agents+web + .tasks/templates. Correct scope.
+- `agents/git/lib/hooks.sh:678` — pre-push runs `fw vendor self --dry-run`, greps for `would sync`. Greps fine; the upstream check is what's wrong.
+- T-2247 RCA names the audit-side mitigation message fix. T-2248 is the detection-side sibling.
+
+**Implementation slice (post-decide-go):**
+1. New `fw vendor check` subcommand in `bin/fw` — iterates the same
+   class lists as audit, emits `would sync N file(s) in <class>` per
+   class with drift, exit 0 always (gating done by caller).
+2. Update pre-push hook to call `fw vendor check` instead of
+   `fw vendor self --dry-run`.
+3. Bats tests for the new verb (per-class drift detection, no false
+   positives on clean state).
+4. Bats integration test: pre-push hook BLOCKs on synthetic bin/ drift
+   (closes the bug at the wire-level).
+
+**Estimated effort:** ~1 session. ~80 LoC verb + ~50 LoC tests + 1 line
+hook change.
+
+**Sovereignty boundary:** Inception decide is operator's via
+`fw task review T-2248` → Watchtower `/inception/T-2248`.
 
 ## Updates
 
