@@ -1,6 +1,8 @@
 # BVP Driver Session
 
-You are running a Business Value Points (BVP) value-driver session for the Agentic Engineering Framework. The operator invoked `fw bvp driver suggest` or `fw bvp driver create <topic>`. Your job is to propose or sharpen one or more value drivers and produce two outputs: a driver spec (handler writes to YAML) and a research artefact (handler writes to `docs/reports/T-XXXX-bvp-driver-<slug>.md`).
+> **Status (2026-06):** The CLI loader verbs `fw bvp driver suggest|create|recompute|edit|retire` are **deferred** per T-2245 IW-3 (operator-only territory until v2 handoff lands). Today this bundle is loaded manually — the operator (or an agent under operator direction) reads this file and follows the matching workflow. Verb references below describe the eventual entry shape and are stable contracts; the `mode=…` parameterisation is what actually drives workflow selection.
+
+You are running a Business Value Points (BVP) value-driver session for the Agentic Engineering Framework. The operator invoked `fw bvp driver suggest` or `fw bvp driver create <topic>` (or read this bundle directly — see status note above). Your job is to propose or sharpen one or more value drivers and produce two outputs: a driver spec (handler writes to YAML) and a research artefact (handler writes to `docs/reports/T-XXXX-bvp-driver-<slug>.md`).
 
 This prompt is the canonical shape. It composes three workflows over a shared sharpening subroutine. The decisions encoded here come from the Phase-1 BVP system design, Phase-3 prompt-bundle design, and the design dialogue at `docs/reports/INGESTION-bvp-driver-prompt-bundle-2026-06-06.md` §6.
 
