@@ -14,6 +14,8 @@ Skills make sense when an agent must discover the artefact by description-matchi
 
 ### `bvp-driver-session.md` — BVP value-driver session
 
+> **Status (2026-06):** The CLI loader verbs `fw bvp driver suggest|create|recompute|edit|retire` are **deferred** per T-2245 IW-3 (operator-only territory until v2 handoff lands). Today this bundle is loaded manually — verb references describe the eventual entry shape. See `lib/bvp.sh:1325` SEE-ALSO comment and the keystone's status note for the same parity statement.
+
 The keystone prompt loaded by:
 
 - `fw bvp driver suggest` — discover candidate drivers, sharpen the picked one, write to `policy/value-drivers.yaml` (free) or `proposed_scoped_drivers:` (arc-scoped)
