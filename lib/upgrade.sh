@@ -225,6 +225,59 @@ _self_vendor_templates() {
     return 0
 }
 
+# T-2263 (arc-006 Slice 2C): self-vendor the framework's own BVP-policy templates
+# from FRAMEWORK_ROOT/policy/{value-drivers.yaml,bvp-scoring-rubric.md} to
+# .agentic-framework/policy/. Sibling to _self_vendor_libs (T-2095) and
+# _self_vendor_templates (T-2241) — same shape, same dry-run/real-run wording
+# split, same structural consumer-safety. T-2240 pre-push gate's regex
+# (`would sync`) catches all three classes (libs + templates + policy) via one
+# match, so policy-file drift in the framework repo blocks push the same way
+# lib/ drift does.
+#
+# Explicit sync set (NOT a wildcard over `policy/`): the framework's `policy/`
+# dir also contains arc-specific subdirs (capability-overlay/, prompts/) that
+# are NOT framework→consumer governance templates. Only the two BVP files are
+# in scope; future BVP-arc additions should be added here explicitly.
+#
+# Inputs:
+#   $1 — dry_run ("true" / "false"). When "true", computes what WOULD sync
+#        without copying files.
+# Return:
+#   0 — sync completed (or nothing to sync, or consumer-skip)
+_self_vendor_policy() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    # Structural guard mirror of siblings: consumer's vendored copy has no
+    # nested .agentic-framework/policy/, so this branch is the consumer-safe
+    # early exit. The framework repo carries the dir; a one-time bootstrap
+    # (mkdir .agentic-framework/policy/ + cp the two templates) primed it
+    # under T-2263.
+    if [ ! -d "$_self_vendor/policy" ]; then
+        return 0
+    fi
+    local _svp_updated=0
+    local _svp_name _svp_src _svp_dst
+    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md; do
+        _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
+        _svp_dst="$_self_vendor/policy/$_svp_name"
+        [ -f "$_svp_src" ] || continue
+        if [ ! -f "$_svp_dst" ] || ! diff -q "$_svp_src" "$_svp_dst" > /dev/null 2>&1; then
+            if [ "$dry_run" != true ]; then
+                cp "$_svp_src" "$_svp_dst"
+            fi
+            _svp_updated=$((_svp_updated + 1))
+        fi
+    done
+    if [ "$_svp_updated" -gt 0 ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svp_updated file(s) to .agentic-framework/policy/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svp_updated file(s) to .agentic-framework/policy/"
+        fi
+    fi
+    return 0
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -522,6 +575,9 @@ do_upgrade() {
         _self_vendor_libs "$dry_run"
         # T-2241: sibling sync — templates drift class, same flag gates both
         _self_vendor_templates "$dry_run"
+        # T-2263: sibling sync — BVP-policy drift class (arc-006 Slice 2C),
+        # same flag, same prefix → caught by T-2240 pre-push gate regex
+        _self_vendor_policy "$dry_run"
     fi
 
     local project_name
