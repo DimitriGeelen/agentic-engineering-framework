@@ -278,6 +278,56 @@ _self_vendor_policy() {
     return 0
 }
 
+# T-2264: self-vendor the framework's own bin/fw shim. Fourth sibling of
+# _self_vendor_libs (T-2095) / _self_vendor_templates (T-2241) / _self_vendor_policy
+# (T-2263) — same shape, same dry-run/real-run wording split, same structural
+# consumer-safety. T-2240 pre-push gate's regex (`would sync`) catches all four
+# classes via one match.
+#
+# Why: developer edits bin/fw without re-vendoring → `.agentic-framework/bin/fw`
+# silently diverges. Consumers vendoring from origin then inherit the stale shim.
+# Caught live during T-2263 close (13-line drift after Slice 2C wiring landed in
+# bin/fw without a follow-up vendor refresh).
+#
+# Scope intentionally narrow: ONLY bin/fw, NOT agents/. Closing agents/ drift
+# is a larger surface (~30 dirs, subprocess invocations) that needs its own
+# design pass.
+#
+# Inputs:
+#   $1 — dry_run ("true" / "false"). When "true", computes what WOULD sync
+#        without copying files.
+# Return:
+#   0 — sync completed (or nothing to sync, or consumer-skip)
+_self_vendor_shim() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    # Structural guard mirror of siblings: consumer's vendored copy has no
+    # nested .agentic-framework/bin/, so this branch is the consumer-safe
+    # early exit.
+    if [ ! -d "$_self_vendor/bin" ]; then
+        return 0
+    fi
+    local _svs_src="$FRAMEWORK_ROOT/bin/fw"
+    local _svs_dst="$_self_vendor/bin/fw"
+    [ -f "$_svs_src" ] || return 0
+    local _svs_updated=0
+    if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1; then
+        if [ "$dry_run" != true ]; then
+            cp "$_svs_src" "$_svs_dst"
+            [ -x "$_svs_src" ] && chmod +x "$_svs_dst"
+        fi
+        _svs_updated=1
+    fi
+    if [ "$_svs_updated" -gt 0 ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync 1 file(s) to .agentic-framework/bin/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced 1 file(s) to .agentic-framework/bin/"
+        fi
+    fi
+    return 0
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -578,6 +628,8 @@ do_upgrade() {
         # T-2263: sibling sync — BVP-policy drift class (arc-006 Slice 2C),
         # same flag, same prefix → caught by T-2240 pre-push gate regex
         _self_vendor_policy "$dry_run"
+        # T-2264: sibling sync — bin/fw shim drift class, same flag, same prefix
+        _self_vendor_shim "$dry_run"
     fi
 
     local project_name
