@@ -35,14 +35,36 @@
 #      `work_on`), not termlink_*-style suffixes — the verb whitelist may need
 #      updating. T-2256 §6 captures the decision.
 
-baseline_count: 0
-last_verified: null   # set by Slice 1 close gate
+baseline_count: 6
+last_verified: '2026-06-08'   # T-2265 (arc-010 Slice 2): manifest shipped + 22 tools registered
 gated:
   description: "Mutator tools that already invoke the framework's governance gate (check_task_id / require_active_task)."
-  tools: []
+  tools:
+    - assumption_add
+    - context_add_learning
+    - context_focus
+    - note
+    - task_update
+    - work_on
 mutators_ungated:
   description: "Mutator tools that SHOULD gate but currently don't (ratchet target — move to `gated` as gates land)."
   tools: []
 readonly_exempt:
   description: "Read-only / passive tools — governance not required by design."
-  tools: []
+  tools:
+    - ask
+    - bvp_rank
+    - costs
+    - decisions
+    - doctor
+    - fabric_deps
+    - fabric_search
+    - gaps
+    - inception_status
+    - learnings
+    - metrics
+    - recall
+    - review_queue
+    - task_list
+    - task_show
+    - version

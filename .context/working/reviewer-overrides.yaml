@@ -629,3 +629,16 @@ overrides:
   expires_at: '2026-09-06T19:04:39Z'
   added_by: root
   added_at: '2026-06-08T19:04:39Z'
+- id: OV-822b8648
+  task_id: T-2265
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  reason: "AC text cites tool-set.yaml path as part of the WHY rationale, not a verifiable\
+    \ assertion. Structural check is via bats t1 (manifest.py emit reads tool-set.yaml\
+    \ \u2014 fails if missing) + Verification block step #1 (bin/fw mcp emit-manifest\
+    \ exercises the same load_tool_set path). Sibling FP class to mock-only-integration\
+    \ overrides in T-2266/T-2267 + T-2095/T-2241/T-2263/T-2264 \u2014 heuristic over-matches\
+    \ on path-in-AC-text without parsing whether the test side already covers it."
+  expires_at: '2026-09-06T20:05:56Z'
+  added_by: root
+  added_at: '2026-06-08T20:05:56Z'
