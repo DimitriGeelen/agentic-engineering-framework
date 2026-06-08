@@ -119,7 +119,7 @@ The cap exists because arc-scoped drivers compete for *within-arc* ranking atten
 
 ## Initialisation skip
 
-**Description:** running the workflow on a project where `fw bvp init` hasn't been run. Produces artefacts that reference YAML structures that don't exist yet.
+**Description:** running the workflow on a project where `fw bvp driver --init` hasn't been run. Produces artefacts that reference YAML structures that don't exist yet.
 
 **Recognition cues:**
 
@@ -130,10 +130,10 @@ The cap exists because arc-scoped drivers compete for *within-arc* ranking atten
 **Counter-move:** refuse. `bvp-driver-session.md` "Init refusal" section is the canonical text:
 
 ```
-BVP is not initialised on this project. Run `fw bvp init` first.
+BVP is not initialised on this project. Run `fw bvp driver --init` first.
 ```
 
-`fw bvp init` is idempotent — running it on a partially-initialised project completes what's missing without disrupting what's there.
+`fw bvp driver --init` is idempotent — running it on a partially-initialised project completes what's missing without disrupting what's there.
 
 ## Defer-as-hedge (from T-2144)
 

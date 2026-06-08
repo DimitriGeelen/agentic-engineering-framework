@@ -83,7 +83,7 @@ Operator: <walks through>
 Agent: <if all 3 dominated: too broad, sharpen. If 0 of 3 dominated: too narrow, sharpen. If 1–2 of 3: good.>
 ```
 
-**Convergence test:** 1–2 of 3 recent tasks dominated. Skip-when-stuck if recent tasks don't have BVP scores yet (likely on a fresh `fw bvp init`).
+**Convergence test:** 1–2 of 3 recent tasks dominated. Skip-when-stuck if recent tasks don't have BVP scores yet (likely on a fresh `fw bvp driver --init`).
 
 ## O3 — Overlap Test (optional)
 

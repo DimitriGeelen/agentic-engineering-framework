@@ -141,10 +141,10 @@ Audit log entry per recompute lands at `.context/bvp-recompute-log.jsonl`: `{ts,
 
 ## Init refusal
 
-If `fw bvp init` has not been run on this project (detected by absence of `policy/value-drivers.yaml` OR absence of `policy/bvp-scoring-rubric.md`), refuse to run the workflows. Surface:
+If `fw bvp driver --init` has not been run on this project (detected by absence of `policy/value-drivers.yaml` OR absence of `policy/bvp-scoring-rubric.md`), refuse to run the workflows. Surface:
 
 ```
-BVP is not initialised on this project. Run `fw bvp init` first.
+BVP is not initialised on this project. Run `fw bvp driver --init` first.
 ```
 
 The init verb is idempotent — running it on a partially-initialised project completes what's missing without disrupting what's there.
