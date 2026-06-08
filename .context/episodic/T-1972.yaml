@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1972: fw bvp empty-state stale text — T-1924 'once that slice ships' references already-shipped
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:25Z
+# ============================================================================
+
+task_id: T-1972
+task_name: "fw bvp empty-state stale text — T-1924 'once that slice ships' references already-shipped"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-21T07:01:41Z
+completed: 2026-05-21T07:04:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-21T09:03:59+02:00
+last_commit: 2026-05-21T09:03:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw bvp empty-state — drop 'once that slice ships', name --i-am-human
+
+# Key outcomes
+outcomes:
+  - '`"once that slice ships"` removed from `lib/bvp.sh:286-288` empty-state message'
+  - 'Replacement framing names live verb with required `--i-am-human` flag and cites Sovereignty boundary'
+  - '`fw bvp` empty-state still names `fw bvp confirm` and `--include-proposed` as the two action paths'
+  - 'Live `fw bvp` test confirms the swap (capture-then-grep, single line per L-387)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-1972-fw-bvp-empty-state-stale-text--t-1924-on.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-21T09:03:59"
+    action: "T-1972: fw bvp empty-state — drop 'once that slice ships', name --i-am-human"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 209
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1972-fw-bvp-empty-state-stale-text--t-1924-on.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2178: Fix 4 partial-complete Human-Steps URLs pointing at prod FQDN (404s) — repoint
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:32Z
+# ============================================================================
+
+task_id: T-2178
+task_name: "Fix 4 partial-complete Human-Steps URLs pointing at prod FQDN (404s) — repoint"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T13:21:22Z
+completed: 2026-06-02T13:27:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-06-02T15:26:29+02:00
+last_commit: 2026-06-02T15:27:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  repoint 4 partial-complete Human-Steps URLs from prod→dev FQDN (OBS-044 fix). add RCA — prod-FQDN-in-Human-Steps symptom + prevention scoping
+
+# Key outcomes
+outcomes:
+  - '`grep -c "watchtower.docker.ring20.geelenandcompany.com" .tasks/active/T-1990-*.md .tasks/active/T-1994-*.md` returns 0 lines across both files (post-edit). Pre-edit baseline: 4 occurrences (2 in T-1990 at lines 141 + 149; 2 in T-1994 at lines 129 + 137). **Verified: 0+0 = 0 across both files.**'
+  - '`grep -c "watchtower-dev.docker.ring20.geelenandcompany.com" .tasks/active/T-1990-*.md .tasks/active/T-1994-*.md` returns ≥4 lines across both files (the four URLs were rewritten in place, not deleted). **Verified: 2+2 = 4 across both files.**'
+  - 'All four rewritten URLs return HTTP 200 on dev FQDN: `/approvals`, `/`, `/arcs`, `/fabric`, `/fabric/component/hook-config`. **Verified: all 5 routes 200 (the original `/docs/generated/components/hook-config` was structurally wrong — corrected to `/fabric/component/hook-config` as documented in Evolution).**'
+  - 'No content changes to either task beyond the URL swaps — Human ACs themselves, Steps numbering, and Expected text remain identical. **Verified via `git diff --word-diff`: only FQDN tokens flipped in 3 of the 4 URLs; the 4th additionally needed the structurally-correct `/fabric/component/hook-config` path (see Evolution log).**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'repoint 4 partial-complete Human-Steps URLs from prod→dev FQDN (OBS-044 fix)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1990-watchtower-cockpit--approvals-redesign--.md'
+  - '.tasks/active/T-1994-watchtower-fabric--arcs-page-redesign--a.md'
+  - '.tasks/active/T-2178-production-watchtower-deployment-lag-3-h.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-02T15:26:29"
+    action: "T-2178: repoint 4 partial-complete Human-Steps URLs from prod→dev FQDN (OBS-044 fix)"
+  - time: "2026-06-02T15:27:22"
+    action: "T-2178: add RCA — prod-FQDN-in-Human-Steps symptom + prevention scoping"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [obs-044, partial-complete-url-rot, watchtower-fqdn-rewrite]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 3
+  lines_added: 178
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2178-production-watchtower-deployment-lag-3-h.md
+generated_by: context-agent-hybrid

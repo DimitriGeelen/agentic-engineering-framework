@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1981: Inception: how should arc-scoped drivers contribute to per-task BVP?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:26Z
+# ============================================================================
+
+task_id: T-1981
+task_name: "Inception: how should arc-scoped drivers contribute to per-task BVP?"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-21T14:56:35Z
+completed: 2026-05-22T18:37:00Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-05-22T08:58:56+02:00
+last_commit: 2026-05-22T08:58:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fill inception (BVP arc-scoped drivers contribution model) — Recommendation GO B
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1981-inception-how-should-arc-scoped-drivers-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-22T08:58:56"
+    action: "T-1981: fill inception (BVP arc-scoped drivers contribution model) — Recommendation GO B"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1660 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1660
+  commits: 2
+  files_changed: 3
+  lines_added: 274
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1981-inception-how-should-arc-scoped-drivers-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1931: BVP T-NEW-14a: auto-promote logic + log, off by default (split parent T-NEW-14, novel_mechanism)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:19Z
+# ============================================================================
+
+task_id: T-1931
+task_name: "BVP T-NEW-14a: auto-promote logic + log, off by default (split parent T-NEW-14, novel_mechanism)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T13:54:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-19T15:55:17+02:00
+last_commit: 2026-05-19T15:55:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP T-NEW-14a — fw bvp auto-promote logic + R4 log (off by default)
+
+# Key outcomes
+outcomes:
+  - 'Logic in `lib/bvp.sh` reads `auto_promote.*` from `policy/value-drivers.yaml`'
+  - 'When `enabled: false` (the default), no auto-promotion occurs — this is the ship-state default'
+  - 'When `enabled: true`, tasks satisfying both thresholds (`bvp_norm ≥ bvp_norm_min` AND `cost ≤ cost_max`) get promoted captured → started-work'
+  - 'Respects `max_concurrent` — never promotes more than N tasks at once'
+  - 'No promotion of tasks with unconfirmed `bvp_scores_proposed:` only — confirmation (`bvp_scores:` set by T-1924) is the sovereignty boundary'
+  - 'Every auto-promotion writes to `.context/bvp-auto-promote-log.yaml` with: task_id, bvp_norm, cost, blast_radius, tier, effort, ts (R4 metadata)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/bvp-auto-promote-log.yaml'
+  - '.context/working/focus.yaml'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-1931-bvp-auto-promote-logic-log-off-by-default-s.md'
+  - '.tasks/active/T-1932-bvp-auto-promote-enabling-cron-trigger-wirin.md'
+  - '.tasks/completed/T-1931-bvp-auto-promote-logic-log-off-by-default-s.md'
+  - 'tests/unit/bvp_auto_promote.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T15:55:17"
+    action: "T-1931: BVP T-NEW-14a — fw bvp auto-promote logic + R4 log (off by default)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 414 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-14a, novel-mechanism]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 414
+  commits: 1
+  files_changed: 7
+  lines_added: 535
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1931-bvp-auto-promote-logic-log-off-by-default-s.md
+generated_by: context-agent-hybrid

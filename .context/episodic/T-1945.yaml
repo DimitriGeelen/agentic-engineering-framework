@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1945: PreToolUse heredoc-in-cmd-sub guard hook for bin/fw — L-332/L-408 surface at
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:21Z
+# ============================================================================
+
+task_id: T-1945
+task_name: "PreToolUse heredoc-in-cmd-sub guard hook for bin/fw — L-332/L-408 surface at"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T06:10:35Z
+completed: 2026-05-20T06:22:04Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-20T08:19:47+02:00
+last_commit: 2026-05-20T08:25:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  PreToolUse heredoc-in-cmd-sub guard hook for bin/fw (L-332/L-408 edit-time surface). work-completed — archive
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-heredoc-cmd-sub.sh` exists, executable, reads PreToolUse JSON from stdin (final path; `agents/context/` is the convention for `fw hook` dispatch).'
+  - 'Hook detects `python3 - <<TAG` or `$(... <<[''"]?[A-Z_]+)` in the proposed Edit `new_string` / Write `content` when `tool_input.file_path` ends in `bin/fw`. Detection delegated to `lib/heredoc_guard.py` (forced extraction per L-332 — see Evolution).'
+  - 'When pattern detected: stderr emits a multi-line warning referencing L-332 and L-408 + the canonical extract-to-`lib/*.py` rule. Hook exits 0 (advisory, non-blocking).'
+  - 'When pattern absent: hook exits 0 silently (no spurious output).'
+  - 'Hook is wired into `.claude/settings.json` under `PreToolUse` matcher `Write|Edit` via `bin/fw hook-enable` (settings.json is human-protected; hook-enable is the canonical wire-in path).'
+  - '`bin/fw enforcement baseline` refreshed after settings.json change (L-398). Hash: `ae2e99f41a709dd5...`'
+  - 'Bats unit test `tests/unit/test_heredoc_cmd_sub_guard.bats`: **7** cases — (a) bin/fw + heredoc → warns; (b) bin/fw + no heredoc → silent; (c) non-bin/fw + heredoc → silent; (d) Write tool with heredoc in content → warns; (e) Bash tool → silent; (f) non-python3 heredoc → warns; (g) malformed JSON → fail-open silent.'
+  - '`bin/fw doctor` and `bash -n bin/fw` remain clean (no parse warnings); cosmetic warning eliminated post-T-1944.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-20 — WARN-only, not BLOCK'
+    chose: 'Advisory warning to stderr; exit 0 always.'
+    rationale: 'Not every heredoc-in-cmd-sub is the dangerous shape — the stable multi-line-clean `<<PYEOF\n...\nPYEOF\n)` form at bin/fw:1911 has been fine for weeks. Blocking would also create chicken-and-egg if someone legitimately needs to MODIFY an existing heredoc to fix something (e.g., the T-1944 extraction itself touched the heredoc on its way out). WARN surfaces the rule without obstructing.'
+    alternatives_rejected: ['(a) BLOCK with `FW_ALLOW_HEREDOC_IN_BIN_FW=1` override — too friction-heavy for a rule that''s about *consideration* rather than *prohibition*. (b) BLOCK only when heredoc body >10 lines — adds parsing complexity without clear benefit (the WARN already references the 10-line L-332 threshold in its text).']
+  - decision: '2026-05-20 — Detection helper in `lib/heredoc_guard.py`'
+    chose: 'Extract detection logic to a python file; bash side stays parse-safe.'
+    rationale: 'Own dogfood — discovered during build that the initial inline `python3 - <<''PY'' ... PY` shape inside `$()` consumed the heredoc as stdin instead of the pipe. The bug only surfaced at runtime (bash -n was clean). Fixing it meant applying L-332 to the L-332 guard itself. The recursive self-validation is the strongest possible proof the rule has teeth.'
+    alternatives_rejected: ['(a) Inline `python3 -c "..."` — too long, escape-prone (~30 lines). (b) Embedded `awk`/`grep` only — would miss multi-line patterns and lose JSON parsing.']
+  - decision: '2026-05-20 — Hook lives in `agents/context/`, not a new `agents/hooks/`'
+    chose: 'Drop the file at `agents/context/check-heredoc-cmd-sub.sh`.'
+    rationale: 'That''s where the existing check-* hooks live (check-active-task, check-arc-id, check-human-ac-tick, ...) and `fw hook` dispatch auto-discovers everything matching `agents/context/*.sh`. A new directory would need bin/fw plumbing changes for zero benefit.'
+    alternatives_rejected: ['`agents/hooks/` — would split the existing hook set across two paths and require dispatch changes.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/check-heredoc-cmd-sub.sh'
+  - '.claude/settings.json'
+  - '.context/project/enforcement-baseline.sha256'
+  - '.fabric/components/agents-context-check-heredoc-cmd-sub.yaml'
+  - '.fabric/components/lib-heredoc_guard.yaml'
+  - '.fabric/components/tests-unit-test_heredoc_cmd_sub_guard.yaml'
+  - 'lib/heredoc_guard.py'
+  - '.tasks/active/T-1945-pretooluse-heredoc-in-cmd-sub-guard-hook.md'
+  - '.tasks/completed/T-1945-pretooluse-heredoc-in-cmd-sub-guard-hook.md'
+  - 'tests/unit/test_heredoc_cmd_sub_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-20T08:19:47"
+    action: "T-1945: PreToolUse heredoc-in-cmd-sub guard hook for bin/fw (L-332/L-408 edit-time surface)"
+  - time: "2026-05-20T08:25:00"
+    action: "T-1945: work-completed — archive"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, future-prevention, L-332, L-408, hooks]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 10
+  lines_added: 546
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1945-pretooluse-heredoc-in-cmd-sub-guard-hook.md
+generated_by: context-agent-hybrid

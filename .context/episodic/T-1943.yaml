@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1943: fw audit registry→generated cron drift FAIL (T-1942 audit-side sibling for
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:21Z
+# ============================================================================
+
+task_id: T-1943
+task_name: "fw audit registry→generated cron drift FAIL (T-1942 audit-side sibling for"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T22:28:18Z
+completed: 2026-05-19T23:17:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-20T00:32:28+02:00
+last_commit: 2026-05-20T01:20:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw audit registry→generated cron drift FAIL (T-1942 sibling). T-1942/T-1943: work-completed — archive + episodic generation
+
+# Key outcomes
+outcomes:
+  - '`fw audit` detects registry→generated drift: when cron-registry.yaml is edited'
+  - 'Drift check uses content comparison (dry-run vs on-disk source) — catches'
+  - 'On clean state, audit emits the existing `Cron registry in sync` PASS (no'
+  - 'FAIL severity matches T-1771''s generated→deployed FAIL (same "tasks won''t run"'
+  - 'New unit test pins both directions via the existing test_audit_cron_drift.bats'
+  - 'Test uses `FW_CRON_INSTALL_DIR` tmp override (existing pattern from'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-19 — FAIL severity (matching T-1771) vs WARN (matching T-1942)'
+    chose: 'FAIL.'
+    rationale: 'Audit''s existing T-1771 cron-drift block uses FAIL on substantive drift'
+    alternatives_rejected: ['WARN parity with doctor (would have under-signalled in autonomous mode).']
+  - decision: '2026-05-19 — Shared Python heredoc vs extracted helper'
+    chose: 'Shared verbatim heredoc across doctor, audit, and `fw cron generate`.'
+    rationale: 'Three call sites of ~30 lines each is the threshold where extraction'
+    alternatives_rejected: ['Extract to `lib/cron.sh _generate_dry_run` (premature abstraction).']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.fabric/components/tests-unit-test_audit_cron_registry_generated_drift.yaml'
+  - '.tasks/active/T-1943-fw-audit-registrygenerated-cron-drift-fa.md'
+  - '.tasks/completed/T-1942-fw-doctor-cron-registrygenerated-drift-c.md'
+  - '.tasks/completed/T-1943-fw-audit-registrygenerated-cron-drift-fa.md'
+  - 'tests/unit/test_audit_cron_drift.bats'
+  - 'tests/unit/test_audit_cron_registry_generated_drift.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-20T00:32:28"
+    action: "T-1943: fw audit registry→generated cron drift FAIL (T-1942 sibling)"
+  - time: "2026-05-20T01:20:01"
+    action: "T-1942/T-1943: work-completed — archive + episodic generation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 49 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, future-prevention, drift, cron, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 49
+  commits: 3
+  files_changed: 7
+  lines_added: 462
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1943-fw-audit-registrygenerated-cron-drift-fa.md
+generated_by: context-agent-hybrid

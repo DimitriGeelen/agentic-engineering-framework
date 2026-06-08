@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2068: fix shell-quote trap in update-task.sh python3 -c comment block - T-2067 follow-up
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:31Z
+# ============================================================================
+
+task_id: T-2068
+task_name: "fix shell-quote trap in update-task.sh python3 -c comment block - T-2067 follow-up"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T14:26:43Z
+completed: 2026-05-28T14:29:40Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-28T16:29:35+02:00
+last_commit: 2026-05-28T16:30:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix shell-quote trap in update-task.sh python3 -c comment block. work-completed + L-440 learning captured
+
+# Key outcomes
+outcomes:
+  - 'Replace the offending inline double-quoted phrase in update-task.sh:1737 with safer wording.'
+  - 'Add an inline NOTE comment so the next author sees the trap.'
+  - 'Confirm next `--status work-completed` runs cleanly (no traceback from the python3 -c block).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix shell-quote trap in update-task.sh python3 -c comment block'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/update-task.sh'
+  - '.tasks/active/T-2068-fix-shell-quote-trap-in-update-tasksh-py.md'
+  - '.tasks/completed/T-2067-fix-update-tasksh-components-flow-style-.md'
+  - '.tasks/completed/T-2068-fix-shell-quote-trap-in-update-tasksh-py.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T16:29:35"
+    action: "T-2068: fix shell-quote trap in update-task.sh python3 -c comment block"
+  - time: "2026-05-28T16:30:16"
+    action: "T-2068: work-completed + L-440 learning captured"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, framework-tooling, shell-quoting, immediate-followup]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 3
+  files_changed: 6
+  lines_added: 240
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2068-fix-shell-quote-trap-in-update-tasksh-py.md
+generated_by: context-agent-hybrid

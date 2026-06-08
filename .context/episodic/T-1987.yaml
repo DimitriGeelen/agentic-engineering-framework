@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1987: Watchtower redesign — apply Claude Design exploration: foundations + /settings/appearance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:27Z
+# ============================================================================
+
+task_id: T-1987
+task_name: "Watchtower redesign — apply Claude Design exploration: foundations + /settings/appearance"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-22T10:03:25Z
+completed: 2026-05-22T18:36:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-22T12:11:22+02:00
+last_commit: 2026-05-22T20:29:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file watchtower-redesign inception arc (arc-007) + 7 child slices. review-A2 persistence layer. synthesise 5-reviewer pass into inception (GO-with-adjustments)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/watchtower-redesign.yaml'
+  - 'docs/design/watchtower-redesign-2026-05-13/chats/chat1.md'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/appearance-settings.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/app.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/design-canvas.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/.design-canvas.state.json'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/direction-calm.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/direction-cockpit.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/direction-editorial.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/foundations.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/index.html'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/live-preview.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/nav-patterns.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/shared.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/project/tweaks-panel.jsx'
+  - 'docs/design/watchtower-redesign-2026-05-13/README.md'
+  - 'docs/reports/T-1987-reviews/A2-persistence-layer.md'
+  - 'docs/reports/T-1987-watchtower-redesign-inception.md'
+  - '.tasks/active/T-1987-watchtower-redesign--apply-claude-design.md'
+  - '.tasks/active/T-1988-watchtower-settingsappearance-page--pres.md'
+  - '.tasks/active/T-1989-watchtower-nav-restructure--flatten-16-i.md'
+  - '.tasks/active/T-1990-watchtower-cockpit--approvals-redesign--.md'
+  - '.tasks/active/T-1991-watchtower-foundation-tokens--6-palettes.md'
+  - '.tasks/active/T-1992-watchtower-tasks-board--list-redesign--s.md'
+  - '.tasks/active/T-1993-watchtower-interactions--k-command-palet.md'
+  - '.tasks/active/T-1994-watchtower-fabric--arcs-page-redesign--a.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-22T12:11:22"
+    action: "T-1987: file watchtower-redesign inception arc (arc-007) + 7 child slices"
+  - time: "2026-05-22T12:37:42"
+    action: "T-1987: review-A2 persistence layer"
+  - time: "2026-05-22T20:29:47"
+    action: "T-1987: synthesise 5-reviewer pass into inception (GO-with-adjustments)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 513 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 513
+  commits: 3
+  files_changed: 26
+  lines_added: 7632
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1987-watchtower-redesign--apply-claude-design.md
+generated_by: context-agent-hybrid

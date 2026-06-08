@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1937: BVP T-1936 follow-up — fw bvp arcs CLI parity with /bvp web rollup
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:20Z
+# ============================================================================
+
+task_id: T-1937
+task_name: "BVP T-1936 follow-up — fw bvp arcs CLI parity with /bvp web rollup"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T19:53:53Z
+completed: 2026-05-20T18:20:48Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-19T21:59:00+02:00
+last_commit: 2026-05-19T21:59:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw bvp arcs CLI parity with /bvp web rollup (arc-006 follow-up)
+
+# Key outcomes
+outcomes:
+  - '`cmd_arcs` in `lib/bvp.sh` falls back to constituent-task rollup when arc YAML lacks direct `bvp_scores:`, mirroring `web/blueprints/bvp.py:_collect_arc_points`'
+  - 'Rollup uses arc_id-dual-form matching (slug OR arc-NNN), same as web blueprint (T-1849)'
+  - 'Output row includes a `source` column distinguishing `direct` vs `derived-confirmed` vs `derived-proposed`'
+  - '`fw bvp arcs` returns at least one row (5 arc dots visible on /bvp must also show in CLI) — verified by `bin/fw bvp arcs 2>&1 | grep -E "arc-00[2-6]"`'
+  - 'Unit tests in `tests/unit/test_bvp_cli_arcs_rollup.py` cover: empty members case, direct-confirmed bypass, derived-confirmed via task rollup, mixed-mode degrades to derived-proposed, both arc_id forms resolve'
+  - 'All new tests PASS via `cd tests && python3 -m pytest unit/test_bvp_cli_arcs_rollup.py -q`'
+  - 'Existing CLI BVP tests still PASS via `cd tests && python3 -m pytest unit/test_bvp_estimator.py unit/test_bvp_blueprint_cost.py -q`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-19 — port helpers vs. shell-out to web'
+    chose: 'Duplicate the rollup helpers structurally in `lib/bvp.sh`''s python body.'
+    rationale: 'Web blueprint is Flask-app-resident — invoking it from CLI would require Flask boot. Three helpers (~60 LOC) is cheaper than a Flask dependency for a read-only CLI.'
+    alternatives_rejected: ['(a) Shell-out to `curl /bvp` JSON — adds runtime dependency on a running Watchtower. (b) Move helpers to a shared `lib/bvp_rollup.py` — viable refactor but would touch web blueprint imports; deferred to a future consolidation slice if a third consumer emerges.']
+  - decision: '2026-05-19 — SOURCE column placement'
+    chose: 'Inline column between NORM and NAME, name `SOURCE`.'
+    rationale: 'Provenance is the most-asked question for `derived-proposed` rows ("why is this arc scored?"). Putting it before NAME keeps it visible without scrolling.'
+    alternatives_rejected: ['Append after NAME (would get truncated by terminal width on long names).']
+  - decision: '2026-05-19 — keep existing tests at 75-pass total instead of consolidating'
+    chose: 'New test file `test_bvp_cli_arcs_rollup.py` rather than extending `test_bvp_estimator.py`.'
+    rationale: 'CLI rollup is a distinct concern from estimator scoring; test file naming should map 1:1 to surface. Future readers find arc-rollup tests by name.'
+    alternatives_rejected: ['Single-mega-test-file — would obscure which surface each test guards.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-1937-bvp-t-1936-follow-up--fw-bvp-arcs-cli-pa.md'
+  - 'tests/unit/test_bvp_cli_arcs_rollup.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T21:59:00"
+    action: "T-1937: fw bvp arcs CLI parity with /bvp web rollup (arc-006 follow-up)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1346 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, parity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1346
+  commits: 2
+  files_changed: 5
+  lines_added: 1082
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1937-bvp-t-1936-follow-up--fw-bvp-arcs-cli-pa.md
+generated_by: context-agent-hybrid

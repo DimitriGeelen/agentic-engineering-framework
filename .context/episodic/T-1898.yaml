@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1898: fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html but render_page wraps in _wrapper.html (which also extends base.html), producing two full Watchtower headers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:17Z
+# ============================================================================
+
+task_id: T-1898
+task_name: "fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html but render_page wraps in _wrapper.html (which also extends base.html), producing two full Watchtower headers"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T11:26:56Z
+completed: 2026-05-20T10:40:25Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-18T13:36:40+02:00
+last_commit: 2026-05-18T13:43:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix double-render on /arcs/arc-005 + 2 sibling pages. tick 6/6 Agent ACs, partial-complete pending [REVIEW]
+
+# Key outcomes
+outcomes:
+  - 'None of the 3 `render_page`-rendered templates (`arc_detail.html`, `arcs_index.html`, `orchestrator.html`) start with `{% extends "base.html" %}` (verified by grep).'
+  - '`curl -sf http://localhost:3000/arcs/arc-005` returns HTTP 200 and the response body contains exactly one `<nav` opening tag (proxy for one Watchtower chrome instance — base.html emits `<nav class="site-nav">` for the top bar).'
+  - 'Same one-`<nav>` assertion holds for `/arcs` and `/orchestrator`.'
+  - 'htmx fragment behaviour preserved: `curl -sf -H "HX-Request: true" http://localhost:3000/arcs/arc-005` returns the fragment without `<nav` (no chrome on htmx swaps).'
+  - 'No regression on the 3 `render_template`-rendered routes: `/escalation-drift`, `/reviewer/audit`, `/reviewer/overrides` each return HTTP 200 with exactly one `<nav` (the abortive sweep through these templates was reverted in-iteration).'
+  - 'RCA section filled in (workflow_type=build + title contains "fix").'
+  - '[REVIEW] Layout reads clean — only one Watchtower header at the top, no visible page-in-page'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix double-render on /arcs/arc-005 + 2 sibling pages'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1898-fix-double-render-on-arcsarc-005-and-5-s.md'
+  - '.tasks/completed/T-1766-render-surface-human-ac-gate--block-work.md'
+  - '.tasks/completed/T-1893-arc-005-closure-demo-evidence-capture-g-.md'
+  - '.tasks/completed/T-1897-widen-t-1896-detector--re-class-4-block-.md'
+  - 'web/templates/arc_detail.html'
+  - 'web/templates/arcs_index.html'
+  - 'web/templates/orchestrator.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T13:36:40"
+    action: "T-1898: fix double-render on /arcs/arc-005 + 2 sibling pages"
+  - time: "2026-05-18T13:43:03"
+    action: "T-1898: tick 6/6 Agent ACs, partial-complete pending [REVIEW]"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2833 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2833
+  commits: 2
+  files_changed: 5
+  lines_added: 241
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1898-fix-double-render-on-arcsarc-005-and-5-s.md
+generated_by: context-agent-hybrid

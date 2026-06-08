@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2032: arc-007 settings gear in top-bar nav to /settings/appearance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:30Z
+# ============================================================================
+
+task_id: T-2032
+task_name: "arc-007 settings gear in top-bar nav to /settings/appearance"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-24T14:54:01Z
+completed: '2026-05-29T09:45:04Z'
+duration_days: -20596
+updates_count: 1
+first_commit: 2026-05-24T16:59:09+02:00
+last_commit: 2026-05-24T16:59:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  add settings gear to top-bar nav → /settings/appearance
+
+# Key outcomes
+outcomes:
+  - '`base.html` top-bar action cluster contains a settings link: an `<li class="nav-settings">`'
+  - 'The gear link is an `<a>` (not a `<button>`) using the shared `.nav-search`/`.nav-settings`'
+  - 'Unit test `tests/unit/test_settings_nav_link.py` passes: base.html contains the'
+  - '`/settings/appearance` returns HTTP 200 (the link target is live, not orphaned).'
+  - 'Playwright test `tests/playwright/test_settings_nav_link.py` passes: the gear is visible in'
+  - '`base.html` still compiles (jinja `get_template`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-playwright-test_settings_nav_link.yaml'
+  - '.fabric/components/tests-unit-test_settings_nav_link.yaml'
+  - '.tasks/active/T-2032-arc-007-settings-gear-in-top-bar-nav-to-.md'
+  - 'tests/playwright/test_settings_nav_link.py'
+  - 'tests/unit/test_settings_nav_link.py'
+  - 'web/templates/base.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-24T16:59:09"
+    action: "T-2032: add settings gear to top-bar nav → /settings/appearance"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:watchtower-redesign, ui, watchtower, nav, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 6
+  lines_added: 479
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2032-arc-007-settings-gear-in-top-bar-nav-to-.md
+generated_by: context-agent-hybrid

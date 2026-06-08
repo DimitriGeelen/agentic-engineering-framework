@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1958: Inception: should driver CRUD (add/remove drivers, change weights) belong in
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:24Z
+# ============================================================================
+
+task_id: T-1958
+task_name: "Inception: should driver CRUD (add/remove drivers, change weights) belong in"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T11:46:36Z
+completed: 2026-05-20T17:54:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-20T14:41:06+02:00
+last_commit: 2026-05-20T14:41:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception body filled — GO recommendation for driver CRUD forms
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1958-inception-should-driver-crud-addremove-d.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-20T14:41:06"
+    action: "T-1958: inception body filled — GO recommendation for driver CRUD forms"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 368 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 368
+  commits: 3
+  files_changed: 13
+  lines_added: 2111
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1958-inception-should-driver-crud-addremove-d.md
+generated_by: context-agent-hybrid

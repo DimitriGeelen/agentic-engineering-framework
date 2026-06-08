@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2000: Specialised UX-review TermLink agent + enforce executed-browser review on render
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:29Z
+# ============================================================================
+
+task_id: T-2000
+task_name: "Specialised UX-review TermLink agent + enforce executed-browser review on render"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-05-23T11:36:05Z
+completed: '2026-05-29T09:45:04Z'
+duration_days: -20595
+updates_count: 0
+first_commit: 2026-05-23T13:39:07+02:00
+last_commit: 2026-05-23T13:39:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — UX-review agent + enforce executed-browser review on render surfaces
+
+# Key outcomes
+outcomes:
+  - 'Task completed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-23 — approach selection (human-directed)'
+    chose: 'Build **A** (enforcement gate) **and C** (dedicated UX-review TermLink agent), with C **preloaded with our design style guides** so it assesses against our system.'
+    rationale: 'A is the can''t-skip structural floor that would have blocked T-1988; C adds specialised, guide-aware qualitative review that a generic linter can''t. Preloading the style guides is what makes C worth building over plain "no console errors" checks.'
+    alternatives_rejected: ['B (`fw reviewer --ux` mode) — keeps the static scanner and browser-driving entangled; A+C separate prevention from assessment more cleanly.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2000-specialised-ux-review-termlink-agent--en.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-23T13:39:07"
+    action: "T-2000: file inception — UX-review agent + enforce executed-browser review on render surfaces"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, review, inception, ux]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 1
+  lines_added: 167
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2000-specialised-ux-review-termlink-agent--en.md
+generated_by: context-agent-hybrid

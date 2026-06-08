@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1952: G-064 closure gauge fix — count cron invocations not dispatch rows + idempotency-saturation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:28:23Z
+# ============================================================================
+
+task_id: T-1952
+task_name: "G-064 closure gauge fix — count cron invocations not dispatch rows + idempotency-saturation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T10:18:17Z
+completed: 2026-05-20T10:25:14Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-20T12:25:06+02:00
+last_commit: 2026-05-20T12:25:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  G-064 gauge — v0.5 LATEST fallback for idempotency-saturation case
+
+# Key outcomes
+outcomes:
+  - '`tools/g064-readiness.py` reads `.context/working/escalation-drift-LATEST-v0.5.yaml` and extracts `generated` timestamp + `dispatched` + `skipped_idempotent` counts'
+  - 'Assessment dict gains 4 new fields: `v0_5_last_generated`, `v0_5_last_dispatched`, `v0_5_last_skipped_idempotent`, `v0_5_date_added_to_cron`'
+  - 'Human render block shows "v0.5 LATEST: <ISO>" line with dispatched/skipped breakdown when file exists'
+  - 'Verdict logic extends: if cron_firing_dates < threshold BUT v0.5 LATEST exists and its `generated` timestamp falls within cron-time window, treat that date as a cron-firing-evidence date (counted toward threshold)'
+  - 'Header/docstring updated to document idempotency-saturation case + the two cron-fire evidence sources (dispatch rows + v0.5 LATEST timestamp) + KNOWN BUG note pointing at T-1953 for the TZ mismatch'
+  - 'New unit test in `tests/unit/test_g064_readiness.py` covers idempotency-saturated case: zero dispatches + v0.5 LATEST present → cron-firing-date counted (`test_v0_5_latest_in_window_adds_cron_date`)'
+  - 'New unit test covers backward compat: no v0.5 LATEST → old behavior unchanged (`test_v0_5_latest_missing_backward_compat`)'
+  - 'All existing tests still pass (21/21: 13 pre-existing + 8 new)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1952-g-064-closure-gauge-fix--count-cron-invo.md'
+  - '.tasks/active/T-1953-g-064-gauge-timezone-fix--cronhourutc-mi.md'
+  - 'tests/unit/test_g064_readiness.py'
+  - 'tools/g064-readiness.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-20T12:25:06"
+    action: "T-1952: G-064 gauge — v0.5 LATEST fallback for idempotency-saturation case"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 4
+  lines_added: 610
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1952-g-064-closure-gauge-fix--count-cron-invo.md
+generated_by: context-agent-hybrid
