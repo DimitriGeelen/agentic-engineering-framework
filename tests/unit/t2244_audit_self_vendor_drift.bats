@@ -39,7 +39,10 @@ teardown() {
     # Audit exit code 2 = failures. We expect FAIL line for libs.
     [[ "$out" == *"Self-vendor drift: libs class"* ]] || { echo "$out" | tail -50; return 1; }
     [[ "$out" == *"upgrade.sh"* ]] || { echo "$out" | tail -50; return 1; }
-    [[ "$out" == *"fw vendor self"* ]] || { echo "$out" | tail -50; return 1; }
+    # T-2247: libs class scans bin+lib+agents+web; 'fw vendor self' only syncs
+    # lib/. Mitigation must point at full 'fw vendor' (always-works superset).
+    [[ "$out" == *"Run: fw vendor "* ]] || { echo "$out" | tail -50; return 1; }
+    [[ "$out" != *"Run: fw vendor self"* ]] || { echo "$out" | tail -50; return 1; }
 }
 
 @test "t2244 t3: templates-only drift → FAIL line names templates class" {

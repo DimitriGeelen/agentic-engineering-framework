@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2247: fw vendor self mitigation scope mismatch (T-2244 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T06:21:03Z
+# ============================================================================
+
+task_id: T-2247
+task_name: "fw vendor self mitigation scope mismatch (T-2244 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T05:54:39Z
+completed: 2026-06-08T06:20:56Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`check_self_vendor_drift()` libs-class FAIL message in `agents/audit/audit.sh` says `Run: fw vendor` (no `self` suffix)'
+  - '`check_self_vendor_drift()` templates-class FAIL message in `agents/audit/audit.sh` unchanged (`Run: fw vendor self`)'
+  - 'Bats test asserts libs-class FAIL message contains `Run: fw vendor` and does NOT contain `Run: fw vendor self`'
+  - 'Bats test asserts templates-class FAIL message still contains `Run: fw vendor self`'
+  - 'Explanatory comment in audit.sh names the scope-mismatch rationale (future-maintainer signal)'
+  - 'T-2244 t2 integration test updated to assert new libs-class message (regression net in CI/cron)'
+  - '`bin/fw reviewer T-2247 2>&1 | grep -qE "Overall:.*(PASS|CONCERN)"` (no FAIL) — R-ca51fd75 PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2247-fw-vendor-self-mitigation-scope-mismatch.md
+generated_by: context-agent-hybrid

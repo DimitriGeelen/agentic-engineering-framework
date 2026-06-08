@@ -1554,11 +1554,16 @@ check_self_vendor_drift() {
     fi
 
     if [ "$_sv_libs" -gt 0 ]; then
+        # T-2247: 'fw vendor self' only syncs .agentic-framework/lib/ — libs class
+        # scans bin+lib+agents+web. Use full 'fw vendor' as the always-works
+        # superset; 'fw vendor self' would no-op for bin/agents/web drift.
         fail "Self-vendor drift: libs class — $_sv_libs file(s) out of sync (T-2244)" \
              "First $([ $_sv_libs -gt 5 ] && echo 5 || echo $_sv_libs):$_sv_libs_list" \
-             "Run: fw vendor self  (sync .agentic-framework/ libs with source)"
+             "Run: fw vendor  (sync all vendored .agentic-framework/ classes with source)"
     fi
     if [ "$_sv_tpl" -gt 0 ]; then
+        # Templates class is correctly scoped to 'fw vendor self' — it syncs
+        # .tasks/templates as a sibling of lib/ (lib/upgrade.sh _self_vendor_templates).
         fail "Self-vendor drift: templates class — $_sv_tpl file(s) out of sync (T-2244)" \
              "First $([ $_sv_tpl -gt 5 ] && echo 5 || echo $_sv_tpl):$_sv_tpl_list" \
              "Run: fw vendor self  (sync .agentic-framework/ templates with source)"
