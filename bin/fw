@@ -5908,6 +5908,7 @@ PYSEARCH
                 echo "  - .agentic-framework/.tasks/templates/    ← .tasks/templates/  (T-2241)"
                 echo "  - .agentic-framework/policy/              ← policy/{value-drivers.yaml,bvp-scoring-rubric.md} (T-2263)"
                 echo "  - .agentic-framework/bin/                 ← bin/fw             (T-2264)"
+                echo "  - .agentic-framework/agents/              ← agents/**/*.{sh,py} (T-2266)"
                 echo ""
                 echo "T-1217 / T-2078 §F2 / T-2095 V1-D / T-2241. Extracted from do_upgrade so it can be"
                 echo "invoked explicitly (cron, pre-push, manual) without firing the full upgrade flow."
@@ -5928,6 +5929,8 @@ PYSEARCH
             _self_vendor_policy "$_vs_dry"
             # T-2264: sibling — bin/fw shim drift class.
             _self_vendor_shim "$_vs_dry"
+            # T-2266: sibling — agents/ drift class (5th class).
+            _self_vendor_agents "$_vs_dry"
             exit $?
         fi
         do_vendor "$@"

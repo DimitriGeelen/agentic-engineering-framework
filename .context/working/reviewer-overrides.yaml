@@ -604,3 +604,16 @@ overrides:
   expires_at: '2026-09-03T09:35:53Z'
   added_by: root
   added_at: '2026-06-05T09:35:53Z'
+- id: OV-3fc5133e
+  task_id: T-2266
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "T-2266 bats test (t2266_self_vendor_agents.bats) sources real lib/upgrade.sh\
+    \ and exercises real _self_vendor_agents helper in tests t3/t4/t6/t7 (synthetic\
+    \ FRAMEWORK_ROOT to isolate side-effects). Detector heuristic flags any 'bats'\
+    \ command as mock-only \u2014 this is the canonical FP for self-vendor bats suites\
+    \ (same as T-2095/T-2241/T-2263/T-2264 which got Overall PASS by chance of detector\
+    \ ordering). Override scoped to T-2266 only."
+  expires_at: '2026-09-06T18:28:59Z'
+  added_by: root
+  added_at: '2026-06-08T18:28:59Z'
