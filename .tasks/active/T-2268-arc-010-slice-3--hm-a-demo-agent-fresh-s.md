@@ -1,8 +1,12 @@
 ---
 id: T-2268
-name: "arc-010 Slice 3 — HM-A demo agent: fresh-session MCP-only task drive (no Bash bin/fw)"
+name: "arc-010 Slice 3 — HM-A demo agent: fresh-session MCP-only task drive (no Bash
+  bin/fw)"
 description: >
-  Materialize T-2209:iw4-headline-mechanic. A fresh Claude Code session, with .mcp.json wired to framework-mcp, drives a stub demo task to work-completed using ONLY mcp__fw__* tools — zero Bash(bin/fw ...) calls for any wired verb. Captures evidence to docs/reports/arc-010-hm-a-demo-evidence.md so arc-010 close gate (G-062) unblocks.
+  Materialize T-2209:iw4-headline-mechanic. A fresh Claude Code session, with .mcp.json
+  wired to framework-mcp, drives a stub demo task to work-completed using ONLY mcp__fw__*
+  tools — zero Bash(bin/fw ...) calls for any wired verb. Captures evidence to docs/reports/arc-010-hm-a-demo-evidence.md
+  so arc-010 close gate (G-062) unblocks.
 
 status: captured
 workflow_type: build
@@ -14,8 +18,8 @@ related_tasks: [T-2209, T-2265, T-2258]
 arc_id: capability-overlay
 unlocks_inception_decision: [T-2209:iw4-headline-mechanic]
 created: 2026-06-08T21:38:44Z
-last_update: 2026-06-08T21:38:44Z
-date_finished: null
+last_update: '2026-06-08T21:45:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -26,6 +30,31 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-08T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-08T21:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 3
+      F-RECALL: 3
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=3 
+      (body:portability-abstraction); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2268: arc-010 Slice 3 — HM-A demo agent: fresh-session MCP-only task drive (no Bash bin/fw)
