@@ -71,19 +71,28 @@ bvp_scores_proposed:
 - [x] Worker progressing past Step 1 (install) — 25KB result.jsonl growth at 15s; actively running Bash tool-uses diagnosing FRAMEWORK_ROOT mode detection (same env-leak pattern as fan-dashboard worker, evidence for T-2201 inception).
 - [x] Operator surfaced session id + monitor command.
 
-## Status: RE-DISPATCHED 2026-06-09
+## Status: COMPLETED 2026-06-09
 
-Prior worker exited; re-dispatched alongside T-2200 at 2026-06-09T00:43Z after `/root/.claude.json` verified valid.
+Prior worker exited; re-dispatched alongside T-2200 at 2026-06-09T00:43Z after `/root/.claude.json` verified valid. Completed exit 0 at 2026-06-09T01:50Z (~67 minutes runtime).
 
 - [x] Verified `/root/.claude.json` parses as valid JSON.
 - [x] Worker re-spawned: session `tl-zdqnjfal` / `workflow-designer-aef-setup`. Tagged: task:T-2202, task-type:build. Tmux backend, 3600s timeout.
+- [x] Worker exited 0 (no timeout). Result captured at `/tmp/tl-dispatch/workflow-designer-aef-setup/result.md`. Event `worker.done` emitted.
+- [x] Final audit verdict on `/opt/832-Workflow-designer`: **78 PASS, 2 WARN, 0 FAIL** (both WARNs documented residue).
+- [x] 4 substantive fixes applied: (a) Orchestrator MCP baseline 252 → 263 (9 auto-classifiable TermLink tools + 2 manual `_status`-suffix tools as `readonly_exempt`); (b) `fw test-onboarding` env-isolation bug — added `env -u TASKS_DIR -u CONTEXT_DIR` to `fw work-on` + `handover.sh` test invocations so the test no longer leaks current-project tasks into temp dir, ID-agnostic assertions added; (c) cron audit backlog committed (290 files); (d) Watchtower started on port 3002 (3000 held by framework repo).
+- [x] Cross-repo escalation: T-015 (`upstream-framework` tag) filed in workflow-designer's local task system — proposes `paths.sh` re-derive `TASKS_DIR`/`CONTEXT_DIR` from `PROJECT_ROOT` when `PROJECT_ROOT` is explicitly overridden and differs from inherited vars. Recommendation: GO. **HV signal — this is the same env-leak pattern observed in fan-dashboard worker's first launch (T-2201 inception).** May warrant framework-side task if reproducible.
 
-**Monitor:** `termlink pty output workflow-designer-aef-setup --lines 100`
-**Result stream:** `tail -f /tmp/tl-dispatch/workflow-designer-aef-setup/result.jsonl`
-
-Outcome ACs (worker exit code, audit verdict, final state of /opt/832-Workflow-designer) added on return.
+Monitor archive: `termlink pty output workflow-designer-aef-setup --lines 100` (session may have been swept).
 
 ### Human
+- [ ] [REVIEW] Verify workflow-designer audit verdict reproducible on the target host.
+  **Steps:**
+  1. `cd /opt/832-Workflow-designer && bin/fw audit 2>&1 | tail -10`
+  2. Visually scan PASS/WARN/FAIL counts.
+  3. Open `http://192.168.10.107:3002/` (the workflow-designer Watchtower) and confirm it loads.
+  **Expected:** Audit summary line reports 0 FAIL. WARN count ≤ 3 (target was 2). Watchtower renders.
+  **If not:** Re-run `cd /opt/832-Workflow-designer && bin/fw audit` and reply with the new WARN/FAIL list. The 2 documented WARNs at session end were: uncommitted audit-state file churn (normal periodic-commit residue), and orchestrator-arc cross-repo drift (T-1649, outside path isolation).
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -208,9 +217,33 @@ Outcome ACs (worker exit code, audit verdict, final state of /opt/832-Workflow-d
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO — ship as partial-complete; operator runs the `[REVIEW]` Human AC to confirm reproducible verdict on the workflow-designer host.
+
+**Rationale:** Worker delivered a clean exit-0 result with 78 PASS / 2 WARN / 0 FAIL on `/opt/832-Workflow-designer` and applied 4 substantive fixes. The most valuable signal is fix (b) — the env-isolation bug in `fw test-onboarding` reproduces the same env-leak pattern observed when T-2200's first worker launch failed (see T-2201 inception). Worker filed local T-015 in workflow-designer's task system with concrete proposal for `paths.sh` re-derivation; this is the kind of cross-project signal that should inform whether to file a framework-side observation/task.
+
+**Evidence:**
+- Worker exit-0 + `worker.done` event: `/tmp/tl-dispatch/workflow-designer-aef-setup/result.md`
+- `fw test-onboarding` result: ONBOARDING BROKEN (1 FAIL) → ONBOARDING DEGRADED (0 FAIL, 1 WARN).
+- Orchestrator MCP baseline tool-count 252 → 263 (worker scan exits 0).
+- 290-file commit reduced cron audit backlog to zero on the workflow-designer side.
+- Watchtower live on `http://192.168.10.107:3002`.
+
+**Follow-on candidate (optional, agent will file iff operator confirms HV):** filing an observation on the framework side — *"env-var leakage causes `fw test-onboarding` + dispatched-worker first-launch failures when calling project differs from target. See workflow-designer's local T-015 for the paths.sh proposal."* Will not file unilaterally; cross-project framework changes belong to operator triage.
+
 ## Updates
 
 ### 2026-06-04T07:50:29Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2202-dispatch-aef-setup-worker-on-opt832-work.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1aca9623
+- **Timestamp:** 2026-06-08T23:21:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
