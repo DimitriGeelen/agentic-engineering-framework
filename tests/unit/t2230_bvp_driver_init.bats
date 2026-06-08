@@ -125,3 +125,68 @@ teardown() {
     [ "$status" -eq 0 ]
     [ -f "$TEST_TEMP_DIR/policy/value-drivers.yaml" ]
 }
+
+# ============================================================================
+# T-2259 (T-2252 build slice): rubric.md is copied symmetrically alongside
+# value-drivers.yaml. Bundle's init-refusal requires BOTH.
+# ============================================================================
+
+@test "T-2259: --init also creates policy/bvp-scoring-rubric.md" {
+    [ -f "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" ] || \
+        skip "framework rubric template missing — broken install"
+    [ ! -f "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md" ]
+
+    run env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init
+    [ "$status" -eq 0 ]
+    [ -f "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md" ]
+    echo "$output" | grep -q "bvp-scoring-rubric.md created from framework template"
+}
+
+@test "T-2259: created rubric is byte-identical to framework template" {
+    env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init >/dev/null
+    rc=0
+    cmp -s "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" \
+           "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md" || rc=$?
+    [ "$rc" -eq 0 ]
+}
+
+@test "T-2259: rubric.md is idempotent — refuses to overwrite without --force" {
+    env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init >/dev/null
+    # Customise consumer copy.
+    echo "<!-- CONSUMER-RUBRIC-MARKER -->" >> "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md"
+
+    run env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "bvp-scoring-rubric.md already exists"
+    grep -q "CONSUMER-RUBRIC-MARKER" "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md"
+}
+
+@test "T-2259: --force overwrites the rubric too" {
+    env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init >/dev/null
+    echo "<!-- CONSUMER-RUBRIC-MARKER -->" >> "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md"
+
+    run env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init --force
+    [ "$status" -eq 0 ]
+    rc=0
+    grep -q "CONSUMER-RUBRIC-MARKER" "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md" || rc=$?
+    [ "$rc" -ne 0 ]
+}
+
+@test "T-2259: per-file idempotency — value-drivers.yaml exists but rubric.md missing → only rubric copied" {
+    # Simulate a partially-initialised state from before T-2259 (a consumer that
+    # ran the old `fw bvp driver --init` and got only value-drivers.yaml).
+    mkdir -p "$TEST_TEMP_DIR/policy"
+    cp "$FRAMEWORK_ROOT/policy/value-drivers.yaml" "$TEST_TEMP_DIR/policy/value-drivers.yaml"
+    echo "# PREEXISTING-VALUE-DRIVERS-MARKER" >> "$TEST_TEMP_DIR/policy/value-drivers.yaml"
+    [ ! -f "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md" ]
+
+    run env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init
+    [ "$status" -eq 0 ]
+    # value-drivers.yaml untouched (marker survives).
+    grep -q "PREEXISTING-VALUE-DRIVERS-MARKER" "$TEST_TEMP_DIR/policy/value-drivers.yaml"
+    # rubric.md now present.
+    [ -f "$TEST_TEMP_DIR/policy/bvp-scoring-rubric.md" ]
+    # Output mentions both: one as already-exists, one as created.
+    echo "$output" | grep -q "value-drivers.yaml already exists"
+    echo "$output" | grep -q "bvp-scoring-rubric.md created from framework template"
+}

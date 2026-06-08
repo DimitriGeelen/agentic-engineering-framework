@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2259: T-2252 build slice — extend _driver_init to copy bvp-scoring-rubric.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T12:31:03Z
+# ============================================================================
+
+task_id: T-2259
+task_name: "T-2252 build slice — extend _driver_init to copy bvp-scoring-rubric.md"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T12:27:12Z
+completed: 2026-06-08T12:30:55Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/bvp.sh:_driver_init` copies BOTH `policy/value-drivers.yaml` AND `policy/bvp-scoring-rubric.md` from FRAMEWORK_ROOT to PROJECT_ROOT'
+  - 'Each file is idempotent independently (existing file untouched unless `--force`)'
+  - '`--force` overwrites BOTH files'
+  - 'Missing framework template (either file) fails fast with an error naming the missing file'
+  - 'New tests in `tests/unit/t2230_bvp_driver_init.bats` cover the rubric.md leg (create, idempotent, --force overwrite, partial-init recovery)'
+  - 'All existing tests in `t2230_bvp_driver_init.bats` still pass (10/10 pre-existing + 5/5 new = 15/15)'
+  - 'Reviewer scan returns PASS on T-2259 (R-de35c2c1 / 2026-06-08T12:30:41Z, 0 findings)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2259-t-2252-build-slice--extend-driverinit-to.md
+generated_by: context-agent-hybrid

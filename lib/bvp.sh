@@ -659,41 +659,65 @@ def cmd_driver(args):
 
 
 def _driver_init(args):
-    """Bootstrap consumer's policy/value-drivers.yaml from the framework template.
+    """Bootstrap consumer's BVP policy files from the framework templates.
 
-    Idempotent by default: refuses to overwrite if the target file already
-    exists. `--force` overrides. NOT §ACD-gated — first-write of a starter
-    file is not a policy decision; subsequent weight/driver mutations are
-    gated separately.
+    Copies BOTH `policy/value-drivers.yaml` (driver definitions, T-2229) and
+    `policy/bvp-scoring-rubric.md` (estimator's scoring source of truth,
+    T-1921). The BVP driver-session bundle (policy/prompts/bvp-driver-session.md
+    line 146) refuses to run without BOTH files; T-2259 closes the asymmetric
+    leg from T-2252's GO decision.
 
-    T-2229 Slice 1. Slice 2 (separate task) wires this into fw init/upgrade/vendor.
+    Idempotent per-file: each existing target survives unless `--force` is
+    given (in which case BOTH are overwritten). NOT §ACD-gated — first-write
+    of starter files is not a policy decision; subsequent weight/driver
+    mutations are gated separately.
+
+    T-2229 Slice 1 (value-drivers.yaml leg) + T-2259 (rubric.md leg, this
+    function). Slice 2 (separate task) wires this into fw init/upgrade/vendor.
     """
-    target = PROJECT_ROOT / 'policy' / 'value-drivers.yaml'
-    template = FRAMEWORK_ROOT / 'policy' / 'value-drivers.yaml'
     force = '--force' in args
+    files = [
+        ('policy/value-drivers.yaml',
+         FRAMEWORK_ROOT / 'policy' / 'value-drivers.yaml',
+         PROJECT_ROOT / 'policy' / 'value-drivers.yaml'),
+        ('policy/bvp-scoring-rubric.md',
+         FRAMEWORK_ROOT / 'policy' / 'bvp-scoring-rubric.md',
+         PROJECT_ROOT / 'policy' / 'bvp-scoring-rubric.md'),
+    ]
 
-    if not template.is_file():
-        print(f"ERROR: framework template not found at {template}", file=sys.stderr)
-        print("       This indicates a broken framework install (vendored copy", file=sys.stderr)
-        print("       is missing policy/value-drivers.yaml). Run `fw vendor` or", file=sys.stderr)
-        print("       reinstall the framework.", file=sys.stderr)
-        return 2
+    # Both templates must exist or the install is broken.
+    for label, template, _ in files:
+        if not template.is_file():
+            print(f"ERROR: framework template not found at {template}", file=sys.stderr)
+            print(f"       This indicates a broken framework install (vendored copy", file=sys.stderr)
+            print(f"       is missing {label}). Run `fw vendor` or", file=sys.stderr)
+            print(f"       reinstall the framework.", file=sys.stderr)
+            return 2
 
-    if target.exists() and not force:
-        print(f"OK: policy/value-drivers.yaml already exists at {target}")
+    actions = []  # list of (label, "created"|"overwritten"|"already-exists", target)
+    for label, template, target in files:
+        if target.exists() and not force:
+            actions.append((label, 'already-exists', target))
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        action = 'overwritten' if (force and target.exists()) else 'created'
+        target.write_bytes(template.read_bytes())
+        actions.append((label, action, target))
+
+    for label, action, target in actions:
+        if action == 'already-exists':
+            print(f"OK: {label} already exists at {target}")
+        else:
+            print(f"OK: {label} {action} from framework template")
+            print(f"  Source: {FRAMEWORK_ROOT / label}")
+            print(f"  Target: {target}")
+
+    if any(a == 'already-exists' for _, a, _ in actions):
         print("    (idempotent — use `fw bvp driver --init --force` to overwrite from framework template)")
-        return 0
 
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_bytes(template.read_bytes())
-
-    action = "overwritten" if (force and target.exists()) else "created"
-    print(f"OK: policy/value-drivers.yaml {action} from framework template")
-    print(f"  Source: {template}")
-    print(f"  Target: {target}")
     print("")
-    print("  These are the framework's default value drivers (D1-D4 + free drivers).")
-    print("  Customise via sovereignty-gated verbs:")
+    print("  These are the framework's default BVP drivers (D1-D4 + free drivers)")
+    print("  and the scoring rubric. Customise via sovereignty-gated verbs:")
     print("    fw bvp                                    # see current ranking")
     print("    fw bvp weight --set Dn=N --rationale ...  # tune driver weights")
     print("    fw bvp driver --add ... | --remove ...    # add/drop free drivers")
