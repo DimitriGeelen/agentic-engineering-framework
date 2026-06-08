@@ -6,7 +6,7 @@ description: >
   corrupted. fw termlink dispatch should pre-flight the Claude CLI config and refuse
   fast with precise diagnostic.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-06-04T07:43:22Z
-last_update: '2026-06-05T18:00:03Z'
+last_update: 2026-06-08T07:44:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable

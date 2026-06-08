@@ -7,7 +7,7 @@ description: >
   drift escapes the BLOCK detection. Sibling of T-2247 (audit message fix) but at
   the detection layer not just messaging
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
 horizon: now
@@ -21,7 +21,7 @@ voi_score: 0.4
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T06:14:10Z
-last_update: 2026-06-08T06:30:01Z
+last_update: 2026-06-08T07:44:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,9 +91,9 @@ detector, same scope, both surfaces.
 
 ### Agent
 <!-- Inception scope — fix shape to be decided at decide-go. -->
-- [ ] Investigate the three candidates above and record decision in `## Decision`
-- [ ] Confirm `_self_vendor_libs` scope vs audit `check_self_vendor_drift` scope (cite line numbers)
-- [ ] Recommendation block populated with GO/NO-GO/DEFER + rationale
+- [x] Investigate the three candidates above and record decision in `## Decision` — see Recommendation block
+- [x] Confirm `_self_vendor_libs` scope vs audit `check_self_vendor_drift` scope (cite line numbers) — `lib/upgrade.sh:141` (lib/ only) vs `agents/audit/audit.sh:1523-1548` (bin+lib+agents+web + templates)
+- [x] Recommendation block populated with GO/NO-GO/DEFER + rationale — GO Candidate 4 (new `fw vendor check` verb)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -6,16 +6,16 @@ description: >
   Inception: Multi-option AC pattern — choice spawns child inception (T-1776 surfaces
   the gap)
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: [inception-spawn, arc-008, multi-option-ac, review-loop, ac-classification]
 components: []
 related_tasks: [T-1776, T-2101, T-2097, T-2098, T-2100]
 arc_id: inception-review-loop
 created: 2026-05-31T10:28:56Z
-last_update: '2026-06-05T18:00:03Z'
+last_update: 2026-06-08T07:44:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -265,3 +265,8 @@ This inception captures a structural gap surfaced by T-1776's close: Human AC #H
 ### 2026-05-31T14:22:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-06-08T07:44:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → later
+- **Reason:** T-1865 sweep: DEFER limbo recovery
