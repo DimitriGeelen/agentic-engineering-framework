@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2263: arc-006 Slice 2C — extend self-vendor to sync BVP policy templates
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T14:13:44Z
+# ============================================================================
+
+task_id: T-2263
+task_name: "arc-006 Slice 2C — extend self-vendor to sync BVP policy templates"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T14:09:23Z
+completed: 2026-06-08T14:13:37Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`.agentic-framework/policy/value-drivers.yaml` exists and is byte-identical to `policy/value-drivers.yaml`'
+  - '`.agentic-framework/policy/bvp-scoring-rubric.md` exists and is byte-identical to `policy/bvp-scoring-rubric.md`'
+  - '`lib/upgrade.sh` defines `_self_vendor_policy()` (sibling of `_self_vendor_libs` / `_self_vendor_templates`)'
+  - '`_self_vendor_policy()` syncs both BVP-policy files when their vendored copy is missing or differs from `$FRAMEWORK_ROOT/policy/`'
+  - '`_self_vendor_policy()` honours `dry_run`: dry-run emits `Self-vendor: would sync N file(s) to .agentic-framework/policy/`; real-run emits `Self-vendor: synced N ...`'
+  - '`do_upgrade()` invokes `_self_vendor_policy "$dry_run"` near the existing libs/templates calls (around `lib/upgrade.sh` line 522-524)'
+  - 'After running `bin/fw vendor self` once, `bin/fw vendor self --dry-run` reports zero "would sync" lines (clean state)'
+  - 'Mutating `policy/value-drivers.yaml` (then reverting) causes `bin/fw vendor self --dry-run` to report exactly one "would sync 1 file(s)" line targeting `.agentic-framework/policy/` — proving the T-2240 pre-push gate sees policy drift'
+  - '`fw reviewer T-2263` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2263-arc-006-slice-2c--extend-self-vendor-to-.md
+generated_by: context-agent-hybrid

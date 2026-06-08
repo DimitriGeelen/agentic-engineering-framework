@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1766: render-surface Human-AC gate — block work-completed on render-touching tasks without [REVIEW] Human AC
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T15:11:20Z
+# ============================================================================
+
+task_id: T-1766
+task_name: "render-surface Human-AC gate — block work-completed on render-touching tasks without [REVIEW] Human AC"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-06T11:30:48Z
+completed: 2026-05-16T08:13:11Z
+duration_days: 10
+updates_count: 2
+first_commit: 2026-05-06T13:36:02+02:00
+last_commit: 2026-05-16T10:13:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  render-surface predicate (partial-ship — budget gate fired). wire render-surface Human-AC gate into update-task.sh (P-013). register fabric card for test_render_surface_gate bats. retroactive [REVIEW] Human ACs on T-1763/T-1764/T-1765 (documentary). Recommendation block (GO) + verification commands
+
+# Key outcomes
+outcomes:
+  - '**Render-surface predicate** — `lib/render_surface.sh` exposes `task_touches_render_surface <task_file>` returning 0 (yes) or 1 (no). Predicate examines the task''s `components` frontmatter list AND the file paths mentioned in `## Verification` and `## Recommendation > Evidence`. Match patterns: `web/templates/*.html`, `web/static/*.css`, `web/static/*.js`, `web/blueprints/*.py`, `web/shared.py`, `web/app.py`, `web/templates/*.j2`. Single source of truth — the patterns list is exported as `RENDER_SURFACE_PATTERNS` for reuse. **SHIPPED 2026-05-06 (partial-ship: lib only).**'
+  - '**Gate wired into update-task.sh** — `check_render_surface_human_ac()` in `agents/task-create/update-task.sh:380-475`. Fires on `--status work-completed` AND `workflow_type` in {build, refactor, test} AND `task_touches_render_surface` returns 0. Refuses with exit 1 if no Human AC exists OR all Human ACs are mechanical (no `[REVIEW]` marker). Bypass: `--skip-render-review "rationale"` logged Tier-2.'
+  - '**Bypass plumbing reuses log_gate_bypass** — same machinery as T-1668/T-1671/T-1762 gates. Bypass log: `.context/working/.gate-bypass-log.yaml`. No new log file.'
+  - '**Bats test pinned** — `tests/unit/test_render_surface_gate.bats` covers 12 cases: source-level invariants (4), predicate behaviour (3), gate firing/passing/bypass/rubber-stamp/non-render (5). 12/12 pass.'
+  - '**Self-application: T-1766 closure** — T-1766''s body references `web/shared.py`/`web/app.py` literal paths (because the task DEFINES those patterns as render-surface examples). The predicate correctly flags T-1766 as render-touching — meta-honest result. Adding a [REVIEW] Human AC below to satisfy the gate self-applies the rule the task creates.'
+  - '**Retroactive hygiene applied to T-1763/T-1764/T-1765** — Each completed task gained a `[REVIEW]` Human AC with copy-pasteable Steps/Expected/If-not. Commit 34e7127d. Documentary only — the tasks already shipped; this records what eyes the human would have applied if the gate had existed.'
+  - '**Documentation updated** — `CLAUDE.md` "AC Classification Guidance" section gains a new bullet (5th) under "Make it a Human AC if ANY apply": render-surface trigger + cite T-1766 / bypass flag / origin tasks.'
+  - '**Block-message conformance (T-1897 split):** [REVIEWER] Block message names (a) which file(s) triggered the gate, (b) the exact `[REVIEW]` AC template to copy-paste, (c) the bypass flag with rationale syntax — conformance check via `bin/fw reviewer T-1766` (human-ac-mechanical-signal pattern silent on the residual UX-taste [REVIEW] body).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/update-task.sh'
+  - 'CLAUDE.md'
+  - '.fabric/components/tests-unit-test_render_surface_gate.yaml'
+  - 'lib/render_surface.sh'
+  - '.tasks/active/T-1766-render-surface-human-ac-gate--block-work.md'
+  - '.tasks/completed/T-1763-fix-ac-body-parser--html-comment-example.md'
+  - '.tasks/completed/T-1764-fix-file-route--404s-for-non-md-paths-de.md'
+  - '.tasks/completed/T-1765-fix-code-element-inline-block-dropping-l.md'
+  - 'tests/unit/test_render_surface_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-06T13:36:02"
+    action: "T-1766: render-surface predicate (partial-ship — budget gate fired)"
+  - time: "2026-05-16T10:10:22"
+    action: "T-1766: wire render-surface Human-AC gate into update-task.sh (P-013)"
+  - time: "2026-05-16T10:10:30"
+    action: "T-1766: register fabric card for test_render_surface_gate bats"
+  - time: "2026-05-16T10:12:23"
+    action: "T-1766: retroactive [REVIEW] Human ACs on T-1763/T-1764/T-1765 (documentary)"
+  - time: "2026-05-16T10:13:04"
+    action: "T-1766: Recommendation block (GO) + verification commands"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 14202 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: ["bug", "governance-gate", "human-review-surface", "T-1575-followup", "T-1763-T-1764-T-1765-meta"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14202
+  commits: 5
+  files_changed: 9
+  lines_added: 818
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1766-render-surface-human-ac-gate--block-work.md
+generated_by: context-agent-hybrid

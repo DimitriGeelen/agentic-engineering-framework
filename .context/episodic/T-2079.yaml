@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2079: convert /bvp vanilla-fetch forms to htmx — eliminate native-submit-to-API-URL bug
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T15:11:26Z
+# ============================================================================
+
+task_id: T-2079
+task_name: "convert /bvp vanilla-fetch forms to htmx — eliminate native-submit-to-API-URL bug"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T20:18:42Z
+completed: 2026-05-28T20:29:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-28T22:29:19+02:00
+last_commit: 2026-05-28T22:30:37+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  convert /bvp vanilla-fetch forms to htmx — kill native-submit-to-API-URL. work-completed (Agent ACs ticked; [REVIEW] pending human eyes-on)
+
+# Key outcomes
+outcomes:
+  - '`web/templates/bvp.html` — `#bvp-driver-add-form` uses `hx-post="/api/bvp/driver/add"` with `hx-target` + `hx-swap`; the legacy `method="POST" action="..."` attribute pair is removed so native submit cannot fire.'
+  - '`web/templates/bvp.html` — `#bvp-commit-form` uses `hx-post="/api/bvp/commit-weights"` with `hx-target` + `hx-swap`; native `method/action` removed.'
+  - '`web/templates/bvp.html` — per-row `.dr-remove-btn` buttons use `hx-post="/api/bvp/driver/remove?driver=…"` + `hx-prompt` (rationale collected via browser prompt → `HX-Prompt` header); the vanilla `<script>` IIFE that hooked their `click` is removed.'
+  - 'The three vanilla `<script>` IIFEs that built `fetch()` calls + `window.location.reload()` are removed (driver-add + remove fully gone; commit-form''s IIFE remains but only as `htmx:configRequest` hook for change-diff/rationale validation — no `fetch()` left); on success, htmx triggers reload via `hx-on::after-request="if(event.detail.successful)setTimeout(()=>location.reload(),800)"` on each form/button.'
+  - '`web/blueprints/bvp.py` returns a small HTML fragment (success message) + `HX-Trigger: bvpReload` on 200 when `HX-Request` header is present, and returns plain-text error in body on 4xx so htmx renders it in the target div (L-270 — same error visibility on htmx + plain paths). CLI/API callers keep JSON envelope.'
+  - 'CSRF still works end-to-end (X-CSRF-Token injected by `csrf-htmx.js`) — verified by curl smoke tests (driver-add + driver-remove both returned 200 with HTML fragment + HX-Trigger header, using the meta-tag CSRF token).'
+  - 'Playwright test `tests/playwright/test_bvp_form_htmx.py` asserts (a) no native `method="POST" action="/api/bvp/..."` remains, (b) each form/button carries the right `hx-post`, (c) submitting the add form does NOT navigate the page URL away from `/bvp`. 5/5 pass. Pre-existing `test_bvp_sliders.py` + `test_bvp_scatter.py` (15 tests) still pass — no regression.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2079-convert-bvp-vanilla-fetch-forms-to-htmx-.md'
+  - 'tests/playwright/test_bvp_form_htmx.py'
+  - 'web/blueprints/bvp.py'
+  - 'web/templates/bvp.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T22:29:19"
+    action: "T-2079: convert /bvp vanilla-fetch forms to htmx — kill native-submit-to-API-URL"
+  - time: "2026-05-28T22:30:37"
+    action: "T-2079: work-completed (Agent ACs ticked; [REVIEW] pending human eyes-on)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 2
+  files_changed: 4
+  lines_added: 451
+  lines_removed: 105
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2079-convert-bvp-vanilla-fetch-forms-to-htmx-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2037: T-1934 has malformed YAML frontmatter — parse error on every get_all_task_metadata
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T15:11:28Z
+# ============================================================================
+
+task_id: T-2037
+task_name: "T-1934 has malformed YAML frontmatter — parse error on every get_all_task_metadata"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-25T08:12:39Z
+completed: '2026-05-25T08:15:02Z'
+duration_days: -20597
+updates_count: 2
+first_commit: 2026-05-25T10:15:11+02:00
+last_commit: 2026-05-25T10:15:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix T-1934 malformed components flow-list (frontmatter parse error)
+
+# Key outcomes
+outcomes:
+  - 'T-1934 frontmatter parses via `yaml.safe_load` with no error'
+  - 'The `components:` list still includes `tests/playwright/test_bvp_scatter.py` (entry merged, not dropped) — 8 components'
+  - '`get_all_task_metadata()` no longer logs a T-1934 parse error'
+  - 'No Human ACs or body content of T-1934 altered — frontmatter `components:` line only'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix T-1934 malformed components flow-list (frontmatter parse error)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1934-bvp-t-new-12c-bvp-scatter-renders-propos.md'
+  - '.tasks/active/T-2036-completed-before-commit-deadlock--work-o.md'
+  - '.tasks/active/T-2037-t-1934-has-malformed-yaml-frontmatter--p.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-25T10:15:11"
+    action: "T-2037: fix T-1934 malformed components flow-list (frontmatter parse error)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 3
+  lines_added: 445
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2037-t-1934-has-malformed-yaml-frontmatter--p.md
+generated_by: context-agent-hybrid

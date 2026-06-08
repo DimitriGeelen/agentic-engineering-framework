@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2264: Close bin/fw drift class — add _self_vendor_shim sibling to T-2240 gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T14:22:22Z
+# ============================================================================
+
+task_id: T-2264
+task_name: "Close bin/fw drift class — add _self_vendor_shim sibling to T-2240 gate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T14:19:34Z
+completed: 2026-06-08T14:22:16Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/upgrade.sh` defines `_self_vendor_shim()` (sibling of `_self_vendor_libs` / `_self_vendor_templates` / `_self_vendor_policy`)'
+  - '`_self_vendor_shim()` syncs `bin/fw` from `$FRAMEWORK_ROOT/bin/fw` to `$FRAMEWORK_ROOT/.agentic-framework/bin/fw` when missing or differing'
+  - '`_self_vendor_shim()` preserves executable permission on the destination (`chmod +x` matching the source)'
+  - '`_self_vendor_shim()` honours `dry_run`: dry-run emits `Self-vendor: would sync 1 file(s) to .agentic-framework/bin/`; real-run emits `Self-vendor: synced 1 ...`'
+  - '`do_upgrade()` invokes `_self_vendor_shim "$dry_run"` after the existing self-vendor calls'
+  - '`bin/fw vendor)` case invokes `_self_vendor_shim "$_vs_dry"` after the existing self-vendor calls'
+  - '`fw vendor self --help` lists `.agentic-framework/bin/` as a fourth sync class'
+  - 'After `bin/fw vendor self`, vendored bin/fw is byte-identical to source bin/fw (`diff -q` returns clean)'
+  - 'Mutating `bin/fw` (then reverting) causes `bin/fw vendor self --dry-run` to report exactly one `would sync 1 file(s) to .agentic-framework/bin/` line — proving the T-2240 pre-push gate sees bin/fw drift'
+  - '`fw reviewer T-2264` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [self-vendor-drift, t2240-closure-arc]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2264-close-binfw-drift-class--add-selfvendors.md
+generated_by: context-agent-hybrid

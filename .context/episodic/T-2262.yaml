@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2262: arc-006 Slice 2B — wire BVP policy cp into fw upgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T14:06:16Z
+# ============================================================================
+
+task_id: T-2262
+task_name: "arc-006 Slice 2B — wire BVP policy cp into fw upgrade"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T14:00:27Z
+completed: 2026-06-08T14:06:07Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/upgrade.sh` defines a new step "3c. BVP policy files" between step 3b (Cron registry) and step 4 (Git hooks)'
+  - 'Step 3c copies `policy/value-drivers.yaml` from `$FRAMEWORK_ROOT` to `$target_dir/policy/` only when the target file does not exist (same contract as the cron-registry seed)'
+  - 'Step 3c copies `policy/bvp-scoring-rubric.md` from `$FRAMEWORK_ROOT` to `$target_dir/policy/` only when the target file does not exist'
+  - 'Step 3c honours the `dry_run` flag: dry-run emits `WOULD SEED` and performs no filesystem write; real-run emits `SEEDED` and performs the copy'
+  - '`fw upgrade --dry-run` on a fresh tmpdir (pre-T-2261 consumer shape, no `policy/` directory) prints the `WOULD SEED` line and creates no files'
+  - '`fw upgrade` (real) on the same tmpdir creates `policy/value-drivers.yaml` + `policy/bvp-scoring-rubric.md` byte-identical to the framework copies'
+  - 'Pre-existing consumer `policy/value-drivers.yaml` (customised) survives a re-run of `fw upgrade` — file content unchanged'
+  - '`fw reviewer T-2262` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2262-arc-006-slice-2b--wire-bvp-policy-cp-int.md
+generated_by: context-agent-hybrid

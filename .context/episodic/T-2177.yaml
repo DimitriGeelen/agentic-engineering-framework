@@ -1,0 +1,283 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2177: Reviewer FAIL fix batch D — tighten skip-as-pass + swallowed-errors detectors
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T15:11:27Z
+# ============================================================================
+
+task_id: T-2177
+task_name: "Reviewer FAIL fix batch D — tighten skip-as-pass + swallowed-errors detectors"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T11:52:20Z
+completed: 2026-06-02T13:06:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-06-02T15:05:01+02:00
+last_commit: 2026-06-02T15:07:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tighten skip-as-pass detector — quoted-context + same-line-assertion FPs. add RCA capturing detector blind-spot + cached-fingerprint cascade. capture L-452 — detector blind-spot lesson
+
+# Key outcomes
+outcomes:
+  - '`detect_skip_as_pass` suppresses findings when the same line carries an output assertion (`| grep`, `&& grep`, `| test`, `&& test`, `| cmp`, `&& cmp`, `| diff`, `&& diff`, `| jq`, `&& jq`, `| awk`, `| sed`). Rationale: a `--dry-run` followed by an assertion is simulation-with-check, not skip-as-pass. Empirical FP: T-2072 line 9 `out=$(bin/fw pickup promote-deferred --dry-run 2>&1); echo "$?" | grep -q "^0$"`. **Shipped:** `_OUTPUT_ASSERTION_RE` in `lib/reviewer/static_scan.py:639-641`; T-2072 fresh-scan no longer fires skip-as-pass.'
+  - '`detect_skip_as_pass` suppresses findings when the matched token appears inside single or double quotes (textual argument to grep/awk/sed/etc., not a CLI flag). Pattern lifted from existing `_GREP_LITERAL_RE` in swallowed-errors (L-264-(a)) — same shape adapted for skip tokens. Empirical FP: T-1516 line 2 `grep -E ''manual fix.*--skip-sovereignty|deserves RCA''`. **Shipped:** `_QUOTED_SUBSTR_RE` strip-then-search at `lib/reviewer/static_scan.py:632-634`; T-1516 fresh-scan moves FAIL→PASS.'
+  - 'All existing true positives preserved: bare `pytest --collect-only`, `make test SKIP=true`, `pytest.mark.skip(...)`, `@unittest.skip(...)`, `--xfail`, plain `--skip` flag without assertion or quoting. **Verified:** all 4 pre-existing skip-as-pass tests pass; 4 new positive tests cover bare flags / collect-only / pytest.mark.skip / dry-run-with-devnull-only.'
+  - 'Unit tests in `tests/unit/test_reviewer_static_scan.py` cover each new suppression heuristic (positive: still fires on bare skip; negative: suppressed on assertion / quoted) AND each preserved TP — minimum 6 new test cases. **Shipped:** 9 new tests (5 negative for new suppression, 4 positive for TP regression guard). Full suite: 95 passed.'
+  - 'Fresh re-scan of T-1516 and T-2072 (`bin/fw reviewer T-XXX --no-write --json`) shows skip-as-pass no longer fires on those lines (FAIL→PASS or FAIL→CONCERN with no `skip-as-pass` in findings). **Verified:** T-1516 FAIL→PASS (only finding cleared); T-2072 FAIL→CONCERN (skip-as-pass cleared, mock-only-integration remains, unrelated).'
+  - 'Regression sweep: 50 randomly-sampled cached-PASS tasks re-scanned — zero now flag skip-as-pass. Additionally: 7 of 8 Cluster 1 tasks dropped skip-as-pass (T-1514, T-1516, T-1734, T-1738, T-1903, T-2072, T-2124); T-1594 retained — its `bin/fw mirror sync --dry-run --quiet` has no output assertion so the detector correctly preserves it as a real skip-as-pass (author needs to add an assertion, not detector to relax further).'
+  - 'Commit message references T-2177 and ships `lib/reviewer/static_scan.py` + `tests/unit/test_reviewer_static_scan.py` in a single commit (atomic detector + test pairing). **Verified at commit time.**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.context/working/arc-focus.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/episodic-gen/T-1659.log'
+  - '.context/working/episodic-gen/T-1677.log'
+  - '.context/working/episodic-gen/T-1728.log'
+  - '.context/working/episodic-gen/T-1761.log'
+  - '.context/working/episodic-gen/T-1763.log'
+  - '.context/working/episodic-gen/T-1764.log'
+  - '.context/working/episodic-gen/T-1765.log'
+  - '.context/working/episodic-gen/T-1828.log'
+  - '.context/working/episodic-gen/T-1833.log'
+  - '.context/working/episodic-gen/T-1849.log'
+  - '.context/working/episodic-gen/T-1850.log'
+  - '.context/working/episodic-gen/T-1856.log'
+  - '.context/working/episodic-gen/T-1863.log'
+  - '.context/working/episodic-gen/T-1864.log'
+  - '.context/working/episodic-gen/T-1865.log'
+  - '.context/working/episodic-gen/T-1866.log'
+  - '.context/working/episodic-gen/T-1867.log'
+  - '.context/working/episodic-gen/T-1868.log'
+  - '.context/working/episodic-gen/T-1869.log'
+  - '.context/working/episodic-gen/T-1870.log'
+  - '.context/working/episodic-gen/T-1871.log'
+  - '.context/working/episodic-gen/T-1872.log'
+  - '.context/working/episodic-gen/T-1873.log'
+  - '.context/working/episodic-gen/T-1875.log'
+  - '.context/working/episodic-gen/T-1877.log'
+  - '.context/working/episodic-gen/T-1878.log'
+  - '.context/working/episodic-gen/T-1881.log'
+  - '.context/working/episodic-gen/T-1882.log'
+  - '.context/working/episodic-gen/T-1883.log'
+  - '.context/working/episodic-gen/T-1884.log'
+  - '.context/working/episodic-gen/T-1885.log'
+  - '.context/working/episodic-gen/T-1886.log'
+  - '.context/working/episodic-gen/T-1887.log'
+  - '.context/working/episodic-gen/T-1888.log'
+  - '.context/working/episodic-gen/T-1889.log'
+  - '.context/working/episodic-gen/T-1892.log'
+  - '.context/working/episodic-gen/T-1901.log'
+  - '.context/working/episodic-gen/T-1902.log'
+  - '.context/working/episodic-gen/T-1903.log'
+  - '.context/working/episodic-gen/T-1905.log'
+  - '.context/working/episodic-gen/T-1906.log'
+  - '.context/working/episodic-gen/T-1908.log'
+  - '.context/working/episodic-gen/T-1912.log'
+  - '.context/working/episodic-gen/T-1913.log'
+  - '.context/working/episodic-gen/T-1914.log'
+  - '.context/working/episodic-gen/T-1915.log'
+  - '.context/working/episodic-gen/T-1916.log'
+  - '.context/working/episodic-gen/T-1917.log'
+  - '.context/working/episodic-gen/T-1918.log'
+  - '.context/working/episodic-gen/T-1919.log'
+  - '.context/working/episodic-gen/T-1920.log'
+  - '.context/working/episodic-gen/T-1921.log'
+  - '.context/working/episodic-gen/T-1922.log'
+  - '.context/working/episodic-gen/T-1923.log'
+  - '.context/working/episodic-gen/T-1924.log'
+  - '.context/working/episodic-gen/T-1925.log'
+  - '.context/working/episodic-gen/T-1926.log'
+  - '.context/working/episodic-gen/T-1927.log'
+  - '.context/working/episodic-gen/T-1931.log'
+  - '.context/working/episodic-gen/T-1932.log'
+  - '.context/working/episodic-gen/T-1937.log'
+  - '.context/working/episodic-gen/T-1938.log'
+  - '.context/working/episodic-gen/T-1940.log'
+  - '.context/working/episodic-gen/T-1941.log'
+  - '.context/working/episodic-gen/T-1942.log'
+  - '.context/working/episodic-gen/T-1943.log'
+  - '.context/working/episodic-gen/T-1944.log'
+  - '.context/working/episodic-gen/T-1945.log'
+  - '.context/working/episodic-gen/T-1946.log'
+  - '.context/working/episodic-gen/T-1948.log'
+  - '.context/working/episodic-gen/T-1949.log'
+  - '.context/working/episodic-gen/T-1950.log'
+  - '.context/working/episodic-gen/T-1952.log'
+  - '.context/working/episodic-gen/T-1953.log'
+  - '.context/working/episodic-gen/T-1956.log'
+  - '.context/working/episodic-gen/T-1958.log'
+  - '.context/working/episodic-gen/T-1959.log'
+  - '.context/working/episodic-gen/T-1962.log'
+  - '.context/working/episodic-gen/T-1966.log'
+  - '.context/working/episodic-gen/T-1967.log'
+  - '.context/working/episodic-gen/T-1972.log'
+  - '.context/working/episodic-gen/T-1973.log'
+  - '.context/working/episodic-gen/T-1974.log'
+  - '.context/working/episodic-gen/T-1975.log'
+  - '.context/working/episodic-gen/T-1979.log'
+  - '.context/working/episodic-gen/T-1981.log'
+  - '.context/working/episodic-gen/T-1983.log'
+  - '.context/working/episodic-gen/T-1986.log'
+  - '.context/working/episodic-gen/T-1987.log'
+  - '.context/working/episodic-gen/T-1995.log'
+  - '.context/working/episodic-gen/T-1996.log'
+  - '.context/working/episodic-gen/T-1997.log'
+  - '.context/working/episodic-gen/T-1998.log'
+  - '.context/working/episodic-gen/T-2000.log'
+  - '.context/working/episodic-gen/T-2007.log'
+  - '.context/working/episodic-gen/T-2030.log'
+  - '.context/working/episodic-gen/T-2032.log'
+  - '.context/working/episodic-gen/T-2035.log'
+  - '.context/working/episodic-gen/T-2036.log'
+  - '.context/working/episodic-gen/T-2037.log'
+  - '.context/working/episodic-gen/T-2042.log'
+  - '.context/working/episodic-gen/T-2048.log'
+  - '.context/working/episodic-gen/T-2050.log'
+  - '.context/working/episodic-gen/T-2052.log'
+  - '.context/working/episodic-gen/T-2053.log'
+  - '.context/working/episodic-gen/T-2055.log'
+  - '.context/working/episodic-gen/T-2056.log'
+  - '.context/working/episodic-gen/T-2057.log'
+  - '.context/working/episodic-gen/T-2058.log'
+  - '.context/working/episodic-gen/T-2059.log'
+  - '.context/working/episodic-gen/T-2060.log'
+  - '.context/working/episodic-gen/T-2061.log'
+  - '.context/working/episodic-gen/T-2068.log'
+  - '.context/working/episodic-gen/T-2069.log'
+  - '.context/working/episodic-gen/T-2070.log'
+  - '.context/working/episodic-gen/T-2071.log'
+  - '.context/working/episodic-gen/T-2072.log'
+  - '.context/working/episodic-gen/T-2073.log'
+  - '.context/working/episodic-gen/T-2076.log'
+  - '.context/working/episodic-gen/T-2078.log'
+  - '.context/working/episodic-gen/T-2081.log'
+  - '.context/working/episodic-gen/T-2090.log'
+  - '.context/working/episodic-gen/T-2091.log'
+  - '.context/working/episodic-gen/T-2092.log'
+  - '.context/working/episodic-gen/T-2096.log'
+  - '.context/working/episodic-gen/T-2097.log'
+  - '.context/working/episodic-gen/T-2098.log'
+  - '.context/working/episodic-gen/T-2099.log'
+  - '.context/working/episodic-gen/T-2100.log'
+  - '.context/working/episodic-gen/T-2101.log'
+  - '.context/working/episodic-gen/T-2104.log'
+  - '.context/working/episodic-gen/T-2105.log'
+  - '.context/working/episodic-gen/T-2115.log'
+  - '.context/working/episodic-gen/T-2118.log'
+  - '.context/working/episodic-gen/T-2120.log'
+  - '.context/working/episodic-gen/T-2122.log'
+  - '.context/working/episodic-gen/T-2123.log'
+  - '.context/working/episodic-gen/T-2125.log'
+  - '.context/working/episodic-gen/T-2126.log'
+  - '.context/working/episodic-gen/T-2127.log'
+  - '.context/working/episodic-gen/T-2128.log'
+  - '.context/working/episodic-gen/T-2129.log'
+  - '.context/working/episodic-gen/T-2130.log'
+  - '.context/working/episodic-gen/T-2131.log'
+  - '.context/working/episodic-gen/T-2132.log'
+  - '.context/working/episodic-gen/T-2133.log'
+  - '.context/working/episodic-gen/T-2135.log'
+  - '.context/working/episodic-gen/T-2138.log'
+  - '.context/working/episodic-gen/T-2140.log'
+  - '.context/working/episodic-gen/T-2141.log'
+  - '.context/working/episodic-gen/T-2142.log'
+  - '.context/working/episodic-gen/T-2143.log'
+  - '.context/working/episodic-gen/T-2144.log'
+  - '.context/working/episodic-gen/T-2145.log'
+  - '.context/working/episodic-gen/T-2146.log'
+  - '.context/working/episodic-gen/T-2147.log'
+  - '.context/working/episodic-gen/T-2148.log'
+  - '.context/working/episodic-gen/T-2149.log'
+  - '.context/working/episodic-gen/T-2150.log'
+  - '.context/working/episodic-gen/T-2151.log'
+  - '.context/working/episodic-gen/T-2152.log'
+  - '.context/working/episodic-gen/T-2154.log'
+  - '.context/working/episodic-gen/T-2155.log'
+  - '.context/working/episodic-gen/T-2156.log'
+  - '.context/working/episodic-gen/T-2157.log'
+  - '.context/working/episodic-gen/T-2159.log'
+  - '.context/working/episodic-gen/T-2161.log'
+  - '.context/working/episodic-gen/T-2162.log'
+  - '.context/working/episodic-gen/T-2163.log'
+  - '.context/working/episodic-gen/T-2164.log'
+  - '.context/working/episodic-gen/T-2165.log'
+  - '.context/working/episodic-gen/T-2166.log'
+  - '.context/working/episodic-gen/T-2173.log'
+  - '.context/working/episodic-gen/T-2177.log'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/t1848-update-run.log'
+  - '.context/working/T-1951-dispatch-prompt.md'
+  - '.context/working/T-1984-dispatch-prompt.md'
+  - '.context/working/T-1987-review-prompts/A1-foundation.md'
+  - '.context/working/T-1987-review-prompts/A2-persistence.md'
+  - '.context/working/T-1987-review-prompts/A3-interactions.md'
+  - '.context/working/T-1987-review-prompts/A4-nav.md'
+  - '.context/working/T-1987-review-prompts/A5-adversarial.md'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - 'lib/reviewer/static_scan.py'
+  - '.tasks/active/T-2177-reviewer-fail-fix-batch-d--tighten-skip-.md'
+  - '.tasks/completed/T-2177-reviewer-fail-fix-batch-d--tighten-skip-.md'
+  - 'tests/unit/test_reviewer_static_scan.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-02T15:05:01"
+    action: "T-2177: tighten skip-as-pass detector — quoted-context + same-line-assertion FPs"
+  - time: "2026-06-02T15:06:04"
+    action: "T-2177: add RCA capturing detector blind-spot + cached-fingerprint cascade"
+  - time: "2026-06-02T15:07:04"
+    action: "T-2177: capture L-452 — detector blind-spot lesson"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer-quality, detector-fp, fail-fix, T-2173-child]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 73
+  commits: 3
+  files_changed: 201
+  lines_added: 9622
+  lines_removed: 221
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2177-reviewer-fail-fix-batch-d--tighten-skip-.md
+generated_by: context-agent-hybrid

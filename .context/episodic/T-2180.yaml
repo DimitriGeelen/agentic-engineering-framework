@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2180: reviewer FAIL floor — classify+route 10 remaining audit FAILs (post-T-2173
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T15:11:31Z
+# ============================================================================
+
+task_id: T-2180
+task_name: "reviewer FAIL floor — classify+route 10 remaining audit FAILs (post-T-2173"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T18:54:10Z
+completed: '2026-06-02T19:00:02Z'
+duration_days: -20605
+updates_count: 2
+first_commit: 2026-06-02T21:03:57+02:00
+last_commit: 2026-06-02T21:03:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close audit-FAIL floor (10→0) via 14 cluster-routed overrides
+
+# Key outcomes
+outcomes:
+  - 'All 10 audit-FAIL tasks classified: T-1356, T-1378, T-1360, T-1694, T-229, T-303, T-341, T-454, T-415, T-774. Each finding tagged genuine (needs source-truth fix at the AC/verification text) or FP (cluster-routed override with multi-sentence rationale). All 10 routed FP across 8 distinct cluster classes (soft-warn-tool / soft-warn-doctor / non-bash-content / stderr-swallow-block-test / dry-run-as-assertion-subject / assert-absent / intent-preserved-l387 / version-noop / historical-completed-task).'
+  - 'Principled overrides filed for each FP via `bin/fw reviewer override add T-XXXX --pattern <id> --reason "..." [--ttl 90]`. 14 overrides filed (one per pattern per task): OV-7effcc5d (T-774), 2× T-1356, 2× T-1378, 2× T-1360, 2× T-1694, 2× T-229, 1× T-303, 1× T-341, 2× T-454, 2× T-415. Each rationale articulates which FP class applies in multi-sentence prose; visible via `bin/fw reviewer override list`.'
+  - 'Genuine findings (if any) fixed at the task body — N/A: all 10 routed as FP after fresh per-task scan + cluster analysis. No retroactive AC re-wording on months-old completed tasks (per memory feedback_cached_verdict_text_blind_spot: fresh scan revealed all 10 are legitimate FP shapes, not genuine bugs to fix).'
+  - '5 stale-cached-FAIL-now-PASS verdict blocks refreshed via `bin/fw reviewer T-XXXX` write-back: T-1585 (now CONCERN), T-1445 (now PASS), T-1812 (now PASS), T-1897 (now PASS), T-2173 (now PASS). Verified: zero `**Overall:** FAIL` blocks remain in corpus.'
+  - 'Fresh `bin/fw reviewer audit` shows totals.FAIL=0. Audit run 2026-06-02T18:59Z: PASS=1440, CONCERN=514, FAIL=0, needs_human=67. Suppressed_by_override=45 (50 active overrides). Catalogue v1.3-seed.'
+  - 'Diff hygiene: only `.tasks/completed/T-*.md` verdict blocks (15 refreshed) + `.context/working/reviewer-overrides.yaml` (14 new entries) + this task file. No source/lib/agent changes — pure governance routing via principled overrides.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-02 — Route all 10 as FP via principled override, not retroactive AC re-wording'
+    chose: 'File principled overrides with 90-day TTL on each finding, cluster-routed by FP class (8 classes identified). 14 overrides total.'
+    rationale: 'All 10 tasks are months-to-year-old completed work. Retroactive AC re-wording on historical tasks invents history that wasn''t there at completion time and adds no value to future readers. The override system was built exactly for this routing — recurring FP cluster classes surface with TTL-bounded rationale, signalling detector-tightening opportunities (cf. T-2177''s skip-as-pass tightening pattern). The fresh per-task scan (per memory feedback_cached_verdict_text_blind_spot) confirmed all 10 are legitimate FP shapes, not genuine bugs.'
+    alternatives_rejected: ['(1) Mechanical AC re-write on each task — fabricates history, adds churn to completed tree. (2) Single bulk override at corpus level — loses cluster-class signal needed for future detector improvements. (3) Defer — would leave audit FAIL=10 floor indefinitely, accumulating tooling debt.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/working/reviewer-overrides.yaml'
+  - '.tasks/active/T-2180-reviewer-fail-floor--classifyroute-10-re.md'
+  - '.tasks/completed/T-1356-t-1346-b1-flip-resolveframework-rule-ord.md'
+  - '.tasks/completed/T-1360-g-053-a-rewrite-hook-commands-to-absolut.md'
+  - '.tasks/completed/T-1378-eliminate-hardcoded-3000-in-3-agent-faci.md'
+  - '.tasks/completed/T-1445-t-1443-v10-static-scan-validator-anti-pa.md'
+  - '.tasks/completed/T-1585-surface-reviewer-verdict-on-inceptiont-x.md'
+  - '.tasks/completed/T-1694-fw-doctor-extensions--pi-installed-check.md'
+  - '.tasks/completed/T-1812-reviewer-pass-on-dispatch-safety-arc-tas.md'
+  - '.tasks/completed/T-1897-widen-t-1896-detector--re-class-4-block-.md'
+  - '.tasks/completed/T-2173-reviewer-fail-sweep--31-completed-tasks-.md'
+  - '.tasks/completed/T-229-fix-high-severity-enforcement-bypasses--.md'
+  - '.tasks/completed/T-303-create-fw-preflight-command-and-integrat.md'
+  - '.tasks/completed/T-341-rewrite-7-deep-dive-posts-in-dimitri-voi.md'
+  - '.tasks/completed/T-415-decompose-update-tasksh-into-modular-fun.md'
+  - '.tasks/completed/T-454-build-fw-upstream-report--safe-issue-cre.md'
+  - '.tasks/completed/T-774-pickup-pipeline-core--libpickupsh-with-r.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-02T21:03:57"
+    action: "T-2180: close audit-FAIL floor (10→0) via 14 cluster-routed overrides"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 17
+  lines_added: 522
+  lines_removed: 124
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2180-reviewer-fail-floor--classifyroute-10-re.md
+generated_by: context-agent-hybrid

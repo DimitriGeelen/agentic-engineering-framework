@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2005: arc-007 ux-review multi-page theme sweep — verify headline mechanic across
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T15:11:30Z
+# ============================================================================
+
+task_id: T-2005
+task_name: "arc-007 ux-review multi-page theme sweep — verify headline mechanic across"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-23T15:14:04Z
+completed: 2026-05-25T09:28:37Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-23T17:15:44+02:00
+last_commit: 2026-05-25T12:01:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file multi-page theme-sweep task (arc-007) — real ACs, [REVIEW] gallery. add cross-page theme sweep to ux-review (--sweep / --content-pages). ACs ticked (5/5 pages carry theme), Evolution + Recommendation GO. height-aware capture — ux-review sweep no longer wedges on tall pages
+
+# Key outcomes
+outcomes:
+  - '`ux-review.py` accepts `--content-pages` (comma-separated list); when set, the capture'
+  - 'The report (`docs/reports/T-2002-ux-review-arc-007-s0-s1.md`) gained a **per-page'
+  - 'Each swept page screenshotted under the Bone palette into the gallery. Verified: 5 frames'
+  - '`python3 -m py_compile agents/ux-review/ux-review.py` passes; `bash -n bin/fw` OK (bin/fw'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/ux-review/AGENT.md'
+  - 'agents/ux-review/ux-review.py'
+  - 'docs/reports/T-2002-ux-review-arc-007-s0-s1.md'
+  - '.tasks/active/T-2005-arc-007-ux-review-multi-page-theme-sweep.md'
+  - '.tasks/active/T-2038-approvals-page-renders-37000px-tall--rev.md'
+  - 'web/static/ux-review/index.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-23T17:15:44"
+    action: "T-2005: file multi-page theme-sweep task (arc-007) — real ACs, [REVIEW] gallery"
+  - time: "2026-05-23T17:20:26"
+    action: "T-2005: add cross-page theme sweep to ux-review (--sweep / --content-pages)"
+  - time: "2026-05-23T17:21:07"
+    action: "T-2005: ACs ticked (5/5 pages carry theme), Evolution + Recommendation GO"
+  - time: "2026-05-25T12:01:18"
+    action: "T-2005: height-aware capture — ux-review sweep no longer wedges on tall pages"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 2534 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ux, css, arc-007, tooling]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2534
+  commits: 4
+  files_changed: 6
+  lines_added: 847
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2005-arc-007-ux-review-multi-page-theme-sweep.md
+generated_by: context-agent-hybrid

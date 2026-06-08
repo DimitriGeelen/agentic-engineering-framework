@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1899: render_page() runtime guard — refuse template that extends base.html with actionable error pointing at the convention (future-prevention follow-up to T-1898)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T15:11:30Z
+# ============================================================================
+
+task_id: T-1899
+task_name: "render_page() runtime guard — refuse template that extends base.html with actionable error pointing at the convention (future-prevention follow-up to T-1898)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T17:18:57Z
+completed: 2026-05-20T10:40:56Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-18T19:25:24+02:00
+last_commit: 2026-05-18T19:27:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  render_page() runtime guard refuses extends base.html. register fabric card for test_render_page_guard.py. tick 5/5 Agent ACs + transition to partial-complete (Human [REVIEW] pending)
+
+# Key outcomes
+outcomes:
+  - '`render_page()` reads the resolved template source on full-page load and refuses if its first non-empty/non-Jinja-comment line starts with `{% extends "base.html"`. Refusal raises `RuntimeError` with a message naming (a) the template name, (b) the convention ("page templates are HTML fragments"), (c) where to look (`web/shared.py:render_page` docstring + a sibling fragment example). htmx fragment path (HX-Request) is unchanged — those go through `render_template()` directly.'
+  - 'Unit test: feeding a template that begins with `{% extends "base.html" %}` to `render_page()` raises `RuntimeError` whose message matches `extends.*base\.html` and names the template name.'
+  - 'Unit test: feeding a fragment template (no extends) renders normally (returns wrapped HTML with one `<nav>`).'
+  - 'Live regression: `curl -sf $(bin/fw watchtower url)/arcs/arc-005` and `curl -sf $(bin/fw watchtower url)/arcs` and `curl -sf $(bin/fw watchtower url)/orchestrator` each return one `<nav>` (T-1898 invariants hold).'
+  - 'Live confirmation: temporarily re-introducing `{% extends "base.html" %}` at the top of `web/templates/arc_detail.html` causes `/arcs/arc-005` to return HTTP 500 with the actionable message (revert immediately after; check encoded in test, not as a manual step in this file).'
+  - '[REVIEW] Error message reads actionably — a fresh developer who hits the new guard understands what the convention is and where to look without re-reading T-1898 or T-1899'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-test_render_page_guard.yaml'
+  - '.tasks/active/T-1899-renderpage-runtime-guard--refuse-templat.md'
+  - 'tests/unit/test_render_page_guard.py'
+  - 'web/shared.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T19:25:24"
+    action: "T-1899: render_page() runtime guard refuses extends base.html"
+  - time: "2026-05-18T19:25:35"
+    action: "T-1899: register fabric card for test_render_page_guard.py"
+  - time: "2026-05-18T19:27:05"
+    action: "T-1899: tick 5/5 Agent ACs + transition to partial-complete (Human [REVIEW] pending)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2481 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2481
+  commits: 3
+  files_changed: 4
+  lines_added: 437
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1899-renderpage-runtime-guard--refuse-templat.md
+generated_by: context-agent-hybrid
