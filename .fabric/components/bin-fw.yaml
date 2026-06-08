@@ -561,3 +561,5 @@ depended_by:
   type: tests_by
 - target: tests/unit/test_mcp_wire_fragment.bats
   type: tests_by
+- target: tests/integration/test_arc010_hm_a_demo_evidence.bats
+  type: tests_by
