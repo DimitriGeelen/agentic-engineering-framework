@@ -907,6 +907,8 @@ A bad set of candidates (don't do this): `reliability`, `usability`, `correctnes
 
 **Surfaced through:** `fw arc show-suggestions <arc-id>` (T-1926); Watchtower `/arcs/<id>` shows proposed drivers with Approve buttons (T-1930).
 
+**Canonical session prompt:** this 5-step protocol is Workflow A (`mode=batch_propose`) of the BVP driver-session bundle — see §Driver Session Prompt Bundle below + `policy/prompts/bvp-driver-session.md` for entry conditions, failure modes (driver inflation, overlap with directives, manufactured drivers), and worked examples (`policy/prompts/bvp-references/arc-scoped-driver-examples.md`). Workflows B (`fw bvp driver suggest`) and C (`fw bvp driver create <topic>`) are global / sharpening variants that run the same sharpening subroutine but are not arc-scoped.
+
 ### Driver Session Prompt Bundle (T-2245 / T-2246)
 
 When you need to propose a new free driver, an arc-scoped driver, or sharpen an existing one, the canonical workflow lives in **`policy/prompts/`** — NOT inlined into this CLAUDE.md.

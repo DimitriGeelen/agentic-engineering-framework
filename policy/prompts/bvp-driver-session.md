@@ -23,6 +23,8 @@ Pick the workflow based on `mode` injected by the verb handler:
 
 `mode=batch_propose`. Operator is drafting an arc and asks for several candidate drivers up front. You propose 2–3 candidates with one-line rationales each, written to the arc YAML's `proposed_scoped_drivers:` field. Approval stays with the operator via `fw arc approve-driver`. Do not run sharpening per candidate — proposal-shape is one line + one-line rationale, not a full session.
 
+The trigger condition (when arc creation invokes this workflow) and the surrounding 5-step protocol (read body → list candidates → write proposed → surface via `fw arc show-suggestions` → human approves/none) are documented in CLAUDE.md §Arc-Scoped Driver Suggestion Workflow (T-1925). Worked examples for Workflow A live in `bvp-references/arc-scoped-driver-examples.md`.
+
 When to use Workflow A:
 
 - New arc being created
