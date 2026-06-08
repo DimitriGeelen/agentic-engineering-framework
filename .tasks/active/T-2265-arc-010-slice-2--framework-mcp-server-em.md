@@ -19,17 +19,17 @@ description: >
   Drift-scan consumer: agents/audit/orchestrator-mcp-scan.sh (T-2260).
   Downstream: Slice 3 (HM-A demo agent), Slice 4 (Watchtower frontend MCP migration).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:capability-overlay, mcp-server]
-components: [agents-mcp]
+components: [agents/mcp/framework_mcp_server.py, agents/mcp/manifest.py, bin/fw, tests/integration/test_framework_mcp_server.bats]
 related_tasks: [T-2209, T-2256, T-2258, T-2260]
 arc_id: arc-010
 created: 2026-06-08T14:45:31Z
-last_update: 2026-06-08T19:55:12Z
-date_finished:
+last_update: 2026-06-08T20:06:39Z
+date_finished: 2026-06-08T20:06:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -333,8 +333,8 @@ without escape hatches — partial-complete owner=human is correct.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-304d7a47
-- **Timestamp:** 2026-06-08T20:05:56Z
+- **Scan ID:** R-ca34632d
+- **Timestamp:** 2026-06-08T20:06:44Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -342,3 +342,6 @@ without escape hatches — partial-complete owner=human is correct.
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#2 (Agent)
+
+### 2026-06-08T20:06:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

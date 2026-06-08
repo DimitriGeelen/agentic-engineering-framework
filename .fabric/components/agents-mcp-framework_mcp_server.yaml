@@ -1,0 +1,20 @@
+id: agents/mcp/framework_mcp_server.py
+name: framework_mcp_server
+type: script
+subsystem: unknown
+location: agents/mcp/framework_mcp_server.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-06-08
+created_by: unknown
