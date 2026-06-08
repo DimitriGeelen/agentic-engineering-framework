@@ -25,6 +25,50 @@ runs the demo worker (see worker prompt linked above).
 **Transcript path:** `docs/reports/arc-010-hm-a-demo/transcript.jsonl` _(to be created
 during run)_
 
+## Operator Quickstart
+
+Three steps. All commands run from `/opt/999-Agentic-Engineering-Framework`.
+
+**1. Wire `.mcp.json`** — merge the framework-mcp fragment into the current
+config. Idempotent (skips on duplicate key):
+
+```sh
+python3 -c '
+import json, pathlib
+mcp = pathlib.Path(".mcp.json")
+cfg = json.loads(mcp.read_text()) if mcp.exists() else {"mcpServers": {}}
+cfg.setdefault("mcpServers", {})
+frag = json.loads(pathlib.Path("agents/mcp/framework-mcp.mcp-fragment.json").read_text())
+cfg["mcpServers"].update(frag)
+mcp.write_text(json.dumps(cfg, indent=2) + "\n")
+print("wired:", list(frag.keys()))
+'
+```
+
+**2. Spawn the demo worker** — fresh `claude -p` with transcript capture:
+
+```sh
+mkdir -p docs/reports/arc-010-hm-a-demo
+claude -p "$(cat docs/reports/arc-010-hm-a-demo-prompt.md)" \
+    --output-format stream-json \
+    > docs/reports/arc-010-hm-a-demo/transcript.jsonl
+```
+
+**3. Verify the headline mechanic fires** — two greps, one negative:
+
+```sh
+T=docs/reports/arc-010-hm-a-demo/transcript.jsonl
+echo "MCP work_on:    $(grep -c '\"name\":\"mcp__fw__work_on\"' "$T")"     # ≥1
+echo "MCP task_update: $(grep -c '\"name\":\"mcp__fw__task_update\"' "$T")" # ≥1
+echo "Bash bin/fw:    $(grep -cE 'Bash.*bin/fw (task update|work-on|context focus)' "$T")"  # MUST be 0
+```
+
+If clause-5 (negative grep) returns `0`, the headline mechanic fired. Run
+`bats tests/integration/test_arc010_hm_a_demo_evidence.bats` — t9, t10, t11 will
+upgrade from skip to pass. Then fill the traceability table below + the metadata
+fields above, tick the remaining T-2268 ACs, and run `fw arc close
+capability-overlay --demo docs/reports/arc-010-hm-a-demo-evidence.md`.
+
 ## Traceability Table
 
 Each row maps one clause of the headline mechanic to the artefact that proves it
