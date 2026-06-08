@@ -270,6 +270,7 @@ fw tier0 approve     # Approve a blocked destructive command
 | Confirm task scores | `fw bvp confirm T-XXX` |
 | Approve arc-scoped driver (§ACD) | `fw arc approve-driver <arc> "<name>" [--weight N]` |
 | Surface estimator-proposed scoped drivers | `fw arc show-suggestions <arc>` |
+| Driver-session prompts (propose/sharpen) | `policy/prompts/bvp-driver-session.md` (keystone — three workflows A/B/C) |
 | Recover legacy consumer (pre-T-2232) | `fw consumer-recover <host> [path] [--apply] [--via {ssh,termlink}]` |
 
 ## Glossary

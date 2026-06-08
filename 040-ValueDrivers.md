@@ -280,6 +280,38 @@ no BVP action that cannot be undone with another BVP action.
 | `.context/audits/arc-scoped-driver-bypass.jsonl` | Auto (`fw arc approve-driver`) | Audit trail for scoped-driver decisions |
 | Per-task frontmatter: `bvp_scores`, `bvp_scores_proposed`, `cost_estimate` | Mixed | Confirmed scores (human), proposals (estimator), cost composite (computed) |
 
+## Driver Session Prompt Bundle (T-2245 / T-2246)
+
+When proposing a new free driver, arc-scoped driver, or sharpening an
+existing one, the canonical workflow lives in **`policy/prompts/`**:
+
+- `bvp-driver-session.md` — keystone: three workflows (A=batch-propose,
+  B=discover+sharpen, C=sharpen named topic), entry/exit conditions,
+  outputs, anti-patterns, init refusal, degraded mode.
+- `artefact-template.md` — research artefact YAML frontmatter + 10
+  sections. References §6 of `INGESTION-bvp-driver-prompt-bundle-2026-06-06.md`
+  as the canonical worked example.
+- `bvp-references/sharpening-subroutine.md` — R1 (differentiation),
+  R2 (weight calibration), O1-O4 (edge/scope/overlap/rubric, optional),
+  skip-when-stuck mechanics.
+- `bvp-references/sharpening-tactics.md` — conversational moves:
+  surfacing assumptions, drilling scope without leading, eliciting
+  weight without anchoring, recovering from frustration.
+- `bvp-references/discipline-failure-modes.md` — anti-patterns: driver
+  inflation, overlap with directives, manufactured drivers, single-axis
+  routing, skipped dialogue capture, death-marching, cap blindness,
+  init skip, defer-as-hedge, spec-over-dialogue drift.
+- `bvp-references/global-driver-examples.md` — three worked global
+  free-driver proposals (F-RECALL real reconstruction, killed-mid-session,
+  recommend --none).
+- `bvp-references/arc-scoped-driver-examples.md` — three worked arc-
+  scoped proposals (Workflow A batch-propose, Workflow B discover,
+  Workflow C sharpen named topic).
+- `policy/prompts/README.md` — bundle orientation, why bundles not skills.
+
+Read the keystone first; reach into references when a specific tactic,
+example, or failure mode applies.
+
 ## See also
 
 - `CLAUDE.md` §"Arc-Scoped Driver Suggestion Workflow" — the 5-step protocol
@@ -288,3 +320,4 @@ no BVP action that cannot be undone with another BVP action.
 - `010-TaskSystem.md` — task frontmatter, including the BVP fields
 - `docs/reports/T-1915-bvp-inception.md` — inception artefact with full
   mechanic list, risk register, and Geelen 2019 origin discussion
+- `policy/prompts/bvp-driver-session.md` — driver-session keystone (see above)

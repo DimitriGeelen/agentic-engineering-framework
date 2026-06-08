@@ -907,6 +907,24 @@ A bad set of candidates (don't do this): `reliability`, `usability`, `correctnes
 
 **Surfaced through:** `fw arc show-suggestions <arc-id>` (T-1926); Watchtower `/arcs/<id>` shows proposed drivers with Approve buttons (T-1930).
 
+### Driver Session Prompt Bundle (T-2245 / T-2246)
+
+When you need to propose a new free driver, an arc-scoped driver, or sharpen an existing one, the canonical workflow lives in **`policy/prompts/`** — NOT inlined into this CLAUDE.md.
+
+| Bundle file | When to reach for it |
+|-------------|----------------------|
+| `policy/prompts/bvp-driver-session.md` | **Always start here.** Keystone. Three workflows (A=batch-propose, B=discover+sharpen, C=sharpen named topic). Entry/exit conditions, outputs, init refusal, degraded mode. |
+| `policy/prompts/artefact-template.md` | When writing the research artefact (`docs/reports/T-XXXX-bvp-driver-*.md`). YAML frontmatter + 10 sections + `[CONVERGED]/[SKIPPED]/[REJECTED]/[OPEN]` markers. |
+| `bvp-references/sharpening-subroutine.md` | When running R1+R2 (required) and O1-O4 (optional) per candidate. Skip-when-stuck mechanics. |
+| `bvp-references/sharpening-tactics.md` | Tactical moves: surfacing assumptions, drilling scope without leading, eliciting weight without anchoring, recovering from frustration. |
+| `bvp-references/discipline-failure-modes.md` | Anti-patterns: driver inflation, overlap with directives, single-axis routing, defer-as-hedge, spec-over-dialogue drift. |
+| `bvp-references/global-driver-examples.md` | Three worked global-free proposals (F-RECALL real, killed-mid-session, recommend --none). |
+| `bvp-references/arc-scoped-driver-examples.md` | Three worked arc-scoped proposals (Workflow A/B/C end-to-end). |
+
+**The rule:** read `bvp-driver-session.md` first; reach into the bundle's references when a specific tactic, example, or failure mode applies. The bundle is the prompt; CLAUDE.md routes you there.
+
+**§Arc-Scoped Driver Suggestion Workflow (above)** is the *trigger* — what causes you to enter a driver session. The bundle is the *protocol* — how you run the session once entered.
+
 ## Plan Mode Prohibition
 
 **NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:
