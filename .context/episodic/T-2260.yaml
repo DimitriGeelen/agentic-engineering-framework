@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2260: arc-010 Slice 1B — activate framework-mcp baseline + wire probe_framework_tools() into orchestrator-mcp-scan.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T12:52:51Z
+# ============================================================================
+
+task_id: T-2260
+task_name: "arc-010 Slice 1B — activate framework-mcp baseline + wire probe_framework_tools() into orchestrator-mcp-scan.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T12:45:36Z
+completed: 2026-06-08T12:52:43Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`.context/audits/framework-mcp-baseline.yaml.draft` no longer exists; `.context/audits/framework-mcp-baseline.yaml` (no `.draft`) is in place with the same content shape (`baseline_count: 0`, three categories `gated`/`mutators_ungated`/`readonly_exempt` all with empty `tools:` lists)'
+  - '`agents/audit/orchestrator-mcp-scan.sh` defines `probe_framework_tools()` and `probe_framework_gate_calls()` (per T-2256 §3 sketch) and exposes the manifest path via the `FRAMEWORK_MCP_MANIFEST` env var, returning empty cleanly when the manifest doesn''t exist (EC-1)'
+  - '`agents/audit/orchestrator-mcp-scan.sh` hard-error refactor: scan exits 2 only when **both** termlink probe AND framework probe return empty (per T-2256 §5). With manifest absent but termlink reachable, scan proceeds.'
+  - '`agents/audit/orchestrator-mcp-scan.sh` Python heredoc emits a `framework_findings:` key in `orchestrator-LATEST.yaml` with the parallel set-ops mirror of the termlink leg (status, gate_drop_outs, new_unclassified_tools, ratchet_candidates, gated_baseline, gated_current, total_current)'
+  - 'Running `bash agents/audit/orchestrator-mcp-scan.sh` exits 0 in the pre-Slice-2 state (manifest absent, baseline empty); `framework_findings.status` in `orchestrator-LATEST.yaml` equals `pass`'
+  - '`agents/audit/audit.sh` orchestrator section surfaces a `framework-mcp` summary line (so `bin/fw audit` output contains a parseable framework-mcp status marker)'
+  - '[REVIEWER] `bin/fw reviewer T-2260` returns Overall: PASS (no findings or only acceptable findings with documented rationale)'
+  - 'All existing tests still pass — `cd tests/unit && bats t2095_upgrade_self_vendor_extraction.bats` PASS as a regression net for the broader audit subsystem (T-2095 is the closest cross-cutting bats suite)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2260-arc-010-slice-1b--activate-framework-mcp.md
+generated_by: context-agent-hybrid

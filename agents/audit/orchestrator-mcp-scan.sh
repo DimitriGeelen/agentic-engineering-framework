@@ -37,9 +37,22 @@ LATEST="$FRAMEWORK_ROOT/.context/audits/orchestrator-LATEST.yaml"
 TERMLINK_REPO="${FW_TERMLINK_REPO:-/opt/termlink}"
 TERMLINK_AGENT="${FW_TERMLINK_AGENT:-framework-agent}"
 
+# T-2260 / arc-010 Slice 1B (OR-2): framework-mcp drift leg. The manifest path
+# is overridable via $FW_MCP_MANIFEST; default lives where Slice 2 will ship it.
+# The baseline file ships activated (no .draft) but tools: lists are empty
+# until Slice 2 populates them.
+FRAMEWORK_BASELINE="$FRAMEWORK_ROOT/.context/audits/framework-mcp-baseline.yaml"
+FRAMEWORK_MCP_MANIFEST="${FW_MCP_MANIFEST:-$FRAMEWORK_ROOT/agents/mcp/framework-mcp-manifest.json}"
+
 if [ ! -f "$BASELINE" ]; then
   echo "ERROR: baseline not found at $BASELINE" >&2
   echo "Run T-1646 setup: file should ship with the framework." >&2
+  exit 2
+fi
+
+if [ ! -f "$FRAMEWORK_BASELINE" ]; then
+  echo "ERROR: framework-mcp baseline not found at $FRAMEWORK_BASELINE" >&2
+  echo "Run T-2260 activation: strip .draft from framework-mcp-baseline.yaml.draft." >&2
   exit 2
 fi
 
@@ -80,13 +93,36 @@ probe_gate_calls() {
   fi
 }
 
+# T-2260 / arc-010 Slice 1B (OR-2): framework MCP manifest probe. Reads the
+# OR-1 manifest contract (JSON, list of {name, gated} entries). Returns empty
+# cleanly when the manifest isn't shipped yet (EC-1 per T-2256 §8) — the
+# baseline's empty tools: lists keep the scan passing in that state.
+probe_framework_tools() {
+  if [ ! -f "$FRAMEWORK_MCP_MANIFEST" ]; then
+    return 0
+  fi
+  python3 -c "import json,sys; m=json.load(open('$FRAMEWORK_MCP_MANIFEST')); [print(t['name']) for t in m.get('tools', [])]" 2>/dev/null | sort -u
+}
+
+probe_framework_gate_calls() {
+  if [ ! -f "$FRAMEWORK_MCP_MANIFEST" ]; then
+    return 0
+  fi
+  python3 -c "import json,sys; m=json.load(open('$FRAMEWORK_MCP_MANIFEST')); [print(t['name']) for t in m.get('tools', []) if t.get('gated')]" 2>/dev/null | sort -u
+}
+
 CURRENT_TOOLS=$(probe_tools)
-if [ -z "$CURRENT_TOOLS" ]; then
-  echo "ERROR: probe returned empty tool list — TERMLINK_REPO=$TERMLINK_REPO unreachable" >&2
+CURRENT_FRAMEWORK_TOOLS=$(probe_framework_tools)
+# T-2260: hard-bail only when BOTH probes return empty — that genuinely indicates
+# misconfiguration (no termlink reach AND no framework manifest). When only the
+# framework probe is empty, that's the normal pre-Slice-2 state.
+if [ -z "$CURRENT_TOOLS" ] && [ -z "$CURRENT_FRAMEWORK_TOOLS" ]; then
+  echo "ERROR: both probes empty — TERMLINK_REPO=$TERMLINK_REPO unreachable AND FRAMEWORK_MCP_MANIFEST=$FRAMEWORK_MCP_MANIFEST absent" >&2
   exit 2
 fi
 
 CURRENT_GATED=$(probe_gate_calls)
+CURRENT_FRAMEWORK_GATED=$(probe_framework_gate_calls)
 
 # T-1649: also pull live TermLink sessions for tag-format lint. Bounded; degrades silently.
 probe_sessions_json() {
@@ -99,7 +135,9 @@ probe_sessions_json() {
 SESSIONS_JSON=$(probe_sessions_json)
 
 # Run classification in Python (yaml + set ops are easier than bash)
-export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON APPLY_MODE
+# T-2260: extended with framework-mcp leg env vars.
+export CURRENT_TOOLS CURRENT_GATED BASELINE LATEST SESSIONS_JSON APPLY_MODE \
+       CURRENT_FRAMEWORK_TOOLS CURRENT_FRAMEWORK_GATED FRAMEWORK_BASELINE
 python3 - <<'PYEOF'
 import yaml, sys, datetime, os, json, shutil
 
@@ -109,6 +147,11 @@ current_tools = {t for t in os.environ['CURRENT_TOOLS'].splitlines() if t}
 current_gated = {t for t in os.environ['CURRENT_GATED'].splitlines() if t}
 sessions_json = os.environ.get('SESSIONS_JSON', '') or ''
 apply_mode = os.environ.get('APPLY_MODE', '0') == '1'
+
+# T-2260 / arc-010 Slice 1B (OR-2): framework-mcp leg env.
+framework_baseline_path = os.environ.get('FRAMEWORK_BASELINE', '')
+current_framework_tools = {t for t in os.environ.get('CURRENT_FRAMEWORK_TOOLS', '').splitlines() if t}
+current_framework_gated = {t for t in os.environ.get('CURRENT_FRAMEWORK_GATED', '').splitlines() if t}
 
 # T-2154 (T-1761 build): convention-based auto-classification for the two
 # namespaces (termlink_agent_*, termlink_channel_*) with a 7-batch zero-
@@ -344,6 +387,75 @@ if tag_format_warnings:
     if exit_code == 0:
         status = "warn"; exit_code = 1
 
+# T-2260 / arc-010 Slice 1B (OR-2): framework-mcp leg classification.
+# Mirror of the termlink leg's set-ops (lines 226-238 above), driven by the
+# framework manifest probes and a parallel baseline file. No convention
+# auto-classification on this leg (per T-2256 §6 — framework verb shape
+# doesn't match the termlink whitelist).
+fw_status = "pass"
+fw_gate_drop_outs: list[str] = []
+fw_new_unclassified: list[str] = []
+fw_ratchet_candidates: list[str] = []
+fw_removed: list[str] = []
+fw_warnings: list[str] = []
+fw_errors: list[str] = []
+fw_baseline_count = 0
+fw_gated_baseline = 0
+fw_mutators_ungated_baseline = 0
+fw_readonly_baseline = 0
+if framework_baseline_path and os.path.isfile(framework_baseline_path):
+    with open(framework_baseline_path) as f:
+        fw_baseline = yaml.safe_load(f) or {}
+    fw_bl_gated = set((fw_baseline.get('gated') or {}).get('tools', []) or [])
+    fw_bl_mut = set((fw_baseline.get('mutators_ungated') or {}).get('tools', []) or [])
+    fw_bl_ro = set((fw_baseline.get('readonly_exempt') or {}).get('tools', []) or [])
+    fw_bl_known = fw_bl_gated | fw_bl_mut | fw_bl_ro
+    fw_baseline_count = fw_baseline.get('baseline_count', 0) or 0
+    fw_gated_baseline = len(fw_bl_gated)
+    fw_mutators_ungated_baseline = len(fw_bl_mut)
+    fw_readonly_baseline = len(fw_bl_ro)
+    fw_new_unclassified = sorted(current_framework_tools - fw_bl_known)
+    fw_removed = sorted(fw_bl_known - current_framework_tools)
+    fw_gate_drop_outs = sorted(fw_bl_gated - current_framework_gated)
+    fw_gate_added = sorted(current_framework_gated - fw_bl_gated)
+    fw_ratchet_candidates = sorted(set(fw_gate_added) & fw_bl_mut)
+    if fw_gate_drop_outs:
+        fw_errors.append(f"FRAMEWORK-REGRESSION: {len(fw_gate_drop_outs)} tool(s) lost their gate: {', '.join(fw_gate_drop_outs)}")
+        fw_status = "fail"
+        if exit_code < 2:
+            status = "fail"; exit_code = 2
+    if fw_new_unclassified:
+        fw_warnings.append(f"FRAMEWORK-NEW: {len(fw_new_unclassified)} unclassified framework tool(s): {', '.join(fw_new_unclassified)}")
+        if fw_status == "pass":
+            fw_status = "warn"
+        if exit_code == 0:
+            status = "warn"; exit_code = 1
+    if fw_ratchet_candidates:
+        fw_warnings.append(f"FRAMEWORK-RATCHET: {len(fw_ratchet_candidates)} framework mutator(s) gained a gate: {', '.join(fw_ratchet_candidates)}")
+        if fw_status == "pass":
+            fw_status = "warn"
+        if exit_code == 0:
+            status = "warn"; exit_code = 1
+    if fw_removed:
+        fw_warnings.append(f"FRAMEWORK-REMOVED: {len(fw_removed)} tool(s) gone from manifest: {', '.join(fw_removed)}")
+
+framework_findings = {
+    'status': fw_status,
+    'baseline_count': fw_baseline_count,
+    'current_count': len(current_framework_tools),
+    'gated_baseline': fw_gated_baseline,
+    'gated_current': len(current_framework_gated),
+    'mutators_ungated_baseline': fw_mutators_ungated_baseline,
+    'readonly_exempt_baseline': fw_readonly_baseline,
+    'manifest_present': bool(current_framework_tools or current_framework_gated),
+    'gate_drop_outs': fw_gate_drop_outs,
+    'new_unclassified_tools': fw_new_unclassified,
+    'ratchet_candidates': fw_ratchet_candidates,
+    'removed_tools': fw_removed,
+    'warnings': fw_warnings,
+    'errors': fw_errors,
+}
+
 result = {
     'audit': 'orchestrator-mcp-scan',
     'task': 'T-1646',
@@ -382,6 +494,8 @@ result = {
     'sessions_probe_error': sessions_err,
     'warnings': warnings,
     'errors': errors,
+    # T-2260 / arc-010 Slice 1B (OR-2): parallel framework-mcp leg findings.
+    'framework_findings': framework_findings,
 }
 
 with open(latest_path, 'w') as f:
@@ -392,6 +506,13 @@ print(f"Tools: {len(current_tools)} (baseline {baseline['baseline_count']})")
 print(f"Gated: {len(current_gated)} (baseline {len(bl_gated)})")
 print(f"Mutators ungated (baseline): {len(bl_mutators_ungated)}")
 print(f"Readonly exempt (baseline): {len(bl_readonly)}")
+# T-2260 / arc-010 Slice 1B: framework-mcp leg summary line.
+fw_manifest_state = 'manifest present' if framework_findings['manifest_present'] else 'manifest absent (pre-Slice-2)'
+print(f"Framework-mcp: {framework_findings['status']} — {framework_findings['gated_current']}/{framework_findings['current_count']} tools gated ({fw_manifest_state})")
+for fw_w in fw_warnings:
+    print(f"  framework-WARN: {fw_w}")
+for fw_e in fw_errors:
+    print(f"  framework-FAIL: {fw_e}", file=sys.stderr)
 if sessions_total:
     print(f"Sessions scanned (tag-lint): {sessions_total}")
 elif sessions_err:

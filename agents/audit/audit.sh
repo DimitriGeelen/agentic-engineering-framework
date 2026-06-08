@@ -4379,14 +4379,18 @@ if [ ! -x "$ORCH_SCRIPT" ]; then
 elif ! [ -d "${FW_TERMLINK_REPO:-/opt/termlink}/crates/termlink-mcp/src" ] && ! command -v termlink >/dev/null 2>&1; then
     info "Orchestrator scan: skipped — TermLink repo unreachable on this host"
 else
-    if bash "$ORCH_SCRIPT" >/dev/null 2>&1; then
+    # T-2260 / arc-010 Slice 1B: capture orchestrator exit but always continue
+    # to the framework-mcp summary block below — both legs share one scan but
+    # each leg has its own pass/warn/fail surface line.
+    bash "$ORCH_SCRIPT" >/dev/null 2>&1
+    ORCH_EXIT_CAPTURED=$?
+    if [ "$ORCH_EXIT_CAPTURED" = "0" ]; then
         ORCH_STATUS=$(grep -oE '^status: [a-z]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
         ORCH_GATED=$(grep -oE '^gated_current: [0-9]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
         ORCH_TOTAL=$(grep -oE '^current_count: [0-9]+' "$ORCH_LATEST" 2>/dev/null | awk '{print $2}')
         pass "Orchestrator-arc MCP scan: $ORCH_STATUS — $ORCH_GATED/$ORCH_TOTAL tools gated"
     else
-        ORCH_EXIT=$?
-        if [ "$ORCH_EXIT" = "1" ]; then
+        if [ "$ORCH_EXIT_CAPTURED" = "1" ]; then
             ORCH_WARNS=$(awk '/^warnings:/{flag=1; next} /^errors:/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
             # T-1649: tag-format drift uses a different remediation path than baseline drift.
             if echo "$ORCH_WARNS" | grep -q "TAG-FORMAT-DRIFT"; then
@@ -4398,15 +4402,47 @@ else
                      "${ORCH_WARNS:-see $ORCH_LATEST}" \
                      "Update .context/audits/orchestrator-mcp-baseline.yaml or investigate ratchet/new-tool"
             fi
-        elif [ "$ORCH_EXIT" = "2" ]; then
+        elif [ "$ORCH_EXIT_CAPTURED" = "2" ]; then
             ORCH_ERRS=$(awk '/^errors:/{flag=1; next} /^[a-z]/{flag=0} flag' "$ORCH_LATEST" 2>/dev/null | head -1 | sed 's/^- //')
             fail "Orchestrator-arc MCP scan: regression — gated tool lost its check_task_governance" \
                  "${ORCH_ERRS:-see $ORCH_LATEST}" \
                  "Restore the gate or update baseline if removal was intentional (commit body must explain)"
         else
-            warn "Orchestrator-arc MCP scan: probe failed (exit $ORCH_EXIT)" \
+            warn "Orchestrator-arc MCP scan: probe failed (exit $ORCH_EXIT_CAPTURED)" \
                  "Cannot reach /opt/termlink via direct read or termlink interact" \
                  "Check FW_TERMLINK_REPO and TermLink session availability"
+        fi
+    fi
+
+    # T-2260 / arc-010 Slice 1B (OR-2): surface the parallel framework-mcp leg
+    # status. Always emitted (independent of orchestrator-leg exit code) — both
+    # legs share one scan but each has its own pass/warn/fail surface line.
+    if [ -f "$ORCH_LATEST" ]; then
+        FW_MCP_LINE=$(python3 -c "
+import yaml
+d = yaml.safe_load(open('$ORCH_LATEST'))
+ff = d.get('framework_findings') or {}
+s = ff.get('status', 'missing')
+gc = ff.get('gated_current', 0)
+cc = ff.get('current_count', 0)
+mp = 'present' if ff.get('manifest_present') else 'absent'
+print(f'{s}|{gc}|{cc}|{mp}')
+" 2>/dev/null)
+        if [ -n "$FW_MCP_LINE" ]; then
+            FW_MCP_STATUS=$(echo "$FW_MCP_LINE" | awk -F'|' '{print $1}')
+            FW_MCP_GATED=$(echo "$FW_MCP_LINE" | awk -F'|' '{print $2}')
+            FW_MCP_TOTAL=$(echo "$FW_MCP_LINE" | awk -F'|' '{print $3}')
+            FW_MCP_MANIFEST_STATE=$(echo "$FW_MCP_LINE" | awk -F'|' '{print $4}')
+            case "$FW_MCP_STATUS" in
+                pass) pass "framework-mcp scan: PASS — $FW_MCP_GATED/$FW_MCP_TOTAL tools gated (manifest $FW_MCP_MANIFEST_STATE)" ;;
+                warn) warn "framework-mcp scan: WARN — $FW_MCP_GATED/$FW_MCP_TOTAL tools gated (manifest $FW_MCP_MANIFEST_STATE)" \
+                          "see framework_findings.warnings in $ORCH_LATEST" \
+                          "Update .context/audits/framework-mcp-baseline.yaml or classify the new tool" ;;
+                fail) fail "framework-mcp scan: FAIL — gated tool lost its governance call" \
+                          "see framework_findings.errors in $ORCH_LATEST" \
+                          "Restore the gate or update baseline if removal was intentional" ;;
+                *)    info "framework-mcp scan: status=$FW_MCP_STATUS (unexpected)" ;;
+            esac
         fi
     fi
 fi
