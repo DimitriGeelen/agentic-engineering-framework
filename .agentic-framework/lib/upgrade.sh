@@ -388,6 +388,68 @@ _self_vendor_agents() {
     return 0
 }
 
+# T-2267: self-vendor the framework's own web/ tree. Sixth (and current-final)
+# sibling of _self_vendor_libs (T-2095) / _self_vendor_templates (T-2241) /
+# _self_vendor_policy (T-2263) / _self_vendor_shim (T-2264) / _self_vendor_agents
+# (T-2266). Same shape, same dry-run/real-run wording split, same structural
+# consumer-safety. T-2240 pre-push gate's regex (`would sync`) catches all six
+# classes via one match.
+#
+# Why: web/ holds *.sh + *.py — Flask app, blueprints, shared helpers, smoke
+# tests. Developer edits web/ without re-vendoring → `.agentic-framework/web/`
+# silently diverges. Audit at agents/audit/audit.sh:1534 scans bin+lib+agents+web
+# for drift; pre-T-2267 web/ was flagged but `fw vendor self` could not fix it
+# (mitigation pointed at full `fw vendor` — wrong tool, wrong direction).
+#
+# Recursive: web/ has subdirectories (blueprints/, etc.). Helper mirrors the
+# directory tree under .agentic-framework/web/, creating missing subdirs at
+# real-run only.
+#
+# Filter: `*.sh + *.py` — matches audit.sh:1534's exact set so coverage parity
+# is mechanical. Templates (web/templates/*.html) and static assets
+# (web/static/*) are NOT scanned by audit, so this helper deliberately leaves
+# them untouched (out-of-scope per T-2267 fence).
+#
+# Inputs:
+#   $1 — dry_run ("true" / "false"). When "true", computes what WOULD sync
+#        without copying files (and without creating directories).
+# Return:
+#   0 — sync completed (or nothing to sync, or consumer-skip)
+_self_vendor_web() {
+    local dry_run="${1:-false}"
+    local _self_vendor="$FRAMEWORK_ROOT/.agentic-framework"
+    # Structural guard mirror of siblings: consumer's vendored copy has no
+    # nested .agentic-framework/web/, so this branch is the consumer-safe
+    # early exit.
+    if [ ! -d "$_self_vendor/web" ]; then
+        return 0
+    fi
+    local _svw_updated=0
+    local _svw_src _svw_rel _svw_dst _svw_dst_dir
+    while IFS= read -r _svw_src; do
+        [ -f "$_svw_src" ] || continue
+        _svw_rel="${_svw_src#$FRAMEWORK_ROOT/web/}"
+        _svw_dst="$_self_vendor/web/$_svw_rel"
+        if [ ! -f "$_svw_dst" ] || ! diff -q "$_svw_src" "$_svw_dst" > /dev/null 2>&1; then
+            if [ "$dry_run" != true ]; then
+                _svw_dst_dir=$(dirname "$_svw_dst")
+                [ -d "$_svw_dst_dir" ] || mkdir -p "$_svw_dst_dir"
+                cp "$_svw_src" "$_svw_dst"
+                [ -x "$_svw_src" ] && chmod +x "$_svw_dst"
+            fi
+            _svw_updated=$((_svw_updated + 1))
+        fi
+    done < <(find "$FRAMEWORK_ROOT/web" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null)
+    if [ "$_svw_updated" -gt 0 ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svw_updated web/ file(s) to .agentic-framework/web/"
+        else
+            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svw_updated web/ file(s) to .agentic-framework/web/"
+        fi
+    fi
+    return 0
+}
+
 do_upgrade() {
     local target_dir=""
     local dry_run=false
@@ -694,6 +756,10 @@ do_upgrade() {
         # subdirs (audit/, context/, git/, ...) filtered to *.sh + *.py to mirror
         # the audit drift scan's exact filter at agents/audit/audit.sh:1534.
         _self_vendor_agents "$dry_run"
+        # T-2267: sibling sync — web/ drift class (6th and current-final class
+        # under the audit drift-scan shape). Same *.sh + *.py filter; templates
+        # and static assets stay untouched (out-of-scope per audit's filter).
+        _self_vendor_web "$dry_run"
     fi
 
     local project_name

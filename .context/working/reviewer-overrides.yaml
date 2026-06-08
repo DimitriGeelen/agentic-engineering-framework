@@ -617,3 +617,15 @@ overrides:
   expires_at: '2026-09-06T18:28:59Z'
   added_by: root
   added_at: '2026-06-08T18:28:59Z'
+- id: OV-3c8b2ee8
+  task_id: T-2267
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "T-2267 bats test (t2267_self_vendor_web.bats) sources real lib/upgrade.sh\
+    \ and exercises real _self_vendor_web helper in tests t3/t4/t6/t7 (synthetic FRAMEWORK_ROOT\
+    \ to isolate side-effects). Detector heuristic flags any 'bats' command as mock-only\
+    \ \u2014 canonical FP for self-vendor bats suites (same class as T-2266 OV-3fc5133e,\
+    \ T-2095/T-2241/T-2263/T-2264). Override scoped to T-2267 only."
+  expires_at: '2026-09-06T19:04:39Z'
+  added_by: root
+  added_at: '2026-06-08T19:04:39Z'

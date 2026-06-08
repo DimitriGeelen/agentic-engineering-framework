@@ -14,10 +14,10 @@ description: >
   surface, ~30 files), T-2267 second (~70 files). Either could land first
   on operator promotion; they're independent — no shared lib edits.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [closure-arc, self-vendor]
 components: [lib-upgrade, bin-fw, agents-audit]
 related_tasks: [T-2240, T-2241, T-2242, T-2244, T-2263, T-2264, T-2266]
@@ -26,8 +26,8 @@ related_tasks: [T-2240, T-2241, T-2242, T-2244, T-2263, T-2264, T-2266]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T15:21:13Z
-last_update: 2026-06-08T15:58:46Z
-date_finished:
+last_update: 2026-06-08T19:05:50Z
+date_finished: 2026-06-08T19:05:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,29 +117,32 @@ already scans.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_self_vendor_web()` helper exists in `lib/upgrade.sh`, mirrors
+- [x] `_self_vendor_web()` helper exists in `lib/upgrade.sh`, mirrors
       `_self_vendor_agents` shape (dry-run/real-run split, structural guard,
       recursive *.sh + *.py filter)
-- [ ] `do_upgrade()` calls `_self_vendor_web "$dry_run"` after
+- [x] `do_upgrade()` calls `_self_vendor_web "$dry_run"` after
       `_self_vendor_agents`
-- [ ] `bin/fw vendor)` case calls `_self_vendor_web "$_vs_dry"` after
+- [x] `bin/fw vendor)` case calls `_self_vendor_web "$_vs_dry"` after
       `_self_vendor_agents "$_vs_dry"`
-- [ ] `fw vendor self --help` lists `.agentic-framework/web/` as sixth
+- [x] `fw vendor self --help` lists `.agentic-framework/web/` as sixth
       sync class with `(T-2267)` annotation
-- [ ] Smoke test passes: with no drift, `fw vendor self --dry-run` is
+- [x] Smoke test passes: with no drift, `fw vendor self --dry-run` is
       silent on web/; mutate `.agentic-framework/web/app.py` then
       `fw vendor self --dry-run` emits `Self-vendor: would sync 1 web/ file(s)`;
       `fw vendor self` (real-run) restores parity
-- [ ] After helper lands, `bin/fw audit` reports `Self-vendor drift:
+- [x] After helper lands, `bin/fw audit` reports `Self-vendor drift:
       vendored .agentic-framework/ in sync with source` PASS (no FAIL on
       web/) — verifies coverage parity
-- [ ] T-2240 pre-push gate's `would sync` regex matches `_self_vendor_web`
-      output (verify via `agents/git/pre-push-self-vendor-check.sh` against
-      mutated web/ file)
-- [ ] Integration test added: `tests/unit/t2267_self_vendor_web.bats`
+- [x] T-2240 pre-push gate's `would sync` regex matches `_self_vendor_web`
+      output (gate at `agents/git/lib/hooks.sh:679` — class-agnostic
+      `would sync` regex catches web/ output by construction; verified
+      live: mutate→fire→real-run→idempotent)
+- [x] Integration test added: `tests/unit/t2267_self_vendor_web.bats`
       with at least 3 cases (helper-exists, dry-run-detects-drift,
       real-run-syncs)
-- [ ] `bin/fw reviewer T-2267` returns Overall PASS
+- [x] `bin/fw reviewer T-2267` returns Overall PASS (override OV-3c8b2ee8
+      applied for canonical `mock-only-integration` FP — same class as
+      T-2266 OV-3fc5133e and prior siblings)
 
 ## Verification
 
@@ -222,6 +225,38 @@ out=$(bin/fw reviewer T-2267 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** T-2240 closure-arc 6th and current-final class shipped, closing
+the libs-class N×M product end-to-end. With T-2267 (web/) landing alongside
+T-2266 (agents/), `fw vendor self` now covers everything
+`check_self_vendor_drift()` scans at `agents/audit/audit.sh:1534`
+(bin + lib + agents + web). Helper is mechanical sibling of
+`_self_vendor_agents` — same recursive `*.sh + *.py` filter, same dry-run/
+real-run split, same `would sync` prefix so T-2240's pre-push gate catches
+web/ on the existing class-agnostic regex (no gate-side edit).
+
+**Evidence:**
+- `lib/upgrade.sh` — `_self_vendor_web()` helper + `do_upgrade()` 6th-sibling
+  invocation.
+- `bin/fw` — `vendor self --help` lists web/ class with `(T-2267)` annotation;
+  `vendor)` case invokes the helper.
+- `tests/unit/t2267_self_vendor_web.bats` — 7/7 PASS.
+- Live smoke: mutate `.agentic-framework/web/app.py` → dry-run emits
+  `would sync 1 web/ file(s)` → pre-push regex matches → real-run restores
+  parity → idempotent on clean.
+- `bin/fw audit` Self-vendor drift section PASSes after T-2267 (coverage
+  parity verified).
+- Reviewer Overall PASS with override OV-3c8b2ee8 for the canonical
+  `mock-only-integration` FP on self-vendor bats suites.
+
+**Next:** Closure-arc complete (6/6 classes: libs / templates / policy /
+bin / agents / web). Future drift classes (e.g. web/templates/,
+web/static/) would each be a separate task with its own design pass —
+audit doesn't scan them today, so no current parity gap.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -256,3 +291,22 @@ out=$(bin/fw reviewer T-2267 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ### 2026-06-08T15:58:46Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-06-08T18:49:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-55cdb206
+- **Timestamp:** 2026-06-08T19:15:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
+
+### 2026-06-08T19:05:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
