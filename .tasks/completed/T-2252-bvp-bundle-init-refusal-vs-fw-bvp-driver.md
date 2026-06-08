@@ -4,16 +4,16 @@ name: "BVP bundle init-refusal vs fw bvp driver --init scope mismatch"
 description: >
   Design vs impl gap in BVP bundle init-refusal
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-08T09:41:11Z
-last_update: '2026-06-08T09:45:03Z'
-date_finished:
+last_update: 2026-06-08T12:19:39Z
+date_finished: 2026-06-08T12:19:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -99,15 +99,15 @@ None. Pure file-copy extension; same `template.read_bytes()` / `target.write_byt
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -169,9 +169,66 @@ None. Pure file-copy extension; same `template.read_bytes()` / `target.write_byt
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: The fix is one-sided and bounded. Extend `_driver_init` (lib/bvp.sh:661) to copy `policy/bvp-scoring-rubric.md` alongside `policy/value-drivers.yaml`. The bundle's two-file init-refusal is structurally correct: the rubric is the BVP estimator's source of truth (T-1922 reads from it; bundle cites at policy/prompts/bvp-driver-session.md:168). Removing the check would defer the brokenness to estimator-time instead of init-time, which is strictly worse. `--init` is the asymmetric leg.
+
+Evidence:
+- `lib/bvp.sh:661-700` `_driver_init` copies only `policy/value-drivers.yaml` (template.read_bytes() → target.write_bytes(); idempotent).
+- `policy/prompts/bvp-driver-session.md:146` refuses on absence of EITHER file.
+- `policy/prompts/bvp-driver-session.md:168` cites `bvp-scoring-rubric.md` as the scoring source of truth for the estimator chain.
+- Framework template exists: `policy/bvp-scoring-rubric.md` (212 lines, 12.5K, T-1921-owned).
+
+Scope of build slice (post-GO):
+- Single-file edit, `lib/bvp.sh:_driver_init`. ~10 LoC: add second `template_b / target_b` pair, mirror the file-exists / `--force` / write_bytes / message lines.
+- Test: existing `_driver_init` test pattern (look for `tests/unit/test_bvp_driver_init.bats` or equivalent — extend with rubric assertion).
+- Verification: `[ -f policy/value-drivers.yaml ] && [ -f policy/bvp-scoring-rubric.md ]` after running `fw bvp driver --init` on a fresh tmpdir.
+
+Earlier DEFER was a placeholder: the producer-leg-3 gate (T-2207, `--recommendation` required at filing under `$CLAUDECODE=1`) forced a recommendation at filing time; DEFER was the easiest fill while the body was empty. This is exactly the failure mode `feedback_defer_for_evidence_not_confidence` warns against: DEFER masking a confidence gap instead of marking an evidence gap. Operator caught it in one question. Recommendation re-filed to GO with the actual evidence walked.
+
+**Date**: 2026-06-08T12:19:38Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-08T12:19:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: The fix is one-sided and bounded. Extend `_driver_init` (lib/bvp.sh:661) to copy `policy/bvp-scoring-rubric.md` alongside `policy/value-drivers.yaml`. The bundle's two-file init-refusal is structurally correct: the rubric is the BVP estimator's source of truth (T-1922 reads from it; bundle cites at policy/prompts/bvp-driver-session.md:168). Removing the check would defer the brokenness to estimator-time instead of init-time, which is strictly worse. `--init` is the asymmetric leg.
+
+Evidence:
+- `lib/bvp.sh:661-700` `_driver_init` copies only `policy/value-drivers.yaml` (template.read_bytes() → target.write_bytes(); idempotent).
+- `policy/prompts/bvp-driver-session.md:146` refuses on absence of EITHER file.
+- `policy/prompts/bvp-driver-session.md:168` cites `bvp-scoring-rubric.md` as the scoring source of truth for the estimator chain.
+- Framework template exists: `policy/bvp-scoring-rubric.md` (212 lines, 12.5K, T-1921-owned).
+
+Scope of build slice (post-GO):
+- Single-file edit, `lib/bvp.sh:_driver_init`. ~10 LoC: add second `template_b / target_b` pair, mirror the file-exists / `--force` / write_bytes / message lines.
+- Test: existing `_driver_init` test pattern (look for `tests/unit/test_bvp_driver_init.bats` or equivalent — extend with rubric assertion).
+- Verification: `[ -f policy/value-drivers.yaml ] && [ -f policy/bvp-scoring-rubric.md ]` after running `fw bvp driver --init` on a fresh tmpdir.
+
+Earlier DEFER was a placeholder: the producer-leg-3 gate (T-2207, `--recommendation` required at filing under `$CLAUDECODE=1`) forced a recommendation at filing time; DEFER was the easiest fill while the body was empty. This is exactly the failure mode `feedback_defer_for_evidence_not_confidence` warns against: DEFER masking a confidence gap instead of marking an evidence gap. Operator caught it in one question. Recommendation re-filed to GO with the actual evidence walked.
+
+### 2026-06-08T12:19:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3139562b
+- **Timestamp:** 2026-06-08T12:19:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-08T12:19:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
