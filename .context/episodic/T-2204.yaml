@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2204: Recommendation-completeness gate has bypass paths — fw task create, fw work-on,
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T10:08:16Z
+# ============================================================================
+
+task_id: T-2204
+task_name: "Recommendation-completeness gate has bypass paths — fw task create, fw work-on,"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-04T09:00:06Z
+completed: 2026-06-08T07:44:40Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-06-04T11:06:25+02:00
+last_commit: 2026-06-05T13:52:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — Recommendation-completeness gate bypass paths. inception decision GO (via Watchtower). §Recommendation-completeness gate doc + answered Open Questions
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'CLAUDE.md'
+  - '.context/working/focus.yaml'
+  - 'docs/reports/T-2204-recommendation-completeness-bypass-paths.md'
+  - '.tasks/active/T-2204-recommendation-completeness-gate-has-byp.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-04T11:06:25"
+    action: "T-2204: file inception — Recommendation-completeness gate bypass paths"
+  - time: "2026-06-04T18:09:53"
+    action: "T-2204: inception decision GO (via Watchtower)"
+  - time: "2026-06-05T13:52:39"
+    action: "T-2204: §Recommendation-completeness gate doc + answered Open Questions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 5684 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5684
+  commits: 4
+  files_changed: 6
+  lines_added: 445
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2204-recommendation-completeness-gate-has-byp.md
+generated_by: context-agent-hybrid

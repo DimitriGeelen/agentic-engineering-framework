@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2203: AEF lacks a structural-observation harvester from dispatched workers back to
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T10:08:16Z
+# ============================================================================
+
+task_id: T-2203
+task_name: "AEF lacks a structural-observation harvester from dispatched workers back to"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-04T07:57:58Z
+completed: 2026-06-08T07:44:40Z
+duration_days: 4
+updates_count: 1
+first_commit: 2026-06-04T21:47:41+02:00
+last_commit: 2026-06-04T21:47:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2203-aef-lacks-a-structural-observation-harve.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-04T21:47:41"
+    action: "T-2203: inception decision GO (via Watchtower)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 5746 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5746
+  commits: 4
+  files_changed: 5
+  lines_added: 257
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2203-aef-lacks-a-structural-observation-harve.md
+generated_by: context-agent-hybrid

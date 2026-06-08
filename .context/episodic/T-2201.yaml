@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2201: AEF pre-flight Claude CLI config before fw termlink dispatch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T10:08:11Z
+# ============================================================================
+
+task_id: T-2201
+task_name: "AEF pre-flight Claude CLI config before fw termlink dispatch"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-04T07:43:22Z
+completed: 2026-06-08T07:44:40Z
+duration_days: 4
+updates_count: 1
+first_commit: 2026-06-04T09:47:45+02:00
+last_commit: 2026-06-04T21:47:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — AEF pre-flight Claude CLI config before dispatch. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2201-claude-config-preflight-inception.md'
+  - '.tasks/active/T-2201-aef-pre-flight-claude-cli-config-before-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-04T09:47:45"
+    action: "T-2201: file inception — AEF pre-flight Claude CLI config before dispatch"
+  - time: "2026-06-04T21:47:12"
+    action: "T-2201: inception decision GO (via Watchtower)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 5761 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5761
+  commits: 3
+  files_changed: 5
+  lines_added: 328
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2201-aef-pre-flight-claude-cli-config-before-.md
+generated_by: context-agent-hybrid
