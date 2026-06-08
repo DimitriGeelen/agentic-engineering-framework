@@ -295,6 +295,27 @@ learnings:
 LYAML
     fi
 
+    # T-2261 / arc-006 (T-2229 Slice 2A): bootstrap BVP policy files from
+    # framework templates. Mirror of the practices/decisions/patterns cp pattern
+    # above. Per-file idempotent — pre-existing consumer customisation survives.
+    # Skipped silently when --force re-runs: the destination existence check
+    # handles re-init without trampling customisations.
+    mkdir -p "$target_dir/policy"
+    #@init: yaml-2bv policy/value-drivers.yaml drivers
+    # BVP value-drivers definitions (T-2229)
+    if [ ! -f "$target_dir/policy/value-drivers.yaml" ]; then
+        if [ -f "$FRAMEWORK_ROOT/policy/value-drivers.yaml" ]; then
+            cp "$FRAMEWORK_ROOT/policy/value-drivers.yaml" "$target_dir/policy/value-drivers.yaml"
+        fi
+    fi
+    #@init: md-3bv policy/bvp-scoring-rubric.md
+    # BVP scoring rubric (T-1921/T-2259)
+    if [ ! -f "$target_dir/policy/bvp-scoring-rubric.md" ]; then
+        if [ -f "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" ]; then
+            cp "$FRAMEWORK_ROOT/policy/bvp-scoring-rubric.md" "$target_dir/policy/bvp-scoring-rubric.md"
+        fi
+    fi
+
     #@init: yaml-9he .context/project/assumptions.yaml assumptions
     # Tracked assumptions
     if [ ! -f "$target_dir/.context/project/assumptions.yaml" ] || [ "${force:-false}" = true ]; then
