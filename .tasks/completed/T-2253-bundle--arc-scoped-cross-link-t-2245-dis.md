@@ -4,10 +4,10 @@ name: "Bundle ↔ §Arc-Scoped cross-link (T-2245 discoverability follow-on)"
 description: >
   Bundle ↔ §Arc-Scoped cross-link (T-2245 discoverability follow-on)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -16,8 +16,8 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T10:14:21Z
-last_update: '2026-06-08T10:15:03Z'
-date_finished:
+last_update: 2026-06-08T10:16:32Z
+date_finished: 2026-06-08T10:16:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -212,9 +212,12 @@ out=$(bin/fw reviewer T-2253 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-eeb13672
-- **Timestamp:** 2026-06-08T10:16:01Z
+- **Scan ID:** R-0753a957
+- **Timestamp:** 2026-06-08T10:16:33Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-08T10:16:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
