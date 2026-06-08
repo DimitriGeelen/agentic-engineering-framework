@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2256: T-2209 Slice 1 pre-stage — OR-2 scan extension draft for orchestrator-mcp-scan.sh
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T11:36:23Z
+# ============================================================================
+
+task_id: T-2256
+task_name: "T-2209 Slice 1 pre-stage — OR-2 scan extension draft for orchestrator-mcp-scan.sh"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T11:31:02Z
+completed: 2026-06-08T11:36:17Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Research artefact written at `docs/reports/T-2256-or-2-scan-extension-draft.md` with sections: Context (T-2209/T-2216 trace), Current Scan Surface (probe_tools/probe_gate_calls anatomy), Proposed `probe_framework_tools()` (function sketch + edge cases — empty-cleanly when manifest absent, direct-read fallback, TermLink remote fallback), Proposed `framework-mcp-baseline.yaml` shape (mirror of orchestrator-mcp-baseline.yaml), Verification Block Addition (per OR-6), Convention-Classifier Reuse Decision (does T-2154''s verb whitelist apply to mcp__framework__*?), LoC Budget Validation (verify T-2216''s ~15 LoC estimate).'
+  - 'Draft scaffold file at `.context/audits/framework-mcp-baseline.yaml.draft` mirroring `orchestrator-mcp-baseline.yaml`''s shape (header comments + `gated:`, `mutators_ungated:`, `readonly_exempt:` keys empty, `baseline_count: 0`), so Slice 1 author has a concrete drop-in starting point.'
+  - 'Artefact''s "Edge cases" enumeration includes at least three: (a) framework MCP server not yet deployed (empty return, not error), (b) cross-host scan via TermLink remote (degrade silently per existing `probe_via_direct_read` pattern), (c) baseline file absent on first run (exit 2 per existing pattern at scan.sh:40-44).'
+  - 'Artefact cites at minimum two existing-scan code anchor lines for the new code (per §2 "Current scan surface anatomy" table in the artefact: direct-read fallback pattern at lines 48-53; empty-probe error handling at lines 84-87 — both referenced in artefact body). Verification: `grep -c "scan.sh:" docs/reports/T-2256-or-2-scan-extension-draft.md` returns ≥2.'
+  - 'No source file under `agents/`, `bin/`, `lib/`, or `web/` is modified (this is pre-stage research only — Slice 1 carries the actual patch).'
+  - '[REVIEWER] `bin/fw reviewer T-2256` returns Overall: PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2256-t-2209-slice-1-pre-stage--or-2-scan-exte.md
+generated_by: context-agent-hybrid

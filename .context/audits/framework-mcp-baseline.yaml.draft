@@ -1,0 +1,48 @@
+# Framework MCP-tool task_id enforcement baseline (DRAFT — T-2256 pre-stage)
+# T-2209 capability-overlay arc, Slice 1 OR-2 deliverable (T-2216 §16)
+# Source of truth for orchestrator-mcp-scan.sh's probe_framework_tools() leg.
+#
+# Categories (mirror of orchestrator-mcp-baseline.yaml — same shape, same rules):
+#   gated            — MUST call check_task_governance() (or framework analogue) — mutators that already do
+#   mutators_ungated — Mutators that SHOULD gate but currently don't (ratchet target)
+#   readonly_exempt  — Passive/read-only tools — gating optional
+#
+# Drift detection rules (mirror):
+#   1. Any tool listed under `gated` losing its governance call → FAIL
+#   2. Any tool in `mutators_ungated` GAINING a governance call → CONGRATS, move it to `gated` and update baseline (ratchet)
+#   3. New tool not in any list → WARN, requires manual classification
+#   4. `gated` count must not drop below baseline_count
+#
+# Source code reference: <framework MCP server entry point — TBD at Slice 2 design>
+# Manifest reference (OR-1 contract): <framework-mcp-manifest.json — location TBD at Slice 2 design>
+# Provenance: empty draft scaffolded by T-2256 pre-stage. Populated by Slice 1
+# after Slice 2 ships the framework MCP server with its initial tool set.
+#
+# DEPLOYMENT NOTES (for Slice 1 author):
+#   1. Rename this file to `framework-mcp-baseline.yaml` (strip .draft) when
+#      activating. The scan helper expects the no-suffix name.
+#   2. Until the framework MCP server exists (Slice 2), `probe_framework_tools()`
+#      returns empty — scan still passes with `current_count: 0` against a baseline
+#      with `gated.tools: []`. This avoids a FAIL on the OR-2 leg pre-Slice-2.
+#   3. When Slice 2 deploys the server, populate `gated.tools`,
+#      `mutators_ungated.tools`, `readonly_exempt.tools` per the read/write
+#      classification of each `mcp__framework__*` tool. Use the same verb
+#      convention as orchestrator-mcp-baseline.yaml (action verb → mutator;
+#      read suffix → readonly).
+#   4. Consider whether T-2154's `classify_by_convention()` should extend to
+#      `mcp__framework__*` namespace. Pro: reuses the 7-batch zero-misclassification
+#      track record. Con: framework verbs follow `fw <verb>` shape (e.g. `task_update`,
+#      `work_on`), not termlink_*-style suffixes — the verb whitelist may need
+#      updating. T-2256 §6 captures the decision.
+
+baseline_count: 0
+last_verified: null   # set by Slice 1 close gate
+gated:
+  description: "Mutator tools that already invoke the framework's governance gate (check_task_id / require_active_task)."
+  tools: []
+mutators_ungated:
+  description: "Mutator tools that SHOULD gate but currently don't (ratchet target — move to `gated` as gates land)."
+  tools: []
+readonly_exempt:
+  description: "Read-only / passive tools — governance not required by design."
+  tools: []
