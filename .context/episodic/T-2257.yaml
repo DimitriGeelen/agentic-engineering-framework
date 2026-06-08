@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2257: T-2209 Slice 1 pre-stage — fw --json readiness re-survey delta (validate §15 against current state)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T11:44:55Z
+# ============================================================================
+
+task_id: T-2257
+task_name: "T-2209 Slice 1 pre-stage — fw --json readiness re-survey delta (validate §15 against current state)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T11:40:25Z
+completed: 2026-06-08T11:44:49Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Re-probe each verb catalogued in §15 of `docs/reports/T-2209-cli-mcp-overlay-inception.md` (dated 2026-06-05) by running `bin/fw <verb> --json` and record current state in a new §17 appended to the same artefact.'
+  - '§17 has shape: timestamp, methodology, per-verb delta table (verb | §15 state | current state | delta), summary count (verbs whose state shifted since §15).'
+  - 'Where state has shifted since §15, §17 names the verb and shift direction (added `--json` / removed `--json` / verb renamed / verb removed) — Slice 1 author uses this delta to know which §15 rows still need work.'
+  - 'No source file under `agents/`, `bin/`, `lib/`, `web/` modified — pre-stage research only.'
+  - '[REVIEWER] `bin/fw reviewer T-2257` returns Overall: PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2257-t-2209-slice-1-pre-stage--fw---json-read.md
+generated_by: context-agent-hybrid

@@ -352,3 +352,49 @@ While the arc itself awaits operator `fw arc create capability-overlay --headlin
 - **`docs/dispatch-templates/iw-slice-worker.md`** (commit `90742e380`) — sibling of `iw-spike-worker.md`; encodes build-slice discipline (real ACs before Bash/Edit per G-020, progressive AC ticks per T-1831 C-4, headline-mechanic demo at slice boundary per §ACD G-062, no scope creep, bus envelope, partial-complete handoff). References the full routing ladder (T-1878 → T-1947 → T-2143 → T-2147), L-387 SIGPIPE safety, and L-458 + L-459 from the T-2222 session.
 
 Once the operator runs `fw arc create capability-overlay`, dispatching Slice 1-4 is one `fw termlink dispatch` call away — the template carries every gate-aware pattern needed. The Slice 1 surface (§12 + §15) is fully scoped: `fw --json` extension on the curated-22 read-only verbs + `schema_version` field + OR-2 scan extension to `agents/audit/orchestrator-mcp-scan.sh` + OR-6 `## Verification` convention.
+
+---
+
+## §17. Slice 1 readiness delta (re-probe 2026-06-08, T-2257)
+
+**Re-run §15's probe method (`timeout 30 bin/fw <verb> --json 2>/dev/null` + `json.loads(strip_ansi(stdout))`) against current `master` (HEAD `e13dac10a`) to validate the 3-day-old §15 baseline before Slice 1 fires.**
+
+| Verb | §15 state (2026-06-05) | Current state (2026-06-08) | Delta |
+|------|------------------------|----------------------------|-------|
+| `ask` | valid JSON | valid JSON, no `schema_version` field | unchanged |
+| `task list` | ignored — prose | ignored — prose | unchanged |
+| `task show T-XXX` | ignored — prose | ignored — prose | unchanged |
+| `review-queue` | ignored — prose | ignored — prose | unchanged |
+| `inception status` | ignored — prose | ignored — prose | unchanged |
+| `bvp rank` | verb doesn't exist | now exits rc=2 with prose error (verb still unresolved) | minor — same root cause, different surface |
+| `learnings` | ignored — prose | **ARGPARSE-REJECTS** | **SHIFTED** — moved class 1 → class 2 |
+| `decisions` | ignored — prose | ignored — prose | unchanged |
+| `recall <q>` | ignored — prose | ignored — prose | unchanged |
+| `gaps` | ignored — prose | ignored — prose | unchanged |
+| `metrics` | argparse rejects | argparse rejects | unchanged |
+| `doctor` | ignored — prose | **TIMEOUT @ 30s** (audit-loop perf class) | **SHIFTED** — surfaces OSQ-C blocker |
+| `fabric search <q>` | ignored — prose | ignored — prose | unchanged |
+| `fabric deps <path>` | ignored — prose | ignored — prose | unchanged |
+| `costs` | argparse rejects | argparse rejects | unchanged |
+| `version` | argparse rejects | argparse rejects | unchanged |
+
+**Summary: 3 shifts since §15.** §15's three-class breakdown (12 add-handler + 3 argparse-fix + 1 verb-naming) updates to:
+
+- **Add `--json` handler (was 12, now 11):** `learnings` moved to class 2.
+- **Resolve argparse rejections (was 3, now 4):** `learnings` joins `metrics`/`costs`/`version`. All four reject the flag before any handler runs.
+- **Resolve verb naming (still 1):** `bvp rank` still doesn't resolve. The rc=2 exit is the same root cause as §15's "doesn't exist", just with a different argparse stage catching it.
+- **NEW for Slice 1: OSQ-C blocker on `doctor`:** the verb hit a 30-second timeout. Root cause is the T-2067 task-frontmatter parse loop in `agents/audit/audit.sh:617-634` (spawns one `python3 -c "..."` per task file across ~2200 `.tasks/{active,completed}/` files). Slice 1's OSQ-C performance-benchmark gate cannot be met on `doctor --json` until this loop is optimised. Two paths: (a) batch-parse all frontmatter in one Python invocation; (b) cache parsed frontmatter to `.context/working/.task-fm-cache.json` keyed by file mtime. Either is out of Slice 1 scope but Slice 1 must acknowledge it (e.g. mark `doctor --json` as "deferred to a post-Slice-1 perf slice" or make doctor's `--json` opt-out of the audit-loop call).
+
+**§15 baseline still load-bearing:** the 3 shifts are minor structural updates, not fundamental re-shapes. The recommended Slice 1 shape from §15 (`{"schema_version": "1", "ok": true|false, "data"|"error_code"+"message"}` envelope + `tests/unit/test_fw_json_surface.bats` parametric test) remains the right design.
+
+**Slice 1 author action:** update the §15 "Three classes of work" counts (12 → 11 add-handler, 3 → 4 argparse-fix) in the Slice 1 build task's design notes. Add an explicit OSQ-C row for the `doctor` timeout — either resolve via batch-parse refactor inside Slice 1, or carve out as a follow-on perf slice.
+
+**Provenance:**
+
+```
+re-probe: 2026-06-08T11:39:00Z
+re-probed by: T-2257 (agent, claude-opus-4-7)
+git HEAD at probe: e13dac10a
+fw VERSION: 1.6.9
+probe method: identical to §15 (timeout 30 + strip_ansi + json.loads)
+```
