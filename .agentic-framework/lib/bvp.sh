@@ -1292,6 +1292,23 @@ NOTES:
   - Cost composite (F8): 0.6×blast_radius + 0.3×tier + 0.1×effort.
     T-shirt fallback (Q2): S/M/L/XL → 2/4/6/8 when 3-component values absent.
   - Source: docs/reports/T-1915-bvp-inception.md (arc-006).
+
+SEE ALSO (driver-session workflow, T-2245/T-2246/T-2250):
+  policy/prompts/bvp-driver-session.md
+    Keystone prompt for proposing or sharpening a value driver. Three
+    workflows: A (batch-propose at arc-draft), B (discover+sharpen),
+    C (sharpen named topic). Loaded manually today; CLI loader verbs
+    (`fw bvp driver suggest|create|recompute|edit|retire`) are deferred
+    per T-2245 IW-3 (operator-only territory until v2 handoff lands).
+  policy/prompts/artefact-template.md
+    Output shape for the research artefact written to
+    docs/reports/T-XXXX-bvp-driver-<slug>.md.
+  policy/prompts/bvp-references/
+    Sharpening subroutine (R1/R2/O1-O4), tactical conversation moves,
+    worked examples (global + arc-scoped), and anti-patterns to avoid.
+  CLAUDE.md §Driver Session Prompt Bundle and 040-ValueDrivers.md
+    Routing context — when to enter a session and how to navigate
+    the bundle.
 """)
     return 0
 
