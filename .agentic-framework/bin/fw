@@ -1241,6 +1241,30 @@ else:
         fi
     fi
 
+    # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
+    local _mcp_mf="$PROJECT_ROOT/agents/mcp/framework-mcp-manifest.json"
+    local _mcp_ts="$PROJECT_ROOT/policy/capability-overlay/tool-set.yaml"
+    if [ -f "$_mcp_mf" ]; then
+        local _mcp_tools _mcp_gated _mcp_msg
+        _mcp_tools=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(len(m.get('tools',[])))" 2>/dev/null || echo "?")
+        _mcp_gated=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(sum(1 for t in m.get('tools',[]) if t.get('gated')))" 2>/dev/null || echo "?")
+        local _mcp_pid_f="$PROJECT_ROOT/.context/working/framework-mcp.pid"
+        if [ -f "$_mcp_pid_f" ] && kill -0 "$(cat "$_mcp_pid_f" 2>/dev/null)" 2>/dev/null; then
+            _mcp_msg="running (pid $(cat "$_mcp_pid_f"))"
+        else
+            _mcp_msg="stopped (manifest ready; start: fw mcp start --background)"
+        fi
+        if [ -f "$_mcp_ts" ] && [ "$_mcp_ts" -nt "$_mcp_mf" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  framework MCP manifest stale relative to tool-set.yaml"
+            echo -e "         Run: fw mcp emit-manifest"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
+    fi
+
     # Check: Watchtower discovery triple (T-1292 / T-1284 B4)
     local _wt_pid_f="$PROJECT_ROOT/.context/working/watchtower.pid"
     local _wt_url_f="$PROJECT_ROOT/.context/working/watchtower.url"
@@ -4335,20 +4359,85 @@ EOF
     mcp)
         mcp_subcmd="${1:-}"
         shift || true
+        # T-2265 (arc-010 Slice 2): framework MCP server lifecycle + manifest.
+        _mcp_pid_file="$PROJECT_ROOT/.context/working/framework-mcp.pid"
+        _mcp_log_file="$PROJECT_ROOT/.context/working/framework-mcp.log"
+        _mcp_manifest="$PROJECT_ROOT/agents/mcp/framework-mcp-manifest.json"
+        _mcp_server="$AGENTS_DIR/mcp/framework_mcp_server.py"
+        _mcp_emitter="$AGENTS_DIR/mcp/manifest.py"
         case "$mcp_subcmd" in
             reap)
                 exec "$AGENTS_DIR/mcp/mcp-reaper.sh" "$@"
                 ;;
+            emit-manifest|manifest)
+                # Emit manifest WITHOUT starting the server. Used by audit + ci.
+                exec python3 "$_mcp_emitter" emit "$@"
+                ;;
+            manifest-show|show)
+                exec python3 "$_mcp_emitter" show "$@"
+                ;;
+            start)
+                # Foreground stdio server (Claude Code spawns this via .mcp.json).
+                # For background server use: fw mcp start --background
+                _bg=0
+                for _a in "$@"; do
+                    [ "$_a" = "--background" ] || [ "$_a" = "--bg" ] && _bg=1
+                done
+                if [ "$_bg" -eq 1 ]; then
+                    if [ -f "$_mcp_pid_file" ] && kill -0 "$(cat "$_mcp_pid_file" 2>/dev/null)" 2>/dev/null; then
+                        echo "framework MCP server already running (pid $(cat "$_mcp_pid_file"))"
+                        exit 0
+                    fi
+                    mkdir -p "$(dirname "$_mcp_pid_file")"
+                    nohup python3 "$_mcp_server" >"$_mcp_log_file" 2>&1 &
+                    echo "$!" > "$_mcp_pid_file"
+                    sleep 0.2
+                    echo "framework MCP server started (pid $(cat "$_mcp_pid_file")), log: $_mcp_log_file"
+                    exit 0
+                fi
+                exec python3 "$_mcp_server"
+                ;;
+            stop)
+                if [ -f "$_mcp_pid_file" ]; then
+                    _pid=$(cat "$_mcp_pid_file" 2>/dev/null)
+                    if [ -n "$_pid" ] && kill -0 "$_pid" 2>/dev/null; then
+                        kill "$_pid" 2>/dev/null && echo "stopped framework MCP server (pid $_pid)"
+                    else
+                        echo "framework MCP server pid $_pid not running"
+                    fi
+                    rm -f "$_mcp_pid_file"
+                else
+                    echo "framework MCP server not running (no pid file)"
+                fi
+                ;;
+            status)
+                if [ -f "$_mcp_manifest" ]; then
+                    _tools=$(python3 -c "import json; m=json.load(open('$_mcp_manifest')); print(len(m.get('tools',[])))" 2>/dev/null || echo "?")
+                    _gated=$(python3 -c "import json; m=json.load(open('$_mcp_manifest')); print(sum(1 for t in m.get('tools',[]) if t.get('gated')))" 2>/dev/null || echo "?")
+                    echo "manifest:    $_mcp_manifest"
+                    echo "tools:       ${_tools} (gated: ${_gated})"
+                else
+                    echo "manifest:    ABSENT — run 'fw mcp emit-manifest'"
+                fi
+                if [ -f "$_mcp_pid_file" ] && kill -0 "$(cat "$_mcp_pid_file" 2>/dev/null)" 2>/dev/null; then
+                    echo "server:      running (pid $(cat "$_mcp_pid_file"))"
+                else
+                    echo "server:      stopped"
+                fi
+                ;;
             ""|help|-h|--help)
-                echo -e "${BOLD}fw mcp${NC} — MCP server process management"
+                echo -e "${BOLD}fw mcp${NC} — MCP server lifecycle + manifest (T-2265, arc-010)"
                 echo ""
                 echo "Subcommands:"
-                echo "  reap [--dry-run] [--force] [--age N] [--quiet]   Kill orphaned MCP processes"
+                echo "  emit-manifest                          Read tool-set.yaml → write framework-mcp-manifest.json"
+                echo "  manifest-show                          Print manifest JSON to stdout (no file write)"
+                echo "  start [--background]                   Run server (foreground stdio by default)"
+                echo "  stop                                   Stop background server"
+                echo "  status                                 Show manifest + pid state"
+                echo "  reap [--dry-run] [--force] [--age N]   Kill orphaned MCP processes"
                 echo ""
-                echo "Examples:"
-                echo "  fw mcp reap              # Interactive: detect + confirm"
-                echo "  fw mcp reap --dry-run    # Detection only"
-                echo "  fw mcp reap --force      # Kill without confirmation"
+                echo "Source of truth: policy/capability-overlay/tool-set.yaml (T-2258)"
+                echo "Consumed by:     agents/audit/orchestrator-mcp-scan.sh probe_framework_tools() (T-2260)"
                 ;;
             *)
                 echo -e "${RED}Unknown mcp subcommand: $mcp_subcmd${NC}"
