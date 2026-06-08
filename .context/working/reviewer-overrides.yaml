@@ -642,3 +642,13 @@ overrides:
   expires_at: '2026-09-06T20:05:56Z'
   added_by: root
   added_at: '2026-06-08T20:05:56Z'
+- id: OV-60e25441
+  task_id: T-2272
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "FP class: bats test is real integration against bin/fw, file contents,\
+    \ JSON shape \u2014 not mock-only. Heuristic triggers on 'bats' substring near\
+    \ AC vs Verification."
+  expires_at: '2026-09-06T22:20:25Z'
+  added_by: root
+  added_at: '2026-06-08T22:20:25Z'

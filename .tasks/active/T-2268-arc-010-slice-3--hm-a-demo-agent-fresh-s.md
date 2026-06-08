@@ -72,7 +72,7 @@ Materializes T-2209 `iw4-headline-mechanic` decision: produces the wire-level de
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.mcp.json` at PROJECT_ROOT includes `framework-mcp` server entry pointing at `agents/mcp/framework_mcp_server.py` (stdio command shape).
+- [ ] `.mcp.json` at PROJECT_ROOT includes `framework-mcp` server entry pointing at `agents/mcp/framework_mcp_server.py` (stdio command shape). **Hint:** Copy verbatim from `agents/mcp/framework-mcp.mcp-fragment.json` (T-2272 shipped the contract). Or: `bin/fw mcp wire-fragment >> /tmp/frag.json` then merge into `.mcp.json` mcpServers block.
 - [ ] Demo-target stub task exists at `.tasks/active/T-XXXX-arc-010-hm-a-demo-target.md` (or sibling slug) with workflow_type=build, captured, owner=claude-code. This is the task the demo agent will drive end-to-end.
 - [ ] Demo evidence directory `docs/reports/arc-010-hm-a-demo-evidence.md` (or `docs/reports/arc-010-hm-a-demo/README.md` if multi-file) exists with: arc id, headline_mechanic verbatim from arc-010 YAML, traceability table (each headline_mechanic clause → demo artefact path → shipping commit), capture timestamp, capture host.
 - [ ] Demo transcript JSONL captured at `docs/reports/arc-010-hm-a-demo/transcript.jsonl` (or referenced from README) — full session of the fresh Claude Code instance driving the demo-target task.

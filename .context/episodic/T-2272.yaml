@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2272: arc-010 Slice 2.5 — framework-mcp .mcp.json fragment helper for operator wiring
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T22:21:56Z
+# ============================================================================
+
+task_id: T-2272
+task_name: "arc-010 Slice 2.5 — framework-mcp .mcp.json fragment helper for operator wiring"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T22:16:13Z
+completed: 2026-06-08T22:21:50Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/mcp/framework-mcp.mcp-fragment.json` exists and is valid JSON. Shape: top-level object with key `framework-mcp` and value `{command, args}` (env optional). Validation: `python3 -c "import json; d=json.load(open(''agents/mcp/framework-mcp.mcp-fragment.json'')); assert ''framework-mcp'' in d; assert ''command'' in d[''framework-mcp'']; assert ''args'' in d[''framework-mcp'']"`.'
+  - 'The fragment''s `args` references a path that resolves to `agents/mcp/framework_mcp_server.py` (the actual server entry-point from T-2265). Validation: `python3 -c "import json,os; d=json.load(open(''agents/mcp/framework-mcp.mcp-fragment.json'')); p=d[''framework-mcp''][''args''][-1]; assert os.path.isabs(p) or p.endswith(''framework_mcp_server.py'')"`.'
+  - '`bin/fw mcp wire-fragment` subcommand exists and prints the fragment JSON to stdout (exit 0). Validation: `out=$(bin/fw mcp wire-fragment); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); assert ''framework-mcp'' in d"`.'
+  - '`bin/fw mcp` help block lists `wire-fragment` with one-line description. Validation: `out=$(bin/fw mcp 2>&1); echo "$out" | grep -q "wire-fragment"`.'
+  - 'bats integration test at `tests/unit/test_mcp_wire_fragment.bats` covers: (a) fragment file valid JSON, (b) `wire-fragment` verb prints valid JSON to stdout, (c) help block lists the verb. Validation: `out=$(bats tests/unit/test_mcp_wire_fragment.bats 2>&1); echo "$out" | grep -qE "^ok " && ! echo "$out" | grep -qE "^not ok"`.'
+  - '`bin/fw reviewer T-2272` returns Overall: PASS or CONCERN (no FAIL). FP class overrides allowed (mock-only-integration, AC-verify-mismatch). [R-e3592b1c PASS via OV-60e25441 suppress]'
+  - 'T-2268 AC #1 references this fragment file as the canonical source (Edit T-2268 AC #1 to add `Copy from agents/mcp/framework-mcp.mcp-fragment.json` hint). Validation: `grep -q "framework-mcp.mcp-fragment.json" .tasks/active/T-2268-*.md`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:capability-overlay, mcp, helper]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2272-arc-010-slice-25--framework-mcp-mcpjson-.md
+generated_by: context-agent-hybrid
