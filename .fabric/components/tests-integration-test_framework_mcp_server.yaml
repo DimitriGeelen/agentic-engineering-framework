@@ -4,17 +4,23 @@ type: script
 subsystem: unknown
 location: tests/integration/test_framework_mcp_server.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: calls
+- target: agents/mcp/manifest.py
+  type: calls
+- target: agents/mcp/framework_mcp_server.py
+  type: calls
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: tests
+- target: agents/mcp/manifest.py
+  type: tests
+- target: agents/mcp/framework_mcp_server.py
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-06-08
 created_by: unknown
+last_enriched: '2026-06-09'

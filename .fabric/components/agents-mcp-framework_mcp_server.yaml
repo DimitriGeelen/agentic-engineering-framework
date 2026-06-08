@@ -4,17 +4,17 @@ type: script
 subsystem: unknown
 location: agents/mcp/framework_mcp_server.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+- target: bin/fw
+  type: calls
+- target: agents/mcp/manifest.py
+  type: uses
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/integration/test_framework_mcp_server.bats
+  type: called_by
+- target: tests/integration/test_framework_mcp_server.bats
+  type: tests_by
 last_verified: 2026-06-08
 created_by: unknown
+last_enriched: '2026-06-09'

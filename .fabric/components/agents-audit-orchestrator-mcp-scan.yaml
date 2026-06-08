@@ -15,6 +15,12 @@ depended_by:
   type: called_by
 - target: tools/check_termlink_tag_drift.py
   type: called_by
+- target: agents/mcp/manifest.py
+  type: called_by
+- target: tests/integration/test_framework_mcp_server.bats
+  type: called_by
+- target: tests/integration/test_framework_mcp_server.bats
+  type: tests_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-06-09'
