@@ -4376,6 +4376,16 @@ EOF
             manifest-show|show)
                 exec python3 "$_mcp_emitter" show "$@"
                 ;;
+            wire-fragment)
+                # T-2272: print the .mcp.json fragment operator copies into project .mcp.json.
+                # Contract: agents/mcp/framework-mcp.mcp-fragment.json (static, version-controlled).
+                _frag="$PROJECT_ROOT/agents/mcp/framework-mcp.mcp-fragment.json"
+                if [ ! -f "$_frag" ]; then
+                    echo "fragment file missing: $_frag" >&2
+                    exit 2
+                fi
+                cat "$_frag"
+                ;;
             start)
                 # Foreground stdio server (Claude Code spawns this via .mcp.json).
                 # For background server use: fw mcp start --background
@@ -4431,6 +4441,7 @@ EOF
                 echo "Subcommands:"
                 echo "  emit-manifest                          Read tool-set.yaml → write framework-mcp-manifest.json"
                 echo "  manifest-show                          Print manifest JSON to stdout (no file write)"
+                echo "  wire-fragment                          Print .mcp.json fragment for operator-side wiring (T-2272)"
                 echo "  start [--background]                   Run server (foreground stdio by default)"
                 echo "  stop                                   Stop background server"
                 echo "  status                                 Show manifest + pid state"
