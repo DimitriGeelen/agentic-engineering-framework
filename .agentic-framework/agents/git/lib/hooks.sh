@@ -286,14 +286,20 @@ fi
     && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
 
 SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
-if [ ! -x "$SCANNER" ]; then
+# T-2061: gate on -f not -x. We invoke via `bash "$SCANNER"` below, so the
+# exec bit is irrelevant — gating on -x silently disabled the scanner when
+# vendor copies landed without the exec bit (T-2052 found this hot, 2026-06-08).
+# -f catches the only failure that actually matters here: file missing.
+if [ ! -f "$SCANNER" ]; then
     # Scanner missing — fail open with a clear message, don't block legitimate work.
     echo "secret-scan: scanner not found at $SCANNER (skipping)" >&2
     exit 0
 fi
 
 # Run the scanner against the staged diff.
-_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$SCANNER" scan-staged 2>&1)
+# T-2061: invoke via `bash` so the exec bit is irrelevant (vendor copies
+# historically landed without +x and silently fail-open under the older -x gate).
+_hits=$(PROJECT_ROOT="$PROJECT_ROOT" bash "$SCANNER" scan-staged 2>&1)
 _rc=$?
 
 if [ "$_rc" -ne 0 ]; then
@@ -316,8 +322,10 @@ fi
 # Catches active/T-NNNN + completed/T-NNNN orphans before they land in git
 # (was previously only caught at audit time, often days after the leak).
 DUP_TASK_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/dup-task-scan.sh"
-if [ -x "$DUP_TASK_SCANNER" ]; then
-    _dt_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$DUP_TASK_SCANNER" scan-staged 2>&1)
+# T-2061: see secret-scan note above — gate on -f, not -x.
+if [ -f "$DUP_TASK_SCANNER" ]; then
+    # T-2061: bash-invoke pattern — see secret-scan note above.
+    _dt_hits=$(PROJECT_ROOT="$PROJECT_ROOT" bash "$DUP_TASK_SCANNER" scan-staged 2>&1)
     _dt_rc=$?
     if [ "$_dt_rc" -ne 0 ]; then
         echo "" >&2
@@ -339,8 +347,10 @@ fi
 # T-1845: Large-file gate — sibling prevention to secret-scan. Blocks staged
 # files >10MiB by default; allowlist exempts deliberate vendored cases.
 LARGE_FILE_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/large-file-scan.sh"
-if [ -x "$LARGE_FILE_SCANNER" ]; then
-    _lf_hits=$(PROJECT_ROOT="$PROJECT_ROOT" "$LARGE_FILE_SCANNER" scan-staged 2>&1)
+# T-2061: see secret-scan note above — gate on -f, not -x.
+if [ -f "$LARGE_FILE_SCANNER" ]; then
+    # T-2061: bash-invoke pattern — see secret-scan note above.
+    _lf_hits=$(PROJECT_ROOT="$PROJECT_ROOT" bash "$LARGE_FILE_SCANNER" scan-staged 2>&1)
     _lf_rc=$?
     if [ "$_lf_rc" -ne 0 ]; then
         echo ""
