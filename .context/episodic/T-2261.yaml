@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2261: T-2229 Slice 2 — wire fw bvp driver --init into fw init/upgrade/vendor
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-08T13:17:48Z
+# ============================================================================
+
+task_id: T-2261
+task_name: "T-2229 Slice 2 — wire fw bvp driver --init into fw init/upgrade/vendor"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T13:13:54Z
+completed: 2026-06-08T13:17:36Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/init.sh` invokes the BVP-policy copy on a fresh project init, populating both `policy/value-drivers.yaml` AND `policy/bvp-scoring-rubric.md` from framework templates (cp + per-file existence check, mirroring the practices/decisions/patterns pattern)'
+  - 'The wiring is idempotent — running `fw init` against a directory that already has `policy/value-drivers.yaml` does NOT overwrite the existing file (per-file existence check before cp)'
+  - 'After a fresh `fw init`, both `<project>/policy/value-drivers.yaml` AND `<project>/policy/bvp-scoring-rubric.md` exist and are byte-identical to the framework templates'
+  - '[REVIEWER] `bin/fw reviewer T-2261` returns Overall: PASS'
+  - 'Existing T-2230 bats regression net (`tests/unit/t2230_bvp_driver_init.bats`) still passes 15/15 — wiring init.sh must not break the underlying `fw bvp driver --init` verb'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2261-t-2229-slice-2--wire-fw-bvp-driver---ini.md
+generated_by: context-agent-hybrid
