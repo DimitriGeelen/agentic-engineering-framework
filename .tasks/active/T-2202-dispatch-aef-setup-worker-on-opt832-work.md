@@ -71,14 +71,17 @@ bvp_scores_proposed:
 - [x] Worker progressing past Step 1 (install) — 25KB result.jsonl growth at 15s; actively running Bash tool-uses diagnosing FRAMEWORK_ROOT mode detection (same env-leak pattern as fan-dashboard worker, evidence for T-2201 inception).
 - [x] Operator surfaced session id + monitor command.
 
-## Status: WORKER RUNNING
+## Status: RE-DISPATCHED 2026-06-09
 
-**Session:** `workflow-designer-aef-setup`
+Prior worker exited; re-dispatched alongside T-2200 at 2026-06-09T00:43Z after `/root/.claude.json` verified valid.
+
+- [x] Verified `/root/.claude.json` parses as valid JSON.
+- [x] Worker re-spawned: session `tl-zdqnjfal` / `workflow-designer-aef-setup`. Tagged: task:T-2202, task-type:build. Tmux backend, 3600s timeout.
+
 **Monitor:** `termlink pty output workflow-designer-aef-setup --lines 100`
 **Result stream:** `tail -f /tmp/tl-dispatch/workflow-designer-aef-setup/result.jsonl`
-**Timeout:** 3600s (will self-terminate at ~08:52Z if not done)
 
-Same FRAMEWORK_ROOT-leak adaptation observed in both this worker and `fan-dashboard-aef-setup` — extra evidence for the T-2201 inception (worker env hygiene at dispatch time).
+Outcome ACs (worker exit code, audit verdict, final state of /opt/832-Workflow-designer) added on return.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

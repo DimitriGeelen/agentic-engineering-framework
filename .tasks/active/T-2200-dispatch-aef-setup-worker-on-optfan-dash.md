@@ -69,29 +69,14 @@ bvp_scores_proposed:
 - [x] Worker output captured. Result: **exit 1 immediately**. Cause: `/root/.claude.json` corrupted (`JSON Parse error: Unterminated string`). Backup auto-saved by Claude Code to `/root/.claude/backups/.claude.json.backup.1780508533646`. Worker could not load any config and aborted.
 - [x] Dead worker reaped via `termlink clean` (signal failed because process had already exited; clean removed stale registration).
 
-## Status: BLOCKED on operator action
+## Status: RE-DISPATCHED 2026-06-09
 
-**The dispatch could not complete because the Claude CLI config the worker needs to spawn `claude -p` is corrupted on this host.** The cross-project boundary hook (correctly) refuses to let me inspect or restore `/root/.claude.json` — it's outside this project's PROJECT_ROOT.
+`/root/.claude.json` verified valid by operator. Worker re-dispatched at 2026-06-09T00:43Z.
 
-**Required operator action (one of):**
+- [x] Verified `/root/.claude.json` parses as valid JSON (`python3 -c "import json; json.load(open('/root/.claude.json'))"` exits 0).
+- [x] Worker re-spawned: session `tl-22yns2h4` / `fan-dashboard-aef-setup`. Tagged: task:T-2200, task-type:build. Tmux backend, 3600s timeout.
 
-1. Restore the backup:
-   ```
-   cp /root/.claude/backups/.claude.json.backup.1780508533646 /root/.claude.json
-   ```
-2. Or recreate config via `claude` interactive setup.
-
-**After restoration**, re-dispatch with the same command:
-```
-cd /opt/999-Agentic-Engineering-Framework && bin/fw termlink dispatch \
-  --task T-2200 \
-  --name fan-dashboard-aef-setup \
-  --project /opt/fan-dashboard \
-  --prompt-file docs/reports/T-2200-fan-dashboard-aef-setup-prompt.md \
-  --timeout 3600
-```
-
-The worker will then attach to its own framework session in /opt/fan-dashboard and execute the 6-step setup brief autonomously. Monitor via `termlink pty output fan-dashboard-aef-setup --lines 50`.
+Monitor: `termlink pty output fan-dashboard-aef-setup --lines 50`. Outcome ACs (worker exit code, audit verdict, final state of /opt/fan-dashboard) added on return.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
