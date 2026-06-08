@@ -18,7 +18,7 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: later
+horizon: next
 tags: [closure-arc, self-vendor]
 components: [lib-upgrade, bin-fw, agents-audit]
 related_tasks: [T-2240, T-2241, T-2242, T-2244, T-2263, T-2264]
@@ -27,7 +27,7 @@ related_tasks: [T-2240, T-2241, T-2242, T-2244, T-2263, T-2264]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T15:04:46Z
-last_update: '2026-06-08T15:15:03Z'
+last_update: 2026-06-08T15:58:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -255,3 +255,6 @@ out=$(bin/fw reviewer T-2266 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 ### 2026-06-08T15:06:21Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-06-08T15:58:46Z — status-update [task-update-agent]
+- **Change:** horizon: later → next
