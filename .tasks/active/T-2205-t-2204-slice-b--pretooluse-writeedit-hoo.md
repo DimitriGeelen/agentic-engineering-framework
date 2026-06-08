@@ -113,6 +113,21 @@ unlocks_inception_decision: [T-2204:slice-b]
      moved to Agent self-eval AC above ("Block-message stderr...").
      No Human [REVIEW] on agent-facing stderr per CLAUDE.md §AC routing. -->
 
+## Recommendation
+
+**Recommendation:** GO — wire the hook into `.claude/settings.json` when convenient (B-005 sovereign boundary; one-line patch in the Human AC).
+
+**Rationale:** 7 of 8 ACs ship-ready. Hook script (`agents/context/check-inception-recommendation.py`) tested green (7 bats), block-message stderr names all four bypass mechanisms per T-1890 producer/consumer parity rule, and the Reviewer scan returned PASS with zero findings on 2026-06-04 (cached: R-93c4dc94). The 8th AC is operator-only (.claude/settings.json edit) because the agent is hard-blocked at `agents/context/check-active-task.sh:112`. Until wired, the empty-Recommendation gate is enforced only via the producer-side leg (T-1716 `do_inception_start` + T-2207 `create-task.sh`); wiring Slice B closes the Write/Edit-direct producer leg per the 4-producer table in CLAUDE.md §Recommendation-completeness gate.
+
+**Evidence:**
+- Hook script: `agents/context/check-inception-recommendation.py:1-220` (`grep -n "FW_ALLOW_EMPTY_RECOMMENDATION\|--allow-empty-recommendation\|--recommendation" agents/context/check-inception-recommendation.py | head -10`)
+- Tests: `tests/unit/check_inception_recommendation.bats` — 7 tests, all pass (`bats tests/unit/check_inception_recommendation.bats`)
+- Reviewer verdict: R-93c4dc94 PASS, Needs Human=no, findings=none (cached 2026-06-04T20:02:18Z)
+- Bypass-log parity: `lib/inception.sh` + `agents/task-create/create-task.sh` (T-2207) both log Tier-2 via the unified `FW_ALLOW_EMPTY_RECOMMENDATION=1` env var per L-399 producer/consumer rule
+- Wire patch: see `### Human` AC #1 above — exact JSON object + insertion location
+
+**Open question:** None. The 8th AC is a mechanical rubber-stamp; agent cannot self-serve.
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
