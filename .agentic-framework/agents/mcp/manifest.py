@@ -87,13 +87,44 @@ def emit_manifest(
     return out
 
 
+def _check_drift() -> int:
+    """T-2293: exit-code drift check for CI / pre-commit / scripts.
+
+    Re-emit the manifest in memory, md5-compare to the on-disk file:
+      0 → in sync
+      1 → drift (regenerate via emit)
+      2 → manifest absent or unreadable
+    Sibling to `fw vendor self --dry-run` (T-2240) and the `fw doctor`
+    content-compare branch (T-2290).
+    """
+    import hashlib
+    target = manifest_path()
+    if not target.exists():
+        sys.stderr.write(f"ABSENT: {target} — run `fw mcp emit-manifest`\n")
+        return 2
+    try:
+        on_disk = target.read_bytes()
+    except OSError as exc:
+        sys.stderr.write(f"ABSENT: cannot read {target} ({exc})\n")
+        return 2
+    ts = load_tool_set()
+    manifest = build_manifest(ts)
+    emitted = (json.dumps(manifest, indent=2) + "\n").encode("utf-8")
+    if hashlib.md5(on_disk).hexdigest() == hashlib.md5(emitted).hexdigest():
+        sys.stdout.write(f"OK: manifest in sync ({len(manifest.get('tools', []))} tools)\n")
+        return 0
+    sys.stderr.write("DRIFT: manifest differs from tool-set.yaml — regenerate via `fw mcp emit-manifest`\n")
+    return 1
+
+
 def main(argv: list[str]) -> int:
     if argv and argv[0] in ("-h", "--help", "help"):
         sys.stdout.write(
-            "Usage: framework-mcp-manifest [emit|show]\n"
-            "  emit  Read policy/capability-overlay/tool-set.yaml, write\n"
-            "        agents/mcp/framework-mcp-manifest.json.\n"
-            "  show  Print manifest JSON to stdout (no file write).\n"
+            "Usage: framework-mcp-manifest [emit|show|check]\n"
+            "  emit   Read policy/capability-overlay/tool-set.yaml, write\n"
+            "         agents/mcp/framework-mcp-manifest.json.\n"
+            "  show   Print manifest JSON to stdout (no file write).\n"
+            "  check  Exit 0 (sync), 1 (drift), or 2 (absent) — for CI/pre-commit.\n"
         )
         return 0
     cmd = argv[0] if argv else "emit"
@@ -107,6 +138,8 @@ def main(argv: list[str]) -> int:
             json.dump(build_manifest(ts), sys.stdout, indent=2)
             sys.stdout.write("\n")
             return 0
+        if cmd == "check":
+            return _check_drift()
         sys.stderr.write(f"ERROR: unknown command: {cmd}\n")
         return 2
     except (FileNotFoundError, ValueError) as exc:
