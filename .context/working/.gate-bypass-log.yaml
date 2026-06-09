@@ -2902,3 +2902,342 @@ T-2244: audit self-vendor drift FAIL — F2 N×M daily-cron backstop
 
 Closes the third surface in the F2 N×M chain: T-2240 (pre-push BLOCK,
 developer-tr'
+- timestamp: '2026-06-07T23:53:06Z'
+  task: 'T-2245'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2246'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2246: file BVP driver prompt bundle (Path B authoring)
+
+8 files under policy/prompts/ (1499 lines total — within 1% of §1s
+~1490 estimate). Content'
+- timestamp: '2026-06-08T06:22:08Z'
+  task: 'T-2248'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2247'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2247: audit libs-class mitigation says fw vendor not fw vendor self (scope fix)
+
+check_self_vendor_drift() scans .agentic-framework/{bin,lib,agents'
+- timestamp: '2026-06-08T06:23:21Z'
+  task: 'T-2248'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2247'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2247: audit libs-class mitigation says fw vendor not fw vendor self (scope fix)
+
+check_self_vendor_drift() scans .agentic-framework/{bin,lib,agents'
+- timestamp: '2026-06-08T06:30:32Z'
+  task: 'T-2248'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2249'
+  command: 'git add CLAUDE.md FRAMEWORK.md 040-ValueDrivers.md .tasks/completed/T-2249-bvp-driver-prompt-bundle-cross-link-from.md .context/episodic/T-2249.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T'
+- timestamp: '2026-06-08T07:31:56Z'
+  task: 'T-2248'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2250'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2250: fw bvp --help SEE ALSO points at policy/prompts/ bundle
+
+Closes the discoverability gap T-2245/T-2246/T-2249 left open: bundle
+exists + cross-lin'
+- timestamp: '2026-06-08T07:32:20Z'
+  task: 'T-2248'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2250'
+  command: 'git add .agentic-framework/lib/bvp.sh && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2250: vendor self-sync of lib/bvp.sh SEE ALSO addition
+
+Propagates T-2250s source edit to .agentic-framework/'
+- timestamp: '2026-06-08T09:40:11Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2251'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2251: BVP bundle — correct fw bvp init → fw bvp driver --init
+
+Bundle proses "Init refusal" copy + discipline-failure-modes
+anti-pattern + sha'
+- timestamp: '2026-06-08T09:41:30Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2252'
+  command: 'git add .tasks/active/T-2252-bvp-bundle-init-refusal-vs-fw-bvp-driver.md .context/working/session.yaml 2>&1; FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2252: file BVP bundle init-refusal scope-m'
+- timestamp: '2026-06-08T10:17:18Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2253'
+  command: 'git add .tasks/active/T-2253*.md .tasks/completed/T-2253*.md .context/episodic/T-2253.yaml 2>&1
+FW_SWITCH_FOCUS=1 git commit -m "T-2253: close — bundle ↔ §Arc-Scoped cross-link shipped (episodic '
+- timestamp: '2026-06-08T10:17:27Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2253'
+  command: 'git add .context/episodic/T-2253.yaml .tasks/completed/T-2253*.md
+FW_SWITCH_FOCUS=1 git commit -m "T-2253: episodic capture + finalised completed/ frontmatter" 2>&1 | tail -10'
+- timestamp: '2026-06-08T11:30:39Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2255'
+  command: 'git add .context/arcs/dispatch-safety.yaml .context/episodic/T-2255.yaml .tasks/completed/T-2255-bvp-bundle-dogfood--workflow-a-on-arc-00.md docs/reports/T-2255-bvp-driver-arc-001-dispatch-safety.md
+F'
+- timestamp: '2026-06-08T12:14:50Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2252'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2252: re-file Recommendation GO (was placeholder DEFER); create arc-010 capability-overlay
+
+T-2252 prior DEFER was a placeholder forced by producer-leg'
+- timestamp: '2026-06-08T12:24:51Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2258'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2258: arc-010 Slice 1A — capability-overlay tool-set classification artefact
+
+Ships policy/capability-overlay/tool-set.yaml: the canonical 22-verb
+cl'
+- timestamp: '2026-06-08T12:31:40Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2259'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2259: extend _driver_init to copy bvp-scoring-rubric.md (closes T-2252 GO)
+
+T-2252 inception decided GO 2026-06-08 via Watchtower (`7d1489bdd`).
+Closes'
+- timestamp: '2026-06-08T12:53:53Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2260'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2260: arc-010 Slice 1B — wire framework-mcp drift scan + activate baseline
+
+Activates the OR-2 scan extension prepared by T-2256s pre-stage draft.
+S'
+- timestamp: '2026-06-08T13:18:36Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2261'
+  command: 'git add lib/init.sh .tasks/completed/T-2261-t-2229-slice-2--wire-fw-bvp-driver---ini.md .context/episodic/T-2261.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2261: arc-006 Slice 2A — wir'
+- timestamp: '2026-06-08T13:57:16Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2261'
+  command: 'git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2261: refresh vendored .agentic-framework/lib/ for BVP policy cp wiring
+
+Self-vendor drift surfaced by T-2240 pre-push g'
+- timestamp: '2026-06-08T14:14:46Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2263'
+  command: 'git add lib/upgrade.sh bin/fw .agentic-framework/lib/upgrade.sh .agentic-framework/policy/ .tasks/completed/T-2263-* 2>&1 && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2263: arc-006 Slice 2C —'
+- timestamp: '2026-06-08T14:48:12Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2265'
+  command: 'git add .tasks/active/T-2265-* && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2265: file arc-010 Slice 2 (framework MCP server) as captured+later
+
+Slice 2 of 4 for arc-010 capability-overlay. Anc'
+- timestamp: '2026-06-08T15:08:12Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2266'
+  command: 'git add .tasks/active/T-2266-close-agents-drift-class--selfvendoragen.md 2>&1; FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2266: file 5th self-vendor class (agents/) as captured+later
+
+T-2240 clo'
+- timestamp: '2026-06-08T15:24:30Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2267'
+  command: 'git add .tasks/active/T-2267-close-web-drift-class--selfvendorweb-sib.md 2>&1
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2267: file 6th self-vendor class (web/) as captured+later
+
+T-2240 closure'
+- timestamp: '2026-06-08T18:48:51Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2266'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2266: ship _self_vendor_agents helper + bats + reviewer override
+
+Forward-fix of 67859acb9 (rename-only commit). Stages the actual source
+edits the clo'
+- timestamp: '2026-06-08T19:24:28Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2267'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2267: close web/ drift class — _self_vendor_web (6th sibling)
+
+T-2240 closure-arc 6th and current-final class. With T-2266 (agents/) and
+T-2267 (web/'
+- timestamp: '2026-06-08T21:43:21Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2269'
+  command: 'git add .tasks/active/T-2268-*.md .tasks/active/T-2269-*.md && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2268+T-2269: file arc-010 Slice 3 (HM-A demo agent) + Slice 4 (Watchtower migration)
+
+Sl'
+- timestamp: '2026-06-08T21:46:28Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2269'
+  command: 'git add .tasks/active/T-2268-*.md .tasks/active/T-2269-*.md && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2268+T-2269: BVP estimator proposals (cron, T-1935)
+
+bvp-estimator-v1-heuristic + bvp-co'
+- timestamp: '2026-06-08T22:10:40Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw git add .context/handovers/S-2026-0609-0001.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-077: Session handover S-2026-0609-0001" 2>&1 | tail -10'
+- timestamp: '2026-06-08T22:22:41Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2272'
+  command: 'FW_SWITCH_FOCUS=1 git add agents/mcp/framework-mcp.mcp-fragment.json bin/fw tests/unit/test_mcp_wire_fragment.bats .tasks/active/T-2268-arc-010-slice-3--hm-a-demo-agent-fresh-s.md .tasks/completed/T-2'
+- timestamp: '2026-06-08T22:23:07Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2272'
+  command: 'FW_SWITCH_FOCUS=1 git add .agentic-framework/bin/fw .fabric/components/tests-unit-test_mcp_wire_fragment.yaml .fabric/components/agents-mcp-framework-mcp.mcp-fragment.yaml && FW_SWITCH_FOCUS=1 bin/fw '
+- timestamp: '2026-06-08T23:27:01Z'
+  task: 'T-2268'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-1687'
+  command: 'git add .fabric/ && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-1687: fabric enrich — +2 edges across 2 cards
+
+bin-fw.yaml: +1 depends_on edge.
+test_arc010_hm_a_demo_evidence.yaml: cleanup + 1 '
+- timestamp: '2026-06-09T05:23:13Z'
+  task: 'T-2268'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2265'
+  command: 'FW_SWITCH_FOCUS=1 git add tests/integration/test_framework_mcp_server.bats && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2265: t9 — pin name-level parity between live MCP server and manifest'
+- timestamp: '2026-06-09T06:46:45Z'
+  task: 'T-2268'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2202'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/inbox.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2200+T-2202: backfill OBS-053/054/055 text bodies (fw note "add" silent-swallow)
+
+Previously these thr'
+- timestamp: '2026-06-09T07:45:52Z'
+  task: 'T-2273'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2274'
+  command: 'git add .tasks/active/T-2274-author-aef-readme-draft--research-dossie.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-2274: fix Verification block + AC Steps post-merge
+
+README.draft.md '
+- timestamp: '2026-06-09T07:46:53Z'
+  task: 'T-2273'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2274'
+  command: 'git add .tasks/active/T-2274-author-aef-readme-draft--research-dossie.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-2274: restore historical contract refs (replace_all over-correction)'
+- timestamp: '2026-06-09T07:50:00Z'
+  task: 'T-2273'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2274'
+  command: 'git add docs/reports/T-2274-readme-research.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-2274: close 2 dossier GAPS (watchtower.url format, bash test coverage)
+
+GAP #4 (watchtower.url'
+- timestamp: '2026-06-09T07:51:14Z'
+  task: 'T-2273'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2274'
+  command: 'git add README.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-2274: README hygiene — real fw recall output, misplaced marker removed
+
+Two improvements that move the README closer to t'
+- timestamp: '2026-06-09T07:54:28Z'
+  task: 'T-2273'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2274'
+  command: 'git add README.md && FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-2274: maturity table honesty — carve semantic recall out of "shipped stable"
+
+Spot-check against dossier §1F (the work ['
+- timestamp: '2026-06-09T08:36:17Z'
+  task: 'T-2277'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-09T08:36:38Z'
+  task: 'T-2275'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-09T08:47:09Z'
+  task: 'T-2279'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-09T08:47:20Z'
+  task: 'T-2280'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-09T09:03:35Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw git commit -m "T-077: Session handover S-2026-0609-1059" -- .context/handovers/S-2026-0609-1059.md .context/handovers/LATEST.md 2>&1 | tail -10'
+- timestamp: '2026-06-09T09:59:40Z'
+  task: 'T-2268'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2282'
+  command: 'bin/fw context add-learning "fw termlink dispatch ran claude -p without --permission-mode, so non-interactive workers couldnt trigger the workspace-trust dialog and MCP servers stayed status:pending'

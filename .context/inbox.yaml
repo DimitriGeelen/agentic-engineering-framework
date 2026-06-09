@@ -411,11 +411,25 @@ observations:
     captured: 2026-06-09T09:50:40Z
     context_task: T-2268
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-059
     text: "OBS-058 root cause identified: 'fw termlink dispatch' at agents/termlink/termlink.sh:714 calls claude -p without --permission-mode flag. Default permission mode keeps MCP servers in 'pending' state (workspace trust dialog can't fire non-interactively). All 5 MCP servers (context7, playwright, termlink, skills, framework-mcp) showed 'pending' in the demo session init — this is the symptom of the missing trust acceptance. Fix path: add '--permission-mode acceptEdits' OR '--allow-dangerously-skip-permissions' to the claude -p invocation at agents/termlink/termlink.sh:714. Trade-off — 'acceptEdits' restricts to Edit/Write+ASK; 'dangerously-skip-permissions' is full bypass. For HM-A demo worker (well-scoped prompt, mcp-only verbs), 'acceptEdits' likely sufficient. Operator triage: this is a dispatch-substrate change — same class as T-1703 (--tools plumbing). Once fixed, re-dispatch HM-A demo should let framework-mcp tools surface and the demo can run."
     captured: 2026-06-09T09:52:21Z
+    context_task: T-2268
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-060
+    text: "OBS-060: T-2282 (--permission-mode acceptEdits) is NECESSARY BUT NOT SUFFICIENT for MCP-using workers. Re-dispatched HM-A demo (arc010-hma-demo-002, 2026-06-09 10:12 UTC) with acceptEdits — verified by permission_mode.txt + meta.json + worker init events. Result: 4/5 MCP servers STILL 'pending' (context7, playwright, skills, framework-mcp); only termlink 'connected' (likely cached from earlier session). Worker did 8 Read + 3 ToolSearch + 3 Bash trying to diagnose mcp__fw__* absence, identical pattern to OBS-058 pre-T-2282. Killed at 1m to preserve budget. Hypothesis: claude -p doesn't auto-trust uncached MCP servers regardless of --permission-mode (acceptEdits gates write tools, not MCP server registration). Next diagnostic: try --dangerously-skip-permissions instead, OR investigate whether claude has a per-server trust mechanism. T-2268 ACs #4-7 remain blocked. Wdir: /tmp/tl-dispatch/arc010-hma-demo-002 was cleaned."
+    captured: 2026-06-09T10:14:46Z
+    context_task: T-2268
+    tags: []
+    status: pending
+    promoted_to: null
+  - id: OBS-061
+    text: "OBS-061: Refined hypothesis for MCP-pending in claude -p workers (continues OBS-060). User /root/.claude/settings.json permissions.allow has mcp__termlink__*, mcp__plugin_context7_*, mcp__plugin_playwright_* entries but ZERO mcp__framework-mcp__* entries. Project /opt/.../​.claude/settings.json has NO permissions block at all (hooks only). Hypothesis: claude -p workers use permissions.allow for MCP server trust pre-acceptance. Without an entry, --permission-mode acceptEdits is insufficient because the workspace trust dialog covers Edit/Write but not MCP server registration. Candidate fixes for operator: (a) add 'mcp__framework-mcp__*' to /root/.claude/settings.json permissions.allow (sovereignty-adjacent, affects parent session too), or (b) modify fw termlink dispatch to pass --mcp-config .mcp.json --strict-mcp-config (explicit operator opt-in), or (c) investigate per-project trust manifest. Note: --dangerously-skip-permissions and --permission-mode bypassPermissions are blocked when running as root (security check). Substrate gap; T-2268 demo blocked until operator picks a path. cf. OBS-058/059/060."
+    captured: 2026-06-09T10:19:02Z
     context_task: T-2268
     tags: []
     status: pending

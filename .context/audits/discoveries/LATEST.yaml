@@ -1,26 +1,25 @@
-timestamp: 2026-06-07T23:00:01Z
+timestamp: 2026-06-09T10:00:01Z
 findings:
   - id: D4
     level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - id: D5
     level: WARN
-    check: "D5: Task lifecycle — 14 anomaly(s): T-1820(24d-active) T-544(78d-active) T-1700(35d-active) T-801(65d-active) T-1542(41d-active) T-332(94d-active) T-464(87d-active) T-334(94d-active) T-1274(52d-active) T-1687(36d-active) (+4 more)"
+    check: "D5: Task lifecycle — 14 anomaly(s): T-1820(26d-active) T-544(79d-active) T-1700(36d-active) T-801(66d-active) T-1542(42d-active) T-332(96d-active) T-464(88d-active) T-334(96d-active) T-1274(54d-active) T-1687(37d-active) (+4 more)"
     mitigation: "Review flagged tasks for process issues"
   - id: D13
     level: WARN
-    check: "D13: Inception limbo — 9 task(s): A=5/B=4 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu) T-2137(B) T-2201(B) T-2203(B) (+1 more)"
+    check: "D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)"
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - id: D3
-    level: WARN
-    check: "D3: Commit velocity — WARN drop today=2 avg=43 ratio=0.0x"
-    mitigation: "Check if velocity reflects budget pressure or unusual activity"
+    level: PASS
+    check: "D3: Commit velocity — normal (PASS today=50 avg=47 ratio=1.1x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — none (PASS 40_commits_24h_no_bunching)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 102_commits_24h)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=12.3 earlier=11.0)"
+    check: "D6: Completion velocity — normal (PASS recent=13.0 earlier=11.1)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"
@@ -35,7 +34,7 @@ findings:
     check: "D15: Inception limbo state — none (PASS no_limbo)"
 
 summary:
-  pass: 7
-  warn: 3
+  pass: 8
+  warn: 2
   fail: 0
   total: 10

@@ -2,22 +2,64 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-05-31T18:57:07Z'
+last_run: '2026-06-09T09:40:46Z'
 baseline_count: 251
-current_count: 251
+current_count: 265
 gated_baseline: 4
 gated_current: 4
 mutators_ungated_baseline: 58
 readonly_exempt_baseline: 189
-status: pass
-exit_code: 0
+status: warn
+exit_code: 1
 findings:
-  new_unclassified_tools: []
+  new_unclassified_tools:
+  - termlink_fleet_governor_history
+  - termlink_fleet_governor_status
+  - termlink_hub_governor_status
+  - termlink_whoami
   gate_drop_outs: []
   gate_added_ratchet_candidates: []
   removed_tools: []
-  tag_format_warnings: []
-sessions_scanned: 28
+  tag_format_warnings:
+  - bad: respawn=
+    count: 1
+    suggested: null
+    sample_sessions:
+    - email-archive
+  auto_classified:
+    mutators_ungated: []
+    readonly_exempt:
+    - termlink_agent_find_idle
+    - termlink_channel_claim
+    - termlink_channel_claim_force_release
+    - termlink_channel_claim_transfer
+    - termlink_channel_claims
+    - termlink_channel_claims_history
+    - termlink_channel_claims_summary
+    - termlink_channel_claims_summary_all
+    - termlink_channel_release
+    - termlink_channel_renew
+apply_result: null
+sessions_scanned: 6
 sessions_probe_error: null
-warnings: []
+warnings:
+- "NEW: 4 unclassified tool(s) (manual review needed \u2014 outside T-1761 convention\
+  \ scope): termlink_fleet_governor_history, termlink_fleet_governor_status, termlink_hub_governor_status,\
+  \ termlink_whoami"
+- 'TAG-FORMAT-DRIFT: 1 non-canonical tag prefix(es) in live sessions: respawn=(1)'
 errors: []
+framework_findings:
+  status: pass
+  baseline_count: 6
+  current_count: 22
+  gated_baseline: 6
+  gated_current: 6
+  mutators_ungated_baseline: 0
+  readonly_exempt_baseline: 16
+  manifest_present: true
+  gate_drop_outs: []
+  new_unclassified_tools: []
+  ratchet_candidates: []
+  removed_tools: []
+  warnings: []
+  errors: []
