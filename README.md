@@ -462,7 +462,7 @@ are actively iterating. The maturity table is honest in both directions.
 | Capability | Status |
 |---|---|
 | Task gate, Tier 0, sovereignty refusals, single-gate invariant | shipped, exercised daily |
-| Three-layer memory, handover, resume, semantic recall | shipped, stable |
+| Three-layer memory (working/project/episodic), handover, resume | shipped, stable |
 | Component Fabric, blast-radius, drift | shipped, stable |
 | Task system, arcs, inceptions, horizon | shipped, stable (10 arcs registered) |
 | BVP, weighted directives, audit (260+ checks), reviewer | shipped, stable |
