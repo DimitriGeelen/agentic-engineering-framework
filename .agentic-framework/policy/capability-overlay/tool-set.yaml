@@ -1,0 +1,205 @@
+# policy/capability-overlay/tool-set.yaml
+#
+# Canonical tool-set classification for arc-010 (capability-overlay).
+# Sourced from docs/reports/T-2209-cli-mcp-overlay-inception.md §3.
+# Filed under T-2258 (arc-010 Slice 1A).
+#
+# Three classes:
+#   read_only                   — passive verbs; safe to expose unconditionally.
+#                                 No state change, no authority required.
+#   agent_authority             — state-changing verbs an agent may invoke under
+#                                 framework governance (task_id required, gates
+#                                 enforce focus/active-task/budget). Expose with
+#                                 task_id parameter wired into MCP tool schema.
+#   sovereignty_bound_excluded  — verbs gated by §ACD or $CLAUDECODE=1.
+#                                 EXCLUDED from MCP exposure today — surfacing
+#                                 them would require an auth model the framework
+#                                 does not yet have. Operator runs these via
+#                                 bin/fw (shell-only).
+#
+# Consumed by:
+#   - Slice 1B (orchestrator-mcp-scan extension; T-2256 pre-stage draft) reads
+#     this file to diff against the framework MCP server's actual tool registry.
+#   - Slice 2 (framework MCP server process) registers a tool for each entry
+#     in read_only: and agent_authority:; entries in sovereignty_bound_excluded:
+#     are never registered.
+#   - Slice 4 (Watchtower frontend migration) consults the schema_status: field
+#     on each entry to know which verbs are migration-ready.
+#
+# schema_status semantics:
+#   stub        — entry exists; tool schema TBD at Slice 2 design.
+#   defined     — schema is documented (input/output) but not implemented.
+#   verified    — schema implemented and exercised by at least one test.
+#
+# Slice 1A ships every entry as `stub`. Slice 2 promotes to `defined` as the
+# server's tool registry lands. Slice 3 agent-authority demo (HM-A) promotes
+# the relevant subset to `verified`.
+
+version: 1
+filed_by: T-2258
+arc_id: capability-overlay
+inception_decision: T-2209:iw2-verb-scope
+last_update: '2026-06-08T20:10Z'
+
+# ---------------------------------------------------------------------------
+# read_only (16 verbs) — passive, safe-everywhere, no governance gates apply
+# ---------------------------------------------------------------------------
+read_only:
+  - name: task_list
+    fw_command: task list
+    description: List tasks (filterable by --status, --type, --component, --horizon)
+    schema_status: defined
+  - name: task_show
+    fw_command: task show
+    description: Show task detail (frontmatter, ACs, recommendation, episodic summary)
+    schema_status: defined
+  - name: review_queue
+    fw_command: review-queue
+    description: List tasks awaiting human review (GO-first sort, includes verdicts)
+    schema_status: defined
+  - name: inception_status
+    fw_command: inception status
+    description: Show active inceptions with recommendation state and exploration commit counts
+    schema_status: defined
+  - name: bvp_rank
+    fw_command: bvp
+    description: Rank tasks by BVP (default actionable, --include-proposed/--include-completed flags)
+    schema_status: defined
+  - name: learnings
+    fw_command: learnings
+    description: Show learnings with task source and pattern links
+    schema_status: defined
+  - name: decisions
+    fw_command: decisions
+    description: Show all architectural and operational decisions
+    schema_status: defined
+  - name: recall
+    fw_command: recall
+    description: Query project memory (learnings, patterns, decisions, episodic summaries)
+    schema_status: defined
+  - name: ask
+    fw_command: ask
+    description: RAG query over project knowledge corpus
+    schema_status: defined
+  - name: gaps
+    fw_command: gaps
+    description: Show spec-reality gaps from concerns register (status, age, closure conditions)
+    schema_status: defined
+  - name: metrics
+    fw_command: metrics
+    description: Project metrics dashboard (commits/turn, FTC rate, productive-turn ratio)
+    schema_status: defined
+  - name: doctor
+    fw_command: doctor
+    description: Framework health check (config, drift, cron, enforcement baseline)
+    schema_status: defined
+  - name: fabric_search
+    fw_command: fabric search
+    description: Component fabric search by tag, name, or purpose
+    schema_status: defined
+  - name: fabric_deps
+    fw_command: fabric deps
+    description: Direct dependencies of a fabric component
+    schema_status: defined
+  - name: costs
+    fw_command: costs
+    description: Token-usage tracking from JSONL transcripts (session or project)
+    schema_status: defined
+  - name: version
+    fw_command: version
+    description: Show framework version (VERSION file, last git tag)
+    schema_status: defined
+
+# ---------------------------------------------------------------------------
+# agent_authority (6 verbs) — state-changing, agent-allowed under task_id gate
+# ---------------------------------------------------------------------------
+# Every entry in this class MUST require task_id in its MCP schema (the gate
+# that propagates focus/active-task through the call). Sovereignty boundary:
+# these verbs alter framework state but stay within agent authority — no
+# §ACD-gated state transitions reachable via this class.
+agent_authority:
+  - name: work_on
+    fw_command: work-on
+    description: Create task + set focus + start (the one-step task gate, accepts T-XXX or "name")
+    schema_status: defined
+  - name: task_update
+    fw_command: task update
+    description: Update task status, horizon, ACs, ownership (gated by check-active-task)
+    schema_status: defined
+  - name: note
+    fw_command: note
+    description: Capture a lightweight observation (writes to .context/observations/)
+    schema_status: defined
+  - name: context_focus
+    fw_command: context focus
+    description: Set or clear focus on a task (writes .context/working/focus.yaml)
+    schema_status: defined
+  - name: context_add_learning
+    fw_command: context add-learning
+    description: Record a learning under a task with source pattern reference
+    schema_status: defined
+  - name: assumption_add
+    fw_command: assumption add
+    description: Register an exploration assumption against a task (validation-tracked)
+    schema_status: defined
+
+# ---------------------------------------------------------------------------
+# sovereignty_bound_excluded — explicitly NOT exposed in this arc
+# ---------------------------------------------------------------------------
+# Every entry documents why exposure is foreclosed today. Re-exposure would
+# require: (1) an MCP-aware auth model, (2) operator §ACD sign-off, (3) a
+# separate inception arc. Listed for transparency — if an MCP consumer asks
+# "why can't I do X?", the answer is in this list.
+sovereignty_bound_excluded:
+  - name: bvp_confirm
+    fw_command: bvp confirm
+    excluded_reason: >-
+      Sets the bvp_scores: sovereignty-bound field on a task (T-1924). The
+      score IS the policy edit. F7/D8 boundary — only human confirms.
+  - name: inception_decide
+    fw_command: inception decide
+    excluded_reason: >-
+      go/no-go/defer on an inception's build authorisation. T-1259/T-1260
+      refuse under $CLAUDECODE=1. Re-exposure requires an authority model
+      that distinguishes operator from agent at the MCP transport layer.
+  - name: arc_close
+    fw_command: arc close
+    excluded_reason: >-
+      Closes an arc with --demo evidence and headline-mechanic verification
+      (T-1668, T-1671). §ACD-gated; operator decides closure based on
+      observed demo, not on agent self-report.
+  - name: tier0_approve
+    fw_command: tier0 approve
+    excluded_reason: >-
+      Approves a Tier-0 destructive action (force push, hard reset, rm -rf
+      patterns). Authority delegation that bypasses standard PreToolUse
+      gates — must remain operator-only.
+  - name: enforcement_baseline
+    fw_command: enforcement baseline
+    excluded_reason: >-
+      Stamps the canonical hook-config hash. B-005 prevents agent rewrite
+      of the enforcement surface itself. MCP exposure would let an agent
+      retroactively legitimise a hook config it just edited.
+
+# ---------------------------------------------------------------------------
+# Future-class notes (NOT exposed; not in any list above; recorded for clarity)
+# ---------------------------------------------------------------------------
+# Verbs intentionally absent from all three lists above:
+#   - audit (read)            — usable read-only but slow (~30s today, T-2067).
+#                               Surface candidate once T-2067 frontmatter loop is
+#                               fixed; would land in read_only: at that point.
+#   - fabric overview         — read-only but large output; not a high-frequency
+#                               agent use-case. Defer until a use-case surfaces.
+#   - search                  — keyword/semantic/hybrid search. Read-only and
+#                               useful; held back from Slice 1A only because the
+#                               hybrid (--semantic, --hybrid) modes need their
+#                               vector-DB schema documented before MCP exposure.
+#   - cron generate           — agent-allowed mutator but only meaningful for the
+#                               operator's machine (writes ~/.cron entries). MCP
+#                               exposure would be cross-machine-confusing.
+#   - handover                — agent-callable but ALWAYS called at end-of-session,
+#                               not mid-task. CLI invocation is the right surface.
+#
+# Each can be re-evaluated for Slice 2 promotion. Slice 1A's curated 22 covers
+# the demonstrated HM-A demo path (task-handling + observability) without
+# requiring an auth/schema breakthrough.

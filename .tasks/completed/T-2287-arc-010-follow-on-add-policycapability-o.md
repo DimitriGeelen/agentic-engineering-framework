@@ -10,10 +10,10 @@ description: >
   arc-010 follow-on slice for consumer enablement (current arc-010 GO scope is framework-self
   only). Origin: OBS-063.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: later
+horizon: null
 tags: [arc:capability-overlay, consumer, mcp, vendor-policy, obs-063]
 components: []
 related_tasks: [T-2265, T-2268, T-2241, T-2095]
@@ -22,8 +22,8 @@ related_tasks: [T-2265, T-2268, T-2241, T-2095]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-09T13:45:07Z
-last_update: '2026-06-09T14:00:02Z'
-date_finished:
+last_update: 2026-06-09T14:37:39Z
+date_finished: 2026-06-09T14:37:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -64,45 +64,25 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Consumer projects vendor the framework MCP server to `.agentic-framework/agents/mcp/framework_mcp_server.py` (T-2266 self-vendor agents). The server reads `policy/capability-overlay/tool-set.yaml` at startup to classify tools as read-only vs agent-authority vs sovereignty-bound-excluded (T-2258). But `_self_vendor_policy()` in `lib/upgrade.sh:260` only loops over a flat two-file list (`value-drivers.yaml bvp-scoring-rubric.md`) — the capability-overlay subdirectory is never synced. Consumer-side MCP server thus crashes on `tool-set.yaml-not-found` after `fw upgrade`.
+
+Path (a) per OBS-063: extend the explicit loop with `capability-overlay/tool-set.yaml` + add `mkdir -p $(dirname)` guard since the destination subdir doesn't exist in fresh vendored copies. Same shape as the existing two entries — same dry-run/real-run wording, same diff-vs-copy gate, same T-2240 pre-push regex catches the drift class.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_self_vendor_policy()` in `lib/upgrade.sh` includes `capability-overlay/tool-set.yaml` in its sync list
+- [x] `_self_vendor_policy()` creates the destination subdirectory (`.agentic-framework/policy/capability-overlay/`) before `cp` — `mkdir -p $(dirname "$_svp_dst")` guard added
+- [x] `.agentic-framework/policy/capability-overlay/tool-set.yaml` exists and is byte-identical to `policy/capability-overlay/tool-set.yaml`
+- [x] After running `bin/fw vendor self` once, `bin/fw vendor self --dry-run` reports zero "would sync" lines (clean state)
+- [x] Mutating `policy/capability-overlay/tool-set.yaml` (then reverting) causes `bin/fw vendor self --dry-run` to report exactly one "would sync 1 file(s) to .agentic-framework/policy/" line — proving the T-2240 pre-push gate sees subdir drift
+- [x] New bats test `tests/unit/t2287_self_vendor_policy_subdir.bats` covers: helper-defined ✓ / subdir-entry-listed ✓ / mkdir-guard-present ✓ / dry-run on mutate emits "would sync 1 file(s)" / real-run syncs and result is byte-identical / second dry-run is clean
+- [x] All sibling self-vendor regression bats remain PASS (`t2095`, `t2241`, `t2266`, `t2267`)
+- [x] `fw reviewer T-2287` returns Overall PASS
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+<!-- No Human section: all ACs above are deterministic / shell-verifiable. -->
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
@@ -137,6 +117,16 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# --- T-2287 ACs ---
+grep -q 'capability-overlay/tool-set.yaml' lib/upgrade.sh
+grep -qE 'mkdir -p .*dirname' lib/upgrade.sh
+test -f .agentic-framework/policy/capability-overlay/tool-set.yaml && diff -q .agentic-framework/policy/capability-overlay/tool-set.yaml policy/capability-overlay/tool-set.yaml
+out=$(bin/fw vendor self --dry-run 2>&1); test "$(echo "$out" | grep -c "would sync" || true)" = "0"
+TMP_FILE=$(mktemp -p /tmp fw-t2287-mutate-XXXXXX); cp policy/capability-overlay/tool-set.yaml "$TMP_FILE"; printf '\n# T-2287 smoke mutation\n' >> policy/capability-overlay/tool-set.yaml; out=$(bin/fw vendor self --dry-run 2>&1); cp "$TMP_FILE" policy/capability-overlay/tool-set.yaml; echo "$out" | grep -qE "would sync 1 file\(s\) to .agentic-framework/policy/"
+bats tests/unit/t2287_self_vendor_policy_subdir.bats
+bats tests/unit/t2095_upgrade_self_vendor_extraction.bats tests/unit/t2241_upgrade_self_vendor_templates.bats tests/unit/t2266_self_vendor_agents.bats tests/unit/t2267_self_vendor_web.bats
+out=$(bin/fw reviewer T-2287 --no-write 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$out" | grep -q "Overall:.*FAIL"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -155,27 +145,13 @@ bvp_scores_proposed:
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-06-09 — _self_vendor_policy() generalised to handle subdir entries
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** the existing helper's flat-list loop (`value-drivers.yaml bvp-scoring-rubric.md`) couldn't be extended with a subdir entry by just appending the path — `cp` would fail on missing destination directory. Added a single `mkdir -p "$(dirname "$_svp_dst")"` guard, gated on `dry_run != true` so dry-runs stay observation-only. The change is one-line + comment block + new loop entry; no new wiring or new function.
+- **Plan impact:** keeps the helper backward-compatible for the two flat entries (mkdir is harmless when dir already exists). T-2240 pre-push regex (`would sync`) catches the new subdir drift without modification — same matcher line, same gate.
+- **Triggered:** none. Bats test `t2287_self_vendor_policy_subdir.bats` mirrors `t2266_self_vendor_agents.bats` shape with one synthetic-fw fixture per behaviour leg.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
 
 ## Decisions
 
@@ -204,3 +180,21 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2287-arc-010-follow-on-add-policycapability-o.md
 - **Context:** Initial task creation
+
+### 2026-06-09T14:33:32Z — status-update [task-update-agent]
+- **Change:** horizon: later → now
+
+### 2026-06-09T14:33:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-76274845
+- **Timestamp:** 2026-06-09T14:37:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-09T14:37:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

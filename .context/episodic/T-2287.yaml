@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2287: arc-010 follow-on: add policy/capability-overlay/tool-set.yaml to _self_vendor_policy
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T14:37:53Z
+# ============================================================================
+
+task_id: T-2287
+task_name: "arc-010 follow-on: add policy/capability-overlay/tool-set.yaml to _self_vendor_policy"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T13:45:07Z
+completed: 2026-06-09T14:37:39Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_self_vendor_policy()` in `lib/upgrade.sh` includes `capability-overlay/tool-set.yaml` in its sync list'
+  - '`_self_vendor_policy()` creates the destination subdirectory (`.agentic-framework/policy/capability-overlay/`) before `cp` — `mkdir -p $(dirname "$_svp_dst")` guard added'
+  - '`.agentic-framework/policy/capability-overlay/tool-set.yaml` exists and is byte-identical to `policy/capability-overlay/tool-set.yaml`'
+  - 'After running `bin/fw vendor self` once, `bin/fw vendor self --dry-run` reports zero "would sync" lines (clean state)'
+  - 'Mutating `policy/capability-overlay/tool-set.yaml` (then reverting) causes `bin/fw vendor self --dry-run` to report exactly one "would sync 1 file(s) to .agentic-framework/policy/" line — proving the T-2240 pre-push gate sees subdir drift'
+  - 'New bats test `tests/unit/t2287_self_vendor_policy_subdir.bats` covers: helper-defined ✓ / subdir-entry-listed ✓ / mkdir-guard-present ✓ / dry-run on mutate emits "would sync 1 file(s)" / real-run syncs and result is byte-identical / second dry-run is clean'
+  - 'All sibling self-vendor regression bats remain PASS (`t2095`, `t2241`, `t2266`, `t2267`)'
+  - '`fw reviewer T-2287` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 52 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:capability-overlay, consumer, mcp, vendor-policy, obs-063]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 52
+  commits: 1
+  files_changed: 3
+  lines_added: 978
+  lines_removed: 449
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2287-arc-010-follow-on-add-policycapability-o.md
+generated_by: context-agent-hybrid

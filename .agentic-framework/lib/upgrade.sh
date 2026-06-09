@@ -256,13 +256,20 @@ _self_vendor_policy() {
         return 0
     fi
     local _svp_updated=0
-    local _svp_name _svp_src _svp_dst
-    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md; do
+    local _svp_name _svp_src _svp_dst _svp_dst_dir
+    # T-2287: capability-overlay/tool-set.yaml lives in a subdirectory — the
+    # destination needs `mkdir -p` since `.agentic-framework/policy/capability-overlay/`
+    # is absent in fresh vendored copies. The two original flat-list entries
+    # (value-drivers.yaml, bvp-scoring-rubric.md) don't need mkdir; the guard
+    # is harmless for them.
+    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml; do
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue
         if [ ! -f "$_svp_dst" ] || ! diff -q "$_svp_src" "$_svp_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
+                _svp_dst_dir="$(dirname "$_svp_dst")"
+                [ -d "$_svp_dst_dir" ] || mkdir -p "$_svp_dst_dir"
                 cp "$_svp_src" "$_svp_dst"
             fi
             _svp_updated=$((_svp_updated + 1))
