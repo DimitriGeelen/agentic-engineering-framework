@@ -99,9 +99,11 @@ depends_on:
   type: calls
 - target: lib/worker_kinds_parity.py
   type: calls
+- target: agents/mcp/manifest.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-09'
+last_enriched: '2026-06-10'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -563,3 +565,7 @@ depended_by:
   type: tests_by
 - target: tests/integration/test_arc010_hm_a_demo_evidence.bats
   type: tests_by
+- target: tests/unit/g065_readiness.bats
+  type: tests_by
+- target: tools/g065-readiness.py
+  type: called_by

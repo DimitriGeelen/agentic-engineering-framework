@@ -20,9 +20,11 @@ depends_on:
   type: calls
 - target: agents/git/lib/large-file-scan.sh
   type: calls
+- target: agents/mcp/manifest.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-03'
+last_enriched: '2026-06-10'
 depended_by:
 - target: agents/git/git.sh
   type: called_by

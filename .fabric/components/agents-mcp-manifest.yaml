@@ -15,6 +15,10 @@ depended_by:
   type: called_by
 - target: tests/integration/test_framework_mcp_server.bats
   type: tests_by
+- target: agents/git/lib/hooks.sh
+  type: called_by
+- target: bin/fw
+  type: called_by
 last_verified: 2026-06-08
 created_by: unknown
-last_enriched: '2026-06-09'
+last_enriched: '2026-06-10'
