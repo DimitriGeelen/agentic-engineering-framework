@@ -451,8 +451,8 @@ observations:
   - env-leak
   - framework-bug
   - class-signal
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: T-2289
 - id: OBS-054
   text: 'Framework''s orchestrator-mcp baseline drifted +12 tools (251 vs live 263). Scan reports 9 auto-classifiable readonly via T-1761 convention + 3 unclassified (termlink_fleet_governor_status, termlink_hub_governor_status,
     termlink_whoami — *_status/_whoami suffix outside convention scope). Workflow-designer worker did same fix on its target project today (T-2202 fix #1). Operator triage: --apply for the 9 ratchets the
