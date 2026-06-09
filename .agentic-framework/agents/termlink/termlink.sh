@@ -493,7 +493,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
     # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
@@ -536,6 +536,23 @@ cmd_dispatch() {
                 # worker can't call mcp__*__* verbs (OBS-058 + OBS-059, 2026-06-09).
                 # No validation here — claude -p validates the mode string.
                 permission_mode="$2"; shift 2 ;;
+            --mcp-config)
+                # T-2284: --mcp-config passthrough to claude -p. Default empty
+                # → claude -p uses parent's permissions.allow for MCP trust,
+                # which leaves servers in "status":"pending" when the parent
+                # has no per-server entry (OBS-060 + OBS-061, 2026-06-09).
+                # Pass an explicit .mcp.json path so the worker brings up its
+                # own MCP servers regardless of parent's trust state. Pairs
+                # naturally with --strict-mcp-config to refuse anything outside
+                # the supplied config.
+                # No validation here — claude -p validates the file at startup.
+                mcp_config="$2"; shift 2 ;;
+            --strict-mcp-config)
+                # T-2284: refuse MCP servers not in --mcp-config. Boolean flag,
+                # no value. Composes with --mcp-config above; passing strict
+                # without --mcp-config still surfaces as "--strict-mcp-config"
+                # to claude -p (which will use its default config lookup).
+                strict_mcp=1; shift ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -633,6 +650,25 @@ cmd_dispatch() {
         permission_mode_json="\"$permission_mode\""
     fi
 
+    # T-2284: --mcp-config + --strict-mcp-config plumb-through. Write
+    # mcp_config.txt (path string) and strict_mcp (sentinel file, presence ==
+    # true) read by run.sh to construct MCP_CONFIG_FLAG + STRICT_MCP_FLAG.
+    # Empty when no flag passed → claude -p uses parent's .mcp.json + parent's
+    # permissions.allow, which leaves MCP servers pending for workers whose
+    # parent has no per-server trust entry (OBS-060/OBS-061).
+    local mcp_config_json="null"
+    if [ -n "$mcp_config" ]; then
+        printf '%s\n' "$mcp_config" > "$wdir/mcp_config.txt"
+        # Escape quotes in path for JSON safety (paths rarely contain quotes,
+        # but be defensive — same convention as model_used_json above).
+        mcp_config_json="\"${mcp_config//\"/\\\"}\""
+    fi
+    local strict_mcp_json="false"
+    if [ -n "$strict_mcp" ]; then
+        : > "$wdir/strict_mcp"   # sentinel file — presence == enabled
+        strict_mcp_json="true"
+    fi
+
     # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
     # T-1700: env_keys lists the env var names injected (values not stored — possible secrets).
     # model_used / fallback_used now populated at dispatch time when resolution succeeds;
@@ -651,6 +687,8 @@ cmd_dispatch() {
   "env_keys": $env_keys_json,
   "tools_restricted": $tools_json,
   "permission_mode": $permission_mode_json,
+  "mcp_config": $mcp_config_json,
+  "strict_mcp": $strict_mcp_json,
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -705,6 +743,23 @@ if [ -f "$WDIR/permission_mode.txt" ] && [ -s "$WDIR/permission_mode.txt" ]; the
     PERMISSION_MODE_FLAG="--permission-mode $(cat "$WDIR/permission_mode.txt")"
 fi
 
+# T-2284: Build --mcp-config flag if mcp_config.txt was written by cmd_dispatch.
+# Empty/missing → claude -p inherits parent's .mcp.json + permissions.allow,
+# leaving MCP servers pending when the parent has no per-server trust entry
+# (OBS-060/OBS-061). Path is read verbatim — caller is responsible for
+# correctness (claude -p validates at startup).
+MCP_CONFIG_FLAG=""
+if [ -f "$WDIR/mcp_config.txt" ] && [ -s "$WDIR/mcp_config.txt" ]; then
+    MCP_CONFIG_FLAG="--mcp-config $(cat "$WDIR/mcp_config.txt")"
+fi
+
+# T-2284: Build --strict-mcp-config flag if strict_mcp sentinel was written.
+# Composes with MCP_CONFIG_FLAG. Boolean — file presence == enabled.
+STRICT_MCP_FLAG=""
+if [ -f "$WDIR/strict_mcp" ]; then
+    STRICT_MCP_FLAG="--strict-mcp-config"
+fi
+
 # T-1706: worker_kind dispatch routing. If worker_kind.txt requests ollama-loop,
 # run the thin tool-loop worker (curated litellm direct, ~150 LOC python). The
 # python worker writes result.jsonl + result.md + exit_code itself, so we skip
@@ -741,7 +796,7 @@ else
     # buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
     # this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
     # carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
-    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
     CLAUDE_PID=$!
     (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
     WATCHDOG_PID=$!
@@ -936,7 +991,9 @@ cmd_help() {
     echo -e "  ${GREEN}cleanup${NC}                      Deregister sessions, close terminal windows"
     echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal
                                      [--project DIR] [--model M] [--timeout S]
-                                     [--permission-mode acceptEdits]   (T-2282: MCP workers need this)"
+                                     [--permission-mode acceptEdits]   (T-2282: MCP workers need this)
+                                     [--mcp-config <path>] [--strict-mcp-config]
+                                       (T-2284: pin MCP server set independent of parent trust)"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"

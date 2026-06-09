@@ -3574,3 +3574,10 @@ X'` returning empty group."
   date: 2026-06-09
   context: Added via context agent
   application: TBD
+- id: L-468
+  learning: "MCP-server trust is a DISTINCT surface from workspace/file-tool trust. --permission-mode acceptEdits gates Edit/Write only; MCP server registration honours parent's permissions.allow OR --mcp-config <path>. Worker dispatchers needing mcp__*__* verbs MUST plumb --mcp-config (and --strict-mcp-config) — otherwise servers stay 'status':'pending' regardless of permission-mode. T-2282 (permission-mode) + T-2284 (mcp-config) + T-2283 (.mcp.json key rename) form the complete substrate trio for non-interactive MCP workers."
+  source: P-009
+  task: T-2284
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD
