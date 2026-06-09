@@ -154,6 +154,33 @@ print(len(listing['result']['tools']))
     echo "$scan_out" | grep -qE "Framework-mcp: pass — 6/22 tools gated"
 }
 
+@test "t2265 t9: live server tool names exactly match manifest (name-level parity, not just count)" {
+    # t3 + t6 pin counts (22). This pins name-level equality between the live
+    # server's tools/list response and the manifest (which is generated from
+    # tool-set.yaml). Without this, the server and YAML could each have 22
+    # tools but disjoint name sets, and the count-only tests would still pass.
+    [ -f "$DEFAULT_MANIFEST" ] || python3 "$MANIFEST_PY" emit >/dev/null
+    server_out="$BATS_TEST_TMPDIR/server.jsonl"
+    printf '%s\n' \
+        '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0"}}}' \
+        '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+        '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
+        | timeout 8 python3 "$SERVER_PY" 2>/dev/null > "$server_out"
+    run python3 -c "
+import json
+with open('$server_out') as f:
+    lines = [l for l in f if l.strip()]
+listing = json.loads(lines[-1])
+server_names = sorted(t['name'] for t in listing['result']['tools'])
+manifest = json.load(open('$DEFAULT_MANIFEST'))
+manifest_names = sorted(t['name'] for t in manifest['tools'])
+assert server_names == manifest_names, f'drift: server-only={set(server_names)-set(manifest_names)}, manifest-only={set(manifest_names)-set(server_names)}'
+print('OK name-parity', len(server_names))
+"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"OK name-parity 22"* ]]
+}
+
 @test "t2265 t8: fw mcp help lists new subcommands (T-2265 contract)" {
     run "$FW" mcp help
     [ "$status" -eq 0 ]
