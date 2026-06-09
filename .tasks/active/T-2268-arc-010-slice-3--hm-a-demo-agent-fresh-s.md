@@ -18,7 +18,7 @@ related_tasks: [T-2209, T-2265, T-2258]
 arc_id: capability-overlay
 unlocks_inception_decision: [T-2209:iw4-headline-mechanic]
 created: 2026-06-08T21:38:44Z
-last_update: 2026-06-08T23:02:06Z
+last_update: 2026-06-08T23:09:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,7 +72,7 @@ Materializes T-2209 `iw4-headline-mechanic` decision: produces the wire-level de
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.mcp.json` at PROJECT_ROOT includes `framework-mcp` server entry pointing at `agents/mcp/framework_mcp_server.py` (stdio command shape). **Hint:** Copy verbatim from `agents/mcp/framework-mcp.mcp-fragment.json` (T-2272 shipped the contract). Or: `bin/fw mcp wire-fragment >> /tmp/frag.json` then merge into `.mcp.json` mcpServers block.
+- [x] `.mcp.json` at PROJECT_ROOT includes `framework-mcp` server entry pointing at `agents/mcp/framework_mcp_server.py` (stdio command shape). **Hint:** Copy verbatim from `agents/mcp/framework-mcp.mcp-fragment.json` (T-2272 shipped the contract). Or: `bin/fw mcp wire-fragment >> /tmp/frag.json` then merge into `.mcp.json` mcpServers block.
 - [x] Demo-target stub task exists at `.tasks/active/T-2273-arc-010-hm-a-demo-target--generate-mcp-t.md` with workflow_type=build, status=captured, owner=agent, arc_id=capability-overlay. Real ACs + Verification block written (deliverable docs/reports/arc-010-mcp-tools-overview.md, 80-150 words, ≥4 capability groupings, references T-2265+T-2258+tool-set.yaml). Worker prompt at `docs/reports/arc-010-hm-a-demo-prompt.md` (instructs demo agent: use only mcp__fw__ verbs for governance, Write/Read allowed for deliverable, fail-don't-fallback if MCP errors).
 - [x] Demo evidence README scaffold at `docs/reports/arc-010-hm-a-demo-evidence.md` with: arc id (arc-010 / capability-overlay), anchor task (T-2209), demo task (T-2268), demo target (T-2273), headline_mechanic verbatim from arc YAML (backtick-tolerant), traceability table with 6 clause rows (positive + negative + deliverable + render check), AWAITING DEMO RUN status block with capture-host/timestamp/session-id placeholders, verdict template (FIRED/PARTIAL/REFUTED).
 - [ ] Demo transcript JSONL captured at `docs/reports/arc-010-hm-a-demo/transcript.jsonl` (or referenced from README) — full session of the fresh Claude Code instance driving the demo-target task.
@@ -272,9 +272,12 @@ out=$(grep -E "^demo_evidence:" .context/arcs/capability-overlay.yaml); echo "$o
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-46afea2a
-- **Timestamp:** 2026-06-08T23:08:06Z
+- **Scan ID:** R-698a6dd9
+- **Timestamp:** 2026-06-09T09:38:10Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - AC-verify-mismatch @ AC#1 (Agent)

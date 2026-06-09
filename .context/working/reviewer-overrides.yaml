@@ -652,3 +652,27 @@ overrides:
   expires_at: '2026-09-06T22:20:25Z'
   added_by: root
   added_at: '2026-06-08T22:20:25Z'
+- id: OV-8f4fe659
+  task_id: T-2274
+  pattern_id: AC-verify-mismatch
+  ac_index: 6
+  reason: "AC text references install.sh and lib/init.sh as the sources verified during\
+    \ research (dossier \xA71E); the close-time Verification block correctly checks\
+    \ the post-merge README.md state, not the source files. Same FP class as OV-822b8648\
+    \ (T-2265) and the canonical mock-only-integration override."
+  expires_at: '2026-09-07T07:52:13Z'
+  added_by: root
+  added_at: '2026-06-09T07:52:13Z'
+- id: OV-a4f414b4
+  task_id: T-2268
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "FP: AC#1 verification is an actual edit to .mcp.json + grep-in-file check.\
+    \ AC text references the framework_mcp_server.py path, but the path is in the\
+    \ AC's English description ('pointing at agents/mcp/framework_mcp_server.py'),\
+    \ not a Verification command literal \u2014 Verification at line 67 uses 'grep\
+    \ -q framework_mcp_server.py .mcp.json' which is the correct grep target. Heuristic\
+    \ mis-fires on inline-quoted paths in AC body."
+  expires_at: '2027-06-09T09:38:07Z'
+  added_by: root
+  added_at: '2026-06-09T09:38:07Z'
