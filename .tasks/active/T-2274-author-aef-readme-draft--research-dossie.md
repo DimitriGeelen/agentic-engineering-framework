@@ -16,7 +16,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-09T07:04:18Z
-last_update: 2026-06-09T07:44:32Z
+last_update: 2026-06-09T07:45:52Z
 date_finished: 2026-06-09T07:44:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -58,11 +58,11 @@ bvp_scores_proposed:
 
 ## Context
 
-Worker contract handed in by operator: deeply understand AEF (six research lenses — capability inventory, relationships, value, voice mining, installation strategies, maturity / stale-fact pass), test a prior framing hypothesis ("agentic harness, not just a gate; six layers Govern · Remember · Map · Organize · Measure · Coordinate; coordinate, not execute"), propose a README structure, and draft a new README at `README.md` alongside (NOT overwriting) the live `README.md`.
+Worker contract handed in by operator: deeply understand AEF (six research lenses — capability inventory, relationships, value, voice mining, installation strategies, maturity / stale-fact pass), test a prior framing hypothesis ("agentic harness, not just a gate; six layers Govern · Remember · Map · Organize · Measure · Coordinate; coordinate, not execute"), propose a README structure, and draft a new README at `README.draft.md` alongside (NOT overwriting) the live `README.md`. (Post-merge: operator approved verbally during the session, `README.draft.md` was merged into `README.md` in commit `8e61333dd` — see Updates.)
 
 Prior work to fold in (not redo): `docs/reports/T-445-readme-overhaul.md` already produced a March-2026 voice guide, competitive positioning study, evidence-of-value examples, and dialogue log. The README has grown stale since then — Arc system, BVP value-prioritisation, TermLink coordination, MCP server facade (arc-010, just shipped T-2265), and Watchtower depth all post-date it.
 
-Constraints (verbatim from contract): producer-not-judge — human evaluates; verified-not-reconstructed — every claim cites file:line or real output; no fabrication; honesty about maturity is the brand; do NOT overwrite the live README; deliver as `README.md` + a research dossier.
+Constraints (verbatim from contract): producer-not-judge — human evaluates; verified-not-reconstructed — every claim cites file:line or real output; no fabrication; honesty about maturity is the brand; do NOT overwrite the live README; deliver as `README.draft.md` + a research dossier.
 
 ## Acceptance Criteria
 
@@ -73,8 +73,8 @@ Constraints (verbatim from contract): producer-not-judge — human evaluates; ve
 - [x] Frame-test section produces a `confirmed / adjusted / rejected` verdict for every PHASE 2 hypothesis point, each with evidence
 - [x] Installation strategies catalogue documents at minimum: the curl|bash installer, local-clone install, `fw init --provider {claude|cursor|generic}`, vendored-vs-global, and the agent-led install flow — each with prerequisites and "use this when"
 - [x] Watchtower install-time behaviour is documented (auto-starts? URL surfaced?) — verified against `install.sh` and `lib/init.sh`; gap flagged if absent
-- [x] `README.md` exists at repo root, is NOT identical to `README.md`, and does NOT overwrite it (verified: `test -f README.md && test -f README.md && ! cmp -s README.md README.md`)
-- [x] Every fenced terminal-output block in `README.md` is either (a) real captured output traceable to a command run, or (b) clearly marked `[ILLUSTRATIVE — replace with real output]`
+- [x] `README.draft.md` exists at repo root, is NOT identical to `README.md`, and does NOT overwrite it (verified: `test -f README.md && test -f README.draft.md && ! cmp -s README.md README.draft.md`) (Historical: this AC was satisfied at delivery; the draft was later merged into `README.md` per operator's verbal GO and the draft file removed — see Updates.)
+- [x] Every fenced terminal-output block in `README.draft.md` (now `README.md` post-merge) is either (a) real captured output traceable to a command run, or (b) clearly marked `[ILLUSTRATIVE — replace with real output]`
 - [x] Dossier ends with a `## GAPS` section enumerating every claim the agent could NOT verify
 - [x] Agent-led install instructions appear FIRST in the draft's Installation section (leading the tiered menu)
 
