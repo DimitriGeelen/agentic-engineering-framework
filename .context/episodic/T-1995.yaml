@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1995: Unit suite red on master — stale test_arc_system + test_render_artefact_paths
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T23:00:49Z
+# ============================================================================
+
+task_id: T-1995
+task_name: "Unit suite red on master — stale test_arc_system + test_render_artefact_paths"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-22T19:02:48Z
+completed: 2026-05-22T19:20:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-22T21:36:19+02:00
+last_commit: 2026-05-22T21:36:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix stale arc-system tests + render-path PROJECT_ROOT pollution
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/test_arc_system.py::test_arc_show_renders_metadata_and_tasks` updated to expect the current arc-display output (`id: arc-001` + `slug: alpha`, per T-1969 dual-form) and passes'
+  - '`tests/unit/test_render_artefact_paths.py` passes inside the full `bin/fw test unit` run, not only in isolation — the cross-file ordering pollution is fixed (autouse fixture re-pins `web.shared.PROJECT_ROOT` per test)'
+  - 'Root-cause identified for the render-path pollution: which prior test mutates shared global state, and the fix prevents recurrence (not just reorders tests) — see ## RCA'
+  - 'Scope-root-not-symptom: the same T-1852 arc-close-precondition staleness lived in `test_arc_headline_demo.py` (8) + `test_arc_close_agent_gate.py` (7); both fixed (`--start` before close). All five touched files green together (49 passed)'
+  - 'Remaining post-fix reds are independent pre-existing failures (different subsystems, zero source changes by this task), triaged + filed as separate tasks — see ## Evolution'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix stale arc-system tests + render-path PROJECT_ROOT pollution'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1995-unit-suite-red-on-master--stale-testarcs.md'
+  - '.tasks/active/T-1996-g-069-regression-discoverprojectroot-cli.md'
+  - '.tasks/active/T-1997-two-web-route-unit-reds-arcs-empty-state.md'
+  - 'tests/unit/test_arc_close_agent_gate.py'
+  - 'tests/unit/test_arc_headline_demo.py'
+  - 'tests/unit/test_arc_system.py'
+  - 'tests/unit/test_render_artefact_paths.py'
+  - 'tests/unit/test_render_page_guard.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-22T21:36:19"
+    action: "T-1995: fix stale arc-system tests + render-path PROJECT_ROOT pollution"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 8
+  lines_added: 483
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1995-unit-suite-red-on-master--stale-testarcs.md
+generated_by: context-agent-hybrid

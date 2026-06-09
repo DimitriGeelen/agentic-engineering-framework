@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1932: BVP T-NEW-14b: auto-promote enabling + cron/trigger wiring (split parent T-NEW-14)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T23:00:48Z
+# ============================================================================
+
+task_id: T-1932
+task_name: "BVP T-NEW-14b: auto-promote enabling + cron/trigger wiring (split parent T-NEW-14)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: 2026-05-19T14:15:20Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-19T16:21:24+02:00
+last_commit: 2026-05-19T16:21:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP T-NEW-14b — fw bvp auto-promote --enable/--disable (§ACD, D8) + cron + R7 review reminder
+
+# Key outcomes
+outcomes:
+  - '`fw bvp auto-promote --enable --rationale "..."` flips `auto_promote.enabled: true` in `policy/value-drivers.yaml` AND writes an enabling entry to `.context/bvp-auto-promote-log.yaml` (separate "enabling event" vs "promotion event" schema)'
+  - 'Refuses under `$CLAUDECODE=1` unless `--i-am-human` or `--from-watchtower` (D8 enabling is a sovereignty act, §ACD-gated)'
+  - 'Refuses without `--rationale ≥30 chars`'
+  - '`fw bvp auto-promote --disable` symmetrically flips back to false (no rationale required — disabling is always safe)'
+  - 'Cron entry registered in `.context/cron-registry.yaml` to invoke the auto-promote pass periodically (default: every hour)'
+  - 'On `--enable`, a follow-up review task is auto-filed with `revisit_at: <today+30d>` (R7 mitigation — 30-day review reminder)'
+  - '`fw doctor` reports cron-registry-in-sync after the change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/bvp-auto-promote-log.yaml'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.context/working/focus.yaml'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-1932-bvp-auto-promote-enabling-cron-trigger-wirin.md'
+  - '.tasks/completed/T-1932-bvp-auto-promote-enabling-cron-trigger-wirin.md'
+  - 'tests/unit/bvp_auto_promote_enable.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T16:21:24"
+    action: "T-1932: BVP T-NEW-14b — fw bvp auto-promote --enable/--disable (§ACD, D8) + cron + R7 review reminder"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 435 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-14b, cli, acd-gate, cron]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 435
+  commits: 1
+  files_changed: 8
+  lines_added: 343
+  lines_removed: 113
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1932-bvp-auto-promote-enabling-cron-trigger-wirin.md
+generated_by: context-agent-hybrid

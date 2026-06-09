@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1950: G-066 deliverable #2 — reviewer auto-tick Agent ACs from machine-verifiable
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T23:00:52Z
+# ============================================================================
+
+task_id: T-1950
+task_name: "G-066 deliverable #2 — reviewer auto-tick Agent ACs from machine-verifiable"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-20T09:50:12Z
+completed: 2026-05-21T21:55:22Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-05-21T20:36:04+02:00
+last_commit: 2026-05-21T21:32:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — reviewer auto-tick design (GO recommended). collapse AC set to canonical inception 3 (drop gate-output + post-decision ACs)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated — initial framing ("auto-tick breaks a sovereignty boundary") corrected on read of T-1443; decisions 36/113/213 already sanction the principle; the gap is implementation, not policy'
+  - 'Assumptions tested — substrate audit: v1.3 per-AC findings already shipped (`Finding.ac_index` at `lib/reviewer/static_scan.py:49, 257, 703, 810, 906`); `update-task.sh` already invokes reviewer post-verification (line 11 docstring); feedback-stream + overrides infrastructure exists from v1.4'
+  - 'Recommendation written with rationale — Recommendation block in this file + artefact at `docs/reports/T-1950-reviewer-auto-tick-inception.md` answer the 4 implementation questions (trigger / scope / evidence / sovereignty rail) with rejected alternatives per question'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-21 — Reclassify build → inception (initial framing wrong)'
+    chose: 'Reclassify T-1950 to `workflow_type: inception` before any source edit'
+    rationale: 'Initial impulse was to treat T-1950 as a build (placeholder ACs notwithstanding) but the reviewer auto-tick capability requires 4 implementation decisions (trigger / scope / evidence / sovereignty rail) that T-1443 did not spell out. Building without those decisions would have surprised the sovereignty rail later (Q4 — digest-keyed feedback-stream design)'
+    alternatives_rejected: ['Build with "we''ll figure out the rails as we go" — G-020 spirit + T-1443''s own staged-rollout discipline (decision 14 in T-1443) say "design before build, even on a sanctioned principle"']
+  - decision: '2026-05-21 — Scope auto-tick to [REVIEWER]-prefixed Agent ACs at v1.0'
+    chose: 'Auto-tick fires only for Agent ACs whose text starts with `[REVIEWER]` (T-1811 prefix)'
+    rationale: 'T-1811 was filed precisely as the "reviewer-verifiable" prefix; auto-tick is the **dual** of [REVIEWER]. Conservative — easy to widen (v2: + Verification-bound; v3: all Agent), hard to narrow. T-1947''s prose-quality guard already flags [REVIEWER] misfiles; that audit becomes auto-tick''s safety net.'
+    alternatives_rejected: ['"All Agent ACs" (too broad — false-tick on misfiled prose-quality ACs) / "Agent ACs with matching Verification command" (heuristic mapping, conflicts with T-1831 C-4 progressive ticking)']
+  - decision: '2026-05-21 — Sovereignty rail: digest-keyed feedback-stream'
+    chose: 'Auto-tick at most once per `(task_id, ac_index, evidence_digest)` tuple; human un-ticks observed via scan-time diff + feedback-stream `human_untick_observed`; never re-tick same tuple'
+    rationale: 'Markdown `[ ]` has no state — initial-unticked vs human-unticked are indistinguishable in the body. Feedback-stream is the durable structured record (T-1443 decision 6). Digest-keying means evidence-changes re-evaluate naturally — human''s stale revoke doesn''t block updates after task content changes.'
+    alternatives_rejected: ['HTML comment marker (pollutes body, comment-blindness pattern) / Author opt-out via `[REVIEWER]:NO-AUTO` (friction-additive, violates 7 UX principles) / Side-file (duplicates feedback-stream, divergence risk)']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-1950-reviewer-auto-tick-inception.md'
+  - '.tasks/active/T-1950-g-066-deliverable-2--reviewer-auto-tick-.md'
+  - '.tasks/completed/T-1983-go-scope-traceability--inception-decisio.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-21T20:36:04"
+    action: "T-1950: inception — reviewer auto-tick design (GO recommended)"
+  - time: "2026-05-21T21:32:22"
+    action: "T-1950: collapse AC set to canonical inception 3 (drop gate-output + post-decision ACs)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 2165 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2165
+  commits: 4
+  files_changed: 7
+  lines_added: 681
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1950-g-066-deliverable-2--reviewer-auto-tick-.md
+generated_by: context-agent-hybrid

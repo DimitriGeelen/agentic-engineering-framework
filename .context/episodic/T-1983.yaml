@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1983: GO-scope traceability — inception decisions machine-readable + close gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T23:00:52Z
+# ============================================================================
+
+task_id: T-1983
+task_name: "GO-scope traceability — inception decisions machine-readable + close gate"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-21T18:53:14Z
+completed: 2026-05-21T19:29:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-21T20:57:23+02:00
+last_commit: 2026-05-21T20:57:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — GO-scope traceability (structural fix for G-066 root cause)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated — chain-of-blindness mapped, root cause distinguished from G-066 symptom'
+  - 'Assumptions tested — substrate analogue (T-1849 arc_id) confirmed; gate site identified (`update-task.sh --status work-completed`); migration grandfathering feasible'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'inception — GO-scope traceability (structural fix for G-066 root cause)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-21 — Schema lives in inception task frontmatter (not sidecar)'
+    chose: 'New optional frontmatter field `inception_decisions:` on `workflow_type: inception` task files. List of `{id, text, ships_in}` entries. Build children gain optional `unlocks_inception_decision:` (list of `T-XXX:DYY` references). Both fields validated by a PreToolUse hook on Write|Edit (same shape as T-1849 `check-arc-id`).'
+    rationale: 'Single source of truth in the task file itself; agents already write frontmatter; one parser; reuses T-1849''s validated hook pattern. No new file class to back up / mirror / migrate.'
+    alternatives_rejected: ['Sidecar YAML at `.context/inceptions/T-XXX.yaml` (duplicates content, divergence risk). Frontmatter on `docs/reports/T-XXX-*.md` (report files have no schema convention; agents would forget). Free-form markdown table parsed by regex (T-1864 ate the corpus exactly this way — never parse load-bearing data out of prose).']
+  - decision: '2026-05-21 — `ships_in:` is one of {file path, function/symbol name, test name, task-id, literal `deferred`}'
+    chose: '`ships_in:` is a string; validator accepts five shapes — (1) `path/to/file.py`, (2) `module.function_name`, (3) `tests/.../test_name.py::test_func`, (4) `T-XXX` (task ID — points at a build child), (5) literal `deferred:T-YYYY` (explicit defer with target). At gate time: shapes 1-3 are verified by file/symbol existence; shape 4 by the target task being `work-completed`; shape 5 by the target task existing in `.tasks/{active,completed}/`.'
+    rationale: 'Multiple referent types because decisions land in different artefacts (some are code, some are tests, some are policy YAML, some are explicit defers). Five shapes covers everything T-1443 needed without forcing a single style.'
+    alternatives_rejected: ['Force `ships_in: T-XXX` only (too rigid — decisions like "Spike F = 12-pattern catalogue" land as a YAML policy file, not a task). Free-form (loses gate enforceability). Composite YAML (overkill — one field, five validated shapes).']
+  - decision: '2026-05-21 — Gate fires in `update-task.sh --status work-completed` (not at inception-decide)'
+    chose: 'When an inception task transitions to `work-completed`, `update-task.sh` parses `inception_decisions:` and validates every entry''s `ships_in:`. If any entry''s referent is unreachable (file missing, function not defined, task not work-completed, deferred-to target absent), refuse the transition with a block message naming the failing entry and the override flag. Override: `--skip-inception-scope-trace "rationale"` (Tier-2, logged in `.gate-bypass-log.yaml`).'
+    rationale: 'The gate must fire when the inception **closes**, not when it decides — between decide and close, build children are filed and shipped, and the gate''s job is to verify they actually landed. Decide-time validation is too early; cron-time validation is too late (G-066 was post-hoc).'
+    alternatives_rejected: ['Gate at `fw inception decide go` (would refuse before any building started — backwards). Gate at `fw audit` (detective; G-066 already proves this latency is unacceptable). Gate at git pre-push (file-scope mismatch — git hook can''t reason about task lifecycle).']
+  - decision: '2026-05-21 — Migration: grandfather completed inceptions; gate applies only to populated `inception_decisions:`'
+    chose: 'The new frontmatter field is **optional**. Completed inceptions without it (200+ in `.tasks/completed/`) are grandfathered — gate does not retroact. New inceptions filed from the next agent session forward are encouraged (CLAUDE.md text) to populate the field. The gate only fires when the field is **non-empty** — empty/missing = "opt out", logged on close as an info-level note in feedback-stream.'
+    rationale: 'Retroactive enforcement would invalidate the existing corpus and produce noise. Grandfather + opt-in via population is the antifragile path — adoption is observable (count of inceptions with populated decisions over time), drift is preventable for new inceptions, existing trail is preserved.'
+    alternatives_rejected: ['Force-backfill on next-touch (high effort, agents would skip; produces "inception_decisions: []" placeholder noise). Hard cutoff date (arbitrary; introduces a class divide in the corpus). Mandatory on file (would block T-1442/T-1443''s legitimate "captured" filing pattern that pre-dates decisions).']
+  - decision: '2026-05-21 — Bypass contract parity (L-399): refusal names BOTH the flag and the env-var prefix'
+    chose: 'Override mechanism is **both** (a) `--skip-inception-scope-trace "rationale"` for direct invocations of `update-task.sh` (or `fw task update`) and (b) `FW_SKIP_INCEPTION_SCOPE_TRACE=1` env-var prefix for indirect invocations (commit hooks, git via `git commit`, etc). Refusal block message lists both with one-line guidance per L-399 (T-1890).'
+    rationale: 'Hooks gate command patterns; downstream parsers reject unknown flags. T-1890 origin is the same class — focus-drift gate''s `--switch-focus` worked on fw sub-scripts but not on `git commit`. The env-var prefix is the cross-cutting bypass.'
+    alternatives_rejected: ['Flag-only (breaks for indirect invocations — L-399). Env-var only (loses CLI discoverability). No override (Tier-2 needs an explicit escape hatch per CLAUDE.md §Enforcement Tiers).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1983-go-scope-traceability--inception-decisio.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-21T20:57:23"
+    action: "T-1983: inception — GO-scope traceability (structural fix for G-066 root cause)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 36
+  commits: 2
+  files_changed: 4
+  lines_added: 349
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1983-go-scope-traceability--inception-decisio.md
+generated_by: context-agent-hybrid

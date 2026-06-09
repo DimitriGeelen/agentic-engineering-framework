@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2060: polling containers inherit body hx-target=#content — innerHTML swap destroys
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T23:00:50Z
+# ============================================================================
+
+task_id: T-2060
+task_name: "polling containers inherit body hx-target=#content — innerHTML swap destroys"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-28T08:03:48Z
+completed: 2026-05-28T14:07:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-28T10:09:21+02:00
+last_commit: 2026-05-28T16:07:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix htmx polling — page-header destroyed after 10s on /approvals + /review/T-XXX. capture L-438 — htmx body hx-target leak into polling descendants. work-completed — htmx polling chrome restored on /approvals + /review
+
+# Key outcomes
+outcomes:
+  - '`web/templates/approvals.html:222` polling div carries explicit `hx-target="this"` overriding the body-level `#content` inheritance.'
+  - '`web/templates/review.html:591` polling div carries explicit `hx-target="this"` for the same reason.'
+  - '`curl -sf $(bin/fw watchtower url)/approvals | grep -q ''id="approvals-content"'' && curl -sf $(bin/fw watchtower url)/approvals | grep -q ''hx-target="this"''` — server-rendered approvals page contains the override.'
+  - 'Playwright re-test: load `/approvals`, wait 25s (one full polling cycle), screenshot — the four stat cards "Decisions / Arc Closure / Verifications / Total" remain boxed and aligned in a grid; page-header h1 "Approvals (N pending)" remains visible; breadcrumbs + Pin button remain present. Evidence: `approvals-t25-fixed.png` (124 pending, all chrome intact) vs `approvals-t25.png` (pre-fix, chrome gone, plain text flow).'
+  - '[REVIEW] `/approvals` and `/review/T-XXX` retain layout integrity across polling cycles'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix htmx polling — page-header destroyed after 10s on /approvals + /review/T-XXX'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-28 — choice of override token (`"this"` vs `"#approvals-content"`)'
+    chose: '`hx-target="this"`'
+    rationale: 'Self-referential, immune to id renaming. Same fix shape works for both templates with no per-id customisation. Matches the htmx idiom for self-swapping polling.'
+    alternatives_rejected: ['`hx-target="#approvals-content"` (and `#ac-container` on review.html) — works but couples the override to the id; future refactor that renames the container would silently re-introduce the bug.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-2060-polling-containers-inherit-body-hx-targe.md'
+  - '.tasks/completed/T-2060-polling-containers-inherit-body-hx-targe.md'
+  - 'web/templates/approvals.html'
+  - 'web/templates/review.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-28T10:09:21"
+    action: "T-2060: fix htmx polling — page-header destroyed after 10s on /approvals + /review/T-XXX"
+  - time: "2026-05-28T10:11:34"
+    action: "T-2060: capture L-438 — htmx body hx-target leak into polling descendants"
+  - time: "2026-05-28T16:07:57"
+    action: "T-2060: work-completed — htmx polling chrome restored on /approvals + /review"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 363 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, htmx, polling, watchtower, render-fidelity, arc-007]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 363
+  commits: 3
+  files_changed: 5
+  lines_added: 220
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2060-polling-containers-inherit-body-hx-targe.md
+generated_by: context-agent-hybrid

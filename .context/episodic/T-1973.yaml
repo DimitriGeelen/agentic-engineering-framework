@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1973: web/blueprints/bvp.py module docstring stale — 'sliders ship in T-1929' (T-1929 has shipped)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T23:00:48Z
+# ============================================================================
+
+task_id: T-1973
+task_name: "web/blueprints/bvp.py module docstring stale — 'sliders ship in T-1929' (T-1929 has shipped)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-21T07:06:20Z
+completed: 2026-05-21T07:08:16Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-21T09:08:06+02:00
+last_commit: 2026-05-21T09:08:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  web/blueprints/bvp.py docstring — drop 'sliders ship in T-1929'
+
+# Key outcomes
+outcomes:
+  - '`"Read-only by design. Live weight sliders + commit ship in T-1929 (T-NEW-12b)."` removed from `web/blueprints/bvp.py:12`'
+  - 'Replacement docstring accurately describes current state — names the §ACD CLI verb that backs the commit handler'
+  - 'Rest of module docstring intact (axis description, dot legend, math-duplication note all preserved)'
+  - '`python3 -c "import ast; ast.parse(open(''web/blueprints/bvp.py'').read())"` parses (verified)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1973-webblueprintsbvppy-module-docstring-stal.md'
+  - '.tasks/completed/T-1972-fw-bvp-empty-state-stale-text--t-1924-on.md'
+  - 'web/blueprints/bvp.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-21T09:08:06"
+    action: "T-1973: web/blueprints/bvp.py docstring — drop 'sliders ship in T-1929'"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 3
+  lines_added: 192
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1973-webblueprintsbvppy-module-docstring-stal.md
+generated_by: context-agent-hybrid
