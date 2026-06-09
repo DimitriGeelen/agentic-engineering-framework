@@ -12694,3 +12694,1313 @@ scan_id: R-0388ec20
 task_id: T-2246
 payload:
   task_file: .tasks/active/T-2246-file-bvp-driver-prompt-bundle-path-b-t-2.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T15:05:11Z'
+scan_id: R-5546d748
+task_id: T-2289
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T15:05:11Z'
+scan_id: R-5546d748
+task_id: T-2289
+payload:
+  task_file: .tasks/active/T-2289-libpathssh--re-derive-tasksdircontextdir.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T15:05:18Z'
+scan_id: R-2318251b
+task_id: T-2289
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T15:05:18Z'
+scan_id: R-2318251b
+task_id: T-2289
+payload:
+  task_file: .tasks/active/T-2289-libpathssh--re-derive-tasksdircontextdir.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T15:05:29Z'
+scan_id: R-1f2e7469
+task_id: T-2289
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 3
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T15:05:29Z'
+scan_id: R-1f2e7469
+task_id: T-2289
+payload:
+  task_file: .tasks/active/T-2289-libpathssh--re-derive-tasksdircontextdir.md
+---
+kind: override_applied
+timestamp: '2026-06-09T15:05:29Z'
+scan_id: R-1f2e7469
+task_id: T-2289
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-09T15:05:29Z'
+scan_id: R-1f2e7469
+task_id: T-2289
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-09T15:05:29Z'
+scan_id: R-1f2e7469
+task_id: T-2289
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 6
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-09T15:06:17Z'
+scan_id: R-23a8d444
+task_id: T-2289
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 3
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T15:06:17Z'
+scan_id: R-23a8d444
+task_id: T-2289
+payload:
+  task_file: .tasks/active/T-2289-libpathssh--re-derive-tasksdircontextdir.md
+---
+kind: override_applied
+timestamp: '2026-06-09T15:06:17Z'
+scan_id: R-23a8d444
+task_id: T-2289
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-09T15:06:17Z'
+scan_id: R-23a8d444
+task_id: T-2289
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-09T15:06:17Z'
+scan_id: R-23a8d444
+task_id: T-2289
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 6
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:13:06Z'
+scan_id: R-ccb411af
+task_id: T-2290
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:13:06Z'
+scan_id: R-ccb411af
+task_id: T-2290
+payload:
+  task_file: .tasks/active/T-2290-doctor-mcp-manifest-stale-check-uses-mti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:13:22Z'
+scan_id: R-ba0fbbd0
+task_id: T-2290
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:13:22Z'
+scan_id: R-ba0fbbd0
+task_id: T-2290
+payload:
+  task_file: .tasks/active/T-2290-doctor-mcp-manifest-stale-check-uses-mti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:21:03Z'
+scan_id: R-3143f5c5
+task_id: T-2290
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:21:03Z'
+scan_id: R-3143f5c5
+task_id: T-2290
+payload:
+  task_file: .tasks/active/T-2290-doctor-mcp-manifest-stale-check-uses-mti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:27:48Z'
+scan_id: R-8f875e9b
+task_id: T-2290
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:27:48Z'
+scan_id: R-8f875e9b
+task_id: T-2290
+payload:
+  task_file: .tasks/active/T-2290-doctor-mcp-manifest-stale-check-uses-mti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:40:34Z'
+scan_id: R-c3e729ad
+task_id: T-2290
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:40:34Z'
+scan_id: R-c3e729ad
+task_id: T-2290
+payload:
+  task_file: .tasks/active/T-2290-doctor-mcp-manifest-stale-check-uses-mti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:40:35Z'
+scan_id: R-95451f44
+task_id: T-2290
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:40:35Z'
+scan_id: R-95451f44
+task_id: T-2290
+payload:
+  task_file: .tasks/active/T-2290-doctor-mcp-manifest-stale-check-uses-mti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:54:11Z'
+scan_id: R-38b5e84f
+task_id: T-2291
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:54:11Z'
+scan_id: R-38b5e84f
+task_id: T-2291
+payload:
+  task_file: .tasks/active/T-2291-claudemd-tool-setyaml-touching-tasks-ver.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:54:17Z'
+scan_id: R-887ee238
+task_id: T-2291
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:54:17Z'
+scan_id: R-887ee238
+task_id: T-2291
+payload:
+  task_file: .tasks/active/T-2291-claudemd-tool-setyaml-touching-tasks-ver.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:54:53Z'
+scan_id: R-fbcdec78
+task_id: T-2291
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:54:53Z'
+scan_id: R-fbcdec78
+task_id: T-2291
+payload:
+  task_file: .tasks/active/T-2291-claudemd-tool-setyaml-touching-tasks-ver.md
+---
+kind: override_applied
+timestamp: '2026-06-09T16:54:53Z'
+scan_id: R-fbcdec78
+task_id: T-2291
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:56:45Z'
+scan_id: R-125d4e5d
+task_id: T-2291
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:56:45Z'
+scan_id: R-125d4e5d
+task_id: T-2291
+payload:
+  task_file: .tasks/active/T-2291-claudemd-tool-setyaml-touching-tasks-ver.md
+---
+kind: override_applied
+timestamp: '2026-06-09T16:56:45Z'
+scan_id: R-125d4e5d
+task_id: T-2291
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-09T16:56:46Z'
+scan_id: R-151f898c
+task_id: T-2291
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T16:56:46Z'
+scan_id: R-151f898c
+task_id: T-2291
+payload:
+  task_file: .tasks/active/T-2291-claudemd-tool-setyaml-touching-tasks-ver.md
+---
+kind: override_applied
+timestamp: '2026-06-09T16:56:46Z'
+scan_id: R-151f898c
+task_id: T-2291
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-09T18:59:46Z'
+scan_id: R-70ddd1c5
+task_id: T-2292
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T18:59:46Z'
+scan_id: R-70ddd1c5
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:00:30Z'
+scan_id: R-eca43657
+task_id: T-2292
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:00:30Z'
+scan_id: R-eca43657
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:00:45Z'
+scan_id: R-084530ed
+task_id: T-2292
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:00:45Z'
+scan_id: R-084530ed
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:00:45Z'
+scan_id: R-084530ed
+task_id: T-2292
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: auto_tick
+timestamp: '2026-06-09T19:00:45Z'
+scan_id: R-084530ed
+task_id: T-2292
+payload:
+  key: auto_tick:T-2292:5:ab825a1e24ca
+  ac_index: 5
+  digest: ab825a1e24ca
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 verified via `bin/fw reviewer T-2292`."
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:00:59Z'
+scan_id: R-e4ebdf17
+task_id: T-2292
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:00:59Z'
+scan_id: R-e4ebdf17
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:00:59Z'
+scan_id: R-e4ebdf17
+task_id: T-2292
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:00:59Z'
+scan_id: R-1a09fdaa
+task_id: T-2292
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:00:59Z'
+scan_id: R-1a09fdaa
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:00:59Z'
+scan_id: R-1a09fdaa
+task_id: T-2292
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:01:59Z'
+scan_id: R-f48f8072
+task_id: T-2292
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:01:59Z'
+scan_id: R-f48f8072
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:01:59Z'
+scan_id: R-f48f8072
+task_id: T-2292
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:01:59Z'
+scan_id: R-38d399ff
+task_id: T-2292
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:01:59Z'
+scan_id: R-38d399ff
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:01:59Z'
+scan_id: R-38d399ff
+task_id: T-2292
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:02:00Z'
+scan_id: R-23879bc8
+task_id: T-2292
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:02:00Z'
+scan_id: R-23879bc8
+task_id: T-2292
+payload:
+  task_file: .tasks/active/T-2292-obs-055--extend-convention-whitelist-wit.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:02:00Z'
+scan_id: R-23879bc8
+task_id: T-2292
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:16:26Z'
+scan_id: R-2e6b66b2
+task_id: T-2293
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:16:26Z'
+scan_id: R-2e6b66b2
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:16:41Z'
+scan_id: R-b406eac4
+task_id: T-2293
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:16:41Z'
+scan_id: R-b406eac4
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:16:41Z'
+scan_id: R-b406eac4
+task_id: T-2293
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:17:00Z'
+scan_id: R-7be25482
+task_id: T-2293
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:17:00Z'
+scan_id: R-7be25482
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:17:00Z'
+scan_id: R-7be25482
+task_id: T-2293
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: auto_tick
+timestamp: '2026-06-09T19:17:00Z'
+scan_id: R-7be25482
+task_id: T-2293
+payload:
+  key: auto_tick:T-2293:4:2f1830ce66bf
+  ac_index: 4
+  digest: 2f1830ce66bf
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 verified via `bin/fw reviewer T-2293`."
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:17:17Z'
+scan_id: R-c7e5979c
+task_id: T-2293
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:17:17Z'
+scan_id: R-c7e5979c
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:17:17Z'
+scan_id: R-c7e5979c
+task_id: T-2293
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:17:17Z'
+scan_id: R-5f134a28
+task_id: T-2293
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:17:17Z'
+scan_id: R-5f134a28
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:17:17Z'
+scan_id: R-5f134a28
+task_id: T-2293
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:17:59Z'
+scan_id: R-96209722
+task_id: T-2293
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:17:59Z'
+scan_id: R-96209722
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:17:59Z'
+scan_id: R-96209722
+task_id: T-2293
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:18:00Z'
+scan_id: R-0e984cb3
+task_id: T-2293
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:18:00Z'
+scan_id: R-0e984cb3
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:18:00Z'
+scan_id: R-0e984cb3
+task_id: T-2293
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:18:01Z'
+scan_id: R-c1c54c88
+task_id: T-2293
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:18:01Z'
+scan_id: R-c1c54c88
+task_id: T-2293
+payload:
+  task_file: .tasks/active/T-2293-fw-mcp-check--exit-code-drift-check-verb.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:18:01Z'
+scan_id: R-c1c54c88
+task_id: T-2293
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:26:17Z'
+scan_id: R-539dbe98
+task_id: T-2294
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:26:17Z'
+scan_id: R-539dbe98
+task_id: T-2294
+payload:
+  task_file: .tasks/active/T-2294-wire-fw-mcp-check-into-pre-push-self-ven.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:26:31Z'
+scan_id: R-ed718789
+task_id: T-2294
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:26:31Z'
+scan_id: R-ed718789
+task_id: T-2294
+payload:
+  task_file: .tasks/active/T-2294-wire-fw-mcp-check-into-pre-push-self-ven.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:26:31Z'
+scan_id: R-ed718789
+task_id: T-2294
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-06-09T19:26:31Z'
+scan_id: R-ed718789
+task_id: T-2294
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: auto_tick
+timestamp: '2026-06-09T19:26:31Z'
+scan_id: R-ed718789
+task_id: T-2294
+payload:
+  key: auto_tick:T-2294:4:ccc6346fc33f
+  ac_index: 4
+  digest: ccc6346fc33f
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 verified via `bin/fw reviewer T-2294`."
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-716d55ea
+task_id: T-2294
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-716d55ea
+task_id: T-2294
+payload:
+  task_file: .tasks/active/T-2294-wire-fw-mcp-check-into-pre-push-self-ven.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-716d55ea
+task_id: T-2294
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-716d55ea
+task_id: T-2294
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-4ce70846
+task_id: T-2294
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-4ce70846
+task_id: T-2294
+payload:
+  task_file: .tasks/active/T-2294-wire-fw-mcp-check-into-pre-push-self-ven.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-4ce70846
+task_id: T-2294
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-06-09T19:27:20Z'
+scan_id: R-4ce70846
+task_id: T-2294
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:27:21Z'
+scan_id: R-c8046e69
+task_id: T-2294
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:27:21Z'
+scan_id: R-c8046e69
+task_id: T-2294
+payload:
+  task_file: .tasks/active/T-2294-wire-fw-mcp-check-into-pre-push-self-ven.md
+---
+kind: override_applied
+timestamp: '2026-06-09T19:27:21Z'
+scan_id: R-c8046e69
+task_id: T-2294
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-06-09T19:27:21Z'
+scan_id: R-c8046e69
+task_id: T-2294
+payload:
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:42:59Z'
+scan_id: R-cedafb54
+task_id: T-2295
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:42:59Z'
+scan_id: R-cedafb54
+task_id: T-2295
+payload:
+  task_file: .tasks/active/T-2295-obs-054-leg-a--orchestrator-mcp-baseline.md
+---
+kind: auto_tick
+timestamp: '2026-06-09T19:42:59Z'
+scan_id: R-cedafb54
+task_id: T-2295
+payload:
+  key: auto_tick:T-2295:5:96c43a4ea1a4
+  ac_index: 5
+  digest: 96c43a4ea1a4
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 verified via `bin/fw reviewer T-2295`."
+---
+kind: scan_emitted
+timestamp: '2026-06-09T19:43:28Z'
+scan_id: R-21e8baa7
+task_id: T-2295
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T19:43:28Z'
+scan_id: R-21e8baa7
+task_id: T-2295
+payload:
+  task_file: .tasks/active/T-2295-obs-054-leg-a--orchestrator-mcp-baseline.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T20:02:44Z'
+scan_id: R-3c1870b5
+task_id: T-2296
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T20:02:44Z'
+scan_id: R-3c1870b5
+task_id: T-2296
+payload:
+  task_file: .tasks/active/T-2296-audit-wire-fw-mcp-check-as-mcp-manifest-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T20:02:59Z'
+scan_id: R-f28c6dde
+task_id: T-2296
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T20:02:59Z'
+scan_id: R-f28c6dde
+task_id: T-2296
+payload:
+  task_file: .tasks/active/T-2296-audit-wire-fw-mcp-check-as-mcp-manifest-.md
+---
+kind: override_applied
+timestamp: '2026-06-09T20:02:59Z'
+scan_id: R-f28c6dde
+task_id: T-2296
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: auto_tick
+timestamp: '2026-06-09T20:02:59Z'
+scan_id: R-f28c6dde
+task_id: T-2296
+payload:
+  key: auto_tick:T-2296:6:e7b9761033bd
+  ac_index: 6
+  digest: e7b9761033bd
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 verified via `bin/fw reviewer T-2296`."
+---
+kind: scan_emitted
+timestamp: '2026-06-09T20:05:53Z'
+scan_id: R-7fd3b527
+task_id: T-2296
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T20:05:53Z'
+scan_id: R-7fd3b527
+task_id: T-2296
+payload:
+  task_file: .tasks/active/T-2296-audit-wire-fw-mcp-check-as-mcp-manifest-.md
+---
+kind: override_applied
+timestamp: '2026-06-09T20:05:53Z'
+scan_id: R-7fd3b527
+task_id: T-2296
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-09T20:44:05Z'
+scan_id: R-35927673
+task_id: T-2297
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T20:44:05Z'
+scan_id: R-35927673
+task_id: T-2297
+payload:
+  task_file: .tasks/active/T-2297-audit-batch-task-frontmatter-parse-to-fi.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T20:46:38Z'
+scan_id: R-dd0b2771
+task_id: T-2297
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T20:46:38Z'
+scan_id: R-dd0b2771
+task_id: T-2297
+payload:
+  task_file: .tasks/active/T-2297-audit-batch-task-frontmatter-parse-to-fi.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T20:46:39Z'
+scan_id: R-2b79453e
+task_id: T-2297
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T20:46:39Z'
+scan_id: R-2b79453e
+task_id: T-2297
+payload:
+  task_file: .tasks/active/T-2297-audit-batch-task-frontmatter-parse-to-fi.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T21:03:35Z'
+scan_id: R-f08bf4f3
+task_id: T-2298
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T21:03:35Z'
+scan_id: R-f08bf4f3
+task_id: T-2298
+payload:
+  task_file: .tasks/active/T-2298-audit-batch-t-1855-stale-arc--t-2096-go-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T21:05:48Z'
+scan_id: R-dcf4227b
+task_id: T-2298
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T21:05:48Z'
+scan_id: R-dcf4227b
+task_id: T-2298
+payload:
+  task_file: .tasks/active/T-2298-audit-batch-t-1855-stale-arc--t-2096-go-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T21:05:49Z'
+scan_id: R-71148bf7
+task_id: T-2298
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T21:05:49Z'
+scan_id: R-71148bf7
+task_id: T-2298
+payload:
+  task_file: .tasks/active/T-2298-audit-batch-t-1855-stale-arc--t-2096-go-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T22:31:13Z'
+scan_id: R-42a0fb5b
+task_id: T-2299
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T22:31:13Z'
+scan_id: R-42a0fb5b
+task_id: T-2299
+payload:
+  task_file: .tasks/active/T-2299-g-065-closure-readiness-gauge--wiring-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T22:45:54Z'
+scan_id: R-0eb8d770
+task_id: T-2168
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T22:45:54Z'
+scan_id: R-0eb8d770
+task_id: T-2168
+payload:
+  task_file: .tasks/completed/T-2168-bvp-estimator-extension-for-f-recall--f-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T22:46:38Z'
+scan_id: R-25dba86f
+task_id: T-2180
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T22:46:38Z'
+scan_id: R-25dba86f
+task_id: T-2180
+payload:
+  task_file: .tasks/completed/T-2180-reviewer-fail-floor--classifyroute-10-re.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T22:46:57Z'
+scan_id: R-98b56231
+task_id: T-2182
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T22:46:57Z'
+scan_id: R-98b56231
+task_id: T-2182
+payload:
+  task_file: .tasks/completed/T-2182-t-2181-slice-1-fw-task-review-batch-help.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T22:52:06Z'
+scan_id: R-ef4b9dfd
+task_id: T-2196
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T22:52:06Z'
+scan_id: R-ef4b9dfd
+task_id: T-2196
+payload:
+  task_file: .tasks/completed/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T22:58:13Z'
+scan_id: R-4114d748
+task_id: T-2298
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T22:58:13Z'
+scan_id: R-4114d748
+task_id: T-2298
+payload:
+  task_file: .tasks/completed/T-2298-audit-batch-t-1855-stale-arc--t-2096-go-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-09T23:06:58Z'
+scan_id: R-bad09442
+task_id: T-2298
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-09T23:06:58Z'
+scan_id: R-bad09442
+task_id: T-2298
+payload:
+  task_file: .tasks/completed/T-2298-audit-batch-t-1855-stale-arc--t-2096-go-.md
