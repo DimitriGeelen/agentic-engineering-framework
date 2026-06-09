@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2288: fw termlink dispatch — plumb --allowed-tools through to claude -p (substrate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T14:03:02Z
+# ============================================================================
+
+task_id: T-2288
+task_name: "fw termlink dispatch — plumb --allowed-tools through to claude -p (substrate"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T13:48:09Z
+completed: 2026-06-09T14:02:54Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`cmd_dispatch` in `agents/termlink/termlink.sh` declares `allowed_tools=""` in its local vars (mirror T-2284 lines 496/538 shape).'
+  - '`cmd_dispatch` accepts `--allowed-tools <list>` case branch that consumes the next arg (shift 2). The value is written verbatim to `$wdir/allowed_tools.txt` when non-empty (conditional write — empty flag produces zero artefact, zero blast radius).'
+  - '`meta.json` schema includes `"allowed_tools": <json>` key (null when flag absent; string when present) — observability parity with T-2284''s `mcp_config` + `strict_mcp` keys.'
+  - '`run.sh` heredoc constructs `ALLOWED_TOOLS_FLAG="--allowed-tools $(cat "$WDIR/allowed_tools.txt")"` when the file exists and is non-empty; empty/missing → `ALLOWED_TOOLS_FLAG=""` (claude -p uses parent''s permissions.allow).'
+  - '`claude -p` invocation at the bottom of run.sh includes `$ALLOWED_TOOLS_FLAG` between `$STRICT_MCP_FLAG` and `--output-format` (preserve T-2284 ordering invariant).'
+  - '`bin/fw termlink help` advertises `--allowed-tools <list>` with the same wording style as `--permission-mode` and `--mcp-config`.'
+  - '`tests/integration/test_termlink_dispatch_allowed_tools.bats` — 9+ tests mirroring T-2284''s pattern (local-var declaration, case branch shape, conditional wdir write, meta.json schema, run.sh FLAG construction, claude -p invocation includes it, help text mentions it, backward-compat guard, live-smoke against current `bin/fw`). 100% PASS.'
+  - 'Sibling regression net: `bats tests/integration/test_termlink_dispatch_permission_mode.bats tests/integration/test_termlink_dispatch_mcp_config.bats tests/integration/test_termlink_dispatch_framework_root.bats` — 25/25 PASS (substrate quartet still green).'
+  - 'Live smoke: re-dispatch arc-010 HM-A demo as `arc010-hma-demo-005` with the new flag set to `"mcp__fw__work_on mcp__fw__task_update mcp__fw__context_focus Read Write Bash"` and confirm meta.json includes `"allowed_tools"` key. (Demo outcome — worker invokes mcp__fw__task_update and closes T-2273 — is materialised in T-2268, not this task.)'
+  - '`bin/fw reviewer T-2288` returns Overall: PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:capability-overlay, termlink, substrate, mcp, allowed-tools, obs-064]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2288-fw-termlink-dispatch--plumb---allowed-to.md
+generated_by: context-agent-hybrid

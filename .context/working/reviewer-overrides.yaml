@@ -698,3 +698,23 @@ overrides:
   expires_at: '2026-08-08T11:44:11Z'
   added_by: root
   added_at: '2026-06-09T11:44:11Z'
+- id: OV-44ee0fca
+  task_id: T-2288
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  reason: AC#2 references runtime path $wdir/allowed_tools.txt (cmd_dispatch's wdir,
+    NOT a committed file). Reviewer's verify-by-existence heuristic over-matches the
+    literal path string. Same FP class as OV-d0d5b03f (T-2284 AC#7), OV-a3e1c20d (T-2285
+    AC#4).
+  expires_at: '2026-09-07T14:02:49Z'
+  added_by: root
+  added_at: '2026-06-09T14:02:49Z'
+- id: OV-fcd00b4f
+  task_id: T-2288
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  reason: AC#4 references runtime path $WDIR/allowed_tools.txt (run.sh's wdir, NOT
+    a committed file). Same FP class as AC#2 override above.
+  expires_at: '2026-09-07T14:02:49Z'
+  added_by: root
+  added_at: '2026-06-09T14:02:49Z'
