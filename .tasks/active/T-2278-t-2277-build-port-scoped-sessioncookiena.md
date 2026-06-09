@@ -1,23 +1,25 @@
 ---
 id: T-2278
-name: "T-2277 build: port-scoped SESSION_COOKIE_NAME (Candidate 1, Leg A) — eliminates cross-Watchtower CSRF pollution"
+name: "T-2277 build: port-scoped SESSION_COOKIE_NAME (Candidate 1, Leg A) — eliminates
+  cross-Watchtower CSRF pollution"
 description: >
-  T-2277 build: port-scoped SESSION_COOKIE_NAME (Candidate 1, Leg A) — eliminates cross-Watchtower CSRF pollution
+  T-2277 build: port-scoped SESSION_COOKIE_NAME (Candidate 1, Leg A) — eliminates
+  cross-Watchtower CSRF pollution
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/app.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-09T08:37:19Z
-last_update: 2026-06-09T08:40:55Z
-date_finished: null
+last_update: 2026-06-09T08:45:32Z
+date_finished: 2026-06-09T08:45:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -28,6 +30,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-09T08:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-09T08:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2278: T-2277 build: port-scoped SESSION_COOKIE_NAME (Candidate 1, Leg A) — eliminates cross-Watchtower CSRF pollution
@@ -137,6 +163,30 @@ out=$(bin/fw reviewer T-2278 2>&1); echo "$out" | grep -qE "Overall:.*PASS"
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO — tick the [REVIEW] Human AC and close.
+
+**Rationale:** The cookie-rename change (`SESSION_COOKIE_NAME =
+f"fw_session_{Config.PORT}"`) is in production at :3000 and verified
+live. Cookie name is `fw_session_3000` per `curl -sI` Set-Cookie
+header. Implementation is a 2-line config delta with zero render
+surface (cosmetic + structural; not a layout/typography/visual
+change). 4/4 unit tests + 13/13 regression tests + reviewer PASS
++ live cookie inspection. The Human AC exists only to satisfy the
+render-surface gate on `web/app.py`; this is the canonical render-gate
+satisfier case where the touch is mechanical and the change is
+verifiable in DevTools (cookie name) rather than aesthetic.
+
+**Evidence:**
+- web/app.py:82-89 — config line in place (commit 80c7faed7).
+- tests/unit/test_csrf_cookie_scoping.py — 4/4 PASS (R-38a6b153).
+- Live Watchtower (PID 1495540, port 3000): `Set-Cookie: fw_session_3000=...`
+  in HTTP response headers, verified via `curl -sI http://localhost:3000/`.
+- Existing CSRF-touching test files (test_pins.py +
+  test_inception_decide_htmx_error.py): 13/13 PASS, no regression.
+- Reviewer R-38a6b153 verdict: Overall PASS, 0 findings.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -167,9 +217,12 @@ out=$(bin/fw reviewer T-2278 2>&1); echo "$out" | grep -qE "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-38a6b153
-- **Timestamp:** 2026-06-09T08:43:44Z
+- **Scan ID:** R-19bb7bb9
+- **Timestamp:** 2026-06-09T08:45:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-09T08:45:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
