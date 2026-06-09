@@ -10,7 +10,7 @@ description: >
 
 status: started-work
 workflow_type: build
-owner: claude-code
+owner: human
 horizon: now
 tags: [arc:capability-overlay, mcp, demo, headline-mechanic]
 components: []
@@ -82,7 +82,7 @@ Materializes T-2209 `iw4-headline-mechanic` decision: produces the wire-level de
 - [x] `/review/T-2273` renders HTTP 200 against running Watchtower — verified via `curl -s -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/review/T-2273"` returns `200`.
 - [x] Integration test at `tests/integration/test_arc010_hm_a_demo_evidence.bats` asserts: (a) demo evidence README exists at expected path, (b) traceability table contains each headline_mechanic clause (6+ rows), (c) JSONL grep counts match expected shape (post-demo skip-or-pass). 11 tests; 8 PASS scaffolding-phase + 3 skip-when-no-transcript (t9/t10/t11 upgrade to PASS once operator runs the demo). Verified green: `bats tests/integration/test_arc010_hm_a_demo_evidence.bats` 11/11.
 - [x] `bin/fw reviewer T-2268` returns Overall: PASS — Scan ID R-46afea2a, 2026-06-08T23:08:06Z, Catalogue v1.3-seed, Findings: none, Needs Human: no. (Cached at task footer.)
-- [ ] arc-010 YAML's `demo_evidence:` field updated to the captured artefact path (e.g. `docs/reports/arc-010-hm-a-demo-evidence.md`). This is the structural unblock for `fw arc close capability-overlay` (G-062 gate). Operator-only.
+<!-- T-2268 AC #11 (arc YAML demo_evidence: field) moved to ### Human [RUBBER-STAMP] below — `fw arc close` is §ACD-gated (T-1671), operator must drive the closure verb. The agent-side prep is complete (demo FIRED, evidence README populated, transcript captured); the remaining work is the single sovereignty-gated click. -->
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,7 +114,9 @@ Materializes T-2209 `iw4-headline-mechanic` decision: produces the wire-level de
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] Demo evidence README reads cleanly as a closure artefact for arc-010. **Steps:** Open `docs/reports/arc-010-hm-a-demo-evidence.md` (or referenced README) and walk the traceability table — for each row, jump to the artefact and check it shows what the row claims. **Expected:** Traceability holds; you could hand this to a reviewer who has never seen arc-010 and they would conclude the headline mechanic fired. Tone is factual, no marketing. **If not:** Note which clause is unsubstantiated and which artefact is misleading; the demo session needs a re-run with the gap closed.
+- [ ] [REVIEW] Demo evidence README reads cleanly as a closure artefact for arc-010. **Steps:** Open `docs/reports/arc-010-hm-a-demo-evidence.md` and walk the traceability table — for each row, jump to the artefact and check it shows what the row claims. **Expected:** Traceability holds; you could hand this to a reviewer who has never seen arc-010 and they would conclude the headline mechanic fired. Tone is factual, no marketing. **If not:** Note which clause is unsubstantiated and which artefact is misleading; the demo session needs a re-run with the gap closed.
+
+- [ ] [RUBBER-STAMP] Close arc-010 by populating its `demo_evidence:` field with the artefact path and running the §ACD-gated closure verb. **Steps:** From `/opt/999-Agentic-Engineering-Framework`, run: `bin/fw arc close capability-overlay --demo docs/reports/arc-010-hm-a-demo-evidence.md --i-am-human` (or equivalent via Watchtower `/arcs/capability-overlay/close` button). **Expected:** Command exits 0; arc YAML's `decision:`, `closed_at:`, and `demo_evidence:` fields populate; `bin/fw arc show capability-overlay` reports `status: closed`. **If not:** `fw arc close` will name the failing gate (G-062 demo gate, the headline_mechanic match, or sovereignty rail) — share that line. The demo IS captured at the cited path; if `fw arc close` reads the YAML and refuses, the failure is procedural, not evidentiary. **Why this is human-only:** `fw arc close` refuses under `$CLAUDECODE=1` per T-1671 (closure-decision sovereignty); the agent has no path to bypass.
 
 ## Recommendation
 

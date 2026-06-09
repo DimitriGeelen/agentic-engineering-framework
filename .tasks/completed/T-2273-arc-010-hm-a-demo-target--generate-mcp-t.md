@@ -12,12 +12,12 @@ description: >
   JSONL grep confirms mcp__fw__ usage and zero Bash(bin/fw task update|work-on|context
   focus) lines.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:capability-overlay, mcp, demo-target, hm-a]
-components: []
+components: [tests/integration/test_arc010_hm_a_demo_evidence.bats]
 related_tasks: [T-2268, T-2265, T-2258, T-2209]
 arc_id: capability-overlay
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -25,8 +25,8 @@ arc_id: capability-overlay
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T23:03:13Z
-last_update: 2026-06-09T07:45:25Z
-date_finished:
+last_update: 2026-06-09T13:55:25Z
+date_finished: 2026-06-09T13:55:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -74,11 +74,11 @@ Demo-target for arc-010 Slice 3 (T-2268). Fresh Claude Code worker (spawned with
 
 ### Agent
 <!-- Mechanical, verified from the deliverable + transcript. -->
-- [ ] Deliverable file `docs/reports/arc-010-mcp-tools-overview.md` exists.
-- [ ] Deliverable file word count between 80 and 150 words (`wc -w docs/reports/arc-010-mcp-tools-overview.md` ≥ 80 and ≤ 150).
-- [ ] Deliverable groups the 22 framework MCP tools (16 read_only + 6 agent_authority per `policy/capability-overlay/tool-set.yaml`) into ≥ 4 named capability groupings (e.g. task / context / focus / fabric / handover / metrics).
-- [ ] Deliverable references T-2265 (MCP server ship), T-2258 (tool-set artefact), and `policy/capability-overlay/tool-set.yaml` (path).
-- [ ] `bin/fw reviewer T-2273` returns Overall: PASS or CONCERN with findings only in suppressible FP classes (mock-only-integration, AC-verify-mismatch). Override via `bin/fw reviewer override add T-2273 ...` if confirmed FP.
+- [x] Deliverable file `docs/reports/arc-010-mcp-tools-overview.md` exists.
+- [x] Deliverable file word count between 80 and 150 words (`wc -w docs/reports/arc-010-mcp-tools-overview.md` ≥ 80 and ≤ 150).
+- [x] Deliverable groups the 22 framework MCP tools (16 read_only + 6 agent_authority per `policy/capability-overlay/tool-set.yaml`) into ≥ 4 named capability groupings (e.g. task / context / focus / fabric / handover / metrics).
+- [x] Deliverable references T-2265 (MCP server ship), T-2258 (tool-set artefact), and `policy/capability-overlay/tool-set.yaml` (path).
+- [x] `bin/fw reviewer T-2273` returns Overall: PASS or CONCERN with findings only in suppressible FP classes (mock-only-integration, AC-verify-mismatch). Override via `bin/fw reviewer override add T-2273 ...` if confirmed FP.
 
 <!-- No Human ACs: deliverable is mechanical (file exists + word count + ≥4 groupings +
      references). Subject of every check is structural/grep-able — agent self-verifies
@@ -142,27 +142,11 @@ out=$(bin/fw reviewer T-2273 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-06-09 — MCP work_on requires args pass-through; task already in started-work
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** `mcp__fw__work_on` needs the task ID passed as `args` in addition to `task_id` (which sets focus). Without args the verb prints usage and exits 1. The schema is consistent — `task_id` is the focus-setter, `args` are forwarded verbatim to `fw work-on`.
+- **Plan impact:** None; the demo path still fires correctly. The started-work→work-completed transition via `mcp__fw__task_update` is the mechanically auditable half.
+- **Triggered:** No new sub-task. Observation captured in Updates block (2026-06-09T08:00:00Z) for the arc-010 Slice 3 retro.
 
 ## Decisions
 
@@ -227,3 +211,15 @@ out=$(bin/fw reviewer T-2273 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
   `fw work-on` refuses unless `--i-am-demo-orchestrator` is passed. Not
   filing this as a task here — surfaces as observation OBS for the next
   arc-010 retro.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-03d9b18c
+- **Timestamp:** 2026-06-09T13:55:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-09T13:55:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

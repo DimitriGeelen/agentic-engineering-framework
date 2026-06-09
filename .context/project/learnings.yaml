@@ -3588,3 +3588,10 @@ X'` returning empty group."
   date: 2026-06-09
   context: Added via context agent
   application: TBD
+- id: L-470
+  learning: "Substrate quintet for non-interactive MCP-bearing claude -p dispatch: --permission-mode acceptEdits (workspace trust, T-2282) + .mcp.json server key matches mcp__<key>__* prefix (T-2283) + --mcp-config + --strict-mcp-config (server registration, T-2284) + FRAMEWORK_ROOT discriminator via FRAMEWORK.md presence (T-2285) + --allowed-tools listing the wired tool names (per-tool trust pre-grant, T-2288). All five required — drop any one and the worker stalls on the missing axis. Server registration is distinct from per-tool trust; both layers are non-interactive-hostile by default."
+  source: P-009
+  task: T-2288
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD
