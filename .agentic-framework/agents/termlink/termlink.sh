@@ -493,7 +493,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
     # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
@@ -526,6 +526,16 @@ cmd_dispatch() {
                 # T-1706: select worker implementation. Default empty → claude -p.
                 # `ollama-loop` → tools/ollama-tool-loop.py (curated litellm direct).
                 worker_kind="$2"; shift 2 ;;
+            --permission-mode)
+                # T-2282: permission-mode passthrough to claude -p. Default empty
+                # → claude -p uses its own default (interactive trust dialog).
+                # Non-interactive workers needing MCP servers should pass
+                # `acceptEdits` so the workspace trust dialog auto-resolves and
+                # MCP server tools surface in the deferred catalogue. Without
+                # this, .mcp.json-wired servers stay "status":"pending" and the
+                # worker can't call mcp__*__* verbs (OBS-058 + OBS-059, 2026-06-09).
+                # No validation here — claude -p validates the mode string.
+                permission_mode="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -613,6 +623,16 @@ cmd_dispatch() {
         tools_json="[$(printf '%s' "$tools" | awk -F, '{for(i=1;i<=NF;i++){gsub(/^[ \t]+|[ \t]+$/,"",$i); printf "%s\"%s\"",(i>1?",":""),$i}}')]"
     fi
 
+    # T-2282: --permission-mode plumb-through. Write permission_mode.txt read by
+    # run.sh to construct --permission-mode flag. Empty when no flag passed
+    # (claude -p uses its default; for non-interactive workers this leaves MCP
+    # servers stuck "status":"pending" — see OBS-058/OBS-059).
+    local permission_mode_json="null"
+    if [ -n "$permission_mode" ]; then
+        printf '%s\n' "$permission_mode" > "$wdir/permission_mode.txt"
+        permission_mode_json="\"$permission_mode\""
+    fi
+
     # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
     # T-1700: env_keys lists the env var names injected (values not stored — possible secrets).
     # model_used / fallback_used now populated at dispatch time when resolution succeeds;
@@ -630,6 +650,7 @@ cmd_dispatch() {
   "resolution_source": "${resolution_source:-none}",
   "env_keys": $env_keys_json,
   "tools_restricted": $tools_json,
+  "permission_mode": $permission_mode_json,
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -675,6 +696,15 @@ if [ -f "$WDIR/tools.txt" ] && [ -s "$WDIR/tools.txt" ]; then
     TOOLS_FLAG="--tools $(cat "$WDIR/tools.txt")"
 fi
 
+# T-2282: Build --permission-mode flag if permission_mode.txt was written by
+# cmd_dispatch. Empty/missing → claude -p uses its default (workspace trust
+# dialog, which can't fire non-interactively, leaving MCP servers in "pending"
+# state). Pass `acceptEdits` for non-interactive MCP-using workers (OBS-058).
+PERMISSION_MODE_FLAG=""
+if [ -f "$WDIR/permission_mode.txt" ] && [ -s "$WDIR/permission_mode.txt" ]; then
+    PERMISSION_MODE_FLAG="--permission-mode $(cat "$WDIR/permission_mode.txt")"
+fi
+
 # T-1706: worker_kind dispatch routing. If worker_kind.txt requests ollama-loop,
 # run the thin tool-loop worker (curated litellm direct, ~150 LOC python). The
 # python worker writes result.jsonl + result.md + exit_code itself, so we skip
@@ -711,7 +741,7 @@ else
     # buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
     # this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
     # carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
-    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
     CLAUDE_PID=$!
     (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
     WATCHDOG_PID=$!
@@ -905,7 +935,8 @@ cmd_help() {
     echo -e "  ${GREEN}status${NC}                       List active TermLink sessions"
     echo -e "  ${GREEN}cleanup${NC}                      Deregister sessions, close terminal windows"
     echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal
-                                     [--project DIR] [--model M] [--timeout S]"
+                                     [--project DIR] [--model M] [--timeout S]
+                                     [--permission-mode acceptEdits]   (T-2282: MCP workers need this)"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
