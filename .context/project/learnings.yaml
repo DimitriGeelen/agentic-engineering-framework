@@ -3595,3 +3595,10 @@ X'` returning empty group."
   date: 2026-06-09
   context: Added via context agent
   application: TBD
+- id: L-471
+  learning: "Before promoting an OBS-XXX to a task, re-grep the diagnosed surface against its enclosing should_run_section block — awk '/^if should_run_section/,/^fi # end/' is a 1-command verification. OBS-064 claimed the bugfix-learning block ran 'unconditionally'; an awk slice would have shown it sits inside 'should_run_section learning' (1898→2003) and never fires during --section structure. The real culprit (T-2067 per-file python3 fork) hid for 3+ weeks in plain sight while a wrong RCA shipped. Cost: one wasted commit + a stale OBS for a future agent to triage."
+  source: L-461
+  task: T-2297
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD

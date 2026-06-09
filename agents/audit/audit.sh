@@ -616,41 +616,54 @@ fi
 #     empty-dict and mention both origin classes.
 fm_fail_count=0
 fm_fail_list=""
-for tdir in "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"; do
-    [ -d "$tdir" ] || continue
-    while IFS= read -r tf; do
-        [ -f "$tf" ] || continue
-        # Exit codes: 0=ok, 2=fm is False/None (no frontmatter delimiters),
-        # 3=fm is empty dict (YAML parse error caught by parse_frontmatter)
-        rc=0
-        python3 -c "
-import sys, os
+# T-2297: single batched python3 invocation (was per-file fork — 1 process per
+# task file, ~178ms python+yaml startup × 2,261 files = 6.7 min on the audit's
+# pre-push --section structure path). One fork now: file paths stream via stdin,
+# python emits per-file rc<TAB>path lines; bash aggregates. Per-file rc semantics
+# preserved exactly (0=ok, 2=False/None, 3=empty-dict yaml.ScannerError).
+fm_parse_out=$(
+    {
+        for tdir in "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"; do
+            [ -d "$tdir" ] || continue
+            find "$tdir" -maxdepth 1 -name 'T-*.md' -not -name 'T-Test-*' -type f
+        done
+    } | python3 -c "
+import sys
 sys.path.insert(0, '$PROJECT_ROOT')
 try:
     from web.shared import parse_frontmatter
 except ImportError:
     sys.exit(0)  # web/ not present (consumer project) — skip silently
-with open(sys.argv[1]) as f:
-    content = f.read()
-fm, _ = parse_frontmatter(content)
-if fm is False or fm is None:
-    sys.exit(2)
-if isinstance(fm, dict) and len(fm) == 0:
-    sys.exit(3)
-sys.exit(0)
-" "$tf" 2>/dev/null
-        rc=$?
-        if [ "$rc" -ne 0 ]; then
-            fm_fail_count=$((fm_fail_count + 1))
-            tf_rel="${tf#$PROJECT_ROOT/}"
-            if [ "$rc" -eq 3 ]; then
-                fm_fail_list="$fm_fail_list\n  $tf_rel  (empty-dict / yaml.ScannerError — T-2069 class: folded scalar or quoting break)"
-            else
-                fm_fail_list="$fm_fail_list\n  $tf_rel  (no/invalid frontmatter delimiters — T-2067 class: components regex mangle)"
-            fi
-        fi
-    done < <(find "$tdir" -maxdepth 1 -name 'T-*.md' -not -name 'T-Test-*' -type f)
-done
+for line in sys.stdin:
+    tf = line.rstrip('\n')
+    if not tf:
+        continue
+    try:
+        with open(tf) as f:
+            content = f.read()
+        fm, _ = parse_frontmatter(content)
+        if fm is False or fm is None:
+            rc = 2
+        elif isinstance(fm, dict) and len(fm) == 0:
+            rc = 3
+        else:
+            rc = 0
+    except Exception:
+        rc = 2
+    print(f'{rc}\t{tf}')
+" 2>/dev/null
+)
+while IFS=$'\t' read -r rc tf; do
+    [ -z "$rc" ] && continue
+    [ "$rc" = "0" ] && continue
+    fm_fail_count=$((fm_fail_count + 1))
+    tf_rel="${tf#$PROJECT_ROOT/}"
+    if [ "$rc" = "3" ]; then
+        fm_fail_list="$fm_fail_list\n  $tf_rel  (empty-dict / yaml.ScannerError — T-2069 class: folded scalar or quoting break)"
+    else
+        fm_fail_list="$fm_fail_list\n  $tf_rel  (no/invalid frontmatter delimiters — T-2067 class: components regex mangle)"
+    fi
+done <<< "$fm_parse_out"
 if [ "$fm_fail_count" -gt 0 ]; then
     warn "Task frontmatter: $fm_fail_count task(s) have unparseable YAML" \
          "Files: $(printf '%b' "$fm_fail_list")" \
