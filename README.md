@@ -55,12 +55,19 @@ Three layers carry knowledge forward:
 - **Episodic memory** — condensed histories of every completed task, generated
   at completion (`.context/episodic/`)
 
-```bash
-fw recall "authentication timeout pattern"
-# → returns matching learnings, patterns, and episodic entries by meaning,
-#   not just keyword.
 ```
-*[ILLUSTRATIVE — exact ranked output varies by project]*
+$ fw recall "authentication timeout pattern"
+Related knowledge:
+  L-017: Hooks that block on network IO must be bounded. Auto-handover at … (from T-1277)
+  L-367: Background subshell watchdogs (fork-and-sleep timeout pattern) leak … (from T-1687)
+  L-412: Filed bugs can be symptoms of an upstream perf/timeout issue …      (from T-1955)
+  L-013: Heredoc bodies stripped before pattern matching                     (from T-094)
+  L-015: Reduced test_all_nav_routes from 11 routes to 3 …                   (from T-1014)
+```
+
+Matches are returned by meaning, not keyword — none of the surfaced learnings
+literally say "authentication timeout pattern" but each is a timeout/blocking
+class the next session can read in 30 seconds.
 
 At session end, `fw handover --commit` writes a structured handover that the
 next session reads on start. Compaction recovery via `fw resume status` works
@@ -191,7 +198,6 @@ fw context add-learning "Always set connection pool limits" --task T-001
 fw decisions      # browse all architectural decisions with rationale
 fw learnings      # browse all captured learnings
 ```
-*[ILLUSTRATIVE — output varies by project]*
 
 </details>
 
