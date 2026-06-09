@@ -6,16 +6,16 @@ description: >
   Inception: Multi-instance Watchtower CSRF pollution — per-project session cookies
   overwrite each other across ports on same host
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-09T08:26:10Z
-last_update: '2026-06-09T08:30:03Z'
-date_finished:
+last_update: 2026-06-09T08:36:17Z
+date_finished: 2026-06-09T08:36:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -168,15 +168,15 @@ No further spikes needed before GO decision.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -249,7 +249,11 @@ Three-leg bundle: (A) port-scoped SESSION_COOKIE_NAME (~2 LoC eliminates the cla
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Three-leg bundle: (A) port-scoped SESSION_COOKIE_NAME (~2 LoC eliminates the class) + (B) CSRF-403 diagnostic enrichment (silent 403 → actionable recovery hint) + (C) fw doctor multi-instance WARN. Observed in production 2026-06-09 blocking T-2275 GO decision via Watchtower (POST hit :3101 Video-riper instead of :3000 AEF; session cookie shared cookie slot 'session' across all 9 running Watchtower instances on 192.168.10.107).
+
+**Date**: 2026-06-09T08:36:17Z
 
 ## Updates
 
@@ -258,3 +262,26 @@ Three-leg bundle: (A) port-scoped SESSION_COOKIE_NAME (~2 LoC eliminates the cla
 
 ### 2026-06-09T08:27:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-09T08:36:17Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Three-leg bundle: (A) port-scoped SESSION_COOKIE_NAME (~2 LoC eliminates the class) + (B) CSRF-403 diagnostic enrichment (silent 403 → actionable recovery hint) + (C) fw doctor multi-instance WARN. Observed in production 2026-06-09 blocking T-2275 GO decision via Watchtower (POST hit :3101 Video-riper instead of :3000 AEF; session cookie shared cookie slot 'session' across all 9 running Watchtower instances on 192.168.10.107).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-988391d4
+- **Timestamp:** 2026-06-09T08:36:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-09T08:36:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
