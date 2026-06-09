@@ -166,6 +166,13 @@ CONVENTION_NAMESPACES = ('termlink_agent_', 'termlink_channel_')
 CONVENTION_MUTATOR_VERBS_SINGLE = frozenset({
     'post', 'send', 'broadcast', 'edit', 'react', 'pin', 'quote',
     'redact', 'reply', 'star', 'ack', 'forward', 'reauth',
+    # T-2292 / OBS-055: channel-claim/lease domain (claim, release, renew,
+    # transfer). 8th-batch extension beyond chat-system verbs — added after
+    # `--apply` revealed 5 state-mutating `termlink_channel_*` tools would
+    # have been auto-classified `readonly_exempt`. Read-shape suffixes
+    # (`claims`/`claims_history`/`claims_summary`/`claims_summary_all`) stay
+    # readonly because the last-segment is a noun/qualifier, not a verb.
+    'claim', 'release', 'renew', 'transfer',
 })
 CONVENTION_MUTATOR_VERBS_MULTI = frozenset({
     'poll_start', 'poll_end', 'poll_vote', 'typing_emit',
