@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2295: OBS-054 leg A — orchestrator-mcp baseline ratchet (8th batch: read-shape suffixes)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T19:43:34Z
+# ============================================================================
+
+task_id: T-2295
+task_name: "OBS-054 leg A — orchestrator-mcp baseline ratchet (8th batch: read-shape suffixes)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T19:39:55Z
+completed: 2026-06-09T19:43:27Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`bash agents/audit/orchestrator-mcp-scan.sh --apply` ran successfully; `apply_result:` in LATEST.yaml contains both `applied_mutators` (5) and `applied_readonly` (7) with baseline 251→263.'
+  - '`.context/audits/orchestrator-mcp-baseline.yaml` `readonly_exempt.tools` count increased by exactly 7 over pre-apply (189→196) and `mutators_ungated.tools` by exactly 5 (58→63), each containing all 12 named candidates.'
+  - 'Re-run scan (no `--apply`) shows the 12 candidates do NOT appear in `findings.auto_classified` (they''re now baseline). Remaining warnings limited to the 4 unclassified `_governor_*`/`_whoami` tools + tag-format-drift.'
+  - 'Update OBS-054 status: leg A actioned via `promoted_to: T-2295`, status flips `pending → promoted`. Leg B residual (4 unclassified outside convention scope) noted for operator decision.'
+  - '[REVIEWER] Reviewer PASS — verified via `bin/fw reviewer T-2295`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [orchestrator-mcp, baseline-ratchet, obs-054]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2295-obs-054-leg-a--orchestrator-mcp-baseline.md
+generated_by: context-agent-hybrid

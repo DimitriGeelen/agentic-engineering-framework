@@ -456,15 +456,17 @@ observations:
 - id: OBS-054
   text: 'Framework''s orchestrator-mcp baseline drifted +12 tools (251 vs live 263). Scan reports 9 auto-classifiable readonly via T-1761 convention + 3 unclassified (termlink_fleet_governor_status, termlink_hub_governor_status,
     termlink_whoami — *_status/_whoami suffix outside convention scope). Workflow-designer worker did same fix on its target project today (T-2202 fix #1). Operator triage: --apply for the 9 ratchets the
-    framework''s baseline; the 3 *_status/_whoami need manual readonly_exempt entry. CAUTION: see OBS-055 — convention may misclassify channel-claim subsystem.'
+    framework''s baseline; the 3 *_status/_whoami need manual readonly_exempt entry. CAUTION: see OBS-055 — convention may misclassify channel-claim subsystem. LEG A DONE 2026-06-09: T-2295 ran --apply post-T-2292;
+    baseline 251→263 (+5 mutators, +7 readonly via convention). LEG B RESIDUAL: 4 unclassified (termlink_fleet_governor_history/status, termlink_hub_governor_status, termlink_whoami) outside convention scope;
+    decision is whether to extend CONVENTION_NAMESPACES or add manual entries — operator triage.'
   captured: 2026-06-09 06:16:56+00:00
   context_task: T-2200
   tags:
   - orchestrator-mcp
   - baseline-drift
   - mechanical-ratchet
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: T-2295
 - id: OBS-055
   text: 'T-1761 convention whitelist near-miss. Ran --apply this session; diff revealed 9 termlink_channel_* tools classified readonly including ''claim'', ''force_release'', ''transfer'', ''release'',
     ''renew'' — names suggesting state mutation. Whitelist (CONVENTION_MUTATOR_VERBS_SINGLE in orchestrator-mcp-scan.sh:166) built from chat-system verbs (post/send/edit/react). Reverted before commit.
