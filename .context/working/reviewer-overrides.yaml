@@ -745,3 +745,12 @@ overrides:
   expires_at: '2026-09-07T15:05:25Z'
   added_by: root
   added_at: '2026-06-09T15:05:25Z'
+- id: OV-910052ce
+  task_id: T-2291
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  reason: "FP: AC#2 quotes the path policy/capability-overlay/tool-set.yaml as the\
+    \ trigger string for the new CLAUDE.md rule \u2014 same FP class as T-2284/T-2285/T-2288/T-2289/T-2290"
+  expires_at: '2026-09-07T16:54:23Z'
+  added_by: root
+  added_at: '2026-06-09T16:54:23Z'

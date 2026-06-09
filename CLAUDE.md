@@ -181,6 +181,20 @@ Each transition is a separate state — "wired" is not "deployed", "deployed" is
 
 T-1942 + T-1943 close the registry→generated leg at both surfaces (doctor WARN, audit FAIL). T-1771 covers generated→deployed. Task-close is the earliest gate; audit's daily cron catches anything that slips past.
 
+**Tool-set.yaml-touching tasks (T-2290, arc-010):** If your task edited `policy/capability-overlay/tool-set.yaml` or `agents/mcp/manifest.py`, `## Verification` MUST include:
+
+```
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "framework MCP " && ! echo "$out" | grep -q "manifest stale relative to tool-set.yaml"
+```
+
+The chain is `tool-set.yaml` → `framework-mcp-manifest.json` — one transition (tool catalogue → emitted manifest). Drift surface:
+
+1. **tool-set → manifest** — `fw mcp emit-manifest` not run after a content-changing edit to `tool-set.yaml` (or to the emitter). Doctor emits `WARN framework MCP manifest stale relative to tool-set.yaml`. Sibling to the cron registry→generated leg above.
+
+The verification command above checks BOTH the OK line (any tool count) AND the absence of the stale-WARN. T-2290 hardened doctor's stale-check to use content compare (md5 of `manifest-show` vs on-disk) instead of raw mtime — so `touch`/`git checkout`/`fw vendor self` no longer fire false positives, and only real content drift surfaces the WARN. The Verification command is therefore an authoritative content gate, not an mtime gate.
+
+If you edited `tool-set.yaml` without touching `agents/mcp/manifest.py`, regenerate before close: `bin/fw mcp emit-manifest`. If you edited the emitter, manifest content may shift even when tool-set.yaml is unchanged — same drill.
+
 ### Task Lifecycle
 
 ```
