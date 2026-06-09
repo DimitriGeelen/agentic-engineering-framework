@@ -4,20 +4,20 @@ name: "T-2275 build: auto-linker prongs A+B (Candidate 2) — add docs/articles/
 description: >
   T-2275 build: auto-linker prongs A+B (Candidate 2) — add docs/articles/ + root files to VIEWABLE allowlist
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-09T08:45:55Z
-last_update: 2026-06-09T08:45:55Z
-date_finished: null
+last_update: 2026-06-09T08:51:40Z
+date_finished: 2026-06-09T08:51:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -199,9 +199,12 @@ the original T-1722 docs/reports/ surface. Reviewer PASS.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-646331bf
-- **Timestamp:** 2026-06-09T08:50:57Z
+- **Scan ID:** R-40eaf861
+- **Timestamp:** 2026-06-09T08:51:41Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-09T08:51:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
