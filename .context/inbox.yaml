@@ -392,3 +392,24 @@ observations:
     tags: [orchestrator-mcp, convention-gap, near-miss, framework-discipline]
     status: pending
     promoted_to: null
+  - id: OBS-056
+    text: "TEST: verifying fw note text-arg shape — delete me"
+    captured: 2026-06-09T06:48:55Z
+    context_task: T-2268
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-057
+    text: "Demo-target tasks (like T-2273 for arc-010 HM-A) need a structural guard against parent-session fw work-on touches. Today's burn: parent session ran 'bin/fw work-on T-2273' while surveying HV-LC, consuming the captured->started-work transition via Bash instead of mcp__fw__work_on. Half the HM-A headline-mechanic acceptance condition lost before the demo worker even spawned. Proposal: add 'demo_target: true' frontmatter field that 'fw work-on' refuses unless --i-am-demo-orchestrator is passed. Sibling guard to T-1731 (check-human-ac-tick) and T-2205 (check-inception-recommendation): protects a specific class of task from being touched by the wrong actor. Cross-link: T-2273 Updates entry 2026-06-09T08:00:00Z."
+    captured: 2026-06-09T07:53:10Z
+    context_task: T-2273
+    tags: [headline-mechanic]
+    status: pending
+    promoted_to: null
+  - id: OBS-058
+    text: "HM-A demo dispatch experiment 2026-06-09 09:47-09:50 UTC: framework-mcp wired into .mcp.json, JSONRPC handshake + 22 tools verified manually; but in claude -p via TermLink dispatch, framework-mcp status stays 'pending' indefinitely and tools never surface via ToolSearch (neither 'mcp__framework-mcp__*' nor 'mcp__fw__*' prefixes match). Worker did 7 ToolSearch + 5 Bash (informational only, not gated verbs) + 5 Read before I terminated at 2min mark. Session JSONL preserved at /root/.claude/projects/-opt-999-Agentic-Engineering-Framework/edca090c-fb95-4327-9e57-77ff33d0fd20.jsonl (196KB). Class signal: MCP wiring works in direct stdio test (echo JSONRPC | python3 server) but NOT in claude -p context. Likely cause: model fallback to sonnet may handle MCP init differently from opus, OR framework-mcp init exceeds claude -p's deferred-tool catalogue timeout. T-2268 AC#1 (.mcp.json wiring) is still legitimately ticked — the wire-up artefact is correct; the runtime registration is what fails. Operator triage call: investigate before re-dispatching the demo."
+    captured: 2026-06-09T09:50:40Z
+    context_task: T-2268
+    tags: []
+    status: pending
+    promoted_to: null
