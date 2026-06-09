@@ -1254,10 +1254,22 @@ else:
         else
             _mcp_msg="stopped (manifest ready; start: fw mcp start --background)"
         fi
+        # T-2290: mtime is a cheap fast-path that triggers a content check.
+        # Touch/checkout/vendor-sync update mtime without changing content; the
+        # mtime-only test produced operator-facing WARN false positives. When
+        # mtime suggests staleness, re-emit the manifest in-memory and md5 it
+        # against the on-disk file — content match → still OK, content diff → WARN.
         if [ -f "$_mcp_ts" ] && [ "$_mcp_ts" -nt "$_mcp_mf" ]; then
-            echo -e "  ${YELLOW}WARN${NC}  framework MCP manifest stale relative to tool-set.yaml"
-            echo -e "         Run: fw mcp emit-manifest"
-            warnings=$((warnings + 1))
+            local _mcp_emitted_md5 _mcp_ondisk_md5
+            _mcp_emitted_md5=$(python3 "$PROJECT_ROOT/agents/mcp/manifest.py" show 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
+            _mcp_ondisk_md5=$(md5sum "$_mcp_mf" 2>/dev/null | cut -d' ' -f1)
+            if [ -n "$_mcp_emitted_md5" ] && [ "$_mcp_emitted_md5" = "$_mcp_ondisk_md5" ]; then
+                echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  framework MCP manifest stale relative to tool-set.yaml"
+                echo -e "         Run: fw mcp emit-manifest"
+                warnings=$((warnings + 1))
+            fi
         else
             echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
         fi
