@@ -729,20 +729,28 @@ sections serve the contributor.
   but untested. I did not test any of those. The draft preserves the
   battle-tested-with-Claude-Code framing.
 
-- **Watchtower URL format on first init.** I know the URL lands in
-  `.context/working/watchtower.url` after `fw serve` starts; I did not confirm
-  the exact format of the file (whether it has a trailing newline, scheme, etc.)
-  by reading the binary because the file is empty when no Watchtower is
-  running. The draft uses `fw watchtower url` as the surface (which is the
-  correct CLI per CLAUDE.md §Watchtower Port section).
+- **Watchtower URL format on first init.** *(Closed 2026-06-09.)* With
+  Watchtower running, `.context/working/watchtower.url` is exactly 27 bytes:
+  the literal string `http://192.168.10.107:3000` (26 chars) followed by a
+  single `\n` (verified via `xxd`). No scheme variations, no protocol prefix
+  ambiguity, no trailing whitespace — one line, one trailing newline. The
+  draft's reliance on `fw watchtower url` (which strips the newline) remains
+  the right surface.
 
 - **The exact wording of `fw doctor` warning when Watchtower has not been
   started.** The draft uses a generic line, not a verified transcript.
 
-- **Bash unit tests.** Deep-dive #17 names the gap explicitly ("This is a
-  genuine gap. … Marc caught a real hole."). I did not check whether bats
-  coverage of the gates has improved since March; the README maturity table
-  could honestly say so either way. Defer to the next agent or human.
+- **Bash unit tests.** *(Partially closed 2026-06-09.)* Deep-dive #17 names
+  the gap explicitly ("This is a genuine gap. … Marc caught a real hole.").
+  Current counts: 264 `.bats` files total in `tests/unit/`, of which 47
+  explicitly cover hooks/gates/guards (filename match
+  `hook|gate|check_|guard`). 16 hook scripts live under `agents/context/`
+  (one bats file per script is roughly the ratio needed for parity). 123
+  python unit tests in `tests/unit/` complement the bats coverage. The
+  March-era "real hole" claim is materially less true today; whether it's
+  *closed* depends on whether the remaining 16 - matched bats files exist
+  per hook (not enumerated here). The README maturity table cites this
+  partial close and links to the deep-dive for the historical context.
 
 - **Capability "agent mesh" and "multi-model routing" as named code units.**
   These appear in the canonical topic set but do not have a single file each;
