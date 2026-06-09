@@ -3602,3 +3602,10 @@ X'` returning empty group."
   date: 2026-06-09
   context: Added via context agent
   application: TBD
+- id: L-472
+  learning: "L-461 stale-PC scan regex must handle parenthetical Human headings — '### Human (T-XXXX split — ...)' is valid YAML/Markdown syntax used to scope split rationale; regex r'### Human\\s*\\n' misses these and false-positives the task as 'no Human ACs'. Robust pattern: r'^### Human\\b[^\\n]*\\n(?:<!--.*?-->\\s*\\n)?(.*?)(?=\\n###\\s|\\n##\\s|\\Z)' — matches '### Human' as a word boundary, allows any rest-of-line text, then captures until next heading. Worked example: T-1062 (WezTerm chrome) classified as 'truly-stale' by tight regex but has a real [REVIEW] Human AC for on-WezTerm visual verification (visible after correcting the regex). Catch this class before mechanically closing the false-positive set."
+  source: P-009
+  task: T-1687
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD
