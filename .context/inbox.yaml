@@ -568,3 +568,10 @@ observations:
   tags: []
   status: promoted
   promoted_to: T-2287
+  - id: OBS-064
+    text: "audit.sh bugfix-learning coverage block (lines 1962-1981) runs UNCONDITIONALLY outside any should_run_section guard. It's a G-016 learning-system check that should be inside the 'learning' section guard. Symptom: 'fw audit --section structure' (which the pre-push gate invokes) iterates 1500+ T-*.md files via 'find | while read; grep^name; grep^id; grep learnings.yaml' — 6000+ subprocess spawns. Observed wall-clock: 8-10 minutes per pre-push, blocking developer workflow. Root cause: the closing 'fi' for 'should_run_section learning' at line 1960 came one block too early. Fix: wrap lines 1962-1989 (the bugfix-coverage check + its emit) inside the learning guard. Adjacent classes: search audit.sh for other unguarded heavy blocks via 'grep -nE find.*xargs|while.*read.*done' relative to section boundaries — there may be more."
+    captured: 2026-06-09T20:16:32Z
+    context_task: T-2296
+    tags: []
+    status: pending
+    promoted_to: null
