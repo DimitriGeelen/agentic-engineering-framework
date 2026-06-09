@@ -425,19 +425,26 @@ observations:
     captured: 2026-06-09T10:14:46Z
     context_task: T-2268
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-061
     text: "OBS-061: Refined hypothesis for MCP-pending in claude -p workers (continues OBS-060). User /root/.claude/settings.json permissions.allow has mcp__termlink__*, mcp__plugin_context7_*, mcp__plugin_playwright_* entries but ZERO mcp__framework-mcp__* entries. Project /opt/.../​.claude/settings.json has NO permissions block at all (hooks only). Hypothesis: claude -p workers use permissions.allow for MCP server trust pre-acceptance. Without an entry, --permission-mode acceptEdits is insufficient because the workspace trust dialog covers Edit/Write but not MCP server registration. Candidate fixes for operator: (a) add 'mcp__framework-mcp__*' to /root/.claude/settings.json permissions.allow (sovereignty-adjacent, affects parent session too), or (b) modify fw termlink dispatch to pass --mcp-config .mcp.json --strict-mcp-config (explicit operator opt-in), or (c) investigate per-project trust manifest. Note: --dangerously-skip-permissions and --permission-mode bypassPermissions are blocked when running as root (security check). Substrate gap; T-2268 demo blocked until operator picks a path. cf. OBS-058/059/060."
     captured: 2026-06-09T10:19:02Z
     context_task: T-2268
     tags: []
-    status: pending
+    status: dismissed
     promoted_to: null
   - id: OBS-062
     text: "MCP server framework-self-vendor blind spot: agents/termlink/termlink.sh run.sh:670-673 sets FRAMEWORK_ROOT=$PROJECT_DIR/.agentic-framework whenever .agentic-framework/ exists. In framework REPO itself (which has .agentic-framework/ as vendored mirror), this redirects FRAMEWORK_ROOT away from the actual source. Result: framework_mcp_server.py's _project_root() honours FRAMEWORK_ROOT and looks for policy/capability-overlay/tool-set.yaml at /opt/.../999.agentic-framework/policy/ — which doesn't exist in the vendored subset. arc-010 HM-A demo-003 unearthed this 2026-06-09 (substrate trio T-2282 + T-2283 + T-2284 all applied correctly per meta.json + wdir artefacts, ToolSearch still returned 'No matching deferred tools found' for mcp__fw__*). Fix candidate: discriminate framework-repo-self vs consumer in run.sh — test for FRAMEWORK.md at $PROJECT_DIR before deciding to redirect FRAMEWORK_ROOT. Alt fix: include policy/ in self-vendor list (less clean — duplicates policy across two paths). HV-LC follow-on; substrate-class. (T-2284)"
     captured: 2026-06-09T11:31:21Z
     context_task: T-2284
+    tags: []
+    status: dismissed
+    promoted_to: null
+  - id: OBS-063
+    text: "Consumer-shape MCP enablement gap: arc-010 substrate quartet (T-2282/2283/2284/2285) makes framework-self HM-A demo work. But for CONSUMERS, framework_mcp_server.py is self-vendored to .agentic-framework/agents/mcp/ BUT policy/capability-overlay/tool-set.yaml is NOT — lib/upgrade.sh:237-240 explicitly excludes capability-overlay/ from _self_vendor_policy. Consumer-side MCP server would crash on tool-set.yaml-not-found (same class as OBS-062, opposite direction). Three forward paths: (a) add tool-set.yaml to _self_vendor_policy explicit list — arc-010 enabling artefact, structural one-liner; (b) treat consumer MCP as out-of-scope for arc-010 demo (current default); (c) file as arc-010 follow-on slice for consumer enablement. Discovery: ran framework_mcp_server.py with FRAMEWORK_ROOT=PWD locally — 22 tools registered cleanly, proves framework-self side works end-to-end. (T-2268)"
+    captured: 2026-06-09T13:05:02Z
+    context_task: T-2268
     tags: []
     status: pending
     promoted_to: null
