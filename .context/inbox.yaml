@@ -359,7 +359,7 @@ observations:
   context_task: T-1702
   tags:
   - orchestrator-arc
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-044
   text: 'Production Watchtower deployment lag: 3 Human-Steps URLs on T-1990 and T-1994 point at watchtower.docker.ring20.geelenandcompany.com/{approvals,arcs,docs/generated/components/hook-config} which

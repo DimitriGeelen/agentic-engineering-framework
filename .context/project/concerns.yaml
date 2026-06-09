@@ -1941,6 +1941,15 @@ concerns:
   created: 2026-05-03
   last_reviewed: 2026-05-03
   related_task: T-1702
+  related_tasks_extra: [T-1707, T-2185, T-2299]
+  closure_check_command: "python3 tools/g065-readiness.py --json"
+  status_notes: |
+    2026-06-10 — T-2299 added the closure-readiness gauge (sibling to T-2198
+    for G-066). Both T-1702 (boundary hook outside-path argument scan +
+    READ_ALLOWED_PREFIXES allowlist) and T-1707 (fw doctor scope-tagging via
+    host_warnings + _scope_breakdown) shipped — all 4 wiring conditions PASS.
+    Operator can close via Watchtower /gaps Close button (T-2185 surface)
+    or `fw gaps close G-065`.
 - id: G-066
   type: gap
   title: "T-1442/T-1443 closed work-completed while half of GO scope (auto-tick + TermLink-dispatch reviewer) never wired — §ACD pattern at task level (G-062 family)"
