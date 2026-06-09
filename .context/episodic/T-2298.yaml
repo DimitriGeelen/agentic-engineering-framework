@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2298: audit: batch T-1855 stale-arc + T-2096 GO-scope-not-propagated per-task forks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T21:05:54Z
+# ============================================================================
+
+task_id: T-2298
+task_name: "audit: batch T-1855 stale-arc + T-2096 GO-scope-not-propagated per-task forks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T20:48:33Z
+completed: 2026-06-09T21:04:40Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'T-1855 stale-arc block at audit.sh now uses a pre-computed `task_arc_map` (single python3 pre-scan) and ZERO awk invocations inside any per-task inner loop. Bats t1 (T-2298 pin) PASS.'
+  - 'T-2096 GO-scope-not-propagated block at audit.sh now uses a single python3 pre-scan emitting candidate paths; back-references checked via O(M+N) referenced-ids set instead of O(M*N) per-candidate cross-file grep. Bats t3 (T-2298 pin) PASS.'
+  - '`bin/fw audit --section structure` completes in under 100s wall-clock on the current 2,261-task corpus. Measured 64s/66s/66s across 3 runs (steady-state ~65s; down from 132s post-T-2297, ~402s pre-T-2297 = ~6× total payoff).'
+  - 'Bats regression `tests/unit/t2298_audit_structure_no_perfile_fork.bats` PASS — 5/5: T-1855 block contains task_arc_map, no per-task awk fork; T-2096 block contains go_scope_unprop_list, no per-task grep fan-out, no per-candidate `grep -lE`; audit.sh syntactically valid.'
+  - 'Sibling regressions PASS: t2297 (3/3), t2293 (4/4), t2296 (3/3) all green. Confirmed in joint bats run.'
+  - 'OBS-066 promoted in .context/inbox.yaml: status=pending→promoted, promoted_to=T-2298. Inbox parses; OBS-064 + OBS-066 both correctly promoted.'
+  - 'Reviewer PASS via `bin/fw reviewer T-2298` (no FAIL findings). R-f08bf4f3 PASS, 0 findings.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, performance, obs-066]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2298-audit-batch-t-1855-stale-arc--t-2096-go-.md
+generated_by: context-agent-hybrid

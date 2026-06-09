@@ -713,6 +713,41 @@ stale_arc_count=0
 arcs_checked_for_staleness=0
 if [ -d "$PROJECT_ROOT/.context/arcs" ] && command -v git >/dev/null 2>&1 \
     && git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    # T-2298: pre-compute task→arc_id map in ONE python3 pass (was per-task awk
+    # fork inside per-arc loop — 8 arcs × 2,261 tasks = ~18K awk subprocesses,
+    # ~90-100s wall-clock). Now: 1 python3 read of all task heads, in-memory
+    # filter per arc. Skips T-Test-* sentinels (T-2228 parity with _is_test_sentinel).
+    task_arc_map=$(python3 -c "
+import os, re
+project_root = '$PROJECT_ROOT'
+arc_id_re = re.compile(r'^arc_id:\s*([^\s#]+)', re.M)
+for d in ('active', 'completed'):
+    tdir = os.path.join(project_root, '.tasks', d)
+    if not os.path.isdir(tdir):
+        continue
+    try:
+        names = os.listdir(tdir)
+    except OSError:
+        continue
+    for fn in names:
+        if not (fn.startswith('T-') and fn.endswith('.md')):
+            continue
+        if fn.startswith('T-Test-'):
+            continue
+        path = os.path.join(tdir, fn)
+        try:
+            with open(path) as f:
+                head = f.read(4096)
+        except Exception:
+            continue
+        m = arc_id_re.search(head)
+        if not m:
+            continue
+        tag = m.group(1).strip().strip('\"').strip(chr(39))
+        if tag and tag != 'null':
+            print(f'{path}\t{tag}')
+" 2>/dev/null)
+
     for af in "$PROJECT_ROOT/.context/arcs"/*.yaml; do
         [ -f "$af" ] || continue
 
@@ -726,21 +761,15 @@ if [ -d "$PROJECT_ROOT/.context/arcs" ] && command -v git >/dev/null 2>&1 \
                    | tr -d ' "' | head -c 64)
         [ -z "$arc_slug" ] && arc_slug=$(basename "$af" .yaml)
 
-        # Collect task files whose arc_id: matches slug OR arc-NNN form.
+        # T-2298: filter pre-computed map by this arc's slug or arc-NNN id —
+        # was per-task awk fork (one awk per task per arc). Now in-memory only.
         matching_tasks=()
-        for d in active completed; do
-            tdir="$PROJECT_ROOT/.tasks/$d"
-            [ -d "$tdir" ] || continue
-            for tf in "$tdir"/T-*.md; do
-                [ -f "$tf" ] || continue
-                _is_test_sentinel "$tf" && continue  # T-2228: skip T-Test-NNN sentinels
-                ttag=$(awk '/^arc_id:/ {sub(/^arc_id:[[:space:]]*/, ""); gsub(/["\x27]/, ""); print; exit}' "$tf" \
-                       | tr -d ' ' | head -c 64)
-                if [ -n "$ttag" ] && { [ "$ttag" = "$arc_slug" ] || [ "$ttag" = "$arc_numeric" ]; }; then
-                    matching_tasks+=("$tf")
-                fi
-            done
-        done
+        while IFS=$'\t' read -r tp ttag; do
+            [ -z "$tp" ] && continue
+            if [ "$ttag" = "$arc_slug" ] || [ "$ttag" = "$arc_numeric" ]; then
+                matching_tasks+=("$tp")
+            fi
+        done <<< "$task_arc_map"
 
         # Zero-population arcs can't be assessed for staleness — skip.
         [ "${#matching_tasks[@]}" -eq 0 ] && continue
@@ -1168,35 +1197,95 @@ fi
 # FP rate is measured.
 go_scope_unprop_count=0
 go_scope_unprop_evidence=""
-for task_file in "$PROJECT_ROOT"/.tasks/completed/T-*.md; do
-    [ -f "$task_file" ] || continue
-    # Filter: must be inception
-    grep -qE "^workflow_type: inception$" "$task_file" || continue
-    # Body must contain a propagation-claim phrase
-    grep -qiE "filed on GO|sub-tasks (filed|created)|build slices (filed|created)|child tasks (filed|spun off)" \
-         "$task_file" || continue
-    # related_tasks must be empty (`[]`) or absent
-    if grep -qE "^related_tasks: \[\]" "$task_file"; then
-        :
-    elif ! grep -qE "^related_tasks:" "$task_file"; then
-        :
-    else
+# T-2298: single python3 pre-scan (was per-completed-task grep fan-out — ~1500
+# completed tasks × 3-4 greps + cross-file grep per survivor = 30-60s wall-clock).
+# Pass 1: find candidate inceptions (workflow_type=inception + claim phrase +
+# empty/absent related_tasks). Pass 2: build set of ALL t_ids referenced inline
+# in any task's related_tasks: line — O(M+N) instead of original O(M*N) per-
+# candidate cross-file scan. Skips T-Test-* sentinels (T-2228 parity).
+go_scope_unprop_list=$(python3 -c "
+import os, re
+project_root = '$PROJECT_ROOT'
+completed_dir = os.path.join(project_root, '.tasks', 'completed')
+active_dir = os.path.join(project_root, '.tasks', 'active')
+
+WORKFLOW_RE = re.compile(r'^workflow_type: inception\$', re.M)
+CLAIM_RE = re.compile(r'filed on GO|sub-tasks (filed|created)|build slices (filed|created)|child tasks (filed|spun off)', re.I)
+EMPTY_RT_RE = re.compile(r'^related_tasks: \[\]', re.M)
+HAS_RT_RE = re.compile(r'^related_tasks:', re.M)
+ID_RE = re.compile(r'^(T-\d+)')
+INLINE_RT_LINE_RE = re.compile(r'^related_tasks:.*\bT-\d+\b.*\$', re.M)
+TID_RE = re.compile(r'\bT-\d+\b')
+
+# Pass 1: candidate inceptions
+candidates = []  # (path, t_id)
+if os.path.isdir(completed_dir):
+    try:
+        names = os.listdir(completed_dir)
+    except OSError:
+        names = []
+    for fn in names:
+        if not (fn.startswith('T-') and fn.endswith('.md')):
+            continue
+        if fn.startswith('T-Test-'):
+            continue
+        path = os.path.join(completed_dir, fn)
+        try:
+            with open(path) as f:
+                content = f.read()
+        except Exception:
+            continue
+        if not WORKFLOW_RE.search(content):
+            continue
+        if not CLAIM_RE.search(content):
+            continue
+        # related_tasks: must be empty (\`[]\`) OR absent
+        if EMPTY_RT_RE.search(content):
+            pass
+        elif not HAS_RT_RE.search(content):
+            pass
+        else:
+            continue
+        m = ID_RE.match(fn)
+        if not m:
+            continue
+        candidates.append((path, m.group(1)))
+
+# Pass 2: collect ALL t_ids appearing inline in any task's related_tasks: line.
+referenced_ids = set()
+for tdir in (active_dir, completed_dir):
+    if not os.path.isdir(tdir):
         continue
-    fi
-    # Reverse check: if any other task back-references this inception's id
-    # in its own related_tasks:, propagation happened despite the empty
-    # inception-side field. Skip.
-    t_id=$(basename "$task_file" | grep -oE '^T-[0-9]+')
-    [ -z "$t_id" ] && continue
-    back_refs=$(grep -lE "related_tasks:.*\b${t_id}\b" \
-                     "$PROJECT_ROOT"/.tasks/active/T-*.md \
-                     "$PROJECT_ROOT"/.tasks/completed/T-*.md 2>/dev/null | wc -l)
-    if [ "$back_refs" -gt 0 ]; then
+    try:
+        names = os.listdir(tdir)
+    except OSError:
         continue
-    fi
+    for fn in names:
+        if not (fn.startswith('T-') and fn.endswith('.md')):
+            continue
+        if fn.startswith('T-Test-'):
+            continue
+        path = os.path.join(tdir, fn)
+        try:
+            with open(path) as f:
+                content = f.read()
+        except Exception:
+            continue
+        for m in INLINE_RT_LINE_RE.finditer(content):
+            for tid_match in TID_RE.finditer(m.group(0)):
+                referenced_ids.add(tid_match.group(0))
+
+# Emit candidates that are NOT back-referenced
+for path, t_id in candidates:
+    if t_id not in referenced_ids:
+        print(path)
+" 2>/dev/null)
+
+while IFS= read -r task_file; do
+    [ -z "$task_file" ] && continue
     go_scope_unprop_count=$((go_scope_unprop_count + 1))
     go_scope_unprop_evidence="$go_scope_unprop_evidence$task_file\n"
-done
+done <<< "$go_scope_unprop_list"
 if [ "$go_scope_unprop_count" -eq 0 ]; then
     pass "No GO-scope-not-propagated inception(s) (sibling to L-417)"
 else

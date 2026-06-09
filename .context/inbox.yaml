@@ -575,10 +575,10 @@ observations:
   tags: []
   status: promoted
   promoted_to: T-2297
-  - id: OBS-066
-    text: "audit.sh --section structure residual hot spots after T-2297 (~128s remaining of 132s end-to-end). Two per-task fork classes: (1) T-1855 stale-arc check at audit.sh:734 — for each in-progress arc (8 currently), for each task file (2261), runs awk to extract arc_id: → 18,088 awk subprocess spawns per audit. Estimated ~90-100s contribution. (2) T-2096 GO-scope-not-propagated scan at audit.sh:1171 — for each completed task (~1500), runs 3-4 grep invocations to filter by workflow_type:inception + body claim phrase + related_tasks empty + back-references → ~30-60s. Same fix shape as T-2297: pre-compute task→arc_id map (or full grep extract) in ONE python3 pass, then iterate the map in bash. Headline outcome: --section structure drops from 132s → <10s. File as build task next session."
-    captured: 2026-06-09T20:43:19Z
-    context_task: T-2297
-    tags: []
-    status: pending
-    promoted_to: null
+- id: OBS-066
+  text: "audit.sh --section structure residual hot spots after T-2297. Two per-task fork classes batched in T-2298: (1) T-1855 stale-arc — was per-arc×per-task awk fork (8×2261=~18K subprocesses, ~90-100s); now ONE python3 pre-scan emitting task→arc_id map, in-memory filter per arc. (2) T-2096 GO-scope-not-propagated — was per-completed-task grep fan-out + per-candidate cross-file grep -lE (~30-60s); now ONE python3 pass with O(M+N) referenced-ids set instead of O(M*N) per-candidate scan. Measured outcome 2026-06-09: --section structure 132s→65s on 2261-task corpus (6× total payoff from baseline 402s). Remaining ~60s in T-1927 per-driver coherence (~3s), T-2169 retire_when (~2s), T-1845 secret scan (~4s), audit YAML write + trend overhead — tracked as OBS-067 follow-on if further wins needed."
+  captured: 2026-06-09T20:43:19Z
+  context_task: T-2297
+  tags: []
+  status: promoted
+  promoted_to: T-2298
