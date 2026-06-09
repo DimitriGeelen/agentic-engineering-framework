@@ -493,7 +493,7 @@ cmd_cleanup() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp="" allowed_tools=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
     # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
@@ -553,6 +553,20 @@ cmd_dispatch() {
                 # without --mcp-config still surfaces as "--strict-mcp-config"
                 # to claude -p (which will use its default config lookup).
                 strict_mcp=1; shift ;;
+            --allowed-tools)
+                # T-2288 (substrate quintet, 5th onion layer): pre-approve tools
+                # for non-interactive workers. Even with --mcp-config + --strict-mcp-config
+                # + --permission-mode acceptEdits (substrate quartet), claude -p
+                # still emits per-tool trust prompts on first invocation of each
+                # MCP tool. Non-interactive workers (claude -p) cannot answer
+                # the prompt and stall. Pass a comma-or-space-separated list
+                # (e.g. "mcp__fw__work_on mcp__fw__task_update Read Write Bash")
+                # to pre-grant trust for exactly those tools. Origin: arc010-hma-demo-004
+                # (2026-06-09T13:43Z) — substrate-quartet active, worker invoked
+                # mcp__fw__work_on twice, got "Claude requested permissions"
+                # response both times, gave up at turn 8.
+                # No validation here — claude -p validates the tool names.
+                allowed_tools="$2"; shift 2 ;;
             *) die "Unknown option: $1" ;;
         esac
     done
@@ -668,6 +682,15 @@ cmd_dispatch() {
         : > "$wdir/strict_mcp"   # sentinel file — presence == enabled
         strict_mcp_json="true"
     fi
+    # T-2288: --allowed-tools plumb-through. Write allowed_tools.txt read by
+    # run.sh to construct --allowed-tools flag. Empty when no flag passed
+    # (claude -p uses parent's permissions.allow for per-tool trust — which
+    # for non-interactive workers means trust prompts that cannot be answered).
+    local allowed_tools_json="null"
+    if [ -n "$allowed_tools" ]; then
+        printf '%s\n' "$allowed_tools" > "$wdir/allowed_tools.txt"
+        allowed_tools_json="\"${allowed_tools//\"/\\\"}\""
+    fi
 
     # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
     # T-1700: env_keys lists the env var names injected (values not stored — possible secrets).
@@ -689,6 +712,7 @@ cmd_dispatch() {
   "permission_mode": $permission_mode_json,
   "mcp_config": $mcp_config_json,
   "strict_mcp": $strict_mcp_json,
+  "allowed_tools": $allowed_tools_json,
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -774,6 +798,15 @@ if [ -f "$WDIR/strict_mcp" ]; then
     STRICT_MCP_FLAG="--strict-mcp-config"
 fi
 
+# T-2288: Build --allowed-tools flag if allowed_tools.txt was written by
+# cmd_dispatch. Empty/missing → claude -p uses parent's permissions.allow for
+# per-tool trust. For non-interactive workers this leaves trust prompts that
+# cannot be answered (arc010-hma-demo-004 origin).
+ALLOWED_TOOLS_FLAG=""
+if [ -f "$WDIR/allowed_tools.txt" ] && [ -s "$WDIR/allowed_tools.txt" ]; then
+    ALLOWED_TOOLS_FLAG="--allowed-tools $(cat "$WDIR/allowed_tools.txt")"
+fi
+
 # T-1706: worker_kind dispatch routing. If worker_kind.txt requests ollama-loop,
 # run the thin tool-loop worker (curated litellm direct, ~150 LOC python). The
 # python worker writes result.jsonl + result.md + exit_code itself, so we skip
@@ -810,7 +843,7 @@ else
     # buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
     # this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
     # carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
-    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
     CLAUDE_PID=$!
     (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
     WATCHDOG_PID=$!
@@ -1007,7 +1040,10 @@ cmd_help() {
                                      [--project DIR] [--model M] [--timeout S]
                                      [--permission-mode acceptEdits]   (T-2282: MCP workers need this)
                                      [--mcp-config <path>] [--strict-mcp-config]
-                                       (T-2284: pin MCP server set independent of parent trust)"
+                                       (T-2284: pin MCP server set independent of parent trust)
+                                     [--allowed-tools <list>]
+                                       (T-2288: pre-approve tools for non-interactive workers
+                                        e.g. \"mcp__fw__work_on mcp__fw__task_update Read Write Bash\")"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
