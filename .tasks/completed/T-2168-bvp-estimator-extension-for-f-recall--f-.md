@@ -6,17 +6,17 @@ description: >
   BVP estimator extension for F-RECALL + F-ORCH heuristics (T-NEW-A from T-2157/T-2165
   v3 follow-ups)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: [v3-followup-A]
-components: [agents/termlink/bvp-estimator/estimator.py]
+components: [C-004, agents/termlink/bvp-estimator/estimator.py, tests/unit/test_audit_retire_when.bats, tests/unit/test_bvp_estimator.py]
 related_tasks: [T-2157, T-2165, T-2166, T-1922, T-1923, T-1935]
 arc_id: value-prioritisation
 created: 2026-06-01T20:28:50Z
-last_update: 2026-06-03T20:16:45Z
-date_finished:
+last_update: 2026-06-09T22:45:48Z
+date_finished: 2026-06-09T22:45:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -254,3 +254,22 @@ fires too eagerly is real work, not guessing.
 ### 2026-06-03T20:16:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0eb8d770
+- **Timestamp:** 2026-06-09T22:45:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `agents/termlink/bvp-estimator/estimator.py` gains `score_f_recall(fm, body, tags) -> (int, list[str])` modelled on `score_d1_antifragility()` structure. The function maps real signals to the 0-5 rubr
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/termlink/bvp-estimator/estimator.py in: `agents/termlink/bvp-estimator/estimator.py` gains `score_f_recall(fm, body, tags) -> (int, list[str])` modelled on `score_d1_antifragility()` structu`
+- **AC#2 (Agent)** — `score_f_orch(fm, body, tags) -> (int, list[str])` follows the same shape, anchored to `policy/value-drivers.yaml` lines 131-141: level 0 (primary-agent serial), level 1 (hand-wired dispatch only), le
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `score_f_orch(fm, body, tags) -> (int, list[str])` follows the same shape, anchored to `policy/value-drivers.yaml` lines 131-141: level 0 (primary-age`
+
+### 2026-06-09T22:45:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

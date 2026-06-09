@@ -9,20 +9,20 @@ description: >
   helpers — does NOT modify the single-task fw task review T-XXX form. Evidence: bats
   test on table format + URL correctness; consumer-fresh bats simulation T-1633 green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/review.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T19:25:41Z
-last_update: '2026-06-02T19:30:03Z'
-date_finished:
+last_update: 2026-06-09T22:46:43Z
+date_finished: 2026-06-09T22:46:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -197,3 +197,15 @@ out=$(bin/fw task review-batch T-2174 T-2181 2>&1); echo "$out" | grep -q "T-218
 
 ### 2026-06-02T19:26:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-98b56231
+- **Timestamp:** 2026-06-09T22:46:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-09T22:46:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

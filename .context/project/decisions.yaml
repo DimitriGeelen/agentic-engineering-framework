@@ -1990,3 +1990,10 @@ decisions:
     date: 2026-06-07
     task: T-2243
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-287
+    decision: "File principled overrides with 90-day TTL on each finding, cluster-routed by FP class (8 classes identified). 14 overrides total."
+    scope: project
+    date: 2026-06-09
+    task: T-2180
+    rationale: "Auto-captured from task file on completion"

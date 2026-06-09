@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-06-03T21:46:57Z
+# Generated: 2026-06-09T22:52:11Z
 # ============================================================================
 
 task_id: T-2196
@@ -13,15 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-06-03T20:46:45Z
-completed: 2026-06-03T21:28:17Z
-duration_days: 0
+completed: 2026-06-09T22:49:51Z
+duration_days: 6
 updates_count: 1
 first_commit: 2026-06-03T23:08:26+02:00
-last_commit: 2026-06-03T23:28:07+02:00
+last_commit: 2026-06-03T23:47:34+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  fabric enrich — 8 cards enriched, 12 edges (audit WARN 85→81). fix audit verification — check [FAIL] absence, not 'fail: 0' literal
+  fabric enrich — 8 cards enriched, 12 edges (audit WARN 85→81). fix audit verification — check [FAIL] absence, not 'fail: 0' literal. close (fabric enrich operational cleanup — 85→81 unedged cards). episodic generated
 
 # Key outcomes
 outcomes:
@@ -43,6 +43,8 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
+  - '.context/episodic/T-2196.yaml'
+  - '.context/working/episodic-gen/T-2196.log'
   - '.fabric/components/agents-git-lib-hooks.yaml'
   - '.fabric/components/agents-task-create-update-task.yaml'
   - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
@@ -52,6 +54,7 @@ artifacts:
   - '.fabric/components/tests-unit-test_audit_retire_when.yaml'
   - '.fabric/components/tests-unit-test_bvp_estimator.yaml'
   - '.tasks/active/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md'
+  - '.tasks/completed/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md'
 
 # Timeline (auto-mined from git log)
 git_timeline:
@@ -59,10 +62,14 @@ git_timeline:
     action: "T-2196: fabric enrich — 8 cards enriched, 12 edges (audit WARN 85→81)"
   - time: "2026-06-03T23:28:07"
     action: "T-2196: fix audit verification — check [FAIL] absence, not 'fail: 0' literal"
+  - time: "2026-06-03T23:47:25"
+    action: "T-2196: close (fabric enrich operational cleanup — 85→81 unedged cards)"
+  - time: "2026-06-03T23:47:34"
+    action: "T-2196: episodic generated"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 2 commit(s), 41 min
+  # Completed successfully in 4 commit(s), 8763 min
 
 # Related tasks
 related_tasks:
@@ -75,10 +82,10 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 41
-  commits: 2
-  files_changed: 9
-  lines_added: 278
+  wall_clock_minutes: 8763
+  commits: 4
+  files_changed: 12
+  lines_added: 387
   lines_removed: 38
 
 # Metadata

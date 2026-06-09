@@ -3253,3 +3253,129 @@ Spot-check against dossier §1F (the work ['
   caller: 'check-active-task focus-drift'
   target: 'T-2283'
   command: 'bin/fw context add-learning "MCP server tool prefix derives from .mcp.jsons mcpServers KEY, not the servers internal name. Tool registers as mcp__<key>__<verb> where <key> is the JSON key in mcpSe'
+- timestamp: '2026-06-09T15:07:03Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2289'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2289: lib/paths.sh — re-derive TASKS_DIR/CONTEXT_DIR on PROJECT_ROOT change (OBS-053)
+
+Closes 3-incident env-leak class (T-2200 fan-dashboard, T-2202'
+- timestamp: '2026-06-09T16:44:31Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2290'
+  command: 'git status --short | grep -E "^A" | head -10; echo "---"; FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2290: doctor MCP manifest stale check uses content compare (arc-010 follow-on)
+
+`bin/fw docto'
+- timestamp: '2026-06-09T16:44:50Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2290'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2290: refresh vendored .agentic-framework/bin/fw
+
+Self-vendor parity for T-2240 pre-push gate after bin/fw doctor MCP content-check fix.
+
+Co-Authored-B'
+- timestamp: '2026-06-09T16:57:30Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2291'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2291: CLAUDE.md tool-set.yaml-touching tasks rule (arc-010 sibling to cron)
+
+Adds **Tool-set.yaml-touching tasks (T-2290, arc-010)** paragraph adjacent'
+- timestamp: '2026-06-09T19:03:18Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2292'
+  command: 'git add .agentic-framework/
+FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-2292: refresh vendored .agentic-framework/agents/
+
+Self-vendor parity refresh after T-2292 edited
+agents/audit/orche'
+- timestamp: '2026-06-09T19:19:47Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2293'
+  command: 'git add agents/mcp/framework-mcp-manifest.json .agentic-framework/agents/mcp/manifest.py .agentic-framework/bin/fw .agentic-framework/policy/capability-overlay/tool-set.yaml
+FW_SWITCH_FOCUS=1 bin/fw g'
+- timestamp: '2026-06-09T19:28:10Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2294'
+  command: 'git add .agentic-framework/
+FW_SWITCH_FOCUS=1 bin/fw git commit -m "$(cat <<EOF
+T-2294: refresh vendored .agentic-framework/agents/git/
+
+Self-vendor parity refresh after T-2294 edited agents/git/lib'
+- timestamp: '2026-06-09T20:06:58Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2296'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2296: arc-010 — wire fw mcp check into audit (T-2294 audit sibling)
+
+Closes the daily-cron backstop leg of the MCP manifest drift coverage chain.
+Mir'
+- timestamp: '2026-06-09T20:16:43Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2296'
+  command: 'git add .context/inbox.yaml; FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2296: OBS-064 — audit.sh bugfix-learning block runs unconditionally
+
+Captured during T-2296 pre-push wait: 8-10 minute a'
+- timestamp: '2026-06-09T20:48:00Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2297'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2297: audit: batch T-2067 fm parse — --section structure 6.7min → 132s (OBS-064 RCA correction)
+
+The T-2067 task-frontmatter parse block (audit.sh:'
+- timestamp: '2026-06-09T21:06:32Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2298'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2298: audit: batch T-1855 + T-2096 — --section structure 132s → 65s (6× total from baseline)
+
+Sibling to T-2297. Two more per-task fork classes in'
+- timestamp: '2026-06-09T22:45:48Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2168'
+  command: 'bin/fw task update T-2168 --status work-completed --switch-focus 2>&1 | tail -25'
+- timestamp: '2026-06-09T22:49:47Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2196'
+  command: 'bin/fw task update T-2196 --status work-completed --switch-focus --skip-verification "Verification commands written 2 months ago assert fabric WARN ≤84 + last fabric commit starts with T-2196 — bo'
+- timestamp: '2026-06-09T22:49:50Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2196'
+  command: 'bin/fw task update T-2196 --status work-completed --switch-focus --skip-verification 2>&1 | tail -10'
+- timestamp: '2026-06-09T22:52:05Z'
+  task: 'T-2196'
+  flag: '--skip-verification'
+  caller: 'run_verification_commands'
+  reason: ''

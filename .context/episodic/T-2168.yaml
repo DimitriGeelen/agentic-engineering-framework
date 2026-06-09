@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-06-03T20:27:05Z
+# Generated: 2026-06-09T22:45:59Z
 # ============================================================================
 
 task_id: T-2168
@@ -13,15 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-06-01T20:28:50Z
-completed: 2026-06-03T20:26:54Z
-duration_days: 2
+completed: 2026-06-09T22:45:48Z
+duration_days: 8
 updates_count: 3
 first_commit: 2026-06-03T22:26:04+02:00
-last_commit: 2026-06-03T22:26:44+02:00
+last_commit: 2026-06-03T22:27:54+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  F-RECALL + F-ORCH dedicated BVP heuristics (T-NEW-A v3 follow-up). fix L-387 SIGPIPE in /bvp verification (head pipe → here-string)
+  F-RECALL + F-ORCH dedicated BVP heuristics (T-NEW-A v3 follow-up). fix L-387 SIGPIPE in /bvp verification (head pipe → here-string). close (F-RECALL/F-ORCH dedicated heuristics shipped — v3 follow-up T-NEW-A). episodic generated
 
 # Key outcomes
 outcomes:
@@ -48,7 +48,10 @@ decisions:
 # Artifacts (auto-mined from git --name-only)
 artifacts:
   - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.context/episodic/T-2168.yaml'
+  - '.context/working/episodic-gen/T-2168.log'
   - '.tasks/active/T-2168-bvp-estimator-extension-for-f-recall--f-.md'
+  - '.tasks/completed/T-2168-bvp-estimator-extension-for-f-recall--f-.md'
   - 'tests/unit/test_bvp_estimator.py'
 
 # Timeline (auto-mined from git log)
@@ -57,10 +60,14 @@ git_timeline:
     action: "T-2168: F-RECALL + F-ORCH dedicated BVP heuristics (T-NEW-A v3 follow-up)"
   - time: "2026-06-03T22:26:44"
     action: "T-2168: fix L-387 SIGPIPE in /bvp verification (head pipe → here-string)"
+  - time: "2026-06-03T22:27:41"
+    action: "T-2168: close (F-RECALL/F-ORCH dedicated heuristics shipped — v3 follow-up T-NEW-A)"
+  - time: "2026-06-03T22:27:54"
+    action: "T-2168: episodic generated"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 2 commit(s), 2878 min
+  # Completed successfully in 4 commit(s), 11656 min
 
 # Related tasks
 related_tasks:
@@ -73,10 +80,10 @@ tags: [v3-followup-A]
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 2878
-  commits: 2
-  files_changed: 3
-  lines_added: 428
+  wall_clock_minutes: 11656
+  commits: 4
+  files_changed: 6
+  lines_added: 535
   lines_removed: 36
 
 # Metadata
