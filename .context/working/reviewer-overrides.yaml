@@ -766,3 +766,13 @@ overrides:
   expires_at: '2026-09-07T19:00:45Z'
   added_by: root
   added_at: '2026-06-09T19:00:45Z'
+- id: OV-16c93834
+  task_id: T-2293
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  reason: 'FP: same class as OV-3a659191 (T-2292). Verification line 40 uses the canonical
+    L-387 capture-first single-pipe negation pattern. Detector heuristic flags the
+    ''!'' but the capture has already cut the SIGPIPE risk.'
+  expires_at: '2026-09-07T19:16:41Z'
+  added_by: root
+  added_at: '2026-06-09T19:16:41Z'
