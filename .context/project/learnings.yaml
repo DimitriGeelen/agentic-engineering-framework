@@ -3553,3 +3553,24 @@ X'` returning empty group."
   date: 2026-06-07
   context: Added via context agent
   application: TBD
+- id: L-465
+  learning: "Demo-target tasks (workflow_type=build with tags including demo-target + hm-* + arc:<slug>) consume their captured→started-work transition as soon as ANY actor runs 'fw work-on T-XXX'. If the headline-mechanic acceptance condition requires this transition come from mcp__fw__work_on (not Bash), a parent agent surveying HV-LC and accidentally fw work-on'ing the demo target burns the demo. Mitigation: file demo-target tasks with a 'demo_target: true' frontmatter field that fw work-on refuses unless --i-am-demo-orchestrator is passed (sibling guard to T-1731 check-human-ac-tick and T-2205 check-inception-recommendation). 2026-06-09 origin: T-2273 (arc-010 HM-A demo-target) burned by S-2026-0609-0935 parent session; documented in T-2273 Updates + OBS-057."
+  source: P-002
+  task: T-2273
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD
+- id: L-466
+  learning: "fw termlink dispatch ran claude -p without --permission-mode, so non-interactive workers couldn't trigger the workspace-trust dialog and MCP servers stayed 'status:pending' indefinitely. Any worker prompted to use MCP verbs (e.g. mcp__framework-mcp__task_update) would burn budget on ToolSearch retries with no path to success. Symptom signature: init mcp_servers all 'pending'; assistant calls ToolSearch repeatedly; never reaches a tool_use of any mcp__*__* name. Fix shipped T-2282 — add --permission-mode flag plumb; future MCP-using dispatches must pass --permission-mode acceptEdits."
+  source: P-011
+  task: T-2282
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD
+- id: L-467
+  learning: "MCP server tool prefix derives from .mcp.json's mcpServers KEY, not the server's internal name. Tool registers as 'mcp__<key>__<verb>' where <key> is the JSON key in mcpServers. If design artifacts (arc YAML headline_mechanic, demo prompts, IW research) reference a prefix that doesn't match the key, dispatch workers will ToolSearch the wrong prefix and find zero tools — failure looks like 'MCP servers stuck pending' but is actually prefix mismatch. T-2283 origin: T-2265 named server 'framework-mcp' but design uniformly used 'fw'. Diagnostic mis-chain OBS-058→OBS-059→T-2282→OBS-060→OBS-061 chased wrong root cause for ~2 sessions. Verify with: claude -p '...' --mcp-config .mcp.json --strict-mcp-config; the deferred-tool catalogue ToolSearch returns tools under the actual key prefix."
+  source: unknown
+  task: T-2283
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD

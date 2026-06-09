@@ -32,7 +32,7 @@
         "/opt/150-skills-manager/skills-mcp-server/server.py"
       ]
     },
-    "framework-mcp": {
+    "fw": {
       "command": "python3",
       "args": [
         "agents/mcp/framework_mcp_server.py"

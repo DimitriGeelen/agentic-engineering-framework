@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2283: arc-010 substrate fix — rename .mcp.json server key framework-mcp → fw to match
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T10:57:33Z
+# ============================================================================
+
+task_id: T-2283
+task_name: "arc-010 substrate fix — rename .mcp.json server key framework-mcp → fw to match"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T10:32:33Z
+completed: 2026-06-09T10:57:26Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`.mcp.json` server key is `fw` (renamed from `framework-mcp`). Verification: `python3 -c "import json; d=json.load(open(''.mcp.json'')); assert ''fw'' in d[''mcpServers''] and ''framework-mcp'' not in d[''mcpServers''], list(d[''mcpServers''].keys())"`'
+  - '`agents/mcp/framework-mcp.mcp-fragment.json` server key matches (renamed from `framework-mcp` → `fw`). Verification: `python3 -c "import json; d=json.load(open(''agents/mcp/framework-mcp.mcp-fragment.json'')); assert ''fw'' in d and ''framework-mcp'' not in d, list(d.keys())"`'
+  - 'Audit self-vendor drift check stays PASS (the mirror under `.agentic-framework/` does not include `.mcp.json` or the fragment file — these are project-level config artifacts, not framework code). Verification: `out=$(bin/fw audit 2>&1); echo "$out" | grep -q "Self-vendor drift: vendored .agentic-framework/ in sync"`'
+  - 'Live smoke confirms framework-mcp tools surface under `mcp__fw__*` prefix via `claude -p` ToolSearch (validated this session 2026-06-09 — returned 22 tools: `mcp__fw__doctor, mcp__fw__version, mcp__fw__ask, mcp__fw__assumption_add, mcp__fw__bvp_rank, mcp__fw__context_add_learning, mcp__fw__context_focus, mcp__fw__costs, mcp__fw__decisions, mcp__fw__fabric_deps, mcp__fw__fabric_search, mcp__fw__gaps, mcp__fw__inception_status, mcp__fw__learnings, mcp__fw__metrics, mcp__fw__note, mcp__fw__recall, mcp__fw__review_queue, mcp__fw__task_list, mcp__fw__task_show, mcp__fw__task_update, mcp__fw__work_on`). NOT in Verification block (each run costs ~$0.75 claude-p cache miss).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 24
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2283-arc-010-substrate-fix--rename-mcpjson-se.md
+generated_by: context-agent-hybrid
