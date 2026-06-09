@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2286: Demo-target structural guard — refuse parent-session fw work-on without --i-am-demo-orchestrator
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T14:44:42Z
+# ============================================================================
+
+task_id: T-2286
+task_name: "Demo-target structural guard — refuse parent-session fw work-on without --i-am-demo-orchestrator"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T13:44:54Z
+completed: 2026-06-09T14:44:33Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`bin/fw work-on T-XXX` (resume path) refuses started-work transition when the task''s frontmatter has `demo_target: true` AND neither `--i-am-demo-orchestrator` flag nor `FW_I_AM_DEMO_ORCHESTRATOR=1` env-var is set'
+  - 'Block message names BOTH bypass mechanisms verbatim (L-399 producer/consumer parity): `--i-am-demo-orchestrator` flag for direct CLI invocations; `FW_I_AM_DEMO_ORCHESTRATOR=1` env-prefix for git/wrapper/non-flag-bearing callers'
+  - '`--i-am-demo-orchestrator` flag bypasses the gate and logs Tier-2 entry to `.context/working/.gate-bypass-log.yaml`'
+  - '`FW_I_AM_DEMO_ORCHESTRATOR=1` env-var bypasses the gate and logs the same Tier-2 entry (same `category: demo-target-bypass`)'
+  - 'Non-demo tasks (`demo_target: false`, `demo_target` field absent, or empty) work-on resume path unaffected — regression smoke confirms via existing-task transition'
+  - '`.tasks/templates/default.md` documents the optional `demo_target:` field with one-line guidance pointing at the gate (commented-out, mirrors `arc_id:` shape)'
+  - 'New bats test `tests/unit/t2286_demo_target_guard.bats` covers: gate-blocks-bare-resume / flag-bypasses / env-bypasses / non-demo-task-allowed / block-message-names-both-mechanisms / bypass-log-entry-written'
+  - '`fw reviewer T-2286` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:capability-overlay, governance, demo-guard, obs-057]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 59
+  commits: 1
+  files_changed: 3
+  lines_added: 978
+  lines_removed: 449
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2286-demo-target-structural-guard--refuse-par.md
+generated_by: context-agent-hybrid

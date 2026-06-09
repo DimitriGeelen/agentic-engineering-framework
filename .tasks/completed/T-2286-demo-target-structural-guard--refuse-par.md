@@ -9,10 +9,10 @@ description: >
   Half the HM-A headline-mechanic acceptance condition lost before demo worker even
   spawned.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: later
+horizon: null
 tags: [arc:capability-overlay, governance, demo-guard, obs-057]
 components: []
 related_tasks: [T-2273, T-2268, T-1731, T-2205]
@@ -21,8 +21,8 @@ related_tasks: [T-2273, T-2268, T-1731, T-2205]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-09T13:44:54Z
-last_update: '2026-06-09T13:45:03Z'
-date_finished:
+last_update: 2026-06-09T14:44:33Z
+date_finished: 2026-06-09T14:44:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -63,45 +63,27 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Origin OBS-057: during arc-010 Slice 3 (T-2268) HV-LC backlog survey, the parent session ran `bin/fw work-on T-2273` — consuming the captured→started-work transition via Bash instead of leaving it for the demo worker's `mcp__fw__work_on`. Half the HM-A headline_mechanic acceptance clause ("agent dispatches a task via `mcp__fw__work_on`") was burned before the worker spawned. The demo was re-fired (arc010-hma-demo-005) but only because the operator caught the slip.
+
+Structural prevention: introduce a `demo_target: true` frontmatter field that marks a task as a demo subject. `fw work-on` refuses the started-work transition on a `demo_target: true` task unless the orchestrator passes `--i-am-demo-orchestrator` (flag) or `FW_I_AM_DEMO_ORCHESTRATOR=1` (env, for git/wrapper invocations — L-399 producer/consumer parity). Both bypasses log Tier-2 to `.context/working/.gate-bypass-log.yaml`. Sibling shape to T-1731 (`check-human-ac-tick`), T-2205 (`check-inception-recommendation`), and T-1730 (`--switch-focus`) bypasses.
+
+Scope-fence: gate only the **resume path** (`fw work-on T-XXX`). The create path (`fw work-on "<name>"`) creates fresh — `demo_target: true` is set *after* creation, not at filing.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `bin/fw work-on T-XXX` (resume path) refuses started-work transition when the task's frontmatter has `demo_target: true` AND neither `--i-am-demo-orchestrator` flag nor `FW_I_AM_DEMO_ORCHESTRATOR=1` env-var is set
+- [x] Block message names BOTH bypass mechanisms verbatim (L-399 producer/consumer parity): `--i-am-demo-orchestrator` flag for direct CLI invocations; `FW_I_AM_DEMO_ORCHESTRATOR=1` env-prefix for git/wrapper/non-flag-bearing callers
+- [x] `--i-am-demo-orchestrator` flag bypasses the gate and logs Tier-2 entry to `.context/working/.gate-bypass-log.yaml`
+- [x] `FW_I_AM_DEMO_ORCHESTRATOR=1` env-var bypasses the gate and logs the same Tier-2 entry (same `category: demo-target-bypass`)
+- [x] Non-demo tasks (`demo_target: false`, `demo_target` field absent, or empty) work-on resume path unaffected — regression smoke confirms via existing-task transition
+- [x] `.tasks/templates/default.md` documents the optional `demo_target:` field with one-line guidance pointing at the gate (commented-out, mirrors `arc_id:` shape)
+- [x] New bats test `tests/unit/t2286_demo_target_guard.bats` covers: gate-blocks-bare-resume / flag-bypasses / env-bypasses / non-demo-task-allowed / block-message-names-both-mechanisms / bypass-log-entry-written
+- [x] `fw reviewer T-2286` returns Overall PASS
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+<!-- No Human section: all ACs above are deterministic / shell-verifiable. -->
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
@@ -136,6 +118,13 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# --- T-2286 ACs ---
+grep -q 'demo_target' bin/fw
+grep -qE '(--i-am-demo-orchestrator|FW_I_AM_DEMO_ORCHESTRATOR)' bin/fw
+grep -q 'demo_target' .tasks/templates/default.md
+bats tests/unit/t2286_demo_target_guard.bats
+out=$(bin/fw reviewer T-2286 --no-write 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$out" | grep -q "Overall:.*FAIL"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -154,27 +143,13 @@ bvp_scores_proposed:
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-06-09 — Gate landed in bin/fw resume path, not as a PreToolUse hook
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** initial intuition was PreToolUse hook (sibling to T-1731 / T-2205). On read, the right surface is `bin/fw work-on` itself — the gate fires *before* `update-task.sh --status started-work` is called, not after. Putting the gate in bin/fw avoids hook-spec coupling and keeps the bypass-log path identical to the existing `_log_empty_recommendation_bypass` shape in `lib/review.sh:419`.
+- **Plan impact:** scope shrank — no new hook file, no `.claude/settings.json` registration, no enforcement-baseline refresh (L-398). The gate is one ~60-line block inserted into the existing `work-on)` case at the point where `wo_active_file` is already resolved. Frontmatter parsing is a single `awk` that bounds to the YAML block (between the two `---` lines) — no full YAML parser needed for a single boolean field.
+- **Triggered:** none. T-2286 is the structural prevention; the demo-target convention is born here.
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
 
 ## Decisions
 
@@ -203,3 +178,21 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2286-demo-target-structural-guard--refuse-par.md
 - **Context:** Initial task creation
+
+### 2026-06-09T14:40:10Z — status-update [task-update-agent]
+- **Change:** horizon: later → now
+
+### 2026-06-09T14:40:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f9bfe5e3
+- **Timestamp:** 2026-06-09T14:44:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-09T14:44:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
