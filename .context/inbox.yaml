@@ -1,450 +1,568 @@
-# Observation Inbox - Unprocessed observations
-# Capture: fw note "text"
-# Review:  fw note list
-# Triage:  fw note triage
 observations:
-  - id: OBS-001
-    text: "audit agent should check for orphaned episodic files"
-    captured: 2026-02-14T09:20:33Z
-    context_task: T-030
-    tags: [improvement]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-002
-    text: "pre-push hook exit code 127 is not handled"
-    captured: 2026-02-14T09:20:33Z
-    context_task: T-030
-    tags: [bug]
-    status: dismissed
-    promoted_to: null
-    urgent: true
-  - id: OBS-003
-    text: "fw should support --dry-run for all destructive commands"
-    captured: 2026-02-14T09:20:33Z
-    context_task: T-030
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-004
-    text: "Test observation from bats"
-    captured: 2026-04-05T16:29:52Z
-    context_task: T-932
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-005
-    text: "Tagged observation"
-    captured: 2026-04-05T16:29:52Z
-    context_task: T-932
-    tags: [test]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-006
-    text: "Test observation from bats"
-    captured: 2026-04-05T16:30:18Z
-    context_task: T-932
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-007
-    text: "Tagged observation"
-    captured: 2026-04-05T16:30:18Z
-    context_task: T-932
-    tags: [test]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-008
-    text: "Test observation from bats"
-    captured: 2026-04-06T10:25:07Z
-    context_task: T-001
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-009
-    text: "Tagged observation"
-    captured: 2026-04-06T10:25:07Z
-    context_task: T-001
-    tags: [test]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-010
-    text: "Test observation from bats"
-    captured: 2026-04-06T10:29:43Z
-    context_task: T-001
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-011
-    text: "Tagged observation"
-    captured: 2026-04-06T10:29:43Z
-    context_task: T-001
-    tags: [test]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-012
-    text: "add"
-    captured: 2026-04-14T22:03:09Z
-    context_task: T-1257
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-013
-    text: "Memory writes (claude auto-memory) blocked by onboarding task gate — agent on consumer project couldn't save memory about wrong fw path because T-001-T-005 weren't complete. Memory is the exact mechanism that would prevent recurrence of the problem being observed. Memory should not be gated by task onboarding."
-    captured: 2026-04-16T04:40:55Z
-    context_task: T-1257
-    tags: []
-    status: promoted
-    promoted_to: task
-  - id: OBS-014
-    text: "4 Claude Code hooks mirrored from termlink are dead code — never registered in .claude/settings.json or cron. Scripts: agents/context/{session-end,stop-guard,subagent-stop,pl007-scanner}.sh plus session-silent-scanner.sh which claims cron invocation but isn't in crontab. Commits b5383596/562c2fc7/a5c4fe85 landed handlers but settings.json was not updated. Likely skipped after the G-016 commit-storm incident but not documented. Needs inception: register (which ones, after what safeguards?), decommission, or document as reference-only."
-    captured: 2026-04-24T16:41:50Z
-    context_task: null
-    tags: [hooks]
-    status: promoted
-    promoted_to: task
-  - id: OBS-015
-    text: "Pickup importer hard-codes workflow_type=inception for all envelope types (bug-report, feature-proposal, etc.) — leading to 12 closed bug-fix tasks classified as inception. Audit C-001/missing-research check then warns about absent docs/reports/T-XXX-*.md artifacts that bug fixes don't need. Surgical fix landed in T-1440 (skip pickups in audit). Structural fix should change importer to map: bug-report→build, feature-proposal→inception (or build, with inception only for explicit research questions). See agents/pickup or lib/pickup-bus for importer code."
-    captured: 2026-04-25T05:55:27Z
-    context_task: T-1440
-    tags: [classification]
-    status: promoted
-    promoted_to: task
-  - id: OBS-016
-    text: "fw audit recursive-spawn pathology — observed during T-1441 close. Concurrent audit invocations (one in foreground from agent investigation + one inside T-1441's verification gate) caused audit.sh to spawn nested audit.sh children at ~1/min for 5+ minutes (saw 22 audit processes, parent-child chain 6+ levels deep). Each child appeared to be the audit re-running itself, possibly via the post-commit detector or a subshell loop in audit.sh's trend-analysis step. Killed manually with pkill -KILL. Need to investigate: does audit.sh fork itself? Does it lock to prevent concurrent runs? Should it?"
-    captured: 2026-04-25T06:13:31Z
-    context_task: null
-    tags: [bug]
-    status: promoted
-    promoted_to: task
-  - id: OBS-017
-    text: "add"
-    captured: 2026-04-25T11:51:18Z
-    context_task: T-1452
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-018
-    text: "resolve"
-    captured: 2026-04-25T12:17:21Z
-    context_task: T-1454
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-019
-    text: "AGENT_PATTERNS in lib/inception.sh:tick_inception_decide_acs is fragile — every new AC wording variant requires a regex extension (T-1466 RCA). Level D fix: annotation-based AC ticking (e.g. HTML comment marker  before each ceremonial AC, or frontmatter list of AC indices to tick on decide). Would eliminate the wording-dependency entirely. T-1455 GO 500 was first symptom; will recur on next custom inception AC wording."
-    captured: 2026-04-25T18:20:31Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-020
-    text: "resolve"
-    captured: 2026-04-25T19:40:52Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-021
-    text: "add"
-    captured: 2026-04-25T20:24:19Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-022
-    text: "CTL-013 false positive on T-1472: audit reports verification fails, but isolated runs (bats + cd-prefix + eval) all return rc=0. Audit context loses something between the eval and the test. Recurring noise in fw audit since 2026-04-25."
-    captured: 2026-04-25T20:24:28Z
-    context_task: T-1472
-    tags: [bug]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-023
-    text: "Dual PreCompact hook fire causes dual handover commits. Root cause: user-level ~/.claude/settings.json has '.agentic-framework/bin/fw hook pre-compact' (relative path) that resolves to the framework repo's vendored shim; project-level .claude/settings.json has '/opt/.../bin/fw hook pre-compact' (absolute). Both fire on /compact. The pre-compact.sh dedup (HANDOVER_DEDUP_COOLDOWN) didn't catch run-2 — needs investigation. Symptom: every /compact creates 2 commits with same session ID (96fff229+98a31ce5 on this session). Fix candidates: (a) flock around pre-compact.sh, (b) atomic .handover-running marker file written before commit, (c) fw upgrade detect+remove duplicate when user-level already has framework hooks."
-    captured: 2026-04-25T21:02:09Z
-    context_task: T-1474
-    tags: [bug]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-024
-    text: "show"
-    captured: 2026-04-26T09:00:08Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-025
-    text: "Inception limbo state: T-1346 + T-1388 have all Human ACs ticked but no inception decide recorded — status stuck at started-work, owner=human. Audit D5 anomaly only fires on age (T-1346 6d, T-1388 4d). Suggest a discovery check: inception + started-work + owner:human + 0 unchecked Human ACs + no decision recorded = limbo (operator forgot to run fw inception decide after checking the box)."
-    captured: 2026-04-26T09:17:12Z
-    context_task: T-1488
-    tags: [bug]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-026
-    text: "add"
-    captured: 2026-04-26T11:33:45Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-027
-    text: "Inception decide CLI/Watchtower output truncates long rationale comments mid-sentence (T-1506 close: '...sett' cut from '/root/.claude/settings.json'). Affects readability of post-decision side-effect warning. Likely a fixed-width terminal/template buffer; check do_inception_decide post-print + Watchtower /inception/T-XXX rendering of rationale."
-    captured: 2026-04-26T11:33:54Z
-    context_task: null
-    tags: [bug]
-    status: promoted
-    promoted_to: task
-  - id: OBS-028
-    text: "resolve"
-    captured: 2026-04-26T14:27:31Z
-    context_task: T-1511
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-029
-    text: "add"
-    captured: 2026-04-26T21:51:15Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-    urgent: true
-  - id: OBS-030
-    text: "User-level /root/.claude/settings.json has 16 framework hooks duplicating project-level — ROOT CAUSE behind T-1520 dual-fire (also OBS-023). T-1481 shipped 'fw upgrade --dedupe-user-hooks' to fix. Must run from a consumer project (not framework repo) and affects all consumer projects on host — needs human authorization."
-    captured: 2026-04-26T21:51:25Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-    urgent: true
-  - id: OBS-031
-    text: "19 of 22 awaiting-review tasks have NO ## Recommendation block, violating T-679 rule ('never present a blank decision'). Watchtower /review/T-XXX pages render blank where the agent recommendation should be. Affected: T-1214, T-1277, T-1448, T-1449, T-446, T-448, T-460, T-470, T-481, T-505, T-511, T-518, T-530, T-612, T-613, T-706, T-708, T-710, T-782. Root cause: T-679 enforcement is advisory in CLAUDE.md, not structural — no gate blocks work-completed when ## Recommendation is missing. Options: (a) batch-backfill via TermLink workers (each task needs evidence assessment), (b) ship a structural gate that blocks work-completed without Recommendation block, (c) both. Needs human direction."
-    captured: 2026-04-26T22:36:42Z
-    context_task: null
-    tags: []
-    status: dismissed
-    promoted_to: null
-    urgent: true
-  - id: OBS-032
-    text: "fw upgrade run from inside a consumer project (no target arg) crashes at step 4b/9 with 'Source and target resolve to the same directory'. Reproduced in S-2026-0427-0908 against /opt/050-email-archive: framework_root resolves to consumer's vendored copy and target defaults to cwd, both being the same path. Workaround: always run upgrade from framework repo with explicit target ('fw upgrade /path/to/consumer'). Real fix: detect bare-from-consumer case and re-exec upgrade with the upstream framework repo as source."
-    captured: 2026-04-27T10:05:45Z
-    context_task: null
-    tags: [bug]
-    status: promoted
-    promoted_to: task
-  - id: OBS-033
-    text: "Decision auto-capture (lib/decisions.sh or update-task.sh) writes decision text into YAML double-quoted strings without escape sanitization — backslash-anything (\\s, \\`, \\') breaks YAML parse. Recurrence: L-294, D-036 (T-1540), D-038 (T-1541) — three hand-fixes in 3 days, same class. Real fix: route auto-captured strings through yaml.safe_dump (or wrap in '|' literal block), or strip/escape backslashes before write. Sustained framework blindness > 7 days qualifies for G-019 escalation."
-    captured: 2026-04-27T13:33:51Z
-    context_task: null
-    tags: [bug]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-034
-    text: "Orphan stash 254e9028 ('WIP on master: 8a8a7b0a T-2086') contains .agentic-framework/<consumer-layout>/ paths inside the framework repo's own git — likely created by a session whose cwd was confused. Stash was the source of the G-052 active/T-1981 + active/T-1987 duplicates (T-2091 fix). Investigation needed: (1) drop the stash if safely orphan, OR (2) re-apply selectively if it has real work content, OR (3) leave for human inspection. Risk: this is a 600+ file stash referencing consumer paths that don't belong in this repo — dropping unknown stashes is destructive. Reference: docs/reports/T-2091 (not yet written; data in .tasks/completed/T-2091-*.md RCA section)."
-    captured: 2026-05-29T11:56:18Z
-    context_task: T-2091
-    tags: [housekeeping]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-035
-    text: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent."
-    captured: 2026-05-29T11:56:27Z
-    context_task: T-2091
-    tags: [prevention]
-    status: promoted
-    promoted_to: task
-  - id: OBS-036
-    text: "Audit detector idea (sibling to L-417): Completed inception with workflow_type:inception + Recommendation/Decision text matching '(filed on GO|sub-tasks (filed|created)|build slices (filed)' + 'related_tasks: []' + no completed/active task with related_tasks pointing back → WARN as 'GO-scope-not-propagated'. T-2078 (discovered 2026-05-29 via T-2091 sweep) was the first known instance; the V1 slices T-2092..T-2095 were filed retroactively. Existing L-417 detector covers the inverse (templates/source claim 'will ship in T-XXX' but T-XXX already completed) — this would catch the OUTGOING propagation gap. Scope: .tasks/completed/T-*.md filtered by workflow_type. Fix shape: ~30 lines extending audit.sh structure section, follows the L-417 detector pattern."
-    captured: 2026-05-29T12:06:35Z
-    context_task: T-2078
-    tags: [audit]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-037
-    text: "resolve"
-    captured: 2026-05-29T13:50:46Z
-    context_task: T-1062
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-038
-    text: "capture"
-    captured: 2026-05-29T22:12:48Z
-    context_task: T-2103
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-039
-    text: "capture"
-    captured: 2026-05-29T23:44:25Z
-    context_task: T-2107
-    tags: []
-    status: promoted
-    promoted_to: task
-  - id: OBS-040
-    text: "inbox"
-    captured: 2026-05-30T16:14:41Z
-    context_task: T-1687
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-041
-    text: "task-create template Human-section placeholder coexists with agent-inserted real Human AC block — produces duplicate ### Human headings in 3 tasks this session (T-2112, T-2113, T-2114). Pattern: agent inserts a new ### Human block ABOVE the existing template ### Human placeholder rather than editing in-place. Cosmetic-only (Watchtower reads structured ACs), but creates visual noise for the human reviewer. Convention fix: agent should ALWAYS edit the existing template ### Human block (replacing the descriptive comment) rather than inserting a new ### Human heading."
-    captured: 2026-05-30T16:50:23Z
-    context_task: T-2112
-    tags: [housekeeping]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-042
-    text: "show"
-    captured: 2026-05-30T19:37:50Z
-    context_task: T-1687
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-043
-    text: "CTL-029 chain on orchestrator arc: T-1702 has 3 Agent ACs (#5/#6/#7) explicitly DEFERRED to T-1707, T-1707 shipped (work-completed 2026-05-27) and ALSO claims 'Closes G-065', but G-065 in .context/project/concerns.yaml is still status: watching (not closed_date'd). Chain: T-1702 close-by-event waits on T-1707 [REVIEW] Human AC + G-065 status flip. Agent declined to flip G-065 mechanically because (a) T-1707's own Recommendation says 'closes when human reviews', (b) it touches the gap register which is sovereignty-adjacent, (c) the close-cascade T-1702→T-1707→G-065 deserves one coordinated human action via fw task review T-1702 + T-1707 + concerns.yaml edit. Tagged for orchestrator-arc pre-close hygiene. Pattern is identical to T-1776 just closed under 625557f1/9f08aa42."
-    captured: 2026-05-31T09:36:39Z
-    context_task: T-1702
-    tags: [orchestrator-arc]
-    status: pending
-    promoted_to: null
-  - id: OBS-044
-    text: "Production Watchtower deployment lag: 3 Human-Steps URLs on T-1990 and T-1994 point at watchtower.docker.ring20.geelenandcompany.com/{approvals,arcs,docs/generated/components/hook-config} which all 404 on prod but 200 on local (192.168.10.107:3000). Prod tracks tagged releases (/opt/watchtower-prod via systemd watchtower :5050); these routes live on master and would need a tag+deploy to surface. Two options: (a) re-tag + deploy current master to prod, or (b) edit those Human Steps to point at https://watchtower-dev.docker.ring20.geelenandcompany.com which tracks master. Not auto-fixing because the choice is operational (deploy cadence) rather than mechanical. Discovered during arc-007 partial-complete URL sweep S-2026-0531-1116+1; the 4th broken URL (T-2113 local /cockpit) was a class-distinct one-off and got fixed under cb815bae."
-    captured: 2026-05-31T10:03:53Z
-    context_task: T-1687
-    tags: [deployment-lag]
-    status: pending
-    promoted_to: null
-  - id: OBS-045
-    text: "add"
-    captured: 2026-05-31T19:57:00Z
-    context_task: T-2074
-    tags: [housekeeping]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-046
-    text: "Stuck-partial detector gap: T-2074 was owner=human + status=work-completed but had ZERO Human ACs in body (rerouted to Agent via T-2123 retro-fix). File sat in active/ since 2026-05-30 (~2 days) unfinalisable. Existing coverage: T-2055/CTL-029 catches 'Agent ACs ticked, status=started-work' (active-side mirror of CTL-028). active-task-scan.py Loop 10 (D2 review queue) lists owner=human/status=work-completed tasks but doesn't distinguish 'has Human ACs to verify' from 'zero Human ACs = unfinalisable'. Missing detector: 'owner=human + status=work-completed + 0 Human ACs in body' = stuck-partial. Origin: T-2074 retro-fix routing — Human AC re-routed to Agent can leave the partial-complete state dangling."
-    captured: 2026-05-31T19:57:21Z
-    context_task: T-2074
-    tags: [housekeeping]
-    status: promoted
-    promoted_to: task
-  - id: OBS-047
-    text: "add"
-    captured: 2026-06-01T09:05:43Z
-    context_task: T-1820
-    tags: [auto-tick-fp]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-048
-    text: "G-064 closure-readiness gauge VERDICT=READY: 11 cron-firing dates ≥ 3 threshold (gauge: tools/g064-readiness.py 2026-06-01). Status_notes already specify the gauge as the closure mechanism (mechanical threshold, not human-judgment). Recommend closure via Watchtower /gaps. Cascade: closing G-064 also satisfies T-2169 retire_when audit advisory's F-ORCH heuristic (F-ORCH retires when G-064 closed). Cron firings: 2026-05-14, 2026-05-15, 2026-05-18, 2026-05-21, 2026-05-22, 2026-05-23, 2026-05-25, 2026-05-26, 2026-05-29, 2026-05-31, 2026-06-01."
-    captured: 2026-06-01T22:34:22Z
-    context_task: T-2158
-    tags: [gap-readiness]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-049
-    text: "add"
-    captured: 2026-06-05T20:35:34Z
-    context_task: T-2219
-    tags: [deferred]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-050
-    text: "add"
-    captured: 2026-06-05T20:41:45Z
-    context_task: T-2219
-    tags: [forensics]
-    status: dismissed
-    promoted_to: null
-  - id: OBS-051
-    text: "status"
-    captured: 2026-06-07T12:02:45Z
-    context_task: T-1687
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-052
-    text: "resolve"
-    captured: 2026-06-07T12:05:26Z
-    context_task: T-1687
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-053
-    text: "lib/paths.sh env-leak class — 3 incidents now (T-2200 first-launch, T-2202 worker, workflow-designer T-015). Symptom: when caller's session has TASKS_DIR/CONTEXT_DIR exported via prior fw context init and then invokes vendored fw in a different project with PROJECT_ROOT override, writes go to calling project. Proposed fix: paths.sh re-derives TASKS_DIR/CONTEXT_DIR from PROJECT_ROOT when explicitly overridden. Operator triage call — would close 3-incident class."
-    captured: 2026-06-08T23:23:52Z
-    context_task: T-2202
-    tags: [paths-sh, env-leak, framework-bug, class-signal]
-    status: pending
-    promoted_to: null
-  - id: OBS-054
-    text: "Framework's orchestrator-mcp baseline drifted +12 tools (251 vs live 263). Scan reports 9 auto-classifiable readonly via T-1761 convention + 3 unclassified (termlink_fleet_governor_status, termlink_hub_governor_status, termlink_whoami — *_status/_whoami suffix outside convention scope). Workflow-designer worker did same fix on its target project today (T-2202 fix #1). Operator triage: --apply for the 9 ratchets the framework's baseline; the 3 *_status/_whoami need manual readonly_exempt entry. CAUTION: see OBS-055 — convention may misclassify channel-claim subsystem."
-    captured: 2026-06-09T06:16:56Z
-    context_task: T-2200
-    tags: [orchestrator-mcp, baseline-drift, mechanical-ratchet]
-    status: pending
-    promoted_to: null
-  - id: OBS-055
-    text: "T-1761 convention whitelist near-miss. Ran --apply this session; diff revealed 9 termlink_channel_* tools classified readonly including 'claim', 'force_release', 'transfer', 'release', 'renew' — names suggesting state mutation. Whitelist (CONVENTION_MUTATOR_VERBS_SINGLE in orchestrator-mcp-scan.sh:166) built from chat-system verbs (post/send/edit/react). Reverted before commit. Two options: (a) extend whitelist with claim-system verbs before next --apply, OR (b) exclude termlink_channel_claim* from CONVENTION_NAMESPACES. 196-tool zero-misclassification record was chat-domain; channel-claim is new domain. Worth a 30-min triage."
-    captured: 2026-06-09T06:42:51Z
-    context_task: T-2200
-    tags: [orchestrator-mcp, convention-gap, near-miss, framework-discipline]
-    status: pending
-    promoted_to: null
-  - id: OBS-056
-    text: "TEST: verifying fw note text-arg shape — delete me"
-    captured: 2026-06-09T06:48:55Z
-    context_task: T-2268
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-057
-    text: "Demo-target tasks (like T-2273 for arc-010 HM-A) need a structural guard against parent-session fw work-on touches. Today's burn: parent session ran 'bin/fw work-on T-2273' while surveying HV-LC, consuming the captured->started-work transition via Bash instead of mcp__fw__work_on. Half the HM-A headline-mechanic acceptance condition lost before the demo worker even spawned. Proposal: add 'demo_target: true' frontmatter field that 'fw work-on' refuses unless --i-am-demo-orchestrator is passed. Sibling guard to T-1731 (check-human-ac-tick) and T-2205 (check-inception-recommendation): protects a specific class of task from being touched by the wrong actor. Cross-link: T-2273 Updates entry 2026-06-09T08:00:00Z."
-    captured: 2026-06-09T07:53:10Z
-    context_task: T-2273
-    tags: [headline-mechanic]
-    status: pending
-    promoted_to: null
-  - id: OBS-058
-    text: "HM-A demo dispatch experiment 2026-06-09 09:47-09:50 UTC: framework-mcp wired into .mcp.json, JSONRPC handshake + 22 tools verified manually; but in claude -p via TermLink dispatch, framework-mcp status stays 'pending' indefinitely and tools never surface via ToolSearch (neither 'mcp__framework-mcp__*' nor 'mcp__fw__*' prefixes match). Worker did 7 ToolSearch + 5 Bash (informational only, not gated verbs) + 5 Read before I terminated at 2min mark. Session JSONL preserved at /root/.claude/projects/-opt-999-Agentic-Engineering-Framework/edca090c-fb95-4327-9e57-77ff33d0fd20.jsonl (196KB). Class signal: MCP wiring works in direct stdio test (echo JSONRPC | python3 server) but NOT in claude -p context. Likely cause: model fallback to sonnet may handle MCP init differently from opus, OR framework-mcp init exceeds claude -p's deferred-tool catalogue timeout. T-2268 AC#1 (.mcp.json wiring) is still legitimately ticked — the wire-up artefact is correct; the runtime registration is what fails. Operator triage call: investigate before re-dispatching the demo."
-    captured: 2026-06-09T09:50:40Z
-    context_task: T-2268
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-059
-    text: "OBS-058 root cause identified: 'fw termlink dispatch' at agents/termlink/termlink.sh:714 calls claude -p without --permission-mode flag. Default permission mode keeps MCP servers in 'pending' state (workspace trust dialog can't fire non-interactively). All 5 MCP servers (context7, playwright, termlink, skills, framework-mcp) showed 'pending' in the demo session init — this is the symptom of the missing trust acceptance. Fix path: add '--permission-mode acceptEdits' OR '--allow-dangerously-skip-permissions' to the claude -p invocation at agents/termlink/termlink.sh:714. Trade-off — 'acceptEdits' restricts to Edit/Write+ASK; 'dangerously-skip-permissions' is full bypass. For HM-A demo worker (well-scoped prompt, mcp-only verbs), 'acceptEdits' likely sufficient. Operator triage: this is a dispatch-substrate change — same class as T-1703 (--tools plumbing). Once fixed, re-dispatch HM-A demo should let framework-mcp tools surface and the demo can run."
-    captured: 2026-06-09T09:52:21Z
-    context_task: T-2268
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-060
-    text: "OBS-060: T-2282 (--permission-mode acceptEdits) is NECESSARY BUT NOT SUFFICIENT for MCP-using workers. Re-dispatched HM-A demo (arc010-hma-demo-002, 2026-06-09 10:12 UTC) with acceptEdits — verified by permission_mode.txt + meta.json + worker init events. Result: 4/5 MCP servers STILL 'pending' (context7, playwright, skills, framework-mcp); only termlink 'connected' (likely cached from earlier session). Worker did 8 Read + 3 ToolSearch + 3 Bash trying to diagnose mcp__fw__* absence, identical pattern to OBS-058 pre-T-2282. Killed at 1m to preserve budget. Hypothesis: claude -p doesn't auto-trust uncached MCP servers regardless of --permission-mode (acceptEdits gates write tools, not MCP server registration). Next diagnostic: try --dangerously-skip-permissions instead, OR investigate whether claude has a per-server trust mechanism. T-2268 ACs #4-7 remain blocked. Wdir: /tmp/tl-dispatch/arc010-hma-demo-002 was cleaned."
-    captured: 2026-06-09T10:14:46Z
-    context_task: T-2268
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-061
-    text: "OBS-061: Refined hypothesis for MCP-pending in claude -p workers (continues OBS-060). User /root/.claude/settings.json permissions.allow has mcp__termlink__*, mcp__plugin_context7_*, mcp__plugin_playwright_* entries but ZERO mcp__framework-mcp__* entries. Project /opt/.../​.claude/settings.json has NO permissions block at all (hooks only). Hypothesis: claude -p workers use permissions.allow for MCP server trust pre-acceptance. Without an entry, --permission-mode acceptEdits is insufficient because the workspace trust dialog covers Edit/Write but not MCP server registration. Candidate fixes for operator: (a) add 'mcp__framework-mcp__*' to /root/.claude/settings.json permissions.allow (sovereignty-adjacent, affects parent session too), or (b) modify fw termlink dispatch to pass --mcp-config .mcp.json --strict-mcp-config (explicit operator opt-in), or (c) investigate per-project trust manifest. Note: --dangerously-skip-permissions and --permission-mode bypassPermissions are blocked when running as root (security check). Substrate gap; T-2268 demo blocked until operator picks a path. cf. OBS-058/059/060."
-    captured: 2026-06-09T10:19:02Z
-    context_task: T-2268
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-062
-    text: "MCP server framework-self-vendor blind spot: agents/termlink/termlink.sh run.sh:670-673 sets FRAMEWORK_ROOT=$PROJECT_DIR/.agentic-framework whenever .agentic-framework/ exists. In framework REPO itself (which has .agentic-framework/ as vendored mirror), this redirects FRAMEWORK_ROOT away from the actual source. Result: framework_mcp_server.py's _project_root() honours FRAMEWORK_ROOT and looks for policy/capability-overlay/tool-set.yaml at /opt/.../999.agentic-framework/policy/ — which doesn't exist in the vendored subset. arc-010 HM-A demo-003 unearthed this 2026-06-09 (substrate trio T-2282 + T-2283 + T-2284 all applied correctly per meta.json + wdir artefacts, ToolSearch still returned 'No matching deferred tools found' for mcp__fw__*). Fix candidate: discriminate framework-repo-self vs consumer in run.sh — test for FRAMEWORK.md at $PROJECT_DIR before deciding to redirect FRAMEWORK_ROOT. Alt fix: include policy/ in self-vendor list (less clean — duplicates policy across two paths). HV-LC follow-on; substrate-class. (T-2284)"
-    captured: 2026-06-09T11:31:21Z
-    context_task: T-2284
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-063
-    text: "Consumer-shape MCP enablement gap: arc-010 substrate quartet (T-2282/2283/2284/2285) makes framework-self HM-A demo work. But for CONSUMERS, framework_mcp_server.py is self-vendored to .agentic-framework/agents/mcp/ BUT policy/capability-overlay/tool-set.yaml is NOT — lib/upgrade.sh:237-240 explicitly excludes capability-overlay/ from _self_vendor_policy. Consumer-side MCP server would crash on tool-set.yaml-not-found (same class as OBS-062, opposite direction). Three forward paths: (a) add tool-set.yaml to _self_vendor_policy explicit list — arc-010 enabling artefact, structural one-liner; (b) treat consumer MCP as out-of-scope for arc-010 demo (current default); (c) file as arc-010 follow-on slice for consumer enablement. Discovery: ran framework_mcp_server.py with FRAMEWORK_ROOT=PWD locally — 22 tools registered cleanly, proves framework-self side works end-to-end. (T-2268)"
-    captured: 2026-06-09T13:05:02Z
-    context_task: T-2268
-    tags: []
-    status: pending
-    promoted_to: null
+- id: OBS-001
+  text: audit agent should check for orphaned episodic files
+  captured: 2026-02-14 09:20:33+00:00
+  context_task: T-030
+  tags:
+  - improvement
+  status: dismissed
+  promoted_to: null
+- id: OBS-002
+  text: pre-push hook exit code 127 is not handled
+  captured: 2026-02-14 09:20:33+00:00
+  context_task: T-030
+  tags:
+  - bug
+  status: dismissed
+  promoted_to: null
+  urgent: true
+- id: OBS-003
+  text: fw should support --dry-run for all destructive commands
+  captured: 2026-02-14 09:20:33+00:00
+  context_task: T-030
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-004
+  text: Test observation from bats
+  captured: 2026-04-05 16:29:52+00:00
+  context_task: T-932
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-005
+  text: Tagged observation
+  captured: 2026-04-05 16:29:52+00:00
+  context_task: T-932
+  tags:
+  - test
+  status: dismissed
+  promoted_to: null
+- id: OBS-006
+  text: Test observation from bats
+  captured: 2026-04-05 16:30:18+00:00
+  context_task: T-932
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-007
+  text: Tagged observation
+  captured: 2026-04-05 16:30:18+00:00
+  context_task: T-932
+  tags:
+  - test
+  status: dismissed
+  promoted_to: null
+- id: OBS-008
+  text: Test observation from bats
+  captured: 2026-04-06 10:25:07+00:00
+  context_task: T-001
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-009
+  text: Tagged observation
+  captured: 2026-04-06 10:25:07+00:00
+  context_task: T-001
+  tags:
+  - test
+  status: dismissed
+  promoted_to: null
+- id: OBS-010
+  text: Test observation from bats
+  captured: 2026-04-06 10:29:43+00:00
+  context_task: T-001
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-011
+  text: Tagged observation
+  captured: 2026-04-06 10:29:43+00:00
+  context_task: T-001
+  tags:
+  - test
+  status: dismissed
+  promoted_to: null
+- id: OBS-012
+  text: add
+  captured: 2026-04-14 22:03:09+00:00
+  context_task: T-1257
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-013
+  text: Memory writes (claude auto-memory) blocked by onboarding task gate — agent on consumer project couldn't save memory about wrong fw path because T-001-T-005 weren't complete. Memory is the exact
+    mechanism that would prevent recurrence of the problem being observed. Memory should not be gated by task onboarding.
+  captured: 2026-04-16 04:40:55+00:00
+  context_task: T-1257
+  tags: []
+  status: promoted
+  promoted_to: task
+- id: OBS-014
+  text: '4 Claude Code hooks mirrored from termlink are dead code — never registered in .claude/settings.json or cron. Scripts: agents/context/{session-end,stop-guard,subagent-stop,pl007-scanner}.sh plus
+    session-silent-scanner.sh which claims cron invocation but isn''t in crontab. Commits b5383596/562c2fc7/a5c4fe85 landed handlers but settings.json was not updated. Likely skipped after the G-016 commit-storm
+    incident but not documented. Needs inception: register (which ones, after what safeguards?), decommission, or document as reference-only.'
+  captured: 2026-04-24 16:41:50+00:00
+  context_task: null
+  tags:
+  - hooks
+  status: promoted
+  promoted_to: task
+- id: OBS-015
+  text: 'Pickup importer hard-codes workflow_type=inception for all envelope types (bug-report, feature-proposal, etc.) — leading to 12 closed bug-fix tasks classified as inception. Audit C-001/missing-research
+    check then warns about absent docs/reports/T-XXX-*.md artifacts that bug fixes don''t need. Surgical fix landed in T-1440 (skip pickups in audit). Structural fix should change importer to map: bug-report→build,
+    feature-proposal→inception (or build, with inception only for explicit research questions). See agents/pickup or lib/pickup-bus for importer code.'
+  captured: 2026-04-25 05:55:27+00:00
+  context_task: T-1440
+  tags:
+  - classification
+  status: promoted
+  promoted_to: task
+- id: OBS-016
+  text: 'fw audit recursive-spawn pathology — observed during T-1441 close. Concurrent audit invocations (one in foreground from agent investigation + one inside T-1441''s verification gate) caused audit.sh
+    to spawn nested audit.sh children at ~1/min for 5+ minutes (saw 22 audit processes, parent-child chain 6+ levels deep). Each child appeared to be the audit re-running itself, possibly via the post-commit
+    detector or a subshell loop in audit.sh''s trend-analysis step. Killed manually with pkill -KILL. Need to investigate: does audit.sh fork itself? Does it lock to prevent concurrent runs? Should it?'
+  captured: 2026-04-25 06:13:31+00:00
+  context_task: null
+  tags:
+  - bug
+  status: promoted
+  promoted_to: task
+- id: OBS-017
+  text: add
+  captured: 2026-04-25 11:51:18+00:00
+  context_task: T-1452
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-018
+  text: resolve
+  captured: 2026-04-25 12:17:21+00:00
+  context_task: T-1454
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-019
+  text: 'AGENT_PATTERNS in lib/inception.sh:tick_inception_decide_acs is fragile — every new AC wording variant requires a regex extension (T-1466 RCA). Level D fix: annotation-based AC ticking (e.g. HTML
+    comment marker  before each ceremonial AC, or frontmatter list of AC indices to tick on decide). Would eliminate the wording-dependency entirely. T-1455 GO 500 was first symptom; will recur on next
+    custom inception AC wording.'
+  captured: 2026-04-25 18:20:31+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-020
+  text: resolve
+  captured: 2026-04-25 19:40:52+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-021
+  text: add
+  captured: 2026-04-25 20:24:19+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-022
+  text: 'CTL-013 false positive on T-1472: audit reports verification fails, but isolated runs (bats + cd-prefix + eval) all return rc=0. Audit context loses something between the eval and the test. Recurring
+    noise in fw audit since 2026-04-25.'
+  captured: 2026-04-25 20:24:28+00:00
+  context_task: T-1472
+  tags:
+  - bug
+  status: dismissed
+  promoted_to: null
+- id: OBS-023
+  text: 'Dual PreCompact hook fire causes dual handover commits. Root cause: user-level ~/.claude/settings.json has ''.agentic-framework/bin/fw hook pre-compact'' (relative path) that resolves to the framework
+    repo''s vendored shim; project-level .claude/settings.json has ''/opt/.../bin/fw hook pre-compact'' (absolute). Both fire on /compact. The pre-compact.sh dedup (HANDOVER_DEDUP_COOLDOWN) didn''t catch
+    run-2 — needs investigation. Symptom: every /compact creates 2 commits with same session ID (96fff229+98a31ce5 on this session). Fix candidates: (a) flock around pre-compact.sh, (b) atomic .handover-running
+    marker file written before commit, (c) fw upgrade detect+remove duplicate when user-level already has framework hooks.'
+  captured: 2026-04-25 21:02:09+00:00
+  context_task: T-1474
+  tags:
+  - bug
+  status: dismissed
+  promoted_to: null
+- id: OBS-024
+  text: show
+  captured: 2026-04-26 09:00:08+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-025
+  text: 'Inception limbo state: T-1346 + T-1388 have all Human ACs ticked but no inception decide recorded — status stuck at started-work, owner=human. Audit D5 anomaly only fires on age (T-1346 6d, T-1388
+    4d). Suggest a discovery check: inception + started-work + owner:human + 0 unchecked Human ACs + no decision recorded = limbo (operator forgot to run fw inception decide after checking the box).'
+  captured: 2026-04-26 09:17:12+00:00
+  context_task: T-1488
+  tags:
+  - bug
+  status: dismissed
+  promoted_to: null
+- id: OBS-026
+  text: add
+  captured: 2026-04-26 11:33:45+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-027
+  text: 'Inception decide CLI/Watchtower output truncates long rationale comments mid-sentence (T-1506 close: ''...sett'' cut from ''/root/.claude/settings.json''). Affects readability of post-decision
+    side-effect warning. Likely a fixed-width terminal/template buffer; check do_inception_decide post-print + Watchtower /inception/T-XXX rendering of rationale.'
+  captured: 2026-04-26 11:33:54+00:00
+  context_task: null
+  tags:
+  - bug
+  status: promoted
+  promoted_to: task
+- id: OBS-028
+  text: resolve
+  captured: 2026-04-26 14:27:31+00:00
+  context_task: T-1511
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-029
+  text: add
+  captured: 2026-04-26 21:51:15+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+  urgent: true
+- id: OBS-030
+  text: User-level /root/.claude/settings.json has 16 framework hooks duplicating project-level — ROOT CAUSE behind T-1520 dual-fire (also OBS-023). T-1481 shipped 'fw upgrade --dedupe-user-hooks' to fix.
+    Must run from a consumer project (not framework repo) and affects all consumer projects on host — needs human authorization.
+  captured: 2026-04-26 21:51:25+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+  urgent: true
+- id: OBS-031
+  text: '19 of 22 awaiting-review tasks have NO ## Recommendation block, violating T-679 rule (''never present a blank decision''). Watchtower /review/T-XXX pages render blank where the agent recommendation
+    should be. Affected: T-1214, T-1277, T-1448, T-1449, T-446, T-448, T-460, T-470, T-481, T-505, T-511, T-518, T-530, T-612, T-613, T-706, T-708, T-710, T-782. Root cause: T-679 enforcement is advisory
+    in CLAUDE.md, not structural — no gate blocks work-completed when ## Recommendation is missing. Options: (a) batch-backfill via TermLink workers (each task needs evidence assessment), (b) ship a structural
+    gate that blocks work-completed without Recommendation block, (c) both. Needs human direction.'
+  captured: 2026-04-26 22:36:42+00:00
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+  urgent: true
+- id: OBS-032
+  text: 'fw upgrade run from inside a consumer project (no target arg) crashes at step 4b/9 with ''Source and target resolve to the same directory''. Reproduced in S-2026-0427-0908 against /opt/050-email-archive:
+    framework_root resolves to consumer''s vendored copy and target defaults to cwd, both being the same path. Workaround: always run upgrade from framework repo with explicit target (''fw upgrade /path/to/consumer'').
+    Real fix: detect bare-from-consumer case and re-exec upgrade with the upstream framework repo as source.'
+  captured: 2026-04-27 10:05:45+00:00
+  context_task: null
+  tags:
+  - bug
+  status: promoted
+  promoted_to: task
+- id: OBS-033
+  text: 'Decision auto-capture (lib/decisions.sh or update-task.sh) writes decision text into YAML double-quoted strings without escape sanitization — backslash-anything (\s, \`, \'') breaks YAML parse.
+    Recurrence: L-294, D-036 (T-1540), D-038 (T-1541) — three hand-fixes in 3 days, same class. Real fix: route auto-captured strings through yaml.safe_dump (or wrap in ''|'' literal block), or strip/escape
+    backslashes before write. Sustained framework blindness > 7 days qualifies for G-019 escalation.'
+  captured: 2026-04-27 13:33:51+00:00
+  context_task: null
+  tags:
+  - bug
+  status: dismissed
+  promoted_to: null
+- id: OBS-034
+  text: 'Orphan stash 254e9028 (''WIP on master: 8a8a7b0a T-2086'') contains .agentic-framework/<consumer-layout>/ paths inside the framework repo''s own git — likely created by a session whose cwd was
+    confused. Stash was the source of the G-052 active/T-1981 + active/T-1987 duplicates (T-2091 fix). Investigation needed: (1) drop the stash if safely orphan, OR (2) re-apply selectively if it has real
+    work content, OR (3) leave for human inspection. Risk: this is a 600+ file stash referencing consumer paths that don''t belong in this repo — dropping unknown stashes is destructive. Reference: docs/reports/T-2091
+    (not yet written; data in .tasks/completed/T-2091-*.md RCA section).'
+  captured: 2026-05-29 11:56:18+00:00
+  context_task: T-2091
+  tags:
+  - housekeeping
+  status: dismissed
+  promoted_to: null
+- id: OBS-035
+  text: 'T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md
+    and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata
+    churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn''t look here, so 7-day-orphaned completion content was invisible). Filing as separate task per
+    ''one bug = one task'' since the cleanup (T-2091) and the prevention are independent.'
+  captured: 2026-05-29 11:56:27+00:00
+  context_task: T-2091
+  tags:
+  - prevention
+  status: promoted
+  promoted_to: task
+- id: OBS-036
+  text: 'Audit detector idea (sibling to L-417): Completed inception with workflow_type:inception + Recommendation/Decision text matching ''(filed on GO|sub-tasks (filed|created)|build slices (filed)''
+    + ''related_tasks: []'' + no completed/active task with related_tasks pointing back → WARN as ''GO-scope-not-propagated''. T-2078 (discovered 2026-05-29 via T-2091 sweep) was the first known instance;
+    the V1 slices T-2092..T-2095 were filed retroactively. Existing L-417 detector covers the inverse (templates/source claim ''will ship in T-XXX'' but T-XXX already completed) — this would catch the OUTGOING
+    propagation gap. Scope: .tasks/completed/T-*.md filtered by workflow_type. Fix shape: ~30 lines extending audit.sh structure section, follows the L-417 detector pattern.'
+  captured: 2026-05-29 12:06:35+00:00
+  context_task: T-2078
+  tags:
+  - audit
+  status: dismissed
+  promoted_to: null
+- id: OBS-037
+  text: resolve
+  captured: 2026-05-29 13:50:46+00:00
+  context_task: T-1062
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-038
+  text: capture
+  captured: 2026-05-29 22:12:48+00:00
+  context_task: T-2103
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-039
+  text: capture
+  captured: 2026-05-29 23:44:25+00:00
+  context_task: T-2107
+  tags: []
+  status: promoted
+  promoted_to: task
+- id: OBS-040
+  text: inbox
+  captured: 2026-05-30 16:14:41+00:00
+  context_task: T-1687
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-041
+  text: 'task-create template Human-section placeholder coexists with agent-inserted real Human AC block — produces duplicate ### Human headings in 3 tasks this session (T-2112, T-2113, T-2114). Pattern:
+    agent inserts a new ### Human block ABOVE the existing template ### Human placeholder rather than editing in-place. Cosmetic-only (Watchtower reads structured ACs), but creates visual noise for the
+    human reviewer. Convention fix: agent should ALWAYS edit the existing template ### Human block (replacing the descriptive comment) rather than inserting a new ### Human heading.'
+  captured: 2026-05-30 16:50:23+00:00
+  context_task: T-2112
+  tags:
+  - housekeeping
+  status: dismissed
+  promoted_to: null
+- id: OBS-042
+  text: show
+  captured: 2026-05-30 19:37:50+00:00
+  context_task: T-1687
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-043
+  text: 'CTL-029 chain on orchestrator arc: T-1702 has 3 Agent ACs (#5/#6/#7) explicitly DEFERRED to T-1707, T-1707 shipped (work-completed 2026-05-27) and ALSO claims ''Closes G-065'', but G-065 in .context/project/concerns.yaml
+    is still status: watching (not closed_date''d). Chain: T-1702 close-by-event waits on T-1707 [REVIEW] Human AC + G-065 status flip. Agent declined to flip G-065 mechanically because (a) T-1707''s own
+    Recommendation says ''closes when human reviews'', (b) it touches the gap register which is sovereignty-adjacent, (c) the close-cascade T-1702→T-1707→G-065 deserves one coordinated human action via
+    fw task review T-1702 + T-1707 + concerns.yaml edit. Tagged for orchestrator-arc pre-close hygiene. Pattern is identical to T-1776 just closed under 625557f1/9f08aa42.'
+  captured: 2026-05-31 09:36:39+00:00
+  context_task: T-1702
+  tags:
+  - orchestrator-arc
+  status: pending
+  promoted_to: null
+- id: OBS-044
+  text: 'Production Watchtower deployment lag: 3 Human-Steps URLs on T-1990 and T-1994 point at watchtower.docker.ring20.geelenandcompany.com/{approvals,arcs,docs/generated/components/hook-config} which
+    all 404 on prod but 200 on local (192.168.10.107:3000). Prod tracks tagged releases (/opt/watchtower-prod via systemd watchtower :5050); these routes live on master and would need a tag+deploy to surface.
+    Two options: (a) re-tag + deploy current master to prod, or (b) edit those Human Steps to point at https://watchtower-dev.docker.ring20.geelenandcompany.com which tracks master. Not auto-fixing because
+    the choice is operational (deploy cadence) rather than mechanical. Discovered during arc-007 partial-complete URL sweep S-2026-0531-1116+1; the 4th broken URL (T-2113 local /cockpit) was a class-distinct
+    one-off and got fixed under cb815bae.'
+  captured: 2026-05-31 10:03:53+00:00
+  context_task: T-1687
+  tags:
+  - deployment-lag
+  status: pending
+  promoted_to: null
+- id: OBS-045
+  text: add
+  captured: 2026-05-31 19:57:00+00:00
+  context_task: T-2074
+  tags:
+  - housekeeping
+  status: dismissed
+  promoted_to: null
+- id: OBS-046
+  text: 'Stuck-partial detector gap: T-2074 was owner=human + status=work-completed but had ZERO Human ACs in body (rerouted to Agent via T-2123 retro-fix). File sat in active/ since 2026-05-30 (~2 days)
+    unfinalisable. Existing coverage: T-2055/CTL-029 catches ''Agent ACs ticked, status=started-work'' (active-side mirror of CTL-028). active-task-scan.py Loop 10 (D2 review queue) lists owner=human/status=work-completed
+    tasks but doesn''t distinguish ''has Human ACs to verify'' from ''zero Human ACs = unfinalisable''. Missing detector: ''owner=human + status=work-completed + 0 Human ACs in body'' = stuck-partial. Origin:
+    T-2074 retro-fix routing — Human AC re-routed to Agent can leave the partial-complete state dangling.'
+  captured: 2026-05-31 19:57:21+00:00
+  context_task: T-2074
+  tags:
+  - housekeeping
+  status: promoted
+  promoted_to: task
+- id: OBS-047
+  text: add
+  captured: 2026-06-01 09:05:43+00:00
+  context_task: T-1820
+  tags:
+  - auto-tick-fp
+  status: dismissed
+  promoted_to: null
+- id: OBS-048
+  text: 'G-064 closure-readiness gauge VERDICT=READY: 11 cron-firing dates ≥ 3 threshold (gauge: tools/g064-readiness.py 2026-06-01). Status_notes already specify the gauge as the closure mechanism (mechanical
+    threshold, not human-judgment). Recommend closure via Watchtower /gaps. Cascade: closing G-064 also satisfies T-2169 retire_when audit advisory''s F-ORCH heuristic (F-ORCH retires when G-064 closed).
+    Cron firings: 2026-05-14, 2026-05-15, 2026-05-18, 2026-05-21, 2026-05-22, 2026-05-23, 2026-05-25, 2026-05-26, 2026-05-29, 2026-05-31, 2026-06-01.'
+  captured: 2026-06-01 22:34:22+00:00
+  context_task: T-2158
+  tags:
+  - gap-readiness
+  status: dismissed
+  promoted_to: null
+- id: OBS-049
+  text: add
+  captured: 2026-06-05 20:35:34+00:00
+  context_task: T-2219
+  tags:
+  - deferred
+  status: dismissed
+  promoted_to: null
+- id: OBS-050
+  text: add
+  captured: 2026-06-05 20:41:45+00:00
+  context_task: T-2219
+  tags:
+  - forensics
+  status: dismissed
+  promoted_to: null
+- id: OBS-051
+  text: status
+  captured: 2026-06-07 12:02:45+00:00
+  context_task: T-1687
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-052
+  text: resolve
+  captured: 2026-06-07 12:05:26+00:00
+  context_task: T-1687
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-053
+  text: 'lib/paths.sh env-leak class — 3 incidents now (T-2200 first-launch, T-2202 worker, workflow-designer T-015). Symptom: when caller''s session has TASKS_DIR/CONTEXT_DIR exported via prior fw context
+    init and then invokes vendored fw in a different project with PROJECT_ROOT override, writes go to calling project. Proposed fix: paths.sh re-derives TASKS_DIR/CONTEXT_DIR from PROJECT_ROOT when explicitly
+    overridden. Operator triage call — would close 3-incident class.'
+  captured: 2026-06-08 23:23:52+00:00
+  context_task: T-2202
+  tags:
+  - paths-sh
+  - env-leak
+  - framework-bug
+  - class-signal
+  status: pending
+  promoted_to: null
+- id: OBS-054
+  text: 'Framework''s orchestrator-mcp baseline drifted +12 tools (251 vs live 263). Scan reports 9 auto-classifiable readonly via T-1761 convention + 3 unclassified (termlink_fleet_governor_status, termlink_hub_governor_status,
+    termlink_whoami — *_status/_whoami suffix outside convention scope). Workflow-designer worker did same fix on its target project today (T-2202 fix #1). Operator triage: --apply for the 9 ratchets the
+    framework''s baseline; the 3 *_status/_whoami need manual readonly_exempt entry. CAUTION: see OBS-055 — convention may misclassify channel-claim subsystem.'
+  captured: 2026-06-09 06:16:56+00:00
+  context_task: T-2200
+  tags:
+  - orchestrator-mcp
+  - baseline-drift
+  - mechanical-ratchet
+  status: pending
+  promoted_to: null
+- id: OBS-055
+  text: 'T-1761 convention whitelist near-miss. Ran --apply this session; diff revealed 9 termlink_channel_* tools classified readonly including ''claim'', ''force_release'', ''transfer'', ''release'',
+    ''renew'' — names suggesting state mutation. Whitelist (CONVENTION_MUTATOR_VERBS_SINGLE in orchestrator-mcp-scan.sh:166) built from chat-system verbs (post/send/edit/react). Reverted before commit.
+    Two options: (a) extend whitelist with claim-system verbs before next --apply, OR (b) exclude termlink_channel_claim* from CONVENTION_NAMESPACES. 196-tool zero-misclassification record was chat-domain;
+    channel-claim is new domain. Worth a 30-min triage.'
+  captured: 2026-06-09 06:42:51+00:00
+  context_task: T-2200
+  tags:
+  - orchestrator-mcp
+  - convention-gap
+  - near-miss
+  - framework-discipline
+  status: pending
+  promoted_to: null
+- id: OBS-056
+  text: 'TEST: verifying fw note text-arg shape — delete me'
+  captured: 2026-06-09 06:48:55+00:00
+  context_task: T-2268
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-057
+  text: 'Demo-target tasks (like T-2273 for arc-010 HM-A) need a structural guard against parent-session fw work-on touches. Today''s burn: parent session ran ''bin/fw work-on T-2273'' while surveying HV-LC,
+    consuming the captured->started-work transition via Bash instead of mcp__fw__work_on. Half the HM-A headline-mechanic acceptance condition lost before the demo worker even spawned. Proposal: add ''demo_target:
+    true'' frontmatter field that ''fw work-on'' refuses unless --i-am-demo-orchestrator is passed. Sibling guard to T-1731 (check-human-ac-tick) and T-2205 (check-inception-recommendation): protects a
+    specific class of task from being touched by the wrong actor. Cross-link: T-2273 Updates entry 2026-06-09T08:00:00Z.'
+  captured: 2026-06-09 07:53:10+00:00
+  context_task: T-2273
+  tags:
+  - headline-mechanic
+  status: promoted
+  promoted_to: T-2286
+- id: OBS-058
+  text: 'HM-A demo dispatch experiment 2026-06-09 09:47-09:50 UTC: framework-mcp wired into .mcp.json, JSONRPC handshake + 22 tools verified manually; but in claude -p via TermLink dispatch, framework-mcp
+    status stays ''pending'' indefinitely and tools never surface via ToolSearch (neither ''mcp__framework-mcp__*'' nor ''mcp__fw__*'' prefixes match). Worker did 7 ToolSearch + 5 Bash (informational only,
+    not gated verbs) + 5 Read before I terminated at 2min mark. Session JSONL preserved at /root/.claude/projects/-opt-999-Agentic-Engineering-Framework/edca090c-fb95-4327-9e57-77ff33d0fd20.jsonl (196KB).
+    Class signal: MCP wiring works in direct stdio test (echo JSONRPC | python3 server) but NOT in claude -p context. Likely cause: model fallback to sonnet may handle MCP init differently from opus, OR
+    framework-mcp init exceeds claude -p''s deferred-tool catalogue timeout. T-2268 AC#1 (.mcp.json wiring) is still legitimately ticked — the wire-up artefact is correct; the runtime registration is what
+    fails. Operator triage call: investigate before re-dispatching the demo.'
+  captured: 2026-06-09 09:50:40+00:00
+  context_task: T-2268
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-059
+  text: 'OBS-058 root cause identified: ''fw termlink dispatch'' at agents/termlink/termlink.sh:714 calls claude -p without --permission-mode flag. Default permission mode keeps MCP servers in ''pending''
+    state (workspace trust dialog can''t fire non-interactively). All 5 MCP servers (context7, playwright, termlink, skills, framework-mcp) showed ''pending'' in the demo session init — this is the symptom
+    of the missing trust acceptance. Fix path: add ''--permission-mode acceptEdits'' OR ''--allow-dangerously-skip-permissions'' to the claude -p invocation at agents/termlink/termlink.sh:714. Trade-off
+    — ''acceptEdits'' restricts to Edit/Write+ASK; ''dangerously-skip-permissions'' is full bypass. For HM-A demo worker (well-scoped prompt, mcp-only verbs), ''acceptEdits'' likely sufficient. Operator
+    triage: this is a dispatch-substrate change — same class as T-1703 (--tools plumbing). Once fixed, re-dispatch HM-A demo should let framework-mcp tools surface and the demo can run.'
+  captured: 2026-06-09 09:52:21+00:00
+  context_task: T-2268
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-060
+  text: 'OBS-060: T-2282 (--permission-mode acceptEdits) is NECESSARY BUT NOT SUFFICIENT for MCP-using workers. Re-dispatched HM-A demo (arc010-hma-demo-002, 2026-06-09 10:12 UTC) with acceptEdits — verified
+    by permission_mode.txt + meta.json + worker init events. Result: 4/5 MCP servers STILL ''pending'' (context7, playwright, skills, framework-mcp); only termlink ''connected'' (likely cached from earlier
+    session). Worker did 8 Read + 3 ToolSearch + 3 Bash trying to diagnose mcp__fw__* absence, identical pattern to OBS-058 pre-T-2282. Killed at 1m to preserve budget. Hypothesis: claude -p doesn''t auto-trust
+    uncached MCP servers regardless of --permission-mode (acceptEdits gates write tools, not MCP server registration). Next diagnostic: try --dangerously-skip-permissions instead, OR investigate whether
+    claude has a per-server trust mechanism. T-2268 ACs #4-7 remain blocked. Wdir: /tmp/tl-dispatch/arc010-hma-demo-002 was cleaned.'
+  captured: 2026-06-09 10:14:46+00:00
+  context_task: T-2268
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-061
+  text: 'OBS-061: Refined hypothesis for MCP-pending in claude -p workers (continues OBS-060). User /root/.claude/settings.json permissions.allow has mcp__termlink__*, mcp__plugin_context7_*, mcp__plugin_playwright_*
+    entries but ZERO mcp__framework-mcp__* entries. Project /opt/.../​.claude/settings.json has NO permissions block at all (hooks only). Hypothesis: claude -p workers use permissions.allow for MCP server
+    trust pre-acceptance. Without an entry, --permission-mode acceptEdits is insufficient because the workspace trust dialog covers Edit/Write but not MCP server registration. Candidate fixes for operator:
+    (a) add ''mcp__framework-mcp__*'' to /root/.claude/settings.json permissions.allow (sovereignty-adjacent, affects parent session too), or (b) modify fw termlink dispatch to pass --mcp-config .mcp.json
+    --strict-mcp-config (explicit operator opt-in), or (c) investigate per-project trust manifest. Note: --dangerously-skip-permissions and --permission-mode bypassPermissions are blocked when running as
+    root (security check). Substrate gap; T-2268 demo blocked until operator picks a path. cf. OBS-058/059/060.'
+  captured: 2026-06-09 10:19:02+00:00
+  context_task: T-2268
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-062
+  text: 'MCP server framework-self-vendor blind spot: agents/termlink/termlink.sh run.sh:670-673 sets FRAMEWORK_ROOT=$PROJECT_DIR/.agentic-framework whenever .agentic-framework/ exists. In framework REPO
+    itself (which has .agentic-framework/ as vendored mirror), this redirects FRAMEWORK_ROOT away from the actual source. Result: framework_mcp_server.py''s _project_root() honours FRAMEWORK_ROOT and looks
+    for policy/capability-overlay/tool-set.yaml at /opt/.../999.agentic-framework/policy/ — which doesn''t exist in the vendored subset. arc-010 HM-A demo-003 unearthed this 2026-06-09 (substrate trio T-2282
+    + T-2283 + T-2284 all applied correctly per meta.json + wdir artefacts, ToolSearch still returned ''No matching deferred tools found'' for mcp__fw__*). Fix candidate: discriminate framework-repo-self
+    vs consumer in run.sh — test for FRAMEWORK.md at $PROJECT_DIR before deciding to redirect FRAMEWORK_ROOT. Alt fix: include policy/ in self-vendor list (less clean — duplicates policy across two paths).
+    HV-LC follow-on; substrate-class. (T-2284)'
+  captured: 2026-06-09 11:31:21+00:00
+  context_task: T-2284
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-063
+  text: 'Consumer-shape MCP enablement gap: arc-010 substrate quartet (T-2282/2283/2284/2285) makes framework-self HM-A demo work. But for CONSUMERS, framework_mcp_server.py is self-vendored to .agentic-framework/agents/mcp/
+    BUT policy/capability-overlay/tool-set.yaml is NOT — lib/upgrade.sh:237-240 explicitly excludes capability-overlay/ from _self_vendor_policy. Consumer-side MCP server would crash on tool-set.yaml-not-found
+    (same class as OBS-062, opposite direction). Three forward paths: (a) add tool-set.yaml to _self_vendor_policy explicit list — arc-010 enabling artefact, structural one-liner; (b) treat consumer MCP
+    as out-of-scope for arc-010 demo (current default); (c) file as arc-010 follow-on slice for consumer enablement. Discovery: ran framework_mcp_server.py with FRAMEWORK_ROOT=PWD locally — 22 tools registered
+    cleanly, proves framework-self side works end-to-end. (T-2268)'
+  captured: 2026-06-09 13:05:02+00:00
+  context_task: T-2268
+  tags: []
+  status: promoted
+  promoted_to: T-2287
