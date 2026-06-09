@@ -776,3 +776,24 @@ overrides:
   expires_at: '2026-09-07T19:16:41Z'
   added_by: root
   added_at: '2026-06-09T19:16:41Z'
+- id: OV-531b1a86
+  task_id: T-2294
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  reason: 'FP: same class as OV-3a659191 (T-2292), OV-16c93834 (T-2293). Verification
+    line 44 uses the canonical L-387 capture-first single-pipe negation pattern.'
+  expires_at: '2026-09-07T19:26:30Z'
+  added_by: root
+  added_at: '2026-06-09T19:26:30Z'
+- id: OV-77577c62
+  task_id: T-2294
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "FP: same class as OV-9b1912ad/OV-3c8b2ee8/OV-3fc5133e. Pre-push hooks cannot\
+    \ be tested via a real git push without spawning an actual remote; the bats test\
+    \ uses a stub fw + temp-repo pattern (sibling to t2240_pre_push_self_vendor_gate.bats\
+    \ \u2014 the canonical pre-push test shape). Test exercises hook end-to-end with\
+    \ real bash + real .git/hooks/pre-push."
+  expires_at: '2026-09-07T19:26:31Z'
+  added_by: root
+  added_at: '2026-06-09T19:26:31Z'

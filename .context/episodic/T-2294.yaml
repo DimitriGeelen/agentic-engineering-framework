@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2294: wire fw mcp check into pre-push self-vendor gate (arc-010 sibling to T-2240)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T19:27:26Z
+# ============================================================================
+
+task_id: T-2294
+task_name: "wire fw mcp check into pre-push self-vendor gate (arc-010 sibling to T-2240)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T19:22:50Z
+completed: 2026-06-09T19:27:19Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/git/lib/hooks.sh` adds an MCP manifest drift gate immediately after the self-vendor block (T-2240). Block fires only in the framework repo (guard: `agents/mcp/manifest.py` exists). Runs `fw mcp check`; on non-zero exit, refuses push with a clear block message naming the bypass mechanisms.'
+  - 'Bypass via `FW_SKIP_MCP_DRIFT_CHECK=1` skips the check with a WARN to stderr (matches T-2240/T-2241 pattern).'
+  - '`tests/unit/t2294_pre_push_mcp_drift.bats` exercises the gate end-to-end: (a) clean state PASS, (b) drift state BLOCK with block message naming bypass mechanisms, (c) `FW_SKIP_MCP_DRIFT_CHECK=1` BYPASS with WARN. 3/3 PASS.'
+  - '[REVIEWER] Reviewer PASS — verified via `bin/fw reviewer T-2294`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-010, mcp, governance, pre-push-gate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2294-wire-fw-mcp-check-into-pre-push-self-ven.md
+generated_by: context-agent-hybrid

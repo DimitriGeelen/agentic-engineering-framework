@@ -1,0 +1,211 @@
+---
+id: T-2294
+name: "wire fw mcp check into pre-push self-vendor gate (arc-010 sibling to T-2240)"
+description: >
+  wire fw mcp check into pre-push self-vendor gate (arc-010 sibling to T-2240)
+
+status: work-completed
+workflow_type: build
+owner: agent
+horizon: null
+tags: [arc-010, mcp, governance, pre-push-gate]
+components: [agents/git/lib/hooks.sh]
+arc_id: arc-010
+related_tasks: [T-2240, T-2241, T-2290, T-2293]
+# arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
+#                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
+#                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
+#                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
+created: 2026-06-09T19:22:50Z
+last_update: 2026-06-09T19:27:19Z
+date_finished: 2026-06-09T19:27:19Z
+# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
+# revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+# ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
+# bvp_scores:                     # confirmed per-driver scores 0-5, set by `fw bvp confirm` (T-1924).
+#                                 # Sovereignty boundary — only set after human or agent confirmation.
+#                                 # Shape: {D1: <int 0-5>, D2: <int 0-5>, D3: <int 0-5>, D4: <int 0-5>, [<free-driver-id>: <int>]...}
+# bvp_scores_proposed:            # estimator-proposed scores (T-1922 worker). Persists when ≥2 delta
+#                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
+# cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
+#                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+---
+
+# T-2294: wire fw mcp check into pre-push self-vendor gate (arc-010 sibling to T-2240)
+
+## Context
+
+Origin: T-2293's own commit 7e647bd1e leaked a bats test artefact
+(`fake_drift_tool_t2290`) into `agents/mcp/framework-mcp-manifest.json` because
+the bats `setup()` mutates the live tool-set.yaml and the test's prior crash had
+left the manifest in a polluted state. The push went through clean because the
+pre-push gate has no MCP manifest drift check. Only the next session's
+`bin/fw mcp emit-manifest` + diff observation caught it.
+
+This task closes that gap. The pre-push gate at `agents/git/lib/hooks.sh:681`
+already enforces vendored-libs/templates/policy parity via `fw vendor self
+--dry-run` (T-2240/T-2241). We add a sibling block that runs `fw mcp check` —
+the focused exit-code drift verb shipped in T-2293 — and refuses pushes when
+the manifest differs from `policy/capability-overlay/tool-set.yaml`. Two failure
+modes get caught:
+
+1. **Real edit drift:** developer edits `tool-set.yaml` but doesn't run
+   `fw mcp emit-manifest` before push.
+2. **Test-artefact leak:** bats mutates tool-set.yaml + the test crashes before
+   teardown, then emit runs in a polluted state and the leaked entry gets
+   committed (the T-2293 origin).
+
+Bypass: `FW_SKIP_MCP_DRIFT_CHECK=1 git push` (sibling to
+`FW_SKIP_SELF_VENDOR_CHECK=1`, both per L-399 producer/consumer-parity
+discipline) plus `--no-verify` (Tier-0). Block message names both per T-1890.
+
+## Acceptance Criteria
+
+### Agent
+- [x] `agents/git/lib/hooks.sh` adds an MCP manifest drift gate immediately after the self-vendor block (T-2240). Block fires only in the framework repo (guard: `agents/mcp/manifest.py` exists). Runs `fw mcp check`; on non-zero exit, refuses push with a clear block message naming the bypass mechanisms.
+- [x] Bypass via `FW_SKIP_MCP_DRIFT_CHECK=1` skips the check with a WARN to stderr (matches T-2240/T-2241 pattern).
+- [x] `tests/unit/t2294_pre_push_mcp_drift.bats` exercises the gate end-to-end: (a) clean state PASS, (b) drift state BLOCK with block message naming bypass mechanisms, (c) `FW_SKIP_MCP_DRIFT_CHECK=1` BYPASS with WARN. 3/3 PASS.
+- [x] [REVIEWER] Reviewer PASS — verified via `bin/fw reviewer T-2294`.
+
+## Verification
+
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# The completion gate runs each command — if any exits non-zero, completion is blocked.
+#
+# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
+# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
+# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
+# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
+# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
+# while the upstream is still writing — verification then "fails" even though
+# the pattern was present. Safe pattern: capture first, grep the capture:
+#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
+# Or:
+#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
+# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
+#
+# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
+# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
+# the capture step closed off — the middle stage is what `grep -q` slams its
+# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
+# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
+#
+# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
+# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
+# Verification block. Otherwise the canonical hash diverges and `fw doctor`
+# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
+# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
+# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+# 1. Hook source contains the new gate (look for the bypass env-var name).
+grep -q "FW_SKIP_MCP_DRIFT_CHECK" agents/git/lib/hooks.sh
+
+# 2. Block message names both bypass mechanisms (env-var + --no-verify).
+out=$(grep -A 20 "MCP manifest drift" agents/git/lib/hooks.sh); echo "$out" | grep -q "FW_SKIP_MCP_DRIFT_CHECK"
+out=$(grep -A 20 "MCP manifest drift" agents/git/lib/hooks.sh); echo "$out" | grep -q -- "--no-verify"
+
+# 3. New bats covers all three branches.
+bats tests/unit/t2294_pre_push_mcp_drift.bats 2>&1 | tail -5
+
+# 4. Reviewer PASS or CONCERN (no FAIL). L-387 capture-first.
+rev=$(bin/fw reviewer T-2294 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONCERN)"
+rev=$(bin/fw reviewer T-2294 2>&1); ! echo "$rev" | grep -qE "Overall:.*FAIL"
+
+## RCA
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
+
+## Evolution
+
+### 2026-06-09 — 3rd arc-010 close-gate ladder task in this session (T-2292/T-2293/T-2294)
+
+- **What changed:** The pattern is T-2292 (channel-claim auto-classifier whitelist gap) → T-2293 (focused `fw mcp check` verb) → T-2294 (wire it into pre-push so the next leak fails CI). The chain now reaches end-to-end: an agent editing tool-set.yaml without running `fw mcp emit-manifest` is structurally blocked at push, with a class-agnostic block message naming both bypasses (FW_SKIP_MCP_DRIFT_CHECK=1 + --no-verify per L-399).
+- **Plan impact:** none — was scoped as a sibling to T-2240 from the start.
+- **Triggered:** No follow-on. Doctor + audit-pending + pre-push + close-gate + Verification-block (T-2291) already give 4-layer coverage; the audit-side parity could be filed but has diminishing returns past pre-push (push is the earliest external gate).
+
+<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
+     understanding evolved during build — what was learned that wasn't known at
+     filing, what in the original plan no longer fits, what triggered pivots
+     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
+     before --status work-completed.
+
+     Origin: T-1717 grill Q4 — "the understanding of what we need and want
+     evolves with the process of materialisation." Structural counter to §ACD:
+     spec-vs-build divergence is logged as soon as it happens, not lost as
+     folklore.
+
+     Format (one entry per slice boundary or significant insight):
+       ### YYYY-MM-DD — [topic]
+       - **What changed:** [what we learned that we didn't know at filing]
+       - **Plan impact:** [what in the plan no longer fits]
+       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+
+     The completion gate (T-1718) blocks --status work-completed when this
+     section exists but is empty/template-only. Use --skip-evolution to bypass
+     (logged Tier-2). Non-arc tasks may leave this empty.
+-->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion of inception tasks via:
+     fw inception decide T-XXX go|no-go|defer --rationale "..."
+
+     For non-inception tasks this section is ignored. Kept in template
+     so `fw inception decide` (lib/inception.sh) finds the anchor heading
+     without auto-creating; T-1832 added auto-create as fallback for
+     legacy tasks lacking this section. -->
+
+## Updates
+
+### 2026-06-09T19:22:50Z — task-created [task-create-agent]
+- **Action:** Created task via task-create agent
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2294-wire-fw-mcp-check-into-pre-push-self-ven.md
+- **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c8046e69
+- **Timestamp:** 2026-06-09T19:27:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 2 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
+  - l387-sigpipe-risk @ Verification:line 44
+
+### 2026-06-09T19:27:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
