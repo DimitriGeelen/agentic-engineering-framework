@@ -709,6 +709,50 @@ if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -d "$PROJECT_ROOT/.agentic-framework/lib" 
     fi
 fi
 
+# T-2294: MCP manifest drift gate (arc-010 sibling to T-2240).
+# Origin: T-2293 commit 7e647bd1e leaked a bats artefact (fake_drift_tool_t2290)
+# into agents/mcp/framework-mcp-manifest.json because the test's prior crash had
+# polluted tool-set.yaml. The push went through clean — no manifest drift gate
+# existed. This block runs `fw mcp check` (T-2293) and refuses push on non-zero
+# exit. Catches both real edit-drift (developer forgot `fw mcp emit-manifest`)
+# and test-artefact leaks.
+#
+# Guard: framework repo only (consumers have no agents/mcp/manifest.py source).
+# Bypass: FW_SKIP_MCP_DRIFT_CHECK=1 (sibling to FW_SKIP_SELF_VENDOR_CHECK) and
+# --no-verify per L-399 producer/consumer-parity discipline. Block message
+# names both mechanisms (T-1890).
+if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -f "$PROJECT_ROOT/agents/mcp/manifest.py" ]; then
+    if [ "${FW_SKIP_MCP_DRIFT_CHECK:-0}" = "1" ]; then
+        echo "" >&2
+        echo "WARN: MCP manifest drift check skipped (FW_SKIP_MCP_DRIFT_CHECK=1)" >&2
+        echo "  Class: T-2294 — agents/mcp/framework-mcp-manifest.json may diverge from tool-set.yaml" >&2
+        echo "" >&2
+    else
+        _mcp_out=$("$PROJECT_ROOT/bin/fw" mcp check 2>&1 || true)
+        _mcp_exit=$("$PROJECT_ROOT/bin/fw" mcp check >/dev/null 2>&1; echo $?)
+        if [ "$_mcp_exit" != "0" ]; then
+            echo "" >&2
+            echo "ERROR: Push blocked — MCP manifest drift detected (T-2294):" >&2
+            echo "" >&2
+            echo "$_mcp_out" | head -3 >&2
+            echo "" >&2
+            echo "agents/mcp/framework-mcp-manifest.json is out of sync with" >&2
+            echo "policy/capability-overlay/tool-set.yaml. Consumers reading the" >&2
+            echo "manifest as a capability gate would see the stale tool catalogue." >&2
+            echo "" >&2
+            echo "Fix:" >&2
+            echo "  cd $PROJECT_ROOT && bin/fw mcp emit-manifest && git add agents/mcp/framework-mcp-manifest.json && git commit -m 'T-XXX: refresh MCP manifest'" >&2
+            echo "" >&2
+            echo "Bypass (logged Tier-2):" >&2
+            echo "  FW_SKIP_MCP_DRIFT_CHECK=1 git push" >&2
+            echo "Bypass (Tier 0):" >&2
+            echo "  git push --no-verify" >&2
+            echo "" >&2
+            exit 1
+        fi
+    fi
+fi
+
 # Resolve audit script. Priority (T-1396):
 #   1. .framework.yaml -> framework_path (explicit consumer config)
 #   2. $PROJECT_ROOT/agents/audit/audit.sh (framework repo: source-of-truth)
