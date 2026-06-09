@@ -718,3 +718,30 @@ overrides:
   expires_at: '2026-09-07T14:02:49Z'
   added_by: root
   added_at: '2026-06-09T14:02:49Z'
+- id: OV-3fd9517e
+  task_id: T-2289
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "FP: AC body references lib/paths.sh as the implementation path \u2014 same\
+    \ class as T-2284/T-2285/T-2288"
+  expires_at: '2026-09-07T15:05:25Z'
+  added_by: root
+  added_at: '2026-06-09T15:05:25Z'
+- id: OV-26f42554
+  task_id: T-2289
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  reason: "FP: AC body references lib/paths.sh as the implementation path \u2014 same\
+    \ class as T-2284/T-2285/T-2288"
+  expires_at: '2026-09-07T15:05:25Z'
+  added_by: root
+  added_at: '2026-06-09T15:05:25Z'
+- id: OV-1d8cb020
+  task_id: T-2289
+  pattern_id: AC-verify-mismatch
+  ac_index: 6
+  reason: "FP: AC body references tests/unit/t2289_paths_env_leak.bats as the new\
+    \ test path \u2014 same class as T-2284/T-2285/T-2288"
+  expires_at: '2026-09-07T15:05:25Z'
+  added_by: root
+  added_at: '2026-06-09T15:05:25Z'

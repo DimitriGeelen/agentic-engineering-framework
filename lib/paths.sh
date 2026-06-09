@@ -45,9 +45,34 @@ if [[ -z "${PROJECT_ROOT:-}" ]]; then
     fi
 fi
 
+# T-2289 (OBS-053 3-incident class): re-derive TASKS_DIR/CONTEXT_DIR when
+# they were inherited from a different PROJECT_ROOT. Symptom: shell A exports
+# TASKS_DIR=/project-A/.tasks via `fw context init`; a subprocess in project B
+# with `PROJECT_ROOT=/project-B fw …` inherits the stale /project-A/.tasks and
+# writes go to the wrong project. The `:-` default below silently keeps the
+# inherited value when non-empty.
+#
+# Fix: the `_FW_PATHS_DERIVED_BY` sentinel records the PROJECT_ROOT that
+# originally derived the path vars. When it's present AND differs from the
+# current PROJECT_ROOT, the inherited paths are stale — unset them so the
+# `:-` defaults below re-derive from PROJECT_ROOT.
+#
+# Test-fixture invariant: when `TASKS_DIR` is set in the SAME shell as
+# `PROJECT_ROOT` with no prior derivation, `_FW_PATHS_DERIVED_BY` is empty,
+# the unset block is skipped, and the explicit `TASKS_DIR` survives intact
+# (this is what tests/unit/create_task.bats:18 relies on).
+if [[ -n "${_FW_PATHS_DERIVED_BY:-}" ]] && [[ "$_FW_PATHS_DERIVED_BY" != "$PROJECT_ROOT" ]]; then
+    unset TASKS_DIR CONTEXT_DIR
+fi
+
 # Common directories
 TASKS_DIR="${TASKS_DIR:-$PROJECT_ROOT/.tasks}"
 CONTEXT_DIR="${CONTEXT_DIR:-$PROJECT_ROOT/.context}"
+
+# T-2289: record which PROJECT_ROOT derived the path vars, so subprocess
+# invocations under a different PROJECT_ROOT can detect the env-leak above.
+_FW_PATHS_DERIVED_BY="$PROJECT_ROOT"
+export _FW_PATHS_DERIVED_BY
 
 # Context-aware fw command path (T-1102/T-1143)
 # Returns the right form for copy-pasteable commands shown to users:
