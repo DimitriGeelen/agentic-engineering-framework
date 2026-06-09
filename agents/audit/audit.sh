@@ -4447,6 +4447,26 @@ print(f'{s}|{gc}|{cc}|{mp}')
     fi
 fi
 
+# T-2296 / arc-010: MCP manifest drift FAIL (daily-cron backstop to T-2294 pre-push gate).
+# Routes `fw mcp check` exit codes into audit verdict:
+#   0 → pass  (manifest in sync with tool-set.yaml)
+#   1 → fail  (drift — operator/agent forgot `fw mcp emit-manifest` after edit)
+#   2 → info  (absent — fresh project hasn't emitted yet; not a failure)
+# Sibling to the existing framework-mcp scan block above; that one surfaces
+# scan-vs-baseline drift, this one surfaces emitter-vs-source drift.
+if [ -x "$PROJECT_ROOT/bin/fw" ] && [ -f "$PROJECT_ROOT/agents/mcp/manifest.py" ]; then
+    MCP_DRIFT_OUT=$("$PROJECT_ROOT/bin/fw" mcp check 2>&1)
+    MCP_DRIFT_EXIT=$?
+    case "$MCP_DRIFT_EXIT" in
+        0) pass "framework-mcp manifest: PASS — in sync with tool-set.yaml" ;;
+        1) fail "framework-mcp manifest: FAIL — framework-mcp-manifest.json out of sync with tool-set.yaml" \
+                "$(echo "$MCP_DRIFT_OUT" | head -1)" \
+                "Run: bin/fw mcp emit-manifest && git add agents/mcp/framework-mcp-manifest.json && commit" ;;
+        2) info "framework-mcp manifest: ABSENT — run \`bin/fw mcp emit-manifest\` (fresh project)" ;;
+        *) info "framework-mcp manifest: status=$MCP_DRIFT_EXIT (unexpected)" ;;
+    esac
+fi
+
 # T-1798: Workflow → dispatcher coverage check.
 # T-1776 surfaced default.yaml → worker_kind: TermLink at *runtime*
 # (NotImplementedError). The structural prevention is to flag the gap at

@@ -797,3 +797,16 @@ overrides:
   expires_at: '2026-09-07T19:26:31Z'
   added_by: root
   added_at: '2026-06-09T19:26:31Z'
+- id: OV-293067ff
+  task_id: T-2296
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "T-2296 bats stubs bin/fw mcp check exit codes to drive the audit block's\
+    \ 3 branches (clean/drift/absent) \u2014 canonical pattern for testing exit-code-driven\
+    \ branches without running full audit. Sibling FP class to T-2294 OV-77577c62\
+    \ (pre-push gate stubs fw mcp check the same way). Real-world validation comes\
+    \ from the t2293 verb test (the verb's own exit codes are pinned by integration\
+    \ test) plus the live audit run verification step."
+  expires_at: '2026-09-07T20:02:55Z'
+  added_by: root
+  added_at: '2026-06-09T20:02:55Z'

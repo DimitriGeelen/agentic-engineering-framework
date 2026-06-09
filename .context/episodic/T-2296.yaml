@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2296: audit: wire fw mcp check as MCP manifest drift FAIL (T-2294 audit sibling)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T20:05:59Z
+# ============================================================================
+
+task_id: T-2296
+task_name: "audit: wire fw mcp check as MCP manifest drift FAIL (T-2294 audit sibling)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T19:47:30Z
+completed: 2026-06-09T20:05:51Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` has a new "MCP manifest drift" step right after the existing framework-mcp scan block (~line 4448), calling `bin/fw mcp check` and routing exit codes: 0→pass, 1→fail, 2→info (absent → "fresh project, run emit-manifest").'
+  - 'FAIL message names both the symptom (`framework-mcp-manifest.json out of sync with tool-set.yaml`) AND the remediation (`Run: fw mcp emit-manifest && commit`).'
+  - 'New bats test `tests/unit/t2296_audit_mcp_manifest_drift.bats` exercises three states using a stubbed `bin/fw mcp check`: clean (exit 0 → PASS in audit output), drift (exit 1 → FAIL), absent (exit 2 → INFO). 3/3 PASS.'
+  - 'Existing `tests/unit/t2293_mcp_check.bats` still PASS (4/4) — no regression on the verb itself.'
+  - '`bin/fw audit` runs end-to-end and shows the new line in output (live verification on current repo).'
+  - '[REVIEWER] Reviewer PASS — verified via `bin/fw reviewer T-2296`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:capability-overlay, audit, mcp-drift]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2296-audit-wire-fw-mcp-check-as-mcp-manifest-.md
+generated_by: context-agent-hybrid
