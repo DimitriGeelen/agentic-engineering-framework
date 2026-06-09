@@ -371,3 +371,24 @@ observations:
     tags: []
     status: dismissed
     promoted_to: null
+  - id: OBS-053
+    text: "lib/paths.sh env-leak class — 3 incidents now (T-2200 first-launch, T-2202 worker, workflow-designer T-015). Symptom: when caller's session has TASKS_DIR/CONTEXT_DIR exported via prior fw context init and then invokes vendored fw in a different project with PROJECT_ROOT override, writes go to calling project. Proposed fix: paths.sh re-derives TASKS_DIR/CONTEXT_DIR from PROJECT_ROOT when explicitly overridden. Operator triage call — would close 3-incident class."
+    captured: 2026-06-08T23:23:52Z
+    context_task: T-2202
+    tags: [paths-sh, env-leak, framework-bug, class-signal]
+    status: pending
+    promoted_to: null
+  - id: OBS-054
+    text: "Framework's orchestrator-mcp baseline drifted +12 tools (251 vs live 263). Scan reports 9 auto-classifiable readonly via T-1761 convention + 3 unclassified (termlink_fleet_governor_status, termlink_hub_governor_status, termlink_whoami — *_status/_whoami suffix outside convention scope). Workflow-designer worker did same fix on its target project today (T-2202 fix #1). Operator triage: --apply for the 9 ratchets the framework's baseline; the 3 *_status/_whoami need manual readonly_exempt entry. CAUTION: see OBS-055 — convention may misclassify channel-claim subsystem."
+    captured: 2026-06-09T06:16:56Z
+    context_task: T-2200
+    tags: [orchestrator-mcp, baseline-drift, mechanical-ratchet]
+    status: pending
+    promoted_to: null
+  - id: OBS-055
+    text: "T-1761 convention whitelist near-miss. Ran --apply this session; diff revealed 9 termlink_channel_* tools classified readonly including 'claim', 'force_release', 'transfer', 'release', 'renew' — names suggesting state mutation. Whitelist (CONVENTION_MUTATOR_VERBS_SINGLE in orchestrator-mcp-scan.sh:166) built from chat-system verbs (post/send/edit/react). Reverted before commit. Two options: (a) extend whitelist with claim-system verbs before next --apply, OR (b) exclude termlink_channel_claim* from CONVENTION_NAMESPACES. 196-tool zero-misclassification record was chat-domain; channel-claim is new domain. Worth a 30-min triage."
+    captured: 2026-06-09T06:42:51Z
+    context_task: T-2200
+    tags: [orchestrator-mcp, convention-gap, near-miss, framework-discipline]
+    status: pending
+    promoted_to: null
