@@ -5126,6 +5126,64 @@ PYREVQ
                 echo -e "${RED}work-on: task $wo_target not found in .tasks/active/ or .tasks/completed/${NC}" >&2
                 exit 1
             fi
+            # T-2286 (OBS-057): demo-target structural guard. Tasks marked
+            # `demo_target: true` are reserved for an orchestrated demo worker
+            # (e.g. arc-010 HM-A via `fw termlink dispatch`). The parent session
+            # MUST NOT consume the captured→started-work transition by running
+            # `fw work-on T-XXX` directly — doing so burns the headline-mechanic
+            # acceptance ("agent dispatches via mcp__fw__work_on") before the
+            # demo worker spawns. Bypass via flag (CLI) or env (git/wrapper)
+            # mirrors the producer/consumer parity discipline of L-399.
+            wo_demo_target=$(awk '/^---$/{c++; next} c==1 && /^demo_target:[[:space:]]*true[[:space:]]*$/{print "true"; exit}' "$wo_active_file" 2>/dev/null)
+            if [ "$wo_demo_target" = "true" ]; then
+                wo_is_demo_orch=false
+                for wo_arg_idx in "$@"; do
+                    [ "$wo_arg_idx" = "--i-am-demo-orchestrator" ] && wo_is_demo_orch=true
+                done
+                unset wo_arg_idx
+                if [ "${FW_I_AM_DEMO_ORCHESTRATOR:-0}" = "1" ]; then
+                    wo_is_demo_orch=true
+                fi
+                if [ "$wo_is_demo_orch" != true ]; then
+                    echo -e "${RED}=== work-on refused: $wo_target is a demo-target task ===${NC}" >&2
+                    echo "" >&2
+                    echo "  File: $wo_active_file" >&2
+                    echo "  Frontmatter: demo_target: true" >&2
+                    echo "" >&2
+                    echo "  This task is reserved for an orchestrated demo worker (e.g. the" >&2
+                    echo "  arc-010 HM-A demo dispatches its target via mcp__fw__work_on)." >&2
+                    echo "  Running 'fw work-on $wo_target' from the parent session would consume" >&2
+                    echo "  the captured→started-work transition that the demo worker expects" >&2
+                    echo "  to drive — burning half the headline-mechanic acceptance condition" >&2
+                    echo "  before the worker spawns (origin OBS-057, prevented by T-2286)." >&2
+                    echo "" >&2
+                    echo "  If you ARE the demo orchestrator, bypass with EITHER:" >&2
+                    echo "    flag (CLI direct):   bin/fw work-on $wo_target --i-am-demo-orchestrator" >&2
+                    echo "    env  (git/wrapper):  FW_I_AM_DEMO_ORCHESTRATOR=1 bin/fw work-on $wo_target" >&2
+                    echo "" >&2
+                    echo "  Both log Tier-2 bypass entries to .context/working/.gate-bypass-log.yaml." >&2
+                    echo "" >&2
+                    exit 1
+                fi
+                # Bypass active — log Tier-2 entry (mirrors lib/review.sh:_log_empty_recommendation_bypass)
+                wo_bypass_log_dir="${PROJECT_ROOT:-.}/.context/working"
+                mkdir -p "$wo_bypass_log_dir" 2>/dev/null || true
+                wo_bypass_log_file="$wo_bypass_log_dir/.gate-bypass-log.yaml"
+                wo_bypass_ts=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+                wo_bypass_mechanism="flag:--i-am-demo-orchestrator"
+                [ "${FW_I_AM_DEMO_ORCHESTRATOR:-0}" = "1" ] && wo_bypass_mechanism="env:FW_I_AM_DEMO_ORCHESTRATOR"
+                {
+                    echo "- timestamp: '${wo_bypass_ts}'"
+                    echo "  task: '${wo_target}'"
+                    echo "  category: 'demo-target-bypass'"
+                    echo "  mechanism: '${wo_bypass_mechanism}'"
+                    echo "  caller: 'fw work-on'"
+                    echo "  file: '${wo_active_file}'"
+                    echo "  reason: 'demo orchestrator bypass'"
+                } >> "$wo_bypass_log_file" 2>/dev/null || true
+                unset wo_bypass_log_dir wo_bypass_log_file wo_bypass_ts wo_bypass_mechanism
+            fi
+            unset wo_demo_target wo_is_demo_orch
             # Resume existing task
             echo -e "${CYAN}=== Resuming $wo_target ===${NC}"
             # T-2036: Surface real update-task.sh failures instead of swallowing them

@@ -14,6 +14,12 @@ related_tasks: []
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
 created:
 last_update:
 date_finished: null
