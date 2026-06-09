@@ -704,9 +704,23 @@ cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
 export PROJECT_ROOT="$PROJECT_DIR"
-if [ -d "$PROJECT_DIR/.agentic-framework" ]; then
+# T-2285 (OBS-062): discriminate framework-self vs consumer before redirecting
+# FRAMEWORK_ROOT to .agentic-framework/. The .agentic-framework/ directory
+# exists in BOTH cases — consumers have it as the vendored framework source,
+# and the framework REPO itself has it as a self-vendored mirror (verified
+# by `fw vendor self`). Redirecting FRAMEWORK_ROOT to the mirror in the
+# framework repo breaks subsystems that read source-only assets like
+# policy/capability-overlay/tool-set.yaml — the mirror doesn't carry policy/.
+# Use FRAMEWORK.md at PROJECT_DIR's root as the discriminator: only the
+# framework REPO has it; consumers don't.
+if [ -f "$PROJECT_DIR/FRAMEWORK.md" ]; then
+    # Framework repo: PROJECT_ROOT == FRAMEWORK_ROOT (source is at root).
+    export FRAMEWORK_ROOT="$PROJECT_DIR"
+elif [ -d "$PROJECT_DIR/.agentic-framework" ]; then
+    # Consumer with vendored framework: redirect to .agentic-framework/.
     export FRAMEWORK_ROOT="$PROJECT_DIR/.agentic-framework"
 else
+    # Bare project with no framework wiring: FRAMEWORK_ROOT==PROJECT_ROOT.
     export FRAMEWORK_ROOT="$PROJECT_DIR"
 fi
 

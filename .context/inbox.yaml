@@ -434,3 +434,10 @@ observations:
     tags: []
     status: pending
     promoted_to: null
+  - id: OBS-062
+    text: "MCP server framework-self-vendor blind spot: agents/termlink/termlink.sh run.sh:670-673 sets FRAMEWORK_ROOT=$PROJECT_DIR/.agentic-framework whenever .agentic-framework/ exists. In framework REPO itself (which has .agentic-framework/ as vendored mirror), this redirects FRAMEWORK_ROOT away from the actual source. Result: framework_mcp_server.py's _project_root() honours FRAMEWORK_ROOT and looks for policy/capability-overlay/tool-set.yaml at /opt/.../999.agentic-framework/policy/ — which doesn't exist in the vendored subset. arc-010 HM-A demo-003 unearthed this 2026-06-09 (substrate trio T-2282 + T-2283 + T-2284 all applied correctly per meta.json + wdir artefacts, ToolSearch still returned 'No matching deferred tools found' for mcp__fw__*). Fix candidate: discriminate framework-repo-self vs consumer in run.sh — test for FRAMEWORK.md at $PROJECT_DIR before deciding to redirect FRAMEWORK_ROOT. Alt fix: include policy/ in self-vendor list (less clean — duplicates policy across two paths). HV-LC follow-on; substrate-class. (T-2284)"
+    captured: 2026-06-09T11:31:21Z
+    context_task: T-2284
+    tags: []
+    status: pending
+    promoted_to: null

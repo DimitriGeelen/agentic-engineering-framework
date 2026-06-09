@@ -3581,3 +3581,10 @@ X'` returning empty group."
   date: 2026-06-09
   context: Added via context agent
   application: TBD
+- id: L-469
+  learning: ".agentic-framework/ presence is NOT a sufficient discriminator for FRAMEWORK_ROOT redirection — it exists in BOTH consumer projects (vendored framework) AND the framework repo itself (self-vendored mirror). Use FRAMEWORK.md at PROJECT_DIR root as the discriminator: only the framework repo has it. termlink dispatch run.sh now branches three ways: framework-self (FRAMEWORK.md present, no redirect) → consumer (.agentic-framework/, redirect) → bare (no framework wiring). T-2285 closes OBS-062; substrate quartet T-2282 + T-2283 + T-2284 + T-2285 is complete for non-interactive MCP workers."
+  source: P-009
+  task: T-2285
+  date: 2026-06-09
+  context: Added via context agent
+  application: TBD

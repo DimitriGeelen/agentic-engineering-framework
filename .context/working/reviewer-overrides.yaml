@@ -687,3 +687,14 @@ overrides:
   expires_at: '2026-08-08T11:25:12Z'
   added_by: root
   added_at: '2026-06-09T11:25:12Z'
+- id: OV-a3e1c20d
+  task_id: T-2285
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  reason: 'FP: AC#4 references vendored path agentic-framework/agents/termlink/termlink.sh
+    which IS the vendored target verified by ''fw vendor self --dry-run'' returning
+    no ''would sync'' lines. Vendor-sync command IS the verification. Same FP class
+    as OV-d0d5b03f (T-2284) and OV-822b8648 (T-2265).'
+  expires_at: '2026-08-08T11:44:11Z'
+  added_by: root
+  added_at: '2026-06-09T11:44:11Z'
