@@ -6,16 +6,16 @@ description: >
   Inception: Auto-linker excludes root files + docs/articles/ — file paths in Human
   AC Steps render as <code> not <a>
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-09T08:03:48Z
-last_update: 2026-06-09T08:06:37Z
-date_finished:
+last_update: 2026-06-09T08:36:38Z
+date_finished: 2026-06-09T08:36:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -36,6 +36,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-09T08:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -196,15 +206,15 @@ No spikes needed — the fix surface is small + the test is mechanical
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -286,7 +296,46 @@ Two prongs identified via RCA on /review/T-2274. Prong A: docs/articles/ is miss
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Two prongs identified via RCA on /review/T-2274. Prong A: docs/articles/ is missing from web/shared.py:518-538 VIEWABLE_DIR_PREFIXES (has docs/reports/ but not docs/articles/) — 19 deep-dive articles + launch-article.md cannot become /file/ anchors. Prong B: is_viewable_path() at web/shared.py:543-562 requires startswith() match against the directory whitelist, structurally excluding all depth-0 root files (README.md, CLAUDE.md, FRAMEWORK.md, VERSION, LICENSE). Both prongs fix in one function + one regex rebuild; ~10-20 line surface. Existence-gating (PROJECT_ROOT/path).exists() and path-traversal guards (".." check) stay in place — neither prong loosens security. Candidate: extend VIEWABLE_DIR_PREFIXES with docs/articles/ + add explicit root-file allowlist (README, CLAUDE, FRAMEWORK, VERSION, LICENSE, CHANGELOG) covering the known top-level surfaces. Operator confirms scope (Prong A alone vs A+B) and root-file allowlist exhaustiveness.
+
+Evidence:
+
+- Symptom captured live (this session, S-2026-0609-0935):
+  `curl -s http://localhost:3000/review/T-2274 | grep -oE 'README\.md.{30}'`
+  → `<code>README.md</code> past the title` — code span, no anchor.
+  Same shape for `docs/articles/launch-article.md` → `<code>...</code>`.
+- Renderer source identified: `web/shared.py:514-621`:
+  - `VIEWABLE_DIR_PREFIXES` (line 518-538) — 19 dirs; no `docs/articles/`,
+    no root, no `docs/plans/`, no `docs/dispatch-templates/`.
+  - `is_viewable_path` (line 543-562) — requires `startswith(d)` for one
+    of those 19 prefixes; root-files (depth 0) structurally rejected.
+  - `_build_artefact_path_re` (line 572-590) — alternates the dirs into a
+    required group; root-files have no matching alternation.
+  - `_auto_link_files._replace` (line 610-619) — existence-gated
+    `(PROJECT_ROOT / path).exists()`, preserves backticks.
+- Lockstep guard documented (T-1764, line 514-516): "Both the
+  auto-linker (T-1722) and the /file/ route (T-632) consult these.
+  Diverging them — as happened pre-T-1764 — means the linker emits
+  anchors the route can't serve (HTTP 404), silently breaking T-1722's
+  contract." → extending the whitelist extends BOTH; no separate
+  route changes needed.
+- Fix shape estimate: ~5-10 lines in `web/shared.py` (add `docs/articles/`
+  and siblings to `VIEWABLE_DIR_PREFIXES`; add `ROOT_FILES = frozenset(...)`;
+  branch in `is_viewable_path`; either extend the regex with a depth-0
+  alternation or add a second regex pass for root files).
+- Test surface: one `.bats` or one `.py` file covering positive
+  cases (all 5-6 root files + each new directory prefix) + negative
+  cases (typo, non-existent file, path with `..`).
+- Cross-link: RCA detail in `docs/reports/T-2275-auto-linker-rca.md`
+  (this session).
+
+**Date**: 2026-06-09T08:36:37Z
 
 ## Updates
 
@@ -295,3 +344,63 @@ Two prongs identified via RCA on /review/T-2274. Prong A: docs/articles/ is miss
 
 ### 2026-06-09T08:06:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-09T08:36:37Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Two prongs identified via RCA on /review/T-2274. Prong A: docs/articles/ is missing from web/shared.py:518-538 VIEWABLE_DIR_PREFIXES (has docs/reports/ but not docs/articles/) — 19 deep-dive articles + launch-article.md cannot become /file/ anchors. Prong B: is_viewable_path() at web/shared.py:543-562 requires startswith() match against the directory whitelist, structurally excluding all depth-0 root files (README.md, CLAUDE.md, FRAMEWORK.md, VERSION, LICENSE). Both prongs fix in one function + one regex rebuild; ~10-20 line surface. Existence-gating (PROJECT_ROOT/path).exists() and path-traversal guards (".." check) stay in place — neither prong loosens security. Candidate: extend VIEWABLE_DIR_PREFIXES with docs/articles/ + add explicit root-file allowlist (README, CLAUDE, FRAMEWORK, VERSION, LICENSE, CHANGELOG) covering the known top-level surfaces. Operator confirms scope (Prong A alone vs A+B) and root-file allowlist exhaustiveness.
+
+Evidence:
+
+- Symptom captured live (this session, S-2026-0609-0935):
+  `curl -s http://localhost:3000/review/T-2274 | grep -oE 'README\.md.{30}'`
+  → `<code>README.md</code> past the title` — code span, no anchor.
+  Same shape for `docs/articles/launch-article.md` → `<code>...</code>`.
+- Renderer source identified: `web/shared.py:514-621`:
+  - `VIEWABLE_DIR_PREFIXES` (line 518-538) — 19 dirs; no `docs/articles/`,
+    no root, no `docs/plans/`, no `docs/dispatch-templates/`.
+  - `is_viewable_path` (line 543-562) — requires `startswith(d)` for one
+    of those 19 prefixes; root-files (depth 0) structurally rejected.
+  - `_build_artefact_path_re` (line 572-590) — alternates the dirs into a
+    required group; root-files have no matching alternation.
+  - `_auto_link_files._replace` (line 610-619) — existence-gated
+    `(PROJECT_ROOT / path).exists()`, preserves backticks.
+- Lockstep guard documented (T-1764, line 514-516): "Both the
+  auto-linker (T-1722) and the /file/ route (T-632) consult these.
+  Diverging them — as happened pre-T-1764 — means the linker emits
+  anchors the route can't serve (HTTP 404), silently breaking T-1722's
+  contract." → extending the whitelist extends BOTH; no separate
+  route changes needed.
+- Fix shape estimate: ~5-10 lines in `web/shared.py` (add `docs/articles/`
+  and siblings to `VIEWABLE_DIR_PREFIXES`; add `ROOT_FILES = frozenset(...)`;
+  branch in `is_viewable_path`; either extend the regex with a depth-0
+  alternation or add a second regex pass for root files).
+- Test surface: one `.bats` or one `.py` file covering positive
+  cases (all 5-6 root files + each new directory prefix) + negative
+  cases (typo, non-existent file, path with `..`).
+- Cross-link: RCA detail in `docs/reports/T-2275-auto-linker-rca.md`
+  (this session).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a433bed9
+- **Timestamp:** 2026-06-09T08:36:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-09T08:36:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
