@@ -2,12 +2,20 @@
 id: T-2273
 name: "arc-010 HM-A demo-target — generate MCP tools overview doc"
 description: >
-  Demo-target task for arc-010 Slice 3 (T-2268). Fresh Claude Code worker (spawned with .mcp.json configured for framework-mcp) drives this task end-to-end using ONLY mcp__fw__ verbs for governance — never Bash(bin/fw ...). Deliverable: docs/reports/arc-010-mcp-tools-overview.md, a 100-word overview of the 22 tools registered by the framework MCP server (16 read_only + 6 agent_authority per T-2265 + policy/capability-overlay/tool-set.yaml), grouped by capability. The headline mechanic fires when (a) this task moves captured→started-work→work-completed via mcp__fw__task_update calls, (b) the deliverable file exists, (c) transcript JSONL grep confirms mcp__fw__ usage and zero Bash(bin/fw task update|work-on|context focus) lines.
+  Demo-target task for arc-010 Slice 3 (T-2268). Fresh Claude Code worker (spawned
+  with .mcp.json configured for framework-mcp) drives this task end-to-end using ONLY
+  mcp__fw__ verbs for governance — never Bash(bin/fw ...). Deliverable: docs/reports/arc-010-mcp-tools-overview.md,
+  a 100-word overview of the 22 tools registered by the framework MCP server (16 read_only
+  + 6 agent_authority per T-2265 + policy/capability-overlay/tool-set.yaml), grouped
+  by capability. The headline mechanic fires when (a) this task moves captured→started-work→work-completed
+  via mcp__fw__task_update calls, (b) the deliverable file exists, (c) transcript
+  JSONL grep confirms mcp__fw__ usage and zero Bash(bin/fw task update|work-on|context
+  focus) lines.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:capability-overlay, mcp, demo-target, hm-a]
 components: []
 related_tasks: [T-2268, T-2265, T-2258, T-2209]
@@ -17,8 +25,8 @@ arc_id: capability-overlay
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T23:03:13Z
-last_update: 2026-06-08T23:03:13Z
-date_finished: null
+last_update: 2026-06-09T07:45:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -29,6 +37,31 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-08T23:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-08T23:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2273: arc-010 HM-A demo-target — generate MCP tools overview doc
@@ -158,3 +191,39 @@ out=$(bin/fw reviewer T-2273 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2273-arc-010-hm-a-demo-target--generate-mcp-t.md
 - **Context:** Initial task creation
+
+### 2026-06-09T07:45:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-06-09T08:00:00Z — focus-touch via Bash (headline-mechanic caveat)
+- **What happened:** The parent session (claude-master, S-2026-0609-0935) ran
+  `bin/fw work-on T-2273` from Bash to consider this task as the next
+  HV-LC pickup. After reading the task body and realising this is a
+  **demo-target** (not a regular pickup), the parent did NOT write the
+  deliverable and did NOT progress the work — the focus was switched away
+  on the next move.
+- **Headline-mechanic impact:** The captured→started-work transition was
+  consumed by `Bash(bin/fw work-on T-2273)`, NOT by `mcp__fw__work_on`. The
+  HM-A acceptance condition "(a) this task moves captured→started-work→
+  work-completed via `mcp__fw__task_update` calls" can no longer fire
+  cleanly for THIS task in its current state; only the
+  started-work→work-completed half is left for the demo worker.
+- **Options for the arc-010 Slice 3 orchestrator (T-2268):**
+  1. File a fresh demo-target task (T-2275 etc.) and use it instead.
+  2. Reset T-2273 status back to `captured` via direct YAML edit (bypassing
+     update-task.sh) — bypasses the audit trail but restores the demo path.
+  3. Accept the partial-headline demo on T-2273 — captured→started-work
+     was Bash-driven (this session's transcript is the audit), started-work→
+     work-completed will be MCP-driven (demo worker's transcript). The
+     evidence is split across two sessions but still mechanically traceable.
+- **Recommendation:** Option 1 (file fresh demo-target) is cleanest for a
+  single-task headline. Option 3 is acceptable if the operator's audit
+  surface can accept split-session evidence (T-2268's evidence README
+  documents the join).
+- **Lesson:** Demo-target tasks should be filed with a tag or convention
+  that prevents the parent agent from `fw work-on`-ing them by mistake.
+  Possible follow-up: add a `demo_target: true` frontmatter field that
+  `fw work-on` refuses unless `--i-am-demo-orchestrator` is passed. Not
+  filing this as a task here — surfaces as observation OBS for the next
+  arc-010 retro.
