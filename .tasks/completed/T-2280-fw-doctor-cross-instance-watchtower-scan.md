@@ -6,16 +6,16 @@ description: >
   Inception: fw doctor cross-instance Watchtower scan — WARN when N≥2 instances share
   cookie name
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-09T08:38:27Z
-last_update: 2026-06-09T08:39:50Z
-date_finished:
+last_update: 2026-06-09T08:47:20Z
+date_finished: 2026-06-09T08:47:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -36,6 +36,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-09T08:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -123,15 +133,15 @@ RCA already in parent T-2277. Implementation plan:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -188,7 +198,17 @@ fw doctor today checks the current project's invariants in isolation. Cross-host
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+fw doctor today checks the current project's invariants in isolation. Cross-host operational state (other Watchtower instances sharing cookie slots, port collisions, secret-key drift) is invisible. Add ~15-line scan: 'ss -tlnp | grep python3.web.app' → if N≥2 AND current instance has unscoped SESSION_COOKIE_NAME → WARN with remediation pointer. Becomes redundant for T-2277 Leg A's failure class after that ships, but is generally useful observability for the multi-instance pattern. Origin: T-2277 Leg C.
+
+Evidence:
+
+**Date**: 2026-06-09T08:47:20Z
 
 ## Updates
 
@@ -197,3 +217,32 @@ fw doctor today checks the current project's invariants in isolation. Cross-host
 
 ### 2026-06-09T08:39:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-09T08:47:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+fw doctor today checks the current project's invariants in isolation. Cross-host operational state (other Watchtower instances sharing cookie slots, port collisions, secret-key drift) is invisible. Add ~15-line scan: 'ss -tlnp | grep python3.web.app' → if N≥2 AND current instance has unscoped SESSION_COOKIE_NAME → WARN with remediation pointer. Becomes redundant for T-2277 Leg A's failure class after that ships, but is generally useful observability for the multi-instance pattern. Origin: T-2277 Leg C.
+
+Evidence:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-54606f5e
+- **Timestamp:** 2026-06-09T08:47:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-09T08:47:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
