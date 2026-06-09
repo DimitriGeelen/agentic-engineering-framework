@@ -371,7 +371,7 @@ observations:
   context_task: T-1687
   tags:
   - deployment-lag
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-045
   text: add
