@@ -477,8 +477,8 @@ observations:
   - convention-gap
   - near-miss
   - framework-discipline
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: T-2292
 - id: OBS-056
   text: 'TEST: verifying fw note text-arg shape — delete me'
   captured: 2026-06-09 06:48:55+00:00

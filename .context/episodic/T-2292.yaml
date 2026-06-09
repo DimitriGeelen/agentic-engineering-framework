@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2292: OBS-055 — extend convention whitelist with channel-claim mutator verbs (claim/release/renew/transfer)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T19:02:05Z
+# ============================================================================
+
+task_id: T-2292
+task_name: "OBS-055 — extend convention whitelist with channel-claim mutator verbs (claim/release/renew/transfer)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T18:57:03Z
+completed: 2026-06-09T19:01:58Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`CONVENTION_MUTATOR_VERBS_SINGLE` in `agents/audit/orchestrator-mcp-scan.sh` includes the four new single-word verbs `claim`, `release`, `renew`, `transfer` (channel-claim/lease domain).'
+  - 'A one-line code comment immediately above the extended verbs documents the new domain so the next 8th-batch author sees why these verbs were added.'
+  - '`tests/unit/test_orchestrator_mcp_classify.py` pins all five state-mutating tools as `mutators_ungated` (`termlink_channel_claim`, `termlink_channel_claim_force_release`, `termlink_channel_claim_transfer`, `termlink_channel_release`, `termlink_channel_renew`) and all four legitimate read-only tools stay `readonly_exempt` (`termlink_channel_claims`, `termlink_channel_claims_history`, `termlink_channel_claims_summary`, `termlink_channel_claims_summary_all`). All 9 new tests + existing 13 PASS.'
+  - 'OBS-055 promoted to T-2292 in `.context/inbox.yaml` (status: promoted).'
+  - '[REVIEWER] Reviewer PASS — verified via `bin/fw reviewer T-2292`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, mcp-classifier]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2292-obs-055--extend-convention-whitelist-wit.md
+generated_by: context-agent-hybrid

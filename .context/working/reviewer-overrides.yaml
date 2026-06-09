@@ -754,3 +754,15 @@ overrides:
   expires_at: '2026-09-07T16:54:23Z'
   added_by: root
   added_at: '2026-06-09T16:54:23Z'
+- id: OV-3a659191
+  task_id: T-2292
+  pattern_id: l387-sigpipe-risk
+  ac_index: null
+  reason: "FP: Verification lines 48-49 use the canonical L-387 capture-first single-pipe\
+    \ pattern (rev=$(cmd); echo \"$rev\" | grep -q PAT) recommended by memory feedback_reviewer_markdown_regex.md.\
+    \ Detector heuristic flags the negation form '! echo $rev | grep ...' but the\
+    \ capture has already cut the SIGPIPE risk \u2014 the echo is a small in-memory\
+    \ string."
+  expires_at: '2026-09-07T19:00:45Z'
+  added_by: root
+  added_at: '2026-06-09T19:00:45Z'

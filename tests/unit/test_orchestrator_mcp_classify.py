@@ -115,3 +115,51 @@ def test_existing_baseline_known_readonly_agent_threads(classify_by_convention):
 # Edge: empty suffix → unknown (don't silently mis-classify the namespace prefix itself)
 def test_empty_suffix_is_unknown(classify_by_convention):
     assert classify_by_convention("termlink_agent_") == "unknown"
+
+
+# ── T-2292 / OBS-055: channel-claim/lease domain (8th batch) ──────────────────
+# Before T-2292 the convention whitelist was chat-system only (post/send/edit
+# /react/...). A live `--apply` run surfaced five state-mutating channel-claim
+# tools being classified `readonly_exempt`. The whitelist now includes
+# {claim, release, renew, transfer} — these tests pin the new behaviour.
+
+def test_channel_claim_is_mutator(classify_by_convention):
+    assert classify_by_convention("termlink_channel_claim") == "mutators_ungated"
+
+
+def test_channel_claim_force_release_is_mutator(classify_by_convention):
+    # Last segment is 'release' — caught by the new single-word verb.
+    assert classify_by_convention("termlink_channel_claim_force_release") == "mutators_ungated"
+
+
+def test_channel_claim_transfer_is_mutator(classify_by_convention):
+    # Last segment is 'transfer' — caught by the new single-word verb.
+    assert classify_by_convention("termlink_channel_claim_transfer") == "mutators_ungated"
+
+
+def test_channel_release_is_mutator(classify_by_convention):
+    assert classify_by_convention("termlink_channel_release") == "mutators_ungated"
+
+
+def test_channel_renew_is_mutator(classify_by_convention):
+    assert classify_by_convention("termlink_channel_renew") == "mutators_ungated"
+
+
+# The four legitimately read-only claim tools (plural / history / summary /
+# summary_all) keep `readonly_exempt` — their last segments are noun-shapes,
+# not verbs. These pin that the T-2292 extension is precise, not over-broad.
+
+def test_channel_claims_is_readonly(classify_by_convention):
+    assert classify_by_convention("termlink_channel_claims") == "readonly_exempt"
+
+
+def test_channel_claims_history_is_readonly(classify_by_convention):
+    assert classify_by_convention("termlink_channel_claims_history") == "readonly_exempt"
+
+
+def test_channel_claims_summary_is_readonly(classify_by_convention):
+    assert classify_by_convention("termlink_channel_claims_summary") == "readonly_exempt"
+
+
+def test_channel_claims_summary_all_is_readonly(classify_by_convention):
+    assert classify_by_convention("termlink_channel_claims_summary_all") == "readonly_exempt"
