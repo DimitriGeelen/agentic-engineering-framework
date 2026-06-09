@@ -79,6 +79,15 @@ def create_app() -> Flask:
             _key_source,
         )
 
+    # T-2278 (T-2277 Leg A): port-scoped session cookie name.
+    # Multiple Watchtower instances on the same host share Flask's default
+    # SESSION_COOKIE_NAME="session" — RFC 6265 ignores port when scoping
+    # cookies, so visits across instances overwrite each other's session
+    # cookie, breaking CSRF on every cross-tab POST (403 Forbidden).
+    # Scoping the name by port allocates a distinct browser cookie slot
+    # per instance.
+    app.config["SESSION_COOKIE_NAME"] = f"fw_session_{Config.PORT}"
+
     # -------------------------------------------------------------------
     # CSRF protection
     # -------------------------------------------------------------------

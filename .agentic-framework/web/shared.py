@@ -517,6 +517,9 @@ _CODE_URL_HTML_RE_SHARED = re_mod.compile(r"<code>(https?://[^<\s]+?)</code>")
 
 VIEWABLE_DIR_PREFIXES = (
     "docs/reports/",
+    "docs/articles/",
+    "docs/plans/",
+    "docs/dispatch-templates/",
     ".tasks/active/",
     ".tasks/completed/",
     ".context/handovers/",
@@ -539,6 +542,22 @@ VIEWABLE_DIR_PREFIXES = (
 
 VIEWABLE_EXTENSIONS = ("md", "yaml", "yml", "py", "sh", "bats", "json", "toml")
 
+# T-2281 (T-2275 prong B): depth-0 root files cannot match a directory prefix
+# by definition. Adding them to the prefix tuple would mis-scope `README.md`
+# as a directory. The explicit allowlist bypasses the prefix + extension
+# checks so these specific filenames are linkable in rendered task content.
+# Extensionless entries (VERSION, LICENSE, CHANGELOG) are intentionally
+# included even though they don't satisfy VIEWABLE_EXTENSIONS — root files
+# are an allowlist, not a generic depth-0 rule.
+ROOT_FILES = frozenset({
+    "README.md",
+    "CLAUDE.md",
+    "FRAMEWORK.md",
+    "VERSION",
+    "LICENSE",
+    "CHANGELOG",
+})
+
 
 def is_viewable_path(filepath: str) -> bool:
     """Return True iff `filepath` (relative to PROJECT_ROOT) is servable by /file/.
@@ -549,11 +568,17 @@ def is_viewable_path(filepath: str) -> bool:
 
     Path-traversal guards live HERE, not in the route — so any caller (linker,
     route, future surfaces) gets the same enforcement.
+
+    T-2281 (T-2275): depth-0 root files in ROOT_FILES bypass the prefix +
+    extension checks (e.g. README.md, VERSION). Allowlist, not generic
+    depth-0.
     """
     if not filepath:
         return False
     if ".." in filepath:
         return False
+    if filepath in ROOT_FILES:
+        return True
     if not any(filepath.startswith(d) for d in VIEWABLE_DIR_PREFIXES):
         return False
     ext = filepath.rsplit(".", 1)[-1] if "." in filepath else ""
@@ -574,6 +599,12 @@ def _build_artefact_path_re():
     # escape regex metachars (the leading `.` in `.tasks/`, `.context/`, etc.)
     dirs = "|".join(re_mod.escape(d) for d in VIEWABLE_DIR_PREFIXES)
     exts = "|".join(re_mod.escape(e) for e in VIEWABLE_EXTENSIONS)
+    # T-2281 (T-2275): root-files alternative. Sorted for deterministic regex.
+    # The lookbehind on the root-file branch refuses matches when the filename
+    # is preceded by a path-body character — e.g. "foo/README.md" must NOT match
+    # the standalone "README.md" sub-tail (a directory-prefixed README.md is
+    # handled by the dir-branch above; "myREADME.md" must not match at all).
+    root_files = "|".join(re_mod.escape(f) for f in sorted(ROOT_FILES))
     pattern = (
         # Three guards to keep idempotent and avoid wrapping an already-linked path:
         #   (?<!href=")  — path is not the href target of an existing <a>
@@ -583,8 +614,14 @@ def _build_artefact_path_re():
         r'(?<!/file/)'
         r'(?<!">)'
         r'(`?)'
-        r'((?:' + dirs + r')'
-        r'[A-Za-z0-9_/.-]+\.(?:' + exts + r'))'
+        r'('
+            # Branch 1: prefix + path-body + extension (existing T-1722 shape).
+            r'(?:(?:' + dirs + r')'
+            r'[A-Za-z0-9_/.-]+\.(?:' + exts + r'))'
+            r'|'
+            # Branch 2: root-file allowlist, word-boundary-guarded.
+            r'(?<![A-Za-z0-9_/.-])(?:' + root_files + r')'
+        r')'
         r'(`?)'
     )
     return re_mod.compile(pattern)
