@@ -57,6 +57,6 @@ Build task **T-1323** ships:
 ## Decision Trail
 
 - Source pickup: `.context/pickup/processed/P-038-bug-report.yaml`
-- Inception: `.tasks/active/T-1321-pickup-vendored-agentic-framework-tracks.md`
+- Inception: `.tasks/completed/T-1321-pickup-vendored-agentic-framework-tracks.md`
 - Build sibling: T-1323
 - Recommendation: GO

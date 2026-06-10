@@ -53,7 +53,7 @@ Contrast: T-006 transitioned cleanly because the human ran `fw inception decide`
 - The name `fabric-purpose-fill` does **not appear anywhere** in the codebase except T-1260 itself. Search:
   ```
   grep -r "fabric-purpose-fill" /opt/999-Agentic-Engineering-Framework
-  → only .tasks/active/T-1260-...md
+  → only .tasks/completed/T-1260-...md
   ```
 - Conclusion: this is a **stale reference from a one-off worker** that ran in a previous session, was cleaned up, and something kept a path reference (likely a watchdog, status check, or attached terminal trying to re-run).
 - This is class L-006 again (worker registry vs filesystem disagreement), but at low impact: the failure surface is `fw task review` → "Dispatch script missing" — recoverable by re-running with a fresh worker name.

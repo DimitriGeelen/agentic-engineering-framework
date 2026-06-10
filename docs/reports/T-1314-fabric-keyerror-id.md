@@ -58,6 +58,6 @@ Build task **T-1318** ships:
 ## Decision Trail
 
 - Source pickup: `.context/pickup/processed/P-036-bug-report.yaml`
-- Inception task: `.tasks/active/T-1314-pickup-watchtower-fabric-crashes-keyerro.md`
+- Inception task: `.tasks/completed/T-1314-pickup-watchtower-fabric-crashes-keyerro.md`
 - Build sibling: T-1318 (to be created)
 - Recommendation: GO

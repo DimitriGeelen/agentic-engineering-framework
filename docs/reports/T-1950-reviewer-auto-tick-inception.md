@@ -207,7 +207,7 @@ Out-of-scope for v1.0, file as follow-ups if v1.0 is stable:
 
 | Artifact | Path |
 |---|---|
-| Inception task body | `.tasks/active/T-1950-g-066-deliverable-2--reviewer-auto-tick-.md` |
+| Inception task body | `.tasks/completed/T-1950-g-066-deliverable-2--reviewer-auto-tick-.md` |
 | Parent decision | `docs/reports/T-1443-independent-reviewer-agent.md` (decisions 36, 113, 213) |
 | Substrate to extend | `lib/reviewer/static_scan.py` v1.4 |
 | Override mechanism | `lib/reviewer/overrides.py` (T-1443 Spike I) |

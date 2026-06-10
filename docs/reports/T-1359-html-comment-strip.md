@@ -77,4 +77,4 @@ Add 4 bats cases to `tests/unit/lib_task_audit.bats`:
 
 ## Decision trail
 
-See task file `.tasks/active/T-1359-pickup-watchtower-placeholder-detector-m.md` for full Recommendation GO, Evidence, and B1/B2 build plan.
+See task file `.tasks/completed/T-1359-pickup-watchtower-placeholder-detector-m.md` for full Recommendation GO, Evidence, and B1/B2 build plan.

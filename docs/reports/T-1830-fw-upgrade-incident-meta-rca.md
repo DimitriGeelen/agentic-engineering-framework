@@ -90,8 +90,8 @@ If T-1830 is GO and T-1829 is also GO: T-1830 retrofits mirror-sync to emit hear
 ## Wire-evidence (artefacts traceable)
 
 - T-1827 task file (RCA section): `.tasks/active/T-1827-pickup-cross-hub-relay-stall-termlink-ag.md`
-- T-1828 task file (RCA section): `.tasks/active/T-1828-github-mirror-stalled--version-tag-reset.md`
-- T-1829 task file (4 candidates for stamping fix): `.tasks/active/T-1829-version-stamping-algorithm-not-cross-tag.md`
+- T-1828 task file (RCA section): `.tasks/completed/T-1828-github-mirror-stalled--version-tag-reset.md`
+- T-1829 task file (4 candidates for stamping fix): `.tasks/completed/T-1829-version-stamping-algorithm-not-cross-tag.md`
 - L-376 (VERSION tag-reset class): `.context/project/learnings.yaml`
 - Mirror-sync log evidence: `.context/working/.mirror-sync.log` (16+ consecutive push-failed entries since 13:30Z)
 - termlink-agent original report: `framework:pickup` offset 12 (also offset 10 with B-1 cwd-trap detail)

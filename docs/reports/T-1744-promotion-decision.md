@@ -2,7 +2,7 @@
 
 **Type:** Inception decision artifact
 **Filed:** 2026-05-05
-**Focus task:** [T-1744](../../.tasks/active/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md)
+**Focus task:** [T-1744](../../.tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md)
 **Arc:** orchestrator-rethink
 **Predecessors:** T-1688 (G-064 candidate-consumer survey), T-1726 (escalation-scan v0.5 inception → GO), T-1741 + T-1743 (Spike D / D′ → NO-GO)
 **Successor:** T-1727 (escalation-scan v0.5 build) on GO
@@ -137,7 +137,7 @@ The 5 dispatches are spike/research dispatches (T-1696, T-1697, T-1698, T-1733, 
 - `docs/reports/T-1688-candidate-consumer-survey.md` — G-064 candidate survey
 - `.tasks/completed/T-1688-g-064-candidate-consumer-survey--classif.md` — GO on option 1+4
 - `.tasks/completed/T-1726-escalation-scan-v05--llm-augmentation-as.md` — `**Recommendation:** GO`
-- `.tasks/active/T-1727-v05-build--escalation-scan-with-llm-augm.md` — build task, queue-ready
+- `.tasks/completed/T-1727-v05-build--escalation-scan-with-llm-augm.md` — build task, queue-ready
 - `docs/reports/T-1741-spike-d.md` — Spike D NO-GO (4 models)
 - `docs/reports/T-1743-binary-rescore.md` — Spike D′ NO-GO (binary reframe)
 - L-355 — architectural ceiling captured in `.context/project/learnings.yaml`

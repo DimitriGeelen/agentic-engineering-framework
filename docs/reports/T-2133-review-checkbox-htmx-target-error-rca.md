@@ -15,7 +15,7 @@ The toggle-ac endpoint is correct and works (verified by curl test below). The b
 2. **The toggle-ac handler correctly parses `- [ ] [REVIEW] ...` lines** — VALIDATED. The body-relative line_idx (18 for T-2131 AC #5) matches the regex `^(- \[)([ xX])(\] .+)$`.
 3. **htmx 2.0.4 is loaded and JS is intact on the page** — VALIDATED. `window.htmx.version === "2.0.4"`, csrf meta present, form attributes intact (hx-post, hx-vals, hx-swap=none, hx-on::after-request).
 4. **The form's POST is silently aborted by htmx, not by CSRF or network** — VALIDATED. After clicking the checkbox programmatically, ZERO htmx events fire (`htmx:configRequest`, `htmx:beforeRequest`, `htmx:beforeSend` all absent) and a `htmx:targetError` shows in the console. No network call to /toggle-ac is made.
-5. **Server-side state was NOT mutated by my Playwright click** — VALIDATED. T-2131 Human AC remained `[ ]` after the click (per `grep "^- \[" .tasks/active/T-2131-*.md`). Sovereignty boundary preserved by the bug itself.
+5. **Server-side state was NOT mutated by my Playwright click** — VALIDATED. T-2131 Human AC remained `[ ]` after the click (per `grep "^- \[" .tasks/completed/T-2131-*.md`). Sovereignty boundary preserved by the bug itself.
 
 ## Exploration Plan (executed)
 

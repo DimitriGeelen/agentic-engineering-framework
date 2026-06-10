@@ -10,7 +10,7 @@
 
 C-001 (CLAUDE.md): "Research artefact first — when starting inception work, create `docs/reports/T-XXX-*.md` BEFORE conducting research. Update the file incrementally as dialogue produces findings. The thinking trail IS the artefact — conversations are ephemeral, files are permanent."
 
-This file is the permanent thinking trail. The task file (`.tasks/active/T-1878-*.md`) carries the structural metadata + decision; this file carries the reasoning.
+This file is the permanent thinking trail. The task file (`.tasks/completed/T-1878-*.md`) carries the structural metadata + decision; this file carries the reasoning.
 
 ---
 

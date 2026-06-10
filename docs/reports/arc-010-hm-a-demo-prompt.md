@@ -19,7 +19,7 @@ This proves the headline mechanic recorded in
 ## Steps
 
 1. **Read T-2273's ACs** to understand the deliverable:
-   - Read `.tasks/active/T-2273-arc-010-hm-a-demo-target--generate-mcp-t.md` (Read tool).
+   - Read `.tasks/completed/T-2273-arc-010-hm-a-demo-target--generate-mcp-t.md` (Read tool).
    - Read `policy/capability-overlay/tool-set.yaml` (Read tool) — the 22 framework MCP
      tools and their classifications (read_only / agent_authority).
    - Read `.tasks/completed/T-2265-arc-010-slice-2--framework-mcp-server-em.md` (Read

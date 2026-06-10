@@ -2,7 +2,7 @@
 
 **Status:** Inception complete (recommendation written 2026-04-23)
 **Owner:** agent
-**Linked task:** `.tasks/active/T-1268-cross-machine-update-propagation-frictio.md`
+**Linked task:** `.tasks/completed/T-1268-cross-machine-update-propagation-frictio.md`
 
 ## Problem (recap)
 

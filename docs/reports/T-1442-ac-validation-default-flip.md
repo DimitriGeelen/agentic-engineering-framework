@@ -220,8 +220,8 @@ Each version's weekly summary feeds the next version's design decisions. Layer 1
 
 | Artifact | Path |
 |---|---|
-| Inception task body | `.tasks/active/T-1442-ac-validation-default-flip--mechanical-v.md` |
-| Linked sister inception | `.tasks/active/T-1443-independent-reviewer-agent--termlink-dis.md` |
+| Inception task body | `.tasks/completed/T-1442-ac-validation-default-flip--mechanical-v.md` |
+| Linked sister inception | `.tasks/completed/T-1443-independent-reviewer-agent--termlink-dis.md` |
 | Existing AC guidance | `CLAUDE.md` § AC Classification Guidance (T-954) |
 | Existing verification gate | `CLAUDE.md` § Verification Gate (P-011) |
 | Existing CLI | `bin/fw verify-acs` |

@@ -44,4 +44,4 @@ DEFER primary, BUILD-LIGHT fallback.
 
 ## Decision trail
 
-See task file `.tasks/active/T-1365-pickup-multi-agent-dispatch-safety-model.md` for full Recommendation, Evidence, and trigger-list.
+See task file `.tasks/completed/T-1365-pickup-multi-agent-dispatch-safety-model.md` for full Recommendation, Evidence, and trigger-list.

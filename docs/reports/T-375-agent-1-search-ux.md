@@ -105,7 +105,7 @@ The existing search page (`web/templates/search.html`) has these issues:
 |  12 results for "healing"    [Tasks 5] [Patterns 3] ...   |
 |                                                           |
 |  T-015: API Timeout Healing          ████░░               |
-|  .tasks/active/T-015-api-timeout.md                       |
+|  .tasks/completed/T-015-api-timeout.md                       |
 |  ...implements retry logic with exponential backoff...    |
 |                                                           |
 |  L-007: Always Add Retry Logic       ███░░░               |
@@ -146,7 +146,7 @@ The existing search page (`web/templates/search.html`) has these issues:
 |  [All 8] [Tasks 3] [Patterns 2] [Learnings 2] [Docs 1]   |
 |                                                           |
 |  T-015: API Timeout Healing              ████░░           |
-|  .tasks/active/T-015-api-timeout.md                       |
+|  .tasks/completed/T-015-api-timeout.md                       |
 |  ...implements retry logic with exponential backoff...    |
 |  [View task ->]                                           |
 |                                                           |
@@ -260,7 +260,7 @@ The existing search page (`web/templates/search.html`) has these issues:
 |                                                                 |
 |  +----------------------------------------------------------+  |
 |  | T-015: API Timeout Healing                  Relevance     |  |
-|  | .tasks/active/T-015-api-timeout.md          ████░░ High   |  |
+|  | .tasks/completed/T-015-api-timeout.md          ████░░ High   |  |
 |  |                                                           |  |
 |  | ...implements retry logic with exponential backoff.       |  |
 |  | The healing loop diagnosed this as an external            |  |
@@ -350,7 +350,7 @@ The existing search page (`web/templates/search.html`) has these issues:
 |  | T-015: API Timeout        |  |
 |  | Healing                   |  |
 |  | ████░░ High               |  |
-|  | .tasks/active/T-015...    |  |
+|  | .tasks/completed/T-015...    |  |
 |  |                           |  |
 |  | ...implements retry       |  |
 |  | logic with exponential    |  |
@@ -492,7 +492,7 @@ Each result item:
     <div class="relevance-bar" data-score="4">...</div>
   </div>
   <code style="font-size: 0.75rem; color: var(--pico-muted-color);">
-    .tasks/active/T-015-api-timeout.md
+    .tasks/completed/T-015-api-timeout.md
   </code>
   <p style="font-size: 0.85rem; margin-top: 0.25rem; line-height: 1.5;">
     ...implements retry logic with exponential backoff. The healing loop

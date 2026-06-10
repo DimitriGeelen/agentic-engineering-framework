@@ -4,7 +4,7 @@ Research artifact for inception **T-2118**. Codified per CLAUDE.md §Inception
 Discipline C-001 — "Research artifact first … the thinking trail IS the
 artefact … conversations are ephemeral, files are permanent."
 
-This file mirrors the persistent body of `.tasks/active/T-2118-review-handoff-palette-inception.md`
+This file mirrors the persistent body of `.tasks/completed/T-2118-review-handoff-palette-inception.md`
 so the RCA + Recommendation survive task closure (move to `.tasks/completed/`)
 and remain greppable from `docs/reports/` where downstream readers expect them.
 
@@ -309,7 +309,7 @@ shipped tasks, then filed this inception capturing the RCA + recommendation.
 ### 2026-05-30 (later) — artefact codification
 
 `fw audit` raised **C-001 WARN**: "Inception T-2118 has no research
-artefact in `docs/reports/`". The inception body in `.tasks/active/T-2118…`
+artefact in `docs/reports/`". The inception body in `.tasks/completed/T-2118…`
 captures the full thinking; this file mirrors it so the artefact survives
 the task's eventual move to `.tasks/completed/` and the audit closes.
 Same codification rule the framework applies to itself.
