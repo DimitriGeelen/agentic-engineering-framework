@@ -1,0 +1,20 @@
+id: docs/architecture/parallel-execution-aef.md
+name: parallel-execution-aef
+type: script
+subsystem: unknown
+location: docs/architecture/parallel-execution-aef.md
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-06-10
+created_by: unknown
