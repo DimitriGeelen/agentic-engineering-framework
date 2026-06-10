@@ -90,13 +90,12 @@ Implements T-2305 GO (BVP driver batch inception, decided GO by operator 2026-06
 
 ## Verification
 
-# All three drivers present in free_drivers
-out=$(bin/fw bvp driver --list 2>&1 || true); echo "$out" | grep -q "V_PROMPT_QUALITY"
-out=$(bin/fw bvp driver --list 2>&1 || true); echo "$out" | grep -q "V_CONTEXT_FABRIC"
-out=$(bin/fw bvp driver --list 2>&1 || true); echo "$out" | grep -q "V_COMPONENT_FABRIC"
-# Free pool at cap (5)
+# All three drivers present in free_drivers (single comprehensive yaml-load check —
+# replaces three broken `bin/fw bvp driver --list` greps; the --list verb is not
+# implemented, returns Usage text only. T-2306 quickstart sibling commit `25f78d808`
+# documents the verified-path and L-NEW handoff-docs-verify-cli-verbs.)
 python3 -c "import yaml; d=yaml.safe_load(open('policy/value-drivers.yaml')); fd=d.get('free_drivers') or []; assert len(fd)==5, f'expected 5 free drivers, got {len(fd)}'; ids={e['id'] for e in fd}; assert {'F-RECALL','F-ORCH','V_PROMPT_QUALITY','V_CONTEXT_FABRIC','V_COMPONENT_FABRIC'}<=ids, f'missing: {ids}'"
-# Weight-history captured the three additions
+# Weight-history captured the three additions (file is YAML — grep is safe)
 test -f .context/bvp-weight-history.yaml && grep -q "V_PROMPT_QUALITY" .context/bvp-weight-history.yaml
 grep -q "V_CONTEXT_FABRIC" .context/bvp-weight-history.yaml
 grep -q "V_COMPONENT_FABRIC" .context/bvp-weight-history.yaml
