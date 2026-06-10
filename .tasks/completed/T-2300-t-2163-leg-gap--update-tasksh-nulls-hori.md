@@ -6,12 +6,12 @@ description: >
   T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional, skipping
   already-in-completed re-close path (8-instance CTL-030 class)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, rca, governance-hygiene]
-components: []
+components: [agents/task-create/update-task.sh, tests/unit/test_update_task_horizon_null_reclose.bats]
 related_tasks: [T-2160, T-2163, T-2121]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: [T-2160, T-2163, T-2121]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-09T23:11:11Z
-last_update: 2026-06-10T09:08:54Z
-date_finished:
+last_update: 2026-06-10T09:17:14Z
+date_finished: 2026-06-10T09:17:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -166,6 +166,20 @@ out=$(bin/fw reviewer T-2300 --no-write 2>&1); echo "$out" | grep -qE "Overall:.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 8 tasks in `.tasks/completed/` retained `horizon: now` after `--status work-completed`, tripping CTL-030 audit (T-2168/T-2180/T-2182/T-2196/T-2201/T-2203/T-2204/T-2248). All 8 reached completed/ via the L-461 stale-PC re-close path (file already in `completed/`, status flipping started-work → work-completed).
+
+**Root cause:** T-2163's horizon-null mutation in `agents/task-create/update-task.sh:1779` was nested INSIDE the `if [ "$(dirname "$TASK_FILE")" != "$TASKS_DIR/completed" ]` move-conditional. When the file was already in `completed/`, the move was correctly skipped — but the horizon-null mutation lived in the same block and was skipped along with it. The T-709 push-notify on the next line had the same structural placement.
+
+**Why structurally allowed:**
+- T-2163's design comment ("write `null` in the same atomic move so no drift is ever introduced") encoded an assumption that close ⇒ move, but didn't articulate the re-close exception.
+- The bats coverage at `update_task_horizon_null_on_close.bats` only exercised active→completed paths — no fixture set up a file directly in completed/ with started-work status, so the leg-gap was invisible to the test suite.
+- The audit detector CTL-030 (T-2162) correctly catches the symptom *after the fact*, but is a downstream detector, not a preventive structural gate. The framework had observability for the symptom but no write-side prevention on the re-close branch.
+
+**Prevention:**
+- Structural fix: horizon-null + T-709 notify now run unconditionally for the non-partial-complete close branch (independent of whether a move happened). Pinned by 3-case `tests/unit/test_update_task_horizon_null_reclose.bats` (re-close with `now`, re-close with `next`, original active→completed regression).
+- Behavioural invariant: any future refactor that re-nests the mutation inside the move-conditional trips the new bats gate.
+- Detector remains in place as second line of defence — CTL-030 will continue to catch any unforeseen leg-gaps in completed/ frontmatter regardless of write-path.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -223,3 +237,15 @@ out=$(bin/fw reviewer T-2300 --no-write 2>&1); echo "$out" | grep -qE "Overall:.
 
 ### 2026-06-10T09:08:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4ee6a470
+- **Timestamp:** 2026-06-10T09:17:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-10T09:17:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
