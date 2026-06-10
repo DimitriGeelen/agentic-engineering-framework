@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [v3-followup-A]
 components: [C-004, agents/termlink/bvp-estimator/estimator.py, tests/unit/test_audit_retire_when.bats, tests/unit/test_bvp_estimator.py]
 related_tasks: [T-2157, T-2165, T-2166, T-1922, T-1923, T-1935]

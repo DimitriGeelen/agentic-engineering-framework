@@ -1767,22 +1767,27 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 exit 1
             fi
             echo -e "${GREEN}Moved to completed/${NC}"
+        fi
 
-            # T-2163 (arc-009 horizon-axis-hardening, Slice 4): null the stored
-            # horizon now that the file is in .tasks/completed/. Render derives
-            # `past` from _location (T-2160 Q1=(b)) so the stored value is
-            # behaviorally irrelevant — but a non-null value here is a YAML lie
-            # that CTL-030 (T-2162) would catch. Plug the source: write `null`
-            # in the same atomic move so no drift is ever introduced.
-            # Partial-complete branch does NOT touch this — that file stays in
-            # active/ and renders via the stored horizon.
-            _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
+        # T-2163 (arc-009 horizon-axis-hardening, Slice 4): null the stored
+        # horizon now that the file is in .tasks/completed/. Render derives
+        # `past` from _location (T-2160 Q1=(b)) so the stored value is
+        # behaviorally irrelevant — but a non-null value here is a YAML lie
+        # that CTL-030 (T-2162) would catch. Plug the source: write `null`.
+        # T-2300 (leg-gap): runs OUTSIDE the move-conditional so the re-close
+        # path (file already in completed/, status flip only) also nulls the
+        # horizon — was 8-instance CTL-030 class (T-2168/T-2180/T-2182/T-2196/
+        # T-2201/T-2203/T-2204/T-2248). Partial-complete branch does NOT touch
+        # this — that file stays in active/ and renders via the stored horizon.
+        _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
 
-            # T-709: Push notification — task completed
-            if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
-                source "$FRAMEWORK_ROOT/lib/notify.sh"
-                fw_notify "Task Complete: $TASK_ID" "$TASK_NAME" "manual" "framework"
-            fi
+        # T-709: Push notification — task completed
+        # T-2300: lifted out of move-conditional so re-close fires once too.
+        # Outer trigger gate `[ "$OLD_STATUS" != "work-completed" ]` (line ~1709)
+        # already prevents double-notify on genuine re-closes.
+        if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
+            source "$FRAMEWORK_ROOT/lib/notify.sh"
+            fw_notify "Task Complete: $TASK_ID" "$TASK_NAME" "manual" "framework"
         fi
     fi
 

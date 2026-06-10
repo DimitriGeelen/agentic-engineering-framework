@@ -1,10 +1,12 @@
 ---
 id: T-2300
-name: "T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional, skipping already-in-completed re-close path (8-instance CTL-030 class)"
+name: "T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional,
+  skipping already-in-completed re-close path (8-instance CTL-030 class)"
 description: >
-  T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional, skipping already-in-completed re-close path (8-instance CTL-030 class)
+  T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional, skipping
+  already-in-completed re-close path (8-instance CTL-030 class)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +24,8 @@ related_tasks: [T-2160, T-2163, T-2121]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-09T23:11:11Z
-last_update: 2026-06-09T23:13:30Z
-date_finished: null
+last_update: 2026-06-10T09:08:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,30 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-09T23:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-09T23:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2300: T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional, skipping already-in-completed re-close path (8-instance CTL-030 class)
@@ -47,11 +73,11 @@ This is the structural counterpart to today's L-461 stale-PC discovery: the fram
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/task-create/update-task.sh` always null-stores `horizon:` when the task file resides in `.tasks/completed/` at the end of a `--status work-completed` transition, regardless of whether the close gate also performed a `git mv`. Implementation lifts the existing `_sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"` line out of the move-conditional, OR adds a sibling no-move branch that runs the same mutation, OR runs the mutation unconditionally after the move-or-not branches.
-- [ ] Backfill: the 8 affected tasks in `.tasks/completed/` (T-2168, T-2180, T-2182, T-2196, T-2201, T-2203, T-2204, T-2248) have `horizon: null` in frontmatter. YAML still parses.
-- [ ] `tests/unit/test_update_task_horizon_null_reclose.bats` exists with a scenario simulating re-close of a task already in `.tasks/completed/` with `horizon: now` → assert post-condition `horizon: null` and frontmatter parses. PASS.
-- [ ] `bin/fw audit --section structure` reports 0 CTL-030 horizon-drift FAILs after backfill + fix (verified via audit YAML parse).
-- [ ] `bin/fw reviewer T-2300` Overall:.*PASS.
+- [x] `agents/task-create/update-task.sh` always null-stores `horizon:` when the task file resides in `.tasks/completed/` at the end of a `--status work-completed` transition, regardless of whether the close gate also performed a `git mv`. Implementation lifts the existing `_sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"` line out of the move-conditional, OR adds a sibling no-move branch that runs the same mutation, OR runs the mutation unconditionally after the move-or-not branches.
+- [x] Backfill: the 8 affected tasks in `.tasks/completed/` (T-2168, T-2180, T-2182, T-2196, T-2201, T-2203, T-2204, T-2248) have `horizon: null` in frontmatter. YAML still parses.
+- [x] `tests/unit/test_update_task_horizon_null_reclose.bats` exists with a scenario simulating re-close of a task already in `.tasks/completed/` with `horizon: now` → assert post-condition `horizon: null` and frontmatter parses. PASS.
+- [x] `bin/fw audit --section compliance` reports CTL-030 PASS (`All completed/ tasks have null/absent stored horizon`). Note: CTL-030 runs in `--section compliance` and `--section oe-daily` by design, NOT in `--section structure` — pinned by `tests/unit/audit_ctl030_completed_horizon_drift.bats` cases 12-14.
+- [x] `bin/fw reviewer T-2300` Overall:.*PASS.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -89,7 +115,7 @@ This is the structural counterpart to today's L-461 stale-PC discovery: the fram
 bash -n agents/task-create/update-task.sh
 out=$(python3 -c "import yaml; d=yaml.safe_load(open('.tasks/completed/T-2168-bvp-estimator-extension-for-f-recall--f-.md').read().split('---', 2)[1]); print(d.get('horizon'))"); [ "$out" = "None" ]
 out=$(python3 -c "import yaml; d=yaml.safe_load(open('.tasks/completed/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md').read().split('---', 2)[1]); print(d.get('horizon'))"); [ "$out" = "None" ]
-out=$(bin/fw audit --section structure 2>&1); ! echo "$out" | grep -qE 'CTL-030.*horizon'
+out=$(bin/fw audit --section compliance 2>&1); echo "$out" | grep -qE 'PASS.*CTL-030.*null/absent'
 bats tests/unit/test_update_task_horizon_null_reclose.bats
 out=$(bin/fw reviewer T-2300 --no-write 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$out" | grep -qE "Overall:.*FAIL"
 
@@ -194,3 +220,6 @@ out=$(bin/fw reviewer T-2300 --no-write 2>&1); echo "$out" | grep -qE "Overall:.
 
 ### 2026-06-09T23:13:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
+
+### 2026-06-10T09:08:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
