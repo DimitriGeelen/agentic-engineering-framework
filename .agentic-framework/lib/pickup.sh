@@ -560,22 +560,61 @@ do_pickup_send() {
     local filename="${pickup_id}-${pickup_type}.yaml"
     local filepath="$PICKUP_INBOX/$filename"
 
-    # Write envelope
-    cat > "$filepath" <<EOF
-pickup_id: $pickup_id
-version: 1
-type: $pickup_type
-source:
-  project: "$source_project"
-  task_id: "${task_id:-}"
-  agent: "claude-code"
-  timestamp: "$ts"
-payload:
-  summary: "$summary"
-  detail: "${detail:-}"
-  priority: $priority
-  tags: $tag_yaml
-EOF
+    # T-2308 (P-002 fix): write envelope via yaml.safe_dump, not shell heredoc.
+    # User-controlled fields ($summary, $detail, $source_project, $task_id) may
+    # contain YAML-active chars (", \, newlines, regex like \d/\s). Shell heredoc
+    # with double-quoted YAML scalars silently produces unparseable YAML for
+    # exactly the payloads that matter most (stack traces, code, regex). Pass
+    # values through env vars (raw bytes, no shell quoting) into python, then
+    # yaml.safe_dump handles all escaping deterministically.
+    # Post-write guard: re-load through yaml.safe_load; abort non-zero if invalid.
+    PICKUP_ID="$pickup_id" \
+    PICKUP_TYPE="$pickup_type" \
+    PICKUP_VERSION="1" \
+    SOURCE_PROJECT="$source_project" \
+    SOURCE_TASK_ID="${task_id:-}" \
+    SOURCE_AGENT="claude-code" \
+    SOURCE_TIMESTAMP="$ts" \
+    PAYLOAD_SUMMARY="$summary" \
+    PAYLOAD_DETAIL="${detail:-}" \
+    PAYLOAD_PRIORITY="$priority" \
+    PAYLOAD_TAGS_CSV="${tags:-}" \
+    OUT_PATH="$filepath" \
+    python3 - <<'PYEOF' || { echo -e "${RED}Envelope emit failed${NC}" >&2; return 1; }
+import os, sys, yaml
+
+tags_csv = os.environ.get("PAYLOAD_TAGS_CSV", "").strip()
+tags = [t.strip() for t in tags_csv.split(",") if t.strip()] if tags_csv else []
+
+envelope = {
+    "pickup_id":  os.environ["PICKUP_ID"],
+    "version":    int(os.environ["PICKUP_VERSION"]),
+    "type":       os.environ["PICKUP_TYPE"],
+    "source": {
+        "project":   os.environ["SOURCE_PROJECT"],
+        "task_id":   os.environ["SOURCE_TASK_ID"],
+        "agent":     os.environ["SOURCE_AGENT"],
+        "timestamp": os.environ["SOURCE_TIMESTAMP"],
+    },
+    "payload": {
+        "summary":  os.environ["PAYLOAD_SUMMARY"],
+        "detail":   os.environ["PAYLOAD_DETAIL"],
+        "priority": os.environ["PAYLOAD_PRIORITY"],
+        "tags":     tags,
+    },
+}
+
+out_path = os.environ["OUT_PATH"]
+with open(out_path, "w") as f:
+    yaml.safe_dump(envelope, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+# Post-write guard (P-002 recommendation #3): re-load and verify shape.
+with open(out_path) as f:
+    parsed = yaml.safe_load(f)
+assert parsed["pickup_id"] == envelope["pickup_id"], "round-trip mismatch on pickup_id"
+assert parsed["payload"]["summary"] == envelope["payload"]["summary"], "round-trip mismatch on summary"
+assert parsed["payload"]["detail"] == envelope["payload"]["detail"], "round-trip mismatch on detail"
+PYEOF
 
     echo -e "${GREEN}Created${NC} $filename"
 

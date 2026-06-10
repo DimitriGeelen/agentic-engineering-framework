@@ -367,14 +367,30 @@ def create_app() -> Flask:
 
     @app.errorhandler(403)
     def forbidden(e):
+        # T-2309 (P-003 fix): distinguish CSRF token failures from generic 403s.
+        # CSRF failures are recoverable by reloading the page — the generic
+        # "Forbidden" template offers no Reload action and is indistinguishable
+        # from a real permission denial. csrf_protect() raises with description
+        # starting with "CSRF token" (see line 120). Branch on that prefix to
+        # render a friendly Session-expired template with a Reload button.
+        description = (
+            str(e.description) if hasattr(e, "description") else str(e)
+        )
+        is_csrf = description.startswith("CSRF token")
+        if is_csrf:
+            return render_template(
+                "_wrapper.html",
+                _content_template="_error_csrf.html",
+                page_title="Session expired",
+                error_message=description,
+                **_error_context(),
+            ), 403
         return render_template(
             "_wrapper.html",
             _content_template="_error.html",
             page_title="Forbidden",
             error_title="403 Forbidden",
-            error_message=(
-                str(e.description) if hasattr(e, "description") else str(e)
-            ),
+            error_message=description,
             **_error_context(),
         ), 403
 
