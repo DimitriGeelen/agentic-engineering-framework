@@ -26,15 +26,21 @@ grill_me:
   entry: "/grill-with-docs"
   scope: |
     arc-011 parallel-execution-aef. AEF consumer side of multi-agent concurrent execution.
-    Anchor T-2303 (scoping inception, started-work, owner=human). TermLink-side substrate
-    work lives in a sibling arc in the TermLink repo (not yet confirmed to exist; IW-3
-    Spike 3 of T-2303 establishes first contact and validates A2). Grill T-2303's IW-1..IW-5
-    before any downstream inception fires.
+    Anchor T-2303 (scoping inception, GO 2026-06-10 commit `989fc1e6e`). TermLink-side
+    substrate work has no confirmed sibling arc yet (T-2303 IW-3 Spike 3 was documented
+    defer with named trigger: substrate engagement deferred to first downstream design
+    pressure that genuinely needs TermLink hub-state RPC). Downstream cluster filing
+    began: T-2323 (AEF-IC-1 yield-point granularity) + T-2324 (AEF-IC-2 disjoint
+    write-set policy) both filed pure-AEF (no substrate dep), both operator-parked
+    captured/later awaiting spike dialogue per their `## Recommendation` blocks.
+    Grill remaining downstream inceptions (AEF-IC-3 / IC-4 / IC-5) before they fire.
   domain_anchors:
     - docs/architecture/parallel-execution-aef.md
     - docs/architecture/parallel-execution-substrate.md
-    - .tasks/active/T-2303-scoping-inception--parallel-execution-ar.md
+    - .tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md
     - docs/reports/T-2303-scoping-parallel-execution-aef.md
+    - .tasks/active/T-2323-aef-ic-1-yield-point-granularity-substra.md
+    - .tasks/active/T-2324-aef-ic-2-disjoint-write-set-policy.md
   primary_targets:
     - "Is the headline_mechanic above a CONSUMER-SIDE mechanic (what AEF agents do) or
       does it cross the seam into substrate territory (what TermLink delivers)? §ACD/G-062
