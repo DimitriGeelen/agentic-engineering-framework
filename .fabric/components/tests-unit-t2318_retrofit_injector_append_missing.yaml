@@ -1,0 +1,20 @@
+id: tests/unit/t2318_retrofit_injector_append_missing.bats
+name: t2318_retrofit_injector_append_missing
+type: script
+subsystem: unknown
+location: tests/unit/t2318_retrofit_injector_append_missing.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-06-10
+created_by: unknown
