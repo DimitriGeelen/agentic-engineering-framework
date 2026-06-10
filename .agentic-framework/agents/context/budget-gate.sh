@@ -204,6 +204,15 @@ t = 0
 for line in sys.stdin:
     try:
         e = json.loads(line)
+        # T-2322: detect compact_boundary in the transcript itself — single source
+        # of truth. Resets t so pre-compact usage is discarded even when the
+        # T-1088 sidecar (.session-start-ts) is missing/stale/empty. Mirrors the
+        # behavior /compact has on the live token budget (post-compact starts
+        # near zero until first real usage entry lands). Complements (does not
+        # replace) the T-1088 sidecar filter below — both run in this loop.
+        if e.get('type') == 'system' and e.get('subtype') == 'compact_boundary':
+            t = 0
+            continue
         model = e.get('message', {}).get('model', '')
         if model == '<synthetic>' or model.startswith('<'):
             continue
