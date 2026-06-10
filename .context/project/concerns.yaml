@@ -1995,7 +1995,10 @@ concerns:
     User-claim that halves of T-1442/T-1443 GO never wired was verified;
     captured in `docs/reports/T-1709-aef-review-instance.md` "Verification of
     prior-work claims" section.
-  status: watching
+  status: closed
+  closed_date: 2026-06-10
+  closure_notes: |
+    Closed via gauge 'python3 tools/g066-readiness.py --json' (verdict=READY) at 2026-06-10.
   what_works_now: |
     - 3-layer escalation classifier ships and runs daily via cron Pass-B
       (T-1665 wired).
