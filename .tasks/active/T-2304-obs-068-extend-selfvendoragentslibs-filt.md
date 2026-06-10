@@ -1,21 +1,15 @@
 ---
-id: T-2121
-name: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id
-  collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md
-  that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time
-  block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/
-  before mutating any .tasks/active/ file (prevents masking by metadata churn); (3)
-  bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently
-  doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing
-  as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention
-  are independent."
+id: T-2304
+name: "OBS-068: extend _self_vendor_agents/libs filter to include .md siblings (AGENT.md
+  drift class)"
 description: >
-  Promoted from observation OBS-035
+  OBS-068: extend _self_vendor_agents/libs filter to include .md siblings (AGENT.md
+  drift class)
 
-status: captured
-workflow_type: inception
-owner: human
-horizon: later
+status: started-work
+workflow_type: build
+owner: agent
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +17,14 @@ related_tasks: []
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-05-30T20:16:09Z
-last_update: '2026-06-10T09:30:03Z'
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
+created: 2026-06-10T09:19:40Z
+last_update: '2026-06-10T09:30:04Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -37,64 +37,68 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-06-05T18:00:03Z'
+  - ts: '2026-06-10T09:30:03Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-10T09:30:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 4
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-06-05T18:00:03Z'
+  - ts: '2026-06-10T09:30:04Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 2
       D4: 2
       F-RECALL: 0
-      F-ORCH: 4
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=4 (body:rubric-routable)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-10T09:30:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+      (no-signal); F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2121: T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent.
+# T-2304: OBS-068: extend _self_vendor_agents/libs filter to include .md siblings (AGENT.md drift class)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+OBS-068 (promoted via `fw note triage`, origin T-2301): `_self_vendor_agents` in `lib/upgrade.sh:387` filters on `-name *.sh -o -name *.py` — `.md` siblings (AGENT.md) drift between `agents/` and `.agentic-framework/agents/`. T-2301 hit this on the resume agent. Sibling concern: `_self_vendor_libs`, `_self_vendor_web`, `_self_vendor_policy` may have the same gap.
+
+Per the producer/consumer parity discipline (L-399 / T-1890) and the explicit comment at `lib/upgrade.sh:355-356` ("Filter: `*.sh + *.py` — matches `audit.sh:1534`'s exact set so coverage parity is mechanical"), the helper and the audit detector MUST move together. The audit's libs-class scan at `agents/audit/audit.sh:1636` uses the same `*.sh + *.py + fw` filter — extending the helper without extending the audit would re-introduce blind drift (helper syncs, audit doesn't catch; or audit catches, helper can't fix).
+
+Scope: extend the **agents/** class first (where the OBS-068 burn happened). Probe the other three classes (libs/, web/, policy/) for whether they actually contain `.md` siblings that warrant the same extension; document any class that genuinely has no `.md` content as fenced.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_self_vendor_agents` in `lib/upgrade.sh` extends its `find` filter to include `*.md` (sibling to existing `*.sh` and `*.py`). Recursive coverage of `agents/**/*.md` (AGENT.md files at any depth).
+- [x] `check_self_vendor_drift` in `agents/audit/audit.sh` extends its libs-class `find` filter to include `*.md` for the `.agentic-framework/agents/` subtree (parity with the helper — same set, same scan boundary). The other three libs-class subtrees (bin/, lib/, web/) MAY extend at the audit level too if a probe shows they contain tracked `.md` siblings — fence each one in a comment if not.
+- [x] Probe and document: investigate whether `lib/`, `web/`, `policy/` contain `.md` siblings that need vendoring; record findings in the task body (one-line per class: extended / no-md-content / explicitly out-of-scope).
+- [x] New bats test `tests/unit/test_self_vendor_agents_md_filter.bats` simulating an `agents/<agent>/AGENT.md` drift scenario → assert `bin/fw vendor self --dry-run` reports the .md file in its "would sync" output, AND `fw vendor self` (real-run) syncs it. PASS.
+- [x] `bin/fw audit --section structure` reports `[PASS] Self-vendor drift: vendored .agentic-framework/ in sync with source` (i.e., no NEW false-positive drift introduced by extending the audit filter without backfilling vendored .md files).
+- [x] Reviewer `bin/fw reviewer T-2304` Overall: PASS.
+
+## Probe findings (audit/.md coverage across vendored classes)
+
+Counts captured 2026-06-10 via `find <subtree> -name "*.md" -type f | wc -l`:
+
+| Subtree | Source `.md` count | Vendored `.md` count | T-2304 verdict |
+|---------|--------------------|-----------------------|-----------------|
+| `agents/` | 20 | 20 (in sync) | **EXTENDED** — filter now catches `.md` drift. T-2304 ships this leg. |
+| `lib/` | 33 | 33 (in sync) | **AUDIT EXTENDED, helper NOT** — `_self_vendor_libs` (lib/upgrade.sh:141) only globs `lib/*.sh`; .md siblings are coincidentally in sync today (no recent edits) but will drift silently when next edited. Audit catches via the extended filter, but `fw vendor self` cannot fix the libs/.md class — operator must use `fw vendor` full mode. Follow-on candidate: extend `_self_vendor_libs` to include `lib/*.md`. |
+| `web/` | 0 | 0 | **NO-OP** — no `.md` content in `web/`. Fenced. |
+| `bin/` | 0 | 0 | **NO-OP** — no `.md` content in `bin/`. Fenced. |
+| `policy/` | 9 | 1 | **OUT-OF-SCOPE for T-2304 (different class)** — `_self_vendor_policy` uses an explicit named-file list (not a `find` filter). 8 `.md` files unvendored: `policy/prompts/README.md`, `policy/prompts/bvp-driver-session.md`, `policy/prompts/artefact-template.md`, `policy/prompts/bvp-references/{5 files}`. These are the T-2245/T-2246 BVP prompt bundle. Follow-on task needed to add explicit entries OR convert helper to a `find` filter. |
+
+**Follow-on candidates surfaced (file as separate tasks per "one bug = one task"):**
+1. `_self_vendor_libs` extend filter to `lib/*.md` (sibling of T-2304's agents/ leg).
+2. `_self_vendor_policy` add the 8 BVP prompt-bundle `.md` files OR convert to `find` filter.
+
+These are surfaced for operator triage, not actioned in this task.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +132,14 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n lib/upgrade.sh
+bash -n agents/audit/audit.sh
+FRAMEWORK_ROOT="$(pwd)" bats tests/unit/test_self_vendor_agents_md_filter.bats
+out=$(bin/fw audit --section structure 2>&1); echo "$out" | grep -qE 'PASS.*Self-vendor drift.*in sync'
+out=$(grep -E 'name "\*\.md"' lib/upgrade.sh); echo "$out" | grep -q 'agents'
+out=$(grep -E 'name "\*\.md"' agents/audit/audit.sh); echo "$out" | grep -qE 'fw|audit'
+out=$(bin/fw reviewer T-2304 --no-write 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$out" | grep -qE "Overall:.*FAIL"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -223,10 +235,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-05-30T20:16:09Z — task-created [task-create-agent]
+### 2026-06-10T09:19:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2121-t-2091-rca-prevention-follow-up-structur.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2304-obs-068-extend-selfvendoragentslibs-filt.md
 - **Context:** Initial task creation
-
-### 2026-06-10T09:17:42Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

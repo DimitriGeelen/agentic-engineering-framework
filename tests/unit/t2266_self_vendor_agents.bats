@@ -33,11 +33,16 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
-# Build a synthetic framework tree with two subdirs holding *.sh and *.py:
+# Build a synthetic framework tree with subdirs holding *.sh, *.py, and *.md:
 #   agents/foo/same.sh   == .agentic-framework/agents/foo/same.sh   (skip)
 #   agents/foo/changed.sh != .agentic-framework/agents/foo/changed.sh (sync)
 #   agents/bar/new.py     missing in vendored                         (sync)
-#   agents/extra/ignored.md (filter excludes — never synced)
+#   agents/extra/ignored.txt (filter excludes — never synced; .txt is out of scope)
+#
+# T-2304 (OBS-068): filter extended to include *.md. The original `ignored.md`
+# fixture was flipped to `ignored.txt` to keep the negative-case (filter-excludes)
+# distinct from the new positive-case (.md siblings sync). Sibling test in
+# tests/unit/test_self_vendor_agents_md_filter.bats pins the .md-IS-in-scope leg.
 make_synthetic_fw_with_agents_diff() {
     local syn_fw="$TEST_TEMP_DIR/syn-fw-agents"
     mkdir -p "$syn_fw/agents/foo" "$syn_fw/agents/bar" "$syn_fw/agents/extra"
@@ -50,8 +55,8 @@ make_synthetic_fw_with_agents_diff() {
     echo "echo old" > "$syn_fw/.agentic-framework/agents/foo/changed.sh"
     # new — missing in vendored, should be synced (recursive subdir creation)
     echo "print('new')" > "$syn_fw/agents/bar/new.py"
-    # excluded — filter is *.sh + *.py only
-    echo "# markdown" > "$syn_fw/agents/extra/ignored.md"
+    # excluded — filter is *.sh + *.py + *.md (T-2304); .txt is genuinely out of scope
+    echo "plain text" > "$syn_fw/agents/extra/ignored.txt"
     echo "$syn_fw"
 }
 
@@ -107,15 +112,15 @@ YAML
     FRAMEWORK_ROOT="$saved"
 
     [ "$status" -eq 0 ]
-    # synced 2 files (foo/changed.sh + bar/new.py); foo/same.sh skipped, extra/ignored.md filtered
+    # synced 2 files (foo/changed.sh + bar/new.py); foo/same.sh skipped, extra/ignored.txt filtered (T-2304: .txt out of scope; .md IS in scope now)
     [[ "$output" == *"synced 2 agents/ file(s)"* ]]
     # changed.sh now matches the source
     diff -q "$syn_fw/agents/foo/changed.sh" "$syn_fw/.agentic-framework/agents/foo/changed.sh"
     # new.py was created in the vendored copy (subdir auto-mkdir)
     [ -f "$syn_fw/.agentic-framework/agents/bar/new.py" ]
     diff -q "$syn_fw/agents/bar/new.py" "$syn_fw/.agentic-framework/agents/bar/new.py"
-    # ignored.md NOT mirrored (filter excludes)
-    [ ! -f "$syn_fw/.agentic-framework/agents/extra/ignored.md" ]
+    # ignored.txt NOT mirrored (filter excludes — .txt is out of scope post-T-2304)
+    [ ! -f "$syn_fw/.agentic-framework/agents/extra/ignored.txt" ]
 }
 
 @test "t2266 t4: helper dry-run reports 'would sync N agents/ file(s)' without copying" {

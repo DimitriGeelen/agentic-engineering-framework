@@ -352,8 +352,11 @@ _self_vendor_shim() {
 # mirrors the directory tree under .agentic-framework/agents/, creating missing
 # subdirs at real-run only.
 #
-# Filter: `*.sh + *.py` — matches audit.sh:1534's exact set so coverage parity
-# is mechanical.
+# Filter: `*.sh + *.py + *.md` — matches audit.sh:check_self_vendor_drift's
+# exact set so coverage parity is mechanical. T-2304 (OBS-068) added `.md`
+# because AGENT.md files (intelligence siblings of agents/*/AGENT.sh) drift
+# silently between source agents/ and vendored .agentic-framework/agents/.
+# Origin: T-2301 hit this on the resume agent.
 #
 # Inputs:
 #   $1 — dry_run ("true" / "false"). When "true", computes what WOULD sync
@@ -384,7 +387,7 @@ _self_vendor_agents() {
             fi
             _sva_updated=$((_sva_updated + 1))
         fi
-    done < <(find "$FRAMEWORK_ROOT/agents" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null)
+    done < <(find "$FRAMEWORK_ROOT/agents" -type f \( -name "*.sh" -o -name "*.py" -o -name "*.md" \) 2>/dev/null)
     if [ "$_sva_updated" -gt 0 ]; then
         if [ "$dry_run" = true ]; then
             echo -e "  ${GREEN}Self-vendor:${NC} would sync $_sva_updated agents/ file(s) to .agentic-framework/agents/"
