@@ -147,24 +147,35 @@ _self_vendor_libs() {
         return 0
     fi
     local _sv_updated=0
-    local _sv_src _sv_name _sv_dst
-    for _sv_src in "$FRAMEWORK_ROOT/lib/"*.sh; do
+    local _sv_src _sv_rel _sv_dst _sv_dst_dir
+    # T-2307 (T-2304 follow-on): recursive + `*.sh + *.md` filter — parity with
+    # `_self_vendor_agents` (T-2266+T-2304). Replaces the prior non-recursive
+    # `lib/*.sh` glob which silently skipped 33 tracked `.md` siblings under
+    # lib/templates/ and lib/templates/skills/. Audit's libs-class drift scanner
+    # (agents/audit/audit.sh:1644) scans the same `*.sh + *.md` set, so coverage
+    # parity is mechanical. Recursive: lib/ has subdirectories (templates/,
+    # templates/skills/, ts/, etc.); helper mirrors the tree under
+    # .agentic-framework/lib/, creating missing subdirs at real-run only.
+    while IFS= read -r _sv_src; do
         [ -f "$_sv_src" ] || continue
-        _sv_name=$(basename "$_sv_src")
-        _sv_dst="$_self_vendor/lib/$_sv_name"
+        _sv_rel="${_sv_src#$FRAMEWORK_ROOT/lib/}"
+        _sv_dst="$_self_vendor/lib/$_sv_rel"
         if [ ! -f "$_sv_dst" ] || ! diff -q "$_sv_src" "$_sv_dst" > /dev/null 2>&1; then
             if [ "$dry_run" != true ]; then
+                _sv_dst_dir=$(dirname "$_sv_dst")
+                [ -d "$_sv_dst_dir" ] || mkdir -p "$_sv_dst_dir"
                 cp "$_sv_src" "$_sv_dst"
                 [ -x "$_sv_src" ] && chmod +x "$_sv_dst"
             fi
             _sv_updated=$((_sv_updated + 1))
         fi
-    done
+    done < <(find "$FRAMEWORK_ROOT/lib" -type f \( -name "*.sh" -o -name "*.md" \) 2>/dev/null)
     if [ "$_sv_updated" -gt 0 ]; then
         # T-2239: dry-run reports what WOULD happen; real-run reports what DID.
         # Same prefix, distinct verb — preserves the count semantic for both modes
         # and prevents the message from lying about state when the cp guard above
-        # is honoured. Pre-push wiring (the F2 N×M follow-on) depends on this split.
+        # is honoured. T-2240 pre-push gate's regex (`would sync`) catches this
+        # class along with all six other _self_vendor_* helpers via one match.
         if [ "$dry_run" = true ]; then
             echo -e "  ${GREEN}Self-vendor:${NC} would sync $_sv_updated file(s) to .agentic-framework/lib/"
         else

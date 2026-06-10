@@ -1633,14 +1633,14 @@ check_self_vendor_drift() {
                 _sv_libs_list="$_sv_libs_list $_rel"
             fi
         fi
-    # T-2304 (OBS-068): `*.md` added for parity with _self_vendor_agents in
-    # lib/upgrade.sh — AGENT.md intelligence files drift silently between source
-    # agents/ and vendored .agentic-framework/agents/. Audit scans all four
-    # subtrees (bin/lib/agents/web) with the same filter; bin/web have no .md
-    # content (no-op there); lib/ has tracked .md siblings (33 currently in
-    # sync) but `_self_vendor_libs` doesn't sync .md — surfacing lib/.md drift
-    # in audit is the correct cross-leg signal (caught here, fix via `fw vendor`
-    # full mode until lib/upgrade.sh extends _self_vendor_libs in a follow-on).
+    # T-2304 (OBS-068) + T-2307 (follow-on): `*.md` is in scope for parity with
+    # `_self_vendor_agents` (T-2266+T-2304) and `_self_vendor_libs` (T-2307).
+    # AGENT.md intelligence files + lib/templates/*.md siblings drift silently
+    # between source and vendored copies. Audit scans bin/lib/agents/web with
+    # the same filter; bin has no tracked .md content (no-op there); lib/agents
+    # both have tracked .md siblings and both helpers now sync them recursively
+    # via `bin/fw vendor self`. Net: audit FAIL → helper SYNC closure, no
+    # `fw vendor` full-mode fallback needed.
     done < <(find "$FRAMEWORK_ROOT/.agentic-framework/bin" "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "*.md" \) 2>/dev/null)
 
     # templates class: .agentic-framework/.tasks/templates/*.md vs source
