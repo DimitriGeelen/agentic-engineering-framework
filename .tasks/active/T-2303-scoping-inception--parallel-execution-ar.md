@@ -11,7 +11,7 @@ horizon: now
 tags: []
 components: []
 related_tasks: [T-1641, T-1643, T-2302]
-arc_id: orchestrator-rethink
+arc_id: parallel-execution-aef
 created: 2026-06-10T07:57:45Z
 last_update: 2026-06-10T08:01:47Z
 date_finished:
@@ -66,7 +66,7 @@ Key assumptions to validate during exploration. Register each with `fw assumptio
 
 - A1: The two ADRs (AEF + substrate) are stable enough that scoping them is well-defined work — i.e. we are not racing a design that is still flowing.
 - A2: The TermLink-side has an authoritative party (an agent, an operator role) we can engage about the §8 substrate-contracts question via a known mechanism (pickup, `fw pending`, `termlink remote inject`, or a session attach).
-- A3: arc-003 (orchestrator-rethink) is the right arc home for this work; an alternative is a sibling arc.
+- A3: ~~arc-003 (orchestrator-rethink) is the right arc home for this work; an alternative is a sibling arc.~~ **DISPOSED 2026-06-10:** sibling arc `parallel-execution-aef` (arc-011) created; T-2303 moved. arc-003 closure remains operator-only (Sovereign-gated). See IW-2 resolution.
 - A4: The recommendation "before every file-write tool call" yield-point granularity (AEF §6 first open question) is the leading candidate but not yet pinned; downstream §5 inception must resolve it.
 - A5: The operator's "significant cost" authorisation extends to multiple downstream inceptions and a multi-month build, not just to this scoping inception.
 
@@ -80,14 +80,14 @@ These are the load-bearing scoping questions. Each maps to an exploration spike.
   rationale: To be resolved by Spike 1 (goals/headline-mechanic dialogue). Candidate framing: *"two agents on disjoint-write-set tasks complete concurrently, integrate via the hub, with zero governance-plane corruption and zero un-decomposed coordination overhead, observable from wire evidence X."* Without this, every downstream inception has fuzzy success criteria.
 
 - **IW-2: Single arc (extend arc-003 orchestrator-rethink) or multi-arc (sibling AEF + TermLink-side arc + possibly more)?**
-  confidence: 0
-  disposition: deferred
-  rationale: To be resolved by Spike 2 (arc-shape). Substrate ADR §9 makes the cross-repo split first-class — arc placement must reflect that. Tradeoff: arc-003 is already in-progress (3 active constituents) and aligned with this trajectory; opening a new arc fragments closure evidence. Default-to-OPEN per §ACD/G-062 applies to whichever arcs host this work.
+  confidence: 2
+  disposition: answered (proposed — operator confirms via final inception decision)
+  rationale: **(a) sibling arc** — `parallel-execution-aef` (arc-011) created 2026-06-10 with T-2303 as anchor, headline mechanic *"two agents on disjoint-write-set tasks run concurrently … two dispatch IDs in flight at once in dispatches.jsonl … no .tasks/ or .context/audits/ merge conflicts"* (wire-evidence-X to be sharpened by Spike 1). Reasoning: arc-003 orchestrator-rethink's HM ("orchestrator picks model based on task_type + historical success rates → observable on /orchestrator") is functionally complete on its existing demo + W-wirings — bundling parallel-execution into it risks the umbrella-arc anti-pattern (arc never closes, §ACD ledger noise). Parallel-execution is a distinct trajectory (multi-agent concurrency over disjoint write-sets). TermLink-side gets its own arc *in their repo*; this AEF-side arc-011 covers consumer-side work only. **Operator action pending:** confirm at inception decision; close arc-003 separately via Watchtower (Sovereign-gated). Spike 1 may sharpen the HM wire-evidence; Spike 4 may add sibling arcs if downstream inception cluster needs them.
 
 - **IW-3: When and how does AEF first engage TermLink about the §8 substrate-contracts question?**
-  confidence: 0
+  confidence: 1
   disposition: deferred
-  rationale: To be resolved by Spike 3 (TermLink coordination). Substrate ADR §9 says producer (TermLink) ≠ judge; AEF signs off consumer-validation. Open: timing (before/parallel/after AEF-side downstream inceptions), first-contact mechanism (`fw pending register` / TermLink pickup / `termlink remote inject` to their session / out-of-band), and contract artifact shape (extract from substrate ADR vs. dedicated contract doc). The load-bearing scoping question.
+  rationale: **Partial progress 2026-06-10:** first-contact proposal drafted at `docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md` mirroring the T-1804 pattern (U-007 in `fw pending list`). Three questions identified: ADR ratification, §6 primitive priority+ETA, ongoing-coordination mechanism. Proposed send via `termlink remote inject termlink-agent --enter '...'` — exact command embedded in proposal. **NOT sent** — operator authorisation required for cross-repo first-contact (engages another project's agent; "executing actions with care" per CLAUDE.md). Timing decision (before/parallel/after downstream inceptions) remains open; recommended *before* (no AEF-side downstream inception fires until reply received or 7-day timeout). Spike 3 closes when reply received OR operator decides to proceed without confirmation.
 
 - **IW-4: What is the full downstream inception cluster, in what order, with what dependencies?**
   confidence: 0

@@ -1,0 +1,51 @@
+id: arc-011
+slug: parallel-execution-aef
+name: "Parallel execution \u2014 AEF orchestration layer"
+description: "Multi-agent concurrent execution over disjoint write-sets, coordinated through the\
+  \ TermLink substrate. Companion ADR: docs/architecture/parallel-execution-aef.md\
+  \ (this repo authoritative). Substrate side: docs/architecture/parallel-execution-substrate.md\
+  \ (TermLink repo authoritative). Scoping inception: T-2303."
+status: in-progress
+anchor_task: T-2303
+headline_mechanic: "two agents on disjoint-write-set tasks run concurrently against shared substrate,\
+  \ integrate results through the hub's serialized integration queue, and the operator\
+  \ observes both wire-evidence of parallelism (two dispatch IDs in flight at once\
+  \ in dispatches.jsonl) and the absence of governance-plane corruption (no .tasks/\
+  \ or .context/audits/ merge conflicts) \u2014 wire-evidence-X to be sharpened by\
+  \ T-2303 Spike 1"
+demo_evidence: null
+created: 2026-06-10T08:35:44Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
+grill_me:
+  entry: "/grill-with-docs"
+  scope: |
+    arc-011 parallel-execution-aef. AEF consumer side of multi-agent concurrent execution.
+    Anchor T-2303 (scoping inception, started-work, owner=human). TermLink-side substrate
+    work lives in a sibling arc in the TermLink repo (not yet confirmed to exist; IW-3
+    Spike 3 of T-2303 establishes first contact and validates A2). Grill T-2303's IW-1..IW-5
+    before any downstream inception fires.
+  domain_anchors:
+    - docs/architecture/parallel-execution-aef.md
+    - docs/architecture/parallel-execution-substrate.md
+    - .tasks/active/T-2303-scoping-inception--parallel-execution-ar.md
+    - docs/reports/T-2303-scoping-parallel-execution-aef.md
+  primary_targets:
+    - "Is the headline_mechanic above a CONSUMER-SIDE mechanic (what AEF agents do) or
+      does it cross the seam into substrate territory (what TermLink delivers)? §ACD/G-062
+      demands user-observable, not substrate-only."
+    - "Wire-evidence-X needs sharpening (Spike 1). 'two dispatch IDs in flight at once'
+      and 'absence of .tasks/ merge conflicts' — is this actually falsifiable, or does
+      it need a concrete test scenario with named tasks and a captured dispatches.jsonl
+      excerpt?"
+    - "If TermLink-side substrate work blocks indefinitely (A2 fails), can arc-011 still
+      progress AEF-side preparation (orchestrator-graph spike, harness yield-point spike)
+      without committing to a contract that may not land?"
+    - "Does §9 collaboration seam producer ≠ judge mean arc-011 closure literally cannot
+      land until TermLink-side substrate primitives are validated by AEF — i.e. arc-011
+      is bound to a cross-repo arc whose ETA is partly outside our control?"
