@@ -596,3 +596,10 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-070
+  text: "T-2306 execution gap: T-2305 §8 commands include 'fw bvp recompute' which is deferred per T-2245 IW-3, and lack 'cd' prefix per T-609/T-1257 copy-paste rule. Operator running §8 verbatim will hit unknown-verb after 3 driver adds. Recommend: either implement 'fw bvp recompute' before T-2306, or amend §8 with manual reset instruction + cd prefix. Verified via 'fw bvp --help' 2026-06-10."
+  captured: 2026-06-10T21:40:19Z
+  context_task: T-2306
+  tags: []
+  status: pending
+  promoted_to: null
