@@ -289,5 +289,11 @@ treats them as settled.
 (TermLink-authoritative reference copy in this repo; grill the substrate side there).
 
 **Scoping inception that consumes this ADR:**
-[`T-2303`](../../.tasks/active/T-2303-scoping-inception--parallel-execution-ar.md)
-(the IW-1..IW-5 spikes operate over the decisions in §2-§9 here).
+[`T-2303`](../../.tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md)
+(the IW-1..IW-5 spikes operated over the decisions in §2-§9 here; operator GO'd
+2026-06-10 commit `989fc1e6e`, the cluster of downstream inceptions began with
+[`T-2323`](../../.tasks/active/T-2323-aef-ic-1-yield-point-granularity-substra.md)
+(AEF-IC-1, yield-point granularity, §6.1) and
+[`T-2324`](../../.tasks/active/T-2324-aef-ic-2-disjoint-write-set-policy.md)
+(AEF-IC-2, disjoint write-set policy, §6.2 + §3); both currently operator-parked
+captured/later awaiting spike dialogue per their `## Recommendation` blocks).

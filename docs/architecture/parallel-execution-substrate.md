@@ -396,5 +396,10 @@ flow upstream into TermLink; this file is a reference copy.
 authoritative; grill the AEF consumer side there).
 
 **Scoping inception that consumes this ADR (consumer side):**
-[`T-2303`](../../.tasks/active/T-2303-scoping-inception--parallel-execution-ar.md)
-(IW-3 in particular: TermLink coordination timing + mechanism + contract artefact).
+[`T-2303`](../../.tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md)
+(IW-3 in particular: TermLink coordination timing + mechanism + contract artefact;
+operator GO'd 2026-06-10 commit `989fc1e6e`. IW-3 resolved as "documented defer
+with named trigger" — substrate engagement deferred to first downstream design
+pressure that genuinely needs TermLink hub-state RPC; AEF-side downstream cluster
+advances independently via [`T-2323`](../../.tasks/active/T-2323-aef-ic-1-yield-point-granularity-substra.md)
++ [`T-2324`](../../.tasks/active/T-2324-aef-ic-2-disjoint-write-set-policy.md)).
