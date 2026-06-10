@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2322: Fix budget-gate.sh compact_boundary reset (T-1088 sidecar-degradation defense-in-depth)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T19:57:07Z
+# ============================================================================
+
+task_id: T-2322
+task_name: "Fix budget-gate.sh compact_boundary reset (T-1088 sidecar-degradation defense-in-depth)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T19:50:28Z
+completed: 2026-06-10T19:55:02Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/context/budget-gate.sh` slow-path Python loop (line ~207) has a `compact_boundary` detector that resets `t=0` and `continue`s before token-counting logic'
+  - 'Inline test: synthetic JSONL with a `compact_boundary` event followed by a post-compact `usage:{input_tokens:5000}` entry returns `level=ok` (verified live 2026-06-10: tokens=6000 level=ok)'
+  - 'Patch does NOT remove T-1088 sidecar filter (defense-in-depth: both run inside the same parser loop — verified by `grep -n "session_start_ts\|compact_boundary" agents/context/budget-gate.sh`)'
+  - '`bin/fw doctor` PASSES (no regression — 24 WARN no FAIL, same baseline as pre-edit)'
+  - '`bin/fw reviewer T-2322` returns PASS|CONCERN with no FAIL'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, context, budget-gate, inbound, proxmox-ring20]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2322-fix-budget-gatesh-compactboundary-reset-.md
+generated_by: context-agent-hybrid
