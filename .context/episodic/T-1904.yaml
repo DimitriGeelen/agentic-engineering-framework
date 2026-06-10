@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1904: Watchtower /arcs kanban — 4 columns (draft / in-progress / closed / abandoned) replacing T-1853 tabs, matching /tasks visual pattern
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:28Z
+# ============================================================================
+
+task_id: T-1904
+task_name: "Watchtower /arcs kanban — 4 columns (draft / in-progress / closed / abandoned) replacing T-1853 tabs, matching /tasks visual pattern"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T19:12:46Z
+completed: 2026-05-18T19:25:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-18T21:20:00+02:00
+last_commit: 2026-05-18T21:20:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  /arcs 4-column kanban (replaces T-1853 tabs) + Arcs nav under Work. register fabric card for tests/playwright/test_arcs_kanban.py
+
+# Key outcomes
+outcomes:
+  - '`web/templates/arcs_index.html` renders a 4-column kanban (draft / in-progress / closed / abandoned), each column showing its arc cards (id, name, status badge, anchor task, task-count, focus dot, stale flag).'
+  - 'Kanban CSS classes (.arc-kanban-board / .kanban-column / .arc-card / .arc-card-id / .arc-card-meta) mirror the styles from `web/templates/tasks.html` lines 106-198 — copied with comment pointing at the source. Visual parity is the gate.'
+  - 'Responsive grid collapses to 2 columns ≤992px and 1 column ≤576px (same breakpoints as /tasks).'
+  - '`web/blueprints/arcs.py:arcs_index()` defaults to kanban mode — passes all arcs grouped by status (draft/in-progress/closed/abandoned) to the template. The `?status=…` legacy query-param still works for backward compat (returns flat list with "back to kanban" link).'
+  - 'T-1853''s tab partial (`.arc-tabs`) is removed from the index page; the kanban replaces it. Per-state count is shown in column header.'
+  - '`/arcs` link in Watchtower nav is moved from the "Architecture" section to the "Work" section in `web/shared.py:NAV_GROUPS` (line 104 now lists Arcs under Work; line 116 Architecture group no longer contains it).'
+  - '`curl -sf $(bin/fw watchtower url)/arcs` returns 200 and the HTML contains `class="arc-kanban-board"` AND 4× `class="kanban-column"` (verified in `## Verification`).'
+  - '`tests/playwright/test_arcs_kanban.py` covers: (a) page loads + 4 columns render, (b) columns in lifecycle order, (c) header + count per column, (d) in-progress non-empty + card links work, (e) card click navigates to /arcs/<id>, (f) Arcs nav under Work, (g) legacy ?status= flat-list still works. 7 tests, all PASS (19.33s).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-playwright-test_arcs_kanban.yaml'
+  - '.tasks/active/T-1904-watchtower-arcs-kanban--4-columns-draft-.md'
+  - 'tests/playwright/test_arcs_kanban.py'
+  - 'tests/playwright/test_arcs_lifecycle_tabs.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/shared.py'
+  - 'web/templates/arcs_index.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T21:20:00"
+    action: "T-1904: /arcs 4-column kanban (replaces T-1853 tabs) + Arcs nav under Work"
+  - time: "2026-05-18T21:20:10"
+    action: "T-1904: register fabric card for tests/playwright/test_arcs_kanban.py"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 2
+  files_changed: 7
+  lines_added: 495
+  lines_removed: 117
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1904-watchtower-arcs-kanban--4-columns-draft-.md
+generated_by: context-agent-hybrid

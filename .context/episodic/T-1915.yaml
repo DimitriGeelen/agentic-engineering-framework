@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1915: value-prioritisation: Business Value Points — directive-weighted prioritisation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:30Z
+# ============================================================================
+
+task_id: T-1915
+task_name: "value-prioritisation: Business Value Points — directive-weighted prioritisation"
+workflow_type: inception
+enrichment_status: git-derived  # Auto-filled from git; AC/decisions not in task file
+
+# Timeline
+created: 2026-05-18T22:55:05Z
+completed: '2026-05-20T12:30:23Z'
+duration_days: -20590
+updates_count: 1
+first_commit: 2026-05-19T00:58:38+02:00
+last_commit: 2026-05-21T09:21:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ingest HANDOFF-value-prioritisation-2026-05-15 + scaffold arc-006. capture arc-006 (BVP) demo evidence bundle for arc closure. track demo-evidence PNG screenshots — allow docs/reports/T-*-demo-evidence/*.png. demo bundle — add policy-file evidence for Leg 6 (auto-promote OFF, D1-D4 weights)
+
+# Key outcomes
+outcomes:
+  - 'Task completed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/value-prioritisation.yaml'
+  - '.context/handoffs/HANDOFF-value-prioritisation-2026-05-15.md'
+  - 'docs/reports/T-1915-demo-evidence/01-fw-bvp.txt'
+  - 'docs/reports/T-1915-demo-evidence/02-fw-bvp-arcs.txt'
+  - 'docs/reports/T-1915-demo-evidence/03-bvp-scatter.png'
+  - 'docs/reports/T-1915-demo-evidence/04-arc-006-detail.png'
+  - 'docs/reports/T-1915-demo-evidence/05-arc-yaml-head.txt'
+  - 'docs/reports/T-1915-demo-evidence/06-arc-show.txt'
+  - 'docs/reports/T-1915-demo-evidence/07-value-drivers-policy.txt'
+  - 'docs/reports/T-1915-demo-evidence/README.md'
+  - '.gitignore'
+  - '.tasks/active/T-1915-value-prioritisation-business-value-poin.md'
+  - '.tasks/completed/T-1974-playwright-testbvppageshowsdriverweights.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T00:58:38"
+    action: "T-1915: ingest HANDOFF-value-prioritisation-2026-05-15 + scaffold arc-006"
+  - time: "2026-05-21T08:49:00"
+    action: "T-1915: capture arc-006 (BVP) demo evidence bundle for arc closure"
+  - time: "2026-05-21T08:49:41"
+    action: "T-1915: track demo-evidence PNG screenshots — allow docs/reports/T-*-demo-evidence/*.png"
+  - time: "2026-05-21T09:21:32"
+    action: "T-1915: demo bundle — add policy-file evidence for Leg 6 (auto-promote OFF, D1-D4 weights)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [inception, value-drivers, bvp, prioritisation, handoff-ingested]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 5
+  files_changed: 16
+  lines_added: 1324
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1915-value-prioritisation-business-value-poin.md
+generated_by: context-agent-hybrid

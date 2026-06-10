@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1921: BVP T-NEW-6: scoring rubric document (policy/bvp-scoring-rubric.md) — per-driver
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:31Z
+# ============================================================================
+
+task_id: T-1921
+task_name: "BVP T-NEW-6: scoring rubric document (policy/bvp-scoring-rubric.md) — per-driver"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-05-19T07:00:00Z
+completed: '2026-05-19T17:55:47Z'
+duration_days: -20591
+updates_count: 1
+first_commit: 2026-05-19T09:40:54+02:00
+last_commit: 2026-05-19T09:40:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP T-NEW-6 — policy/bvp-scoring-rubric.md (load-bearing [REVIEW])
+
+# Key outcomes
+outcomes:
+  - '`policy/bvp-scoring-rubric.md` exists at repo root (`policy/` directory, not repo root — convention with T-1917 + T-1920 puts BVP policy artefacts under `policy/`)'
+  - 'Document has sections for each protected driver (D1 Antifragility, D2 Reliability, D3 Usability, D4 Portability) — each with a "what does score N mean?" rubric for N in 0..5'
+  - 'Document has a "free drivers — general criteria" section for drivers added via `fw bvp driver --add`'
+  - 'At least 3 worked examples per protected driver, drawn from real completed tasks in `.tasks/completed/` — citing task IDs (T-1730, T-1671, T-1550 / T-1771, T-1550, T-1850 / T-609, T-1257, T-679 / T-1633, T-1542, T-1144) and naming the structural effect'
+  - 'Document includes a determinism statement: same task body scored twice in separate sessions at low temperature must produce scores within ±1 on every driver'
+  - '[REVIEW] Worked examples reflect AEF''s actual values, not hallucinated framings (R2 mitigation, load-bearing — do NOT downgrade to [REVIEWER])'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'policy/bvp-scoring-rubric.md'
+  - '.tasks/active/T-1921-bvp-scoring-rubric-policybvp-scoring-rubri.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T09:40:54"
+    action: "T-1921: BVP T-NEW-6 — policy/bvp-scoring-rubric.md (load-bearing [REVIEW])"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 0 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, build, slice-6, rubric, docs]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 0
+  commits: 1
+  files_changed: 2
+  lines_added: 256
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1921-bvp-scoring-rubric-policybvp-scoring-rubri.md
+generated_by: context-agent-hybrid

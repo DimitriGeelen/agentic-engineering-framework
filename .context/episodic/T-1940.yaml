@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1940: BVP T-1939 sibling — Playwright pin for /arcs/<slug> bvp_mode provenance label
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:32Z
+# ============================================================================
+
+task_id: T-1940
+task_name: "BVP T-1939 sibling — Playwright pin for /arcs/<slug> bvp_mode provenance label"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T21:12:50Z
+completed: 2026-05-20T18:25:47Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-19T23:16:31+02:00
+last_commit: 2026-05-19T23:16:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Playwright pin for /arcs/<slug> bvp_mode provenance label
+
+# Key outcomes
+outcomes:
+  - 'Playwright test file extended/added that asserts `<small>Source: ...</small>` is visible on a `derived-proposed` arc'
+  - 'Same test asserts the `derived-proposed` explanation substring renders ("rolled up from constituent task scores; at least one input is estimator-proposed")'
+  - 'Test pinned via DOM-content assertion (not bare element-presence grep, per T-1575)'
+  - 'Test passes locally against running Watchtower on :3000 (value-prioritisation arc currently `derived-proposed`)'
+  - 'No regression in existing `test_arc_detail_bvp.py` tests'
+  - 'Task post-grill governance closure (L-349): arc_id, tags, related_tasks set; sibling/build pre-files surfaced if needed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-19 — extend existing file vs new file'
+    chose: 'extend `tests/playwright/test_arc_detail_bvp.py` with 3 new tests'
+    rationale: 'T-1930''s existing test file already pins the same page''s BVP'
+    alternatives_rejected: ['create `test_arc_detail_bvp_mode.py` — would split coverage']
+  - decision: '2026-05-19 — DOM-content text match vs to_have_text'
+    chose: '`.text_content()` substring assertion via `assert "Source:" in ...`'
+    rationale: 'The template renders different explanation strings per mode'
+    alternatives_rejected: ['`expect(elem).to_have_text("exact frozen string")` — too']
+  - decision: '2026-05-19 — three tests, not one composite'
+    chose: 'three separate tests pinning label visibility, explanation'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-1940-bvp-t-1939-sibling--playwright-pin-for-a.md'
+  - 'tests/playwright/test_arc_detail_bvp.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T23:16:31"
+    action: "T-1940: Playwright pin for /arcs/<slug> bvp_mode provenance label"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1272 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, render-surface, test, parity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1272
+  commits: 1
+  files_changed: 2
+  lines_added: 329
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1940-bvp-t-1939-sibling--playwright-pin-for-a.md
+generated_by: context-agent-hybrid

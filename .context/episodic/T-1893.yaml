@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1893: arc-005 closure demo evidence capture (G-062 wire artefact)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:10:38Z
+# ============================================================================
+
+task_id: T-1893
+task_name: "arc-005 closure demo evidence capture (G-062 wire artefact)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T07:14:50Z
+completed: 2026-05-18T07:22:01Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-18T09:19:54+02:00
+last_commit: 2026-05-18T09:22:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-005 closure demo evidence capture (G-062 wire artefact). collapse Prong 2 verification into single-line + absolute path
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/arc-005-headline-mechanic-demo.md` exists and demonstrates all 5 prongs end-to-end with captured shell output'
+  - 'Prong 1 (sequential allocation): existing arc YAMLs in `.context/arcs/` show `arc-001..arc-005` monotonically — wire evidence is the IDs themselves'
+  - 'Prong 2 (Tier-1 hook block): demo includes a hook-stdin replay showing exit 2 + `arc_id does not resolve` message'
+  - 'Prong 3 (audit parity + stale): demo includes excerpt from today''s `.context/audits/2026-05-18.yaml` showing arc-related PASS checks'
+  - 'Prong 4 (abandon): demo cites the bats test pinning the behaviour (agent cannot exercise live under `$CLAUDECODE=1` per T-1671) + `fw arc abandon --help` output showing `--reason` required'
+  - 'Prong 5 (012-ArcSystem.md): `ls -la 012-ArcSystem.md` + `grep -c "012-ArcSystem" FRAMEWORK.md` outputs included'
+  - 'All commands in `## Verification` pass'
+  - '[REVIEWER] Demo file structure is wire-evidence-suitable: 5 `## Prong N` sections, each with at least one fenced code block (≥3 lines) showing executable command + captured output; the headline_mechanic text from the arc YAML is quoted verbatim in the demo''s opening; substrate-only phrasing (`"all tasks completed"`, `"substrate in place"`) is absent. Re-classified from Human [REVIEW] by T-1894 — these structural claims are deterministic and verifiable; only the closure-decision remains Human.'
+  - '**Closure-mechanics conformance (T-1897 split):** [REVIEWER] Once the human runs `fw arc close arc-grooming --demo docs/reports/arc-005-headline-mechanic-demo.md --decision "..."`, the arc YAML transitions to `status: closed` and an audit row is appended to `.context/audits/arc-close.jsonl`. Mechanics are deterministic — Verification grep below pins it on closure. Pre-closure: this AC is satisfied by the existence of the closure verb wiring (`bin/fw arc close --help` returns valid usage) since the actual closure is human-gated under `$CLAUDECODE=1` (T-1671). Verification uses `bin/fw arc` (top-level help) since subcommands don''t honour `--help`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/arc-005-headline-mechanic-demo.md'
+  - '.tasks/active/T-1893-arc-005-closure-demo-evidence-capture-g-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T09:19:54"
+    action: "T-1893: arc-005 closure demo evidence capture (G-062 wire artefact)"
+  - time: "2026-05-18T09:22:00"
+    action: "T-1893: collapse Prong 2 verification into single-line + absolute path"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-closure-prep, demo-evidence, G-062, headline-mechanic]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 2
+  lines_added: 457
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1893-arc-005-closure-demo-evidence-capture-g-.md
+generated_by: context-agent-hybrid

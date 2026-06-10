@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1941: BVP T-1940 sibling — emit bvp_mode in /bvp scatter arc payload + tooltip
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:33Z
+# ============================================================================
+
+task_id: T-1941
+task_name: "BVP T-1940 sibling — emit bvp_mode in /bvp scatter arc payload + tooltip"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T21:17:25Z
+completed: 2026-05-20T18:28:21Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-19T23:23:57+02:00
+last_commit: 2026-05-19T23:40:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  /bvp scatter arc payload emits bvp_mode + tooltip surfaces it. register fabric card for test_bvp_scatter_arc_mode. Playwright pins for /bvp arc payload bvp_mode + tooltip builder. regenerate agentic-audit.crontab — pre-existing T-1935 cron drift
+
+# Key outcomes
+outcomes:
+  - '`_collect_arc_points` returns `bvp_mode` in each arc point dict'
+  - 'arc points always carry one of the 4 mode slugs or empty string (never missing key)'
+  - 'tooltip in `web/templates/bvp.html` surfaces mode for arc dots (visible to user)'
+  - 'unit test pins `bvp_mode` in payload for synthetic direct-confirmed + derived-proposed fixtures'
+  - 'live /bvp page renders without error; arc dot tooltip shows mode'
+  - 'live curl test: payload JSON for arcs contains `"bvp_mode":` key'
+  - 'post-grill governance closure (L-349): arc_id, tags, related_tasks; sibling pre-files if needed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-19 — extend tooltip vs add separate UI element'
+    chose: 'extend the existing scatter tooltip with a `<small>source:</small>` line'
+    rationale: 'Tooltip is the established channel for per-dot metadata'
+    alternatives_rejected: ['add a separate legend or in-page annotation —']
+  - decision: '2026-05-19 — emit mode only for arc dots, not task dots'
+    chose: 'tooltip''s `provenance` substring guards on `d.kind === "arc"`'
+    rationale: 'Tasks have no rollup concept (their scores ARE their scores;'
+    alternatives_rejected: ['uniform mode emission — would force a task-side mode']
+  - decision: '2026-05-19 — `bvp_mode or ""` fallback in payload'
+    chose: 'defensive empty-string fallback even though the `continue`'
+    rationale: 'Defensive — the field MUST always be present (test pins this).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/tests-unit-test_bvp_scatter_arc_mode.yaml'
+  - '.tasks/active/T-1941-bvp-t-1940-sibling--emit-bvpmode-in-bvp-.md'
+  - 'tests/playwright/test_bvp_scatter.py'
+  - 'tests/unit/test_bvp_scatter_arc_mode.py'
+  - 'web/blueprints/bvp.py'
+  - 'web/templates/bvp.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T23:23:57"
+    action: "T-1941: /bvp scatter arc payload emits bvp_mode + tooltip surfaces it"
+  - time: "2026-05-19T23:24:10"
+    action: "T-1941: register fabric card for test_bvp_scatter_arc_mode"
+  - time: "2026-05-19T23:34:57"
+    action: "T-1941: Playwright pins for /bvp arc payload bvp_mode + tooltip builder"
+  - time: "2026-05-19T23:40:40"
+    action: "T-1941: regenerate agentic-audit.crontab — pre-existing T-1935 cron drift"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 1270 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, render-surface, parity, drift]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1270
+  commits: 5
+  files_changed: 12
+  lines_added: 1021
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1941-bvp-t-1940-sibling--emit-bvpmode-in-bvp-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1979: T-1976 round-trip: dedup approve-driver + remove from proposed on approval
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:35Z
+# ============================================================================
+
+task_id: T-1979
+task_name: "T-1976 round-trip: dedup approve-driver + remove from proposed on approval"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-21T13:32:14Z
+completed: 2026-05-21T13:41:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-21T15:39:39+02:00
+last_commit: 2026-05-21T15:39:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  dedup approve-driver + move-semantics on proposed→scoped
+
+# Key outcomes
+outcomes:
+  - '`arc_approve_driver` refuses with exit 1 when the named driver is already in `scoped_drivers:`. Error message names the existing entry''s `approved_at` timestamp and points at `remove-driver` as the recovery path.'
+  - 'On successful approval, any matching entry in `proposed_scoped_drivers:` is removed (case-sensitive name match). Info line emitted: `Removed matching proposal for ''<name>''.`'
+  - 'If no matching proposal existed, no info line is emitted (don''t be noisy).'
+  - 'Bats regression test: dedup refusal (exit 1, error message names timestamp, second approve does not append).'
+  - 'Bats regression test: proposal cleanup on approval (approve a proposed driver → proposed_scoped_drivers loses that entry, scoped_drivers gains it, other proposals retained).'
+  - 'Bats regression test: approval of a driver NOT in proposed list does not error and produces no info line about removal.'
+  - 'One-off cleanup of the duplicate `estimator-fidelity` entry in `.context/arcs/value-prioritisation.yaml` (kept first approval at 12:42:38Z, dropped second at 13:29:20Z, removed matching proposal).'
+  - 'All existing tests still green: `bats tests/unit/arc_remove_driver_verb.bats` → 18/18 pass.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/value-prioritisation.yaml'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-1979-t-1976-round-trip-dedup-approve-driver--.md'
+  - 'tests/unit/arc_remove_driver_verb.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-21T15:39:39"
+    action: "T-1979: dedup approve-driver + move-semantics on proposed→scoped"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, bvp, watchtower, bugfix]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 4
+  lines_added: 348
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1979-t-1976-round-trip-dedup-approve-driver--.md
+generated_by: context-agent-hybrid

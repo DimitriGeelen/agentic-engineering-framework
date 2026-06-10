@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1897: Widen T-1896 detector + re-class 5 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:27Z
+# ============================================================================
+
+task_id: T-1897
+task_name: "Widen T-1896 detector + re-class 5 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T08:51:35Z
+completed: 2026-05-18T10:22:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-05-18T10:52:44+02:00
+last_commit: 2026-05-18T12:56:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file T-1878 C follow-up — widen T-1896 detector + re-class 4 block-message [REVIEW]s. strip duplicate ### Human template block left by initial Write. extend scope to 5 ACs (add T-1893) — reviewer-agent sweep evidence. widen human-ac-mechanical-signal detector + re-class 5 ACs (T-1878 C). finalize work-completed + close 3 straight-conversions. fix T-1893 Verification — fw subcommands don't honour --help
+
+# Key outcomes
+outcomes:
+  - '`_HUMAN_AC_MECHANICAL_RE` in `lib/reviewer/static_scan.py` widened with conformance-check dialect (`names?` / `shows?` / `points? at|to` / `contains? the` / `(override|bypass) (flag|env var|mechanism|syntax)` / `audit log row appended` / `block-message names|shows|contains` / `names? missing`). I/O dialect preserved.'
+  - '**Bonus (Gate 2b):** Added taste-in-AC-line suppression — `[REVIEW]` line itself containing taste markers (e.g. "reads usefully", "feels clean") suppresses the finding even if Expected has mechanical signals. Fixes a T-1896-class FP discovered during widening.'
+  - 'Catalogue entry `policy/anti-patterns.yaml` `examples_positive` updated with 3 conformance-style examples (names X / shows Y / audit row appended); `examples_negative` updated with Gate 2b example ("reads usefully" header wins).'
+  - 'Python unit tests `tests/unit/test_reviewer_human_ac_mechanical_signal.py` extended: 5 new positive cases (names X / shows Y / override flag / audit row appended + Gate 2b taste-in-header). 16/16 PASS.'
+  - 'Bats test `tests/unit/reviewer_human_ac_mechanical_signal.bats` extended: T-9899 synthetic conformance fixture + new positive bats case. 5/5 PASS.'
+  - 'Corpus regression: `bin/fw reviewer audit` ran. New hits surfaced: 7 active (T-1730/T-1731/T-1762/T-1773/T-1774/T-1775/T-1805) + 9 historical completed-tasks. The 4 out-of-scope actives (T-1773/T-1774/T-1775 integration smokes; T-1805 ADR-intent) overridden with rationale; the 9 historicals overridden 365d per D-Immutability. Net unsuppressed: 0.'
+  - 'T-1730 [REVIEW] AC re-classed: empty ### Human (with note); new Agent AC A9 [REVIEWER]; Verification line added. Reviewer T-1730 → `human-ac-mechanical-signal` fires 0×.'
+  - 'T-1731 [REVIEW] AC re-classed: empty ### Human (with note); new Agent AC A9 [REVIEWER]; Verification line added. Reviewer T-1731 → `human-ac-mechanical-signal` fires 0×.'
+  - 'T-1762 [REVIEW] AC re-classed: empty ### Human (with note); new Agent AC [REVIEWER]; Verification line added. Reviewer T-1762 → `human-ac-mechanical-signal` fires 0×.'
+  - 'T-1766 [REVIEW] AC SPLIT: conformance ("names file/template/bypass") → Agent [REVIEWER] AC; residual taste ("a fresh agent can act without re-reading T-1766") stays as `[REVIEW]` (genuine cognitive-load UX). Reviewer T-1766 → `human-ac-mechanical-signal` fires 0×.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix T-1893 Verification — fw subcommands don''t honour --help'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-1730.yaml'
+  - '.context/episodic/T-1731.yaml'
+  - '.context/episodic/T-1762.yaml'
+  - '.context/working/reviewer-overrides.yaml'
+  - 'lib/reviewer/static_scan.py'
+  - 'policy/anti-patterns.yaml'
+  - '.tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md'
+  - '.tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md'
+  - '.tasks/active/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md'
+  - '.tasks/active/T-1766-render-surface-human-ac-gate--block-work.md'
+  - '.tasks/active/T-1893-arc-005-closure-demo-evidence-capture-g-.md'
+  - '.tasks/active/T-1897-widen-t-1896-detector--re-class-4-block-.md'
+  - '.tasks/completed/T-1730-bash-matcher--focus-drift-gate-on-check-.md'
+  - '.tasks/completed/T-1731-human-ac-tick-guard--block-agent-from-ch.md'
+  - '.tasks/completed/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md'
+  - '.tasks/completed/T-1851-deprecate-constituenttasks-field-t-new-4.md'
+  - '.tasks/completed/T-1857-012-arcsystemmd--frameworkmd-updates-t-n.md'
+  - '.tasks/completed/T-1894-re-class-mis-classified-human-acs-on-4-a.md'
+  - '.tasks/completed/T-1895-template--claudemd-reviewer-example-for-.md'
+  - '.tasks/completed/T-1896-reviewer-pattern-human-ac-mechanical-sig.md'
+  - 'tests/unit/reviewer_human_ac_mechanical_signal.bats'
+  - 'tests/unit/test_reviewer_human_ac_mechanical_signal.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T10:52:44"
+    action: "T-1897: file T-1878 C follow-up — widen T-1896 detector + re-class 4 block-message [REVIEW]s"
+  - time: "2026-05-18T10:53:05"
+    action: "T-1897: strip duplicate ### Human template block left by initial Write"
+  - time: "2026-05-18T11:31:52"
+    action: "T-1897: extend scope to 5 ACs (add T-1893) — reviewer-agent sweep evidence"
+  - time: "2026-05-18T12:20:57"
+    action: "T-1897: widen human-ac-mechanical-signal detector + re-class 5 ACs (T-1878 C)"
+  - time: "2026-05-18T12:22:49"
+    action: "T-1897: finalize work-completed + close 3 straight-conversions"
+  - time: "2026-05-18T12:56:20"
+    action: "T-1897: fix T-1893 Verification — fw subcommands don't honour --help"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 90 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [build, ac-routing, governance, reviewer, T-1878-C]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 90
+  commits: 6
+  files_changed: 20
+  lines_added: 1012
+  lines_removed: 134
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1897-widen-t-1896-detector--re-class-4-block-.md
+generated_by: context-agent-hybrid

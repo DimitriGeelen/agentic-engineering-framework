@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1942: fw doctor cron registry→generated drift check (close L-364 cousin that bit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:34Z
+# ============================================================================
+
+task_id: T-1942
+task_name: "fw doctor cron registry→generated drift check (close L-364 cousin that bit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T22:11:54Z
+completed: 2026-05-19T23:11:45Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-05-20T00:27:47+02:00
+last_commit: 2026-05-20T01:20:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw doctor registry→generated cron drift check (close L-364 third leg). T-1942/T-1943: work-completed — archive + episodic generation
+
+# Key outcomes
+outcomes:
+  - '`fw doctor` detects registry→generated drift: when `cron-registry.yaml` declares a'
+  - 'Drift check uses content comparison (not just job count) — catches modified'
+  - 'On clean state (registry matches generated), doctor still emits the existing'
+  - 'New unit test pins both directions: drifted-registry → WARN line present;'
+  - 'Test runs in tmp dir via `FW_CRON_INSTALL_DIR` env-var override (no /etc/cron.d'
+  - 'L-364 strengthened (or new L-XXX added) capturing the three-step sync contract:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-19 — Dry-run inline vs `fw cron check` subcommand'
+    chose: 'Inline dry-run inside doctor (Python heredoc), no new subcommand.'
+    rationale: 'Minimal surface change; doctor already invokes Python for other checks; the'
+    alternatives_rejected: ['`fw cron check` subcommand (would have required new exit-code contract,']
+  - decision: '2026-05-19 — Content comparison vs job-count comparison'
+    chose: 'Full content diff between dry-run output and on-disk source.'
+    rationale: 'Job-count comparison would miss modify-in-place edits (schedule changes,'
+    alternatives_rejected: ['count-only comparison (would have missed the most insidious class).']
+  - decision: '2026-05-19 — Why no Human AC'
+    chose: 'All ACs as Agent (no Human review section).'
+    rationale: 'Pure tooling/CLI change with deterministic shell-command verification. No'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/tests-unit-test_cron_registry_generated_drift.yaml'
+  - '.tasks/active/T-1942-fw-doctor-cron-registrygenerated-drift-c.md'
+  - '.tasks/completed/T-1942-fw-doctor-cron-registrygenerated-drift-c.md'
+  - '.tasks/completed/T-1943-fw-audit-registrygenerated-cron-drift-fa.md'
+  - 'tests/unit/test_cron_registry_generated_drift.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-20T00:27:47"
+    action: "T-1942: fw doctor registry→generated cron drift check (close L-364 third leg)"
+  - time: "2026-05-20T01:20:01"
+    action: "T-1942/T-1943: work-completed — archive + episodic generation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, future-prevention, drift, cron]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 59
+  commits: 2
+  files_changed: 6
+  lines_added: 473
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1942-fw-doctor-cron-registrygenerated-drift-c.md
+generated_by: context-agent-hybrid

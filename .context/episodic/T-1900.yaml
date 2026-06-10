@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1900: update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-387 silent-halt class) when render_surface_files_in piped into head -3 produces output ≥3 lines — script dies at exit 141 with no error printed instead of the actionable gate-failure message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:27Z
+# ============================================================================
+
+task_id: T-1900
+task_name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-387 silent-halt class) when render_surface_files_in piped into head -3 produces output ≥3 lines — script dies at exit 141 with no error printed instead of the actionable gate-failure message"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-18T17:29:32Z
+completed: 2026-05-20T10:41:07Z
+duration_days: 2
+updates_count: 1
+first_commit: 2026-05-18T19:34:26+02:00
+last_commit: 2026-05-18T19:35:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix SIGPIPE silent-halt in render-surface gate error path. register fabric card for new bats test. tick 4/4 Agent ACs + transition to partial-complete (Human [REVIEW] on error-message readability)
+
+# Key outcomes
+outcomes:
+  - '`agents/task-create/update-task.sh:450` no longer pipes `render_surface_files_in` into `head` — uses `awk ''NR<=3''` on the assignment-RHS subshell, or `mapfile -t LINES < <(render_surface_files_in ...); matched=$(printf ''    - %s\n'' "${LINES[@]:0:3}")`, or similar L-387-safe form.'
+  - 'Sweep of `agents/task-create/update-task.sh`: any other `$( ... | head -N ... )` or `$( ... | tail -N ... )` lines where upstream may produce >N lines are flagged in the commit message — fix is in this task ONLY for the render-surface error path (one bug = one task); other instances filed as follow-ups if they are real risks.'
+  - 'bats test: feed `update-task.sh` a synthetic task with two `### Human` headers (template-comment + actual [REVIEW]) and a `components:` list pointing at multiple render-surface paths. Without the fix the script exits 141 with no error output; with the fix the error path runs to completion and exits 1 with the actionable message present in stderr.'
+  - 'Live regression: `bin/fw task update T-1900 --status work-completed` itself reaches a clean partial-complete after the fix (this very task touches `agents/task-create/update-task.sh` which is NOT in the render-surface allowlist — so no [REVIEW] AC needed here; the gate''s _own_ correct behaviour is the regression check).'
+  - '[REVIEW] The render-surface gate error message (now actually reachable post-fix) reads as an actionable contract violation report — a fresh agent / developer hitting it understands (a) what failed, (b) what to add, (c) where in their file'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'tick 4/4 Agent ACs + transition to partial-complete (Human [REVIEW] on error-message readability)'
+    source: git-mined
+  - description: 'fix SIGPIPE silent-halt in render-surface gate error path'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-check_render_surface_human_ac_sigpipe.yaml'
+  - '.tasks/active/T-1900-update-tasksh-checkrendersurfacehumanac-.md'
+  - 'tests/unit/check_render_surface_human_ac_sigpipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-18T19:34:26"
+    action: "T-1900: fix SIGPIPE silent-halt in render-surface gate error path"
+  - time: "2026-05-18T19:34:34"
+    action: "T-1900: register fabric card for new bats test"
+  - time: "2026-05-18T19:35:46"
+    action: "T-1900: tick 4/4 Agent ACs + transition to partial-complete (Human [REVIEW] on error-message readability)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2471 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2471
+  commits: 3
+  files_changed: 4
+  lines_added: 366
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1900-update-tasksh-checkrendersurfacehumanac-.md
+generated_by: context-agent-hybrid

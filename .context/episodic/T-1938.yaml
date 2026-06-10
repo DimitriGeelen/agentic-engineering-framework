@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1938: BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallback
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:12:31Z
+# ============================================================================
+
+task_id: T-1938
+task_name: "BVP T-1937 sibling — fw bvp / fw bvp T-XXX cost include proposed fallback"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-19T19:59:47Z
+completed: 2026-05-20T18:22:40Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-05-19T22:04:34+02:00
+last_commit: 2026-05-19T22:05:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw bvp / fw bvp T-XXX include proposed fallback (T-1937 sibling). document --include-proposed flag + T-1937/T-1938 fallback semantics in fw bvp help
+
+# Key outcomes
+outcomes:
+  - '`cmd_rank` accepts `--include-proposed` flag; without it, only confirmed-score tasks rank (sovereignty-conservative default)'
+  - 'When `--include-proposed` is set, `cmd_rank` falls back to `bvp_scores_proposed:` for tasks lacking confirmed scores'
+  - '`cmd_rank` row output includes a `SOURCE` column (`confirmed` / `proposed`) when proposed are included'
+  - '`cmd_detail` cost section falls back to `cost_estimate_proposed:` when `cost_estimate:` is absent, labelled `PROPOSED (estimator)` parallel to the score block convention'
+  - '`bin/fw bvp --include-proposed 2>&1 | grep -E "^T-1937"` returns at least one row (T-1937 has proposed scores set by the v1 cron sweep)'
+  - '`bin/fw bvp T-1937 2>&1 | grep -q "PROPOSED.*estimator"` shows the cost section now reads proposed'
+  - 'Unit tests in `tests/unit/test_bvp_cli_rank_proposed.py` cover: confirmed-only default, --include-proposed opt-in, source column distinction, cost detail proposed fallback'
+  - 'All new tests PASS; existing CLI BVP tests still PASS (`unit/test_bvp_cli_arcs_rollup.py`, `unit/test_bvp_estimator.py`, `unit/test_bvp_blueprint_cost.py`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-19 — --include-proposed flag vs always-on'
+    chose: 'Opt-in flag.'
+    rationale: 'CLI lacks the visual affordance the web `/bvp` scatter has for distinguishing proposed (color/opacity). Always-on would silently mix advisory + confirmed in a flat table — bad sovereignty signal. Opt-in keeps the bare `fw bvp` output sovereignty-clean.'
+    alternatives_rejected: ['Always-on (mirrors web) — would create the very confusion the sovereignty boundary exists to prevent.']
+  - decision: '2026-05-19 — SOURCE column only when --include-proposed'
+    chose: 'Conditional column.'
+    rationale: 'Bare `fw bvp` already implies confirmed-only; an unused SOURCE column would just take screen width and confuse the table. Conditional rendering preserves the slim default output.'
+    alternatives_rejected: ['Always render — taxes the common case for no benefit.']
+  - decision: '2026-05-19 — cmd_detail cost label `PROPOSED (estimator)` matches score block'
+    chose: 'Same label shape as the existing `PROPOSED (advisory)` score block label.'
+    rationale: 'Reader''s mental model is already calibrated — `PROPOSED (...)` means estimator/advisory at this file. Keeps reader from having to learn a second convention.'
+    alternatives_rejected: ['Inventing a new label like `[ADVISORY]` — would fragment the convention within a single command''s output.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-1937-bvp-t-1936-follow-up--fw-bvp-arcs-cli-pa.md'
+  - '.tasks/active/T-1938-bvp-t-1937-sibling--fw-bvp--fw-bvp-t-xxx.md'
+  - 'tests/unit/test_bvp_cli_rank_proposed.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-19T22:04:34"
+    action: "T-1938: fw bvp / fw bvp T-XXX include proposed fallback (T-1937 sibling)"
+  - time: "2026-05-19T22:05:20"
+    action: "T-1938: document --include-proposed flag + T-1937/T-1938 fallback semantics in fw bvp help"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1342 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:value-prioritisation, parity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1342
+  commits: 2
+  files_changed: 4
+  lines_added: 591
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1938-bvp-t-1937-sibling--fw-bvp--fw-bvp-t-xxx.md
+generated_by: context-agent-hybrid
