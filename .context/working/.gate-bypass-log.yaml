@@ -3426,3 +3426,9 @@ T-2313: close-gate completion + L-473 learning + episodic enrichment
 
 Final close metadata for T-2313 G-064 + G-065 gap closures. Includes
 accumulated ep'
+- timestamp: '2026-06-10T15:47:53Z'
+  task: 'T-2316'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2303'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw context add-learning "fw note append heredoc (agents/observe/observe.sh:90) was 2-space-indented while existing inbox.yaml entries were 0-space; mixed-indent broke YAML parse '

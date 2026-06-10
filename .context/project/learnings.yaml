@@ -3616,3 +3616,10 @@ X'` returning empty group."
   date: 2026-06-10
   context: Added via context agent
   application: TBD
+- id: L-474
+  learning: "fw note append heredoc (agents/observe/observe.sh:90) was 2-space-indented while existing inbox.yaml entries were 0-space; mixed-indent broke YAML parse silently. T-2316 hit this on OBS-068/069. Lessons: (1) heredoc generators appending to a multi-list file must match existing style; (2) sed-in-place patches cannot detect downstream parse failures — at least one consumer must round-trip via yaml.safe_load."
+  source: P-001
+  task: T-2303
+  date: 2026-06-10
+  context: Added via context agent
+  application: TBD
