@@ -3630,3 +3630,10 @@ X'` returning empty group."
   date: 2026-06-10
   context: Added via context agent
   application: TBD
+- id: L-476
+  learning: "Autonomous-mode floor pattern: when (a) named foci are Sovereign-blocked AND (b) all top HV-LC items are also blocked (Sovereign / paused on headline mechanic / partial-complete owner=human / cross-repo), the agent's productive move is to ship 2-3 tightly-scoped tractable items (bug fixes from OBS, audit-WARN cleanup, advisory briefs), then commit + handover. Continuing past 80 percent budget chasing diminishing-margin bounded work risks losing the safe-commit window. Test: if the third tractable item is harder to scope than the first two, stop. Session 2026-06-10 evidence: T-2318 fix + T-2319 maintenance + T-2320 brief shipped clean; fourth pivot (T-2171 F-AUTONOMY activate) was Sovereign-gated; correct response was wrap, not continue."
+  source: P-001
+  task: T-2303
+  date: 2026-06-10
+  context: Added via context agent
+  application: TBD
