@@ -1,8 +1,8 @@
-timestamp: 2026-06-10T14:03:04Z
+timestamp: 2026-06-10T14:17:57Z
 findings:
   - id: D1
     level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2056)"
+    check: "D1: Episodic quality — 0% [TODO] (18/2070)"
   - id: D2
     level: WARN
     check: "D2: Human review queue — 108 task(s) waiting >14d: T-1701(14d) T-1707(14d) T-1718(14d) T-1773(27d) T-1774(27d) T-1775(27d) T-1792(28d) T-1794(28d) T-1795(28d) T-1796(28d) T-1797(28d) T-1799(28d) T-1801(28d) T-1802(28d) T-1803(28d) T-1805(27d) T-1806(27d) T-1807(27d) T-1808(27d) T-1810(27d) T-1811(27d) T-1818(27d) T-1827(19d) T-1834(26d) T-1842(19d) T-1843(19d) T-1844(19d) T-1891(23d) T-1909(20d) T-1910(20d) T-1911(20d) T-1928(21d) T-1929(21d) T-1930(21d) T-1933(22d) T-1934(20d) T-1935(20d) T-1936(20d) T-1939(20d) T-1947(21d) T-1951(19d) T-1954(21d) T-1955(21d) T-1957(21d) T-1960(19d) T-1961(19d) T-1963(19d) T-1964(20d) T-1965(20d) T-1968(20d) T-1969(20d) T-1970(20d) T-1971(20d) T-1976(19d) T-1977(19d) T-1978(19d) T-1980(19d) T-1982(19d) T-1984(19d) T-1985(19d) T-1988(18d) T-1989(15d) T-1990(14d) T-1991(18d) T-1992(15d) T-1993(15d) T-1994(14d) T-1999(18d) T-2002(14d) T-2003(15d) T-2004(15d) T-2006(15d) T-2008(15d) T-2009(15d) T-2010(15d) T-2011(15d) T-2012(15d) T-2013(15d) T-2015(15d) T-2016(15d) T-2017(15d) T-2018(15d) T-2019(15d) T-2020(15d) T-2021(15d) T-2022(15d) T-2023(15d) T-2024(15d) T-2025(15d) T-2026(15d) T-2027(15d) T-2028(15d) T-2029(15d) T-2031(15d) T-2033(15d) T-2034(15d) T-2038(15d) T-2039(15d) T-2040(15d) T-2041(15d) T-2043(15d) T-2044(15d) T-2045(15d) T-2046(15d) T-2047(15d) T-2049(15d) T-2051(14d) T-2054(14d)"
@@ -30,13 +30,13 @@ findings:
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - id: D3
     level: PASS
-    check: "D3: Commit velocity — normal (PASS today=36 avg=53 ratio=0.7x)"
+    check: "D3: Commit velocity — normal (PASS today=38 avg=53 ratio=0.7x)"
   - id: D7
     level: PASS
-    check: "D7: Commit bunching — none (PASS 67_commits_24h_no_bunching)"
+    check: "D7: Commit bunching — none (PASS 64_commits_24h_no_bunching)"
   - id: D6
     level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=19.0 earlier=9.9)"
+    check: "D6: Completion velocity — normal (PASS recent=19.3 earlier=9.9)"
   - id: D12
     level: PASS
     check: "D12: Bypass log — no log file"

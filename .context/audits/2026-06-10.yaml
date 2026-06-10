@@ -1,8 +1,8 @@
-# Audit Results - 2026-06-10-1603
-timestamp: 2026-06-10T14:03:04Z
+# Audit Results - 2026-06-10-1617
+timestamp: 2026-06-10T14:17:57Z
 summary:
-  pass: 578
-  warn: 79
+  pass: 579
+  warn: 66
   fail: 1
 findings:
   - level: PASS
@@ -54,7 +54,7 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 99% (5934/5978 commits reference tasks)"
+    check: "Git traceability: 99% (5936/5980 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -63,7 +63,7 @@ findings:
   - level: PASS
     check: "Bypass log exists"
   - level: WARN
-    check: "Gate-bypass log: 103 safety bypasses in last 7 days (+ 17 drift overrides)"
+    check: "Gate-bypass log: 104 safety bypasses in last 7 days (+ 17 drift overrides)"
     mitigation: "Review .context/working/.gate-bypass-log.yaml — investigate --skip-* / --scope-reduction-acknowledged callers"
   - level: PASS
     check: "Commit-msg hook installed"
@@ -76,48 +76,11 @@ findings:
   - level: PASS
     check: "All practice origins resolve to actual tasks"
   - level: PASS
-    check: "Bugfix-learning coverage: 77% (338/435 bugfixes have learnings)"
-  - level: WARN
-    check: "Completed task T-1897 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1897"
-  - level: WARN
-    check: "Completed task T-1900 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1900"
-  - level: WARN
-    check: "Completed task T-1938 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1938"
-  - level: WARN
-    check: "Completed task T-1915 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1915"
-  - level: WARN
-    check: "Completed task T-1905 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1905"
-  - level: WARN
-    check: "Completed task T-1904 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1904"
-  - level: WARN
-    check: "Completed task T-1941 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1941"
-  - level: WARN
-    check: "Completed task T-1942 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1942"
-  - level: WARN
-    check: "Completed task T-1979 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1979"
-  - level: WARN
-    check: "Completed task T-1921 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1921"
-  - level: WARN
-    check: "Completed task T-2097 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-2097"
-  - level: WARN
-    check: "Completed task T-1893 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1893"
-  - level: WARN
-    check: "Completed task T-1940 has no episodic summary"
-    mitigation: "Run: ./agents/context/context.sh generate-episodic T-1940"
+    check: "Bugfix-learning coverage: 77% (339/436 bugfixes have learnings)"
   - level: PASS
-    check: "All 2056 episodic summaries have quality content"
+    check: "All completed tasks have episodic summaries"
+  - level: PASS
+    check: "All 2070 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -206,17 +169,17 @@ findings:
     check: "C-006: Inception T-2121 has template-only Recommendation block"
     mitigation: "Retrofit: fill in **Recommendation:** GO"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-2313)"
+    check: "CTL-001: Focus file has active task (T-2314)"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 8 (last commit: 3 minutes ago)"
+    check: "CTL-004: Tool counter at 1 (last commit: 3 minutes ago)"
   - level: PASS
-    check: "CTL-018: Budget status valid JSON (level: warn)"
+    check: "CTL-018: Budget status valid JSON (level: urgent)"
   - level: PASS
     check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 3 cron audit file(s) in last hour"
+    check: "CTL-020: 2 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
@@ -612,17 +575,17 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1902 has decision (14 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-1905 has decision (7 commits)"
+    check: "CTL-009: Inception T-1905 has decision (8 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-190 has decision (43 commits)"
+    check: "CTL-009: Inception T-190 has decision (44 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-1915 has decision (13 commits)"
+    check: "CTL-009: Inception T-1915 has decision (14 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-191 has decision (49 commits)"
+    check: "CTL-009: Inception T-191 has decision (50 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-192 has decision (46 commits)"
+    check: "CTL-009: Inception T-192 has decision (47 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-194 has decision (62 commits)"
+    check: "CTL-009: Inception T-194 has decision (63 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1950 has decision (8 commits)"
   - level: PASS
@@ -648,7 +611,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-2081 has decision (4 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-2097 has decision (4 commits)"
+    check: "CTL-009: Inception T-2097 has decision (5 commits)"
   - level: PASS
     check: "CTL-009: Inception T-2098 has decision (4 commits)"
   - level: PASS
@@ -939,7 +902,7 @@ findings:
   - level: PASS
     check: "CTL-013: T-2308 verification re-run: 4/4 pass"
   - level: PASS
-    check: "CTL-013: T-2304 verification re-run: 6/6 pass (1 skipped — nested-audit invocation)"
+    check: "CTL-013: T-2313 verification re-run: 3/3 pass (1 skipped — nested-audit invocation)"
   - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
@@ -1284,8 +1247,8 @@ findings:
     check: "CTL-029: T-2309 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-2309 --status work-completed"
   - level: WARN
-    check: "CTL-029: T-2313 has all Agent ACs ticked but status='started-work' — completable, not closed"
-    mitigation: "Run: bin/fw task update T-2313 --status work-completed"
+    check: "CTL-029: T-2314 has all Agent ACs ticked but status='started-work' — completable, not closed"
+    mitigation: "Run: bin/fw task update T-2314 --status work-completed"
   - level: WARN
     check: "CTL-029: T-332 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-332 --status work-completed"
@@ -1326,7 +1289,7 @@ findings:
     check: "CTL-012: Completed task T-436 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2056)"
+    check: "D1: Episodic quality — 0% [TODO] (18/2070)"
   - level: WARN
     check: "D2: Human review queue — 108 task(s) waiting >14d: T-1701(14d) T-1707(14d) T-1718(14d) T-1773(27d) T-1774(27d) T-1775(27d) T-1792(28d) T-1794(28d) T-1795(28d) T-1796(28d) T-1797(28d) T-1799(28d) T-1801(28d) T-1802(28d) T-1803(28d) T-1805(27d) T-1806(27d) T-1807(27d) T-1808(27d) T-1810(27d) T-1811(27d) T-1818(27d) T-1827(19d) T-1834(26d) T-1842(19d) T-1843(19d) T-1844(19d) T-1891(23d) T-1909(20d) T-1910(20d) T-1911(20d) T-1928(21d) T-1929(21d) T-1930(21d) T-1933(22d) T-1934(20d) T-1935(20d) T-1936(20d) T-1939(20d) T-1947(21d) T-1951(19d) T-1954(21d) T-1955(21d) T-1957(21d) T-1960(19d) T-1961(19d) T-1963(19d) T-1964(20d) T-1965(20d) T-1968(20d) T-1969(20d) T-1970(20d) T-1971(20d) T-1976(19d) T-1977(19d) T-1978(19d) T-1980(19d) T-1982(19d) T-1984(19d) T-1985(19d) T-1988(18d) T-1989(15d) T-1990(14d) T-1991(18d) T-1992(15d) T-1993(15d) T-1994(14d) T-1999(18d) T-2002(14d) T-2003(15d) T-2004(15d) T-2006(15d) T-2008(15d) T-2009(15d) T-2010(15d) T-2011(15d) T-2012(15d) T-2013(15d) T-2015(15d) T-2016(15d) T-2017(15d) T-2018(15d) T-2019(15d) T-2020(15d) T-2021(15d) T-2022(15d) T-2023(15d) T-2024(15d) T-2025(15d) T-2026(15d) T-2027(15d) T-2028(15d) T-2029(15d) T-2031(15d) T-2033(15d) T-2034(15d) T-2038(15d) T-2039(15d) T-2040(15d) T-2041(15d) T-2043(15d) T-2044(15d) T-2045(15d) T-2046(15d) T-2047(15d) T-2049(15d) T-2051(14d) T-2054(14d)"
     mitigation: "Review with: fw task verify"
@@ -1348,11 +1311,11 @@ findings:
     check: "D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)"
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
   - level: PASS
-    check: "D3: Commit velocity — normal (PASS today=36 avg=53 ratio=0.7x)"
+    check: "D3: Commit velocity — normal (PASS today=38 avg=53 ratio=0.7x)"
   - level: PASS
-    check: "D7: Commit bunching — none (PASS 67_commits_24h_no_bunching)"
+    check: "D7: Commit bunching — none (PASS 64_commits_24h_no_bunching)"
   - level: PASS
-    check: "D6: Completion velocity — normal (PASS recent=19.0 earlier=9.9)"
+    check: "D6: Completion velocity — normal (PASS recent=19.3 earlier=9.9)"
   - level: PASS
     check: "D12: Bypass log — no log file"
   - level: PASS

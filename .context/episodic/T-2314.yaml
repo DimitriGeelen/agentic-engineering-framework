@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2314: batch-generate missing episodic summaries for 12 completed tasks (audit WARN
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:22:26Z
+# ============================================================================
+
+task_id: T-2314
+task_name: "batch-generate missing episodic summaries for 12 completed tasks (audit WARN"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T14:10:49Z
+completed: 2026-06-10T14:17:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-10T16:17:57+02:00
+last_commit: 2026-06-10T16:17:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  batch-generate 13 missing episodic summaries (audit WARN reduction)
+
+# Key outcomes
+outcomes:
+  - 'All 12 target tasks have a non-empty `.context/episodic/T-XXXX.yaml` summary. Verification: `for T in T-1897 T-1900 T-1904 T-1905 T-1915 T-1921 T-1938 T-1940 T-1941 T-1942 T-1979 T-2097; do test -s ".context/episodic/$T.yaml" || { echo "MISSING: $T"; exit 1; }; done; echo "OK: all 12 present"`'
+  - 'Audit "has no episodic summary" WARN count reduces by 12 (from 13 baseline to 0 — even better than expected; T-1893 also got generated). Verification: `bin/fw audit > /tmp/T-2314-audit.out 2>&1 || true; n=$(grep -c "Completed task.*has no episodic summary" /tmp/T-2314-audit.out); test "$n" -le 1` (achieved n=0)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-1893.yaml'
+  - '.context/episodic/T-1897.yaml'
+  - '.context/episodic/T-1900.yaml'
+  - '.context/episodic/T-1904.yaml'
+  - '.context/episodic/T-1905.yaml'
+  - '.context/episodic/T-1915.yaml'
+  - '.context/episodic/T-1921.yaml'
+  - '.context/episodic/T-1938.yaml'
+  - '.context/episodic/T-1940.yaml'
+  - '.context/episodic/T-1941.yaml'
+  - '.context/episodic/T-1942.yaml'
+  - '.context/episodic/T-1979.yaml'
+  - '.context/episodic/T-2097.yaml'
+  - '.tasks/active/T-2314-batch-generate-missing-episodic-summarie.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-10T16:17:57"
+    action: "T-2314: batch-generate 13 missing episodic summaries (audit WARN reduction)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 1
+  files_changed: 14
+  lines_added: 1354
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2314-batch-generate-missing-episodic-summarie.md
+generated_by: context-agent-hybrid

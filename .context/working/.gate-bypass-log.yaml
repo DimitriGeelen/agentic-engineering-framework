@@ -3416,3 +3416,13 @@ Prior session moved T-2300 file content to completed/ via fw task update
   command: 'git add docs/reports/T-2303-scoping-parallel-execution-aef.md 2>&1; FW_SWITCH_FOCUS=1 git commit -m "T-2303: sync Spike 1 findings header + Wire Evidence Test §
 
 Editorial cleanup — agent-prep work'
+- timestamp: '2026-06-10T14:08:48Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2313'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2313: close-gate completion + L-473 learning + episodic enrichment
+
+Final close metadata for T-2313 G-064 + G-065 gap closures. Includes
+accumulated ep'

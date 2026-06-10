@@ -5,10 +5,10 @@ name: "batch-generate missing episodic summaries for 12 completed tasks (audit W
 description: >
   batch-generate missing episodic summaries for 12 completed tasks (audit WARN reduction)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-10T14:10:49Z
-last_update: '2026-06-10T14:15:03Z'
-date_finished:
+last_update: 2026-06-10T14:17:57Z
+date_finished: 2026-06-10T14:17:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -209,3 +209,20 @@ bin/fw audit > /tmp/T-2314-audit.out 2>&1 || true; n=$(grep -c "Completed task.*
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2314-batch-generate-missing-episodic-summarie.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9e9de2f2
+- **Timestamp:** 2026-06-10T14:22:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — All 12 target tasks have a non-empty `.context/episodic/T-XXXX.yaml` summary. Verification: `for T in T-1897 T-1900 T-1904 T-1905 T-1915 T-1921 T-1938 T-1940 T-1941 T-1942 T-1979 T-2097; do test -s ".
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/episodic/T-XXXX.yaml in: All 12 target tasks have a non-empty `.context/episodic/T-XXXX.yaml` summary. Verification: `for T in T-1897 T-1900 T-1904 T-1905 T-1915 T-1921 T-1938`
+
+### 2026-06-10T14:17:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

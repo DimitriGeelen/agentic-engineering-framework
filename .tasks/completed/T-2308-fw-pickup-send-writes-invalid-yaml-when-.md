@@ -255,8 +255,8 @@ but the learning never propagated to other shell heredoc YAML writers.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-cd00d6ac
-- **Timestamp:** 2026-06-10T14:06:58Z
+- **Scan ID:** R-2d80a1f0
+- **Timestamp:** 2026-06-10T14:21:50Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
