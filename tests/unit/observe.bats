@@ -106,3 +106,26 @@ teardown() {
     # Confirms --type was accepted; failure is the missing-observation path
     [[ "$output" == *"not found"* ]]
 }
+
+# --- Heredoc indent regression (T-2316) ---
+
+@test "two sequential captures produce parseable YAML (T-2316)" {
+    export PROJECT_ROOT="$TEST_DIR"
+    "$OBSERVE" "first obs"  >/dev/null
+    "$OBSERVE" "second obs" >/dev/null
+    # The original bug: second capture appended with mismatched indent, breaking the parse.
+    run python3 -c "import yaml; d=yaml.safe_load(open('$TEST_DIR/.context/inbox.yaml')); print(len(d.get('observations',[])))"
+    [ "$status" -eq 0 ]
+    [ "$output" = "2" ]
+}
+
+@test "captured observation appends at root list level not nested (T-2316)" {
+    export PROJECT_ROOT="$TEST_DIR"
+    "$OBSERVE" "first obs"  >/dev/null
+    "$OBSERVE" "second obs" >/dev/null
+    # Root-level dash (matches OBS-001..OBS-067 in production inbox.yaml)
+    n_root=$(grep -cE "^- id: OBS-" "$TEST_DIR/.context/inbox.yaml" || true)
+    n_nested=$(grep -cE "^  - id: OBS-" "$TEST_DIR/.context/inbox.yaml" || true)
+    [ "$n_root" -eq 2 ]
+    [ "$n_nested" -eq 0 ]
+}

@@ -83,17 +83,17 @@ do_capture() {
 
     local urgent_field=""
     if [ "$urgent" = true ]; then
-        urgent_field="    urgent: true"
+        urgent_field="  urgent: true"
     fi
 
     cat >> "$INBOX_FILE" << EOF
-  - id: $id
-    text: "$text"
-    captured: $ts
-    context_task: ${task:-null}
-    tags: [${tags}]
-    status: pending
-    promoted_to: null
+- id: $id
+  text: "$text"
+  captured: $ts
+  context_task: ${task:-null}
+  tags: [${tags}]
+  status: pending
+  promoted_to: null
 EOF
 
     if [ -n "$urgent_field" ]; then

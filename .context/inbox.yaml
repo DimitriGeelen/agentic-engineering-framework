@@ -582,17 +582,17 @@ observations:
   tags: []
   status: promoted
   promoted_to: T-2298
-  - id: OBS-068
-    text: "_self_vendor_agents in lib/upgrade.sh:387 filters on -name *.sh -o -name *.py only — .md siblings (AGENT.md) drift between agents/ and .agentic-framework/agents/. T-2301 hit this on the resume agent. Extend filter to include *.md, or document the asymmetry. Sibling concern: `_self_vendor_libs` may have the same gap."
-    captured: 2026-06-10T06:51:59Z
-    context_task: T-2301
-    tags: []
-    status: dismissed
-    promoted_to: null
-  - id: OBS-069
-    text: "T-2121 inception (status:captured) missing ## Recommendation triggers CTL-027 FAIL; T-2208 hourly retrofit cron (inception-retrofit-rec-hourly) appears to skip captured-status inceptions — only sweeps started-work. Action: review retrofit predicate in lib/inception.sh do_retrofit_recommendations, extend to captured if intent is full-coverage."
-    captured: 2026-06-10T14:01:45Z
-    context_task: T-2313
-    tags: []
-    status: pending
-    promoted_to: null
+- id: OBS-068
+  text: "_self_vendor_agents in lib/upgrade.sh:387 filters on -name *.sh -o -name *.py only — .md siblings (AGENT.md) drift between agents/ and .agentic-framework/agents/. T-2301 hit this on the resume agent. Extend filter to include *.md, or document the asymmetry. Sibling concern: `_self_vendor_libs` may have the same gap."
+  captured: 2026-06-10T06:51:59Z
+  context_task: T-2301
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-069
+  text: "T-2121 inception (status:captured) missing ## Recommendation triggers CTL-027 FAIL; T-2208 hourly retrofit cron (inception-retrofit-rec-hourly) appears to skip captured-status inceptions — only sweeps started-work. Action: review retrofit predicate in lib/inception.sh do_retrofit_recommendations, extend to captured if intent is full-coverage."
+  captured: 2026-06-10T14:01:45Z
+  context_task: T-2313
+  tags: []
+  status: pending
+  promoted_to: null
