@@ -1,20 +1,24 @@
 ---
 id: T-2323
-name: "AEF-IC-1: Yield-point granularity (substrate ADR §6.1) — where in the agent's tool loop does the harness check the parallel-execution flag and yield-point ear?"
+name: "AEF-IC-1: Yield-point granularity (substrate ADR §6.1) — where in the agent's
+  tool loop does the harness check the parallel-execution flag and yield-point ear?"
 description: >
-  First downstream inception unblocked by T-2303 GO. Substrate ADR §6.1 open question: yield-point granularity decision. No substrate dependency (pure AEF-side harness decision). One question: where in the agent's tool loop does the harness check the parallel-execution flag and yield-point ear?
+  First downstream inception unblocked by T-2303 GO. Substrate ADR §6.1 open question:
+  yield-point granularity decision. No substrate dependency (pure AEF-side harness
+  decision). One question: where in the agent's tool loop does the harness check the
+  parallel-execution flag and yield-point ear?
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: later
 tags: [arc-parallel-execution-aef, downstream-of-T-2303, harness, yield-point]
 components: []
 related_tasks: [T-2303]
 arc_id: parallel-execution-aef
 created: 2026-06-10T20:07:03Z
-last_update: 2026-06-10T20:07:03Z
-date_finished: null
+last_update: 2026-06-10T21:55:57Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -23,6 +27,29 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-06-10T20:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-10T20:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2323: AEF-IC-1: Yield-point granularity (substrate ADR §6.1) — where in the agent's tool loop does the harness check the parallel-execution flag and yield-point ear?
@@ -94,15 +121,15 @@ The harness runs as a wrapper around `claude` CLI. Constraints:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -156,7 +183,11 @@ The harness runs as a wrapper around `claude` CLI. Constraints:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Scoping inception — the question itself (where does the harness check?) is the evidence gap. Spike dialogue resolves: (a) yield-point granularity (file-write boundary vs tool-call boundary vs message boundary); (b) flag shape (env var vs sidecar file vs hub-state poll); (c) ear-check semantics (poll cadence + busy/idle response shape). Leading candidate per T-2303 Spike 5 prep work: 'before every file-write tool call' — but this needs operator dialogue to pin. Legitimate evidence-gap DEFER per T-2144 — this inception's job is to gather the evidence via spike dialogue. Concrete revisit trigger: operator-led spike dialogue session OR first downstream build pressure on harness design (whichever lands first).
+
+**Date**: 2026-06-10T21:55:57Z
 
 ## Updates
 
@@ -171,3 +202,13 @@ The harness runs as a wrapper around `claude` CLI. Constraints:
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-10T21:55:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Scoping inception — the question itself (where does the harness check?) is the evidence gap. Spike dialogue resolves: (a) yield-point granularity (file-write boundary vs tool-call boundary vs message boundary); (b) flag shape (env var vs sidecar file vs hub-state poll); (c) ear-check semantics (poll cadence + busy/idle response shape). Leading candidate per T-2303 Spike 5 prep work: 'before every file-write tool call' — but this needs operator dialogue to pin. Legitimate evidence-gap DEFER per T-2144 — this inception's job is to gather the evidence via spike dialogue. Concrete revisit trigger: operator-led spike dialogue session OR first downstream build pressure on harness design (whichever lands first).
+
+### 2026-06-10T21:55:57Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** Inception decision: DEFER — parking task
