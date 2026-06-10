@@ -1,13 +1,13 @@
 # T-2303 — Scoping inception: parallel-execution architecture (AEF + TermLink coordination)
 
-**Status:** scoping inception, filed 2026-06-10. Exploration not yet started.
-**Task:** [T-2303](../../.tasks/active/T-2303-scoping-inception--parallel-execution-ar.md)
-**Arc:** `orchestrator-rethink` (arc-003) — extension, pending IW-2 resolution
+**Status:** scoping inception, filed 2026-06-10, **GO 2026-06-10** (operator via Watchtower, commit `989fc1e6e`). Downstream cluster: T-2323 (AEF-IC-1 yield-point granularity) + T-2324 (AEF-IC-2 disjoint write-set policy) — both filed, both currently operator-parked captured/later awaiting spike dialogue.
+**Task:** [T-2303](../../.tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md)
+**Arc:** `parallel-execution-aef` (arc-011) — anchor task; arc created 2026-06-10
 **Related ADRs:** [`docs/architecture/parallel-execution-aef.md`](../architecture/parallel-execution-aef.md) + [`docs/architecture/parallel-execution-substrate.md`](../architecture/parallel-execution-substrate.md) (landed by T-2302)
-**Recommendation at filing:** DEFER (legitimate evidence-gap per T-2144 — exploration spikes have not run)
+**Recommendation at filing:** DEFER → **flipped GO** per §Recommendation evolution v3 (5-Whys + dialogue log + candidate matrix all complete; operator concurred 2026-06-10)
 
 **Grill Me entry points:**
-- This inception: see `## Grill Me` section in [`T-2303` task body](../../.tasks/active/T-2303-scoping-inception--parallel-execution-ar.md) — full primary-grill-target list per IW spike, plus assumption stress-tests.
+- This inception: see `## Grill Me` section in [`T-2303` task body](../../.tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md) — full primary-grill-target list per IW spike, plus assumption stress-tests.
 - AEF ADR: see `## 10. Grill Me` in [`docs/architecture/parallel-execution-aef.md`](../architecture/parallel-execution-aef.md).
 - Substrate ADR: see `## 11. Grill Me` in [`docs/architecture/parallel-execution-substrate.md`](../architecture/parallel-execution-substrate.md).
 - arc-003 parent: see `grill_me:` field in [`.context/arcs/orchestrator-rethink.yaml`](../../.context/arcs/orchestrator-rethink.yaml).
