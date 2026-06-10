@@ -1772,7 +1772,10 @@ concerns:
     confirming production consumption. User correction: "we again are missing
     on essential".
   severity: high
-  status: watching
+  status: closed
+  closed_date: 2026-06-10
+  closure_notes: |
+    gauge READY: 481 total dispatches, 290 cron firings, escalation-triage workflow live since 2026-05-14 (T-1727 shipped v0.5)
   what_works_now: |
     Substrate is real and behaviourally verified end-to-end:
     - Resolver picks model from cache (T-1680 + 47 unit tests).
@@ -1909,7 +1912,10 @@ concerns:
     absolute-path commands. User caught violation: "but why where we
     looking at it as its not poart oif our rtepo and we should have full
     path isolation".
-  status: watching
+  status: closed
+  closed_date: 2026-06-10
+  closure_notes: |
+    gauge READY: 4/4 wiring conditions PASS (T-1702 read-side leg + T-1707 scope-tagging shipped; sibling closure-readiness gauge from T-2299 verifies)
   what_works_now: |
     - `cd <outside>` is blocked correctly (T-559 base behaviour)
     - Hook fires PreToolUse on Bash, before the command executes

@@ -1,0 +1,2 @@
+{"ts": "2026-06-10T13:54:40.048282+00:00", "gap_id": "G-065", "verdict": "READY", "override": false, "rationale": "gauge READY: 4/4 wiring conditions PASS (T-1702 read-side leg + T-1707 scope-tagging shipped; sibling closure-readiness gauge from T-2299 verifies)", "actor": "cli"}
+{"ts": "2026-06-10T13:54:54.342009+00:00", "gap_id": "G-064", "verdict": "READY", "override": false, "rationale": "gauge READY: 481 total dispatches, 290 cron firings, escalation-triage workflow live since 2026-05-14 (T-1727 shipped v0.5)", "actor": "cli"}
