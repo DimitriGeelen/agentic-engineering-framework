@@ -376,14 +376,27 @@ EOF
 }
 
 @test "pickup: do_pickup_send envelope has correct content" {
+    # T-2308: assert semantic content via yaml.safe_load round-trip, not the
+    # emitter's chosen quoting style. The old test grep'd for double-quoted
+    # scalars (`summary: "Use X not Y"`) — an artifact of the prior heredoc
+    # emitter, NOT a contract. PyYAML's safe_dump emits plain scalars when
+    # the value contains no YAML-active chars; both forms are valid YAML.
     do_pickup_send --type learning --summary "Use X not Y" --source-project myproj --task-id T-099 --tags "perf,api"
     local f="$PICKUP_INBOX/P-001-learning.yaml"
     [ -f "$f" ]
-    grep -q "type: learning" "$f"
-    grep -q 'summary: "Use X not Y"' "$f"
-    grep -q 'project: "myproj"' "$f"
-    grep -q 'task_id: "T-099"' "$f"
-    grep -q "perf, api" "$f"
+    run python3 - "$f" <<'PYEOF'
+import sys, yaml
+with open(sys.argv[1]) as fh:
+    d = yaml.safe_load(fh)
+assert d["type"] == "learning", f"type was {d['type']}"
+assert d["payload"]["summary"] == "Use X not Y", f"summary was {d['payload']['summary']!r}"
+assert d["source"]["project"] == "myproj", f"project was {d['source']['project']!r}"
+assert d["source"]["task_id"] == "T-099", f"task_id was {d['source']['task_id']!r}"
+assert d["payload"]["tags"] == ["perf", "api"], f"tags were {d['payload']['tags']!r}"
+print("OK")
+PYEOF
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"OK"* ]]
 }
 
 @test "pickup: do_pickup_send auto-increments ID" {
