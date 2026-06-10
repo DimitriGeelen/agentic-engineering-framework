@@ -99,6 +99,39 @@ These are the load-bearing scoping questions. Each maps to an exploration spike.
   disposition: deferred
   rationale: To be resolved by Spike 5 (artifact placement). Partial answer: the ADRs landed at `docs/architecture/parallel-execution-aef.md` (this repo authoritative) and `docs/architecture/parallel-execution-substrate.md` (TermLink-authoritative reference copy) by T-2302. Open: re-sync mechanism for the substrate copy, governance of updates (TermLink-side owns substrate doc; what's the receipt/sync protocol?), and whether a separate "design-of-record" inception is needed to ratify the ADRs themselves or whether ratification is folded into the downstream §2-3/§4/§5 inceptions.
 
+## Grill Me
+
+Before approving any spike disposition, filing any downstream inception, or recording the final go/no-go, the operator may run an interactive grilling session against this scoping inception to drill into assumptions and surface gaps the spike framing has obscured.
+
+**Entry point:** `/grill-with-docs`
+
+**Primary grill targets** (each maps to one of the five IW spikes; flag any answer that cannot be defended in one sentence):
+
+- **IW-1 headline mechanic.** Is "two agents on disjoint write-sets complete concurrently" actually the *goal*, or is it the *mechanism* by which a different goal (faster throughput? richer testbeds? cross-host reliability?) is achieved? Drill: outcome vs. mechanism. What user-visible thing changes that the operator would actually notice on a Tuesday morning?
+- **IW-2 arc shape.** Does "extend arc-003 orchestrator-rethink" preserve closure evidence, or does it bury orchestrator-rethink's existing §ACD-paused closure under new in-progress work that delays the *original* arc's resolution? The arc is already on its 4th §ACD incident; piling on may be the wrong move.
+- **IW-3 TermLink coordination.** Drill assumption A2 *now*, not in spike 3: does TermLink actually have an authoritative party we can reach today, by what mechanism, with what bandwidth for substrate-contract dialogue? If A2 fails, IW-3 collapses and the whole scoping changes shape.
+- **IW-4 cluster.** Are 4-6 downstream inceptions the right shape, or does some merge (one-inception-one-question is being honoured?), or does some need a further split? In particular: §6 open questions — fold into §2-3/§4/§5 owner inceptions, or stand alone?
+- **IW-5 artifact placement.** Does the substrate-doc reference-copy create a sync hazard that retro-justifies a single shared design repo? Or is the producer≠judge boundary specifically protected by the asymmetric ownership we just landed?
+
+**Pre-grill stress tests** (these are the assumptions a grilling session will probe):
+
+- A1: ADRs are stable enough. Falsifier — a fresh design dialogue between authors that materially changes §2-§9 of either ADR mid-spike.
+- A2: TermLink has reachable authoritative party. Falsifier — Spike 3's first-contact attempt times out, comes back with "we are not ready," or surfaces an in-flight TermLink design that contradicts §6 primitive list.
+- A3: arc-003 is the right home. Falsifier — operator decision that orchestrator-rethink should be closed *before* this work proceeds.
+- A4: yield-point granularity candidate is the right one. Falsifier — Spike 1's headline-mechanic forces a different granularity (e.g. "before every governance-state write" instead of "every file write").
+- A5: cost authorisation extends downstream. Falsifier — operator caps the cluster at N inceptions and the grilling session reveals the cluster needs N+M.
+
+**Domain anchor documents:**
+
+- `docs/architecture/parallel-execution-aef.md` (this-repo authoritative)
+- `docs/architecture/parallel-execution-substrate.md` (TermLink-authoritative reference copy)
+- `docs/reports/T-2303-scoping-parallel-execution-aef.md` (this inception's research artifact + dialogue log)
+- `.context/arcs/orchestrator-rethink.yaml` (arc-003 parent)
+
+`CONTEXT.md` does not exist in this repo; the grill-with-docs skill will create one lazily on the first resolved domain term.
+
+**Output of a grilling session:** updates to the research artifact's `## Dialogue Log` section, and revisions to the IW-N entries in this task body (confidence, disposition, rationale). Per CLAUDE.md §Inception Discipline #7, conversation reasoning that doesn't make it into a logged dialogue entry is lost — capture as you go.
+
 ## Exploration Plan
 
 Each spike is operator-facing dialogue work, not autonomous agent work. The inception's research artifact at `docs/reports/T-2303-scoping-parallel-execution-aef.md` accumulates findings as each spike resolves (C-001 research artifact + dialogue log per CLAUDE.md §Inception Discipline).
@@ -237,3 +270,12 @@ Scoping inception; recommendation lands after exploration spikes (goals, arc sha
 
 ### 2026-06-10T08:01:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ee483896
+- **Timestamp:** 2026-06-10T08:10:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

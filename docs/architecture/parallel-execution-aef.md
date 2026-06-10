@@ -250,3 +250,44 @@ not by itself enable optimistic — the flip is a separate gated decision. Deter
 sidecar with no language-model call; no terminal injection for delivery; safe-degrade on
 deafness (a deaf agent stops before acting, never proceeds on an unverified "all clear").
 High coordination volume between two agents is treated as a decomposition smell.
+
+## 10. Grill Me
+
+This ADR is grillable against the project's domain language and any downstream design
+work that cites it. Use to drill load-bearing decisions *before* a downstream inception
+treats them as settled.
+
+**Entry point:** `/grill-with-docs` (skill: `.claude/skills/grill-with-docs/SKILL.md`)
+
+**Primary grill targets** — flag any answer that cannot be defended in one sentence:
+
+- **§2-3 disjoint write-set decision.** Is "split a task, never reconcile" actually
+  achievable for the task classes we ship today, or is it aspirational? Drill: name three
+  recent tasks that would have had to be split.
+- **§3 conservative-launch forcing chain.** Reads load-bearing. Drill the asymmetry
+  argument: if both errors were equally cheap, would conservative still win? If yes,
+  why? If no, the case rests entirely on cost asymmetry — verify that.
+- **§4 active-dispatch forcing chain.** Does it still hold once a claim primitive lands?
+  The ADR claims it does (the orchestrator stays the authority regardless). Drill: what
+  exactly stops a pull-queue from re-emerging the moment exclusive delivery exists?
+- **§5 cooperative-poll yield point.** "Before every file-write tool call" is the
+  *leading* candidate, not the chosen answer. Drill: is that empirically the right
+  granularity, or is it a guess wearing 5 paragraphs of justification? What's the
+  experimental setup that picks the actual number?
+- **§5 self-check-ears.** Heartbeat staleness as liveness proof. Drill: 5s tick / 30s
+  threshold gives a 6-beat window during which an agent may act while deaf. What's the
+  cost of one wrong write inside that window, and does the math still favour this design
+  at homelab-typical write rates?
+- **§7 persistent-topic-not-direct-channel.** The "topic IS the channel" claim. Drill:
+  what's the largest concrete coordination need that would actually feel slow over a
+  topic? Name it. If you can't, the claim survives unchallenged.
+- **§8 substrate contracts.** Which contracts are *currently* underspecified beyond
+  "name + intent"? Those are the ones rising consultation volume will betray (§9 smell
+  in the substrate doc).
+
+**Companion ADR:** [`parallel-execution-substrate.md`](parallel-execution-substrate.md)
+(TermLink-authoritative reference copy in this repo; grill the substrate side there).
+
+**Scoping inception that consumes this ADR:**
+[`T-2303`](../../.tasks/active/T-2303-scoping-inception--parallel-execution-ar.md)
+(the IW-1..IW-5 spikes operate over the decisions in §2-§9 here).

@@ -22,3 +22,23 @@ agent_close_attempt:
   reverted_at: 2026-05-02T07:21:00Z
   reason: "autonomously closed despite Default-to-OPEN; §ACD self-application failure (4th incident)"
   decision_proposed: "shipped — headline mechanic verified live across 3 task_types"
+grill_me:
+  entry: "/grill-with-docs"
+  scope: |
+    arc-003 orchestrator-rethink. Currently extended by T-2303 (scoping inception)
+    for parallel-execution work. Grill T-2303's IW-1..IW-5 before any downstream
+    inception fires. Anchor T-1641 + W-wirings (T-1643) shipped 2026-05-02; closure
+    decision is operator-only per §ACD/G-062 (this is the 3rd-incident arc; 4th if
+    you count the agent_close_attempt above).
+  domain_anchors:
+    - docs/architecture/parallel-execution-aef.md
+    - docs/architecture/parallel-execution-substrate.md
+    - .tasks/active/T-2303-scoping-inception--parallel-execution-ar.md
+    - docs/reports/orchestrator-rethink-demo/README.md
+  primary_targets:
+    - "Is the orchestrator-rethink demo (3 task_types via /orchestrator) sufficient
+      evidence for arc closure, or does parallel-execution work need to ship first?"
+    - "If T-2303 expands the arc with 4-6 downstream inceptions, does that delay
+      closure of the *original* orchestrator-rethink headline mechanic indefinitely?"
+    - "Should arc-003 close on its existing demo, with parallel-execution opening a
+      sibling arc — keeping the §ACD ledger clean?"

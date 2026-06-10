@@ -353,3 +353,48 @@ The substrate builds write-observation *capability* but does not set conservativ
 optimistic *policy*; conservative remains the launch policy regardless of gap 4 landing.
 Producer ≠ judge at the seam. Coordination efficiency is obtained via persistent hub
 topics, never via dissolving the star.
+
+## 11. Grill Me
+
+This ADR is the authoritative substrate-side record (TermLink repo owns updates). It is
+grillable in this repo against the AEF consumer's expectations. Substantive changes must
+flow upstream into TermLink; this file is a reference copy.
+
+**Entry point:** `/grill-with-docs` (skill: `.claude/skills/grill-with-docs/SKILL.md`)
+
+**Primary grill targets** — flag any answer that cannot be defended in one sentence:
+
+- **§3 mesh-rejection forcing chain.** Three arguments, third decisive (fragility). Drill
+  the homelab failure mode: what happens at ring20 if the *one* hub host dies for a day?
+  "Restart is a pause, not loss" — is that *actually* believed at zero-trust level, or is
+  it a phrase that papers over a single point of failure we tolerate?
+- **§4 collision policy boundary.** Capability here, policy in AEF. The "two-step that
+  must not be collapsed" is structurally fragile — under build pressure, someone
+  collapses it. Drill: what mechanism *prevents* the collapse (a doc note, or a code
+  gate)?
+- **§5 plane split.** Governance plane centralises through hub append-log (option b).
+  Drill: a worker that finishes during a hub blip — the spec says channel durability
+  protects readers but writers' outbound posts are discarded. Doesn't this leak the very
+  "completion silently lost" failure the centralisation was meant to prevent?
+  ([cross-ref §6 primitive 5: client-side reconnect + outbound queue is the answer; drill
+  that it's *enough*]).
+- **§6 primitive priority order.** Foundation (1,2,3) → resilience (5,7) → contract (8)
+  → keystone (4) → supporting (6,9,10). Is keystone-last actually right, or does AEF's
+  consumer pressure (the conservative→optimistic flip is the perception-moving event)
+  force re-ordering keystone earlier? Drill: what evidence would justify re-ordering?
+- **§7 transport unification.** Loopback TCP for same-host. Drill: the cost claim is
+  "negligible at homelab scale" — what's the actual measured latency delta over UDS, and
+  does it hold under the agent-presence-bloat traffic class (T-1991)?
+- **§9 collaboration seam.** Producer ≠ judge is sound, but the test is concrete:
+  *what evidence counts* as AEF "validated" a primitive? The ADR says "actually usable
+  for dispatch" — that's a verbal test, not a wire test. Drill: name the artefact that
+  proves consumer-validated.
+- **§9 "rising consultation is a smell".** The §9 self-correcting clause. Drill: what's
+  the threshold? How many consult rounds before "stop and re-contract" fires?
+
+**Companion ADR:** [`parallel-execution-aef.md`](parallel-execution-aef.md) (this-repo
+authoritative; grill the AEF consumer side there).
+
+**Scoping inception that consumes this ADR (consumer side):**
+[`T-2303`](../../.tasks/active/T-2303-scoping-inception--parallel-execution-ar.md)
+(IW-3 in particular: TermLink coordination timing + mechanism + contract artefact).

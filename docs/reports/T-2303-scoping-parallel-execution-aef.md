@@ -6,6 +6,13 @@
 **Related ADRs:** [`docs/architecture/parallel-execution-aef.md`](../architecture/parallel-execution-aef.md) + [`docs/architecture/parallel-execution-substrate.md`](../architecture/parallel-execution-substrate.md) (landed by T-2302)
 **Recommendation at filing:** DEFER (legitimate evidence-gap per T-2144 — exploration spikes have not run)
 
+**Grill Me entry points:**
+- This inception: see `## Grill Me` section in [`T-2303` task body](../../.tasks/active/T-2303-scoping-inception--parallel-execution-ar.md) — full primary-grill-target list per IW spike, plus assumption stress-tests.
+- AEF ADR: see `## 10. Grill Me` in [`docs/architecture/parallel-execution-aef.md`](../architecture/parallel-execution-aef.md).
+- Substrate ADR: see `## 11. Grill Me` in [`docs/architecture/parallel-execution-substrate.md`](../architecture/parallel-execution-substrate.md).
+- arc-003 parent: see `grill_me:` field in [`.context/arcs/orchestrator-rethink.yaml`](../../.context/arcs/orchestrator-rethink.yaml).
+- Invocation: `/grill-with-docs` (skill: `.claude/skills/grill-with-docs/SKILL.md`).
+
 ---
 
 ## Scope
