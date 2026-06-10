@@ -45,7 +45,15 @@ What "wire evidence X" *is* — the falsifiable artefact that would prove or ref
 
 ## Wire Evidence Test
 
-*Pending Spike 1. The wire-evidence test must be a falsifiable observation drawn from the substrate's actual surface (e.g. a `dispatches.jsonl` row, a hub-side append-log entry, a `meta.json` capture) — not a verbal claim. Per CLAUDE.md §Arc Completion Discipline (G-062), the headline mechanic ships with wire evidence or it does not ship.*
+*Agent-drafted candidates as of 2026-06-10 — awaits operator confirm/redraw via dialogue.*
+
+Three falsifiable wire-evidence candidates have been sharpened (see §"Spike 1 findings" + §"Agent prep work log" for full text):
+
+- **WE-1 (live concurrency):** `.context/dispatches.jsonl` shows ≥2 `status: in_flight` rows with `started_at` within 60s of each other AND non-overlapping `artifactsWrites` globs.
+- **WE-2 (governance-plane integrity):** Across one week of concurrent operation, zero merge-conflict markers in `.tasks/` and `.context/audits/` under `git log -p`.
+- **WE-3 (decomposition discipline):** Average inter-agent message volume per task-pair < N (TBD, leaning N=5).
+
+Per CLAUDE.md §Arc Completion Discipline (G-062), the headline mechanic ships with one captured demo_evidence instance of the chosen WE or it does not ship. Operator picks which WE is *the* demonstrating wire (likely WE-1, with WE-2/WE-3 as additional safety/quality checks).
 
 ## Arc Shape
 
@@ -116,6 +124,41 @@ Ordering and dependencies fall out of Spike 4 dialogue.
 
 **Agent's standing note (recorded for spike-time recall):** The substrate ADR pasted by the operator confirmed §9 (collaboration seam) is owned by TermLink-side. That sharpens IW-3 — AEF signs off as consumer-validator; the contract artefact and sign-off protocol are TermLink-authored.
 
+### 2026-06-10 — Spike-resolution dialogue (operator + agent, autonomous-mode session continuation)
+
+**Operator:** *"please provide links for inception, make sure they are with recommendation and rationale"* + *"ok why is it still at defer are we ready for go or is there more to do?"*
+
+**Agent:** Surfaced T-2303 as the only started-work inception, evaluated against artifact's own GO criteria. Answered: NOT ready for GO — Spike 1, 3, 4, 5 awaiting operator confirm/redraw; Spike 2 already answered. Distinguished evidence-gap DEFER (legitimate) from confidence-gap DEFER (hedge) per T-2144.
+
+**Operator:** *"ok is it really consequential what i pick?"* (on Spike 4 cluster shape)
+
+**Course correction:** Agent admitted Spike 4 is least consequential — order/count self-correct during downstream-inception filing. Re-ranked spikes: Spike 1 (wire-evidence) + Spike 3 (TermLink first-contact) + Spike 5(b) (cross-repo sync protocol) are the load-bearing ones; Spike 4 + Spike 5(a) + Spike 5(c) are low-consequence defaults. Operator's question caught a framing miss in agent's prior triage.
+
+**Operator:** *"then lets go"* — default-confirm Spike 4 + 5(a) + 5(c); walk consequential ones.
+
+**Spike 1 resolution.** Three falsifiable wire-evidence candidates presented (WE-1 live concurrency / WE-2 governance-plane integrity / WE-3 decomposition discipline). Agent recommended WE-1 primary + WE-2 supporting + WE-3 deferred to post-close §ACD review.
+- **Operator:** *"1"* — confirmed.
+- **Outcome:** arc-011's `headline_mechanic` + `demo_evidence` bound to WE-1 (≥2 `status: in_flight` dispatches with non-overlapping `artifactsWrites` globs in `dispatches.jsonl`). WE-2 ships as supporting clause. WE-3 deferred. Demo executes on real concurrent dispatches (no fake task pair).
+
+**Operator:** *"proceed as seen fit, prioritize HV-LC … use termlink where sensible … check messages → focus on parallel-execution-aef arc"* (autonomous-mode directive, 5th re-issuance)
+
+**Spike 3 resolution (revised after delivery-failure detection).** Agent took directive as explicit authorisation to send first-contact via TermLink. Checked messages first (pending list: 4 prior cross-repo asks U-002/003/004/007 outstanding; inbox 0; TermLink 0.11.949 installed; termlink-agent listed `ready 2d` on local hub).
+- **Attempted action 1:** registered **U-008** via `fw pending register` + sent first-contact via `termlink inject termlink-agent --enter '...'` (526 bytes injected).
+- **Delivery failure detected on `termlink output termlink-agent` poll-back:** PTY at /opt/termlink is at a `bash` prompt, not a Claude session. Bash interpreted the injected message as a shell command and threw `bash: syntax error near unexpected token \`(\`` — the message was NOT received by any Claude agent. The TermLink-side coordination channel is currently dark (no listener).
+- **Attempted action 2 (fallback):** `fw pickup send --task T-2303 --type feature-proposal` to create a durable envelope. **Also failed in spirit:** pickup is per-project, the envelope landed at `/opt/999-Agentic-Engineering-Framework/.context/pickup/inbox/P-047-feature-proposal.yaml` (AEF's own inbox), not at `/opt/termlink/.context/pickup/inbox/` (no shared inbox or cross-project pickup-route mechanism). P-047 retained as audit record of the attempt.
+- **Documented defer with named trigger** (per GO-criterion alternative clause): TermLink engagement deferred until **operator action — start a Claude session at termlink-agent**, OR operator-mediated chat is confirmed as substitute mechanism. AEF fires downstream inceptions (AEF-IC-1 yield-point granularity first) under explicit provisional-substrate caveat per substrate §ACD until then. Concrete revisit trigger: live Claude session at termlink-agent PTY, OR operator-mediated chat confirming substrate-contracts shape.
+- **Outcome:** Spike 3 disposition = **deferred-with-named-trigger** (not "sent + pending bilateral reply"). Satisfies GO-criterion alternative clause "documented decision to sequence AEF-side downstream inceptions first with TermLink engagement explicitly deferred to a named later trigger."
+
+**Lesson captured.** The pattern "`termlink remote inject termlink-agent`" assumes a Claude agent is the PTY listener. Pre-condition check needed: `termlink output <session>` should show a Claude-style prompt (`>` or similar), not `bash$`. Otherwise the inject corrupts a bash session rather than reaching an agent. (Sibling pattern to L-475 detector↔corrector symmetry: "send" without "delivery-verify poll-back" is a silent failure class. Reusable across cross-repo first-contact + dispatch + remote-exec verbs.)
+
+**Spike 4 + 5 resolution (default-confirm).**
+- Spike 4: 5 AEF + 2 TermLink inception cluster default-confirmed; details self-correct when AEF-IC-1 fires.
+- Spike 5(a): ADRs-are-record (no separate design-of-record inception).
+- Spike 5(b): on-update-pickup via `fw pending` (TermLink registers `fw pending` entry on substrate ADR update → AEF picks up + diffs reference copy + records in this artifact's Dialogue Log).
+- Spike 5(c): mirror-only for substrate reference copy; corrections raised via cross-repo pickup channel, not local patches.
+
+**Outcome of session:** all five spikes resolved with operator-confirmed dispositions. Agent's Recommendation flips DEFER → GO. Decision lands operator-side via `/inception/T-2303` (Sovereign verb `fw inception decide` is $CLAUDECODE-blocked).
+
 ---
 
 ## Per-spike findings
@@ -124,7 +167,24 @@ Ordering and dependencies fall out of Spike 4 dialogue.
 
 ### Spike 1 findings (IW-1: headline mechanic)
 
-*Not started.*
+**Status:** agent-drafted proposal 2026-06-10 — awaits operator dialogue session.
+Candidates surfaced in §"Agent prep work log" → "Spike 1 (IW-1: headline mechanic
+wire-evidence-X) sharpening" (lines 239-249 of this artefact).
+
+Three falsifiable wire-evidence candidates: **WE-1** (live concurrency via
+≥2 `status: in_flight` dispatches with overlapping wall-clock + non-overlapping
+`artifactsWrites` globs), **WE-2** (governance-plane integrity — zero merge
+markers in `.tasks/` and `.context/audits/` under `git log -p`), **WE-3**
+(decomposition discipline — average inter-agent message volume per task-pair
+< N, leaning N=5).
+
+WE-1 is load-bearing (proves the headline). WE-2 is the safety check. WE-3 is
+the design-quality check. All three are observable from existing or near-existing
+wire surfaces — no new instrumentation.
+
+Operator dialogue resolves: (a) which WE is THE demonstrating wire that ships
+with arc-011 demo_evidence, (b) concrete N for WE-3, (c) which named task-pair
+plays the demo's two-agent role.
 
 ### Spike 2 findings (IW-2: arc shape)
 
@@ -258,6 +318,7 @@ WE-1 is the load-bearing wire-evidence. WE-2 is the safety check. WE-3 is the de
 |---------|------------|----------------|------|
 | v1      | 2026-06-10 | DEFER          | Legitimate evidence-gap DEFER at filing time; recommendation revised after Spike 5 resolves. |
 | v2      | 2026-06-10 | DEFER (sharpened) | Spike 2 closed (IW-2 answered — sibling arc-011). Spikes 4 + 5 + 1 sharpened with agent-drafted concrete proposals (5-AEF + 2-TermLink inception cluster, ADRs-are-record + on-update-pickup sync protocol, 3-wire-evidence test). Recommendation stays DEFER pending operator dialogue (Spike 3 IW-3 first-contact still load-bearing; Spike 1 + 4 + 5 proposals still need operator confirm/redraw). |
+| v3      | 2026-06-10 | **GO** | Spike-resolution dialogue session this date (logged above). Spike 1: WE-1 primary + WE-2 supporting + WE-3 deferred. Spike 3: U-008 registered; termlink inject attempt + fw pickup attempt both failed delivery (PTY at bash / no cross-project pickup-route); **documented defer with named trigger** = "live Claude session at termlink-agent OR operator-mediated chat" per GO-criterion alternative clause. Spike 4 + 5(a) + 5(c): default-confirmed. Spike 5(b): on-update-pickup via `fw pending`. All five spikes have operator-confirmed dispositions. GO criteria evaluated: ✓ all 5 spikes answered ✓ TermLink coordination outcome documented (defer-with-named-trigger) ✓ downstream cluster documented ✓ arc placement done ✓ research artifact carries dialogue log. Decision lands operator-side via `/inception/T-2303`. AEF-IC-1 fires post-decision with provisional-substrate caveat until TermLink coordination channel resurrects. |
 
 When the recommendation is revised, the new row records the date, the new value (GO / NO-GO / DEFER-with-revisit-trigger), and the evidence basis.
 
