@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2301: resume arc-focus port — surface arc in cmd_status/cmd_quick
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T06:53:37Z
+# ============================================================================
+
+task_id: T-2301
+task_name: "resume arc-focus port — surface arc in cmd_status/cmd_quick"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T06:48:59Z
+completed: 2026-06-10T06:53:24Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/resume/resume.sh` defines `get_arc_focus()` (mirror of `get_focus`, reads `WORKING_DIR/arc-focus.yaml`, squashes literal `null` → empty)'
+  - '`cmd_status` Session block emits an `Arc:` line above `Focus:` (reads `get_arc_focus`, defaults to `none`)'
+  - '`cmd_status` recommendation when focus is set appends ` (arc: <slug>)` iff arc-focus is set'
+  - '`cmd_quick` summary emits `Arc: <slug> | Focus: <id>` when both are set, falls back to `Focus: <id>` / task-count / `No active tasks` otherwise'
+  - '`agents/resume/AGENT.md` §How It Works item 2 lists `arc-focus.yaml` and "Current arc focus"'
+  - '`.agentic-framework/agents/resume/{resume.sh,AGENT.md}` mirror canonical (`.sh` via `fw vendor self`; `.md` manually `cp`''d — OBS-068 filed for `_self_vendor_agents` `*.md` filter gap)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2301-resume-arc-focus-port--surface-arc-in-cm.md
+generated_by: context-agent-hybrid

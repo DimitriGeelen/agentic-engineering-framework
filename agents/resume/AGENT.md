@@ -28,9 +28,10 @@ The resume agent reads from multiple sources and synthesizes:
    - "Where We Are" summary
    - Suggested first action
 
-2. **Working Memory** (`session.yaml`, `focus.yaml`)
+2. **Working Memory** (`session.yaml`, `focus.yaml`, `arc-focus.yaml`)
    - Current session ID
    - Current focus task
+   - Current arc focus
    - May be stale — use `sync` to fix
 
 3. **Git State**

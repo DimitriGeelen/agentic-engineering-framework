@@ -86,6 +86,21 @@ get_session() {
     fi
 }
 
+# T-2301: Port the arc-focus.yaml reader from handover.sh / post-compact-resume.sh
+# so the interactive /resume path surfaces the same arc-scoping signal those
+# automated paths already inject. `--clear` writes literal `current_arc: null`
+# (lib/arc.sh:472), so squash null → empty for the caller.
+get_arc_focus() {
+    if [ -f "$WORKING_DIR/arc-focus.yaml" ]; then
+        local arc
+        arc=$(grep "^current_arc:" "$WORKING_DIR/arc-focus.yaml" | cut -d: -f2 | tr -d ' "')
+        [ "$arc" = "null" ] && arc=""
+        echo "$arc"
+    else
+        echo ""
+    fi
+}
+
 # STATUS command - full synthesis
 cmd_status() {
     echo -e "${CYAN}${BOLD}=== RESUME: Current State ===${NC}"
@@ -96,7 +111,10 @@ cmd_status() {
     session_id=$(get_session)
     local focus
     focus=$(get_focus)
+    local arc_focus
+    arc_focus=$(get_arc_focus)
     echo -e "${BOLD}Session:${NC} ${session_id:-unknown}"
+    echo -e "${BOLD}Arc:${NC} ${arc_focus:-none}"
     echo -e "${BOLD}Focus:${NC} ${focus:-none}"
     echo ""
 
@@ -260,7 +278,11 @@ if nd:
     if [ "$task_count" -eq 0 ]; then
         echo "  1. Create a new task or review open questions"
     elif [ -n "$focus" ]; then
-        echo "  1. Continue work on $focus"
+        if [ -n "$arc_focus" ]; then
+            echo "  1. Continue work on $focus (arc: $arc_focus)"
+        else
+            echo "  1. Continue work on $focus"
+        fi
     else
         echo "  1. Set focus: ./agents/context/context.sh focus T-XXX"
     fi
@@ -365,6 +387,8 @@ EOF
 cmd_quick() {
     local focus
     focus=$(get_focus)
+    local arc_focus
+    arc_focus=$(get_arc_focus)
     IFS='|' read -r task_count task_list <<< "$(get_active_tasks)"
     IFS='|' read -r uncommitted last_commit branch <<< "$(get_git_state)"
 
@@ -381,7 +405,9 @@ cmd_quick() {
 
     local summary=""
 
-    if [ -n "$focus" ]; then
+    if [ -n "$arc_focus" ] && [ -n "$focus" ]; then
+        summary="Arc: $arc_focus | Focus: $focus"
+    elif [ -n "$focus" ]; then
         summary="Focus: $focus"
     elif [ "$task_count" -gt 0 ]; then
         summary="$task_count active tasks"
