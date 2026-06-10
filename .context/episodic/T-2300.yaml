@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2300: T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional,
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T09:17:26Z
+# ============================================================================
+
+task_id: T-2300
+task_name: "T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional,"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T23:11:11Z
+completed: 2026-06-10T09:17:14Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-06-10T11:16:22+02:00
+last_commit: 2026-06-10T11:16:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lift horizon-null + T-709 notify out of move-conditional (re-close leg-gap)
+
+# Key outcomes
+outcomes:
+  - '`agents/task-create/update-task.sh` always null-stores `horizon:` when the task file resides in `.tasks/completed/` at the end of a `--status work-completed` transition, regardless of whether the close gate also performed a `git mv`. Implementation lifts the existing `_sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"` line out of the move-conditional, OR adds a sibling no-move branch that runs the same mutation, OR runs the mutation unconditionally after the move-or-not branches.'
+  - 'Backfill: the 8 affected tasks in `.tasks/completed/` (T-2168, T-2180, T-2182, T-2196, T-2201, T-2203, T-2204, T-2248) have `horizon: null` in frontmatter. YAML still parses.'
+  - '`tests/unit/test_update_task_horizon_null_reclose.bats` exists with a scenario simulating re-close of a task already in `.tasks/completed/` with `horizon: now` → assert post-condition `horizon: null` and frontmatter parses. PASS.'
+  - '`bin/fw audit --section compliance` reports CTL-030 PASS (`All completed/ tasks have null/absent stored horizon`). Note: CTL-030 runs in `--section compliance` and `--section oe-daily` by design, NOT in `--section structure` — pinned by `tests/unit/audit_ctl030_completed_horizon_drift.bats` cases 12-14.'
+  - '`bin/fw reviewer T-2300` Overall:.*PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.tasks/active/T-2300-t-2163-leg-gap--update-tasksh-nulls-hori.md'
+  - '.tasks/completed/T-2168-bvp-estimator-extension-for-f-recall--f-.md'
+  - '.tasks/completed/T-2180-reviewer-fail-floor--classifyroute-10-re.md'
+  - '.tasks/completed/T-2182-t-2181-slice-1-fw-task-review-batch-help.md'
+  - '.tasks/completed/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md'
+  - '.tasks/completed/T-2201-aef-pre-flight-claude-cli-config-before-.md'
+  - '.tasks/completed/T-2203-aef-lacks-a-structural-observation-harve.md'
+  - '.tasks/completed/T-2204-recommendation-completeness-gate-has-byp.md'
+  - '.tasks/completed/T-2248-t-2240-pre-push-block-scope-mismatch--fw.md'
+  - 'tests/unit/test_update_task_horizon_null_reclose.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-10T11:16:22"
+    action: "T-2300: lift horizon-null + T-709 notify out of move-conditional (re-close leg-gap)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 606 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, rca, governance-hygiene]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 606
+  commits: 1
+  files_changed: 12
+  lines_added: 231
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2300-t-2163-leg-gap--update-tasksh-nulls-hori.md
+generated_by: context-agent-hybrid
