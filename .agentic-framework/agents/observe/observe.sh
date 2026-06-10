@@ -121,29 +121,27 @@ do_list() {
     echo -e "${BOLD}Observation Inbox${NC} ($pending pending)"
     echo ""
 
-    # Parse and display pending observations
+    # Parse and display pending observations (T-2317: yaml.safe_load — was re.split which
+    # drifted from the heredoc format and matched tag boundaries as OBS boundaries).
     python3 << PYEOF
-import re
+import yaml
 
 with open("$INBOX_FILE", "r") as f:
-    content = f.read()
+    data = yaml.safe_load(f) or {}
 
-# Split into observation blocks
-blocks = re.split(r'\n  - ', content)
-for block in blocks[1:]:  # skip header
-    if 'status: pending' not in block:
+for obs in data.get('observations', []) or []:
+    if obs.get('status') != 'pending':
         continue
-    obs_id = re.search(r'id: (OBS-\d+)', block)
-    text = re.search(r'text: "(.*?)"', block)
-    task = re.search(r'context_task: (\S+)', block)
-    tags = re.search(r'tags: \[(.*?)\]', block)
-    urgent = 'urgent: true' in block
+    obs_id = obs.get('id', '')
+    text = obs.get('text', '')
+    task = obs.get('context_task')
+    tags = obs.get('tags') or []
+    urgent = obs.get('urgent') is True
 
-    if obs_id and text:
-        prefix = "  \033[0;31m[URGENT]\033[0m " if urgent else "  "
-        tag_str = f" [{tags.group(1)}]" if tags and tags.group(1) else ""
-        task_str = f" ({task.group(1)})" if task and task.group(1) != "null" else ""
-        print(f"{prefix}\033[0;36m{obs_id.group(1)}\033[0m{tag_str}  {text.group(1)}{task_str}")
+    prefix = "  \033[0;31m[URGENT]\033[0m " if urgent else "  "
+    tag_str = f" [{', '.join(tags)}]" if tags else ""
+    task_str = f" ({task})" if task and task != "null" else ""
+    print(f"{prefix}\033[0;36m{obs_id}\033[0m{tag_str}  {text}{task_str}")
 PYEOF
 }
 

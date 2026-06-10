@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2317: fix observe.sh:132 triage regex split (root-level dash, post-T-2316)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T16:07:29Z
+# ============================================================================
+
+task_id: T-2317
+task_name: "fix observe.sh:132 triage regex split (root-level dash, post-T-2316)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T16:05:58Z
+completed: 2026-06-10T16:07:22Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/observe/observe.sh` triage display uses `yaml.safe_load` (no `re.split` on observation boundaries)'
+  - '`fw note triage` with the live inbox shows OBS-069 id paired with OBS-069 text (no cross-id contamination)'
+  - 'All 13 `tests/unit/observe.bats` tests PASS (no regression)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2317-fix-observesh132-triage-regex-split-root.md
+generated_by: context-agent-hybrid
