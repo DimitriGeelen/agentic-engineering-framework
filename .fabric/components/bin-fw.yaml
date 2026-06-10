@@ -569,3 +569,5 @@ depended_by:
   type: tests_by
 - target: tools/g065-readiness.py
   type: called_by
+- target: tests/unit/t2318_retrofit_injector_append_missing.bats
+  type: tests_by

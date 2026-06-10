@@ -1997,3 +1997,10 @@ decisions:
     date: 2026-06-09
     task: T-2180
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-288
+    decision: "accept 88/811 as the fabric enrich saturation floor for now; do not pursue manual edging in this pass."
+    scope: project
+    date: 2026-06-10
+    task: T-2319
+    rationale: "Auto-captured from task file on completion"

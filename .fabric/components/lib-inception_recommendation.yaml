@@ -11,6 +11,10 @@ depended_by:
   type: called_by
 - target: lib/inception.sh
   type: called_by
+- target: tests/unit/t2318_retrofit_injector_append_missing.bats
+  type: called_by
+- target: tests/unit/t2318_retrofit_injector_append_missing.bats
+  type: tests_by
 last_verified: 2026-05-04
 created_by: unknown
-last_enriched: '2026-05-05'
+last_enriched: '2026-06-10'
