@@ -2,12 +2,36 @@ pickup_id: P-002
 version: 1
 type: bug-report
 source:
-  project: "051-vinix24"
-  task_id: ""
-  agent: "claude-code"
-  timestamp: "2026-03-30T14:15:16Z"
+  project: 100-Video-riper-and-translation-app
+  task_id: T-002
+  agent: claude-code
+  timestamp: '2026-06-09T08:04:50Z'
 payload:
-  summary: "componentData defined AFTER it is referenced — graph renders empty"
-  detail: "JavaScript const hoisting: componentData referenced before initialization, D3 graph renders zero nodes."
-  priority: high
-  tags: [watchtower, fabric-explorer]
+  summary: fw pickup send writes invalid YAML when --detail contains a double-quote or backslash (naive
+    quoting, no escaping) -> envelope unparseable by fw pickup process
+  detail: "SYMPTOM\n`fw pickup send` writes an INVALID YAML envelope whenever --detail contains a\ndouble-quote\
+    \ (\") or a backslash (\\). Observed two distinct parse failures while\nfiling another bug report:\n\
+    \  - detail with embedded `\"` -> \"could not find expected ':'\"\n  - detail with `\\s` (a regex)\
+    \ -> \"found unknown escape character 's'\"\nThe resulting .context/pickup/inbox/P-*.yaml fails yaml.safe_load,\
+    \ so the\nreceiving side's `fw pickup process` cannot load it. The bug-reporting channel\nsilently\
+    \ corrupts any report containing quotes, backslashes, code, or regexes.\n\nROOT CAUSE\n`fw pickup\
+    \ send` serializes the detail payload by naively wrapping it in a YAML\nDOUBLE-QUOTED scalar without\
+    \ escaping embedded `\"` or `\\`. A double-quoted YAML\nscalar treats `\\` as an escape lead-in and\
+    \ `\"` as the terminator, so realistic\nbug-report content (which routinely contains both) produces\
+    \ malformed YAML.\n\nIMPACT\nCross-project pickups are silently corrupted for exactly the payloads\
+    \ that matter\nmost (stack traces, regexes, code, file contents). High irony / meta: this very\nreport\
+    \ could not be filed with the tool and had to be hand-emitted via\nyaml.safe_dump.\n\nRECOMMENDED\
+    \ FIXES\n1. Serialize the whole envelope with a real YAML emitter (e.g. Python\n   yaml.safe_dump(...,\
+    \ default_style='|')), NOT string interpolation.\n2. Or emit multi-line detail as a YAML literal block\
+    \ scalar (|) with correct\n   indentation.\n3. Add a post-write guard: re-open and yaml.safe_load\
+    \ the envelope after writing;\n   fail loudly if it does not parse (so corruption never ships silently).\n\
+    \nREPRO\nfw pickup send --type bug-report --summary x --detail 'has a \" quote' ; then\npython3 -c\
+    \ \"import yaml; yaml.safe_load(open('.context/pickup/inbox/P-001-bug-report.yaml'))\"\n-> ScannerError.\
+    \ Same with --detail containing a backslash.\n"
+  priority: medium
+  tags:
+  - pickup
+  - termlink
+  - yaml
+  - serialization
+  - bug-channel

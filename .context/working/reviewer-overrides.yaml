@@ -810,3 +810,24 @@ overrides:
   expires_at: '2026-09-07T20:02:55Z'
   added_by: root
   added_at: '2026-06-09T20:02:55Z'
+- id: OV-0f6c2d8e
+  task_id: T-2301
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: 'FP: backticked `WORKING_DIR/arc-focus.yaml` is a runtime-path token in
+    the function''s docstring, not a filesystem path. Narrow heuristic flags any path-shaped
+    string in AC text. Sibling FP class to OV-822b8648 / OV-3fc5133e.'
+  expires_at: '2026-09-08T06:52:55Z'
+  added_by: root
+  added_at: '2026-06-10T06:52:55Z'
+- id: OV-f1e47937
+  task_id: T-2309
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "AC text mentions web/app.py:forbidden as the legitimate target of the fix;\
+    \ the Verification block runs pytest against tests/integration/test_csrf_error_template.py\
+    \ which exercises the handler. Detector cannot trace pytest\u2192web/app.py coverage.\
+    \ Sibling of OV-822b8648 (T-2265 AC-verify-mismatch FP class)."
+  expires_at: '2026-09-08T11:30:30Z'
+  added_by: root
+  added_at: '2026-06-10T11:30:30Z'

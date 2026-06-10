@@ -1,0 +1,42 @@
+pickup_id: P-003
+version: 1
+type: bug-report
+source:
+  project: 100-Video-riper-and-translation-app
+  task_id: T-002
+  agent: claude-code
+  timestamp: '2026-06-09T08:11:58Z'
+payload:
+  summary: Watchtower inception /decide returns opaque 403 on stale CSRF token (with theme JS leaking
+    into error page); no reload guidance on a sovereignty-critical action
+  detail: "SYMPTOM\nRecording an inception go/no-go via Watchtower (POST /inception/<T>/decide)\nintermittently\
+    \ returns a bare \"403 Forbidden\" page (with the base-template theme\ninit script bleeding into the\
+    \ visible error body). Server log confirms HTTP 403\non /inception/T-002/decide after earlier 200s\
+    \ in the same session.\n\nROOT CAUSE\nCSRF rejection: app.py csrf_protect() does abort(403, \"CSRF\
+    \ token missing or\ninvalid\") when the POSTed _csrf_token != session[\"_csrf_token\"]. The token\
+    \ is\nminted once per session at page render and embedded in the form; if the page is\nheld open across\
+    \ edits / a Watchtower restart / a session change, the embedded\ntoken goes stale and the next submit\
+    \ 403s. (Secret-key persistence T-1302/T-1306\nis fine; the issue is stale per-session CSRF tokens\
+    \ + the failure UX.)\n\nWHY IT MATTERS / SYSTEMIC\nThe 403 is the LAST gate on a critical, sovereignty-only\
+    \ action (the human\nrecording a go/no-go). The failure is recoverable (just reload) but the UX does\n\
+    not say so: a bare \"Forbidden\" indistinguishable from a real permission denial,\nplus theme JS rendered\
+    \ as visible text in the error page. Users get stuck on a\ngovernance-critical step with no actionable\
+    \ guidance. Recurs for any long-open\nform, not just inception decide.\n\nRECOMMENDED FRAMEWORK FIXES\n\
+    1. CSRF-aware error page: when abort(403) is due to CSRF, render a distinct,\n   friendly message:\
+    \ \"Your page is out of date - reload and resubmit\" with a\n   reload button, NOT the generic Forbidden\
+    \ page.\n2. Auto-refresh the CSRF token client-side (csrf-htmx.js already exists): on a\n   403/CSRF\
+    \ response, fetch a fresh token and offer one-click resubmit.\n3. Fix the 403 error template so inline\
+    \ <script> (theme init) is not rendered as\n   visible text in the error body.\n4. Optional: accept\
+    \ a short grace window / token rotation tolerance so a single\n   stale submit does not hard-fail\
+    \ a governance action.\n\nREPRO\nOpen /inception/<T>; leave it open while the session token changes\
+    \ (restart, or\nanother tab reloads); submit the decision form -> 403 Forbidden with leaked JS.\n\
+    Workaround: hard-reload the page (fresh token) or use `fw inception decide` from\na human terminal\
+    \ (no CSRF path).\n"
+  priority: medium
+  tags:
+  - watchtower
+  - csrf
+  - inception
+  - decide
+  - ux
+  - error-page

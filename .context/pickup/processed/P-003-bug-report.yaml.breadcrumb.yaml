@@ -1,0 +1,4 @@
+reason: triple-dedup
+blocking_task: T-2276
+deferred_at: 2026-06-09T08:12:02Z
+envelope: P-003-bug-report.yaml
