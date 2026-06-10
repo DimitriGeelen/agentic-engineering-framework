@@ -1,0 +1,20 @@
+id: tests/unit/test_self_vendor_agents_md_filter.bats
+name: test_self_vendor_agents_md_filter
+type: script
+subsystem: unknown
+location: tests/unit/test_self_vendor_agents_md_filter.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-06-10
+created_by: unknown

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2304: OBS-068: extend _self_vendor_agents/libs filter to include .md siblings (AGENT.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T09:37:05Z
+# ============================================================================
+
+task_id: T-2304
+task_name: "OBS-068: extend _self_vendor_agents/libs filter to include .md siblings (AGENT.md"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T09:19:40Z
+completed: 2026-06-10T09:35:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-10T11:35:38+02:00
+last_commit: 2026-06-10T11:35:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-068 — extend _self_vendor_agents + audit filter to include .md
+
+# Key outcomes
+outcomes:
+  - '`_self_vendor_agents` in `lib/upgrade.sh` extends its `find` filter to include `*.md` (sibling to existing `*.sh` and `*.py`). Recursive coverage of `agents/**/*.md` (AGENT.md files at any depth).'
+  - '`check_self_vendor_drift` in `agents/audit/audit.sh` extends its libs-class `find` filter to include `*.md` for the `.agentic-framework/agents/` subtree (parity with the helper — same set, same scan boundary). The other three libs-class subtrees (bin/, lib/, web/) MAY extend at the audit level too if a probe shows they contain tracked `.md` siblings — fence each one in a comment if not.'
+  - 'Probe and document: investigate whether `lib/`, `web/`, `policy/` contain `.md` siblings that need vendoring; record findings in the task body (one-line per class: extended / no-md-content / explicitly out-of-scope).'
+  - 'New bats test `tests/unit/test_self_vendor_agents_md_filter.bats` simulating an `agents/<agent>/AGENT.md` drift scenario → assert `bin/fw vendor self --dry-run` reports the .md file in its "would sync" output, AND `fw vendor self` (real-run) syncs it. PASS.'
+  - '`bin/fw audit --section structure` reports `[PASS] Self-vendor drift: vendored .agentic-framework/ in sync with source` (i.e., no NEW false-positive drift introduced by extending the audit filter without backfilling vendored .md files).'
+  - 'Reviewer `bin/fw reviewer T-2304` Overall: PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'agents/audit/audit.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2121-t-2091-rca-prevention-follow-up-structur.md'
+  - '.tasks/active/T-2304-obs-068-extend-selfvendoragentslibs-filt.md'
+  - 'tests/unit/t2266_self_vendor_agents.bats'
+  - 'tests/unit/test_self_vendor_agents_md_filter.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-10T11:35:38"
+    action: "T-2304: OBS-068 — extend _self_vendor_agents + audit filter to include .md"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 8
+  lines_added: 414
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2304-obs-068-extend-selfvendoragentslibs-filt.md
+generated_by: context-agent-hybrid
