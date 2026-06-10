@@ -10,6 +10,7 @@ __pycache__/
 .context/working/.compact-log
 .context/working/.restart-requested
 .context/working/.last-episodic-gen.log
+.context/working/episodic-gen/
 .playwright-mcp/
 .termlink-task
 .claude/scheduled_tasks.lock

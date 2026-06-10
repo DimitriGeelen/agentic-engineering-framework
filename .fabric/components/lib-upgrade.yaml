@@ -10,7 +10,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-15'
+last_enriched: '2026-06-10'
 depended_by:
 - target: bin/fw
   type: called_by
@@ -35,4 +35,10 @@ depended_by:
 - target: tests/unit/test_upgrade_downgrade_guard.bats
   type: tests_by
 - target: tests/unit/upgrade_fresh_machine_simulation.bats
+  type: tests_by
+- target: tests/unit/test_self_vendor_agents_md_filter.bats
+  type: tests_by
+- target: tests/unit/test_self_vendor_libs_md_filter.bats
+  type: called_by
+- target: tests/unit/test_self_vendor_libs_md_filter.bats
   type: tests_by
