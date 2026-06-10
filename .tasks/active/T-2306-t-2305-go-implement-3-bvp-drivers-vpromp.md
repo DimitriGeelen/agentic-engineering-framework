@@ -82,11 +82,11 @@ Implements T-2305 GO (BVP driver batch inception, decided GO by operator 2026-06
 ### Human
 - [ ] [REVIEW] Global BVP recompute confirmation
   **Steps:**
-  1. After the three driver-add commands land, agent prompts: "Adding 3 global drivers re-scores N tasks, M arcs. Run now?"
-  2. Open Watchtower `/bvp` to see post-add state and ranking impact
-  3. Either confirm `bin/fw bvp recompute --scope global ...` (re-scores against the 3 new dimensions) or decline (drivers stay landed; recompute optional)
-  **Expected:** Recompute decision made; `.context/bvp-recompute-log.jsonl` records outcome (completed or "pending recompute" stub)
-  **If not:** Drivers are landed and usable as scoring dimensions immediately; recompute is recommended within 7 days but not blocking
+  1. Follow `docs/reports/T-2306-operator-quickstart.md` §1 (driver-add Sovereign) and §2 (bulk re-estimate via `bash agents/termlink/bvp-estimator/bvp-estimator.sh all`). The quickstart documents the actually-shipped path; T-2305 §8's `fw bvp recompute --scope global` is the deferred verb (T-2245 IW-3) and the quickstart's §2 is the verified substitute.
+  2. Open Watchtower `/bvp` to see post-add state and ranking impact.
+  3. Optional: run quickstart §3 (per-task `fw bvp confirm` for the 4-task baseline) to surface ranking signal in default `fw bvp` HV-LC sweep.
+  **Expected:** Drivers added, estimator sweep completed (one row added to each `.tasks/{active,completed}/T-*.md` `bvp_scores_proposed:` list against the new dimensions), `.context/bvp-weight-history.yaml` has the three add-entries.
+  **If not:** Drivers are landed and usable as scoring dimensions immediately; recompute is recommended within 7 days but not blocking.
 
 ## Verification
 
