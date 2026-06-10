@@ -4,17 +4,17 @@ name: "Scoping inception — parallel-execution architecture (AEF + TermLink coo
 description: >
   Inception: Scoping inception — parallel-execution architecture (AEF + TermLink coordination)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/app.py, web/templates/_error_csrf.html]
 related_tasks: [T-1641, T-1643, T-2302]
 arc_id: parallel-execution-aef
 created: 2026-06-10T07:57:45Z
-last_update: 2026-06-10T08:01:47Z
-date_finished:
+last_update: 2026-06-10T20:02:10Z
+date_finished: 2026-06-10T20:02:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -189,15 +189,15 @@ Each spike's resolution updates the corresponding IW-N entry (confidence 0→3, 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -236,17 +236,29 @@ Each spike's resolution updates the corresponding IW-N entry (confidence 0→3, 
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
 **Rationale:**
 
-Scoping inception; recommendation lands after exploration spikes (goals, arc shape, TermLink coordination, downstream inception cluster, artifact placement) resolve. Legitimate evidence-gap DEFER per T-2144 — this inception's job is to gather the evidence.
+All five spikes (IW-1..IW-5) resolved with operator-confirmed dispositions during the 2026-06-10 spike-resolution dialogue session (full transcript in `docs/reports/T-2303-scoping-parallel-execution-aef.md` §"Dialogue Log → 2026-06-10 — Spike-resolution dialogue"). GO criteria from §Go/No-Go Criteria evaluated point-by-point:
+
+1. ✓ **All 5 spikes resolved.** Spike 2 (arc shape) answered prior session = sibling arc-011. Spike 1 (wire-evidence) = WE-1 primary + WE-2 supporting + WE-3 deferred. Spike 3 (TermLink coordination) = U-008 registered + termlink inject sent 526 bytes + 7-day timeout per §ACD documented-deferral clause. Spike 4 (downstream cluster) = 5 AEF + 2 TermLink default-confirmed (details self-correct when AEF-IC-1 fires). Spike 5(a) ADRs-are-record + 5(b) on-update-pickup via `fw pending` + 5(c) mirror-only.
+2. ✓ **TermLink coordination outcome captured (documented defer with named trigger).** First-contact attempt 1 via `termlink inject termlink-agent` → delivery failure (PTY at bash, no Claude listener — bash threw syntax error). Attempt 2 via `fw pickup send` → landed in AEF's own inbox (P-047), no cross-project pickup-route. **Documented defer trigger:** TermLink engagement deferred until operator starts a live Claude session at termlink-agent OR confirms operator-mediated chat as substitute mechanism. AEF fires downstream inceptions (AEF-IC-1 first) under provisional-substrate caveat per substrate §ACD until then. This satisfies the spike-3 GO clause "documented decision to sequence AEF-side downstream inceptions first with TermLink engagement explicitly deferred to a named later trigger."
+3. ✓ **Downstream inception cluster + order documented.** §Per-spike findings → Spike 4 table + DAG. First downstream inception named: AEF-IC-1 (yield-point granularity, fires post-decision).
+4. ✓ **Arc placement decision committed.** arc-011 `parallel-execution-aef` created prior session (anchor T-2303).
+5. ✓ **Research artifact carries dialogue log + per-spike findings.** Artifact at 380+ lines, two Dialogue Log entries (origination + spike resolution).
+
+NO-GO criteria evaluated: none triggered. Spike 1 pinned a falsifiable headline mechanic (WE-1). Spike 3 produced a bilateral-or-timeout outcome (not a TermLink-not-ready blocker). Operator did not signal ADR-design pushback.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- `docs/reports/T-2303-scoping-parallel-execution-aef.md` §Dialogue Log §"2026-06-10 — Spike-resolution dialogue" — full operator dialogue verbatim
+- `docs/reports/T-2303-scoping-parallel-execution-aef.md` §Recommendation evolution v3 — point-by-point GO criteria evaluation
+- `bin/fw pending list` → U-008 — registered cross-repo first-contact entry
+- `termlink list` → `tl-chgzyrlq termlink-agent ready` — confirmed delivery target
+- `docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md` — drafted artifact backing the first-contact message
+- `.context/arcs/parallel-execution-aef.yaml` (arc-011) — created prior session, anchor T-2303
+- `docs/architecture/parallel-execution-aef.md` + `docs/architecture/parallel-execution-substrate.md` — design-of-record ADRs (Spike 5(a))
 
 ## Decisions
 
@@ -261,7 +273,33 @@ Scoping inception; recommendation lands after exploration spikes (goals, arc sha
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+All five spikes (IW-1..IW-5) resolved with operator-confirmed dispositions during the 2026-06-10 spike-resolution dialogue session (full transcript in `docs/reports/T-2303-scoping-parallel-execution-aef.md` §"Dialogue Log → 2026-06-10 — Spike-resolution dialogue"). GO criteria from §Go/No-Go Criteria evaluated point-by-point:
+
+1. ✓ All 5 spikes resolved. Spike 2 (arc shape) answered prior session = sibling arc-011. Spike 1 (wire-evidence) = WE-1 primary + WE-2 supporting + WE-3 deferred. Spike 3 (TermLink coordination) = U-008 registered + termlink inject sent 526 bytes + 7-day timeout per §ACD documented-deferral clause. Spike 4 (downstream cluster) = 5 AEF + 2 TermLink default-confirmed (details self-correct when AEF-IC-1 fires). Spike 5(a) ADRs-are-record + 5(b) on-update-pickup via `fw pending` + 5(c) mirror-only.
+2. ✓ TermLink coordination outcome captured (documented defer with named trigger). First-contact attempt 1 via `termlink inject termlink-agent` → delivery failure (PTY at bash, no Claude listener — bash threw syntax error). Attempt 2 via `fw pickup send` → landed in AEF's own inbox (P-047), no cross-project pickup-route. Documented defer trigger: TermLink engagement deferred until operator starts a live Claude session at termlink-agent OR confirms operator-mediated chat as substitute mechanism. AEF fires downstream inceptions (AEF-IC-1 first) under provisional-substrate caveat per substrate §ACD until then. This satisfies the spike-3 GO clause "documented decision to sequence AEF-side downstream inceptions first with TermLink engagement explicitly deferred to a named later trigger."
+3. ✓ Downstream inception cluster + order documented. §Per-spike findings → Spike 4 table + DAG. First downstream inception named: AEF-IC-1 (yield-point granularity, fires post-decision).
+4. ✓ Arc placement decision committed. arc-011 `parallel-execution-aef` created prior session (anchor T-2303).
+5. ✓ Research artifact carries dialogue log + per-spike findings. Artifact at 380+ lines, two Dialogue Log entries (origination + spike resolution).
+
+NO-GO criteria evaluated: none triggered. Spike 1 pinned a falsifiable headline mechanic (WE-1). Spike 3 produced a bilateral-or-timeout outcome (not a TermLink-not-ready blocker). Operator did not signal ADR-design pushback.
+
+Evidence:
+
+- `docs/reports/T-2303-scoping-parallel-execution-aef.md` §Dialogue Log §"2026-06-10 — Spike-resolution dialogue" — full operator dialogue verbatim
+- `docs/reports/T-2303-scoping-parallel-execution-aef.md` §Recommendation evolution v3 — point-by-point GO criteria evaluation
+- `bin/fw pending list` → U-008 — registered cross-repo first-contact entry
+- `termlink list` → `tl-chgzyrlq termlink-agent ready` — confirmed delivery target
+- `docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md` — drafted artifact backing the first-contact message
+- `.context/arcs/parallel-execution-aef.yaml` (arc-011) — created prior session, anchor T-2303
+- `docs/architecture/parallel-execution-aef.md` + `docs/architecture/parallel-execution-substrate.md` — design-of-record ADRs (Spike 5(a))
+
+**Date**: 2026-06-10T20:02:10Z
 
 ## Updates
 
@@ -273,9 +311,39 @@ Scoping inception; recommendation lands after exploration spikes (goals, arc sha
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ee483896
-- **Timestamp:** 2026-06-10T08:10:45Z
+- **Scan ID:** R-79e9f0a6
+- **Timestamp:** 2026-06-10T20:02:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+### 2026-06-10T20:02:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+All five spikes (IW-1..IW-5) resolved with operator-confirmed dispositions during the 2026-06-10 spike-resolution dialogue session (full transcript in `docs/reports/T-2303-scoping-parallel-execution-aef.md` §"Dialogue Log → 2026-06-10 — Spike-resolution dialogue"). GO criteria from §Go/No-Go Criteria evaluated point-by-point:
+
+1. ✓ All 5 spikes resolved. Spike 2 (arc shape) answered prior session = sibling arc-011. Spike 1 (wire-evidence) = WE-1 primary + WE-2 supporting + WE-3 deferred. Spike 3 (TermLink coordination) = U-008 registered + termlink inject sent 526 bytes + 7-day timeout per §ACD documented-deferral clause. Spike 4 (downstream cluster) = 5 AEF + 2 TermLink default-confirmed (details self-correct when AEF-IC-1 fires). Spike 5(a) ADRs-are-record + 5(b) on-update-pickup via `fw pending` + 5(c) mirror-only.
+2. ✓ TermLink coordination outcome captured (documented defer with named trigger). First-contact attempt 1 via `termlink inject termlink-agent` → delivery failure (PTY at bash, no Claude listener — bash threw syntax error). Attempt 2 via `fw pickup send` → landed in AEF's own inbox (P-047), no cross-project pickup-route. Documented defer trigger: TermLink engagement deferred until operator starts a live Claude session at termlink-agent OR confirms operator-mediated chat as substitute mechanism. AEF fires downstream inceptions (AEF-IC-1 first) under provisional-substrate caveat per substrate §ACD until then. This satisfies the spike-3 GO clause "documented decision to sequence AEF-side downstream inceptions first with TermLink engagement explicitly deferred to a named later trigger."
+3. ✓ Downstream inception cluster + order documented. §Per-spike findings → Spike 4 table + DAG. First downstream inception named: AEF-IC-1 (yield-point granularity, fires post-decision).
+4. ✓ Arc placement decision committed. arc-011 `parallel-execution-aef` created prior session (anchor T-2303).
+5. ✓ Research artifact carries dialogue log + per-spike findings. Artifact at 380+ lines, two Dialogue Log entries (origination + spike resolution).
+
+NO-GO criteria evaluated: none triggered. Spike 1 pinned a falsifiable headline mechanic (WE-1). Spike 3 produced a bilateral-or-timeout outcome (not a TermLink-not-ready blocker). Operator did not signal ADR-design pushback.
+
+Evidence:
+
+- `docs/reports/T-2303-scoping-parallel-execution-aef.md` §Dialogue Log §"2026-06-10 — Spike-resolution dialogue" — full operator dialogue verbatim
+- `docs/reports/T-2303-scoping-parallel-execution-aef.md` §Recommendation evolution v3 — point-by-point GO criteria evaluation
+- `bin/fw pending list` → U-008 — registered cross-repo first-contact entry
+- `termlink list` → `tl-chgzyrlq termlink-agent ready` — confirmed delivery target
+- `docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md` — drafted artifact backing the first-contact message
+- `.context/arcs/parallel-execution-aef.yaml` (arc-011) — created prior session, anchor T-2303
+- `docs/architecture/parallel-execution-aef.md` + `docs/architecture/parallel-execution-substrate.md` — design-of-record ADRs (Spike 5(a))
+
+### 2026-06-10T20:02:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
