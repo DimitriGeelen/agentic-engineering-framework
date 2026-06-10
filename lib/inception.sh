@@ -981,13 +981,21 @@ new_block = (
 m = template_pat.search(content)
 if not m:
     m = empty_pat.search(content)
-if not m:
-    print(f"  SKIP: Recommendation block not found in template/empty form", file=sys.stderr)
-    sys.exit(0)
-new_content = content[:m.start()] + "## Recommendation\n" + new_block + content[m.end():]
+if m:
+    # Template-present or empty-present: replace in place
+    new_content = content[:m.start()] + "## Recommendation\n" + new_block + content[m.end():]
+    action = "REPLACED template/empty"
+else:
+    # T-2318: section missing entirely (pre-T-1716 backlog). Append a
+    # ## Recommendation section to the end of the file. Strip trailing
+    # whitespace first to avoid stacked blank lines, then ensure exactly
+    # one blank line before the new heading.
+    stripped = content.rstrip() + "\n\n"
+    new_content = stripped + "## Recommendation\n" + new_block
+    action = "APPENDED missing section"
 with open(fp, 'w') as f:
     f.write(new_content)
-print(f"  WROTE: DEFER stub")
+print(f"  WROTE: DEFER stub ({action})")
 PYRETROFIT
         else
             echo "  (read-only — pass --apply to mutate)"

@@ -1,21 +1,13 @@
 ---
-id: T-2121
-name: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id
-  collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md
-  that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time
-  block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/
-  before mutating any .tasks/active/ file (prevents masking by metadata churn); (3)
-  bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently
-  doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing
-  as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention
-  are independent."
+id: T-2318
+name: "fix retrofit injector — append ## Recommendation when section missing (OBS-069)"
 description: >
-  Promoted from observation OBS-035
+  fix retrofit injector — append ## Recommendation when section missing (OBS-069)
 
-status: captured
-workflow_type: inception
-owner: human
-horizon: later
+status: work-completed
+workflow_type: build
+owner: agent
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,9 +15,15 @@ related_tasks: []
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-05-30T20:16:09Z
-last_update: '2026-06-10T09:30:03Z'
-date_finished:
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
+created: 2026-06-10T16:46:12Z
+last_update: 2026-06-10T16:49:12Z
+date_finished: 2026-06-10T16:49:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,65 +34,23 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-06-05T18:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-10T09:30:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 4
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-06-05T18:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-ORCH: 4
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=4 (body:rubric-routable)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-10T09:30:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2121: T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent.
+# T-2318: fix retrofit injector — append ## Recommendation when section missing (OBS-069)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+OBS-069 (T-2313): T-2121 inception is detected by `find_inceptions_without_recommendation` (correct) but `do_inception_retrofit_recommendations` silently skips it under `--apply` because the injector's regex (`template_pat` + `empty_pat`) only matches a pre-existing `## Recommendation` section. T-2121 has no such section at all (filed pre-T-1716 gate, only 8 sections: Context, AC, Verification, RCA, Evolution, Decisions, Decision, Updates).
+
+OBS-069 hypothesised a status filter (`captured` skipped); verified empirically that hypothesis is wrong — the scanner already iterates every inception regardless of status. The real bug is in the injector's missing-section append path.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/inception.sh` injector (around line 957-991) handles missing-section case by APPENDING `## Recommendation\n\n**Recommendation:** <REC>\n\n**Rationale:**\n\n<RAT>\n\n**Evidence:**\n\n<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->\n` to the end of the file (after stripping trailing whitespace), distinct from the existing template-replace + empty-replace paths.
+- [x] `bin/fw inception retrofit-rec --apply` mutates T-2121 (after backup), adds `## Recommendation` section with DEFER stub; pre-existing 8 sections preserved; `has_real_recommendation` returns 0 (true) after retrofit.
+- [x] `tests/unit/t2318_retrofit_injector_append_missing.bats` exercises three cases (template-present → replace, empty-present → replace, missing → append) and asserts post-state `has_real_recommendation` returns 0 in all three.
+- [x] [REVIEWER] Reviewer PASS — `bin/fw reviewer T-2318` returns Overall:.*PASS.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -129,6 +85,9 @@ bvp_scores_proposed:
 
 ## Verification
 
+bats tests/unit/t2318_retrofit_injector_append_missing.bats
+out=$(bin/fw reviewer T-2318 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$out" | grep -q "Overall:.*FAIL"
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -162,19 +121,13 @@ bvp_scores_proposed:
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** T-2121 (inception filed pre-T-1716 gate) detected by retrofit scanner as missing `## Recommendation`, but `fw inception retrofit-rec --apply` silently leaves it untouched. The retrofit cron `inception-retrofit-rec-hourly` reports work done but T-2121 keeps tripping CTL-027 FAIL ("inception missing Recommendation") in audit.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Asymmetric coverage between detector and corrector. `find_inceptions_without_recommendation` correctly emits T-2121 (no real Recommendation found). The injector then runs two regexes — `template_pat` (matches `## Recommendation\n<!--…-->`) and `empty_pat` (matches `## Recommendation\n\n`) — both of which REQUIRE the section heading to exist. When the section is entirely missing, both fail to match, and the Python block exits 0 with a `SKIP: …` stderr message swallowed by the surrounding shell loop. Net: detector flags, corrector no-ops, status quo persists.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The retrofit corrector was authored to cover the post-T-1716 case (template stub injected by `do_inception_start`); the pre-T-1716 backlog (where `## Recommendation` doesn't exist at all) was out of design scope. No assertion on "every detected task got corrected" closes the symmetry gap. T-2208 (hourly cron) layered on top without re-verifying the corrector covers all scanner emissions.
+
+**Prevention:** A bats test that walks every scanner-emitted task through `--apply` and asserts post-state `has_real_recommendation` returns 0. This pins the detector↔corrector symmetry — any future detector class that the corrector can't handle would fail loudly. See AC #3.
 
 ## Evolution
 
@@ -223,23 +176,19 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-05-30T20:16:09Z — task-created [task-create-agent]
+### 2026-06-10T16:46:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2121-t-2091-rca-prevention-follow-up-structur.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2318-fix-retrofit-injector--append--recommend.md
 - **Context:** Initial task creation
 
-### 2026-06-10T09:17:42Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+## Reviewer Verdict (v1.5)
 
-## Recommendation
+- **Scan ID:** R-86cb545e
+- **Timestamp:** 2026-06-10T16:49:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
 
-**Recommendation:** DEFER
-
-**Rationale:**
-
-Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
-
-**Evidence:**
-
-<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
-
+### 2026-06-10T16:49:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -3623,3 +3623,10 @@ X'` returning empty group."
   date: 2026-06-10
   context: Added via context agent
   application: TBD
+- id: L-475
+  learning: "Detector-corrector symmetry rail: if a 'detect-then-fix' loop exists, write an end-to-end test that walks every detector-emitted item through the corrector and asserts the detector emits zero post-fix. T-2318 origin: T-2121 silently un-retrofitted for weeks because injector regex assumed section pre-existed; OBS-069 hypothesised wrong root cause (status filter) but symptom was real. Test in tests/unit/t2318 t6 pins symmetry."
+  source: P-001
+  task: T-2303
+  date: 2026-06-10
+  context: Added via context agent
+  application: TBD
