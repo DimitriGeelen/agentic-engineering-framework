@@ -8,7 +8,7 @@ description: >
 
 status: started-work
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-10T11:19:46Z
-last_update: '2026-06-10T11:30:03Z'
+last_update: 2026-06-10T11:31:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -287,3 +287,6 @@ Discovered cross-project, in field — no test pinned the friendly-error contrac
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#1 (Agent)
+
+### 2026-06-10T11:31:24Z — status-update [task-update-agent]
+- **Change:** owner: agent → human

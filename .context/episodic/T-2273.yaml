@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2273: arc-010 HM-A demo-target — generate MCP tools overview doc
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T13:55:32Z
+# ============================================================================
+
+task_id: T-2273
+task_name: "arc-010 HM-A demo-target — generate MCP tools overview doc"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-08T23:03:13Z
+completed: 2026-06-09T13:55:25Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-06-09T09:53:05+02:00
+last_commit: 2026-06-09T09:53:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  document parent-session focus-touch caveat for HM-A demo
+
+# Key outcomes
+outcomes:
+  - 'Deliverable file `docs/reports/arc-010-mcp-tools-overview.md` exists.'
+  - 'Deliverable file word count between 80 and 150 words (`wc -w docs/reports/arc-010-mcp-tools-overview.md` ≥ 80 and ≤ 150).'
+  - 'Deliverable groups the 22 framework MCP tools (16 read_only + 6 agent_authority per `policy/capability-overlay/tool-set.yaml`) into ≥ 4 named capability groupings (e.g. task / context / focus / fabric / handover / metrics).'
+  - 'Deliverable references T-2265 (MCP server ship), T-2258 (tool-set artefact), and `policy/capability-overlay/tool-set.yaml` (path).'
+  - '`bin/fw reviewer T-2273` returns Overall: PASS or CONCERN with findings only in suppressible FP classes (mock-only-integration, AC-verify-mismatch). Override via `bin/fw reviewer override add T-2273 ...` if confirmed FP.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2273-arc-010-hm-a-demo-target--generate-mcp-t.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-09T09:53:05"
+    action: "T-2273: document parent-session focus-touch caveat for HM-A demo"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 892 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:capability-overlay, mcp, demo-target, hm-a]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 892
+  commits: 1
+  files_changed: 1
+  lines_added: 75
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2273-arc-010-hm-a-demo-target--generate-mcp-t.md
+generated_by: context-agent-hybrid

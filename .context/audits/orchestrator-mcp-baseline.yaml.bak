@@ -1,0 +1,362 @@
+# MCP-tool task_id enforcement baseline
+# T-1646 (Arc C drift defense from T-1641)
+# Source of truth for orchestrator-mcp-scan.sh
+#
+# Categories:
+#   gated            — MUST call check_task_governance() — mutators that already do
+#   mutators_ungated — Mutators with side effects that SHOULD gate but currently don't (ratchet target)
+#   readonly_exempt  — Passive/read-only tools — gating optional
+#
+# Drift detection rules:
+#   1. Any tool listed under `gated` losing its check_task_governance call → FAIL
+#   2. Any tool in `mutators_ungated` GAINING a check_task_governance call → CONGRATS, move it to `gated` and update baseline (ratchet)
+#   3. New tool not in any list → WARN, requires manual classification
+#   4. `gated` count must not drop below baseline_count
+#
+# Source code reference: /opt/termlink/crates/termlink-mcp/src/tools.rs
+# Provenance: snapshot 2026-05-01 from T-1641 W03 + this scan.
+# Update 2026-05-06 (T-1755): added 59 termlink_agent_* tools (chat/threads/reactions
+# primitives) classified by naming convention (action verb → mutator; read suffix → readonly).
+# /opt/termlink is outside PROJECT_ROOT and unreadable from here, so handler-level
+# verification is deferred — human can correct miscategorisations on review.
+# Update 2026-05-06 (T-1760): added 18 more termlink_agent_* analytics primitives
+# (stats/rates/depths/volumes — all read-shaped names). Same convention-based
+# classification rule. Baseline 136 → 154.
+# Update 2026-05-15 (T-1867): added 14 more termlink_agent_* analytics primitives
+# (presence/streaks/silences/top-N — all read-shaped names). Same convention-based
+# classification rule. Baseline 154 → 168.
+# Update 2026-05-28 (T-2073): added 74 more tools spanning termlink_agent_*,
+# termlink_channel_*, termlink_fleet_*, termlink_hub_*, termlink_tofu_*.
+# 14 mutators (action-verb names: channel_ack/edit/forward/pin/poll_start/poll_end/
+# poll_vote/quote/react/redact/reply/star/typing_emit; fleet_reauth) classified
+# to mutators_ungated. 60 read-shape tools (analytics, snapshots, threads, members,
+# probes, verifications) to readonly_exempt. Same convention-based classification;
+# handler-level verification deferred (/opt/termlink outside PROJECT_ROOT, strict
+# path isolation). Baseline 168 → 242.
+# Update 2026-05-28 (T-2073 follow-on): re-run revealed 4 additional listener/
+# auto-discover primitives (cadence issue — same one T-1761 inception captured).
+# agent_send_auto_discover → mutator (verb "send"); listener_heartbeat /
+# agent_listeners / agent_listeners_fleet → readonly (status/list shapes).
+# Baseline 242 → 246.
+# Update 2026-05-31 (T-2150): 5 more primitives surfaced — chat_arc / fleet_doorbell
+# / fleet_adoption / recent_dm primitives. 1 mutator (chat_arc_broadcast — action verb
+# "broadcast" → sends a message to all subscribers) + 4 readonly (chat_arc_recent /
+# check_fleet_doorbell_mail_health / fleet_adoption_snapshot / recent_dm — all read-
+# shape suffixes). Same convention-based classification; handler-level review deferred.
+# Baseline 246 → 251. T-2150 Evolution captures 5th-batch cadence as updated evidence
+# for T-1761 inception (the marginal-leverage assumption is increasingly tenuous).
+# Update 2026-06-01 (T-2154 — T-1761 GO build slice): convention auto-classification
+# now lives in agents/audit/orchestrator-mcp-scan.sh (classify_by_convention). When
+# new termlink_agent_* / termlink_channel_* tools appear, the convention partitions
+# them into mutators_ungated (action-verb suffix) or readonly_exempt (read-shape
+# suffix) automatically. Default mode emits findings.auto_classified as advisory;
+# --apply rewrites this file in-place (with .bak backup) and bumps baseline_count.
+# Verb whitelist canonical: post, send, broadcast, edit, react, pin, quote, redact,
+# reply, star, typing_emit, ack, forward, poll_start, poll_end, poll_vote, reauth.
+# Tools outside the two namespaces still require manual classification (bounded
+# blast radius per T-1761 §Implementation shapes line 89).
+
+baseline_count: 251
+last_verified: 2026-05-31
+
+gated:
+  description: "Enforces check_task_governance() — TERMLINK_TASK_GOVERNANCE=1 requires task_id"
+  count: 4
+  tools:
+    - termlink_exec
+    - termlink_spawn
+    - termlink_interact
+    - termlink_dispatch
+
+mutators_ungated:
+  description: |
+    Tools with side effects that bypass governance. Gating-target list — every entry
+    here is a candidate for moving to `gated` (handled by T-1643/Arc B framework wiring
+    + /opt/termlink-side handler edits). FAIL if list grows; ratchet down as items move.
+  count: 42
+  tools:
+    - termlink_inject              # PTY write → executes commands
+    - termlink_run                 # ephemeral exec
+    - termlink_signal              # SIGTERM/etc. on processes
+    - termlink_remote_exec         # cross-machine exec
+    - termlink_remote_inject       # cross-machine PTY write
+    - termlink_remote_call         # cross-machine RPC
+    - termlink_send                # raw JSON-RPC (broadest blast radius)
+    - termlink_broadcast           # event injection — all sessions; T-1166-deprecated → channel.post(broadcast:global) (T-1403). Do not invest gating effort; remove from baseline when MCP facade goes away.
+    - termlink_emit                # event injection — one session
+    - termlink_emit_to             # event injection — targeted
+    - termlink_tag                 # session metadata mutation
+    - termlink_batch_exec          # mass execution
+    - termlink_batch_run           # mass run
+    - termlink_batch_tag           # mass tag mutation
+    - termlink_clean               # removes session registrations
+    - termlink_kv_set              # KV write; T-1166 candidate (legacy primitive, watch for migration)
+    - termlink_kv_del              # KV delete; T-1166 candidate
+    - termlink_channel_post        # channel write — successor primitive for broadcast/inbox migration
+    - termlink_channel_create      # channel create
+    - termlink_channel_subscribe   # subscription mutation
+    - termlink_inbox_clear         # inbox mutation; T-1166-deprecated (T-1400 migrated callers to channel.list(prefix=inbox:); T-1435 closed last-mile). Facade present, do not gate — slated for removal.
+    - termlink_remote_inbox_clear  # remote inbox mutation; T-1166-deprecated (same arc as inbox_clear)
+    - termlink_file_send           # cross-host file send; T-1166-deprecated (T-1251 file.* legacy + Blob GC successor)
+    - termlink_file_receive        # local file write; T-1166-deprecated (T-1251)
+    - termlink_hub_restart         # hub control
+    - termlink_hub_start           # hub control
+    - termlink_hub_stop            # hub control
+    - termlink_token_create        # auth token mutation
+    - termlink_tofu_clear          # TOFU state mutation
+    # T-1755: termlink_agent_* mutators — chat/threads/reactions primitives.
+    # Classified by naming convention; handler-level verification deferred.
+    - termlink_agent_ack           # creates ack message
+    - termlink_agent_edit          # edits an existing message
+    - termlink_agent_pin           # pins message
+    - termlink_agent_poll_start    # creates poll
+    - termlink_agent_poll_end      # ends poll
+    - termlink_agent_poll_vote     # casts vote
+    - termlink_agent_post          # posts message
+    - termlink_agent_quote         # creates quoted message
+    - termlink_agent_react         # adds reaction
+    - termlink_agent_redact        # redacts message
+    - termlink_agent_reply         # creates reply message
+    - termlink_agent_star          # stars message
+    - termlink_agent_typing        # ephemeral but observable side effect
+    # T-2073: channel_* + fleet_* mutators surfaced 2026-05-28. 11 channel-mutators
+    # mirror their agent_* counterparts (T-1755). poll_start/poll_end create/terminate
+    # poll lifecycle. fleet_reauth rotates credentials. Naming-convention
+    # classification; handler-level review deferred.
+    - termlink_channel_ack             # creates ack message
+    - termlink_channel_edit            # edits an existing message
+    - termlink_channel_forward         # creates forwarded message
+    - termlink_channel_pin             # pins message
+    - termlink_channel_poll_start      # creates poll
+    - termlink_channel_poll_end        # ends poll
+    - termlink_channel_poll_vote       # casts vote
+    - termlink_channel_quote           # creates quoted message
+    - termlink_channel_react           # adds reaction
+    - termlink_channel_redact          # redacts message
+    - termlink_channel_reply           # creates reply message
+    - termlink_channel_star            # stars message
+    - termlink_channel_typing_emit     # emits typing notification (side effect)
+    - termlink_fleet_reauth            # rotates fleet credentials
+    - termlink_agent_send_auto_discover  # T-2073 follow-on: sends discovery msg
+    # T-2150: chat_arc broadcast primitive surfaced 2026-05-31. Action verb
+    # "broadcast" → mutator (sends a message to all subscribers in the arc channel).
+    - termlink_chat_arc_broadcast      # broadcasts a message to chat-arc subscribers
+
+readonly_exempt:
+  description: "Passive/observational — gating optional. Adding new entries here requires an explicit reason in the commit body."
+  count: 122
+  tools:
+    - termlink_ping
+    - termlink_status
+    - termlink_output
+    - termlink_discover
+    - termlink_doctor
+    - termlink_overview
+    - termlink_resize           # local-only PTY size adjust, no exec
+    - termlink_request          # passive read
+    - termlink_wait             # passive event waiter
+    - termlink_info
+    - termlink_topics
+    - termlink_collect
+    - termlink_version
+    - termlink_help
+    - termlink_register         # own-session announcement
+    - termlink_deregister       # own-session deregister
+    - termlink_events
+    - termlink_event_poll
+    - termlink_event_subscribe
+    - termlink_kv_get
+    - termlink_kv_list
+    - termlink_kv_watch
+    - termlink_channel_list
+    - termlink_channel_queue_status
+    - termlink_inbox_list             # T-1166-deprecated (T-1400 migrated to channel.list(prefix=inbox:); T-1435 closed)
+    - termlink_inbox_status           # T-1166-deprecated (same arc)
+    - termlink_remote_inbox_list      # T-1166-deprecated (same arc)
+    - termlink_remote_inbox_status    # T-1166-deprecated (same arc)
+    - termlink_remote_list
+    - termlink_remote_ping
+    - termlink_remote_doctor
+    - termlink_fleet_doctor
+    - termlink_fleet_status
+    - termlink_hub_status
+    - termlink_list_sessions
+    - termlink_net_test
+    - termlink_pty_mode
+    - termlink_dispatch_status
+    - termlink_token_inspect
+    - termlink_tofu_list
+    - termlink_agent_ask
+    - termlink_batch_ping       # benign mass-ping, no exec
+    # T-1755: termlink_agent_* read-only primitives — history/search/state/threads.
+    # Reason: all return data without writing. Naming convention: read-suffix nouns
+    # (_history, _summary, _stats, _state, _info) and search verbs (_search*, _digest).
+    - termlink_agent_ack_history
+    - termlink_agent_ack_status
+    - termlink_agent_active_in_thread
+    - termlink_agent_active_now
+    - termlink_agent_ancestors
+    - termlink_agent_busiest_threads
+    - termlink_agent_describe
+    - termlink_agent_digest
+    - termlink_agent_edits_of
+    - termlink_agent_emoji_stats
+    - termlink_agent_envelope
+    - termlink_agent_followups
+    - termlink_agent_followups_to
+    - termlink_agent_help
+    - termlink_agent_history
+    - termlink_agent_info
+    - termlink_agent_on_thread
+    - termlink_agent_peers
+    - termlink_agent_pin_history
+    - termlink_agent_pinned
+    - termlink_agent_pinned_by
+    - termlink_agent_pinned_history
+    - termlink_agent_reaction_summary
+    - termlink_agent_reactions
+    - termlink_agent_reactions_by
+    - termlink_agent_recent
+    - termlink_agent_recent_decisions
+    - termlink_agent_redactions
+    - termlink_agent_search
+    - termlink_agent_search_by
+    - termlink_agent_search_thread
+    - termlink_agent_silent_senders
+    - termlink_agent_starred
+    - termlink_agent_starred_by
+    - termlink_agent_starred_history
+    - termlink_agent_state
+    - termlink_agent_thread_path
+    - termlink_agent_thread_summary
+    - termlink_agent_threads
+    - termlink_agent_threads_by
+    - termlink_agent_top_repliers
+    - termlink_agent_topic_metadata_history
+    - termlink_agent_topic_stats
+    - termlink_agent_unanswered
+    - termlink_agent_unread
+    - termlink_agent_who_is
+    # T-1755 follow-up: 2 tools that surfaced minutes after first classification
+    # (upstream TermLink is actively shipping). Both read-shaped stats names.
+    - termlink_agent_activity_rhythm
+    - termlink_agent_peer_engagement
+    # T-1760: 18 analytics primitives surfaced after T-1755 — all read-shaped
+    # names per the established convention (stats/rates/depths/volumes, no
+    # write verbs). Naming-convention classification; handler-level review
+    # deferred (TermLink source outside PROJECT_ROOT).
+    - termlink_agent_co_posters
+    - termlink_agent_daily_volume
+    - termlink_agent_emoji_users
+    - termlink_agent_engagement_rate
+    - termlink_agent_first_post_by
+    - termlink_agent_first_responders
+    - termlink_agent_msg_growth_rate
+    - termlink_agent_orphan_replies
+    - termlink_agent_quiet_threads
+    - termlink_agent_recent_window
+    - termlink_agent_response_latency
+    - termlink_agent_self_replies
+    - termlink_agent_thread_authors
+    - termlink_agent_thread_depth
+    - termlink_agent_thread_health
+    - termlink_agent_top_reacted
+    - termlink_agent_top_replied
+    - termlink_agent_user_summary
+    # T-1867: 14 analytics primitives surfaced 2026-05-15 — all read-shaped
+    # names per the established convention (presence/streaks/silences/top-N
+    # rankings/summaries — no write verbs). Naming-convention classification;
+    # handler-level review deferred (TermLink source outside PROJECT_ROOT).
+    - termlink_agent_age_distribution
+    - termlink_agent_burst_detect
+    - termlink_agent_idle_threads
+    - termlink_agent_post_streak
+    - termlink_agent_presence_now
+    - termlink_agent_reaction_rate
+    - termlink_agent_recent_threads
+    - termlink_agent_response_received
+    - termlink_agent_silence_gap
+    - termlink_agent_thread_size_dist
+    - termlink_agent_top_pinners
+    - termlink_agent_top_starrers
+    - termlink_agent_top_thread_starters
+    - termlink_agent_topic_summary
+    # T-2073: 60 read-shape tools surfaced 2026-05-28 across agent_*, channel_*,
+    # fleet_*, hub_*, tofu_* surfaces. All passive — analytics, snapshots, thread
+    # ancestry, presence reads, fingerprints, audits, identity lookups, probes.
+    # Naming-convention classification; handler-level review deferred (/opt/termlink
+    # outside PROJECT_ROOT). Same rule as T-1755/T-1760/T-1867 batches.
+    # agent_* read-shapes (15)
+    - termlink_agent_contact
+    - termlink_agent_dms
+    - termlink_agent_forwards_of
+    - termlink_agent_identity
+    - termlink_agent_inbox
+    - termlink_agent_listen
+    - termlink_agent_mentions
+    - termlink_agent_overview
+    - termlink_agent_ping
+    - termlink_agent_reactions_of
+    - termlink_agent_relations
+    - termlink_agent_replies_of
+    - termlink_agent_snippet
+    - termlink_agent_stats
+    - termlink_agent_thread
+    - termlink_agent_timeline
+    - termlink_agent_typers
+    # channel_* read-shapes (33)
+    - termlink_channel_ack_history
+    - termlink_channel_ack_status
+    - termlink_channel_ancestors
+    - termlink_channel_describe
+    - termlink_channel_digest
+    - termlink_channel_edit_stats
+    - termlink_channel_edits_of
+    - termlink_channel_emoji_stats
+    - termlink_channel_forwards_of
+    - termlink_channel_info
+    - termlink_channel_members
+    - termlink_channel_mentions
+    - termlink_channel_mentions_of
+    - termlink_channel_pin_history
+    - termlink_channel_pinned
+    - termlink_channel_poll_results
+    - termlink_channel_quote_stats
+    - termlink_channel_reactions_of
+    - termlink_channel_reactions_on
+    - termlink_channel_receipts
+    - termlink_channel_redactions
+    - termlink_channel_relations
+    - termlink_channel_replies_of
+    - termlink_channel_search
+    - termlink_channel_snapshot
+    - termlink_channel_snapshot_diff
+    - termlink_channel_snippet
+    - termlink_channel_starred
+    - termlink_channel_state
+    - termlink_channel_state_since
+    - termlink_channel_thread
+    - termlink_channel_threads
+    - termlink_channel_topic_stats
+    - termlink_channel_typing_list
+    - termlink_channel_unread
+    # fleet_* / hub_* / tofu_* read-shapes (8)
+    - termlink_fleet_bootstrap_check
+    - termlink_fleet_history
+    - termlink_fleet_secrets_audit
+    - termlink_fleet_verify
+    - termlink_hub_export_secret
+    - termlink_hub_fingerprint
+    - termlink_hub_probe
+    - termlink_tofu_verify
+    # T-2073 follow-on: listener/auto-discover primitives surfaced on re-run.
+    - termlink_agent_listeners
+    - termlink_agent_listeners_fleet
+    - termlink_listener_heartbeat
+    # T-2150: chat_arc / fleet_doorbell / fleet_adoption / recent_dm read-shape
+    # primitives surfaced 2026-05-31. All return data; suffixes "_recent" /
+    # "check_*_health" / "_snapshot" / "_recent_dm" are canonical read shapes.
+    - termlink_agent_chat_arc_recent              # recent posts in chat-arc
+    - termlink_check_fleet_doorbell_mail_health   # health probe (status read)
+    - termlink_fleet_adoption_snapshot            # point-in-time adoption read
+    - termlink_recent_dm                          # recent DM list

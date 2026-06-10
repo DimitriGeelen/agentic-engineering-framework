@@ -1,21 +1,13 @@
 ---
-id: T-2254
-name: "Watchtower /arcs/new — arc-create form (sibling to /arcs/<id>/close)"
+id: T-2313
+name: "close G-064 + G-065 gaps (gauges READY)"
 description: >
-  Watchtower has /arcs/<id>/close form (web/blueprints/arcs.py:1253) but no /arcs/new
-  arc-create form. Every arc-create handoff (e.g. T-2209 capability-overlay) requires
-  the operator to leave Watchtower and drop to shell. Sibling form-pair would mirror
-  inception/close routes and give Watchtower full arc-lifecycle parity. Build slice:
-  GET /arcs/new renders form (id, name, headline-mechanic, optional anchor T-XXXX);
-  POST shells to 'bin/fw arc create ... --from-watchtower'. §ACD: render-surface gate
-  (T-1766) will require Human [REVIEW] AC on the form template. Headline-mechanic
-  validation (G-062 substrate-rejection) reuses existing lib/arc.sh logic. Surfaced
-  during T-2209 capability-overlay arc-create handoff 2026-06-08.
+  close G-064 + G-065 gaps (gauges READY)
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,9 +15,15 @@ related_tasks: []
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-created: 2026-06-08T10:47:35Z
-last_update: '2026-06-09T15:15:02Z'
-date_finished:
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
+created: 2026-06-10T13:52:43Z
+last_update: 2026-06-10T14:03:03Z
+date_finished: 2026-06-10T14:03:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,7 +35,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-06-09T15:15:02Z'
+  - ts: '2026-06-10T14:00:03Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -47,64 +45,42 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-06-09T15:15:02Z'
+  - ts: '2026-06-10T14:00:03Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
-      D3: 2
+      D2: 4
+      D3: 0
       D4: 2
-      F-RECALL: 0
+      F-RECALL: 2
       F-ORCH: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=0 (no-signal)
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2254: Watchtower /arcs/new — arc-create form (sibling to /arcs/<id>/close)
+# T-2313: close G-064 + G-065 gaps (gauges READY)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Two open `status: watching` gaps have closure_check_command gauges that already report `READY`:
+- **G-064** [high] — Orchestrator substrate has zero production consumers. Gauge `python3 tools/g064-readiness.py` reports READY (481 total dispatches, 290 cron firings, criteria from T-1684).
+- **G-065** [medium] — Boundary hook is read-blind to outside-path arguments. Gauge `python3 tools/g065-readiness.py` reports READY (4/4 wiring conditions PASS — T-1702 + T-1707 shipped).
+
+T-2185 shipped `fw gaps close <id>` + POST `/gaps/<id>/close` (Watchtower button) backed by `lib/gaps.py:close_gap()` — agent-callable when verdict=READY (no `--override` needed). `close_gap()` accepts `actor="agent"` per source. Memory T-2185 says "now closable from button or CLI"; no Sovereign gate visible.
+
+Bundled because: same closure mechanism, both gauges report READY today, both have recorded resolutions in `status_notes`, single commit minimizes register churn.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] G-065 is `status: closed` in `.context/project/concerns.yaml`. Verification: `python3 -c "import yaml; c=yaml.safe_load(open('.context/project/concerns.yaml')); g=[x for x in c['concerns'] if x['id']=='G-065'][0]; assert g['status']=='closed', g['status']"`
+- [x] G-064 is `status: closed` in `.context/project/concerns.yaml`. Verification: `python3 -c "import yaml; c=yaml.safe_load(open('.context/project/concerns.yaml')); g=[x for x in c['concerns'] if x['id']=='G-064'][0]; assert g['status']=='closed', g['status']"`
+- [x] `bin/fw gaps` shows 7 watching (down from 9 baseline). Verification: `bin/fw gaps > /tmp/T-2313-gaps.out 2>&1; grep -q "7 watching" /tmp/T-2313-gaps.out`
+- [x] No NEW audit FAIL introduced by the gap closures. Investigation found 1 PRE-EXISTING FAIL unrelated to closures: `CTL-027: Inception T-2121 missing required sections: ## Recommendation` — T-2121 has `status: captured` and the T-2208 retrofit cron only sweeps `status: started-work` (filed as OBS-069 for operator triage). The closures themselves introduced no new FAIL. Verification (closure-isolated): `out=$(grep -E "^\[FAIL\].*(G-064|G-065|gap.*closure)" /tmp/T-2313-audit.out); test -z "$out"`
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+<!-- No Human ACs — closure_check_command gauge is the structural authority; both gauges report READY. -->
 
 ## Verification
 
@@ -138,6 +114,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -c "import yaml; c=yaml.safe_load(open('.context/project/concerns.yaml')); g=[x for x in c['concerns'] if x['id']=='G-065'][0]; assert g['status']=='closed', g['status']"
+python3 -c "import yaml; c=yaml.safe_load(open('.context/project/concerns.yaml')); g=[x for x in c['concerns'] if x['id']=='G-064'][0]; assert g['status']=='closed', g['status']"
+bin/fw gaps > /tmp/T-2313-gaps.out 2>&1; grep -q "7 watching" /tmp/T-2313-gaps.out
+bin/fw audit > /tmp/T-2313-audit.out 2>&1 || true; out=$(grep -E "^\[FAIL\].*(G-064|G-065|gap.*closure)" /tmp/T-2313-audit.out); test -z "$out"
 
 ## RCA
 
@@ -202,7 +183,19 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-06-08T10:47:35Z — task-created [task-create-agent]
+### 2026-06-10T13:52:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2254-watchtower-arcsnew--arc-create-form-sibl.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2313-close-g-064--g-065-gaps-gauges-ready.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7bc38deb
+- **Timestamp:** 2026-06-10T14:07:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-10T14:03:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2299: G-065 closure-readiness gauge — wiring-presence check (boundary hook arg-scan
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T22:31:18Z
+# ============================================================================
+
+task_id: T-2299
+task_name: "G-065 closure-readiness gauge — wiring-presence check (boundary hook arg-scan"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T22:20:32Z
+completed: 2026-06-09T22:28:50Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`tools/g065-readiness.py` exists, shaped like `tools/g066-readiness.py` (argparse with `--json` + `--strict` + `--project-root`, `assess()` returns dict with `gap_id`, `checks[]`, `passing`, `failing`, `ready`, `verdict` ∈ {READY, NOT_READY}).'
+  - 'Four wiring conditions defined and each PASSes against live repo: (1) `agents/context/check-project-boundary.sh` exists, (2) hook references `Pattern 4` and `G-065` (the read-side outside-path argument leg from T-1702), (3) hook defines `READ_ALLOWED_PREFIXES` (the allowlist construct), (4) `bin/fw` defines `host_warnings` AND `_scope_breakdown` (T-1707 doctor scope-tagging).'
+  - '`python3 tools/g065-readiness.py --json` against the live repo returns `"verdict": "READY"` with `passing_count: 4` and `total_count: 4`.'
+  - '`.context/project/concerns.yaml` G-065 entry gains `closure_check_command: "python3 tools/g065-readiness.py --json"`. YAML parses clean after edit.'
+  - '`tests/unit/g065_readiness.bats` exists with: (a) READY on fully-wired synthetic repo, (b) NOT_READY when hook missing, (c) NOT_READY when Pattern 4 / G-065 comment missing, (d) NOT_READY when `READ_ALLOWED_PREFIXES` missing, (e) NOT_READY when `bin/fw` lacks scope-tag wiring, (f) `--strict` exits 1 on NOT_READY. All scenarios PASS (12/12). Uses `unset PROJECT_ROOT` per L-456.'
+  - '`bin/fw doctor` surfaces G-065 in the "Gauge-READY gaps not closed" section (joins G-064 + G-066 already listed). Verified via doctor output capture-then-grep.'
+  - '`bin/fw reviewer T-2299` returns `Overall:.*PASS` (or PASS-with-suppression).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance-hygiene, closure-gauge]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2299-g-065-closure-readiness-gauge--wiring-pr.md
+generated_by: context-agent-hybrid

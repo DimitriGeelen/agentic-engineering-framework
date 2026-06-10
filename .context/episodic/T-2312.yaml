@@ -1,0 +1,301 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2312: maintenance: fabric enrich (+14 edges) + gitignore episodic-gen + commit handover
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T13:48:59Z
+# ============================================================================
+
+task_id: T-2312
+task_name: "maintenance: fabric enrich (+14 edges) + gitignore episodic-gen + commit handover"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T13:31:00Z
+completed: 2026-06-10T13:42:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-10T15:34:01+02:00
+last_commit: 2026-06-10T15:42:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  maintenance — fabric enrich +14 edges + gitignore episodic-gen + handover backlog. AC ticking + reviewer PASS + verification
+
+# Key outcomes
+outcomes:
+  - 'Fabric enrichment applied: `bin/fw fabric enrich` run; "cards with no edges" reduced from 91 to ≤89 (saturation floor — re-run dry-run returns 0 cards enrichable). Achieved: 88. Verification: `bin/fw audit > /tmp/T-2312-audit.out 2>&1 || true; grep -oE "Fabric: [0-9]+/[0-9]+ cards have no edges" /tmp/T-2312-audit.out | head -1 | awk -F''[ /]'' ''{exit ($2 <= 89 ? 0 : 1)}''`'
+  - '`.gitignore` contains pattern excluding `.context/working/episodic-gen/`. Verification: `grep -q "episodic-gen" .gitignore`'
+  - 'All 11+ untracked `.context/handovers/S-2026-0609*.md` and `S-2026-0610*.md` are committed (no longer in `git status --short -uall .context/handovers/`). Verification: `git status --short .context/handovers/ > /tmp/T-2312-hov.out 2>&1; ! grep -qE "^\?\? \.context/handovers/S-2026-06(09|10)-" /tmp/T-2312-hov.out`'
+  - '`bin/fw doctor` returns exit 0 (no new WARN/FAIL introduced). Verification: `bin/fw doctor >/tmp/T-2312-doctor.out 2>&1 && grep -qiE "PASS|OK" /tmp/T-2312-doctor.out` (36 PASS/OK lines, 0 FAIL on 2026-06-10 run)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/handovers/S-2026-0608-1433.md'
+  - '.context/handovers/S-2026-0608-1651.md'
+  - '.context/handovers/S-2026-0609-0852.md'
+  - '.context/handovers/S-2026-0609-0935.md'
+  - '.context/handovers/S-2026-0609-1009.md'
+  - '.context/handovers/S-2026-0609-1204.md'
+  - '.context/handovers/S-2026-0609-1312.md'
+  - '.context/handovers/S-2026-0609-1623.md'
+  - '.context/handovers/S-2026-0609-1708.md'
+  - '.context/handovers/S-2026-0609-1902.md'
+  - '.context/handovers/S-2026-0609-2309.md'
+  - '.context/handovers/S-2026-0610-0116.md'
+  - '.context/working/episodic-gen/T-1659.log'
+  - '.context/working/episodic-gen/T-1677.log'
+  - '.context/working/episodic-gen/T-1728.log'
+  - '.context/working/episodic-gen/T-1761.log'
+  - '.context/working/episodic-gen/T-1763.log'
+  - '.context/working/episodic-gen/T-1764.log'
+  - '.context/working/episodic-gen/T-1765.log'
+  - '.context/working/episodic-gen/T-1828.log'
+  - '.context/working/episodic-gen/T-1833.log'
+  - '.context/working/episodic-gen/T-1849.log'
+  - '.context/working/episodic-gen/T-1850.log'
+  - '.context/working/episodic-gen/T-1856.log'
+  - '.context/working/episodic-gen/T-1863.log'
+  - '.context/working/episodic-gen/T-1864.log'
+  - '.context/working/episodic-gen/T-1865.log'
+  - '.context/working/episodic-gen/T-1866.log'
+  - '.context/working/episodic-gen/T-1867.log'
+  - '.context/working/episodic-gen/T-1868.log'
+  - '.context/working/episodic-gen/T-1869.log'
+  - '.context/working/episodic-gen/T-1870.log'
+  - '.context/working/episodic-gen/T-1871.log'
+  - '.context/working/episodic-gen/T-1872.log'
+  - '.context/working/episodic-gen/T-1873.log'
+  - '.context/working/episodic-gen/T-1875.log'
+  - '.context/working/episodic-gen/T-1877.log'
+  - '.context/working/episodic-gen/T-1878.log'
+  - '.context/working/episodic-gen/T-1881.log'
+  - '.context/working/episodic-gen/T-1882.log'
+  - '.context/working/episodic-gen/T-1883.log'
+  - '.context/working/episodic-gen/T-1884.log'
+  - '.context/working/episodic-gen/T-1885.log'
+  - '.context/working/episodic-gen/T-1886.log'
+  - '.context/working/episodic-gen/T-1887.log'
+  - '.context/working/episodic-gen/T-1888.log'
+  - '.context/working/episodic-gen/T-1889.log'
+  - '.context/working/episodic-gen/T-1892.log'
+  - '.context/working/episodic-gen/T-1901.log'
+  - '.context/working/episodic-gen/T-1902.log'
+  - '.context/working/episodic-gen/T-1903.log'
+  - '.context/working/episodic-gen/T-1905.log'
+  - '.context/working/episodic-gen/T-1906.log'
+  - '.context/working/episodic-gen/T-1908.log'
+  - '.context/working/episodic-gen/T-1912.log'
+  - '.context/working/episodic-gen/T-1913.log'
+  - '.context/working/episodic-gen/T-1914.log'
+  - '.context/working/episodic-gen/T-1915.log'
+  - '.context/working/episodic-gen/T-1916.log'
+  - '.context/working/episodic-gen/T-1917.log'
+  - '.context/working/episodic-gen/T-1918.log'
+  - '.context/working/episodic-gen/T-1919.log'
+  - '.context/working/episodic-gen/T-1920.log'
+  - '.context/working/episodic-gen/T-1921.log'
+  - '.context/working/episodic-gen/T-1922.log'
+  - '.context/working/episodic-gen/T-1923.log'
+  - '.context/working/episodic-gen/T-1924.log'
+  - '.context/working/episodic-gen/T-1925.log'
+  - '.context/working/episodic-gen/T-1926.log'
+  - '.context/working/episodic-gen/T-1927.log'
+  - '.context/working/episodic-gen/T-1931.log'
+  - '.context/working/episodic-gen/T-1932.log'
+  - '.context/working/episodic-gen/T-1937.log'
+  - '.context/working/episodic-gen/T-1938.log'
+  - '.context/working/episodic-gen/T-1940.log'
+  - '.context/working/episodic-gen/T-1941.log'
+  - '.context/working/episodic-gen/T-1942.log'
+  - '.context/working/episodic-gen/T-1943.log'
+  - '.context/working/episodic-gen/T-1944.log'
+  - '.context/working/episodic-gen/T-1945.log'
+  - '.context/working/episodic-gen/T-1946.log'
+  - '.context/working/episodic-gen/T-1948.log'
+  - '.context/working/episodic-gen/T-1949.log'
+  - '.context/working/episodic-gen/T-1950.log'
+  - '.context/working/episodic-gen/T-1952.log'
+  - '.context/working/episodic-gen/T-1953.log'
+  - '.context/working/episodic-gen/T-1956.log'
+  - '.context/working/episodic-gen/T-1958.log'
+  - '.context/working/episodic-gen/T-1959.log'
+  - '.context/working/episodic-gen/T-1962.log'
+  - '.context/working/episodic-gen/T-1966.log'
+  - '.context/working/episodic-gen/T-1967.log'
+  - '.context/working/episodic-gen/T-1972.log'
+  - '.context/working/episodic-gen/T-1973.log'
+  - '.context/working/episodic-gen/T-1974.log'
+  - '.context/working/episodic-gen/T-1975.log'
+  - '.context/working/episodic-gen/T-1979.log'
+  - '.context/working/episodic-gen/T-1981.log'
+  - '.context/working/episodic-gen/T-1983.log'
+  - '.context/working/episodic-gen/T-1986.log'
+  - '.context/working/episodic-gen/T-1987.log'
+  - '.context/working/episodic-gen/T-1995.log'
+  - '.context/working/episodic-gen/T-1996.log'
+  - '.context/working/episodic-gen/T-1997.log'
+  - '.context/working/episodic-gen/T-1998.log'
+  - '.context/working/episodic-gen/T-2000.log'
+  - '.context/working/episodic-gen/T-2007.log'
+  - '.context/working/episodic-gen/T-2030.log'
+  - '.context/working/episodic-gen/T-2032.log'
+  - '.context/working/episodic-gen/T-2035.log'
+  - '.context/working/episodic-gen/T-2036.log'
+  - '.context/working/episodic-gen/T-2037.log'
+  - '.context/working/episodic-gen/T-2042.log'
+  - '.context/working/episodic-gen/T-2048.log'
+  - '.context/working/episodic-gen/T-2050.log'
+  - '.context/working/episodic-gen/T-2052.log'
+  - '.context/working/episodic-gen/T-2053.log'
+  - '.context/working/episodic-gen/T-2055.log'
+  - '.context/working/episodic-gen/T-2056.log'
+  - '.context/working/episodic-gen/T-2057.log'
+  - '.context/working/episodic-gen/T-2058.log'
+  - '.context/working/episodic-gen/T-2059.log'
+  - '.context/working/episodic-gen/T-2060.log'
+  - '.context/working/episodic-gen/T-2061.log'
+  - '.context/working/episodic-gen/T-2068.log'
+  - '.context/working/episodic-gen/T-2069.log'
+  - '.context/working/episodic-gen/T-2070.log'
+  - '.context/working/episodic-gen/T-2071.log'
+  - '.context/working/episodic-gen/T-2072.log'
+  - '.context/working/episodic-gen/T-2073.log'
+  - '.context/working/episodic-gen/T-2076.log'
+  - '.context/working/episodic-gen/T-2078.log'
+  - '.context/working/episodic-gen/T-2081.log'
+  - '.context/working/episodic-gen/T-2090.log'
+  - '.context/working/episodic-gen/T-2091.log'
+  - '.context/working/episodic-gen/T-2092.log'
+  - '.context/working/episodic-gen/T-2093.log'
+  - '.context/working/episodic-gen/T-2094.log'
+  - '.context/working/episodic-gen/T-2095.log'
+  - '.context/working/episodic-gen/T-2096.log'
+  - '.context/working/episodic-gen/T-2097.log'
+  - '.context/working/episodic-gen/T-2098.log'
+  - '.context/working/episodic-gen/T-2099.log'
+  - '.context/working/episodic-gen/T-2100.log'
+  - '.context/working/episodic-gen/T-2101.log'
+  - '.context/working/episodic-gen/T-2104.log'
+  - '.context/working/episodic-gen/T-2105.log'
+  - '.context/working/episodic-gen/T-2115.log'
+  - '.context/working/episodic-gen/T-2118.log'
+  - '.context/working/episodic-gen/T-2120.log'
+  - '.context/working/episodic-gen/T-2122.log'
+  - '.context/working/episodic-gen/T-2123.log'
+  - '.context/working/episodic-gen/T-2125.log'
+  - '.context/working/episodic-gen/T-2126.log'
+  - '.context/working/episodic-gen/T-2127.log'
+  - '.context/working/episodic-gen/T-2128.log'
+  - '.context/working/episodic-gen/T-2129.log'
+  - '.context/working/episodic-gen/T-2130.log'
+  - '.context/working/episodic-gen/T-2131.log'
+  - '.context/working/episodic-gen/T-2132.log'
+  - '.context/working/episodic-gen/T-2133.log'
+  - '.context/working/episodic-gen/T-2135.log'
+  - '.context/working/episodic-gen/T-2138.log'
+  - '.context/working/episodic-gen/T-2140.log'
+  - '.context/working/episodic-gen/T-2141.log'
+  - '.context/working/episodic-gen/T-2142.log'
+  - '.context/working/episodic-gen/T-2143.log'
+  - '.context/working/episodic-gen/T-2144.log'
+  - '.context/working/episodic-gen/T-2145.log'
+  - '.context/working/episodic-gen/T-2146.log'
+  - '.context/working/episodic-gen/T-2147.log'
+  - '.context/working/episodic-gen/T-2148.log'
+  - '.context/working/episodic-gen/T-2149.log'
+  - '.context/working/episodic-gen/T-2150.log'
+  - '.context/working/episodic-gen/T-2151.log'
+  - '.context/working/episodic-gen/T-2152.log'
+  - '.context/working/episodic-gen/T-2154.log'
+  - '.context/working/episodic-gen/T-2155.log'
+  - '.context/working/episodic-gen/T-2156.log'
+  - '.context/working/episodic-gen/T-2157.log'
+  - '.context/working/episodic-gen/T-2159.log'
+  - '.context/working/episodic-gen/T-2161.log'
+  - '.context/working/episodic-gen/T-2162.log'
+  - '.context/working/episodic-gen/T-2163.log'
+  - '.context/working/episodic-gen/T-2164.log'
+  - '.context/working/episodic-gen/T-2165.log'
+  - '.context/working/episodic-gen/T-2166.log'
+  - '.context/working/episodic-gen/T-2168.log'
+  - '.context/working/episodic-gen/T-2173.log'
+  - '.context/working/episodic-gen/T-2177.log'
+  - '.context/working/episodic-gen/T-2186.log'
+  - '.context/working/episodic-gen/T-2188.log'
+  - '.context/working/episodic-gen/T-2196.log'
+  - '.context/working/episodic-gen/T-2197.log'
+  - '.context/working/episodic-gen/T-2209.log'
+  - '.context/working/episodic-gen/T-2217.log'
+  - '.context/working/episodic-gen/T-2218.log'
+  - '.context/working/episodic-gen/T-2223.log'
+  - '.context/working/episodic-gen/T-2224.log'
+  - '.context/working/episodic-gen/T-2225.log'
+  - '.context/working/episodic-gen/T-2226.log'
+  - '.context/working/episodic-gen/T-2227.log'
+  - '.context/working/episodic-gen/T-2228.log'
+  - '.context/working/episodic-gen/T-2229.log'
+  - '.context/working/episodic-gen/T-2230.log'
+  - '.context/working/episodic-gen/T-2231.log'
+  - '.context/working/episodic-gen/T-2232.log'
+  - '.context/working/episodic-gen/T-2233.log'
+  - '.context/working/episodic-gen/T-2234.log'
+  - '.context/working/episodic-gen/T-2235.log'
+  - '.context/working/episodic-gen/T-2236.log'
+  - '.context/working/episodic-gen/T-2237.log'
+  - '.context/working/episodic-gen/T-2238.log'
+  - '.context/working/episodic-gen/T-2239.log'
+  - '.context/working/episodic-gen/T-2241.log'
+  - '.context/working/episodic-gen/T-2242.log'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/lib-colors.yaml'
+  - '.fabric/components/lib-upgrade.yaml'
+  - '.fabric/components/tests-unit-test_self_vendor_agents_md_filter.yaml'
+  - '.fabric/components/tests-unit-test_self_vendor_libs_md_filter.yaml'
+  - '.fabric/components/tests-unit-test_update_task_horizon_null_reclose.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-2312-maintenance-fabric-enrich-14-edges--giti.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-10T15:34:01"
+    action: "T-2312: maintenance — fabric enrich +14 edges + gitignore episodic-gen + handover backlog"
+  - time: "2026-06-10T15:42:24"
+    action: "T-2312: AC ticking + reviewer PASS + verification"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 2
+  files_changed: 224
+  lines_added: 10982
+  lines_removed: 4699
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2312-maintenance-fabric-enrich-14-edges--giti.md
+generated_by: context-agent-hybrid

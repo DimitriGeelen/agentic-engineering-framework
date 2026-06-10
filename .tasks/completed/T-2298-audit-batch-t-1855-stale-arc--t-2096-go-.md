@@ -202,8 +202,8 @@ out=$(bin/fw reviewer T-2298 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-71148bf7
-- **Timestamp:** 2026-06-09T21:05:49Z
+- **Scan ID:** R-bad09442
+- **Timestamp:** 2026-06-09T23:06:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -213,6 +213,5 @@ out=$(bin/fw reviewer T-2298 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 - **AC#6 (Agent)** — OBS-066 promoted in .context/inbox.yaml: status=pending→promoted, promoted_to=T-2298. Inbox parses; OBS-064 + OBS-066 both correctly promoted.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/inbox.yaml in: OBS-066 promoted in .context/inbox.yaml: status=pending→promoted, promoted_to=T-2298. Inbox parses; OBS-064 + OBS-066 both correctly promoted.`
-
 ### 2026-06-09T21:04:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

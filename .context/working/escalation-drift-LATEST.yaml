@@ -1,14 +1,14 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-06-06T03:23:01.566526+00:00
-corpus_total: 1986
-bug_class_total: 437
-bug_class_pct: 22
+generated: 2026-06-10T03:23:02.359774+00:00
+corpus_total: 2060
+bug_class_total: 447
+bug_class_pct: 21
 h1_flagged: 346
-h1_pct_of_bug_class: 79
-h2_repeat_patterns: 106
+h1_pct_of_bug_class: 77
+h2_repeat_patterns: 112
 h3_flagged: 270
-h3_pct_of_bug_class: 61
+h3_pct_of_bug_class: 60
 recent_30d_flagged: 20
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
@@ -34,15 +34,15 @@ recent_sample:
     name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-"
 h2_top:
   - learning: "P-011"
-    task_count: 590
+    task_count: 721
   - learning: "L-387"
-    task_count: 412
+    task_count: 560
   - learning: "L-291"
-    task_count: 332
+    task_count: 407
   - learning: "L-398"
-    task_count: 162
+    task_count: 221
   - learning: "P-010"
-    task_count: 158
+    task_count: 165
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"
@@ -50,6 +50,6 @@ h2_top:
   - learning: "L-332"
     task_count: 35
   - learning: "L-364"
-    task_count: 26
+    task_count: 35
   - learning: "PL-007"
     task_count: 24

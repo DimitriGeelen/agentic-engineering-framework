@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2284: fw termlink dispatch — plumb --mcp-config + --strict-mcp-config through (OBS-061 substrate fix)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T11:26:22Z
+# ============================================================================
+
+task_id: T-2284
+task_name: "fw termlink dispatch — plumb --mcp-config + --strict-mcp-config through (OBS-061 substrate fix)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T11:20:02Z
+completed: 2026-06-09T11:26:15Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`cmd_dispatch` accepts `--mcp-config <path>` and `--strict-mcp-config` flags (declared in local vars + parsed in the `case` block). Verification: `grep -qE ''mcp_config=""'' agents/termlink/termlink.sh` AND `grep -qE -- ''--mcp-config\)'' agents/termlink/termlink.sh` AND `grep -qE -- ''--strict-mcp-config\)'' agents/termlink/termlink.sh`.'
+  - 'Wdir artefacts written conditionally on flag presence: `mcp_config.txt` (file path) and `strict_mcp` (sentinel file, present-or-absent). Empty by default → backward-compatible. Verification: `grep -qE ''mcp_config\.txt'' agents/termlink/termlink.sh` AND `grep -qE ''strict_mcp'' agents/termlink/termlink.sh`.'
+  - '`meta.json` schema includes `"mcp_config"` (string or null) and `"strict_mcp"` (boolean) keys for observability (same OBS-058 class as T-2282 added `permission_mode`).'
+  - '`run.sh` builds `MCP_CONFIG_FLAG` from `mcp_config.txt` and `STRICT_MCP_FLAG` from `strict_mcp` sentinel, then passes both to `claude -p`. Verification: `grep -qE ''MCP_CONFIG_FLAG="--mcp-config'' agents/termlink/termlink.sh` AND `grep -qE ''STRICT_MCP_FLAG="--strict-mcp-config"'' agents/termlink/termlink.sh` AND `grep -qE ''claude -p .*\$MCP_CONFIG_FLAG'' agents/termlink/termlink.sh`.'
+  - '`fw termlink help` mentions `--mcp-config` and `--strict-mcp-config` so dispatchers can discover the surface. Verification: `bin/fw termlink help 2>&1 | grep -q ''mcp-config''`.'
+  - 'Bats test `tests/integration/test_termlink_dispatch_mcp_config.bats` mirrors T-2282''s t1-t8 shape, with two additional tests for the strict flag boolean. ≥9 tests, all PASS.'
+  - 'Vendored `.agentic-framework/agents/termlink/termlink.sh` is in sync (refreshed via `bin/fw vendor self` if framework-self-vendor; or doctor''s Check 2b passes for libs class).'
+  - '[REVIEWER] Reviewer PASS via `bin/fw reviewer T-2284` — no findings on `mock-only-integration` (the t1-t8 grep-on-source tests are intentional substrate inspection, mirroring T-2282''s pattern).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2284-fw-termlink-dispatch--plumb---mcp-config.md
+generated_by: context-agent-hybrid

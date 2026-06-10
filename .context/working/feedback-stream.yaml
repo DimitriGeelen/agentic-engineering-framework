@@ -14004,3 +14004,498 @@ scan_id: R-bad09442
 task_id: T-2298
 payload:
   task_file: .tasks/completed/T-2298-audit-batch-t-1855-stale-arc--t-2096-go-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T06:52:43Z'
+scan_id: R-525496a7
+task_id: T-2301
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T06:52:43Z'
+scan_id: R-525496a7
+task_id: T-2301
+payload:
+  task_file: .tasks/active/T-2301-resume-arc-focus-port--surface-arc-in-cm.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T06:52:55Z'
+scan_id: R-818b7564
+task_id: T-2301
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T06:52:55Z'
+scan_id: R-818b7564
+task_id: T-2301
+payload:
+  task_file: .tasks/active/T-2301-resume-arc-focus-port--surface-arc-in-cm.md
+---
+kind: override_applied
+timestamp: '2026-06-10T06:52:55Z'
+scan_id: R-818b7564
+task_id: T-2301
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-10T06:53:32Z'
+scan_id: R-bded7efa
+task_id: T-2301
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T06:53:32Z'
+scan_id: R-bded7efa
+task_id: T-2301
+payload:
+  task_file: .tasks/active/T-2301-resume-arc-focus-port--surface-arc-in-cm.md
+---
+kind: override_applied
+timestamp: '2026-06-10T06:53:32Z'
+scan_id: R-bded7efa
+task_id: T-2301
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-10T07:56:44Z'
+scan_id: R-1a5d41dc
+task_id: T-2302
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T07:56:44Z'
+scan_id: R-1a5d41dc
+task_id: T-2302
+payload:
+  task_file: .tasks/active/T-2302-land-parallel-execution-architecture-adr.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T07:57:04Z'
+scan_id: R-3379363b
+task_id: T-2302
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T07:57:04Z'
+scan_id: R-3379363b
+task_id: T-2302
+payload:
+  task_file: .tasks/active/T-2302-land-parallel-execution-architecture-adr.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T07:57:05Z'
+scan_id: R-a20625f4
+task_id: T-2302
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T07:57:05Z'
+scan_id: R-a20625f4
+task_id: T-2302
+payload:
+  task_file: .tasks/active/T-2302-land-parallel-execution-architecture-adr.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T08:10:45Z'
+scan_id: R-ee483896
+task_id: T-2303
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T08:10:45Z'
+scan_id: R-ee483896
+task_id: T-2303
+payload:
+  task_file: .tasks/active/T-2303-scoping-inception--parallel-execution-ar.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T09:17:21Z'
+scan_id: R-4ee6a470
+task_id: T-2300
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T09:17:21Z'
+scan_id: R-4ee6a470
+task_id: T-2300
+payload:
+  task_file: .tasks/active/T-2300-t-2163-leg-gap--update-tasksh-nulls-hori.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T09:36:59Z'
+scan_id: R-56543dcf
+task_id: T-2304
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T09:36:59Z'
+scan_id: R-56543dcf
+task_id: T-2304
+payload:
+  task_file: .tasks/active/T-2304-obs-068-extend-selfvendoragentslibs-filt.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T10:23:36Z'
+scan_id: R-bf140afe
+task_id: T-2305
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T10:23:36Z'
+scan_id: R-bf140afe
+task_id: T-2305
+payload:
+  task_file: .tasks/active/T-2305-bvp-driver-batch--propose-vpromptquality.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T10:40:58Z'
+scan_id: R-ef744ef5
+task_id: T-2307
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T10:40:58Z'
+scan_id: R-ef744ef5
+task_id: T-2307
+payload:
+  task_file: .tasks/active/T-2307-t-2304-follow-on-extend-selfvendorlibs-t.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T10:43:22Z'
+scan_id: R-61617f00
+task_id: T-2307
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T10:43:22Z'
+scan_id: R-61617f00
+task_id: T-2307
+payload:
+  task_file: .tasks/active/T-2307-t-2304-follow-on-extend-selfvendorlibs-t.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T10:43:45Z'
+scan_id: R-97fc401d
+task_id: T-2307
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T10:43:45Z'
+scan_id: R-97fc401d
+task_id: T-2307
+payload:
+  task_file: .tasks/active/T-2307-t-2304-follow-on-extend-selfvendorlibs-t.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T10:46:35Z'
+scan_id: R-918575c6
+task_id: T-2307
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T10:46:35Z'
+scan_id: R-918575c6
+task_id: T-2307
+payload:
+  task_file: .tasks/active/T-2307-t-2304-follow-on-extend-selfvendorlibs-t.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T11:17:32Z'
+scan_id: R-fcef3bfc
+task_id: T-2308
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T11:17:32Z'
+scan_id: R-fcef3bfc
+task_id: T-2308
+payload:
+  task_file: .tasks/active/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T11:18:34Z'
+scan_id: R-c32185ab
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T11:18:34Z'
+scan_id: R-c32185ab
+task_id: T-2308
+payload:
+  task_file: .tasks/active/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T11:18:35Z'
+scan_id: R-1a5d9615
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T11:18:35Z'
+scan_id: R-1a5d9615
+task_id: T-2308
+payload:
+  task_file: .tasks/active/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T11:29:41Z'
+scan_id: R-c608d74d
+task_id: T-2309
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T11:29:41Z'
+scan_id: R-c608d74d
+task_id: T-2309
+payload:
+  task_file: .tasks/active/T-2309-watchtower-inceptiontdecide-returns-opaq.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T11:30:37Z'
+scan_id: R-e053f368
+task_id: T-2309
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T11:30:37Z'
+scan_id: R-e053f368
+task_id: T-2309
+payload:
+  task_file: .tasks/active/T-2309-watchtower-inceptiontdecide-returns-opaq.md
+---
+kind: override_applied
+timestamp: '2026-06-10T11:30:37Z'
+scan_id: R-e053f368
+task_id: T-2309
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-10T11:40:54Z'
+scan_id: R-568e0a09
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T11:40:54Z'
+scan_id: R-568e0a09
+task_id: T-2308
+payload:
+  task_file: .tasks/completed/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T13:38:10Z'
+scan_id: R-1911c7dd
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T13:38:10Z'
+scan_id: R-1911c7dd
+task_id: T-2308
+payload:
+  task_file: .tasks/completed/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T13:46:20Z'
+scan_id: R-3afda736
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T13:46:20Z'
+scan_id: R-3afda736
+task_id: T-2308
+payload:
+  task_file: .tasks/completed/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T13:48:54Z'
+scan_id: R-7f633030
+task_id: T-2312
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T13:48:54Z'
+scan_id: R-7f633030
+task_id: T-2312
+payload:
+  task_file: .tasks/active/T-2312-maintenance-fabric-enrich-14-edges--giti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T13:59:17Z'
+scan_id: R-88a721f9
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T13:59:17Z'
+scan_id: R-88a721f9
+task_id: T-2308
+payload:
+  task_file: .tasks/completed/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T14:06:58Z'
+scan_id: R-cd00d6ac
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T14:06:58Z'
+scan_id: R-cd00d6ac
+task_id: T-2308
+payload:
+  task_file: .tasks/completed/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T14:07:29Z'
+scan_id: R-7bc38deb
+task_id: T-2313
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T14:07:29Z'
+scan_id: R-7bc38deb
+task_id: T-2313
+payload:
+  task_file: .tasks/active/T-2313-close-g-064--g-065-gaps-gauges-ready.md

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2313: close G-064 + G-065 gaps (gauges READY)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T14:07:35Z
+# ============================================================================
+
+task_id: T-2313
+task_name: "close G-064 + G-065 gaps (gauges READY)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T13:52:43Z
+completed: 2026-06-10T14:03:03Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-10T16:02:56+02:00
+last_commit: 2026-06-10T16:02:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close G-064 + G-065 (gauges READY)
+
+# Key outcomes
+outcomes:
+  - 'G-065 is `status: closed` in `.context/project/concerns.yaml`. Verification: `python3 -c "import yaml; c=yaml.safe_load(open(''.context/project/concerns.yaml'')); g=[x for x in c[''concerns''] if x[''id'']==''G-065''][0]; assert g[''status'']==''closed'', g[''status'']"`'
+  - 'G-064 is `status: closed` in `.context/project/concerns.yaml`. Verification: `python3 -c "import yaml; c=yaml.safe_load(open(''.context/project/concerns.yaml'')); g=[x for x in c[''concerns''] if x[''id'']==''G-064''][0]; assert g[''status'']==''closed'', g[''status'']"`'
+  - '`bin/fw gaps` shows 7 watching (down from 9 baseline). Verification: `bin/fw gaps > /tmp/T-2313-gaps.out 2>&1; grep -q "7 watching" /tmp/T-2313-gaps.out`'
+  - 'No NEW audit FAIL introduced by the gap closures. Investigation found 1 PRE-EXISTING FAIL unrelated to closures: `CTL-027: Inception T-2121 missing required sections: ## Recommendation` — T-2121 has `status: captured` and the T-2208 retrofit cron only sweeps `status: started-work` (filed as OBS-069 for operator triage). The closures themselves introduced no new FAIL. Verification (closure-isolated): `out=$(grep -E "^\[FAIL\].*(G-064|G-065|gap.*closure)" /tmp/T-2313-audit.out); test -z "$out"`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/gap-closures.jsonl'
+  - '.context/inbox.yaml'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-2313-close-g-064--g-065-gaps-gauges-ready.md'
+  - '.tasks/completed/T-2312-maintenance-fabric-enrich-14-edges--giti.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-10T16:02:56"
+    action: "T-2313: close G-064 + G-065 (gauges READY)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 5
+  lines_added: 206
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2313-close-g-064--g-065-gaps-gauges-ready.md
+generated_by: context-agent-hybrid

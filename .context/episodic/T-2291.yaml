@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2291: CLAUDE.md tool-set.yaml-touching tasks Verification rule (arc-010 sibling to cron)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T16:56:51Z
+# ============================================================================
+
+task_id: T-2291
+task_name: "CLAUDE.md tool-set.yaml-touching tasks Verification rule (arc-010 sibling to cron)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T16:51:47Z
+completed: 2026-06-09T16:54:56Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md gains a `**Tool-set.yaml-touching tasks (T-2290, arc-010):**` paragraph adjacent to §Cron-touching tasks (after the T-1942+T-1943 closure line, before `### Task Lifecycle`)'
+  - 'The new paragraph specifies the trigger (edited `policy/capability-overlay/tool-set.yaml` OR `agents/mcp/manifest.py`) and the canonical Verification one-liner (`out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "framework MCP " && ! echo "$out" | grep -q "manifest stale relative to tool-set.yaml"`)'
+  - 'The paragraph cross-references T-2290 (mtime → content compare) so readers know the check is now content-authoritative, not mtime-fragile'
+  - 'CLAUDE.md still parses cleanly — no Markdown syntax errors, headings unchanged at known offsets (§Cron-touching unchanged, §Task Lifecycle still at line ~204 after the insertion)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-010, docs]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2291-claudemd-tool-setyaml-touching-tasks-ver.md
+generated_by: context-agent-hybrid

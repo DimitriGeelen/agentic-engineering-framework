@@ -3379,3 +3379,40 @@ Sibling to T-2297. Two more per-task fork classes in'
   flag: '--skip-verification'
   caller: 'run_verification_commands'
   reason: ''
+- timestamp: '2026-06-10T09:35:13Z'
+  task: 'T-2304'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2300'
+  command: 'FW_SWITCH_FOCUS=1 git reset HEAD 2>&1
+FW_SWITCH_FOCUS=1 git add .context/episodic/T-2300.yaml .fabric/components/tests-unit-test_update_task_horizon_null_reclose.yaml
+echo "---staged---"
+FW_SWITCH_FOC'
+- timestamp: '2026-06-10T10:23:35Z'
+  task: 'T-2305'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-10T11:13:23Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2300'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-2300: complete git mv from active/ to completed/ (zombie state cleanup)
+
+Prior session moved T-2300 file content to completed/ via fw task update
+--status work-comp'
+- timestamp: '2026-06-10T11:28:14Z'
+  task: 'T-2309'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2310'
+  command: 'echo "agent" | FW_SWITCH_FOCUS=1 bin/fw task create --name "T-2309 Slice 3: investigate <script> text-leak in error body (consumer-reported in P-003)" --type build --description "Sibling of T-2309 Sli'
+- timestamp: '2026-06-10T11:36:42Z'
+  task: 'T-2309'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2303'
+  command: 'git add docs/reports/T-2303-scoping-parallel-execution-aef.md 2>&1; FW_SWITCH_FOCUS=1 git commit -m "T-2303: sync Spike 1 findings header + Wire Evidence Test §
+
+Editorial cleanup — agent-prep work'

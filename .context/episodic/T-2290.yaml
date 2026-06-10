@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2290: doctor MCP manifest stale check uses mtime — false-positives on content-identical
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T16:40:40Z
+# ============================================================================
+
+task_id: T-2290
+task_name: "doctor MCP manifest stale check uses mtime — false-positives on content-identical"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T15:21:10Z
+completed: 2026-06-09T16:33:27Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'doctor check at `bin/fw:1257` uses content comparison (md5 of `manifest-show` stdout vs md5 of on-disk manifest), NOT raw mtime — mtime test stays as a cheap fast-path that *triggers* the content check'
+  - 'When `tool-set.yaml -nt manifest.json` but content matches (content-identical refresh class), doctor emits the existing OK line — no new WARN, no false positive'
+  - 'When `tool-set.yaml` content genuinely changes without `fw mcp emit-manifest` (real-stale class), doctor still emits the existing WARN with the same "Run: fw mcp emit-manifest" guidance'
+  - 'When manifest file is absent, doctor still emits the existing SKIP line (no regression on that branch)'
+  - 'New bats file `tests/unit/t2290_doctor_mcp_content_check.bats` covers all three legs: content-identical-mtime-newer → OK, content-changed → WARN, manifest-absent → SKIP. All tests PASS'
+  - 'Existing t2287 / sibling bats tests (`tests/unit/t2287_self_vendor_policy_subdir.bats`) still PASS — no regression'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 72 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-010]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 72
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2290-doctor-mcp-manifest-stale-check-uses-mti.md
+generated_by: context-agent-hybrid

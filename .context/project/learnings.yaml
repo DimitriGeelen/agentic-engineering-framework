@@ -3609,3 +3609,10 @@ X'` returning empty group."
   date: 2026-06-09
   context: Added via context agent
   application: TBD
+- id: L-473
+  learning: "Gap closure via fw gaps close is agent-allowed when closure_check_command gauge=READY (lib/gaps.py:close_gap accepts actor=agent, no CLAUDECODE gate). --override path requires rationale + Tier-2 logging when gauge != READY. T-2185 shared surface across CLI + Watchtower button + doctor WARN."
+  source: T-2185
+  task: T-2313
+  date: 2026-06-10
+  context: Added via context agent
+  application: TBD

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2307: T-2304 follow-on: extend _self_vendor_libs to recursive + .md filter (parity
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T10:46:41Z
+# ============================================================================
+
+task_id: T-2307
+task_name: "T-2304 follow-on: extend _self_vendor_libs to recursive + .md filter (parity"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T10:34:49Z
+completed: 2026-06-10T10:44:34Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-10T12:44:23+02:00
+last_commit: 2026-06-10T12:44:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  extend _self_vendor_libs to recursive + .md filter (T-2304 follow-on)
+
+# Key outcomes
+outcomes:
+  - '`_self_vendor_libs()` in `lib/upgrade.sh` iterates via `while read … find` with filter `*.sh + *.md` (parity with `_self_vendor_agents`)'
+  - 'Recursive traversal — files under `lib/templates/` and `lib/templates/skills/` sync to corresponding paths under `.agentic-framework/lib/`'
+  - 'Real-run creates missing parent dirs via `mkdir -p` (matches T-2266 shape)'
+  - 'Dry-run wording: `Self-vendor: would sync N file(s) to .agentic-framework/lib/` (preserves T-2240 pre-push gate regex match)'
+  - 'Real-run wording: `Self-vendor: synced N file(s) to .agentic-framework/lib/`'
+  - 'Bats test `tests/unit/test_self_vendor_libs_md_filter.bats` pins the four classes (drift in dry-run, real-run syncs, .sh regression, clean-state) — 4/4 PASS'
+  - 'Audit''s libs-class comment at `agents/audit/audit.sh:1636-1643` updated to remove the "until lib/upgrade.sh extends" advisory (now extended)'
+  - 'Bats t2266 (`tests/unit/t2266_self_vendor_agents.bats`) still PASS — no regression (7/7 + t2304 4/4)'
+  - '`bin/fw doctor` reports no "vendored .agentic-framework/ may diverge" WARN after `bin/fw vendor self` runs to clean state'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'agents/audit/audit.sh'
+  - 'docs/reports/T-2303-scoping-parallel-execution-aef.md'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2307-t-2304-follow-on-extend-selfvendorlibs-t.md'
+  - 'tests/unit/test_self_vendor_libs_md_filter.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-10T12:44:23"
+    action: "T-2307: extend _self_vendor_libs to recursive + .md filter (T-2304 follow-on)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 7
+  lines_added: 522
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2307-t-2304-follow-on-extend-selfvendorlibs-t.md
+generated_by: context-agent-hybrid

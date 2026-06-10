@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2182: T-2181 Slice 1: fw task review-batch helper + CLAUDE.md ladder for multi-task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T22:47:02Z
+# ============================================================================
+
+task_id: T-2182
+task_name: "T-2181 Slice 1: fw task review-batch helper + CLAUDE.md ladder for multi-task"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-02T19:25:41Z
+completed: 2026-06-09T22:46:43Z
+duration_days: 7
+updates_count: 2
+first_commit: 2026-06-02T21:37:25+02:00
+last_commit: 2026-06-02T21:38:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw task review-batch helper (T-2181 Slice 1). fix Verification line independence ($out per-line scope)
+
+# Key outcomes
+outcomes:
+  - '`emit_review_batch` function added to `lib/review.sh` (line 277+) — takes N task IDs, resolves each task file, emits a markdown table `| Task | Workflow | Link |` with full Watchtower URLs.'
+  - '`bin/fw task review-batch T-A T-B …` subcommand wired in `bin/fw` (line 2489+) — sources `lib/review.sh`, calls `emit_review_batch`. Help text updated in both `fw task help` and the documentation row.'
+  - 'Each row''s URL is class-correct via `workflow_type:` frontmatter detection — verified live: T-2174 (build) → `/review/T-2174`, T-2181 (inception) → `/inception/T-2181`. Base URL via `_watchtower_url` (single source of truth, T-1154); no hard-coded port.'
+  - 'Backward compatibility: `fw task review T-2174` still emits `Open: http://192.168.10.107:3000/review/T-2174` with QR + reviewed-marker creation unchanged. `emit_review` body untouched (only an additive function appended below it).'
+  - 'bats test added (`tests/unit/review_batch.bats`) — 7 tests: zero-args error, single build, single inception, mixed batch, unknown-task NOT-FOUND, completed/ resolution, single header. **All 7 PASS.**'
+  - 'Consumer-fresh simulation (`tests/unit/upgrade_fresh_machine_simulation.bats`) green: 3/3 PASS after the change.'
+  - 'CLAUDE.md §Presenting Work for Human Review updated — new paragraph "Multi-task chat handoffs — use `fw task review-batch` (T-2182, T-2181)" added documenting the helper as canonical for 2+ task handoffs and naming the regression slot.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix Verification line independence ($out per-line scope)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - 'lib/review.sh'
+  - '.tasks/active/T-2182-t-2181-slice-1-fw-task-review-batch-help.md'
+  - 'tests/unit/review_batch.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-02T21:37:25"
+    action: "T-2182: fw task review-batch helper (T-2181 Slice 1)"
+  - time: "2026-06-02T21:38:10"
+    action: "T-2182: fix Verification line independence ($out per-line scope)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10281 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10281
+  commits: 2
+  files_changed: 5
+  lines_added: 394
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2182-t-2181-slice-1-fw-task-review-batch-help.md
+generated_by: context-agent-hybrid

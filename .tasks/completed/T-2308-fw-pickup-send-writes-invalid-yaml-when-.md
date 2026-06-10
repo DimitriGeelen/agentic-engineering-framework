@@ -6,12 +6,12 @@ description: >
   fw pickup send writes invalid YAML when --detail contains quotes or backslashes
   (cross-project bug P-002 from 100-Video-riper)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/pickup.sh, tests/unit/lib_pickup.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-10T11:13:25Z
-last_update: '2026-06-10T11:15:02Z'
-date_finished:
+last_update: 2026-06-10T11:18:30Z
+date_finished: 2026-06-10T11:18:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -255,9 +255,16 @@ but the learning never propagated to other shell heredoc YAML writers.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-fcef3bfc
-- **Timestamp:** 2026-06-10T11:17:32Z
+- **Scan ID:** R-cd00d6ac
+- **Timestamp:** 2026-06-10T14:06:58Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 34
+     - evidence: `bin/fw reviewer T-2308 2>&1 | grep -qE "Overall:.*PASS"`
+### 2026-06-10T11:18:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

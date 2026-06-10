@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2285: termlink dispatch run.sh — discriminate framework-self vs consumer when setting FRAMEWORK_ROOT (OBS-062 substrate fix)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-09T11:44:21Z
+# ============================================================================
+
+task_id: T-2285
+task_name: "termlink dispatch run.sh — discriminate framework-self vs consumer when setting FRAMEWORK_ROOT (OBS-062 substrate fix)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-09T11:40:31Z
+completed: 2026-06-09T11:44:14Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`run.sh` heredoc in `agents/termlink/termlink.sh` discriminates framework-self via `[ -f "$PROJECT_DIR/FRAMEWORK.md" ]` before redirecting FRAMEWORK_ROOT. Verification: `grep -qE ''PROJECT_DIR/FRAMEWORK.md'' agents/termlink/termlink.sh`.'
+  - 'Three-branch logic: framework-self → FRAMEWORK_ROOT=PROJECT_DIR; consumer with `.agentic-framework/` → existing redirect preserved; bare project → FRAMEWORK_ROOT=PROJECT_DIR. Verification: bats test below covers all three.'
+  - 'Bats test `tests/integration/test_termlink_dispatch_framework_root.bats` covers ≥3 cases (framework-self, consumer-shape, bare-project), all PASS. Static-inspection style (mirrors T-2282/T-2284 pattern — extract the heredoc and assert structurally).'
+  - 'Vendored `.agentic-framework/agents/termlink/termlink.sh` in sync via `bin/fw vendor self`. Verification: `bin/fw vendor self --dry-run 2>&1` produces no "would sync" output.'
+  - '[REVIEWER] Reviewer PASS via `bin/fw reviewer T-2285`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2285-termlink-dispatch-runsh--discriminate-fr.md
+generated_by: context-agent-hybrid
