@@ -6,16 +6,16 @@ description: >
   Inception: BVP driver batch — propose V_PROMPT_QUALITY + V_CONTEXT_FABRIC + V_COMPONENT_FABRIC
   as 3 global free drivers
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-10T09:47:42Z
-last_update: 2026-06-10T09:50:57Z
-date_finished:
+last_update: 2026-06-10T10:23:35Z
+date_finished: 2026-06-10T10:23:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -36,6 +36,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-10T10:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -97,15 +107,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -165,7 +175,11 @@ Operator-authored design artefact (`docs/reports/T-2305-bvp-drivers-batch-2026-0
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Operator-authored design artefact (`docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md`) walks R1 (differentiation), R2 (weight), O1 (edge cases), O2 (scope test), O3 (overlap), O4 (scoring rubric) per driver — all three pass the differentiation discipline and all three score meaningfully across multiple arcs in O2. Live-state corrigendum (added at filing) reconciles "pending-implementation" framing with the shipped reality: `fw bvp driver --add` already exists; `policy/value-drivers.yaml` v3 is in place with F-RECALL + F-ORCH in the free pool (2/5 slots used); **3 slots open** — exact fit for 3 new drivers. No prereq evidence-gap per T-2144 — three IW deferrals (IW-3 weight first-use, IW-4 recompute verb status, IW-5 arc re-suggest) are post-deployment observations, not blocking gaps. Recommendation **GO** on the design; operator confirms via Watchtower decide-go, then framework runs the §8 CLI sequence (or pickup at §9 fires automatically once decided).
+
+**Date**: 2026-06-10T10:23:35Z
 
 ## Updates
 
@@ -174,3 +188,26 @@ Operator-authored design artefact (`docs/reports/T-2305-bvp-drivers-batch-2026-0
 
 ### 2026-06-10T09:50:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-10T10:23:35Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Operator-authored design artefact (`docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md`) walks R1 (differentiation), R2 (weight), O1 (edge cases), O2 (scope test), O3 (overlap), O4 (scoring rubric) per driver — all three pass the differentiation discipline and all three score meaningfully across multiple arcs in O2. Live-state corrigendum (added at filing) reconciles "pending-implementation" framing with the shipped reality: `fw bvp driver --add` already exists; `policy/value-drivers.yaml` v3 is in place with F-RECALL + F-ORCH in the free pool (2/5 slots used); **3 slots open** — exact fit for 3 new drivers. No prereq evidence-gap per T-2144 — three IW deferrals (IW-3 weight first-use, IW-4 recompute verb status, IW-5 arc re-suggest) are post-deployment observations, not blocking gaps. Recommendation **GO** on the design; operator confirms via Watchtower decide-go, then framework runs the §8 CLI sequence (or pickup at §9 fires automatically once decided).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bf140afe
+- **Timestamp:** 2026-06-10T10:23:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-10T10:23:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
