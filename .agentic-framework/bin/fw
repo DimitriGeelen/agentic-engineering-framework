@@ -3727,6 +3727,12 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         # claimed by an unrelated feature.
         _orch_subcmd="${1:-}"
         case "$_orch_subcmd" in
+            next-dispatch)
+                # T-2339 (arc-011 M1 §1): build the dispatch graph from the
+                # active task pool and emit (task_id, mode) per line.
+                shift
+                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/agents/orchestrator/orchestrator-graph.py" next-dispatch "$@"
+                ;;
             improve)
                 shift
                 cat <<EOF
