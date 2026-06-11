@@ -3658,3 +3658,10 @@ X'` returning empty group."
   date: 2026-06-11
   context: Added via context agent
   application: TBD
+- id: L-480
+  learning: "Pre-flight pattern on operator-gated tasks: when a task has a mix of gated ACs (policy edit, Sovereign verb, missing precondition) and ungated ones (citing already-shipped sibling work, runnable smoke), tick the ungated ACs with cited evidence even while the task remains partial. Halves the operator's later activation pass and surfaces the ungated/gated split explicitly. Add a Decisions entry naming the split so the operator can re-verify the partial scope is correct. Sibling reviewer FPs (AC-verify-mismatch on path-citing prose) are well-known — suppress per-AC with TTL override (90d). Origin: T-2171 F-AUTONOMY activation gate — AC#5 satisfied by T-2329, AC#6 baseline smoke runnable now, AC#1-4 + #7 + Human gated on T-2158 + L5/L6."
+  source: P-009
+  task: T-2171
+  date: 2026-06-11
+  context: Added via context agent
+  application: TBD
