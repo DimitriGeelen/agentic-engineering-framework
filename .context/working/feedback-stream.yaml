@@ -16751,3 +16751,39 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 2
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-11T18:57:47Z'
+scan_id: R-40441077
+task_id: T-2342
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T18:57:47Z'
+scan_id: R-40441077
+task_id: T-2342
+payload:
+  task_file: .tasks/active/T-2342-arc-011-m1-5--watchtower-orchestratorpar.md
+---
+kind: override_applied
+timestamp: '2026-06-11T18:57:47Z'
+scan_id: R-40441077
+task_id: T-2342
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-11T18:57:47Z'
+scan_id: R-40441077
+task_id: T-2342
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent

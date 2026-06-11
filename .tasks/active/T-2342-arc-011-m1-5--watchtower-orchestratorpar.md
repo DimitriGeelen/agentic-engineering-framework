@@ -4,12 +4,12 @@ name: "arc-011 M1 §5 — Watchtower /orchestrator/parallel view"
 description: >
   arc-011 M1 §5 — Watchtower /orchestrator/parallel view
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_orchestrator_parallel_view.py, web/blueprints/orchestrator.py, web/templates/orchestrator_parallel.html]
 related_tasks: [T-2337, T-2338, T-2339, T-2340, T-2341]
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T18:50:04Z
-last_update: 2026-06-11T18:50:04Z
-date_finished: null
+last_update: 2026-06-11T18:57:42Z
+date_finished: 2026-06-11T18:57:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -180,8 +180,8 @@ curl -s -o /tmp/.t2342-curl-old.out -w "%{http_code}\n" http://localhost:3000/or
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5bc64137
-- **Timestamp:** 2026-06-11T18:57:15Z
+- **Scan ID:** R-40441077
+- **Timestamp:** 2026-06-11T18:57:47Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -190,3 +190,6 @@ curl -s -o /tmp/.t2342-curl-old.out -w "%{http_code}\n" http://localhost:3000/or
 - **Suppressed:** 2 (by override)
   - AC-verify-mismatch @ AC#1 (Agent)
   - AC-verify-mismatch @ AC#2 (Agent)
+
+### 2026-06-11T18:57:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

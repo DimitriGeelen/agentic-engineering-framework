@@ -1,12 +1,12 @@
-error-watchdog=5
+error-watchdog=8
 40
-check-tier0=28
-budget-gate=40
-check-project-boundary=40
-check-active-task=39
-loop-detect=50
+check-tier0=31
+budget-gate=43
+check-project-boundary=43
+check-active-task=42
+loop-detect=53
 error-watchdog=18
-checkpoint=50
+checkpoint=53
 check-arc-id=12
 check-human-ac-tick=11
 check-heredoc-cmd-sub=12
@@ -16,4 +16,4 @@ commit-cadence=10
 check-settings-edit=10
 
 check-fabric-new-file=2
-audit-task-tools=8
+audit-task-tools=11
