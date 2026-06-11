@@ -97,6 +97,28 @@ def _load_drivers() -> dict[str, int]:
     return out
 
 
+def _load_driver_aliases() -> dict[str, str]:
+    """T-2343: return `{id: name}` for free drivers whose `name:` differs from `id`.
+
+    Lets dispatch reach dedicated handlers when the policy `id` is opaque
+    (e.g. F3 for V_PROMPT_QUALITY). Read-only; no policy mutation. Drivers
+    without a `name:` field are omitted (no alias needed).
+    """
+    if not POLICY_PATH.is_file():
+        return {}
+    try:
+        policy = yaml.safe_load(POLICY_PATH.read_text()) or {}
+    except yaml.YAMLError:
+        return {}
+    aliases: dict[str, str] = {}
+    for d in (policy.get("free_drivers") or []):
+        d_id = d.get("id")
+        d_name = d.get("name")
+        if d_id and d_name and isinstance(d_name, str) and d_name != d_id:
+            aliases[d_id] = d_name
+    return aliases
+
+
 # ---- task parsing -----------------------------------------------------------
 
 def parse_task(path: Path) -> tuple[dict, str]:
@@ -1047,10 +1069,12 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # remains the fallback for any other active free driver.
         "F-RECALL": score_f_recall,
         "F-ORCH": score_f_orch,
-        # T-2328 — dedicated handlers for the V_* batch (T-2305 GO). Latent
-        # until operator runs `fw bvp driver --add` to register the drivers
-        # in policy/value-drivers.yaml; _load_drivers() then yields the IDs
-        # and these dispatch instead of the weak score_free_driver fallback.
+        # T-2328 + T-2343 — dedicated handlers for the V_* batch. Active under
+        # the current policy: T-2336 added the drivers with `id: F3 / F1 / F2`
+        # and `name: V_PROMPT_QUALITY / V_CONTEXT_FABRIC / V_COMPONENT_FABRIC`.
+        # T-2343 wired the dispatch to consult both id and name via
+        # _load_driver_aliases() — so these handlers fire under the F3/F1/F2
+        # ids without requiring a Sovereign --add to re-canonicalise.
         "V_PROMPT_QUALITY": score_v_prompt_quality,
         "V_CONTEXT_FABRIC": score_v_context_fabric,
         "V_COMPONENT_FABRIC": score_v_component_fabric,
@@ -1061,11 +1085,16 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # gate removal without at-least-as-safe replacement).
         "F-AUTONOMY": score_f_autonomy,
     }
+    # T-2343: name-alias map for drivers whose policy id differs from their
+    # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).
+    name_aliases = _load_driver_aliases()
     for driver_id in drivers:
         if is_inception:
             sc, ev = _score_inception_voi(fm, body, tags)
         elif driver_id in handlers:
             sc, ev = handlers[driver_id](fm, body, tags)
+        elif name_aliases.get(driver_id) in handlers:
+            sc, ev = handlers[name_aliases[driver_id]](fm, body, tags)
         else:
             sc, ev = score_free_driver(driver_id, fm, body, tags)
         scores[driver_id] = sc

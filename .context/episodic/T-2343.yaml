@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2343: BVP estimator dispatch — name-alias fallback so V_* handlers fire under F3/F1/F2
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T19:16:35Z
+# ============================================================================
+
+task_id: T-2343
+task_name: "BVP estimator dispatch — name-alias fallback so V_* handlers fire under F3/F1/F2"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T19:10:39Z
+completed: 2026-06-11T19:16:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-11T21:16:14+02:00
+last_commit: 2026-06-11T21:16:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP estimator dispatch — name-alias fallback (V_* handlers now fire)
+
+# Key outcomes
+outcomes:
+  - '`agents/termlink/bvp-estimator/estimator.py` adds `_load_driver_aliases() -> dict[str, str]` returning `{id: name}` for free drivers whose `name:` differs from `id` (non-breaking — separate function from `_load_drivers`)'
+  - 'Dispatch loop in `estimate_task()` (estimator.py:~1064-1080) updated: when `driver_id` not in `handlers`, try `name_aliases.get(driver_id)` and dispatch via that handler if present; falls through to `score_free_driver` only when neither id nor name resolves — preserves existing behaviour for handler-less drivers'
+  - 'Comment updates on the dispatch map reflect the new alias mechanism: drivers ARE active now under their policy IDs, no longer awaiting Sovereign --add'
+  - '`tests/unit/test_bvp_estimator_v_alias.py` (new) covers: F3 in policy + V_PROMPT_QUALITY in dispatch → `score_v_prompt_quality` called (NOT `score_free_driver`); F1 → `score_v_context_fabric`; F2 → `score_v_component_fabric`; handler-less custom driver (no name match) → falls back to `score_free_driver`; explicit V_PROMPT_QUALITY id still dispatches correctly (backward-compat for future Sovereign re-canonicalisation); F-RECALL regression intact — 10/10 PASS'
+  - 'Live smoke on T-1062: estimator emits F1 evidence `body/components:context-fabric-incidental` + `→1 (incidental Context Fabric touch)` and F2 evidence `body/components:component-fabric-incidental` + `→1 (incidental Component Fabric touch)` — V_* handler-specific phrasing, distinct from the generic `body:keyword-only` fallback (verified via `bash agents/termlink/bvp-estimator/bvp-estimator.sh one T-1062 --dry-run --json`)'
+  - 'No regression: `bin/fw bvp` rc=0; 158/158 PASS across `tests/unit/test_bvp_*.py`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.context/audits/2026-06-11.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/reviewer-overrides.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/tests-unit-test_bvp_estimator_v_alias.yaml'
+  - '.tasks/active/T-2343-bvp-estimator-dispatch--name-alias-fallb.md'
+  - 'tests/unit/_bvp_cli_imported_1938.py'
+  - 'tests/unit/_bvp_cli_imported.py'
+  - 'tests/unit/test_bvp_estimator_v_alias.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-11T21:16:14"
+    action: "T-2343: BVP estimator dispatch — name-alias fallback (V_* handlers now fire)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 23
+  lines_added: 1271
+  lines_removed: 125
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2343-bvp-estimator-dispatch--name-alias-fallb.md
+generated_by: context-agent-hybrid

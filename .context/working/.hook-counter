@@ -1,11 +1,11 @@
 check-human-ac-tick=8
-check-tier0=62
-budget-gate=84
-check-project-boundary=84
-check-active-task=83
-loop-detect=100
+check-tier0=64
+budget-gate=86
+check-project-boundary=86
+check-active-task=85
+loop-detect=102
 error-watchdog=37
-checkpoint=100
+checkpoint=102
 check-arc-id=22
 check-human-ac-tick=13
 check-heredoc-cmd-sub=22
@@ -15,4 +15,4 @@ commit-cadence=20
 check-settings-edit=19
 
 check-fabric-new-file=3
-audit-task-tools=46
+audit-task-tools=48

@@ -16832,3 +16832,30 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 1
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-11T19:16:29Z'
+scan_id: R-ea44cb5c
+task_id: T-2343
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T19:16:29Z'
+scan_id: R-ea44cb5c
+task_id: T-2343
+payload:
+  task_file: .tasks/active/T-2343-bvp-estimator-dispatch--name-alias-fallb.md
+---
+kind: override_applied
+timestamp: '2026-06-11T19:16:29Z'
+scan_id: R-ea44cb5c
+task_id: T-2343
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
