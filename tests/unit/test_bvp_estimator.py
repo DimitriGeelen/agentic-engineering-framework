@@ -684,5 +684,147 @@ def test_cmd_cost_sweep_skips_confirmed(tmp_path, monkeypatch):
     assert not fm.get("cost_estimate_proposed")
 
 
+# ---------------------------------------------- T-2328: V_* dedicated handlers
+
+# Anchored to docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md §5.
+# Latent until operator runs `fw bvp driver --add` to register the drivers,
+# but the handlers must be importable + scoring-correct from day one.
+
+FM_BUILD: dict = {"workflow_type": "build", "tags": []}
+
+
+def test_v_prompt_quality_empty_scores_zero():
+    s, _ = estimator.score_v_prompt_quality(FM_BUILD, "", [])
+    assert s == 0
+
+
+def test_v_prompt_quality_incidental_touch_scores_one():
+    body = "tweaks a prompt string somewhere in the codebase."
+    s, _ = estimator.score_v_prompt_quality(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_v_prompt_quality_typo_fix_scores_two():
+    body = "fixes a typo in the rubric instruction."
+    s, _ = estimator.score_v_prompt_quality(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_v_prompt_quality_worked_example_scores_three():
+    body = "Adds a worked example to the sharpening instruction."
+    s, _ = estimator.score_v_prompt_quality(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_v_prompt_quality_handler_design_scores_four():
+    body = "Ships a new prompt-handler design with restructured instruction patterns."
+    s, _ = estimator.score_v_prompt_quality(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_v_prompt_quality_foundational_system_scores_five():
+    body = "Introduces a new prompt-creation system at framework level."
+    s, _ = estimator.score_v_prompt_quality(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_v_prompt_quality_components_only_signal():
+    """`components:` touching policy/prompts/ alone counts as at least incidental."""
+    fm = {"workflow_type": "build", "components": ["policy/prompts/bvp-driver-session.md"]}
+    s, _ = estimator.score_v_prompt_quality(fm, "", [])
+    assert s >= 1
+
+
+def test_v_context_fabric_empty_scores_zero():
+    s, _ = estimator.score_v_context_fabric(FM_BUILD, "", [])
+    assert s == 0
+
+
+def test_v_context_fabric_incidental_recall_scores_one():
+    body = "Calls fw recall for diagnostic purposes only."
+    s, _ = estimator.score_v_context_fabric(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_v_context_fabric_handover_fix_scores_two():
+    body = "Handover bugfix in the format generation."
+    s, _ = estimator.score_v_context_fabric(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_v_context_fabric_new_feature_scores_three():
+    body = "New memory feature added for episodic capture."
+    s, _ = estimator.score_v_context_fabric(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_v_context_fabric_baseline_measurement_scores_four():
+    body = "Retrieval-quality baseline measurement against the embedder."
+    s, _ = estimator.score_v_context_fabric(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_v_context_fabric_new_architecture_scores_five():
+    body = "Ships a new memory architecture for episodic memory."
+    s, _ = estimator.score_v_context_fabric(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_v_component_fabric_empty_scores_zero():
+    s, _ = estimator.score_v_component_fabric(FM_BUILD, "", [])
+    assert s == 0
+
+
+def test_v_component_fabric_incidental_diag_scores_one():
+    body = "Runs fw fabric deps for diagnostic purposes only."
+    s, _ = estimator.score_v_component_fabric(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_v_component_fabric_dep_detection_fix_scores_two():
+    body = "Dependency detection fix in fabric registration."
+    s, _ = estimator.score_v_component_fabric(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_v_component_fabric_new_check_scores_three():
+    body = "New fabric check for blast-radius accuracy in audit."
+    s, _ = estimator.score_v_component_fabric(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_v_component_fabric_blast_radius_restructure_scores_four():
+    body = "Comprehensive blast-radius accuracy work across fabric."
+    s, _ = estimator.score_v_component_fabric(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_v_component_fabric_topology_primitive_scores_five():
+    body = "New topology primitive replacing dependency mapping."
+    s, _ = estimator.score_v_component_fabric(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_v_handlers_registered_in_estimate_task_dispatch(tmp_path):
+    """When drivers dict contains V_*, estimate_task dispatches to the dedicated
+    scorer (not the weak score_free_driver fallback)."""
+    body = "Ships a new prompt-creation system at framework level."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {"V_PROMPT_QUALITY": 7})
+    assert result["scores"]["V_PROMPT_QUALITY"] == 5  # foundational, not 0-2 fallback
+
+
+def test_v_handlers_latent_until_drivers_registered(tmp_path):
+    """The handlers exist in the dispatch table, but they are only invoked when
+    the policy registers the driver IDs. With drivers={} the V_* slots never fire."""
+    body = "Ships a new prompt-creation system at framework level."
+    task = _make_task(tmp_path, body)
+    # Empty drivers — no V_* invocation, no scores produced
+    result = estimator.estimate_task(task, {})
+    assert "V_PROMPT_QUALITY" not in result["scores"]
+    assert "V_CONTEXT_FABRIC" not in result["scores"]
+    assert "V_COMPONENT_FABRIC" not in result["scores"]
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
