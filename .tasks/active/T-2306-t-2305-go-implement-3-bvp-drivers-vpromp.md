@@ -85,12 +85,12 @@ Implements T-2305 GO (BVP driver batch inception, decided GO by operator 2026-06
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `V_PROMPT_QUALITY` (w=7) added to `policy/value-drivers.yaml` `free_drivers:` via `fw bvp driver --add` with rationale citing `docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md`
-- [ ] `V_CONTEXT_FABRIC` (w=7) added to `policy/value-drivers.yaml` `free_drivers:` via `fw bvp driver --add` with rationale citing the artefact
-- [ ] `V_COMPONENT_FABRIC` (w=6) added to `policy/value-drivers.yaml` `free_drivers:` via `fw bvp driver --add` with rationale citing the artefact
-- [ ] Free-driver pool reaches exactly 5/5 after the three additions (F-RECALL + F-ORCH + the three new)
-- [ ] Each `fw bvp driver --add` writes a weight-history entry to `.context/bvp-weight-history.yaml`
-- [ ] `bin/fw bvp driver --help` parses without error post-add (yaml integrity check)
+- [x] `V_PROMPT_QUALITY` (w=7) added to `policy/value-drivers.yaml` `free_drivers:` via `fw bvp driver --add` with rationale citing `docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md`
+- [x] `V_CONTEXT_FABRIC` (w=7) added to `policy/value-drivers.yaml` `free_drivers:` via `fw bvp driver --add` with rationale citing the artefact
+- [x] `V_COMPONENT_FABRIC` (w=6) added to `policy/value-drivers.yaml` `free_drivers:` via `fw bvp driver --add` with rationale citing the artefact
+- [x] Free-driver pool reaches exactly 5/5 after the three additions (F-RECALL + F-ORCH + the three new)
+- [x] Each `fw bvp driver --add` writes a weight-history entry to `.context/bvp-weight-history.yaml`
+- [x] `bin/fw bvp driver --help` parses without error post-add (yaml integrity check)
 
 ### Human
 - [ ] [REVIEW] Global BVP recompute confirmation
@@ -103,11 +103,11 @@ Implements T-2305 GO (BVP driver batch inception, decided GO by operator 2026-06
 
 ## Verification
 
-# All three drivers present in free_drivers (single comprehensive yaml-load check —
-# replaces three broken `bin/fw bvp driver --list` greps; the --list verb is not
-# implemented, returns Usage text only. T-2306 quickstart sibling commit `25f78d808`
-# documents the verified-path and L-NEW handoff-docs-verify-cli-verbs.)
-python3 -c "import yaml; d=yaml.safe_load(open('policy/value-drivers.yaml')); fd=d.get('free_drivers') or []; assert len(fd)==5, f'expected 5 free drivers, got {len(fd)}'; ids={e['id'] for e in fd}; assert {'F-RECALL','F-ORCH','V_PROMPT_QUALITY','V_CONTEXT_FABRIC','V_COMPONENT_FABRIC'}<=ids, f'missing: {ids}'"
+# All three V_* drivers present in free_drivers by NAME. lib/bvp.sh:935 auto-assigns
+# slot-positional F-N IDs (F1/F2/F3) — the V_* identity lives in the `name:` field per
+# the shipped policy convention (F-RECALL/F-ORCH also use semantic names vs slot IDs).
+# Assert on names + count (5/5 free-driver pool — F-RECALL + F-ORCH + 3 V_* new).
+python3 -c "import yaml; d=yaml.safe_load(open('policy/value-drivers.yaml')); fd=d.get('free_drivers') or []; assert len(fd)==5, f'expected 5 free drivers, got {len(fd)}'; names={e['name'] for e in fd}; assert {'Recall Leverage','Orchestration Leverage','V_PROMPT_QUALITY','V_CONTEXT_FABRIC','V_COMPONENT_FABRIC'}<=names, f'missing: {names}'"
 # Weight-history captured the three additions (file is YAML — grep is safe)
 test -f .context/bvp-weight-history.yaml && grep -q "V_PROMPT_QUALITY" .context/bvp-weight-history.yaml
 grep -q "V_CONTEXT_FABRIC" .context/bvp-weight-history.yaml
@@ -143,6 +143,19 @@ grep -q "V_COMPONENT_FABRIC" .context/bvp-weight-history.yaml
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 Agent ACs verified satisfied live: `policy/value-drivers.yaml` ships exactly 5 free drivers (F-RECALL, F-ORCH, V_PROMPT_QUALITY, V_CONTEXT_FABRIC, V_COMPONENT_FABRIC) at the documented weights (6/5/7/7/6). Weight-history records three `driver_add` entries from `agent_session: true` (the Sovereign rail Watchtower/--i-am-human path, per the 2026-06-10 Decisions block). `fw bvp driver --help` parses. The original Verification block asserted on driver `id:` (V_PROMPT_QUALITY etc.) but `lib/bvp.sh:935` auto-assigns slot-positional `F{next_n}` IDs — the V_* identity lives in the `name:` field per the shipped convention (F-RECALL/F-ORCH also use semantic names vs slot IDs). Spec/impl mismatch in the Verification block was fixed at the same time (assert on `name:` + count, preserves intent without lowering the bar). Only the [REVIEW] Human AC remains: open `/bvp`, verify post-add state and ranking impact.
+
+**Evidence:**
+- `policy/value-drivers.yaml` lines 204/227/252: id=F3/F1/F2 with name=V_PROMPT_QUALITY/V_CONTEXT_FABRIC/V_COMPONENT_FABRIC, weights 7/7/6, rationale citing `docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md`
+- `.context/bvp-weight-history.yaml`: three `verb: driver_add` entries (2026-06-11T16:01:24Z / 16:01:54Z / 16:01:58Z) with `who: root` + `agent_session: true` matching the Sovereign rail
+- `fw bvp` HV-LC ranking shows V_*-active scoring (top entries score against F1/F2/F3 dimensions)
+- Verification block (this task) re-runs PASS post-mismatch fix
+- BVP estimator V_* dedicated handlers shipped sibling (T-2328 commits `db90137e2`+`e0a97b7ee`+`d06186be5`)
 
 ## RCA
 
@@ -211,3 +224,12 @@ grep -q "V_COMPONENT_FABRIC" .context/bvp-weight-history.yaml
 
 ### 2026-06-10T10:29:14Z — status-update [task-update-agent]
 - **Change:** owner: agent → human
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-140a591f
+- **Timestamp:** 2026-06-11T21:29:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
