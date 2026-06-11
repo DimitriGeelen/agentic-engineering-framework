@@ -1,12 +1,12 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-06-10T03:23:02.359111+00:00
-**Corpus:** 2060 completed tasks
-**Bug-class identified:** 447 (21%)
+**Run:** 2026-06-11T03:23:01.626639+00:00
+**Corpus:** 2078 completed tasks
+**Bug-class identified:** 452 (21%)
 
 ## H1 — Bug-class tasks with no `## RCA` section
 
-**Flagged:** 346 / 447 bug-class tasks (77%)
+**Flagged:** 347 / 452 bug-class tasks (76%)
 
 **Last 30 days sample (FP triage candidates):**
 
@@ -30,28 +30,29 @@
 - `T-2138-rca-review-handoff-homework-pattern-recu` — RCA: review-handoff homework pattern recurs despite T-2030 GO — author-time
 - `T-2143-rca--agent-reflexively-routes-prose-tone` — RCA — agent reflexively routes prose-tone judgment to Human AC even when audienc
 - `T-2144-rca--agent-uses-defer-to-abdicate-adviso` — RCA — agent uses DEFER to abdicate advisory duty when evidence is complete
+- `T-2300-t-2163-leg-gap--update-tasksh-nulls-hori` — T-2163 leg-gap — update-task.sh nulls horizon only inside move-conditional,
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
-- `P-011` — referenced by 721 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
-- `L-387` — referenced by 560 tasks: T-1828-github-mirror-stalled--version-tag-reset, T-1851-deprecate-constituenttasks-field-t-new-4, T-1852-lifecycle-state-machine-add-draft--aband, T-1853-watchtower-arcs-lifecycle-filter-tabs-t-, T-1854-fw-arc-abandon-cli-verb-t-new-6 …
-- `L-291` — referenced by 407 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
-- `L-398` — referenced by 221 tasks: T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa …
+- `P-011` — referenced by 755 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `L-387` — referenced by 593 tasks: T-1828-github-mirror-stalled--version-tag-reset, T-1851-deprecate-constituenttasks-field-t-new-4, T-1852-lifecycle-state-machine-add-draft--aband, T-1853-watchtower-arcs-lifecycle-filter-tabs-t-, T-1854-fw-arc-abandon-cli-verb-t-new-6 …
+- `L-291` — referenced by 425 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
+- `L-398` — referenced by 237 tasks: T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa …
 - `P-010` — referenced by 165 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
 - `L-006` — referenced by 54 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
 - `L-001` — referenced by 38 tasks: T-011-define-practice-graduation-criteria, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le …
 - `L-332` — referenced by 35 tasks: T-1629-b-3-t-1626-hook-failure-escalation--thre, T-1629-b-3-t-1626-hook-failure-escalation--thre, T-1629-b-3-t-1626-hook-failure-escalation--thre, T-1630-b-4-t-1626-sessionstart-hook-self-test--, T-1944-extract-cron-drift-python-heredoc-to-lib …
 - `L-364` — referenced by 35 tasks: T-1720-reviewer-audit-cron-silent-failure-5-day, T-1720-reviewer-audit-cron-silent-failure-5-day, T-1766-render-surface-human-ac-gate--block-work, T-1766-render-surface-human-ac-gate--block-work, T-1767-fix-escalation-scan-v05-cron-deploy-gap- …
+- `P-013` — referenced by 24 tasks: T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1495-pickup-watchtower-discovery-watchtowerur, T-1763-fix-ac-body-parser--html-comment-example, T-1766-render-surface-human-ac-gate--block-work …
 - `PL-007` — referenced by 24 tasks: T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1141-pickup-pl-007-never-dump-terminal-comman, T-1146-pickup-critical-rca-agent-command-amnesi, T-1146-pickup-critical-rca-agent-command-amnesi …
-- `P-013` — referenced by 23 tasks: T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1495-pickup-watchtower-discovery-watchtowerur, T-1763-fix-ac-body-parser--html-comment-example, T-1766-render-surface-human-ac-gate--block-work …
 - `L-293` — referenced by 23 tasks: T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1527-l-293-audit--scan-section-rewriter-regex, T-1528-t-1528-defensive-h2-terminator-on-recomm …
+- `L-399` — referenced by 23 tasks: T-1895-template--claudemd-reviewer-example-for-, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1983-go-scope-traceability--inception-decisio, T-1983-go-scope-traceability--inception-decisio …
 - `L-417` — referenced by 23 tasks: T-1975-audit-stale-slice-reference-scan--flag-s, T-1975-audit-stale-slice-reference-scan--flag-s, T-1975-audit-stale-slice-reference-scan--flag-s, T-1975-audit-stale-slice-reference-scan--flag-s, T-1975-audit-stale-slice-reference-scan--flag-s …
 - `L-441` — referenced by 22 tasks: T-1659-fw-fabric-register-accepts-agentic-frame, T-1659-fw-fabric-register-accepts-agentic-frame, T-1912-fw-upgrade-dovendor-step-4b-runs-before-, T-1912-fw-upgrade-dovendor-step-4b-runs-before-, T-1912-fw-upgrade-dovendor-step-4b-runs-before- …
-- `L-399` — referenced by 22 tasks: T-1895-template--claudemd-reviewer-example-for-, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1983-go-scope-traceability--inception-decisio, T-1983-go-scope-traceability--inception-decisio …
 
 ## H3 — Bug-class with no RCA AND no learning captured
 
-**Flagged:** 270 / 447 (60%)
+**Flagged:** 270 / 452 (59%)
 
 This is the strongest symptom-fix signal: fix shipped, no root cause stated, no learning captured for next time.
 
@@ -65,12 +66,12 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 
 | Metric | Value |
 |---|---|
-| Total completed tasks | 2060 |
-| Bug-class tasks | 447 (21%) |
-| H1 flagged | 346 |
-| H2 repeat-learning patterns | 112 |
+| Total completed tasks | 2078 |
+| Bug-class tasks | 452 (21%) |
+| H1 flagged | 347 |
+| H2 repeat-learning patterns | 114 |
 | H3 flagged (strongest signal) | 270 |
-| Last-30-days bug-class | 20 |
+| Last-30-days bug-class | 21 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 

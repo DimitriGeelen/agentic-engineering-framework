@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2320: F-ORCH retire advisory brief — surface retire-or-keep decision for operator
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T17:12:30Z
+# ============================================================================
+
+task_id: T-2320
+task_name: "F-ORCH retire advisory brief — surface retire-or-keep decision for operator"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T17:07:55Z
+completed: 2026-06-10T17:12:23Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/T-2320-f-orch-retire-brief.md` exists with 5 sections: when-added / what-surfaced / pipeline-check / retire-cost-vs-keep-cost / operator-commands.'
+  - 'Brief cites concrete evidence (F-ORCH definition from `policy/value-drivers.yaml`, retire-when text verbatim, count of tasks F-ORCH influenced in the BVP ranking).'
+  - 'Brief presents a clear recommendation (RETIRE / KEEP / DEFER) with rationale; not a blank decision for operator to fill in.'
+  - '`## Recommendation` block in the task file mirrors the brief''s recommendation with rationale + evidence pointer.'
+  - '[REVIEWER] Reviewer PASS|CONCERN — `bin/fw reviewer T-2320` returns Overall:.*(PASS|CONCERN). CONCERN on AC#2 AC-verify-mismatch is a heuristic FP (brief cites policy/value-drivers.yaml verbatim §1; verification commands check brief existence + KEEP recommendation, intentionally not the YAML directly since the brief IS the evidence vehicle).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2320-f-orch-retire-advisory-brief--surface-re.md
+generated_by: context-agent-hybrid

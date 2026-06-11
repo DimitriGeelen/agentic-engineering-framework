@@ -74,7 +74,7 @@ When run from inside the framework repo itself, it auto-detects.
 | [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | calls | TODO: describe what this component does |
 | [manifest](/docs/generated/agents-mcp-manifest) | calls | TODO: describe what this component does |
 
-## Used By (229)
+## Used By (230)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -306,6 +306,7 @@ When run from inside the framework repo itself, it auto-detects.
 | [test_arc010_hm_a_demo_evidence](/docs/generated/tests-integration-test_arc010_hm_a_demo_evidence) | tests_by | TODO: describe what this component does |
 | [g065_readiness](/docs/generated/tests-unit-g065_readiness) | tests_by | TODO: describe what this component does |
 | [g065-readiness](/docs/generated/tools-g065-readiness) | called_by | TODO: describe what this component does |
+| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

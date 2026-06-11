@@ -195,12 +195,11 @@ out=$(bin/fw reviewer T-2322 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a705a86f
-- **Timestamp:** 2026-06-10T19:57:01Z
+- **Scan ID:** R-024fcdd0
+- **Timestamp:** 2026-06-11T05:02:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-06-10T19:55:02Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

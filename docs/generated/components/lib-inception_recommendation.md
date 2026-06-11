@@ -17,12 +17,14 @@ Returns 0 if file's `## Recommendation` body contains a real
 `**Recommendation:** GO|NO-GO|DEFER` line; 1 otherwise.
 find_inceptions_without_recommendation <active_dir>
 
-## Used By (2)
+## Used By (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [audit-yaml-validator](/docs/generated/audit-yaml-validator) | called_by | Validate all project YAML files parse correctly. Part of the audit structure section. Added as regression test after T-206 silent corruption. |
 | [inception](/docs/generated/lib-inception) | called_by | fw inception - Inception phase workflow |
+| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | called_by | TODO: describe what this component does |
+| [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | tests_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `lib-inception_recommendation.yaml`*

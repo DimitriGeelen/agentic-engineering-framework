@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2318: fix retrofit injector — append ## Recommendation when section missing (OBS-069)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T16:49:20Z
+# ============================================================================
+
+task_id: T-2318
+task_name: "fix retrofit injector — append ## Recommendation when section missing (OBS-069)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T16:46:12Z
+completed: 2026-06-10T16:49:12Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/inception.sh` injector (around line 957-991) handles missing-section case by APPENDING `## Recommendation\n\n**Recommendation:** <REC>\n\n**Rationale:**\n\n<RAT>\n\n**Evidence:**\n\n<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->\n` to the end of the file (after stripping trailing whitespace), distinct from the existing template-replace + empty-replace paths.'
+  - '`bin/fw inception retrofit-rec --apply` mutates T-2121 (after backup), adds `## Recommendation` section with DEFER stub; pre-existing 8 sections preserved; `has_real_recommendation` returns 0 (true) after retrofit.'
+  - '`tests/unit/t2318_retrofit_injector_append_missing.bats` exercises three cases (template-present → replace, empty-present → replace, missing → append) and asserts post-state `has_real_recommendation` returns 0 in all three.'
+  - '[REVIEWER] Reviewer PASS — `bin/fw reviewer T-2318` returns Overall:.*PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2318-fix-retrofit-injector--append--recommend.md
+generated_by: context-agent-hybrid

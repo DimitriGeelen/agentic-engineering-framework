@@ -1,17 +1,31 @@
 pending_updates:
 - id: U-001
-  command: bin/fw pickup send --type feature-proposal --summary 'Adopt triple-dedup + supersedes' --remote termlink ...
-  reason: G-045 TOFU mismatch on ring20-management hub (192.168.10.122:9100) prevents remote push; ring20-dashboard hub has no termlink session. Envelope contents describe T-1425/T-1426 triple-dedup fix for cross-project retry collisions.
+  command: bin/fw pickup send --type feature-proposal --summary 'Adopt triple-dedup
+    + supersedes' --remote termlink ...
+  reason: G-045 TOFU mismatch on ring20-management hub (192.168.10.122:9100) prevents
+    remote push; ring20-dashboard hub has no termlink session. Envelope contents describe
+    T-1425/T-1426 triple-dedup fix for cross-project retry collisions.
   task: T-1425
   host: local
   agent: agent
   created: '2026-04-24T13:18:44Z'
   status: resolved-stale
   resolved_date: '2026-05-15T23:35:00Z'
-  resolution_note: 21-day-old cross-repo proposal — G-059 (the underlying concern) was mitigated 2026-04-24 by T-1425 commit 81f0ae60 within the framework itself. B5 backport to TermLink remains optional polish (per concerns.yaml G-059 mitigation_candidate), not blocking work. Closing as stale; if backport becomes relevant again it would be filed as a fresh proposal under the current arc.
+  resolution_note: 21-day-old cross-repo proposal — G-059 (the underlying concern)
+    was mitigated 2026-04-24 by T-1425 commit 81f0ae60 within the framework itself.
+    B5 backport to TermLink remains optional polish (per concerns.yaml G-059 mitigation_candidate),
+    not blocking work. Closing as stale; if backport becomes relevant again it would
+    be filed as a fresh proposal under the current arc.
 - id: U-002
-  command: 'cd /opt/termlink && $EDITOR crates/termlink-hub/src/route_cache.rs  # add: pub version: u32 field with #[serde(default)]; on load, if version != EXPECTED_VERSION (=1), log warn + return empty RouteCache; bump EXPECTED_VERSION on breaking schema changes'
-  reason: 'T-1650 cross-repo proposal: silent route_cache schema-break → cold cache. Framework already pins schema (tests/unit/test_termlink_route_cache_schema.py, 4 pass + 1 deliberate skip awaiting this field). When version field lands upstream, refresh tests/fixtures/termlink-route-cache-schema.json to pin version=1 and remove the skip.'
+  command: 'cd /opt/termlink && $EDITOR crates/termlink-hub/src/route_cache.rs  #
+    add: pub version: u32 field with #[serde(default)]; on load, if version != EXPECTED_VERSION
+    (=1), log warn + return empty RouteCache; bump EXPECTED_VERSION on breaking schema
+    changes'
+  reason: 'T-1650 cross-repo proposal: silent route_cache schema-break → cold cache.
+    Framework already pins schema (tests/unit/test_termlink_route_cache_schema.py,
+    4 pass + 1 deliberate skip awaiting this field). When version field lands upstream,
+    refresh tests/fixtures/termlink-route-cache-schema.json to pin version=1 and remove
+    the skip.'
   task: T-1650
   host: 192.168.10.107
   agent: agent
@@ -20,8 +34,16 @@ pending_updates:
   resolved_date: null
   resolution_note: null
 - id: U-003
-  command: 'cd /opt/termlink && $EDITOR crates/termlink-hub/src/registry.rs  # in spawn-tag validation: warn (or reject in strict mode) when tag prefix is not in CANONICAL_PREFIXES = [''task-type:'', ''role:'', ''task:'', ''model:'', ''host='', ''project='']. Witness: live audit detects ''task='' (=20) and ''role='' (=1) non-canonical prefix usage in production'
-  reason: 'T-1649 cross-repo proposal: framework Arc C drift defenses include source-side validator. Currently the framework only DETECTS at /orchestrator + via cron audit (agents/audit/orchestrator-mcp-scan.sh). Source validator at spawn time would PREVENT the drift at the moment it occurs. Witness: 21 sessions in ''task=NUM'' / ''role=NAME'' format (non-canonical) right now on this hub.'
+  command: 'cd /opt/termlink && $EDITOR crates/termlink-hub/src/registry.rs  # in
+    spawn-tag validation: warn (or reject in strict mode) when tag prefix is not in
+    CANONICAL_PREFIXES = [''task-type:'', ''role:'', ''task:'', ''model:'', ''host='',
+    ''project='']. Witness: live audit detects ''task='' (=20) and ''role='' (=1)
+    non-canonical prefix usage in production'
+  reason: 'T-1649 cross-repo proposal: framework Arc C drift defenses include source-side
+    validator. Currently the framework only DETECTS at /orchestrator + via cron audit
+    (agents/audit/orchestrator-mcp-scan.sh). Source validator at spawn time would
+    PREVENT the drift at the moment it occurs. Witness: 21 sessions in ''task=NUM''
+    / ''role=NAME'' format (non-canonical) right now on this hub.'
   task: T-1649
   host: 192.168.10.107
   agent: agent
@@ -30,8 +52,18 @@ pending_updates:
   resolved_date: null
   resolution_note: null
 - id: U-004
-  command: 'cd /opt/termlink && # T-1642 GO accepted (Watchtower 19:08:45). Lift 13 routing-policy constants from Rust source to runtime config. See full table in /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md ## Recommendation. Cluster B1 (dispatch core: task_type taxonomy + DEFAULT_MODEL_FALLBACK + bypass/template_cache PROMOTION_THRESHOLDs + FAILURE_THRESHOLD), B2 (route cache + breaker tunables: COOLDOWN + DEFAULT_TTL_HOURS + CONFIDENCE_THRESHOLD), B3 (discovery + dispatch: tag prefix + filter strictness + concurrency + attribution), B4 (fw config plumbing). Ship as routing-policy.yaml at /etc/termlink/ + fw config keys via env. Match defaults from the Recommendation table.'
-  reason: T-1642 GO recorded by user via Watchtower 2026-05-01T17:08:45Z. 13 routing-policy parameters to lift cluster-by-cluster. /opt/termlink Rust changes; framework cannot edit cross-repo.
+  command: 'cd /opt/termlink && # T-1642 GO accepted (Watchtower 19:08:45). Lift 13
+    routing-policy constants from Rust source to runtime config. See full table in
+    /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1642-arc-a--orchestrator-routing-policy-consu.md
+    ## Recommendation. Cluster B1 (dispatch core: task_type taxonomy + DEFAULT_MODEL_FALLBACK
+    + bypass/template_cache PROMOTION_THRESHOLDs + FAILURE_THRESHOLD), B2 (route cache
+    + breaker tunables: COOLDOWN + DEFAULT_TTL_HOURS + CONFIDENCE_THRESHOLD), B3 (discovery
+    + dispatch: tag prefix + filter strictness + concurrency + attribution), B4 (fw
+    config plumbing). Ship as routing-policy.yaml at /etc/termlink/ + fw config keys
+    via env. Match defaults from the Recommendation table.'
+  reason: T-1642 GO recorded by user via Watchtower 2026-05-01T17:08:45Z. 13 routing-policy
+    parameters to lift cluster-by-cluster. /opt/termlink Rust changes; framework cannot
+    edit cross-repo.
   task: T-1642
   host: 192.168.10.107
   agent: agent
@@ -40,32 +72,76 @@ pending_updates:
   resolved_date: null
   resolution_note: null
 - id: U-005
-  command: 'cd /opt/termlink && # When fw termlink dispatch worker reports back via governance frame 0x8 on /var/lib/termlink/sessions/<id>.sock.data, the hub''s dispatch handler already knows: (a) which model the worker actually ran (from --model arg propagated through run.sh), (b) whether routing chose a fallback (orchestrator route_cache decision). Write these back into /tmp/tl-dispatch/<name>/meta.json by setting model_used and fallback_used. See web/blueprints/orchestrator.py:_recent_dispatches and tests/unit/test_termlink_dispatch_task_type.py:test_dispatch_meta_json_format_pinned for the schema. After landing, worker meta.json should look like {model_used: ''sonnet'', fallback_used: false} instead of nulls. Closes orchestrator-rethink arc Q1.'
-  reason: 'T-1643 cross-repo follow-up: framework now writes task_type/model_used/fallback_used to worker meta.json (W4). model_used and fallback_used start as null — /opt/termlink hub needs to populate them when it routes a dispatch and decides the actual specialist (or falls back). This closes Q1 of section Arc Completion Discipline (end-to-end on fresh substrate) for orchestrator-rethink.'
+  command: 'cd /opt/termlink && # When fw termlink dispatch worker reports back via
+    governance frame 0x8 on /var/lib/termlink/sessions/<id>.sock.data, the hub''s
+    dispatch handler already knows: (a) which model the worker actually ran (from
+    --model arg propagated through run.sh), (b) whether routing chose a fallback (orchestrator
+    route_cache decision). Write these back into /tmp/tl-dispatch/<name>/meta.json
+    by setting model_used and fallback_used. See web/blueprints/orchestrator.py:_recent_dispatches
+    and tests/unit/test_termlink_dispatch_task_type.py:test_dispatch_meta_json_format_pinned
+    for the schema. After landing, worker meta.json should look like {model_used:
+    ''sonnet'', fallback_used: false} instead of nulls. Closes orchestrator-rethink
+    arc Q1.'
+  reason: 'T-1643 cross-repo follow-up: framework now writes task_type/model_used/fallback_used
+    to worker meta.json (W4). model_used and fallback_used start as null — /opt/termlink
+    hub needs to populate them when it routes a dispatch and decides the actual specialist
+    (or falls back). This closes Q1 of section Arc Completion Discipline (end-to-end
+    on fresh substrate) for orchestrator-rethink.'
   task: T-1643
   host: 192.168.10.107
   agent: agent
   created: '2026-05-01T19:52:47Z'
   status: resolved
   resolved_date: '2026-05-01T21:39:37Z'
-  resolution_note: 'Closed end-to-end: /opt/termlink T-1442 (commit 143cd870) populates meta.json on substrate CLI path; framework T-1664 (commit 5fd678eb0) populates meta.json on framework dispatch path. Smoke verified t1664-smoke3 (default fallback) + t1664-explicit (no fallback). Q1 substrate-half closed on both paths. Cross-repo evidence: /opt/termlink/docs/reports/U-005-meta-populate.md'
+  resolution_note: 'Closed end-to-end: /opt/termlink T-1442 (commit 143cd870) populates
+    meta.json on substrate CLI path; framework T-1664 (commit 5fd678eb0) populates
+    meta.json on framework dispatch path. Smoke verified t1664-smoke3 (default fallback)
+    + t1664-explicit (no fallback). Q1 substrate-half closed on both paths. Cross-repo
+    evidence: /opt/termlink/docs/reports/U-005-meta-populate.md'
 - id: U-006
   command: bin/fw push
-  reason: ct301 (onedev origin) under migration through ~11:55Z 2026-05-02 — last attempt 502; commit 477268803 (T-1676) and prior c1cd7b633 held locally
+  reason: ct301 (onedev origin) under migration through ~11:55Z 2026-05-02 — last
+    attempt 502; commit 477268803 (T-1676) and prior c1cd7b633 held locally
   task: T-1676
   host: ct301
   agent: agent
   created: '2026-05-02T11:00:06Z'
   status: resolved
   resolved_date: '2026-05-15T20:42:08Z'
-  resolution_note: 'ct301 onedev migration completed long ago (>13 days). Subsequent pushes confirmed working: current origin HEAD matches local at 3f0413eb. The 502 was transient migration-window state — stale entry now cleared. T-1687 housekeeping.'
+  resolution_note: 'ct301 onedev migration completed long ago (>13 days). Subsequent
+    pushes confirmed working: current origin HEAD matches local at 3f0413eb. The 502
+    was transient migration-window state — stale entry now cleared. T-1687 housekeeping.'
 - id: U-007
-  command: 'bin/fw termlink remote inject termlink-agent --enter ''cd /opt/termlink && please review docs/proposals/T-1804-cross-agent-conversation-substrate.md (mirrored from AEF) — confirm or reject the seam (transport-vs-semantics), confirm wakeup option (iii hybrid: TermLink emits generic event class, AEF subscriber bridge consumes), reply with verdict + bounded changeset estimate'''
-  reason: 'T-1804 GO recorded. Cross-repo seam agreement: propose to TermLink-project agent (option iii — 1 generic event class TermLink-side, 1 subscriber bridge AEF-side). Proposal artifact: docs/proposals/T-1804-cross-agent-conversation-substrate.md. Awaiting TermLink-side concurrence before either repo writes code.'
+  command: 'bin/fw termlink remote inject termlink-agent --enter ''cd /opt/termlink
+    && please review docs/proposals/T-1804-cross-agent-conversation-substrate.md (mirrored
+    from AEF) — confirm or reject the seam (transport-vs-semantics), confirm wakeup
+    option (iii hybrid: TermLink emits generic event class, AEF subscriber bridge
+    consumes), reply with verdict + bounded changeset estimate'''
+  reason: 'T-1804 GO recorded. Cross-repo seam agreement: propose to TermLink-project
+    agent (option iii — 1 generic event class TermLink-side, 1 subscriber bridge AEF-side).
+    Proposal artifact: docs/proposals/T-1804-cross-agent-conversation-substrate.md.
+    Awaiting TermLink-side concurrence before either repo writes code.'
   task: T-1804
   host: 192.168.10.107
   agent: agent
   created: '2026-05-13T17:40:53Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null
+- id: U-008
+  command: 'termlink inject termlink-agent --enter ''AEF→TermLink: T-2303 arc-011
+    parallel-execution scoping. Please review /opt/999-Agentic-Engineering-Framework/docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md
+    — three questions on (1) substrate ADR ratification (2) §6 primitive priority/ETA
+    (3) ongoing-coordination mechanism. Expecting structured reply.'''
+  reason: 'T-2303 arc-011 parallel-execution scoping inception Spike 3 — cross-repo
+    first-contact. Three questions: (1) substrate ADR ratification, (2) §6 primitive
+    priority/ETA for foundation triple, (3) ongoing-coordination mechanism. Proposal:
+    docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md (88 lines).
+    Operator authorised send via autonomous-mode directive 2026-06-10.'
+  task: T-2303
+  host: termlink-agent
+  agent: agent
+  created: '2026-06-10T19:42:48Z'
   status: pending
   resolved_date: null
   resolution_note: null

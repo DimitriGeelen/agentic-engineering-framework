@@ -3450,3 +3450,107 @@ accumulated ep'
   caller: 'check-active-task focus-drift'
   target: 'T-2317'
   command: 'FW_SWITCH_FOCUS=1 bin/fw vendor self 2>&1 | tail -3; FW_SWITCH_FOCUS=1 git add agents/observe/observe.sh .agentic-framework/agents/observe/observe.sh .tasks/ .context/episodic/T-2317.yaml .context/wor'
+- timestamp: '2026-06-10T16:50:12Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2318'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2318: retrofit injector handles missing ## Recommendation section (OBS-069)
+
+Detector↔corrector asymmetry: find_inceptions_without_recommendation
+cor'
+- timestamp: '2026-06-10T16:50:35Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2318'
+  command: 'git add .agentic-framework/lib/inception.sh .fabric/components/tests-unit-t2318_retrofit_injector_append_missing.yaml
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2318: vendor self + register t231'
+- timestamp: '2026-06-10T16:59:48Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2319'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2319: fabric enrich pass — confirm saturation floor at 88 cards-no-edges
+
+Routine maintenance run. Pre: WARN Fabric 88/810 cards-no-edges.
+Post: WARN'
+- timestamp: '2026-06-10T17:12:53Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2320'
+  command: 'git add docs/reports/T-2320-f-orch-retire-brief.md .tasks/completed/T-2320-f-orch-retire-advisory-brief--surface-re.md .context/working/focus.yaml .context/project/decisions.yaml VERSION 2>&1
+FW_SWITC'
+- timestamp: '2026-06-10T19:57:58Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2322'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2322: budget-gate.sh compact_boundary reset (T-1088 sidecar-degradation defense-in-depth)
+
+3-line patch to agents/context/budget-gate.sh slow-path Pyth'
+- timestamp: '2026-06-10T19:59:25Z'
+  task: 'T-2303'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2322'
+  command: 'git add .agentic-framework/ && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2322: refresh vendored .agentic-framework/agents/context/budget-gate.sh
+
+T-2240 pre-push gate caught divergence after T-'
+- timestamp: '2026-06-10T20:02:10Z'
+  task: 'T-2303'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
+- timestamp: '2026-06-10T21:37:58Z'
+  task: 'T-2324'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2313'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/project/concerns.yaml .context/audits/gap-closures.jsonl && FW_SWITCH_FOCUS=1 git commit -m "T-2313: close G-066 — closure-readiness gauge verdict READY
+
+python3 t'
+- timestamp: '2026-06-10T21:40:39Z'
+  task: 'T-2324'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2306'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/inbox.yaml && FW_SWITCH_FOCUS=1 git commit -m "T-2306: OBS-070 — T-2305 §8 commands include deferred fw bvp recompute verb
+
+Operator following T-2305 §8 verbat'
+- timestamp: '2026-06-10T22:37:15Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2303'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/architecture/parallel-execution-aef.md docs/architecture/parallel-execution-substrate.md && FW_SWITCH_FOCUS=1 git commit -m "T-2303: refresh arc-011 ADR scoping-inceptio'
+- timestamp: '2026-06-10T22:38:05Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2303'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/reports/T-2303-scoping-parallel-execution-aef.md && FW_SWITCH_FOCUS=1 git commit -m "T-2303: refresh research-doc Status + Task header post-GO
+
+Research artefacts top h'
+- timestamp: '2026-06-10T22:39:57Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2303'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/arcs/parallel-execution-aef.yaml && FW_SWITCH_FOCUS=1 git commit -m "T-2303: refresh arc-011 grill_me block post-GO
+
+Pre-GO grill_me text said Anchor T-2303 (scopin'
+- timestamp: '2026-06-10T22:43:47Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2303'
+  command: 'FW_SWITCH_FOCUS=1 git add docs/ && FW_SWITCH_FOCUS=1 git commit -m "T-2303: batch-fix 36 stale .tasks/active/T-NNN refs in docs/
+
+Sweep across docs/reports/ + docs/articles/ found 44 stale references '

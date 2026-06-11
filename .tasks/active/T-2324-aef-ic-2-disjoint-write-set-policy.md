@@ -6,17 +6,17 @@ description: >
   write-sets before parallel dispatch. Three candidate proof shapes: static (frontmatter-declared)
   / dynamic (blast-radius predicted) / hybrid.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: later
 tags: [arc-parallel-execution-aef, downstream-of-T-2303, orchestrator, 
       planning-layer]
 components: []
 related_tasks: [T-2303, T-2323]
 arc_id: parallel-execution-aef
 created: 2026-06-10T21:32:35Z
-last_update: 2026-06-10T21:34:50Z
+last_update: 2026-06-10T21:56:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -38,6 +38,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-10T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -138,15 +148,15 @@ Four operator-dialogue spikes (A: policy shape / B: granularity / C: capture sur
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -201,7 +211,11 @@ Four operator-dialogue spikes (A: policy shape / B: granularity / C: capture sur
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Scoping inception. Three candidate policies need spike dialogue to pin against false-positive (over-conservative) vs false-negative (governance-plane corruption) trade-offs. Legitimate evidence-gap DEFER per T-2144 — revisit trigger: operator spike A/B/C session OR first downstream build pressure on planning layer.
+
+**Date**: 2026-06-10T21:56:07Z
 
 ## Updates
 
@@ -224,3 +238,13 @@ Four operator-dialogue spikes (A: policy shape / B: granularity / C: capture sur
 
   1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
      - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-10T21:56:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Scoping inception. Three candidate policies need spike dialogue to pin against false-positive (over-conservative) vs false-negative (governance-plane corruption) trade-offs. Legitimate evidence-gap DEFER per T-2144 — revisit trigger: operator spike A/B/C session OR first downstream build pressure on planning layer.
+
+### 2026-06-10T21:56:07Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Reason:** Inception decision: DEFER — parking task

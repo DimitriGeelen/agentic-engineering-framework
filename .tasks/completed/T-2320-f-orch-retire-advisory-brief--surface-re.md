@@ -207,8 +207,8 @@ The audit advisory is firing correctly — both literal `retire_when:` clauses (
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3fed4e94
-- **Timestamp:** 2026-06-10T17:12:25Z
+- **Scan ID:** R-ae66a73d
+- **Timestamp:** 2026-06-11T05:02:37Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -220,6 +220,5 @@ The audit advisory is firing correctly — both literal `retire_when:` clauses (
   - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: Brief cites concrete evidence (F-ORCH definition from `policy/value-drivers.yaml`, retire-when text verbatim, count of tasks F-ORCH influenced in the `
 - **AC#5 (Agent)** — [REVIEWER] Reviewer PASS|CONCERN — `bin/fw reviewer T-2320` returns Overall:.*(PASS|CONCERN). CONCERN on AC#2 AC-verify-mismatch is a heuristic FP (brief cites policy/value-drivers.yaml verbatim §1; v
   - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: [REVIEWER] Reviewer PASS|CONCERN — `bin/fw reviewer T-2320` returns Overall:.*(PASS|CONCERN). CONCERN on AC#2 AC-verify-mismatch is a heuristic FP (br`
-
 ### 2026-06-10T17:12:23Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

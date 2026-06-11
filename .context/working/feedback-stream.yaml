@@ -14553,3 +14553,518 @@ scan_id: R-9e9de2f2
 task_id: T-2314
 payload:
   task_file: .tasks/active/T-2314-batch-generate-missing-episodic-summarie.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T15:30:23Z'
+scan_id: R-5541b12c
+task_id: T-2315
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T15:30:23Z'
+scan_id: R-5541b12c
+task_id: T-2315
+payload:
+  task_file: .tasks/active/T-2315-maintenance-register-lib-setupsh--commit.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T15:33:32Z'
+scan_id: R-4a542738
+task_id: T-2315
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T15:33:32Z'
+scan_id: R-4a542738
+task_id: T-2315
+payload:
+  task_file: .tasks/active/T-2315-maintenance-register-lib-setupsh--commit.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T15:46:20Z'
+scan_id: R-704b308f
+task_id: T-2316
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T15:46:20Z'
+scan_id: R-704b308f
+task_id: T-2316
+payload:
+  task_file: .tasks/active/T-2316-fix-observesh-heredoc-indent--repair-obs.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T15:46:56Z'
+scan_id: R-6f6b20b6
+task_id: T-2316
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T15:46:56Z'
+scan_id: R-6f6b20b6
+task_id: T-2316
+payload:
+  task_file: .tasks/active/T-2316-fix-observesh-heredoc-indent--repair-obs.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:07:18Z'
+scan_id: R-dfbfddd8
+task_id: T-2317
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:07:18Z'
+scan_id: R-dfbfddd8
+task_id: T-2317
+payload:
+  task_file: .tasks/active/T-2317-fix-observesh132-triage-regex-split-root.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:07:24Z'
+scan_id: R-dd17bce2
+task_id: T-2317
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:07:24Z'
+scan_id: R-dd17bce2
+task_id: T-2317
+payload:
+  task_file: .tasks/active/T-2317-fix-observesh132-triage-regex-split-root.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:48:56Z'
+scan_id: R-251eb07d
+task_id: T-2318
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:48:56Z'
+scan_id: R-251eb07d
+task_id: T-2318
+payload:
+  task_file: .tasks/active/T-2318-fix-retrofit-injector--append--recommend.md
+---
+kind: auto_tick
+timestamp: '2026-06-10T16:48:56Z'
+scan_id: R-251eb07d
+task_id: T-2318
+payload:
+  key: auto_tick:T-2318:4:b0dd87f35331
+  ac_index: 4
+  digest: b0dd87f35331
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 `bin/fw reviewer T-2318` returns\
+    \ Overall:.*PASS."
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:49:08Z'
+scan_id: R-52c7341f
+task_id: T-2318
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:49:08Z'
+scan_id: R-52c7341f
+task_id: T-2318
+payload:
+  task_file: .tasks/active/T-2318-fix-retrofit-injector--append--recommend.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:49:14Z'
+scan_id: R-01896d55
+task_id: T-2318
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:49:14Z'
+scan_id: R-01896d55
+task_id: T-2318
+payload:
+  task_file: .tasks/active/T-2318-fix-retrofit-injector--append--recommend.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:49:15Z'
+scan_id: R-86cb545e
+task_id: T-2318
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:49:15Z'
+scan_id: R-86cb545e
+task_id: T-2318
+payload:
+  task_file: .tasks/active/T-2318-fix-retrofit-injector--append--recommend.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:57:49Z'
+scan_id: R-655c2848
+task_id: T-2319
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:57:49Z'
+scan_id: R-655c2848
+task_id: T-2319
+payload:
+  task_file: .tasks/active/T-2319-fabric-enrich--reduce-cards-no-edges-aud.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T16:59:03Z'
+scan_id: R-6ad5f24d
+task_id: T-2319
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T16:59:03Z'
+scan_id: R-6ad5f24d
+task_id: T-2319
+payload:
+  task_file: .tasks/active/T-2319-fabric-enrich--reduce-cards-no-edges-aud.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T17:05:40Z'
+scan_id: R-de27cc1c
+task_id: T-2308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T17:05:40Z'
+scan_id: R-de27cc1c
+task_id: T-2308
+payload:
+  task_file: .tasks/completed/T-2308-fw-pickup-send-writes-invalid-yaml-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T17:11:38Z'
+scan_id: R-a9891478
+task_id: T-2320
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T17:11:38Z'
+scan_id: R-a9891478
+task_id: T-2320
+payload:
+  task_file: .tasks/active/T-2320-f-orch-retire-advisory-brief--surface-re.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T17:11:43Z'
+scan_id: R-dd3b6f8f
+task_id: T-2320
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T17:11:43Z'
+scan_id: R-dd3b6f8f
+task_id: T-2320
+payload:
+  task_file: .tasks/active/T-2320-f-orch-retire-advisory-brief--surface-re.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T17:11:52Z'
+scan_id: R-7e60df16
+task_id: T-2320
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T17:11:52Z'
+scan_id: R-7e60df16
+task_id: T-2320
+payload:
+  task_file: .tasks/active/T-2320-f-orch-retire-advisory-brief--surface-re.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T17:12:24Z'
+scan_id: R-5b40fb30
+task_id: T-2320
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T17:12:24Z'
+scan_id: R-5b40fb30
+task_id: T-2320
+payload:
+  task_file: .tasks/active/T-2320-f-orch-retire-advisory-brief--surface-re.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T17:12:25Z'
+scan_id: R-3fed4e94
+task_id: T-2320
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T17:12:25Z'
+scan_id: R-3fed4e94
+task_id: T-2320
+payload:
+  task_file: .tasks/active/T-2320-f-orch-retire-advisory-brief--surface-re.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T19:45:04Z'
+scan_id: R-1f9694a2
+task_id: T-2303
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T19:45:04Z'
+scan_id: R-1f9694a2
+task_id: T-2303
+payload:
+  task_file: .tasks/active/T-2303-scoping-inception--parallel-execution-ar.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T19:48:36Z'
+scan_id: R-cd9b2fd9
+task_id: T-2303
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T19:48:36Z'
+scan_id: R-cd9b2fd9
+task_id: T-2303
+payload:
+  task_file: .tasks/active/T-2303-scoping-inception--parallel-execution-ar.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T19:54:57Z'
+scan_id: R-20b014f7
+task_id: T-2322
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T19:54:57Z'
+scan_id: R-20b014f7
+task_id: T-2322
+payload:
+  task_file: .tasks/active/T-2322-fix-budget-gatesh-compactboundary-reset-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T19:57:00Z'
+scan_id: R-9831ca39
+task_id: T-2322
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T19:57:00Z'
+scan_id: R-9831ca39
+task_id: T-2322
+payload:
+  task_file: .tasks/active/T-2322-fix-budget-gatesh-compactboundary-reset-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T19:57:01Z'
+scan_id: R-a705a86f
+task_id: T-2322
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T19:57:01Z'
+scan_id: R-a705a86f
+task_id: T-2322
+payload:
+  task_file: .tasks/active/T-2322-fix-budget-gatesh-compactboundary-reset-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T20:02:11Z'
+scan_id: R-79e9f0a6
+task_id: T-2303
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T20:02:11Z'
+scan_id: R-79e9f0a6
+task_id: T-2303
+payload:
+  task_file: .tasks/active/T-2303-scoping-inception--parallel-execution-ar.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T20:09:17Z'
+scan_id: R-6d8d62da
+task_id: T-2323
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T20:09:17Z'
+scan_id: R-6d8d62da
+task_id: T-2323
+payload:
+  task_file: .tasks/active/T-2323-aef-ic-1-yield-point-granularity-substra.md
+---
+kind: scan_emitted
+timestamp: '2026-06-10T21:35:06Z'
+scan_id: R-a21260e9
+task_id: T-2324
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-10T21:35:06Z'
+scan_id: R-a21260e9
+task_id: T-2324
+payload:
+  task_file: .tasks/active/T-2324-aef-ic-2-disjoint-write-set-policy.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T05:02:36Z'
+scan_id: R-024fcdd0
+task_id: T-2322
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T05:02:36Z'
+scan_id: R-024fcdd0
+task_id: T-2322
+payload:
+  task_file: .tasks/completed/T-2322-fix-budget-gatesh-compactboundary-reset-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T05:02:37Z'
+scan_id: R-ae66a73d
+task_id: T-2320
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T05:02:37Z'
+scan_id: R-ae66a73d
+task_id: T-2320
+payload:
+  task_file: .tasks/completed/T-2320-f-orch-retire-advisory-brief--surface-re.md

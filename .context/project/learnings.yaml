@@ -3637,3 +3637,10 @@ X'` returning empty group."
   date: 2026-06-10
   context: Added via context agent
   application: TBD
+- id: L-477
+  learning: "Cross-repo TermLink injection without delivery-verify poll-back is a silent-failure class. The pattern 'termlink inject <session> --enter <msg>' assumes a Claude agent is the PTY listener — if the PTY is at a bash prompt (no Claude session running), bash interprets the message as a shell command and the send silently fails to reach any agent. Pre-condition check needed: 'termlink output <session>' should show a Claude-style prompt before injecting. Sibling pattern to L-475 detector↔corrector symmetry — extends to dispatch + remote-exec verbs (any 'send' without 'verify' is silent failure)."
+  source: T-2303
+  task: T-2303
+  date: 2026-06-10
+  context: Added via context agent
+  application: TBD

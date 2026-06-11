@@ -1,0 +1,30 @@
+pickup_id: P-047
+version: 1
+type: feature-proposal
+source:
+  project: 999-Agentic-Engineering-Framework
+  task_id: T-2303
+  agent: claude-code
+  timestamp: '2026-06-10T19:47:32Z'
+payload:
+  summary: 'AEF→TermLink first-contact: T-2303 arc-011 parallel-execution scoping
+    (three questions on substrate ADR / §6 priority / coordination mechanism)'
+  detail: 'AEF arc-011 (parallel-execution-aef) is scoping its downstream inception
+    cluster. Spike 3 of T-2303 requires substrate-side confirmation before AEF commits
+    to contracts. Three questions in proposal artifact docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md
+    (88 lines): (1) substrate ADR docs/architecture/parallel-execution-substrate.md
+    ratification, (2) §6 primitive priority + ETA for foundation triple primitives
+    1+2+3 (claim, idle/busy, pull/assign), (3) ongoing-coordination mechanism for
+    soft dependencies (filesystem-write observation, un-partitionable regen, flip
+    criteria). Expecting structured reply per §Expected response shape — confirmed/disputed/unclear
+    per §6 primitive, ETA per hard dependency, choice of coordination mechanism. 7-day
+    timeout — after that AEF fires downstream inceptions with provisional caveat per
+    substrate §ACD. Per substrate §9 (producer ≠ judge), AEF cannot self-validate.
+    Prior termlink inject 2026-06-10 hit bash PTY (no Claude listener) — this pickup
+    is the durable fallback.'
+  priority: high
+  tags:
+  - cross-repo
+  - parallel-execution
+  - scoping
+  - first-contact

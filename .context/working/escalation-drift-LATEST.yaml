@@ -1,15 +1,15 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-06-10T03:23:02.359774+00:00
-corpus_total: 2060
-bug_class_total: 447
+generated: 2026-06-11T03:23:01.626943+00:00
+corpus_total: 2078
+bug_class_total: 452
 bug_class_pct: 21
-h1_flagged: 346
-h1_pct_of_bug_class: 77
-h2_repeat_patterns: 112
+h1_flagged: 347
+h1_pct_of_bug_class: 76
+h2_repeat_patterns: 114
 h3_flagged: 270
-h3_pct_of_bug_class: 60
-recent_30d_flagged: 20
+h3_pct_of_bug_class: 59
+recent_30d_flagged: 21
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
   - tid: "T-1813-audit-arc-completion-check-ignores-tag-t"
@@ -34,13 +34,13 @@ recent_sample:
     name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-"
 h2_top:
   - learning: "P-011"
-    task_count: 721
+    task_count: 755
   - learning: "L-387"
-    task_count: 560
+    task_count: 593
   - learning: "L-291"
-    task_count: 407
+    task_count: 425
   - learning: "L-398"
-    task_count: 221
+    task_count: 237
   - learning: "P-010"
     task_count: 165
   - learning: "L-006"
@@ -51,5 +51,5 @@ h2_top:
     task_count: 35
   - learning: "L-364"
     task_count: 35
-  - learning: "PL-007"
+  - learning: "P-013"
     task_count: 24

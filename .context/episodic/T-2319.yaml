@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2319: fabric enrich — reduce cards-no-edges audit WARN (88/810)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-10T16:59:08Z
+# ============================================================================
+
+task_id: T-2319
+task_name: "fabric enrich — reduce cards-no-edges audit WARN (88/810)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-10T16:53:56Z
+completed: 2026-06-10T16:57:55Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`bin/fw fabric enrich` runs to completion, prints summary (cards processed, edges added, by-subsystem breakdown).'
+  - 'Post-enrich audit re-read: capture the new `Fabric: N/M cards have no edges` count vs pre-run.'
+  - 'Document outcome inline: if N decreased, note delta and the subsystems that gained edges; if N held at saturation floor (per L-466), confirm with the orphan sample.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-10 — accept 88-card saturation floor for fabric WARN'
+    chose: 'accept 88/811 as the fabric enrich saturation floor for now; do not pursue manual edging in this pass.'
+    rationale: 'Pre-run audit: `WARN Fabric: 88/810 cards have no edges`. Ran `bin/fw fabric enrich` over all 821 cards — added 3 forward + 3 reverse edges (subsystems unknown:+3, framework-core:+3). Post-run audit: `WARN Fabric: 88/811 cards have no edges`. Numerator unchanged; denominator +1 (T-2318''s new bats card registered). Confirms L-466 lesson — cards_enriched (3) does not reduce the no-edges bucket because the 3 enriched cards were already edge-connected; the orphan 88 are structural orphans (auto-generated docs/generated/components/*, config files, templates) that don''t naturally connect to other code.'
+    alternatives_rejected: ['manual orphan edging — cost > value at this saturation; orphan inspection earlier showed templates/auto-gen docs as the dominant class (legitimately edge-less).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2319-fabric-enrich--reduce-cards-no-edges-aud.md
+generated_by: context-agent-hybrid
