@@ -4,7 +4,7 @@
 
 ## Working artifact
 
-See `.tasks/active/T-1270-peer-learning-cron-every-15-min-connect-.md` for the full inception (Problem Statement, 6 Assumptions, 6 Spikes, Technical Constraints, Scope Fence, Recommendation).
+See `.tasks/completed/T-1270-peer-learning-cron-every-15-min-connect-.md` for the full inception (Problem Statement, 6 Assumptions, 6 Spikes, Technical Constraints, Scope Fence, Recommendation).
 
 ## Propagation record (2026-04-15)
 

@@ -210,7 +210,7 @@ Add to CLAUDE.md after T-193 section:
 
 ## Evidence: Current Partial-Complete Workflow (T-303 Example)
 
-**File:** `.tasks/active/T-303-create-fw-preflight-command-and-integrat.md`
+**File:** `.tasks/completed/T-303-create-fw-preflight-command-and-integrat.md`
 - Status: `work-completed`
 - Owner: `human` (partial-complete)
 - Agent ACs: all checked (7/7)

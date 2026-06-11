@@ -225,7 +225,7 @@ This belongs in concerns.yaml as a **G-067** candidate: silent-failure on the hu
 ## Evidence
 
 - `.context/working/watchtower.log` lines 19, 110, 187, 264 — four `inception decide T-1744 failed: primary_landed=True` entries
-- `.tasks/active/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md:105` — `**Recommendation:** **GO**` body
+- `.tasks/completed/T-1744-spike-d-off-ramp-pick-a-different-g-064-.md:105` — `**Recommendation:** **GO**` body
 - `lib/task-audit.sh:154` — failing regex
 - `web/blueprints/inception.py:578` — false-positive primary_landed regex
 - `web/templates/inception_detail.html:384` — error-only banner block

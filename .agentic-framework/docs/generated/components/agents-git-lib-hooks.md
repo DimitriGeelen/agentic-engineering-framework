@@ -8,7 +8,7 @@
 
 Git Agent - Hook installation subcommand
 
-## Dependencies (7)
+## Dependencies (8)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -19,6 +19,7 @@ Git Agent - Hook installation subcommand
 | [secret-scan](/docs/generated/agents-git-lib-secret-scan) | calls | TODO: describe what this component does |
 | [dup-task-scan](/docs/generated/agents-git-lib-dup-task-scan) | calls | TODO: describe what this component does |
 | [large-file-scan](/docs/generated/agents-git-lib-large-file-scan) | calls | TODO: describe what this component does |
+| [manifest](/docs/generated/agents-mcp-manifest) | calls | TODO: describe what this component does |
 
 ## Used By (4)
 

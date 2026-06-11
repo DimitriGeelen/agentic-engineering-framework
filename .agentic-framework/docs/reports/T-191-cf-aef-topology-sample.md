@@ -414,7 +414,7 @@ last_verified: 2026-02-19
 
 - **Predecessor:** [T-191 Research Landscape](T-191-cf-research-landscape.md) — five dependency layers, C4 model, component manifests
 - **Genesis:** [T-191 Genesis Discussion](T-191-cf-genesis-discussion.md) — problem statement, design principles
-- **Task:** `.tasks/active/T-191-component-fabric--structural-topology-sy.md`
+- **Task:** `.tasks/completed/T-191-component-fabric--structural-topology-sy.md`
 
 ---
 

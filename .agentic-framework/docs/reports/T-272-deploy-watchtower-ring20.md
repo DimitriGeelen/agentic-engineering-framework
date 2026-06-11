@@ -109,7 +109,7 @@ Rejected: GPU split pattern — would require containerizing Ollama (already run
 
 ## Task Decomposition
 
-See `.tasks/active/T-273` through `T-278` for implementation tasks.
+See `.tasks/completed/T-273` through `T-278` for implementation tasks.
 
 | Task | Name | Type | Depends On | Deliverable |
 |------|------|------|-----------|-------------|

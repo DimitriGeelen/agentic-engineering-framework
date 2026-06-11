@@ -5,7 +5,7 @@
 filed without a Recommendation block.
 
 The task file
-`.tasks/active/T-1715-meta-rca-agent-files-inception-artefacts.md`
+`.tasks/completed/T-1715-meta-rca-agent-files-inception-artefacts.md`
 carries the full content. This artifact captures the dialogue trail and
 in-session evidence per C-001.
 

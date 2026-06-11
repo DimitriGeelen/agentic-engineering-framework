@@ -270,7 +270,7 @@ This rollout addendum is captured in both T-1442 and T-1443 research artifacts. 
 
 ## Recommendation
 
-**GO** (full text in `.tasks/active/T-1443-independent-reviewer-agent--termlink-dis.md` § Recommendation).
+**GO** (full text in `.tasks/completed/T-1443-independent-reviewer-agent--termlink-dis.md` § Recommendation).
 
 Hand to user via `fw task review T-1443` for GO/NO-GO/DEFER.
 
@@ -320,8 +320,8 @@ Learning entries: L-264 (v1.0 dogfood), L-265 (v1.1 + L-264-(a) fix), L-266 (v1.
 
 | Artifact | Path |
 |---|---|
-| Inception task body | `.tasks/active/T-1443-independent-reviewer-agent--termlink-dis.md` |
-| Linked sister inception | `.tasks/active/T-1442-ac-validation-default-flip--mechanical-v.md` |
+| Inception task body | `.tasks/completed/T-1443-independent-reviewer-agent--termlink-dis.md` |
+| Linked sister inception | `.tasks/completed/T-1442-ac-validation-default-flip--mechanical-v.md` |
 | Genesis dialogue | `docs/reports/T-1442-ac-validation-default-flip.md` |
 | TermLink dispatch reference | `CLAUDE.md` § TermLink Integration |
 | Authority model reference | `CLAUDE.md` § Authority Model |

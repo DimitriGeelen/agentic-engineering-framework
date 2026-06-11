@@ -40,7 +40,7 @@ All three also share `last_upgrade: 2026-04-25T16:18–16:19Z` — they were swe
   - `841ddbe T-005: Session handover S-2026-0421-0430`
 - **Drift verdict:** unknown (consumer pin 1.5.307 vs framework HEAD 1.5.167)
 - **Recommendation:** investigate-uncommitted-changes
-- **Notes:** Cleanest of the three. Modifications are limited to `.claude/commands/resume.md`, `.framework.yaml` (the pin bump itself), `.tasks/active/T-011-...md`, and `CLAUDE.md`; untracked = two `.bak` files plus `.context/audits/upgrades.yaml`. The nested `agentic-engineering-framework/` and `termlink/` dirs are explicitly out of W1 scope. No structural breakage.
+- **Notes:** Cleanest of the three. Modifications are limited to `.claude/commands/resume.md`, `.framework.yaml` (the pin bump itself), `.tasks/completed/T-011-...md`, and `CLAUDE.md`; untracked = two `.bak` files plus `.context/audits/upgrades.yaml`. The nested `agentic-engineering-framework/` and `termlink/` dirs are explicitly out of W1 scope. No structural breakage.
 
 ## /opt/termlink
 - **Pinned framework:** 1.5.307 (`upgraded_from: 1.5.16`, `last_upgrade: 2026-04-25T16:19:05Z`)

@@ -11,7 +11,7 @@
 
 - 2026-06-05 ~17:46Z (and again ~21:46Z): operator clicked **GO** on `/inception/T-2209` via Watchtower.
 - Watchtower's `web/blueprints/inception.py:record_decision` ran `bin/fw inception decide T-2209 go --rationale … --from-watchtower`.
-- **Primary action succeeded**: ## Decision block written to `.tasks/active/T-2209-*.md`; commit `00da96d8c T-2209: inception decision GO (via Watchtower)` landed.
+- **Primary action succeeded**: ## Decision block written to `.tasks/completed/T-2209-*.md`; commit `00da96d8c T-2209: inception decision GO (via Watchtower)` landed.
 - **Side-effect failed**: `do_inception_decide()` chained to `update-task.sh --status work-completed`, which **errored on the T-2190 disposition gate**:
 
   ```

@@ -59,6 +59,6 @@ After writing the Decision block:
 ## Decision Trail
 
 - Source pickup: `.context/pickup/processed/P-039-bug-report.yaml`
-- Inception: `.tasks/active/T-1322-pickup-fw-inception-decide-doesnt-tick-t.md`
+- Inception: `.tasks/completed/T-1322-pickup-fw-inception-decide-doesnt-tick-t.md`
 - Build sibling: T-1324 (to be created next session)
 - Recommendation: GO (build deferred)

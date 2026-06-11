@@ -6,7 +6,7 @@
 **Anchor incident (this session):** `bin/fw config list` framework-repo conflation
 
 This artifact summarises the analysis already filed in the task body
-(`.tasks/active/T-1675-*.md`) and adds the spike measurements that
+(`.tasks/completed/T-1675-*.md`) and adds the spike measurements that
 informed the recommendation. The task body remains the primary
 artifact; this file exists to satisfy C-001 and to give the
 human-review surface a single landing page.

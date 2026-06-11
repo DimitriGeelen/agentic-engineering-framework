@@ -1,0 +1,6 @@
+{
+  "fw": {
+    "command": "python3",
+    "args": ["agents/mcp/framework_mcp_server.py"]
+  }
+}

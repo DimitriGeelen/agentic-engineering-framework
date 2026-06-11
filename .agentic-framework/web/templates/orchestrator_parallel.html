@@ -1,0 +1,111 @@
+{# T-2342 (arc-011 M1 §5) — visual surface for in-flight dispatches.
+
+   Renders one card per in-flight dispatch read from .context/dispatches.jsonl.
+   Auto-refreshes every 2s via htmx (selects only the cards container, so the
+   page chrome doesn't flicker). Sibling to T-2341's bash demo — operator
+   observes the headline_mechanic firing in real time. #}
+
+<style>
+    .op-summary {
+        display: flex;
+        align-items: baseline;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .op-summary .count {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .op-summary .label {
+        color: var(--pico-muted-color);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+    }
+    .op-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+    }
+    .op-card {
+        border: 1px solid var(--pico-muted-border-color);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: var(--pico-card-background-color);
+    }
+    .op-card .dispatch-id {
+        font-family: var(--pico-font-family-monospace);
+        font-size: 0.85rem;
+        color: var(--pico-muted-color);
+    }
+    .op-card .task-id {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0.25rem 0;
+    }
+    .op-card .elapsed {
+        font-family: var(--pico-font-family-monospace);
+        color: var(--pico-primary);
+    }
+    .op-card .elapsed-warn { color: orange; }
+    .op-empty {
+        padding: 2rem;
+        text-align: center;
+        color: var(--pico-muted-color);
+        font-style: italic;
+        border: 1px dashed var(--pico-muted-border-color);
+        border-radius: 0.5rem;
+    }
+    .op-meta {
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: var(--pico-muted-color);
+    }
+</style>
+
+<header>
+    <h2>Orchestrator — Parallel Dispatches</h2>
+    <p>Real-time view of in-flight dispatches recorded in
+       <code>.context/dispatches.jsonl</code>. Polls every 2 seconds.
+       <em>arc-011 M1 §5 — operator surface for the headline_mechanic.</em>
+    </p>
+</header>
+
+<div id="op-content"
+     hx-get="/orchestrator/parallel"
+     hx-trigger="every 2s"
+     hx-target="this"
+     hx-select="#op-content"
+     hx-swap="outerHTML">
+
+    <div class="op-summary">
+        <span class="count">{{ in_flight_count }}</span>
+        <span class="label">dispatches in flight</span>
+    </div>
+
+    {% if cards %}
+        <div class="op-cards">
+            {% for c in cards %}
+                <article class="op-card">
+                    <div class="dispatch-id">{{ c.dispatch_id }}</div>
+                    <div class="task-id">{{ c.task_id }}</div>
+                    {% if c.started_at %}
+                        <div>started at {{ c.started_at }}</div>
+                        <div class="elapsed {% if c.elapsed_seconds > 30 %}elapsed-warn{% endif %}">
+                            elapsed: {{ c.elapsed_seconds }}s
+                        </div>
+                    {% else %}
+                        <div class="elapsed">started_at unknown</div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="op-empty">No dispatches in flight.</div>
+    {% endif %}
+
+    <p class="op-meta">
+        Snapshot taken at {{ now_ts }}. Auto-refresh every 2s.
+    </p>
+</div>

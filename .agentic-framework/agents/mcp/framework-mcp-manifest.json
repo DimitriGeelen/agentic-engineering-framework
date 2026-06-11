@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "source": "policy/capability-overlay/tool-set.yaml",
+  "source_version": 1,
+  "filed_by": "T-2258",
+  "arc_id": "capability-overlay",
+  "tools": [
+    {
+      "name": "task_list",
+      "gated": false
+    },
+    {
+      "name": "task_show",
+      "gated": false
+    },
+    {
+      "name": "review_queue",
+      "gated": false
+    },
+    {
+      "name": "inception_status",
+      "gated": false
+    },
+    {
+      "name": "bvp_rank",
+      "gated": false
+    },
+    {
+      "name": "learnings",
+      "gated": false
+    },
+    {
+      "name": "decisions",
+      "gated": false
+    },
+    {
+      "name": "recall",
+      "gated": false
+    },
+    {
+      "name": "ask",
+      "gated": false
+    },
+    {
+      "name": "gaps",
+      "gated": false
+    },
+    {
+      "name": "metrics",
+      "gated": false
+    },
+    {
+      "name": "doctor",
+      "gated": false
+    },
+    {
+      "name": "fabric_search",
+      "gated": false
+    },
+    {
+      "name": "fabric_deps",
+      "gated": false
+    },
+    {
+      "name": "costs",
+      "gated": false
+    },
+    {
+      "name": "version",
+      "gated": false
+    },
+    {
+      "name": "work_on",
+      "gated": true
+    },
+    {
+      "name": "task_update",
+      "gated": true
+    },
+    {
+      "name": "note",
+      "gated": true
+    },
+    {
+      "name": "context_focus",
+      "gated": true
+    },
+    {
+      "name": "context_add_learning",
+      "gated": true
+    },
+    {
+      "name": "assumption_add",
+      "gated": true
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # T-1420 — Cross-project pickup semantic dedup (G-059)
 
-Research artifact for inception T-1420. Created 2026-04-24. Home: `.tasks/active/T-1420-cross-project-pickup-semantic-dedup--has.md`.
+Research artifact for inception T-1420. Created 2026-04-24. Home: `.tasks/completed/T-1420-cross-project-pickup-semantic-dedup--has.md`.
 
 ## Problem origin
 

@@ -104,6 +104,63 @@
         each button. CSRF is auto-injected by web/static/csrf-htmx.js. -#}
   </section>
 
+  {# ── T-2332 (T-2330 S2): driver proposal queue ── #}
+  {%- if pending_proposals %}
+  <section id="bvp-driver-proposals" style="margin: 1rem 0 1.5rem 0; padding: 0.8rem; border: 1px solid var(--pico-muted-border-color); border-radius: 0.4rem;">
+    <h3>Pending driver proposals ({{ pending_proposals|length }})</h3>
+    <p class="muted">
+      Agent-filed proposals awaiting your decision. Approve runs
+      <code>fw bvp driver --add --from-watchtower</code> (the Sovereign rail is
+      preserved). Reject appends a <code>state: rejected</code> row with your
+      rationale — both decisions are auditable in
+      <code>.context/bvp-driver-proposals.jsonl</code>.
+    </p>
+    <table style="width:100%;">
+      <thead>
+        <tr>
+          <th style="text-align:left;">ID</th>
+          <th style="text-align:left;">Name</th>
+          <th style="text-align:right;">Weight</th>
+          <th style="text-align:left;">Rationale</th>
+          <th style="text-align:left;">Author</th>
+          <th style="text-align:left;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for p in pending_proposals %}
+        <tr id="proposal-{{ p.id }}">
+          <td><code>{{ p.id }}</code></td>
+          <td><strong>{{ p.name }}</strong></td>
+          <td style="text-align:right;">{{ p.weight }}</td>
+          <td style="max-width: 28rem;">{{ p.rationale }}</td>
+          <td><small class="muted">{{ p.author or 'unknown' }}{% if p.task %} · {{ p.task }}{% endif %}</small></td>
+          <td style="white-space:nowrap;">
+            <button type="button"
+                    hx-post="/api/bvp/driver/approve?id={{ p.id }}"
+                    hx-target="#proposal-{{ p.id }} .dp-result"
+                    hx-swap="innerHTML"
+                    hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(),800)"
+                    style="background: var(--pico-ins-color); color: white; padding: 0.2rem 0.6rem; border: 0;">
+              Approve
+            </button>
+            <button type="button"
+                    hx-post="/api/bvp/driver/reject?id={{ p.id }}"
+                    hx-prompt="Reject rationale (≥30 chars — why is this not the right driver?):"
+                    hx-target="#proposal-{{ p.id }} .dp-result"
+                    hx-swap="innerHTML"
+                    hx-on::after-request="if(event.detail.successful) setTimeout(()=>location.reload(),800)"
+                    style="background: var(--pico-del-color); color: white; padding: 0.2rem 0.6rem; border: 0;">
+              Reject
+            </button>
+            <span class="dp-result" style="display:inline-block; margin-left:0.4rem;"></span>
+          </td>
+        </tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+  </section>
+  {%- endif %}
+
   {# ── T-1964 (T-1958 A): add free driver form ── #}
   <section id="bvp-driver-add" style="margin: 1rem 0 1.5rem 0;">
     <h3>Add free driver</h3>

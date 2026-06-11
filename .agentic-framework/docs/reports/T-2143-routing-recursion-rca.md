@@ -13,7 +13,7 @@ This RCA sits inside the larger T-2138 → T-2140 → T-2141 arc and adds a **fi
 
 ## The 4 Rounds (Evidence)
 
-The recursion happened in one continuous chat session, after a `/resume`. All four rounds were on **T-2139's Human AC** — the keystone task that itself ships the framework's enforcement gate against the parent class. Sources in `.tasks/active/T-2139-transition-time-blocking-gate--review-li.md` revision history (commits `8880e0ab`, `10299add`, `cd4d321a`, `069f64d4`, `37416f84`).
+The recursion happened in one continuous chat session, after a `/resume`. All four rounds were on **T-2139's Human AC** — the keystone task that itself ships the framework's enforcement gate against the parent class. Sources in `.tasks/completed/T-2139-transition-time-blocking-gate--review-li.md` revision history (commits `8880e0ab`, `10299add`, `cd4d321a`, `069f64d4`, `37416f84`).
 
 ### Round 1 — bundled `[REVIEW]` with 5 sub-clauses
 Original AC bundled five tick-clauses under one `[REVIEW]` checkbox: class name present, URL pattern correct, env-var bypass named, CLI-flag bypass named, **tone reads coaching**. The first four are deterministic structural checks (`[REVIEWER]`-class or Agent-AC-class). The fifth is genuine human taste.

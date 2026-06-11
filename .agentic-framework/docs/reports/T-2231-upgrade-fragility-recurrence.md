@@ -10,7 +10,7 @@ T-2229 (BVP onboarding bootstrap GO), T-2093/T-2094/T-2095 (captured-but-stalled
 
 The operator filed a fresh field-failure report on a consumer project shorthanded
 as `.121do` (likely `/opt/121-*`; exact path + failure output pending operator
-paste in the Dialogue Log of `.tasks/active/T-2231-*.md`). The operator's
+paste in the Dialogue Log of `.tasks/completed/T-2231-*.md`). The operator's
 verbatim meta-question — *"do our upgrades keep failing?"* — has an
 evidence-backed answer:
 
@@ -80,7 +80,7 @@ questions that resolve under any GO path.
 
 ## Open Questions
 
-(See `.tasks/active/T-2231-*.md` §Open Questions for the formal IW-N
+(See `.tasks/completed/T-2231-*.md` §Open Questions for the formal IW-N
 disposition table. IW-1 / IW-3 / IW-5 block on the operator's paste of the
 .121do failure output. IW-2 / IW-4 / IW-6 are recommendation-ready.)
 
@@ -144,7 +144,7 @@ The agent's recommendation: ship V1-B → V1-C → V1-D under the existing T-223
    — no new content carrying the .121do output.
 2. Walked the upgrade-fragility history — table above is the receipt.
 3. Filed this inception with the pattern + a placeholder for the .121do
-   paste in the Dialogue Log of `.tasks/active/T-2231-*.md`.
+   paste in the Dialogue Log of `.tasks/completed/T-2231-*.md`.
 4. Requesting operator paste of the .121do failure output so IW-1/IW-3/IW-5
    can resolve.
 
@@ -157,9 +157,9 @@ The agent's recommendation: ship V1-B → V1-C → V1-D under the existing T-223
 
 - `.tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md` — 40d started-work
 - `.tasks/completed/T-2078-deep-review-fw-upgrade-reliability-for-f.md` — GO inception
-- `.tasks/active/T-2093-v1-b-fw-upgrade-strict-exit-code-discipl.md` — V1-B captured
-- `.tasks/active/T-2094-v1-c-fw-upgrade-pre-flight-tooling-check.md` — V1-C captured
-- `.tasks/active/T-2095-v1-d-fw-upgrade-self-vendor-extraction-i.md` — V1-D captured
+- `.tasks/completed/T-2093-v1-b-fw-upgrade-strict-exit-code-discipl.md` — V1-B captured
+- `.tasks/completed/T-2094-v1-c-fw-upgrade-pre-flight-tooling-check.md` — V1-C captured
+- `.tasks/completed/T-2095-v1-d-fw-upgrade-self-vendor-extraction-i.md` — V1-D captured
 - `.tasks/completed/T-2229-onboarding-bootstrap-gap--fw-upgradeinit.md` — GO today
 - `.tasks/completed/T-2230-t-2229-slice-1--fw-bvp-driver---init-ver.md` — shipped today
 - L-461 — sibling pattern (started-work + Recommendation, close never fires)

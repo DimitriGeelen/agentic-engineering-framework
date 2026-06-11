@@ -135,8 +135,8 @@ This confirms Assumption A-1 from T-1104.
 ```
 .agentic-framework/agents/termlink/termlink.sh
 .context/episodic/T-651.yaml
-.tasks/active/T-651-*.md
-.tasks/active/T-652-*.md
+.tasks/completed/T-651-*.md
+.tasks/completed/T-652-*.md
 agents/termlink/termlink.sh
 ```
 

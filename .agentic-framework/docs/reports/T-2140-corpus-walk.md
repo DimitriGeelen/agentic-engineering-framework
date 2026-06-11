@@ -54,7 +54,7 @@ outside `## Acceptance Criteria` (e.g. `## Problem Statement`,
 | `.tasks/completed/T-2118-review-handoff-palette-inception.md` | Sibling inception; pattern in `## Problem Statement` only, Human AC has full URL |
 | `.tasks/completed/T-2138-rca-review-handoff-homework-pattern-recu.md` | RCA itself; pattern quoted in body, Human AC clean |
 | `.tasks/completed/T-2139-transition-time-blocking-gate--review-li.md` | V1 gate build; pattern in Context + Recommendation, Human AC clean |
-| `.tasks/active/T-2140-reviewer-static-scan-catalogue-entry--re.md` | This task; pattern in AC bodies under `### Agent`, not `### Human` |
+| `.tasks/completed/T-2140-reviewer-static-scan-catalogue-entry--re.md` | This task; pattern in AC bodies under `### Agent`, not `### Human` |
 
 ## Design choices that drove 0 false-positives
 

@@ -32,5 +32,5 @@ Episodic memory has zero incidents traceable to RPC version skew. The dispatch-v
 ## Decision Trail
 
 - Source pickup: `.context/pickup/processed/P-033-feature-proposal.yaml`
-- Task: `.tasks/active/T-1311-pickup-codify-rpc-resilience-tier-taxono.md`
+- Task: `.tasks/completed/T-1311-pickup-codify-rpc-resilience-tier-taxono.md`
 - Recommendation: DEFER pending concrete need

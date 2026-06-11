@@ -333,7 +333,7 @@ For htmx/Jinja2 apps, the import graph equivalent is `{% extends %}` / `{% inclu
 - **Phase 1a:** [Research Landscape](T-191-cf-research-landscape.md) — C4 model, Storybook MCP, soft coupling taxonomy
 - **Phase 1b:** [AEF Budget Topology](T-191-cf-aef-topology-sample.md) — proof-of-concept for CLI script cards
 - **Genesis:** [Genesis Discussion](T-191-cf-genesis-discussion.md) — design principles, use cases
-- **Task:** `.tasks/active/T-191-component-fabric--structural-topology-sy.md`
+- **Task:** `.tasks/completed/T-191-component-fabric--structural-topology-sy.md`
 
 ---
 

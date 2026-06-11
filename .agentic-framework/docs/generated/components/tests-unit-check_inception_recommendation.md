@@ -11,6 +11,12 @@ Mirrors tests/unit/check_arc_id.bats / check_inception_decisions.bats shape:
 build the stdin JSON envelope Claude Code would send, invoke the hook,
 assert exit code + stderr.
 
+## Dependencies (1)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [check-inception-recommendation](/docs/generated/agents-context-check-inception-recommendation) | tests | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-check_inception_recommendation.yaml`*
 *Last verified: 2026-06-04*

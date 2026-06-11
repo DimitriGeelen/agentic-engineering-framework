@@ -3,7 +3,7 @@
 **Status:** captured / awaiting inception decision
 **Origin:** session 2026-05-04, prompted by T-1700 AC4.3 honest-fail surfacing.
 
-The task file `.tasks/active/T-1714-substrate-bypass-fw-termlink-dispatch-du.md`
+The task file `.tasks/completed/T-1714-substrate-bypass-fw-termlink-dispatch-du.md`
 carries the full content. This artifact captures the dialogue trail that
 led to filing and verification of claims at filing time, per C-001.
 

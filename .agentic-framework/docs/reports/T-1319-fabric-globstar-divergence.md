@@ -62,6 +62,6 @@ Build task **T-1320** ships:
 ## Decision Trail
 
 - Source pickup: `.context/pickup/inbox/P-037-bug-report.yaml` (will move to processed/)
-- Inception: `.tasks/active/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md`
+- Inception: `.tasks/completed/T-1319-pickup-fw-fabric-drift-and-scan-miss-rec.md`
 - Build sibling: T-1320
 - Recommendation: GO

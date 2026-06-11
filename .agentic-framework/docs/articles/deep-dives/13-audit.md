@@ -39,7 +39,7 @@ The audit subsystem operates through three core components, each addressing a di
 
    ```bash
    $ audit.sh --section structure
-   [WARNING] File: .tasks/active/T-151.yaml — invalid key 'unauthorized'
+   [WARNING] File: .tasks/completed/T-151.yaml — invalid key 'unauthorized'
    ```  
 
 These checks form a mechanical barrier to drift, ensuring the framework remains aligned with its own specifications.  

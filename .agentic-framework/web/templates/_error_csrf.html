@@ -1,0 +1,12 @@
+<div class="page-header">
+    <h1>Session expired</h1>
+    <p>This page was held open across a session change, so its embedded security token is stale. No data has been lost.</p>
+</div>
+<article>
+    <p>To complete your action, reload the page and submit your decision again.</p>
+    <p><small>Technical detail: {{ error_message | default("CSRF token missing or invalid") }}</small></p>
+    <footer>
+        <button onclick="location.reload()" class="primary">Reload page</button>
+        <a href="{{ url_for('core.index') }}" role="button" class="secondary">Return to Dashboard</a>
+    </footer>
+</article>
