@@ -77,6 +77,7 @@ def require_rationale(args, min_chars=30):
 # ------------------------------------------------------ append-only history
 HISTORY_PATH = PROJECT_ROOT / '.context' / 'bvp-weight-history.yaml'
 AUTO_PROMOTE_LOG = PROJECT_ROOT / '.context' / 'bvp-auto-promote-log.yaml'
+PROPOSALS_PATH = PROJECT_ROOT / '.context' / 'bvp-driver-proposals.jsonl'
 
 
 def _utc_now():
@@ -616,6 +617,12 @@ def cmd_driver(args):
     # and gates appropriately.
     if '--init' in args:
         return _driver_init(args)
+    # T-2331 (T-2330 S1): --propose is the NON-Sovereign sibling of --add.
+    # Writes a pending row to .context/bvp-driver-proposals.jsonl; the
+    # Watchtower /bvp/proposed queue (T-2330 S2) approves via --from-watchtower.
+    # Must route before --add — propose has no acd_gate; add does.
+    if '--propose' in args:
+        return _driver_propose(args)
     if '--add' in args:
         return _driver_add(args)
     if '--remove' in args:
@@ -623,45 +630,70 @@ def cmd_driver(args):
     print("Usage: fw bvp driver --init [--force]", file=sys.stderr)
     print("       fw bvp driver --add \"name\" --weight N --rationale \"...\"", file=sys.stderr)
     print("       fw bvp driver --remove Dn --rationale \"...\" [--drop Dn]", file=sys.stderr)
+    print("       fw bvp driver --propose \"name\" --weight N --rationale \"...\" [--drop Dn] [--task T-XXX]", file=sys.stderr)
     return 2
 
 
 def _driver_init(args):
-    """Bootstrap consumer's policy/value-drivers.yaml from the framework template.
+    """Bootstrap consumer's BVP policy files from the framework templates.
 
-    Idempotent by default: refuses to overwrite if the target file already
-    exists. `--force` overrides. NOT §ACD-gated — first-write of a starter
-    file is not a policy decision; subsequent weight/driver mutations are
-    gated separately.
+    Copies BOTH `policy/value-drivers.yaml` (driver definitions, T-2229) and
+    `policy/bvp-scoring-rubric.md` (estimator's scoring source of truth,
+    T-1921). The BVP driver-session bundle (policy/prompts/bvp-driver-session.md
+    line 146) refuses to run without BOTH files; T-2259 closes the asymmetric
+    leg from T-2252's GO decision.
 
-    T-2229 Slice 1. Slice 2 (separate task) wires this into fw init/upgrade/vendor.
+    Idempotent per-file: each existing target survives unless `--force` is
+    given (in which case BOTH are overwritten). NOT §ACD-gated — first-write
+    of starter files is not a policy decision; subsequent weight/driver
+    mutations are gated separately.
+
+    T-2229 Slice 1 (value-drivers.yaml leg) + T-2259 (rubric.md leg, this
+    function). Slice 2 (separate task) wires this into fw init/upgrade/vendor.
     """
-    target = PROJECT_ROOT / 'policy' / 'value-drivers.yaml'
-    template = FRAMEWORK_ROOT / 'policy' / 'value-drivers.yaml'
     force = '--force' in args
+    files = [
+        ('policy/value-drivers.yaml',
+         FRAMEWORK_ROOT / 'policy' / 'value-drivers.yaml',
+         PROJECT_ROOT / 'policy' / 'value-drivers.yaml'),
+        ('policy/bvp-scoring-rubric.md',
+         FRAMEWORK_ROOT / 'policy' / 'bvp-scoring-rubric.md',
+         PROJECT_ROOT / 'policy' / 'bvp-scoring-rubric.md'),
+    ]
 
-    if not template.is_file():
-        print(f"ERROR: framework template not found at {template}", file=sys.stderr)
-        print("       This indicates a broken framework install (vendored copy", file=sys.stderr)
-        print("       is missing policy/value-drivers.yaml). Run `fw vendor` or", file=sys.stderr)
-        print("       reinstall the framework.", file=sys.stderr)
-        return 2
+    # Both templates must exist or the install is broken.
+    for label, template, _ in files:
+        if not template.is_file():
+            print(f"ERROR: framework template not found at {template}", file=sys.stderr)
+            print(f"       This indicates a broken framework install (vendored copy", file=sys.stderr)
+            print(f"       is missing {label}). Run `fw vendor` or", file=sys.stderr)
+            print(f"       reinstall the framework.", file=sys.stderr)
+            return 2
 
-    if target.exists() and not force:
-        print(f"OK: policy/value-drivers.yaml already exists at {target}")
+    actions = []  # list of (label, "created"|"overwritten"|"already-exists", target)
+    for label, template, target in files:
+        if target.exists() and not force:
+            actions.append((label, 'already-exists', target))
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        action = 'overwritten' if (force and target.exists()) else 'created'
+        target.write_bytes(template.read_bytes())
+        actions.append((label, action, target))
+
+    for label, action, target in actions:
+        if action == 'already-exists':
+            print(f"OK: {label} already exists at {target}")
+        else:
+            print(f"OK: {label} {action} from framework template")
+            print(f"  Source: {FRAMEWORK_ROOT / label}")
+            print(f"  Target: {target}")
+
+    if any(a == 'already-exists' for _, a, _ in actions):
         print("    (idempotent — use `fw bvp driver --init --force` to overwrite from framework template)")
-        return 0
 
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_bytes(template.read_bytes())
-
-    action = "overwritten" if (force and target.exists()) else "created"
-    print(f"OK: policy/value-drivers.yaml {action} from framework template")
-    print(f"  Source: {template}")
-    print(f"  Target: {target}")
     print("")
-    print("  These are the framework's default value drivers (D1-D4 + free drivers).")
-    print("  Customise via sovereignty-gated verbs:")
+    print("  These are the framework's default BVP drivers (D1-D4 + free drivers)")
+    print("  and the scoring rubric. Customise via sovereignty-gated verbs:")
     print("    fw bvp                                    # see current ranking")
     print("    fw bvp weight --set Dn=N --rationale ...  # tune driver weights")
     print("    fw bvp driver --add ... | --remove ...    # add/drop free drivers")
@@ -901,6 +933,87 @@ def _driver_add(args):
         print(f"OK: added {new_id} '{name}' weight={weight}; dropped {drop_id} (M1 add-one-drop-one)")
     else:
         print(f"OK: added {new_id} '{name}' weight={weight}")
+    return 0
+
+
+def _driver_propose(args):
+    """T-2331 (T-2330 S1): non-Sovereign propose-queue write.
+
+    Appends a `state: pending` row to .context/bvp-driver-proposals.jsonl.
+    NOT §ACD-gated — proposing is the agent's job; the Sovereign click stays
+    on the operator's Approve action (T-2330 S2 wires Watchtower /bvp/proposed
+    → `fw bvp driver --add --from-watchtower`). Storage is JSONL for
+    race-free append (IW-3 dissolved): two agents proposing the same name
+    produce two rows, both surface in the queue, operator picks one.
+
+    Storage location (.context/, not policy/) chosen because proposals are
+    working state, not live policy — mirrors .context/bvp-weight-history.yaml,
+    .context/dispatches.jsonl convention.
+    """
+    if '--propose' not in args:
+        return 2
+    idx = args.index('--propose')
+    if idx + 1 >= len(args):
+        print("Error: --propose needs a driver name", file=sys.stderr)
+        return 2
+    name = args[idx + 1]
+
+    # Slug shape mirrors the form validator (web/templates/bvp.html: pattern
+    # [A-Za-z][A-Za-z0-9_-]*) so propose↔add round-trip is identical.
+    if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]*', name):
+        print(f"Error: invalid name {name!r}; must start with letter, then letters/digits/_/-", file=sys.stderr)
+        return 2
+
+    if '--weight' not in args:
+        print("Error: --weight is required", file=sys.stderr)
+        return 2
+    widx = args.index('--weight')
+    try:
+        weight = int(args[widx + 1])
+    except (IndexError, ValueError):
+        print("Error: --weight needs an integer", file=sys.stderr)
+        return 2
+    if not 0 <= weight <= 9:
+        print(f"Error: weight {weight} out of range (0-9)", file=sys.stderr)
+        return 2
+
+    rationale, ok = require_rationale(args)
+    if not ok:
+        return 2
+
+    drop_id = None
+    if '--drop' in args:
+        didx = args.index('--drop')
+        if didx + 1 < len(args):
+            drop_id = args[didx + 1]
+
+    task_id = None
+    if '--task' in args:
+        tidx = args.index('--task')
+        if tidx + 1 < len(args):
+            task_id = args[tidx + 1]
+
+    import json, uuid
+    actor_prefix = 'agent' if os.environ.get('CLAUDECODE') == '1' else 'human'
+    entry = {
+        'id': f'P-{uuid.uuid4().hex[:8]}',
+        'ts': _utc_now(),
+        'state': 'pending',
+        'name': name,
+        'weight': weight,
+        'rationale': rationale,
+        'drop': drop_id,
+        'task': task_id,
+        'author': f"{actor_prefix}:{os.environ.get('USER', 'unknown')}",
+    }
+
+    PROPOSALS_PATH.parent.mkdir(exist_ok=True)
+    with open(PROPOSALS_PATH, 'a') as f:
+        f.write(json.dumps(entry) + '\n')
+
+    print(f"OK: proposal {entry['id']} filed — name='{name}' weight={weight} (state: pending)")
+    print(f"  Storage: {PROPOSALS_PATH.relative_to(PROJECT_ROOT)}")
+    print(f"  Operator approves via Watchtower /bvp — Pending driver proposals section (T-2332 shipped this surface).")
     return 0
 
 
@@ -1260,6 +1373,23 @@ NOTES:
   - Cost composite (F8): 0.6×blast_radius + 0.3×tier + 0.1×effort.
     T-shirt fallback (Q2): S/M/L/XL → 2/4/6/8 when 3-component values absent.
   - Source: docs/reports/T-1915-bvp-inception.md (arc-006).
+
+SEE ALSO (driver-session workflow, T-2245/T-2246/T-2250):
+  policy/prompts/bvp-driver-session.md
+    Keystone prompt for proposing or sharpening a value driver. Three
+    workflows: A (batch-propose at arc-draft), B (discover+sharpen),
+    C (sharpen named topic). Loaded manually today; CLI loader verbs
+    (`fw bvp driver suggest|create|recompute|edit|retire`) are deferred
+    per T-2245 IW-3 (operator-only territory until v2 handoff lands).
+  policy/prompts/artefact-template.md
+    Output shape for the research artefact written to
+    docs/reports/T-XXXX-bvp-driver-<slug>.md.
+  policy/prompts/bvp-references/
+    Sharpening subroutine (R1/R2/O1-O4), tactical conversation moves,
+    worked examples (global + arc-scoped), and anti-patterns to avoid.
+  CLAUDE.md §Driver Session Prompt Bundle and 040-ValueDrivers.md
+    Routing context — when to enter a session and how to navigate
+    the bundle.
 """)
     return 0
 

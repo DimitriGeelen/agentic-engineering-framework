@@ -914,3 +914,13 @@ overrides:
   expires_at: '2026-09-09T18:57:14Z'
   added_by: root
   added_at: '2026-06-11T18:57:14Z'
+- id: OV-a80585e9
+  task_id: T-2343
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "AC#1 describes WHERE the helper is defined (path = the .py file extended),\
+    \ not what the AC promises to verify \u2014 narrow path-grep FP. Sibling to T-2342\
+    \ OV-d1fb047e + T-2341 OV-60e71634."
+  expires_at: '2026-09-09T19:15:58Z'
+  added_by: root
+  added_at: '2026-06-11T19:15:58Z'
