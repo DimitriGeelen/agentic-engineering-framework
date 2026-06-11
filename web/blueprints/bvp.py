@@ -35,7 +35,70 @@ from web.shared import PROJECT_ROOT
 bp = Blueprint("bvp", __name__)
 
 POLICY_PATH = PROJECT_ROOT / "policy" / "value-drivers.yaml"
+PROPOSALS_PATH = PROJECT_ROOT / ".context" / "bvp-driver-proposals.jsonl"
 TSHIRT = {"S": 2, "M": 4, "L": 6, "XL": 8}
+
+
+def _load_proposals(state_filter: str | None = "pending") -> list[dict]:
+    """T-2332 (T-2330 S2): read .context/bvp-driver-proposals.jsonl and apply
+    state machine. Each proposal id has one or more rows; the last row's state
+    wins. Default returns only `state: pending` rows (queue surface usage).
+    Pass `state_filter=None` for full history.
+    """
+    if not PROPOSALS_PATH.exists():
+        return []
+    by_id: dict[str, dict] = {}
+    order: list[str] = []
+    try:
+        with open(PROPOSALS_PATH) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                pid = row.get("id")
+                if not pid:
+                    continue
+                if pid not in by_id:
+                    by_id[pid] = row
+                    order.append(pid)
+                else:
+                    merged = dict(by_id[pid])
+                    merged["state"] = row.get("state", merged.get("state"))
+                    merged["decision_ts"] = row.get("ts")
+                    merged["decision_actor"] = row.get("actor")
+                    merged["decision_rationale"] = row.get("rationale_decision")
+                    by_id[pid] = merged
+    except OSError:
+        return []
+    rows = [by_id[pid] for pid in order]
+    if state_filter:
+        rows = [r for r in rows if r.get("state") == state_filter]
+    return rows
+
+
+def _append_proposal_state_change(proposal_id: str, new_state: str, rationale_decision: str | None = None) -> bool:
+    """Append a state-change row to the JSONL. Returns True on success."""
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    row = {
+        "id": proposal_id,
+        "ts": ts,
+        "state": new_state,
+        "actor": "operator-watchtower",
+    }
+    if rationale_decision:
+        row["rationale_decision"] = rationale_decision
+    try:
+        PROPOSALS_PATH.parent.mkdir(exist_ok=True)
+        with open(PROPOSALS_PATH, "a") as f:
+            f.write(json.dumps(row) + "\n")
+        return True
+    except OSError:
+        return False
 
 
 def _load_policy() -> dict:
@@ -713,6 +776,150 @@ def bvp_driver_remove():
     return json.dumps({"ok": True, "message": out, "removed": driver_id}), 200, {"Content-Type": "application/json"}
 
 
+@bp.route("/api/bvp/driver/propose", methods=["POST"])
+def bvp_driver_propose():
+    """T-2332 (T-2330 S2): file a pending driver proposal — NON-Sovereign.
+
+    Shells out to `bin/fw bvp driver --propose` (T-2331). Storage is
+    .context/bvp-driver-proposals.jsonl (append-only JSONL). Approve/Reject
+    actions handle the Sovereign rail.
+
+    Form fields: name, weight, rationale (≥30 chars), drop (optional), task (optional).
+    """
+    name = (request.form.get("name") or "").strip()
+    weight_raw = (request.form.get("weight") or "").strip()
+    rationale = (request.form.get("rationale") or "").strip()
+    drop_id = (request.form.get("drop") or "").strip() or None
+    task_id = (request.form.get("task") or "").strip() or None
+
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]*", name):
+        return "Bad driver name: must match [A-Za-z][A-Za-z0-9_-]*", 400
+    try:
+        weight = int(weight_raw)
+    except ValueError:
+        return "Bad weight: must be an integer 0-9", 400
+    if not 0 <= weight <= 9:
+        return f"Weight {weight} out of range (0-9)", 400
+    if len(rationale) < 30:
+        return "Rationale must be ≥30 characters (R6).", 400
+
+    cmd = [
+        "bin/fw", "bvp", "driver",
+        "--propose", name,
+        "--weight", str(weight),
+        "--rationale", rationale,
+    ]
+    if drop_id:
+        cmd.extend(["--drop", drop_id])
+    if task_id:
+        cmd.extend(["--task", task_id])
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f"Subprocess error: {e}", 500
+    if result.returncode != 0:
+        err = (result.stderr or result.stdout or "").strip()
+        first = err.splitlines()[0] if err else f"fw bvp driver --propose exited {result.returncode}"
+        return f"Propose failed: {first}", 400
+    out = (result.stdout or "").strip()
+    if request.headers.get("HX-Request"):
+        msg = out.splitlines()[0] if out else f"Proposal for {name} filed (state: pending)."
+        return (
+            f'<span style="color: var(--pico-ins-color);">✓ {msg} Reloading…</span>',
+            200,
+            {"Content-Type": "text/html", "HX-Trigger": "bvpReload"},
+        )
+    return json.dumps({"ok": True, "message": out, "name": name, "weight": weight}), 200, {"Content-Type": "application/json"}
+
+
+@bp.route("/api/bvp/driver/approve", methods=["POST"])
+def bvp_driver_approve():
+    """T-2332 (T-2330 S2): operator-side Sovereign approve.
+
+    Reads the pending proposal, runs `fw bvp driver --add --from-watchtower`
+    with its stored fields, then appends `state: approved` row on success.
+    Refuses on already-decided / missing-id proposals.
+    """
+    proposal_id = (request.args.get("id") or request.form.get("id") or "").strip()
+    if not re.fullmatch(r"P-[a-f0-9]+", proposal_id):
+        return f"Bad proposal id {proposal_id!r}", 400
+
+    pending = {p["id"]: p for p in _load_proposals(state_filter="pending")}
+    proposal = pending.get(proposal_id)
+    if not proposal:
+        return f"Proposal {proposal_id} not in pending state (already decided or missing).", 404
+
+    cmd = [
+        "bin/fw", "bvp", "driver",
+        "--add", proposal["name"],
+        "--weight", str(proposal["weight"]),
+        "--rationale", proposal["rationale"],
+        "--from-watchtower",
+    ]
+    if proposal.get("drop"):
+        cmd.extend(["--drop", proposal["drop"]])
+    try:
+        result = subprocess.run(
+            cmd, cwd=str(PROJECT_ROOT),
+            capture_output=True, text=True, timeout=30,
+        )
+    except (subprocess.SubprocessError, OSError) as e:
+        return f"Subprocess error: {e}", 500
+    if result.returncode != 0:
+        err = (result.stderr or result.stdout or "").strip()
+        first = err.splitlines()[0] if err else f"fw bvp driver --add exited {result.returncode}"
+        return f"Approve failed: {first}", 400
+    if not _append_proposal_state_change(proposal_id, "approved"):
+        return f"Driver added but state-change row failed to append (manual recovery needed)", 500
+    out = (result.stdout or "").strip()
+    if request.headers.get("HX-Request"):
+        msg = out or f"Proposal {proposal_id} approved → driver added."
+        return (
+            f'<span style="color: var(--pico-ins-color);">✓ {msg} Reloading…</span>',
+            200,
+            {"Content-Type": "text/html", "HX-Trigger": "bvpReload"},
+        )
+    return json.dumps({"ok": True, "approved": proposal_id, "name": proposal["name"], "message": out}), 200, {"Content-Type": "application/json"}
+
+
+@bp.route("/api/bvp/driver/reject", methods=["POST"])
+def bvp_driver_reject():
+    """T-2332 (T-2330 S2): operator-side Reject — appends state:rejected row.
+
+    Rationale-decision comes from `HX-Prompt` header (browser prompt() result)
+    same pattern as the `--remove` endpoint (T-2079). NOT Sovereign — rejecting
+    is the absence of a policy edit, not a policy edit itself.
+    """
+    proposal_id = (request.args.get("id") or request.form.get("id") or "").strip()
+    rationale_decision = (
+        request.headers.get("HX-Prompt")
+        or request.form.get("rationale_decision")
+        or ""
+    ).strip()
+
+    if not re.fullmatch(r"P-[a-f0-9]+", proposal_id):
+        return f"Bad proposal id {proposal_id!r}", 400
+    if len(rationale_decision) < 30:
+        return "Reject rationale must be ≥30 characters (matches propose R6 floor).", 400
+
+    pending = {p["id"]: p for p in _load_proposals(state_filter="pending")}
+    if proposal_id not in pending:
+        return f"Proposal {proposal_id} not in pending state (already decided or missing).", 404
+
+    if not _append_proposal_state_change(proposal_id, "rejected", rationale_decision):
+        return f"State-change row failed to append.", 500
+    if request.headers.get("HX-Request"):
+        return (
+            f'<span style="color: var(--pico-del-color);">✗ Proposal {proposal_id} rejected. Reloading…</span>',
+            200,
+            {"Content-Type": "text/html", "HX-Trigger": "bvpReload"},
+        )
+    return json.dumps({"ok": True, "rejected": proposal_id, "rationale_decision": rationale_decision}), 200, {"Content-Type": "application/json"}
+
+
 @bp.route("/bvp")
 def bvp_scatter():
     policy = _load_policy()
@@ -721,6 +928,7 @@ def bvp_scatter():
     driver_rubrics = _driver_rubrics(policy)
     task_points = _collect_task_points(weights)
     arc_points = _collect_arc_points(weights)
+    pending_proposals = _load_proposals(state_filter="pending")
     return render_template(
         "bvp.html",
         page_title="BVP Quadrant Scatter",
@@ -730,5 +938,6 @@ def bvp_scatter():
         weights=weights,
         driver_names=driver_names,
         driver_rubrics=driver_rubrics,
+        pending_proposals=pending_proposals,
         empty=(not task_points and not arc_points),
     )
