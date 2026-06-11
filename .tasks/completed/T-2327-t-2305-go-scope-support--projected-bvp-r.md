@@ -7,10 +7,10 @@ description: >
   T-2305 GO scope support — projected BVP ranking impact for V_PROMPT_QUALITY + V_CONTEXT_FABRIC
   + V_COMPONENT_FABRIC (advisory analysis, 5 sample tasks scored against new rubrics)
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-value-prioritisation, agent-prep, bvp-support, advisory-analysis, 
       no-source-change]
 components: []
@@ -23,8 +23,8 @@ arc_id: value-prioritisation
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T07:12:34Z
-last_update: '2026-06-11T07:15:03Z'
-date_finished:
+last_update: 2026-06-11T07:18:58Z
+date_finished: 2026-06-11T07:18:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -167,7 +167,8 @@ ALL scoring is agent-advisory; the operator confirms (or doesn't) via
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 test -s docs/reports/arc-006-bvp-driver-projected-impact.md
-out=$(cat docs/reports/arc-006-bvp-driver-projected-impact.md); for t in T-2271 T-2319 T-2322 T-2325 T-2298; do echo "$out" | grep -q "$t" || (echo "missing $t" && exit 1); done
+# L-387: bash substring containment, no pipe-to-grep
+out=$(cat docs/reports/arc-006-bvp-driver-projected-impact.md); for t in T-2271 T-2319 T-2322 T-2325 T-2298; do case "$out" in *"$t"*) :;; *) echo "missing $t"; exit 1;; esac; done
 out=$(cat docs/reports/arc-006-bvp-driver-projected-impact.md); n=$(echo "$out" | grep -cE "V_PROMPT_QUALITY|V_CONTEXT_FABRIC|V_COMPONENT_FABRIC"); test "$n" -ge 15
 out=$(cat docs/reports/arc-006-bvp-driver-projected-impact.md); echo "$out" | grep -qE "BVP_total" && echo "$out" | grep -qE "BVP_norm"
 out=$(cat docs/reports/arc-006-bvp-driver-projected-impact.md); echo "$out" | grep -qE "Δ|delta|shift"
@@ -300,3 +301,15 @@ Operator can now grill the driver-add proposal on actual numbers:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2327-t-2305-go-scope-support--projected-bvp-r.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9403b116
+- **Timestamp:** 2026-06-11T07:18:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-11T07:18:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2327: T-2305 GO scope support — projected BVP ranking impact for V_PROMPT_QUALITY
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T07:19:03Z
+# ============================================================================
+
+task_id: T-2327
+task_name: "T-2305 GO scope support — projected BVP ranking impact for V_PROMPT_QUALITY"
+workflow_type: design
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T07:12:34Z
+completed: 2026-06-11T07:18:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-11T09:18:14+02:00
+last_commit: 2026-06-11T09:18:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP driver projected-impact analysis (advisory, no Sovereign trip)
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/arc-006-bvp-driver-projected-impact.md exists with non-empty body'
+  - 'Artifact scores all 5 sample tasks (T-2271, T-2319, T-2322, T-2325, T-2298) against all 3 new drivers'
+  - 'Per-task score includes 1-line rubric-trace rationale (which T-2305 §5.X scoring level applied + why)'
+  - 'Artifact computes current BVP_total + BVP_total_with_3_new + BVP_norm shift for each sample task (5×2 = 10 BVP_total lines, 5×2 = 17 BVP_norm references including summary table)'
+  - 'Artifact''s summary table shows ≥1 task that gains BVP_norm rank and ≥1 task that loses BVP_norm rank (T-2322 gains 3→2; T-2319 gains 4→3; T-2298 loses 1→3; T-2325 loses 2→4)'
+  - 'Artifact explicitly declares "advisory analysis only — operator confirms via fw bvp confirm" and names the Sovereign boundary (8 references)'
+  - 'Cross-references T-2305 §5 (rubrics) + §7 (expected changes) by section number (§5 cited 4×, §7 cited 1× + §6 + §8)'
+  - 'Identifies ≥2 ambiguity points in the rubrics encountered during scoring (4 ambiguity points identified: V_CONTEXT_FABRIC scope, V_PROMPT_QUALITY index-vs-content, V_COMPONENT_FABRIC L3-vs-L2 characterization, sample-bias L4/L5)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/arc-006-bvp-driver-projected-impact.md'
+  - '.tasks/active/T-2327-t-2305-go-scope-support--projected-bvp-r.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-11T09:18:14"
+    action: "T-2327: BVP driver projected-impact analysis (advisory, no Sovereign trip)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-value-prioritisation, agent-prep, bvp-support, advisory-analysis, ]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 2
+  lines_added: 639
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2327-t-2305-go-scope-support--projected-bvp-r.md
+generated_by: context-agent-hybrid

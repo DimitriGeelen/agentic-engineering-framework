@@ -15194,3 +15194,57 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 5
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-11T07:18:18Z'
+scan_id: R-9470c340
+task_id: T-2327
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T07:18:18Z'
+scan_id: R-9470c340
+task_id: T-2327
+payload:
+  task_file: .tasks/active/T-2327-t-2305-go-scope-support--projected-bvp-r.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T07:18:54Z'
+scan_id: R-1d94380a
+task_id: T-2327
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T07:18:54Z'
+scan_id: R-1d94380a
+task_id: T-2327
+payload:
+  task_file: .tasks/active/T-2327-t-2305-go-scope-support--projected-bvp-r.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T07:18:58Z'
+scan_id: R-9403b116
+task_id: T-2327
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T07:18:58Z'
+scan_id: R-9403b116
+task_id: T-2327
+payload:
+  task_file: .tasks/active/T-2327-t-2305-go-scope-support--projected-bvp-r.md
