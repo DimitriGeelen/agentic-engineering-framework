@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2328: BVP estimator: dedicated heuristic handlers for V_PROMPT_QUALITY, V_CONTEXT_FABRIC, V_COMPONENT_FABRIC
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T10:13:07Z
+# ============================================================================
+
+task_id: T-2328
+task_name: "BVP estimator: dedicated heuristic handlers for V_PROMPT_QUALITY, V_CONTEXT_FABRIC, V_COMPONENT_FABRIC"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T10:06:34Z
+completed: 2026-06-11T10:13:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-11T12:12:54+02:00
+last_commit: 2026-06-11T12:12:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP estimator V_* dedicated heuristic handlers (latent)
+
+# Key outcomes
+outcomes:
+  - '`score_v_prompt_quality(fm, body, tags) -> tuple[int, list[str]]` function added to `agents/termlink/bvp-estimator/estimator.py` covering levels 0-5 per T-2305 §5.1'
+  - '`score_v_context_fabric(fm, body, tags) -> tuple[int, list[str]]` function added covering levels 0-5 per T-2305 §5.2'
+  - '`score_v_component_fabric(fm, body, tags) -> tuple[int, list[str]]` function added covering levels 0-5 per T-2305 §5.3'
+  - '`handlers` dict in `estimate_task()` registers `V_PROMPT_QUALITY`, `V_CONTEXT_FABRIC`, `V_COMPONENT_FABRIC` → respective scorers'
+  - 'Test functions `test_v_prompt_quality_*` in `tests/unit/test_bvp_estimator.py` covering levels 0/1/2/3/4/5 + components-only signal (7 tests)'
+  - 'Test functions `test_v_context_fabric_*` covering levels 0/1/2/3/4/5 (6 tests)'
+  - 'Test functions `test_v_component_fabric_*` covering levels 0/1/2/3/4/5 (6 tests)'
+  - 'Existing `test_bvp_estimator.py` test suite still passes (no regression) — 75 passed (was 54, +21 new)'
+  - 'Latent-mode verified: `test_v_handlers_latent_until_drivers_registered` proves handlers exist in dispatch table but never fire when drivers dict lacks V_* IDs; `test_v_handlers_registered_in_estimate_task_dispatch` proves dispatch works the moment driver IDs are present'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.tasks/active/T-2328-bvp-estimator-dedicated-heuristic-handle.md'
+  - 'tests/unit/test_bvp_estimator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-11T12:12:54"
+    action: "T-2328: BVP estimator V_* dedicated heuristic handlers (latent)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 3
+  lines_added: 618
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2328-bvp-estimator-dedicated-heuristic-handle.md
+generated_by: context-agent-hybrid

@@ -854,3 +854,13 @@ overrides:
   expires_at: '2026-09-09T07:03:50Z'
   added_by: root
   added_at: '2026-06-11T07:03:50Z'
+- id: OV-9039c7f2
+  task_id: T-2328
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: 'FP: AC#1 names estimator.py as code-edit target, not as verification path.
+    Same Layer-1 FP class as OV-822b8648 / OV-8658fdf8. Anchor pattern is the file-extension
+    grep without semantic check.'
+  expires_at: '2026-09-09T10:12:19Z'
+  added_by: root
+  added_at: '2026-06-11T10:12:19Z'
