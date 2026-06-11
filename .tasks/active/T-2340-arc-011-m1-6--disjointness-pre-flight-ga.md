@@ -60,10 +60,52 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:277-313` (§6).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/orchestrator/orchestrator-graph.py` extended with `pre_flight_check(task_id, dispatches_jsonl_path=None) -> tuple[bool, str]` that returns `(True, "")` when no in-flight overlap exists, or `(False, "write_set overlap with in-flight dispatch <D-ID>: <conflicting path>")` when one does
-- [ ] Reuses `lib/write_set.py` for the overlap check; reads `.context/dispatches.jsonl` and filters to entries where `outcome` is empty (in-flight) — does NOT re-implement either
-- [ ] `bin/fw orchestrator pre-flight T-XXX` CLI verb prints the verdict + exit code (0=allowed, 1=refused, 2=task-not-found)
-- [ ] `tests/unit/test_orchestrator_preflight.bats` covers: no in-flight → exit 0; in-flight overlap → exit 1 + stderr reason names dispatch id + path; in-flight non-overlap → exit 0; completed-only history → exit 0; task without write_set → exit 0 with note (conservative undecidable = allowed for pre-flight, since downstream §2 yield-point + §3 declaration both refuse) — all 5 PASS
+- [x] `agents/orchestrator/orchestrator-graph.py` extended with `pre_flight_check(task_id, dispatches_jsonl_path=None) -> tuple[bool, str]` that returns `(True, "")` when no in-flight overlap exists, or `(False, "write_set overlap with in-flight dispatch <D-ID>: <conflicting path>")` when one does
+- [x] Reuses `lib/write_set.py` for the overlap check; reads `.context/dispatches.jsonl` and filters to entries where `outcome` is empty (in-flight) — does NOT re-implement either
+- [ ] `bin/fw orchestrator pre-flight T-XXX` CLI verb prints the verdict + exit code (0=allowed, 1=refused, 2=task-not-found) — **PARTIAL: `_main()` extension authored but Edit blocked by budget gate at 97%; next session lands the CLI wire + `bin/fw` dispatch verb + bats**
+- [ ] `tests/unit/test_orchestrator_preflight.bats` covers: no in-flight → exit 0; in-flight overlap → exit 1 + stderr reason names dispatch id + path; in-flight non-overlap → exit 0; completed-only history → exit 0; task without write_set → exit 0 with note (conservative undecidable = allowed for pre-flight, since downstream §2 yield-point + §3 declaration both refuse) — all 5 PASS — **PENDING next session**
+
+## Resume Notes (T-2340 pick-up — next session)
+
+**Status:** 2/4 Agent ACs verified. `pre_flight_check()` function is shipped in `agents/orchestrator/orchestrator-graph.py:172-227` (reads `_in_flight_dispatches()`, reuses `lib/write_set.py`). Budget critical at 97% before the `_main()` extension + CLI wire + bats could land.
+
+**Next steps:**
+1. **Extend `_main()` in `agents/orchestrator/orchestrator-graph.py`** to dispatch `pre-flight <T-XXX>` subverb (~25 lines). Pattern from existing `next-dispatch` default branch:
+   ```python
+   if cmd == "pre-flight":
+       if len(argv) < 3:
+           sys.stderr.write("usage: ... pre-flight <T-XXX>\n")
+           return 64
+       task_id = argv[2]
+       try:
+           ok, msg = pre_flight_check(task_id)
+       except FileNotFoundError as e:
+           sys.stderr.write(f"error: {e}\n")
+           return 2
+       if ok:
+           print(f"allowed{(': ' + msg) if msg else ''}")
+           return 0
+       sys.stderr.write(f"refused: {msg}\n")
+       print("refused")
+       return 1
+   ```
+
+2. **Add `pre-flight)` branch in `bin/fw` orchestrator dispatch** (near `next-dispatch)` at bin/fw:~3730):
+   ```bash
+   pre-flight)
+       shift
+       exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/agents/orchestrator/orchestrator-graph.py" pre-flight "$@"
+       ;;
+   ```
+
+3. **Author `tests/unit/test_orchestrator_preflight.bats`** with 5 scenarios per AC list. Fixture pattern: write to `$TEST_REPO/.context/dispatches.jsonl` with synthetic in-flight rows like `{"dispatch_id":"D-001","task_id":"T-COL-A","outcome":""}` + create the matching task fixtures under `.tasks/active/`.
+
+4. **Run reviewer + close + push.** Pattern verified across T-2337/T-2338/T-2339 in this session — chain to T-2341 §4 demo (the L-sized headline_mechanic-firing slice).
+
+**Reference files for resume:**
+- Spec: `docs/reports/arc-011-m1-single-host-sketch.md:277-313`
+- Reused: `lib/write_set.py:resolve_task_path` + `lib/write_set.py:read_write_set` + `lib/write_set.py:expand_globs`
+- In-flight format: see `.context/dispatches.jsonl` schema (existing T-1696/T-1697 contracts)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
