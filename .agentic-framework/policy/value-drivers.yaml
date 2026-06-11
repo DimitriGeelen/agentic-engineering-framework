@@ -107,9 +107,11 @@ free_drivers:
       1: Captures something but session-scoped only (episodic, not promoted).
       2: Captured + lightly promoted, but not retrievable by future sessions.
       3: Writes a reusable artifact future sessions can find via `fw recall`.
-      4: Closes a loop -- capture -> encode -> synced into instruction files agents read.
-      5: Improves the retrieval/synthesis layer itself (selective recall, condensation),
-         so EVERY future task benefits, not just ones touching the same area.
+      4: Closes a loop -- capture -> encode -> synced into instruction files 
+        agents read.
+      5: Improves the retrieval/synthesis layer itself (selective recall, 
+        condensation), so EVERY future task benefits, not just ones touching the
+        same area.
     guardrails: >
       Reward better RETRIEVAL & SYNTHESIS, not raw capture. Naive accumulation
       competes for the 90% context budget and trades against D2/D3.
@@ -132,13 +134,13 @@ free_drivers:
       0: Inherently primary-agent-only and serial; no routable surface added.
       1: Runs only via hand-wired dispatch; no reusable routing artifact.
       2: Minor routing improvement, single-use.
-      3: Adds a clean typed I/O contract or decision gate so the framework can
-         refuse-or-dispatch the step mechanically.
-      4: Converts interpretive primary work into rubric-scored work a TermLink
-         worker can run, OR adds an explicit router decision tree (closes the
-         open router-skills gap).
-      5: Expands the orchestration substrate itself -- new worker class,
-         parallel/multi-perspective dispatch, or advances the orchestrator.
+      3: Adds a clean typed I/O contract or decision gate so the framework can 
+        refuse-or-dispatch the step mechanically.
+      4: Converts interpretive primary work into rubric-scored work a TermLink 
+        worker can run, OR adds an explicit router decision tree (closes the 
+        open router-skills gap).
+      5: Expands the orchestration substrate itself -- new worker class, 
+        parallel/multi-perspective dispatch, or advances the orchestrator.
     guardrails: >
       Score CAPABILITY UPLIFT (does this expand what the framework can orchestrate?),
       NOT ease-of-delegating-this-task (that is a cost-side property -- keep it off
@@ -199,6 +201,18 @@ free_drivers:
 # from any driver (drivers rank autonomy-ENABLING work; this governs whether HV/LC
 # work auto-advances on the kanban without a human).
 # ---------------------------------------------------------------------------
+  - id: F1
+    name: t2079probe
+    weight: 3
+    protected: false
+    rationale: T-2079 Playwright guard — verifying form submit does not navigate
+      URL away from /bvp.
+  - id: F2
+    name: t2079probe
+    weight: 3
+    protected: false
+    rationale: T-2079 Playwright guard — verifying form submit does not navigate
+      URL away from /bvp.
 auto_promote:
   enabled: false
   bvp_norm_min: 0.85    # only top-band value
