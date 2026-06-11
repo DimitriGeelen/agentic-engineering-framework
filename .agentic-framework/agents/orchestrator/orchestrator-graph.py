@@ -195,6 +195,85 @@ def next_dispatch(graph: dict) -> list[tuple[str, str]]:
     return output
 
 
+def _in_flight_dispatches(jsonl_path: str) -> list[dict]:
+    """Read .context/dispatches.jsonl, return rows considered in-flight.
+
+    An entry is in-flight when its `outcome` field is missing/empty and
+    a parallel entry in `.context/dispatch-outcomes.jsonl` would normally
+    backfill it. For pre-flight purposes we conservatively treat any entry
+    without an outcome as in-flight.
+    """
+    import json
+    if not os.path.isfile(jsonl_path):
+        return []
+    in_flight: list[dict] = []
+    with open(jsonl_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(row, dict) and not row.get("outcome"):
+                in_flight.append(row)
+    return in_flight
+
+
+def pre_flight_check(
+    task_id: str,
+    dispatches_jsonl_path: str | None = None,
+    root: str | None = None,
+) -> tuple[bool, str]:
+    """Decide if a task is safe to dispatch given currently in-flight dispatches.
+
+    Returns:
+        (True, "")  — no conflict, safe to dispatch
+        (False, msg) — conflict found; msg names the in-flight dispatch and path
+
+    Conservative undecidable: a task without `write_set:` frontmatter returns
+    (True, "<note>") because pre-flight cannot prove unsafety. The downstream
+    §2 yield-point and §3 declaration gate cover this case.
+    """
+    if root is None:
+        root = _project_root()
+    if dispatches_jsonl_path is None:
+        dispatches_jsonl_path = os.path.join(root, ".context", "dispatches.jsonl")
+
+    try:
+        target_path = write_set.resolve_task_path(task_id, root=root)
+    except FileNotFoundError as e:
+        # Surface upward — caller handles exit-2
+        raise
+
+    target_ws = write_set.read_write_set(target_path)
+    if target_ws is None:
+        return (True, f"task {task_id} has no write_set declared — pre-flight skipped (undecidable)")
+
+    target_paths = write_set.expand_globs(target_ws, root=root)
+
+    for entry in _in_flight_dispatches(dispatches_jsonl_path):
+        peer_id = entry.get("task_id") or entry.get("task") or ""
+        if not peer_id or peer_id == task_id:
+            continue
+        try:
+            peer_path = write_set.resolve_task_path(peer_id, root=root)
+        except FileNotFoundError:
+            continue
+        peer_ws = write_set.read_write_set(peer_path)
+        if peer_ws is None:
+            continue
+        peer_paths = write_set.expand_globs(peer_ws, root=root)
+        conflict = target_paths & peer_paths
+        if conflict:
+            d_id = entry.get("dispatch_id") or entry.get("id") or "D-?"
+            sample = sorted(conflict)[0]
+            return (False, f"write_set overlap with in-flight dispatch {d_id}: {sample}")
+
+    return (True, "")
+
+
 def _main(argv: list[str]) -> int:
     if len(argv) >= 2 and argv[1] in ("--help", "-h", "help"):
         sys.stderr.write(
