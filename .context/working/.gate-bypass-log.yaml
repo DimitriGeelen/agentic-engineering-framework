@@ -3641,3 +3641,9 @@ Co-Authored-By: Claude Opus 4.7 <noreply@a'
   command: 'FW_SWITCH_FOCUS=1 git add .context/handovers/S-2026-0611-2123.md && FW_SWITCH_FOCUS=1 git commit -m "T-077: Session handover S-2026-0611-2123
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>" '
+- timestamp: '2026-06-11T19:55:12Z'
+  task: 'T-1687'
+  flag: '--switch-focus'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2344'
+  command: 'bin/fw context add-learning "Workflow A (arc-scoped driver session per T-1925) trigger is agent-discipline, NOT hook-enforced. New arcs created via fw arc create do not auto-prompt the agent to run '

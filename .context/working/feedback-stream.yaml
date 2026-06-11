@@ -16931,3 +16931,39 @@ scan_id: R-d05c8065
 task_id: T-2344
 payload:
   task_file: .tasks/active/T-2344-arc-011-workflow-a--propose-arc-scoped-d.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T19:56:48Z'
+scan_id: R-f5905df9
+task_id: T-1542
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T19:56:48Z'
+scan_id: R-f5905df9
+task_id: T-1542
+payload:
+  task_file: .tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T19:57:19Z'
+scan_id: R-0bca758b
+task_id: T-1542
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T19:57:19Z'
+scan_id: R-0bca758b
+task_id: T-1542
+payload:
+  task_file: .tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md

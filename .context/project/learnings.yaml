@@ -3644,3 +3644,10 @@ X'` returning empty group."
   date: 2026-06-10
   context: Added via context agent
   application: TBD
+- id: L-478
+  learning: "Workflow A (arc-scoped driver session per T-1925) trigger is agent-discipline, NOT hook-enforced. New arcs created via 'fw arc create' do not auto-prompt the agent to run the 5-step protocol — the keystone bundle at policy/prompts/bvp-driver-session.md is authoritative but discovery is via CLAUDE.md. Check 'proposed_scoped_drivers:' on every new arc before HV-LC work begins; if empty + arc has discriminating axes vs D1-D4, run Workflow A. arc-011 went 1 day with empty proposed_scoped_drivers before T-2344 caught it during HV-LC survey."
+  source: P-009
+  task: T-2344
+  date: 2026-06-11
+  context: Added via context agent
+  application: TBD

@@ -134,9 +134,9 @@ Origin: OBS-032 (S-2026-0427-0908 against `/opt/050-email-archive`).
 #
 # Bats regression test exists and passes (assertion, not optional) — content-asserted
 test -f tests/unit/test_upgrade_self_target_guard.bats
-bats tests/unit/test_upgrade_self_target_guard.bats 2>&1 | grep -q "^ok 4 "
+out=$(bats tests/unit/test_upgrade_self_target_guard.bats 2>&1); echo "$out" | grep -q "^ok 4 "
 # Existing upgrade-from-framework-repo path still works — content-asserted, not exit-only
-bin/fw upgrade --help 2>&1 | grep -q "Sync framework improvements to consumer project"
+out=$(bin/fw upgrade --help 2>&1); echo "$out" | grep -q "Sync framework improvements to consumer project"
 # Guard-line presence in lib/upgrade.sh (T-1542 fix landed)
 grep -q "FRAMEWORK_ROOT.*resolves\|self-target check\|bare-from-consumer" lib/upgrade.sh
 
@@ -180,14 +180,13 @@ grep -q "FRAMEWORK_ROOT.*resolves\|self-target check\|bare-from-consumer" lib/up
 - `tests/unit/lib_upgrade.bats`: 12/12 still pass (no regression)
 - `bin/fw upgrade --help` still works (existing verification command)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ad02c9c8
-- **Timestamp:** 2026-04-28T20:12:24Z
+- **Scan ID:** R-0bca758b
+- **Timestamp:** 2026-06-11T19:57:19Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-05-02T10:07:11Z — status-update [task-update-agent]
 - **Change:** tags: +arc:project-shape-resilience
