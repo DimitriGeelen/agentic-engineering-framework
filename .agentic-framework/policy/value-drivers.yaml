@@ -201,18 +201,79 @@ free_drivers:
 # from any driver (drivers rank autonomy-ENABLING work; this governs whether HV/LC
 # work auto-advances on the kanban without a human).
 # ---------------------------------------------------------------------------
+  - id: F3
+    name: V_PROMPT_QUALITY
+    weight: 7
+    protected: false
+    rationale: "Discriminates LLM prompt-quality work from work on other aspects.
+      Core to AEF's value as an agentic framework. Source: docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md"
+    polarity: positive
+    rubric:
+      0: No prompt-quality dimension touched.
+      1: Tweaks one-off prompt phrasing or a single message; no reusable artifact.
+      2: Improves one AGENT.md / template / preamble; localized to one agent.
+      3: Adds a reusable prompt template, rubric, or naming convention agents
+        can pick up across tasks.
+      4: Closes a prompt-quality loop -- e.g. reviewer prompt pattern, sovereignty
+        preamble, multi-turn discipline guide enforced by hook/test/lint.
+      5: Improves the prompt-quality substrate itself -- meta-prompts,
+        prompts-as-data infrastructure, structural prompt-evolution mechanisms.
+    guardrails: >
+      Reward STRUCTURAL prompt improvements (reusable, gate-enforced) over
+      one-off rewording. Polish competes for budget against D2/D3.
+    retire_when: >
+      Prompt-quality substrate matures (prompts-as-data, meta-prompt registry)
+      and one-off prompt edits no longer move the needle.
   - id: F1
-    name: t2079probe
-    weight: 3
+    name: V_CONTEXT_FABRIC
+    weight: 7
     protected: false
-    rationale: T-2079 Playwright guard — verifying form submit does not navigate
-      URL away from /bvp.
+    rationale: 'Discriminates memory-layer work (Context Fabric: working/project/episodic
+      memory, semantic search) from work elsewhere. Load-bearing for cross-session
+      continuity. Source: docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md'
+    polarity: positive
+    rubric:
+      0: No memory-layer touched.
+      1: Logs to one episodic file; session-scoped only.
+      2: Adds a working-memory entry; project-scoped but not retrievable across
+        sessions.
+      3: Writes to a layer with a retrieval contract -- project memory,
+        episodic with `fw recall`, fabric registration.
+      4: Closes a memory loop -- capture -> encode -> synced into instruction
+        files / hooks / templates agents read on subsequent runs.
+      5: Improves the retrieval/synthesis substrate itself -- selective recall,
+        condensation, semantic search index, cross-memory linking.
+    guardrails: >
+      Score MEMORY LAYER STRUCTURE (working/project/episodic + retrieval
+      contract), not raw token count. Big logs trade against D2/D3.
+    retire_when: >
+      Memory substrate (retrieval, synthesis, condensation) matures such that
+      raw capture without retrieval contract no longer rewards.
   - id: F2
-    name: t2079probe
-    weight: 3
+    name: V_COMPONENT_FABRIC
+    weight: 6
     protected: false
-    rationale: T-2079 Playwright guard — verifying form submit does not navigate
-      URL away from /bvp.
+    rationale: 'Discriminates topology-layer work (Component Fabric: dependency mapping,
+      blast-radius, drift detection) from work elsewhere. Load-bearing for BVP cost
+      composite and audit. Source: docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md'
+    polarity: positive
+    rubric:
+      0: No fabric/topology touched.
+      1: Registers one component card without edges.
+      2: Registers component with `depends_on` / `depended_by` populated but no
+        blast-radius hook or audit detector.
+      3: Adds fabric drift detection or enrichment for a subsystem.
+      4: Closes a fabric loop -- auto-enrichment cron, drift FAIL gate,
+        post-commit blast-radius surface, audit detector wired to fabric.
+      5: Extends the fabric substrate itself -- new edge type, new drift class,
+        cross-fabric correlation, fabric-fed audit dimension.
+    guardrails: >
+      Score TOPOLOGY UPLIFT, not "I touched a file". A card without edges is
+      L1; the value is in the edges, retrieval surface, and audit signal.
+    retire_when: >
+      Fabric substrate (edges, drift, blast-radius, audit integration) is
+      pervasive across the codebase and incremental registration no longer
+      surfaces meaningful signal.
 auto_promote:
   enabled: false
   bvp_norm_min: 0.85    # only top-band value

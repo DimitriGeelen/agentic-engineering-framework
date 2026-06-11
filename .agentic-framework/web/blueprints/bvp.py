@@ -185,16 +185,24 @@ def _driver_rubrics(policy: dict) -> dict[str, list[tuple[str, str]]]:
             if all(i in scored for i in range(6)):
                 out[did] = [(str(i), scored[i]) for i in range(6)]
 
-    # Free drivers — parse `rationale` field's inline level enumeration.
-    # Accepts: "0 — desc", "1–2 — desc" (en-dash range), "1-2 — desc" (ascii).
-    # Source order preserved; a range stays one entry (not expanded into N
-    # duplicate rows — T-2086).
+    # Free drivers — two sources, in priority order:
+    #   1. Structured `rubric:` YAML field (canonical, used by F-RECALL/F-ORCH/V_*).
+    #      Shape: {0: "...", 1: "...", 2: "...", 3: "...", 4: "...", 5: "..."}.
+    #      Rendered as single-score labels matching the protected-driver shape.
+    #   2. Inline level enumeration in `rationale:` text (legacy fallback).
+    #      Accepts: "0 — desc", "1–2 — desc" (en-dash range), "1-2 — desc".
+    #      Source order preserved; a range stays one entry (T-2086).
     line_pat = _re.compile(
         r"^\s*(\d)(?:\s*[–\-]\s*(\d))?\s*—\s*(.+?)\s*$", _re.M
     )
     for d in (policy.get("free_drivers") or []):
         did = d.get("id")
         if not did or did in out:
+            continue
+        # T-2336: prefer structured `rubric:` YAML field when present.
+        rubric_yaml = d.get("rubric")
+        if isinstance(rubric_yaml, dict) and all(i in rubric_yaml for i in range(6)):
+            out[did] = [(str(i), str(rubric_yaml[i]).strip()) for i in range(6)]
             continue
         rationale = str(d.get("rationale") or "")
         if not rationale:
