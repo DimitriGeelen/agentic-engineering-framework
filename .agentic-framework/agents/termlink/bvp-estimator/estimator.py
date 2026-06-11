@@ -603,6 +603,267 @@ def score_f_orch(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     return 0, ev + ["→0 (no orchestration signal)"]
 
 
+def score_v_prompt_quality(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """V_PROMPT_QUALITY — LLM-prompt quality improvement.
+
+    T-2328. Anchored to docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md §5.1.
+
+    Rubric:
+      0: No prompt-related work.
+      1: Touches a prompt incidentally (changes a prompt string with no quality intent).
+      2: Minor improvement (typo, wording cleanup in an instruction).
+      3: Meaningful improvement (adds worked example, refines instruction, improves rubric).
+      4: Material improvement (new prompt-handler design, restructured patterns, multi-section refinement).
+      5: Foundational (new prompt-creation system, framework-level prompt-template patterns,
+         prompt-bundle that becomes pattern for other prompts).
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    prompt_touch_comps = _has_any(comps, [
+        r"policy/prompts/", r"agents/[a-z_-]+/(prompt|preamble)",
+        r"policy/bvp-scoring-rubric", r"policy/prompts/bvp-driver-session",
+        r"docs/dispatch-templates/",
+    ])
+    prompt_touch_body = _has_any(body, [
+        r"\bprompt\b", r"\binstruction\b", r"\brubric\b", r"\bpickup prompt\b",
+        r"prompt[- ](bundle|template|handler|file|skeleton|surface|library)",
+    ])
+    if not (prompt_touch_comps or prompt_touch_body):
+        return 0, ev + ["→0 (no prompt signal)"]
+
+    foundational = _has_any(body, [
+        r"new prompt[- ]creation system",
+        r"framework[- ]level prompt[- ]template",
+        r"prompt[- ]bundle (that )?becomes (a |the )?pattern",
+        r"new prompt (subsystem|architecture)",
+        r"prompt[- ]library", r"prompt[- ]bundle pattern",
+        r"canonical prompt[- ]bundle",
+    ])
+    if foundational:
+        ev.append("body:prompt-foundational")
+        return 5, ev + ["→5 (foundational prompt-creation system)"]
+
+    material = _has_any(body, [
+        r"new prompt[- ]handler",
+        r"restructured (instruction|prompt) (pattern|surface)",
+        r"multi[- ]section (prompt )?(refinement|restructure)",
+        r"new pickup prompt",
+        r"prompt[- ]handler design",
+        r"(workflow|sharpening) (prompt|bundle)",
+        r"(new |re)design.{0,30}prompt",
+    ])
+    if material:
+        ev.append("body:prompt-material")
+        return 4, ev + ["→4 (material prompt restructure)"]
+
+    meaningful = _has_any(body, [
+        r"worked example", r"refines? (an? |the )?instruction",
+        r"improves? (an? |the )?rubric", r"rubric improvement",
+        r"adds? (an? |the )?rubric (level|narrative)",
+        r"prompt (improvement|refinement|sharpening)",
+        r"scoring[- ]level narrative",
+    ])
+    if meaningful:
+        ev.append("body:prompt-meaningful")
+        return 3, ev + ["→3 (meaningful prompt improvement)"]
+
+    minor = _has_any(body, [
+        r"fix(es|ed)? (a )?typo in (a |the )?(prompt|instruction|rubric)",
+        r"clarif(y|ies|ied) (a |the )?wording",
+        r"wording cleanup", r"prompt (wording|cleanup)",
+        r"small (prompt|instruction) (cleanup|tweak|fix)",
+    ])
+    if minor:
+        ev.append("body:prompt-minor")
+        return 2, ev + ["→2 (minor prompt cleanup)"]
+
+    if prompt_touch_comps or prompt_touch_body:
+        ev.append("body/components:prompt-incidental")
+        return 1, ev + ["→1 (incidental prompt touch)"]
+
+    return 0, ev + ["→0 (no prompt signal)"]
+
+
+def score_v_context_fabric(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """V_CONTEXT_FABRIC — memory-layer (working/project/episodic + semantic search).
+
+    T-2328. Anchored to docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md §5.2.
+
+    Rubric:
+      0: No Context Fabric work.
+      1: Incidental touch (calls fw recall for diagnostics).
+      2: Minor improvement (handover bugfix, fw recall reliability fix, doc improvement).
+      3: Meaningful improvement (new memory feature, perf optimization, new audit check
+         for Context Fabric correctness).
+      4: Material improvement (new memory layer addition, retrieval-quality baseline
+         measurement, structural Context Fabric enhancement).
+      5: Foundational change (new memory architecture, embedder replacement with
+         measured quality improvement, new memory primitive).
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    fabric_touch_comps = _has_any(comps, [
+        r"\.context/working", r"\.context/episodic", r"\.context/project",
+        r"\.context/handovers",
+        r"lib/recall", r"lib/synthesis", r"lib/embeddings", r"lib/index",
+        r"agents/recall", r"agents/condensation", r"agents/handover",
+        r"agents/context", r"agents/session-capture",
+        r"web/blueprints/recall", r"web/blueprints/handovers",
+        r"qdrant",
+    ])
+    fabric_touch_body = _has_any(body, [
+        r"\bContext Fabric\b", r"\b(working|project|episodic) memory\b",
+        r"\bfw recall\b", r"\bfw ask\b", r"semantic search",
+        r"\bmemory (layer|primitive|architecture|substrate|feature|capture)\b",
+        r"\bnew memory\b", r"memory (correctness|integrity)",
+        r"handover (file|document|generation|format|bug|fix)",
+        r"retrieval[- ](layer|quality|engine|baseline)",
+        r"embedder", r"embeddings? (substrate|index|store|model)",
+        r"\bepisodic (entry|capture|summary|memory)\b",
+    ])
+    if not (fabric_touch_comps or fabric_touch_body):
+        return 0, ev + ["→0 (no Context Fabric signal)"]
+
+    foundational = _has_any(body, [
+        r"new memory architecture",
+        r"new memory primitive",
+        r"embedder replacement", r"embedder upgrade",
+        r"new (working|project|episodic) memory (layer|surface)",
+        r"foundational (Context Fabric|memory) (change|overhaul)",
+        r"measured (retrieval|recall) quality (improvement|baseline)",
+    ])
+    if foundational:
+        ev.append("body:context-fabric-foundational")
+        return 5, ev + ["→5 (foundational Context Fabric change)"]
+
+    material = _has_any(body, [
+        r"retrieval[- ]quality baseline",
+        r"memory[- ]layer addition",
+        r"structural Context Fabric",
+        r"new (memory|context) (layer|store|surface)",
+        r"comprehensive (handover|memory) (restructure|enhancement)",
+        r"semantic (search|index) (rebuild|substrate)",
+    ])
+    if material:
+        ev.append("body:context-fabric-material")
+        return 4, ev + ["→4 (material Context Fabric enhancement)"]
+
+    meaningful = _has_any(body, [
+        r"new memory (feature|capture|primitive)",
+        r"(performance|perf) optimi(s|z)ation.{0,30}(memory|recall|handover|episodic)",
+        r"new audit check.{0,30}Context Fabric",
+        r"Context Fabric audit",
+        r"memory (correctness|integrity) check",
+        r"new (handover|episodic|recall) (feature|capability)",
+        r"fw recall (improvement|enhancement|quality)",
+    ])
+    if meaningful:
+        ev.append("body:context-fabric-meaningful")
+        return 3, ev + ["→3 (meaningful Context Fabric improvement)"]
+
+    minor = _has_any(body, [
+        r"handover (bugfix|fix|bug)",
+        r"fw recall (bug|fix|reliability)",
+        r"memory (doc|documentation) improvement",
+        r"small (memory|handover|episodic) (cleanup|fix)",
+    ])
+    if minor:
+        ev.append("body:context-fabric-minor")
+        return 2, ev + ["→2 (minor Context Fabric fix)"]
+
+    if fabric_touch_comps or fabric_touch_body:
+        ev.append("body/components:context-fabric-incidental")
+        return 1, ev + ["→1 (incidental Context Fabric touch)"]
+
+    return 0, ev + ["→0 (no Context Fabric signal)"]
+
+
+def score_v_component_fabric(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """V_COMPONENT_FABRIC — topology layer (dependency mapping, blast-radius, drift).
+
+    T-2328. Anchored to docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md §5.3.
+
+    Rubric:
+      0: No Component Fabric work.
+      1: Incidental touch (runs fw fabric for diagnostic purposes).
+      2: Minor improvement (bug fix in dependency detection, small speed improvement).
+      3: Meaningful improvement (new fabric check, accuracy improvement, drift-detection enhancement).
+      4: Material improvement (major restructuring of dependency representation,
+         comprehensive blast-radius accuracy work).
+      5: Foundational change (new topology primitive, fundamentally improved drift detection,
+         structural Component Fabric overhaul).
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    fabric_touch_comps = _has_any(comps, [
+        r"lib/fabric", r"agents/fabric", r"\.fabric/",
+        r"web/blueprints/fabric", r"web/templates/fabric",
+    ])
+    fabric_touch_body = _has_any(body, [
+        r"\bComponent Fabric\b",
+        r"\bfw fabric\b", r"\bfabric (check|gate|audit|accuracy|drift|enrich)\b",
+        r"\b(blast[- ]radius|dependency mapping|dependency detection)\b",
+        r"\bfabric drift\b", r"\bdrift detection\b",
+        r"\btopology (primitive|layer|map)\b",
+        r"component card", r"\.fabric/components",
+        r"\bnew fabric\b",
+    ])
+    if not (fabric_touch_comps or fabric_touch_body):
+        return 0, ev + ["→0 (no Component Fabric signal)"]
+
+    foundational = _has_any(body, [
+        r"new topology primitive",
+        r"Component Fabric overhaul",
+        r"fundamentally improved drift detection",
+        r"structural (Component Fabric|topology) (overhaul|change)",
+        r"new fabric (architecture|substrate)",
+    ])
+    if foundational:
+        ev.append("body:component-fabric-foundational")
+        return 5, ev + ["→5 (foundational Component Fabric change)"]
+
+    material = _has_any(body, [
+        r"major restructur(ing|e).{0,30}dependency",
+        r"dependency representation (restructure|overhaul)",
+        r"comprehensive blast[- ]radius (accuracy|work)",
+        r"fabric (re)?structure",
+        r"new (component|fabric) (surface|registration|model)",
+    ])
+    if material:
+        ev.append("body:component-fabric-material")
+        return 4, ev + ["→4 (material Component Fabric restructure)"]
+
+    meaningful = _has_any(body, [
+        r"new fabric check",
+        r"fabric accuracy", r"accuracy (improvement|enhancement).{0,30}(fabric|dependency)",
+        r"drift[- ]detection (enhancement|improvement)",
+        r"blast[- ]radius (improvement|accuracy)",
+        r"new (component|fabric) (audit|gate)",
+    ])
+    if meaningful:
+        ev.append("body:component-fabric-meaningful")
+        return 3, ev + ["→3 (meaningful Component Fabric improvement)"]
+
+    minor = _has_any(body, [
+        r"dependency detection (fix|bug)",
+        r"fabric (speed|perf|bug) (fix|improvement)",
+        r"small fabric (fix|cleanup)",
+        r"\bfix(es|ed)? fabric\b",
+    ])
+    if minor:
+        ev.append("body:component-fabric-minor")
+        return 2, ev + ["→2 (minor Component Fabric fix)"]
+
+    if fabric_touch_comps or fabric_touch_body:
+        ev.append("body/components:component-fabric-incidental")
+        return 1, ev + ["→1 (incidental Component Fabric touch)"]
+
+    return 0, ev + ["→0 (no Component Fabric signal)"]
+
+
 def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """Heuristic fallback for free drivers without a dedicated scorer — keyword-
     on-driver-id only.
@@ -671,6 +932,13 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # remains the fallback for any other active free driver.
         "F-RECALL": score_f_recall,
         "F-ORCH": score_f_orch,
+        # T-2328 — dedicated handlers for the V_* batch (T-2305 GO). Latent
+        # until operator runs `fw bvp driver --add` to register the drivers
+        # in policy/value-drivers.yaml; _load_drivers() then yields the IDs
+        # and these dispatch instead of the weak score_free_driver fallback.
+        "V_PROMPT_QUALITY": score_v_prompt_quality,
+        "V_CONTEXT_FABRIC": score_v_context_fabric,
+        "V_COMPONENT_FABRIC": score_v_component_fabric,
     }
     for driver_id in drivers:
         if is_inception:
