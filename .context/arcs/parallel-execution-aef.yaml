@@ -21,7 +21,37 @@ decision: null
 # docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
 bvp_scores: {}
 scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
-proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
+proposed_scoped_drivers:     # uncapped persistence (D7-reframe). Estimator may write here freely.
+  # T-2344 (Workflow A batch_propose, retroactive). Research artifact:
+  # docs/reports/T-2344-bvp-driver-arc-011.md. Approve via
+  # `bin/fw arc approve-driver arc-011 <id> --weight N` or
+  # `bin/fw arc approve-driver arc-011 --none --justification "..."`.
+  - id: D-DISJOINT
+    name: Disjoint Write-Set Discipline
+    weight: 5
+    rationale: |
+      R1: rewards pre-flight collision refusal (write-set scope declared, tested before
+      dispatch) — D2 (reliability) rewards post-hoc observability of the same failure
+      class but not the structural prevention. Anchors the arc's load-bearing invariant
+      (headline_mechanic clause "no .tasks/ or .context/audits/ merge conflicts").
+      R2: weight 5 — heavier than D3 (5) because invariant-defining, lighter than D2 (7)
+      because reliability bounds correctness broadly.
+    source: agent
+    ts: 2026-06-11T19:45:00Z
+    source_task: T-2344
+  - id: D-WIRE-EVIDENCE
+    name: Wire-Evidence Falsifiability
+    weight: 4
+    rationale: |
+      R1: rewards captured, re-runnable wire artefacts (dispatches.jsonl excerpts, git
+      status snapshots, timing.yaml) tied to a specific arc claim — D2 satisfies "log
+      line says X happened", this driver requires the evidence be re-runnable by an
+      outside party. Counters G-062 substrate-vs-deliverable conflation at arc-close time.
+      R2: weight 4 — lighter than D-DISJOINT (the invariant matters more than its proof),
+      heavier than D4 (3 — portability not arc-011's concern).
+    source: agent
+    ts: 2026-06-11T19:45:00Z
+    source_task: T-2344
 grill_me:
   entry: "/grill-with-docs"
   scope: |

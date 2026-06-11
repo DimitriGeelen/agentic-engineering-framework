@@ -16859,3 +16859,75 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 1
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-11T19:45:19Z'
+scan_id: R-d60dc08d
+task_id: T-2344
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T19:45:19Z'
+scan_id: R-d60dc08d
+task_id: T-2344
+payload:
+  task_file: .tasks/active/T-2344-arc-011-workflow-a--propose-arc-scoped-d.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T19:46:35Z'
+scan_id: R-54a6e438
+task_id: T-2344
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T19:46:35Z'
+scan_id: R-54a6e438
+task_id: T-2344
+payload:
+  task_file: .tasks/active/T-2344-arc-011-workflow-a--propose-arc-scoped-d.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T19:46:44Z'
+scan_id: R-b0b91401
+task_id: T-2344
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T19:46:44Z'
+scan_id: R-b0b91401
+task_id: T-2344
+payload:
+  task_file: .tasks/active/T-2344-arc-011-workflow-a--propose-arc-scoped-d.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T19:46:45Z'
+scan_id: R-d05c8065
+task_id: T-2344
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T19:46:45Z'
+scan_id: R-d05c8065
+task_id: T-2344
+payload:
+  task_file: .tasks/active/T-2344-arc-011-workflow-a--propose-arc-scoped-d.md
