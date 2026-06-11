@@ -103,7 +103,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-10'
+last_enriched: '2026-06-11'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -570,4 +570,12 @@ depended_by:
 - target: tools/g065-readiness.py
   type: called_by
 - target: tests/unit/t2318_retrofit_injector_append_missing.bats
+  type: tests_by
+- target: tests/unit/t2331_driver_propose.bats
+  type: tests_by
+- target: tests/unit/t2332_bvp_propose_queue.bats
+  type: tests_by
+- target: tests/unit/test_orchestrator_graph.bats
+  type: tests_by
+- target: tests/unit/test_write_set.bats
   type: tests_by
