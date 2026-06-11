@@ -924,3 +924,14 @@ overrides:
   expires_at: '2026-09-09T19:15:58Z'
   added_by: root
   added_at: '2026-06-11T19:15:58Z'
+- id: OV-cad6c610
+  task_id: T-2171
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  reason: 'Pre-flight evidence cites file path agents/termlink/bvp-estimator/estimator.py
+    with line refs (889, 1086, 894-896) directly inline. Verification is the textual
+    citation + T-2329 commit hash 9d5377baa with 89 PASS evidence. Heuristic FP class
+    (memory L-478 sibling pattern: prose-discusses-path).'
+  expires_at: '2026-09-09T23:07:55Z'
+  added_by: root
+  added_at: '2026-06-11T23:07:55Z'
