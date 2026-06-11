@@ -6,17 +6,17 @@ description: >
   Inception: arc-011 milestone-split decision — M1 (single-host AEF-only) vs cross-repo-bound
   monolithic arc
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-2303, T-2325, T-2326, T-2323, T-2324]
 arc_id: arc-011
 created: 2026-06-11T15:46:00Z
-last_update: 2026-06-11T15:48:47Z
-date_finished:
+last_update: 2026-06-11T16:19:55Z
+date_finished: 2026-06-11T16:19:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -37,6 +37,16 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-11T16:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -172,15 +182,15 @@ T-2326 §dependencies + this Recommendation block; decide GO/NO-GO/DEFER).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -269,7 +279,39 @@ T-2325 §3 + T-2326 §dependencies identified 6 substrate-free workstreams that 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+T-2325 §3 + T-2326 §dependencies identified 6 substrate-free workstreams that close M1 without TermLink primitives + a milestone-split that avoids the §9 closure-binding problem. Operator's three answers (REJECT/RESCOPE/APPROVE) need a structured GO/NO-GO surface — this inception is it. Recommendation = GO because the headline_mechanic passes §ACD on consumer side, the 6 workstreams are AEF-only-buildable, and M2 (substrate-bound) becomes a clean sibling arc rather than a hidden cross-repo binding.
+
+Evidence:
+
+- T-2325 grill responses (`docs/reports/arc-011-grill-me-responses.md`,
+  committed at `8e42a8f3b`): answers all 4 arc-011.yaml `grill_me.primary_targets`
+  in 369 lines. §1 verdicts headline_mechanic CONSUMER-SIDE (passes §ACD/G-062).
+  §2 sharpens wire-evidence-X with 3 falsifiable test scenarios (1A/1B/1C). §3
+  enumerates 6 substrate-free workstreams. §4 names the milestone-split as the
+  structural counter to cross-repo binding.
+- T-2326 M1 sketch (`docs/reports/arc-011-m1-single-host-sketch.md`,
+  committed at `d21768ab7`): concretizes T-2325 §3's 6 workstreams in 385 lines.
+  Each workstream has Files-touched / Size / Cost-rationale / Exit-criterion /
+  Headline_mechanic-traceability. §dependencies block ranks §3 (disjoint
+  validator, S) as the foundation. Total M1 estimate: 4-7 build sessions.
+- arc-011 yaml (`.context/arcs/parallel-execution-aef.yaml`): `status:
+  in-progress`, `demo_evidence: null`, `grill_me.primary_targets` lists the 4
+  questions T-2325 answered. Operator's milestone-split decision either
+  validates or rejects the answers.
+- T-2303 scoping inception (`.tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md`):
+  IW-3 (parallel-execution-strategy-spike) deferred at GO; M1 split path
+  re-opens it as workstream §1 in T-2326.
+- T-2323 + T-2324 (currently parked captured/later by operator): downstream
+  inceptions for yield-point granularity + disjoint-write-set policy. T-2326 §2 + §3
+  show how each collapses to M1-scope on GO.
+
+**Date**: 2026-06-11T16:19:55Z
 
 ## Updates
 
@@ -278,3 +320,48 @@ T-2325 §3 + T-2326 §dependencies identified 6 substrate-free workstreams that 
 
 ### 2026-06-11T15:48:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e1dea92d
+- **Timestamp:** 2026-06-11T16:19:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+### 2026-06-11T16:19:55Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+T-2325 §3 + T-2326 §dependencies identified 6 substrate-free workstreams that close M1 without TermLink primitives + a milestone-split that avoids the §9 closure-binding problem. Operator's three answers (REJECT/RESCOPE/APPROVE) need a structured GO/NO-GO surface — this inception is it. Recommendation = GO because the headline_mechanic passes §ACD on consumer side, the 6 workstreams are AEF-only-buildable, and M2 (substrate-bound) becomes a clean sibling arc rather than a hidden cross-repo binding.
+
+Evidence:
+
+- T-2325 grill responses (`docs/reports/arc-011-grill-me-responses.md`,
+  committed at `8e42a8f3b`): answers all 4 arc-011.yaml `grill_me.primary_targets`
+  in 369 lines. §1 verdicts headline_mechanic CONSUMER-SIDE (passes §ACD/G-062).
+  §2 sharpens wire-evidence-X with 3 falsifiable test scenarios (1A/1B/1C). §3
+  enumerates 6 substrate-free workstreams. §4 names the milestone-split as the
+  structural counter to cross-repo binding.
+- T-2326 M1 sketch (`docs/reports/arc-011-m1-single-host-sketch.md`,
+  committed at `d21768ab7`): concretizes T-2325 §3's 6 workstreams in 385 lines.
+  Each workstream has Files-touched / Size / Cost-rationale / Exit-criterion /
+  Headline_mechanic-traceability. §dependencies block ranks §3 (disjoint
+  validator, S) as the foundation. Total M1 estimate: 4-7 build sessions.
+- arc-011 yaml (`.context/arcs/parallel-execution-aef.yaml`): `status:
+  in-progress`, `demo_evidence: null`, `grill_me.primary_targets` lists the 4
+  questions T-2325 answered. Operator's milestone-split decision either
+  validates or rejects the answers.
+- T-2303 scoping inception (`.tasks/completed/T-2303-scoping-inception--parallel-execution-ar.md`):
+  IW-3 (parallel-execution-strategy-spike) deferred at GO; M1 split path
+  re-opens it as workstream §1 in T-2326.
+- T-2323 + T-2324 (currently parked captured/later by operator): downstream
+  inceptions for yield-point granularity + disjoint-write-set policy. T-2326 §2 + §3
+  show how each collapses to M1-scope on GO.
+
+### 2026-06-11T16:19:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
