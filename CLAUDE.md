@@ -1041,6 +1041,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 **Fabric (before modifying source):**
 - `fw fabric deps <path>` / `fw fabric impact <path>` / `fw fabric blast-radius [ref]`
 - `fw fabric overview` / `fw fabric drift` / `fw fabric register <path>`
+- `fw write-set check <T-A> <T-B>` — disjoint-write-set validator for arc-011 parallel dispatch (T-2337); exit 0=disjoint, 1=overlap, 2=undecidable
 
 **Dispatch and cross-project:**
 - `fw termlink check|spawn|exec|dispatch|status|cleanup|wait|result` (see TermLink section)
