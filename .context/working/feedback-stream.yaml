@@ -15068,3 +15068,57 @@ scan_id: R-ae66a73d
 task_id: T-2320
 payload:
   task_file: .tasks/completed/T-2320-f-orch-retire-advisory-brief--surface-re.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T06:43:57Z'
+scan_id: R-32130c1c
+task_id: T-2325
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T06:43:57Z'
+scan_id: R-32130c1c
+task_id: T-2325
+payload:
+  task_file: .tasks/active/T-2325-arc-011-grillme-primarytarget-response-a.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T06:44:52Z'
+scan_id: R-44dd652c
+task_id: T-2325
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T06:44:52Z'
+scan_id: R-44dd652c
+task_id: T-2325
+payload:
+  task_file: .tasks/active/T-2325-arc-011-grillme-primarytarget-response-a.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T06:46:31Z'
+scan_id: R-90e27a05
+task_id: T-2325
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T06:46:31Z'
+scan_id: R-90e27a05
+task_id: T-2325
+payload:
+  task_file: .tasks/active/T-2325-arc-011-grillme-primarytarget-response-a.md

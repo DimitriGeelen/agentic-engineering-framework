@@ -1,13 +1,15 @@
 ---
 id: T-2325
-name: "arc-011 grill_me primary_target response artifact — AEF ADR §ACD audit + Spike 1 falsifiability sharpening + A2-fails AEF-side prep + §9 closure binding analysis"
+name: "arc-011 grill_me primary_target response artifact — AEF ADR §ACD audit + Spike
+  1 falsifiability sharpening + A2-fails AEF-side prep + §9 closure binding analysis"
 description: >
-  arc-011 grill_me primary_target response artifact — AEF ADR §ACD audit + Spike 1 falsifiability sharpening + A2-fails AEF-side prep + §9 closure binding analysis
+  arc-011 grill_me primary_target response artifact — AEF ADR §ACD audit + Spike 1
+  falsifiability sharpening + A2-fails AEF-side prep + §9 closure binding analysis
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-parallel-execution-aef, agent-prep, no-source-change]
 components: []
 related_tasks: [T-2303, T-2323, T-2324]
@@ -19,8 +21,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T06:39:30Z
-last_update: 2026-06-11T06:39:30Z
-date_finished: null
+last_update: 2026-06-11T06:46:30Z
+date_finished: 2026-06-11T06:46:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -31,6 +33,31 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-11T06:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-11T06:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=4 
+      (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2325: arc-011 grill_me primary_target response artifact — AEF ADR §ACD audit + Spike 1 falsifiability sharpening + A2-fails AEF-side prep + §9 closure binding analysis
@@ -132,11 +159,13 @@ are derivations from existing decisions, not new architecture.
 test -s docs/reports/arc-011-grill-me-responses.md
 out=$(cat docs/reports/arc-011-grill-me-responses.md); echo "$out" | grep -qE "^## 1\.\s+Headline" && echo "$out" | grep -qE "^## 2\.\s+Wire-evidence" && echo "$out" | grep -qE "^## 3\.\s+A2-fails" && echo "$out" | grep -qE "^## 4\.\s+§9"
 out=$(cat docs/reports/arc-011-grill-me-responses.md); echo "$out" | grep -qE "CONSUMER-SIDE|consumer-side" && echo "$out" | grep -qE "SUBSTRATE|substrate-territory"
-out=$(cat docs/reports/arc-011-grill-me-responses.md); echo "$out" | grep -qE "T-X|task-A|named tasks?:" && echo "$out" | grep -qE "dispatches\.jsonl"
+out=$(cat docs/reports/arc-011-grill-me-responses.md); echo "$out" | grep -qE "T-PAR-A|T-COL-A|T-[A-Z]+-[A-Z]+" && echo "$out" | grep -qE "dispatches\.jsonl"
 out=$(cat docs/reports/arc-011-grill-me-responses.md); n=$(echo "$out" | grep -cE "^- "); test "$n" -ge 8
 out=$(cat docs/reports/arc-011-grill-me-responses.md); echo "$out" | grep -qE "milestone|M1|split"
 out=$(cat docs/reports/arc-011-grill-me-responses.md); echo "$out" | grep -qE "§[0-9]"
-! find .tasks/active -name "T-23[3-9][0-9]-*" -newer .tasks/active/T-2325-arc-011-grillme-primarytarget-response-a.md 2>/dev/null | grep -q .
+# L-387: capture-first, no pipe-to-grep — avoid SIGPIPE on the find→grep boundary.
+# Predicate: zero new T-23[3-9][0-9] inception files newer than this task = no cluster-bombing.
+n=$(find .tasks/active -name "T-23[3-9][0-9]-*" -newer .tasks/active/T-2325-arc-011-grillme-primarytarget-response-a.md 2>/dev/null); test -z "$n"
 
 ## RCA
 
@@ -155,6 +184,18 @@ out=$(cat docs/reports/arc-011-grill-me-responses.md); echo "$out" | grep -qE "�
 -->
 
 ## Evolution
+
+### 2026-06-11 — Reviewer-caught Verification regex placeholders
+
+- **What changed:** Wrote initial Verification block with placeholder grep patterns (`T-X|task-A`) before knowing what task ids the artifact would actually name. The artifact ended up naming `T-PAR-A/B` (positive parallelism scenario) and `T-COL-A/B` (collision/disjointness gate). The placeholder regex matched zero — predicate p4 returned 0 on real verify run.
+- **Plan impact:** Verification predicates written speculatively at task-create time can drift from the artifact's actual content. Better discipline: write Verification predicates *after* the artifact draft is in place, or write them against shape patterns (`T-[A-Z]+-[A-Z]+`) that survive content choices.
+- **Triggered:** No new task — this is a one-line lesson for next time, not a new structural fix. Captured here so future arc-prep tasks (T-2326+) don't replay the same placeholder-drift.
+
+### 2026-06-11 — Reviewer FP override class: doc-discusses-cross-repo
+
+- **What changed:** Reviewer Layer-1 flagged `cross-project-blast` (medium) on the substring "cross-repo" in §4. Pure FP — the task is a docs artifact in this repo only; the substring discusses arc-011's binding situation (AEF↔TermLink substrate) without making any cross-project change. Filed OV-b13c3432 (90d TTL).
+- **Plan impact:** Discussions *about* cross-repo binding will keep hitting this FP. The override pattern is reusable.
+- **Triggered:** No new task; the override is the structural counter. Memory candidate: "reviewer cross-project-blast FP class — doc-discusses-cross-repo binding (not a cross-repo change)" for the L-XXX sibling rail.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -269,3 +310,19 @@ arc-grill mode rather than arc-bootstrap mode.
   - "milestone"/"M1"/"split" appears 14×
   - 18 explicit `§N` ADR cross-references
 - **AC ticks:** all 8 Agent ACs ticked progressively per T-1831 C-4 (artifact-in-place precondition met)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-90e27a05
+- **Timestamp:** 2026-06-11T06:46:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **cross-project-blast** (medium) — Cross-project or cross-repo change
+     - matched: `cross-repo`
+
+### 2026-06-11T06:46:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -831,3 +831,14 @@ overrides:
   expires_at: '2026-09-08T11:30:30Z'
   added_by: root
   added_at: '2026-06-10T11:30:30Z'
+- id: OV-b13c3432
+  task_id: T-2325
+  pattern_id: cross-project-blast
+  ac_index: null
+  reason: "Heuristic FP \u2014 task body discusses arc-011's cross-repo binding situation\
+    \ (AEF\u2194TermLink substrate); no actual cross-project change made. Pure docs\
+    \ artifact in this repo only. Sibling FP class to other doc-discusses-cross-repo\
+    \ cases."
+  expires_at: '2026-09-09T06:44:48Z'
+  added_by: root
+  added_at: '2026-06-11T06:44:48Z'

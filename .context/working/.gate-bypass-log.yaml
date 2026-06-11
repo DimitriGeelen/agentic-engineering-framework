@@ -3554,3 +3554,13 @@ Pre-GO grill_me text said Anchor T-2303 (scopin'
   command: 'FW_SWITCH_FOCUS=1 git add docs/ && FW_SWITCH_FOCUS=1 git commit -m "T-2303: batch-fix 36 stale .tasks/active/T-NNN refs in docs/
 
 Sweep across docs/reports/ + docs/articles/ found 44 stale references '
+- timestamp: '2026-06-11T06:38:13Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: housekeeping — cron-driven audit/episodic/reviewer/fabric refresh
+
+- 2026-06-11 audit + reviewer YAMLs (daily cron)
+- T-2318/T-2319/T-2320 episo'
