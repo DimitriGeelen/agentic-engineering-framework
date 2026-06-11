@@ -109,6 +109,7 @@ def require_rationale(args, min_chars=30):
 # ------------------------------------------------------ append-only history
 HISTORY_PATH = PROJECT_ROOT / '.context' / 'bvp-weight-history.yaml'
 AUTO_PROMOTE_LOG = PROJECT_ROOT / '.context' / 'bvp-auto-promote-log.yaml'
+PROPOSALS_PATH = PROJECT_ROOT / '.context' / 'bvp-driver-proposals.jsonl'
 
 
 def _utc_now():
@@ -648,6 +649,12 @@ def cmd_driver(args):
     # and gates appropriately.
     if '--init' in args:
         return _driver_init(args)
+    # T-2331 (T-2330 S1): --propose is the NON-Sovereign sibling of --add.
+    # Writes a pending row to .context/bvp-driver-proposals.jsonl; the
+    # Watchtower /bvp/proposed queue (T-2330 S2) approves via --from-watchtower.
+    # Must route before --add — propose has no acd_gate; add does.
+    if '--propose' in args:
+        return _driver_propose(args)
     if '--add' in args:
         return _driver_add(args)
     if '--remove' in args:
@@ -655,6 +662,7 @@ def cmd_driver(args):
     print("Usage: fw bvp driver --init [--force]", file=sys.stderr)
     print("       fw bvp driver --add \"name\" --weight N --rationale \"...\"", file=sys.stderr)
     print("       fw bvp driver --remove Dn --rationale \"...\" [--drop Dn]", file=sys.stderr)
+    print("       fw bvp driver --propose \"name\" --weight N --rationale \"...\" [--drop Dn] [--task T-XXX]", file=sys.stderr)
     return 2
 
 
@@ -957,6 +965,87 @@ def _driver_add(args):
         print(f"OK: added {new_id} '{name}' weight={weight}; dropped {drop_id} (M1 add-one-drop-one)")
     else:
         print(f"OK: added {new_id} '{name}' weight={weight}")
+    return 0
+
+
+def _driver_propose(args):
+    """T-2331 (T-2330 S1): non-Sovereign propose-queue write.
+
+    Appends a `state: pending` row to .context/bvp-driver-proposals.jsonl.
+    NOT §ACD-gated — proposing is the agent's job; the Sovereign click stays
+    on the operator's Approve action (T-2330 S2 wires Watchtower /bvp/proposed
+    → `fw bvp driver --add --from-watchtower`). Storage is JSONL for
+    race-free append (IW-3 dissolved): two agents proposing the same name
+    produce two rows, both surface in the queue, operator picks one.
+
+    Storage location (.context/, not policy/) chosen because proposals are
+    working state, not live policy — mirrors .context/bvp-weight-history.yaml,
+    .context/dispatches.jsonl convention.
+    """
+    if '--propose' not in args:
+        return 2
+    idx = args.index('--propose')
+    if idx + 1 >= len(args):
+        print("Error: --propose needs a driver name", file=sys.stderr)
+        return 2
+    name = args[idx + 1]
+
+    # Slug shape mirrors the form validator (web/templates/bvp.html: pattern
+    # [A-Za-z][A-Za-z0-9_-]*) so propose↔add round-trip is identical.
+    if not re.fullmatch(r'[A-Za-z][A-Za-z0-9_-]*', name):
+        print(f"Error: invalid name {name!r}; must start with letter, then letters/digits/_/-", file=sys.stderr)
+        return 2
+
+    if '--weight' not in args:
+        print("Error: --weight is required", file=sys.stderr)
+        return 2
+    widx = args.index('--weight')
+    try:
+        weight = int(args[widx + 1])
+    except (IndexError, ValueError):
+        print("Error: --weight needs an integer", file=sys.stderr)
+        return 2
+    if not 0 <= weight <= 9:
+        print(f"Error: weight {weight} out of range (0-9)", file=sys.stderr)
+        return 2
+
+    rationale, ok = require_rationale(args)
+    if not ok:
+        return 2
+
+    drop_id = None
+    if '--drop' in args:
+        didx = args.index('--drop')
+        if didx + 1 < len(args):
+            drop_id = args[didx + 1]
+
+    task_id = None
+    if '--task' in args:
+        tidx = args.index('--task')
+        if tidx + 1 < len(args):
+            task_id = args[tidx + 1]
+
+    import json, uuid
+    actor_prefix = 'agent' if os.environ.get('CLAUDECODE') == '1' else 'human'
+    entry = {
+        'id': f'P-{uuid.uuid4().hex[:8]}',
+        'ts': _utc_now(),
+        'state': 'pending',
+        'name': name,
+        'weight': weight,
+        'rationale': rationale,
+        'drop': drop_id,
+        'task': task_id,
+        'author': f"{actor_prefix}:{os.environ.get('USER', 'unknown')}",
+    }
+
+    PROPOSALS_PATH.parent.mkdir(exist_ok=True)
+    with open(PROPOSALS_PATH, 'a') as f:
+        f.write(json.dumps(entry) + '\n')
+
+    print(f"OK: proposal {entry['id']} filed — name='{name}' weight={weight} (state: pending)")
+    print(f"  Storage: {PROPOSALS_PATH.relative_to(PROJECT_ROOT)}")
+    print(f"  Operator approves via Watchtower /bvp/proposed (T-2330 S2 — not yet shipped).")
     return 0
 
 
