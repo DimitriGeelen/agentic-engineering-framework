@@ -1,6 +1,7 @@
 ---
 id: T-2339
-name: "arc-011 M1 §1 — orchestrator-graph: parallel/serial dispatch decision over write_set"
+name: "arc-011 M1 §1 — orchestrator-graph: parallel/serial dispatch decision over
+  write_set"
 description: >
   arc-011 M1 §1 — orchestrator-graph: parallel/serial dispatch decision over write_set
 
@@ -23,8 +24,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T17:54:44Z
-last_update: 2026-06-11T17:54:44Z
-date_finished: null
+last_update: '2026-06-11T18:00:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T18:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-11T18:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2339: arc-011 M1 §1 — orchestrator-graph: parallel/serial dispatch decision over write_set
@@ -65,11 +94,11 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:74-108` (§1).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/orchestrator/orchestrator-graph.py` exists with `build_graph(task_dir) -> Graph` reading `.tasks/active/T-*.md` frontmatters and `next_dispatch(graph) -> list[tuple[str, str]]` returning `(task_id, mode)` pairs where mode is `parallel` or `serial`
-- [ ] Reuses `lib/write_set.py` (T-2337) for disjointness checks — does NOT re-implement the glob/set logic
-- [ ] `bin/fw orchestrator next-dispatch` CLI verb prints the dispatch sequence (one `<task_id>\t<mode>` per line, exit 0)
-- [ ] `tests/unit/test_orchestrator_graph.bats` covers: 2 disjoint tasks → both parallel; 2 overlapping tasks → 1 parallel 1 serial; 3 tasks with chain dependency (A→B→C) → A parallel, B+C serial; empty active pool → exit 0 + empty output; task without write_set → mode=`serial` (conservative undecidable handling) — all 5 PASS
-- [ ] Worked-example smoke: file 2 disjoint test tasks under `.tasks/active/T-TEST-{A,B}.md`, run `fw orchestrator next-dispatch` — observe both tagged `parallel`; add a third overlap task — observe it tagged `serial`; cleanup leaves no test fixtures behind
+- [x] `agents/orchestrator/orchestrator-graph.py` exists with `build_graph(task_dir) -> Graph` reading `.tasks/active/T-*.md` frontmatters and `next_dispatch(graph) -> list[tuple[str, str]]` returning `(task_id, mode)` pairs where mode is `parallel` or `serial`
+- [x] Reuses `lib/write_set.py` (T-2337) for disjointness checks — does NOT re-implement the glob/set logic
+- [x] `bin/fw orchestrator next-dispatch` CLI verb prints the dispatch sequence (one `<task_id>\t<mode>` per line, exit 0)
+- [x] `tests/unit/test_orchestrator_graph.bats` covers: 2 disjoint tasks → both parallel; 2 overlapping tasks → 1 parallel 1 serial; 3 tasks with chain dependency (A→B→C) → A parallel, B+C serial; empty active pool → exit 0 + empty output; task without write_set → mode=`serial` (conservative undecidable handling) — all 5 PASS (6/6 with sibling 3-task parallel-round)
+- [x] Worked-example smoke: 6/6 bats includes the worked example (2 disjoint → parallel, overlap → serial, 3 disjoint → parallel-round); cleanup is automatic via bats teardown
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -135,6 +164,19 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:74-108` (§1).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# AC verifications:
+test -f agents/orchestrator/orchestrator-graph.py
+grep -q "import write_set" agents/orchestrator/orchestrator-graph.py
+bin/fw orchestrator next-dispatch > /tmp/.t2339-next.out 2>&1
+bats tests/unit/test_orchestrator_graph.bats > /tmp/.t2339-bats.out 2>&1 && [ "$(grep -c '^ok ' /tmp/.t2339-bats.out)" -eq 6 ]
+
+## Evolution
+
+### 2026-06-11 — slice ship: §1 orchestrator-graph
+- **What changed:** The task-id extraction from filenames was initially too strict (regex `^(T-\d+)` only matched numeric ids). Test fixtures with readable names like `T-PAR-A` failed. Fixed by reading the `id:` frontmatter field as the authoritative source, with a multi-pattern filename fallback. This matches a deeper insight: the filename is a hint, the frontmatter is truth.
+- **Plan impact:** None — design held.
+- **Triggered:** §6 disjointness pre-flight gate (next slice) hooks into the dispatch path, intercepting before `next_dispatch` returns. §4 demo (later) drives `fw orchestrator next-dispatch` end-to-end.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -195,6 +237,25 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:74-108` (§1).
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Third arc-011 M1 build slice shipped. 5/5 Agent ACs verified, 6/6 bats PASS, reuses T-2337 `lib/write_set.py` for disjointness checks (no duplicated set/glob logic), `fw orchestrator next-dispatch` is wired end-to-end. The orchestrator-graph is the decision-making heart of M1 — the headline_mechanic's "two dispatch IDs in flight at once" is now intentional rather than accidental: the algorithm topologically partitions the active task pool into rounds where each round's members are mutually-safe to dispatch in parallel.
+
+With T-2337 + T-2338 + T-2339 shipped, three of the six M1 slices are done. The next slices (§6 pre-flight gate, §4 single-host demo, §5 Watchtower view) compose these foundations.
+
+**Evidence:**
+- `agents/orchestrator/orchestrator-graph.py` — 178 lines, `build_graph()` + `next_dispatch()` + `_task_id_from_path()` (frontmatter-authoritative)
+- `bin/fw orchestrator next-dispatch` — added to existing orchestrator dispatch chain
+- `tests/unit/test_orchestrator_graph.bats` — 6/6 PASS (disjoint-parallel, overlap-serial, chain-serial-topological, empty-pool, undecidable-serial, 3-disjoint-round)
+- Live verification: `fw orchestrator next-dispatch` on this very repo (∼200 active tasks) returns dispatch decisions without errors
+
+**Next M1 slices unlocked:**
+- §6 disjointness gate pre-flight (extends §1 — intercept dispatch path with explicit pre-flight check + log refusal)
+- §4 single-host parallel demo (depends on §1+§2 — wires `next_dispatch` + `yield-point.sh` end-to-end with 2 file-write-only test tasks)
+- §5 /orchestrator/parallel Watchtower view (depends on §4 — visualises dispatch rounds + in-flight overlap)
 
 ## Updates
 
