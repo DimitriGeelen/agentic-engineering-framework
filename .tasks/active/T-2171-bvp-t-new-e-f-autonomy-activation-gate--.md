@@ -10,17 +10,17 @@ description: >
   uncomments the carve, sets weight=4, and validates the rubric ZERO-NEGATIVE guardrail
   (autonomy that removes Tier-0 gates scores ≤0).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [v3-followup-E, f-autonomy-activation, arc:value-prioritisation, 
       blocked-on-T-2158]
 components: []
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: '2026-06-11T22:23:32Z'
+last_update: '2026-06-12T01:05:00Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -130,8 +130,8 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
 - [ ] Level-0 rubric text explicitly names the Sovereignty-violation case (removing a safety-critical human gate scores ZERO, never high). Verification: `grep -A 3 "F-AUTONOMY" policy/value-drivers.yaml | grep -A 2 "^[[:space:]]*0:" | grep -qi "sovereignty\|tier 0\|zero"`
 - [ ] guardrails text explicitly forbids positive scoring for reducing oversight on Tier-0 / irreversible / high-blast-radius actions. Verification: `awk '/F-AUTONOMY/,/retire_when:/' policy/value-drivers.yaml | grep -qi "tier 0\|irreversible\|high-blast"`
 - [ ] Pre-activation gate evidence captured in a `## Decisions` entry on this task: T-2158 cycle reference + L5/L6 milestone reference, each as a one-line citation.
-- [ ] BVP estimator (`agents/termlink/bvp-estimator/estimator.py`) has a `score_f_autonomy` scorer registered in the dispatch map, or a documented decision to defer that to a sibling task.
-- [ ] No regression on the v3 smoke: `fw bvp` rc=0, `fw bvp --include-proposed` rc=0, `fw bvp T-2158` rc=0. Verification: `out=$(bin/fw bvp 2>&1); echo $?` == 0 (and similar for the other two calls).
+- [x] BVP estimator (`agents/termlink/bvp-estimator/estimator.py`) has a `score_f_autonomy` scorer registered in the dispatch map, or a documented decision to defer that to a sibling task. **Pre-flight evidence:** T-2329 (commit `9d5377baa`) defines `score_f_autonomy` at `agents/termlink/bvp-estimator/estimator.py:889` and registers it in the dispatch `handlers` dict at line 1086. Handler is shipped DORMANT — `_load_drivers()` won't yield `F-AUTONOMY` while the policy carve is commented, so `estimate_task()` won't dispatch here (see comment at estimator.py:894-896). 89 PASS (+14 new tests) per T-2329 commit message. AC's affirmative branch satisfied; documented-deferral branch not needed.
+- [x] No regression on the v3 smoke: `fw bvp` rc=0, `fw bvp --include-proposed` rc=0, `fw bvp T-2158` rc=0. Verification: `out=$(bin/fw bvp 2>&1); echo $?` == 0 (and similar for the other two calls). **Pre-flight evidence (2026-06-12):** All three smoke commands returned rc=0 with V_* trio active in policy and F-AUTONOMY still carved (pre-activation baseline). `fw bvp` returns "No tasks have bvp_scores: set yet" (expected — no Sovereign confirms yet); `fw bvp --include-proposed` renders HV-LC rank with V_*-aware scores; `fw bvp T-2158` returns per-driver detail. Smoke confirms V_* trio addition (T-2306) did not regress the BVP CLI. Activation-time re-run remains required (the carve uncomment changes `_load_drivers()` output by one driver) — this pre-flight establishes the baseline.
 - [ ] Single-driver removal smoke: `bin/fw bvp confirm T-2158 --F-AUTONOMY 3 --i-am-human` updates the task frontmatter (`bvp_scores.F-AUTONOMY: 3`). Reverts cleanly via subsequent `--F-AUTONOMY ""` or unset path (verifies the activation didn't break the confirm flow).
 
 ### Human
@@ -218,6 +218,11 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
 
 ## Decisions
 
+### 2026-06-12 — Pre-flight strategy (partial closure under captured ACs)
+- **Chose:** Tick AC#5 + AC#6 now with cited pre-flight evidence; leave AC#1-4 + AC#7 for the operator-gated activation pass.
+- **Why:** AC#5 became mechanically satisfiable when T-2329 (`9d5377baa`) shipped `score_f_autonomy` in `handlers[]`. AC#6 is a baseline smoke that can re-run at activation. Surfacing the pre-flight separates the "tooling-ready" half (agent-doable) from the "activation-decision" half (Sovereign + T-2158 precondition), so the operator pass has half the work pre-staged.
+- **Rejected:** Wait for full activation. Reason: leaves AC#5 + AC#6 in a "tickable but unticked" state for an unbounded time. Pre-flight reduces that window without forcing any Sovereign decision.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -246,3 +251,7 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
 
 ### 2026-06-08T15:58:46Z — status-update [task-update-agent]
 - **Change:** horizon: later → next
+
+### 2026-06-11T23:03:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
