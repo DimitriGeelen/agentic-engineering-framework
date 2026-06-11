@@ -128,12 +128,12 @@ Existing pattern: `budget-gate.sh` already parses JSONL for context budget track
 
 # lib/costs.sh exists
 test -f lib/costs.sh
-# fw costs runs without error
-bin/fw costs >/dev/null
-# fw costs session runs without error
-bin/fw costs session >/dev/null
-# fw costs help runs without error
-bin/fw costs help >/dev/null
+# fw costs renders summary with per-session breakdown (content-asserted, not exit-only)
+out=$(bin/fw costs 2>&1); echo "$out" | grep -qE "session|turn|token"
+# fw costs session lists per-session rows (content-asserted)
+out=$(bin/fw costs session 2>&1); echo "$out" | grep -qiE "session|turns|total"
+# fw costs help emits usage block (content-asserted)
+out=$(bin/fw costs help 2>&1); echo "$out" | grep -qiE "usage|token usage|costs"
 # Component card registered
 test -f .fabric/components/lib-costs.yaml
 
@@ -183,3 +183,12 @@ test -f .fabric/components/lib-costs.yaml
 ### 2026-04-28T11:33:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b4d2db1c
+- **Timestamp:** 2026-06-11T20:40:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
