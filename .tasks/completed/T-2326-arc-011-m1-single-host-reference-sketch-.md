@@ -6,10 +6,10 @@ description: >
   arc-011 M1 single-host reference sketch — companion design artifact to T-2325 §3
   (6 workstreams concretized for operator grill, not implementation)
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-parallel-execution-aef, agent-prep, design-sketch, no-source-change]
 components: []
 related_tasks: [T-2303, T-2323, T-2324, T-2325]
@@ -21,8 +21,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T06:58:46Z
-last_update: '2026-06-11T07:00:04Z'
-date_finished:
+last_update: 2026-06-11T07:04:00Z
+date_finished: 2026-06-11T07:04:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -292,3 +292,18 @@ preserve the operator's authority to make the milestone-split decision.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2326-arc-011-m1-single-host-reference-sketch-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c8585f10
+- **Timestamp:** 2026-06-11T07:04:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - AC-verify-mismatch @ AC#5 (Agent)
+
+### 2026-06-11T07:04:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

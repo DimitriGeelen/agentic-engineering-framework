@@ -15122,3 +15122,75 @@ scan_id: R-90e27a05
 task_id: T-2325
 payload:
   task_file: .tasks/active/T-2325-arc-011-grillme-primarytarget-response-a.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T07:03:37Z'
+scan_id: R-ee8637d9
+task_id: T-2326
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T07:03:37Z'
+scan_id: R-ee8637d9
+task_id: T-2326
+payload:
+  task_file: .tasks/active/T-2326-arc-011-m1-single-host-reference-sketch-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T07:03:54Z'
+scan_id: R-ef86e374
+task_id: T-2326
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T07:03:54Z'
+scan_id: R-ef86e374
+task_id: T-2326
+payload:
+  task_file: .tasks/active/T-2326-arc-011-m1-single-host-reference-sketch-.md
+---
+kind: override_applied
+timestamp: '2026-06-11T07:03:54Z'
+scan_id: R-ef86e374
+task_id: T-2326
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-11T07:04:00Z'
+scan_id: R-c8585f10
+task_id: T-2326
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T07:04:00Z'
+scan_id: R-c8585f10
+task_id: T-2326
+payload:
+  task_file: .tasks/active/T-2326-arc-011-m1-single-host-reference-sketch-.md
+---
+kind: override_applied
+timestamp: '2026-06-11T07:04:00Z'
+scan_id: R-c8585f10
+task_id: T-2326
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  ac_subhead: Agent

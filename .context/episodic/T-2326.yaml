@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2326: arc-011 M1 single-host reference sketch — companion design artifact to T-2325
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T07:04:06Z
+# ============================================================================
+
+task_id: T-2326
+task_name: "arc-011 M1 single-host reference sketch — companion design artifact to T-2325"
+workflow_type: design
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T06:58:46Z
+completed: 2026-06-11T07:04:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-11T09:03:31+02:00
+last_commit: 2026-06-11T09:03:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011 M1 single-host reference sketch (companion to T-2325 §3)
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/arc-011-m1-single-host-sketch.md exists with non-empty body'
+  - 'Artifact contains 6 numbered workstream sections matching T-2325 §3 (orchestrator-graph, harness yield-point, disjoint-write-set policy validator, single-host parallel demo, /orchestrator/parallel view, disjointness gate pre-flight)'
+  - 'Each workstream section names ≥1 specific file path under `agents/`, `bin/`, `lib/`, `web/`, or `tests/` (23 path references total)'
+  - 'Each workstream section gives a Q-sized estimate (S/M/L/XL) and a one-line cost rationale (6 Size lines)'
+  - 'Each workstream section names ≥1 exit criterion that connects to headline_mechanic firing (32 exit/dispatches.jsonl references)'
+  - 'Artifact has an explicit "What this is NOT" closing block declaring no pre-emption of operator milestone-split decision'
+  - 'Artifact cross-references T-2325 §3 by section number for traceability (10 cross-references)'
+  - 'No new build tasks filed under this task (anti-pre-emption — sequencing table is a recommendation block, not pre-emptive filing)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/arc-011-m1-single-host-sketch.md'
+  - '.tasks/active/T-2326-arc-011-m1-single-host-reference-sketch-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-11T09:03:31"
+    action: "T-2326: arc-011 M1 single-host reference sketch (companion to T-2325 §3)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-parallel-execution-aef, agent-prep, design-sketch, no-source-change]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 2
+  lines_added: 679
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2326-arc-011-m1-single-host-reference-sketch-.md
+generated_by: context-agent-hybrid

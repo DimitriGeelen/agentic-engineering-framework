@@ -842,3 +842,15 @@ overrides:
   expires_at: '2026-09-09T06:44:48Z'
   added_by: root
   added_at: '2026-06-11T06:44:48Z'
+- id: OV-8658fdf8
+  task_id: T-2326
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  reason: "Heuristic FP \u2014 parser parsed 'exit/dispatches.jsonl' from AC #5 parenthetical\
+    \ metadata as a file path needing file-exists verification. The AC is satisfied\
+    \ by substring grep predicates in the Verification block (Exit|headline_mechanic|dispatches.jsonl)\
+    \ which match 32 times in the artifact. No file at 'exit/dispatches.jsonl' is\
+    \ referenced; the slash is incidental punctuation."
+  expires_at: '2026-09-09T07:03:50Z'
+  added_by: root
+  added_at: '2026-06-11T07:03:50Z'
