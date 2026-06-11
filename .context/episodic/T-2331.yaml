@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2331: T-2330 S1 — fw bvp driver --propose verb + .context/bvp-driver-proposals.jsonl
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T14:31:02Z
+# ============================================================================
+
+task_id: T-2331
+task_name: "T-2330 S1 — fw bvp driver --propose verb + .context/bvp-driver-proposals.jsonl"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T14:26:14Z
+completed: 2026-06-11T14:30:50Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/bvp.sh:_driver_propose(args)` implemented — non-Sovereign (no `acd_gate` call), writes JSONL row to `.context/bvp-driver-proposals.jsonl`, returns 0 on success / 2 on bad args'
+  - 'Each JSONL row contains: `id` (P-NNNN unique), `ts` (ISO8601 UTC), `name`, `weight` (0-9), `rationale` (≥30 chars enforced), `drop` (optional), `author` (env: USER + CLAUDECODE session-id or "human"), `task` (optional task-id reference), `state: pending`'
+  - '`cmd_driver()` routes `--propose` to `_driver_propose` before the Sovereign-gated `--add`/`--remove` branches'
+  - '`fw bvp driver` invocation with no args prints usage line including the new `--propose` shape'
+  - 'bats test `tests/unit/t2331_driver_propose.bats` covers: (1) propose appends row + cat shows valid JSON; (2) propose under `CLAUDECODE=1` succeeds without `--i-am-human` (non-Sovereign); (3) two sequential proposes for same driver-id append 2 rows (race-free fixture); (4) rationale <30 chars rejected with exit 2; (5) bad `--weight` rejected with exit 2 — **9/9 PASS**'
+  - 'No regression on sibling `tests/unit/t2230_bvp_driver_init.bats` (run + report PASS) — **15/15 PASS**'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-11 — Storage shape (IW-1)'
+    chose: '`.context/bvp-driver-proposals.jsonl` (append-only JSONL in working-state dir)'
+    rationale: 'Proposals are working state, not policy. Mirrors `.context/bvp-weight-history.yaml` (audit log), `.context/dispatches.jsonl` (queue), `.context/inbox.yaml` (proposal-style data). JSONL append-only eliminates the race semantics IW-3 was scoped for — no file lock, no merge logic.'
+    alternatives_rejected: ['In-place `bvp_drivers_proposed:` list inside `policy/value-drivers.yaml` (muddies policy audit story — policy file should change only on Approve); sidecar `policy/value-drivers.proposed.yaml` (still mixes policy/working concerns by location)']
+  - decision: '2026-06-11 — Race semantics (IW-3, dissolved)'
+    chose: 'Append-only JSONL — two agents proposing same driver-id produce 2 rows, both surface in queue, operator picks one to Approve. No merge logic needed.'
+    rationale: 'The JSONL storage choice (IW-1) makes race a non-issue. Originally feared file-lock / merge-on-conflict territory; the append-only primitive dissolves the question.'
+    alternatives_rejected: ['File lock + in-place YAML mutation (complex, lock-leak risk); reject-conflicting (loses signal from second proposer)']
+  - decision: 'Human'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2331-t-2330-s1--fw-bvp-driver---propose-verb-.md
+generated_by: context-agent-hybrid
