@@ -894,3 +894,23 @@ overrides:
   expires_at: '2026-09-09T18:44:25Z'
   added_by: root
   added_at: '2026-06-11T18:44:25Z'
+- id: OV-d1fb047e
+  task_id: T-2342
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "AC#1 describes what the .py FILE is extended with (a handler), not what\
+    \ the AC verifies \u2014 path appears as the implementation target, not the verification\
+    \ target. Narrow path-grep FP. Sibling to T-2341 OV-60e71634."
+  expires_at: '2026-09-09T18:57:14Z'
+  added_by: root
+  added_at: '2026-06-11T18:57:14Z'
+- id: OV-c358d6bd
+  task_id: T-2342
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  reason: "AC#2 describes what the .html template renders, not what the AC verifies\
+    \ \u2014 path appears as the implementation target, not the verification target.\
+    \ Narrow path-grep FP. Sibling class."
+  expires_at: '2026-09-09T18:57:14Z'
+  added_by: root
+  added_at: '2026-06-11T18:57:14Z'
