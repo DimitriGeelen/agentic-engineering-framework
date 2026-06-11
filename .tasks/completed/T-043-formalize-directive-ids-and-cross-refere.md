@@ -2,7 +2,10 @@
 id: T-043
 name: Formalize directive IDs and cross-references
 description: >
-  Create directives.yaml with formal D1-D4 IDs and last_reviewed dates. Add IDs (AD-001 through AD-012) to architectural decisions in 005-DesignDirectives.md. Add directives_served field to all entries in decisions.yaml. Design authority: 025-ArtifactDiscovery.md. Relevant sections: Q3 decision stores, Missing Cross-References, Directive IDs.
+  Create directives.yaml with formal D1-D4 IDs and last_reviewed dates. Add IDs (AD-001
+  through AD-012) to architectural decisions in 005-DesignDirectives.md. Add directives_served
+  field to all entries in decisions.yaml. Design authority: 025-ArtifactDiscovery.md.
+  Relevant sections: Q3 decision stores, Missing Cross-References, Directive IDs.
 status: work-completed
 workflow_type: build
 owner: claude-code
@@ -12,8 +15,25 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T11:33:46Z
-last_update: 2026-02-14T12:27:34Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-14T12:27:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-043: Formalize directive IDs and cross-references

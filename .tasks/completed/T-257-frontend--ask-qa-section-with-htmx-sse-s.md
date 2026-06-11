@@ -2,18 +2,39 @@
 id: T-257
 name: "Frontend — Ask Q&A section with htmx SSE streaming"
 description: >
-  Add Ask Q&A section to web/templates/search.html: textarea input, Ask button, answer div with streaming token display, collapsible Sources panel with inline [1][2] citations. Uses htmx 2.0+ SSE extension (hx-ext=sse, sse-connect). Reuses T-253 URL mapping for source links. ~80 lines template + check/upgrade htmx version. See docs/reports/T-254-llm-assisted-qa-research.md RQ-3. Predecessor: T-256.
+  Add Ask Q&A section to web/templates/search.html: textarea input, Ask button, answer
+  div with streaming token display, collapsible Sources panel with inline [1][2] citations.
+  Uses htmx 2.0+ SSE extension (hx-ext=sse, sse-connect). Reuses T-253 URL mapping
+  for source links. ~80 lines template + check/upgrade htmx version. See docs/reports/T-254-llm-assisted-qa-research.md
+  RQ-3. Predecessor: T-256.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-254]
 created: 2026-02-23T20:38:34Z
-last_update: 2026-02-23T21:26:45Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-23T21:01:32Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-257: Frontend — Ask Q&A section with htmx SSE streaming

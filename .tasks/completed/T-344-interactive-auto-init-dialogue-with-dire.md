@@ -9,13 +9,30 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [cli, ux, onboarding]
 components: [bin/fw]
 related_tasks: [T-343, T-294, T-304]
 created: 2026-03-08T11:20:14Z
-last_update: 2026-03-08T20:31:51Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-08T12:30:00Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 2
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=2 (body:default-change); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-344: Interactive auto-init dialogue with directory and provider selection

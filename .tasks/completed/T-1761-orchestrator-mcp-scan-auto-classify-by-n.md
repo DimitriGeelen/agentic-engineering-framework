@@ -9,13 +9,13 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: ["drift-defense", "deferred"]
 components: ["agents/audit/orchestrator-mcp-scan.sh"]
 related_tasks: ["T-1755", "T-1760", "T-1646"]
 arc_id: orchestrator-rethink
 created: 2026-05-06T06:08:25Z
-last_update: 2026-06-01T08:20:30Z
+last_update: '2026-06-11T22:23:58Z'
 date_finished: 2026-06-01T08:20:30Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -71,6 +71,22 @@ bvp_scores_proposed:
       D4: 3
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=3 (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

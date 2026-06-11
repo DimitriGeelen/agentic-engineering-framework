@@ -2,18 +2,43 @@
 id: T-1632
 name: "B-3c (T-1626): Watchtower /hooks page — per-hook fire/fail rates"
 description: >
-  New Watchtower blueprint /hooks reads .hook-counter + .hook-failure-counter (T-1628 telemetry) and displays per-hook table: fires, failures, ratio. Pinned by Playwright DOM-content assertion (T-1575 visual verification rule).
+  New Watchtower blueprint /hooks reads .hook-counter + .hook-failure-counter (T-1628
+  telemetry) and displays per-hook table: fires, failures, ratio. Pinned by Playwright
+  DOM-content assertion (T-1575 visual verification rule).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [from-T-1626, B-3c, watchtower, ui]
-components: [agents/context/post-compact-resume.sh, bin/fw, lib/doctor-hook-exercise.py, tests/playwright/test_hooks_page.py, tests/unit/doctor_hook_exercise.bats, tests/unit/session_start_hook_warning.bats, web/blueprints/hooks.py, web/blueprints/__init__.py, web/shared.py, web/templates/hooks.html]
+components: [agents/context/post-compact-resume.sh, bin/fw, 
+      lib/doctor-hook-exercise.py, tests/playwright/test_hooks_page.py, 
+      tests/unit/doctor_hook_exercise.bats, 
+      tests/unit/session_start_hook_warning.bats, web/blueprints/hooks.py, 
+      web/blueprints/__init__.py, web/shared.py, web/templates/hooks.html]
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:38Z
-last_update: 2026-05-02T05:06:07Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T09:57:39Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1632: B-3c (T-1626): Watchtower /hooks page — per-hook fire/fail rates

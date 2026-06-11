@@ -2,21 +2,42 @@
 id: T-1877
 name: "lib/arc.sh _arc_next_numeric_id octal-parse latent bug fix (T-NEW-13)"
 description: >
-  _arc_next_numeric_id stores max as a leading-zero string (e.g. '008') after the POSIX test comparison; the trailing $((max+1)) arithmetic expansion then octal-errors on arc-008/009. Caught in T-1851 Evolution as cheap latent-bug fix. Currently at arc-005 — 3 creations from blowing up. Force base-10 with 10# prefix.
+  _arc_next_numeric_id stores max as a leading-zero string (e.g. '008') after the
+  POSIX test comparison; the trailing $((max+1)) arithmetic expansion then octal-errors
+  on arc-008/009. Caught in T-1851 Evolution as cheap latent-bug fix. Currently at
+  arc-005 — 3 creations from blowing up. Force base-10 with 10# prefix.
 
 status: work-completed
 workflow_type: build
 owner: claude
-horizon: null
+horizon:
 tags: [arc, arc-grooming, lib-arc, bug, T-NEW-13]
 components: [lib/arc.sh, tests/unit/arc_next_numeric_id_octal.bats]
 related_tasks: [T-1687, T-1848, T-1851]
 arc_id: arc-grooming
 created: 2026-05-17T07:01:10Z
-last_update: 2026-05-17T07:05:28Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-17T07:05:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1877: lib/arc.sh _arc_next_numeric_id octal-parse latent bug fix (T-NEW-13)

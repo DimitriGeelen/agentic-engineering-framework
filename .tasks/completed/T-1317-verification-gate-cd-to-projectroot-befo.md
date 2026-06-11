@@ -2,18 +2,38 @@
 id: T-1317
 name: "Verification gate cd to PROJECT_ROOT before eval (T-1044 fix from email-archive)"
 description: >
-  One-line fix in agents/task-create/update-task.sh:223 — add 'cd "$PROJECT_ROOT" && ' inside the eval subshell so verification commands resolve relative paths against PROJECT_ROOT regardless of caller CWD. Sibling to T-1316 inception. Email-archive proposal at docs/proposals/T-1316-from-email-archive-watchtower-verification-cwd.md.
+  One-line fix in agents/task-create/update-task.sh:223 — add 'cd "$PROJECT_ROOT"
+  && ' inside the eval subshell so verification commands resolve relative paths against
+  PROJECT_ROOT regardless of caller CWD. Sibling to T-1316 inception. Email-archive
+  proposal at docs/proposals/T-1316-from-email-archive-watchtower-verification-cwd.md.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T20:36:11Z
-last_update: 2026-04-18T23:32:04Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-04-18T23:32:04Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1317: Verification gate cd to PROJECT_ROOT before eval (T-1044 fix from email-archive)

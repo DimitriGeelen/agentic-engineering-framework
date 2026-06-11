@@ -2,18 +2,44 @@
 id: T-263
 name: "RAG quick wins — prompt, embeddings, chunking"
 description: >
-  Four stacking improvements to RAG quality: (1) Improve system prompt with anti-hallucination rules, structured citation format, 'I don't know' protocol — 15min, 15-25% fewer hallucinations (RQ-2 §4.2). (2) Upgrade embedding model from all-MiniLM-L6-v2 (384-dim, MTEB 56.3) to nomic-embed-text (768-dim, MTEB 62.4) via Ollama API — 1hr, 10-15% retrieval improvement (RQ-2 §3.2). (3) Add 150-200 char chunk overlap — 30min, 5-10% boundary fix (RQ-2 §2.2A). (4) Add query embedding cache (LRU) — 30min, 50-80% latency reduction (RQ-2 §6.1). Files: web/ask.py (prompt), web/embeddings.py (embed model + chunking + cache). Ref: docs/reports/T-261-rag-quality-techniques.md §1-§6. Predecessor: T-255 (RAG retrieval).
+  Four stacking improvements to RAG quality: (1) Improve system prompt with anti-hallucination
+  rules, structured citation format, 'I don't know' protocol — 15min, 15-25% fewer
+  hallucinations (RQ-2 §4.2). (2) Upgrade embedding model from all-MiniLM-L6-v2 (384-dim,
+  MTEB 56.3) to nomic-embed-text (768-dim, MTEB 62.4) via Ollama API — 1hr, 10-15%
+  retrieval improvement (RQ-2 §3.2). (3) Add 150-200 char chunk overlap — 30min, 5-10%
+  boundary fix (RQ-2 §2.2A). (4) Add query embedding cache (LRU) — 30min, 50-80% latency
+  reduction (RQ-2 §6.1). Files: web/ask.py (prompt), web/embeddings.py (embed model
+  + chunking + cache). Ref: docs/reports/T-261-rag-quality-techniques.md §1-§6. Predecessor:
+  T-255 (RAG retrieval).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [qa, rag, embeddings]
 components: [web/embeddings.py]
 related_tasks: []
 created: 2026-02-24T08:36:46Z
-last_update: 2026-02-25T20:37:12Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T09:20:13Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=1 (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-263: RAG quick wins — prompt, embeddings, chunking

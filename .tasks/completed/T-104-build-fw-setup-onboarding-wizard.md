@@ -2,15 +2,48 @@
 id: T-104
 name: Build fw setup onboarding wizard
 description: >
-  Build a 6-step guided onboarding wizard (fw setup) that wraps fw init with a breadcrumb flow. Design from code-architect agent investigation: Step 1: Project Identity (name, description, owner) -> writes .framework.yaml metadata + CLAUDE.md Project Overview. Step 2: Provider Selection (claude/cursor/generic) -> generates provider config, hooks. Step 3: Tech Stack and Conventions (languages, test framework, code style) -> appends to CLAUDE.md + .framework.yaml. Step 4: Enforcement Level (strict/standard/advisory) -> configures hooks, git hooks. Step 5: First Task (optional) -> creates task + sets focus + context init. Step 6: Verification -> runs fw doctor + prints cheat sheet + creates initial handover. IMPLEMENTATION: Create lib/setup.sh with do_setup() and per-step functions. Add setup route to bin/fw. Each step checks sentinel (idempotent). Non-interactive mode (detect TTY) applies defaults for agent invocation. Partial completion is safe — each step writes to disk before proceeding. fw init remains as fast non-interactive path; fw setup wraps it. ACCEPTANCE: fw setup /tmp/test runs interactive 6-step flow. Re-running skips completed steps. fw doctor passes after setup completes. DEPENDS ON: T-102 (needs comprehensive CLAUDE.md template) + T-103 (needs hardened init). Files: create lib/setup.sh (~350 lines), modify bin/fw (add routing).
+  Build a 6-step guided onboarding wizard (fw setup) that wraps fw init with a breadcrumb
+  flow. Design from code-architect agent investigation: Step 1: Project Identity (name,
+  description, owner) -> writes .framework.yaml metadata + CLAUDE.md Project Overview.
+  Step 2: Provider Selection (claude/cursor/generic) -> generates provider config,
+  hooks. Step 3: Tech Stack and Conventions (languages, test framework, code style)
+  -> appends to CLAUDE.md + .framework.yaml. Step 4: Enforcement Level (strict/standard/advisory)
+  -> configures hooks, git hooks. Step 5: First Task (optional) -> creates task +
+  sets focus + context init. Step 6: Verification -> runs fw doctor + prints cheat
+  sheet + creates initial handover. IMPLEMENTATION: Create lib/setup.sh with do_setup()
+  and per-step functions. Add setup route to bin/fw. Each step checks sentinel (idempotent).
+  Non-interactive mode (detect TTY) applies defaults for agent invocation. Partial
+  completion is safe — each step writes to disk before proceeding. fw init remains
+  as fast non-interactive path; fw setup wraps it. ACCEPTANCE: fw setup /tmp/test
+  runs interactive 6-step flow. Re-running skips completed steps. fw doctor passes
+  after setup completes. DEPENDS ON: T-102 (needs comprehensive CLAUDE.md template)
+  + T-103 (needs hardened init). Files: create lib/setup.sh (~350 lines), modify bin/fw
+  (add routing).
 status: work-completed
 workflow_type: build
 owner: agent
 tags: [fw-setup, wizard, onboarding, external-project]
 related_tasks: []
 created: 2026-02-17T08:53:56Z
-last_update: 2026-02-17T09:44:00Z
-date_finished: null
+last_update: '2026-06-11T22:23:38Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-104: Build fw setup onboarding wizard

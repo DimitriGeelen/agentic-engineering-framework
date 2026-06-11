@@ -2,18 +2,44 @@
 id: T-245
 name: "sqlite-vec embedding layer — semantic search for project knowledge"
 description: >
-  Add sqlite-vec vector database for semantic/associative search across episodic memory (241 files), learnings (58), patterns (14), decisions (30+), and component cards (99). T-235 research found BM25 (Tantivy, T-237) covers 60-70% of queries; embeddings add 30-40% value for 'find similar' and 'what is related' queries. Root cause: terminology fragmentation — 'audit'/'gate'/'enforcement'/'verification' all mean similar things, causing 30-40% miss rate on keyword search. Recommended: sqlite-vec (~22MB model) paired with existing Tantivy for hybrid search. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md §Topic 2. Related: T-237 (Tantivy BM25 — done, live at :3000/search). This is the foundation for project memory read-path (T-245) and episodic search.
+  Add sqlite-vec vector database for semantic/associative search across episodic memory
+  (241 files), learnings (58), patterns (14), decisions (30+), and component cards
+  (99). T-235 research found BM25 (Tantivy, T-237) covers 60-70% of queries; embeddings
+  add 30-40% value for 'find similar' and 'what is related' queries. Root cause: terminology
+  fragmentation — 'audit'/'gate'/'enforcement'/'verification' all mean similar things,
+  causing 30-40% miss rate on keyword search. Recommended: sqlite-vec (~22MB model)
+  paired with existing Tantivy for hybrid search. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md
+  §Topic 2. Related: T-237 (Tantivy BM25 — done, live at :3000/search). This is the
+  foundation for project memory read-path (T-245) and episodic search.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [search, embeddings, knowledge]
 components: [bin/fw, C-003, web/embeddings.py, web/templates/search.html]
 related_tasks: []
 created: 2026-02-22T09:29:37Z
-last_update: 2026-02-23T21:26:15Z
+last_update: '2026-06-11T22:24:16Z'
 date_finished: 2026-02-22T15:33:04Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-245: sqlite-vec embedding layer — semantic search for project knowledge

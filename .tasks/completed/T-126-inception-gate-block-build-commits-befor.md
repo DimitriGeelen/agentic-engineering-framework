@@ -2,16 +2,34 @@
 id: T-126
 name: "Inception gate: block build commits before fw inception decide"
 description: >
-  Addresses O-003, O-005. MOST CRITICAL. Structural gate in commit-msg hook for inception tasks.
+  Addresses O-003, O-005. MOST CRITICAL. Structural gate in commit-msg hook for inception
+  tasks.
 status: work-completed
 workflow_type: build
-horizon: null
+horizon:
 owner: agent
 tags: []
 related_tasks: []
 created: 2026-02-17T20:02:52Z
-last_update: 2026-02-17T20:25:03Z
+last_update: '2026-06-11T22:23:43Z'
 date_finished: 2026-02-17T20:25:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-126: Inception gate: block build commits before fw inception decide

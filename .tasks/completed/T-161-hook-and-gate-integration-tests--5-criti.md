@@ -2,17 +2,37 @@
 id: T-161
 name: "Hook and gate integration tests — 5 critical enforcement scripts"
 description: >
-  Write integration tests for: budget-gate.sh, check-active-task.sh, check-tier0.sh (extend existing), checkpoint.sh, error-watchdog.sh. Requires mock JSONL transcripts, mock git repos, mock focus.yaml. These are critical path — 0% coverage currently. Ref: T-158, /tmp/T-158-hooks-and-bugs.md
+  Write integration tests for: budget-gate.sh, check-active-task.sh, check-tier0.sh
+  (extend existing), checkpoint.sh, error-watchdog.sh. Requires mock JSONL transcripts,
+  mock git repos, mock focus.yaml. These are critical path — 0% coverage currently.
+  Ref: T-158, /tmp/T-158-hooks-and-bugs.md
 
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-18T13:30:45Z
-last_update: 2026-02-18T15:24:36Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-02-18T15:24:36Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-161: Hook and gate integration tests — 5 critical enforcement scripts

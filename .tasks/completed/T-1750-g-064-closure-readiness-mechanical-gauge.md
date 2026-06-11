@@ -1,20 +1,46 @@
 ---
 id: T-1750
-name: "G-064 closure-readiness mechanical gauge — substrate-aware check + concerns text refresh"
+name: "G-064 closure-readiness mechanical gauge — substrate-aware check + concerns
+  text refresh"
 description: >
-  G-064's status_notes name route_cache.json as the closure precondition artefact — that file doesn't exist on disk; the substrate is .context/dispatches.jsonl. T-1727 cron fires 5:33 UTC daily; we need a mechanical helper that reads dispatches.jsonl, distinguishes natural cron firings (around 5:33 UTC) from the manual T-1727 backfill (16:26 UTC), and reports readiness for closure on 2026-05-08. Bundles two deliverables: (1) tools/g064-readiness.py mechanical check + (2) refresh G-064 status_notes/recommendation to point at dispatches.jsonl. Direct orchestrator-arc work — makes the 2026-05-08 review a paste-and-decide instead of YAML grep.
+  G-064's status_notes name route_cache.json as the closure precondition artefact
+  — that file doesn't exist on disk; the substrate is .context/dispatches.jsonl. T-1727
+  cron fires 5:33 UTC daily; we need a mechanical helper that reads dispatches.jsonl,
+  distinguishes natural cron firings (around 5:33 UTC) from the manual T-1727 backfill
+  (16:26 UTC), and reports readiness for closure on 2026-05-08. Bundles two deliverables:
+  (1) tools/g064-readiness.py mechanical check + (2) refresh G-064 status_notes/recommendation
+  to point at dispatches.jsonl. Direct orchestrator-arc work — makes the 2026-05-08
+  review a paste-and-decide instead of YAML grep.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [governance, observability]
 components: [tests/unit/test_g064_readiness.py, tools/g064-readiness.py]
 related_tasks: [T-1687, T-1727, T-1749, T-1688]
 arc_id: orchestrator-rethink
 created: 2026-05-05T19:15:25Z
-last_update: 2026-05-05T19:21:01Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T19:21:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1750: G-064 closure-readiness mechanical gauge — substrate-aware check + concerns text refresh

@@ -1,19 +1,42 @@
 ---
 id: T-229
-name: "Fix HIGH severity enforcement bypasses — B-001 (--no-verify) and B-005 (hook config)"
+name: "Fix HIGH severity enforcement bypasses — B-001 (--no-verify) and B-005 (hook
+  config)"
 description: >
-  Implement fixes for the two HIGH severity bypass vectors from T-228 analysis: (1) B-001: Detect --no-verify in check-tier0.sh as a Tier 0 destructive pattern. Also expand keyword pre-filter. (2) B-005: Detect Write/Edit to .claude/settings.json in check-tier0.sh or check-active-task.sh — require Tier 0 approval. Also add B-003 Tier 0 pattern gaps (find -delete, dd, chmod 000, mkfs, pkill).
+  Implement fixes for the two HIGH severity bypass vectors from T-228 analysis: (1)
+  B-001: Detect --no-verify in check-tier0.sh as a Tier 0 destructive pattern. Also
+  expand keyword pre-filter. (2) B-005: Detect Write/Edit to .claude/settings.json
+  in check-tier0.sh or check-active-task.sh — require Tier 0 approval. Also add B-003
+  Tier 0 pattern gaps (find -delete, dd, chmod 000, mkfs, pkill).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/context/check-active-task.sh, agents/context/check-tier0.sh]
 related_tasks: [T-228]
 created: 2026-02-21T14:19:45Z
-last_update: 2026-02-21T14:23:23Z
+last_update: '2026-06-11T22:24:14Z'
 date_finished: 2026-02-21T14:23:23Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-229: Fix HIGH severity enforcement bypasses — B-001 (--no-verify) and B-005 (hook config)

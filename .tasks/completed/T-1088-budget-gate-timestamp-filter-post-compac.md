@@ -2,18 +2,41 @@
 id: T-1088
 name: "Budget gate timestamp-filter post-compact JSONL read (real T-1087 fix)"
 description: >
-  Option 1 from T-1087 RCA: budget-gate.sh and checkpoint.sh both read last usage entry across the whole JSONL, which after /compact can include pre-compact entries because claude -c continues the same JSONL. Real fix: filter JSONL entries by timestamp during the Python scan, taking only entries with timestamp > SESSION_START_TS. post-compact-resume.sh should write .session-start-ts; budget-gate and checkpoint should read it. Includes JSONL schema verification and unit tests for the post-compact window.
+  Option 1 from T-1087 RCA: budget-gate.sh and checkpoint.sh both read last usage
+  entry across the whole JSONL, which after /compact can include pre-compact entries
+  because claude -c continues the same JSONL. Real fix: filter JSONL entries by timestamp
+  during the Python scan, taking only entries with timestamp > SESSION_START_TS. post-compact-resume.sh
+  should write .session-start-ts; budget-gate and checkpoint should read it. Includes
+  JSONL schema verification and unit tests for the post-compact window.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T10:31:55Z
-last_update: 2026-04-11T10:43:57Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-11T10:43:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1088: Budget gate timestamp-filter post-compact JSONL read (real T-1087 fix)

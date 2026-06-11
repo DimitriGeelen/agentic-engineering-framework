@@ -8,7 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
@@ -17,7 +17,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T05:54:39Z
-last_update: 2026-06-08T06:20:56Z
+last_update: '2026-06-11T22:24:12Z'
 date_finished: 2026-06-08T06:20:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,6 +52,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
       (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
       F-ORCH=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 

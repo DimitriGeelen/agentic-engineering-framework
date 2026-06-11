@@ -1,21 +1,45 @@
 ---
 id: T-1829
-name: "VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 class"
+name: "VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828
+  class"
 description: >
-  Level-C fix for the class T-1828 surfaced. Current VERSION stamping in agents/git/lib/hooks.sh uses `git describe --tags --match 'v[0-9]*'` and stamps `<major>.<minor>.<commits-since-tag>`. The commits-since-tag counter resets to 0 at each new v<M>.<m>.<p> tag, causing local VERSION to numerically drop below remote VERSION at the next push. T-1603 pre-push hook then blocks as monotonicity violation even when commit time is strictly newer. Need a stamping algorithm OR a hook upgrade that handles cross-tag-monotonicity correctly.
+  Level-C fix for the class T-1828 surfaced. Current VERSION stamping in agents/git/lib/hooks.sh
+  uses `git describe --tags --match 'v[0-9]*'` and stamps `<major>.<minor>.<commits-since-tag>`.
+  The commits-since-tag counter resets to 0 at each new v<M>.<m>.<p> tag, causing
+  local VERSION to numerically drop below remote VERSION at the next push. T-1603
+  pre-push hook then blocks as monotonicity violation even when commit time is strictly
+  newer. Need a stamping algorithm OR a hook upgrade that handles cross-tag-monotonicity
+  correctly.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [version-monotonicity, mirror-sync, fw-upgrade-incident-2026-05-14]
 components: [agents-git-lib-hooks, lib-mirror, VERSION]
 related_tasks: [T-1602, T-1603, T-1828]
 created: 2026-05-14T18:24:14Z
-last_update: 2026-05-14T20:29:30Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T20:29:30Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1829: VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 class

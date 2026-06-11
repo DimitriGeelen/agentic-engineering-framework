@@ -2,18 +2,39 @@
 id: T-459
 name: "Refactor init.sh to thin bootstrap — remove dynamic task creation"
 description: >
-  Keep bootstrap steps in init.sh: create dirs, copy templates, create .framework.yaml, copy curated seeds, generate provider config, context init. Remove: dynamic create-task.sh calls, git hook install, PATH setup, post-init validation. These become onboarding task templates (separate task). Init just copies template tasks from lib/seeds/tasks/ into .tasks/active/ with __PROJECT_NAME__ and __DATE__ substitution.
+  Keep bootstrap steps in init.sh: create dirs, copy templates, create .framework.yaml,
+  copy curated seeds, generate provider config, context init. Remove: dynamic create-task.sh
+  calls, git hook install, PATH setup, post-init validation. These become onboarding
+  task templates (separate task). Init just copies template tasks from lib/seeds/tasks/
+  into .tasks/active/ with __PROJECT_NAME__ and __DATE__ substitution.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [init, refactor, architecture]
 components: []
 related_tasks: []
 created: 2026-03-12T17:00:48Z
-last_update: 2026-03-13T10:00:07Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-13T10:00:07Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-459: Refactor init.sh to thin bootstrap — remove dynamic task creation

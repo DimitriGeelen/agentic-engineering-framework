@@ -1,23 +1,42 @@
 ---
 id: T-2126
-name: "fw task review output: URL scrolls off-screen above QR — repeat below for terminal-reliable handoff"
+name: "fw task review output: URL scrolls off-screen above QR — repeat below for terminal-reliable
+  handoff"
 description: >
-  Inception: fw task review output: URL scrolls off-screen above QR — repeat below for terminal-reliable handoff
+  Inception: fw task review output: URL scrolls off-screen above QR — repeat below
+  for terminal-reliable handoff
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [cli-ux, handoff, terminal-rendering]
 components: [lib/review.sh]
 related_tasks: [T-2125, T-2118, T-2122, T-2123, T-679]
 created: 2026-05-30T21:35:35Z
-last_update: 2026-05-30T21:42:43Z
+last_update: '2026-06-11T22:24:08Z'
 date_finished: 2026-05-30T21:42:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2126: fw task review output: URL scrolls off-screen above QR — repeat below for terminal-reliable handoff

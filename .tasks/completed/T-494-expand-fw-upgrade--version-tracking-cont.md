@@ -2,18 +2,37 @@
 id: T-494
 name: "Expand fw upgrade — version tracking, context dir sync, E2E test"
 description: >
-  Expand fw upgrade to: (1) record framework VERSION in .framework.yaml on upgrade, (2) create new .context/ subdirs if missing, (3) add E2E upgrade test to fw self-test. From T-434 inception GO (Option A).
+  Expand fw upgrade to: (1) record framework VERSION in .framework.yaml on upgrade,
+  (2) create new .context/ subdirs if missing, (3) add E2E upgrade test to fw self-test.
+  From T-434 inception GO (Option A).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [upgrade, testing]
 components: [bin/fw, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-14T20:05:30Z
-last_update: 2026-03-23T11:04:30Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-14T20:14:58Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-494: Expand fw upgrade — version tracking, context dir sync, E2E test

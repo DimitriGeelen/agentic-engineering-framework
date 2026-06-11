@@ -2,18 +2,39 @@
 id: T-271
 name: "Fix budget-gate stale critical status trap"
 description: >
-  Budget-gate.sh line 104 has a stale-critical trap: when .budget-status says critical, the fast path ALWAYS intercepts regardless of age, so the slow path (which re-reads the actual transcript) never runs. After compaction or new session, the old critical status persists forever. Fix: when status is stale AND critical, force slow path re-read instead of blindly blocking.
+  Budget-gate.sh line 104 has a stale-critical trap: when .budget-status says critical,
+  the fast path ALWAYS intercepts regardless of age, so the slow path (which re-reads
+  the actual transcript) never runs. After compaction or new session, the old critical
+  status persists forever. Fix: when status is stale AND critical, force slow path
+  re-read instead of blindly blocking.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [bugfix, budget, enforcement]
 components: [C-007]
 related_tasks: [T-138, T-139, T-228]
 created: 2026-02-25T06:34:08Z
-last_update: 2026-02-25T20:36:17Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-25T20:36:17Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-271: Fix budget-gate stale critical status trap

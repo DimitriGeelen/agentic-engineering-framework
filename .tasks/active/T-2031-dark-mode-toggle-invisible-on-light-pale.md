@@ -20,7 +20,7 @@ components: [tests/playwright/test_settings_nav_link.py,
       tests/unit/test_theme_toggle_contrast.py, web/templates/base.html]
 related_tasks: [T-1987, T-2003, T-1991]
 created: 2026-05-24T14:40:20Z
-last_update: '2026-05-28T22:54:11Z'
+last_update: '2026-06-11T22:23:30Z'
 date_finished: 2026-05-26T06:51:03Z
 cost_estimate_proposed:
   - ts: '2026-05-24T14:45:02Z'
@@ -54,6 +54,22 @@ bvp_scores_proposed:
       F2: 1
     rationale: "D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 (no-signal);
       D4=0 (no-signal); F1=0 (no-signal); F2=1 (body/tag hits for 'F2': 1)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

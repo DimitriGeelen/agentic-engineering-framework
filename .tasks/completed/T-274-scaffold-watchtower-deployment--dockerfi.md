@@ -2,18 +2,39 @@
 id: T-274
 name: "Scaffold Watchtower deployment — Dockerfile, compose, Traefik routes"
 description: >
-  Generate deployment files for Watchtower using swarm pattern. Customize Dockerfile for Flask+deps, configure docker-compose with health checks, create Traefik routes for watchtower.docker.ring20.geelenandcompany.com. Wire OLLAMA_HOST to GPU host. Depends on T-273 (needs /health endpoint). See docs/reports/T-272-deploy-watchtower-ring20.md.
+  Generate deployment files for Watchtower using swarm pattern. Customize Dockerfile
+  for Flask+deps, configure docker-compose with health checks, create Traefik routes
+  for watchtower.docker.ring20.geelenandcompany.com. Wire OLLAMA_HOST to GPU host.
+  Depends on T-273 (needs /health endpoint). See docs/reports/T-272-deploy-watchtower-ring20.md.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [deployment, infrastructure, docker, traefik]
-components: [bin/fw, Dockerfile, deploy/docker-compose.swarm.yml, deploy/traefik-routes.yml]
+components: [bin/fw, Dockerfile, deploy/docker-compose.swarm.yml, 
+      deploy/traefik-routes.yml]
 related_tasks: [T-272, T-273, T-277, T-077]
 created: 2026-02-25T08:09:37Z
-last_update: 2026-02-25T20:37:13Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-25T09:24:19Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-274: Scaffold Watchtower deployment — Dockerfile, compose, Traefik routes

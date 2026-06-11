@@ -2,19 +2,45 @@
 id: T-1857
 name: "012-ArcSystem.md + FRAMEWORK.md updates (T-NEW-9)"
 description: >
-  Write 012-ArcSystem.md at repo root mirroring 010-TaskSystem.md structure: Overview, Arc Structure (file format + lifecycle), Arc Fields Reference, Statuses (draft/in-progress/closed/abandoned), fw arc CLI, Relation to Tasks, Relation to Other Concepts (Inception, Horizon, Learnings, Directives, Component Fabric), D-Immutability. Update FRAMEWORK.md: glossary Arc entry, Quick Reference rows for fw arc create/abandon/close/focus/show, Arc System section paralleling Task System. Deps: T-NEW-1.5, T-NEW-2, T-NEW-3, T-NEW-5*, T-NEW-6 (doc describes post-refactor state).
+  Write 012-ArcSystem.md at repo root mirroring 010-TaskSystem.md structure: Overview,
+  Arc Structure (file format + lifecycle), Arc Fields Reference, Statuses (draft/in-progress/closed/abandoned),
+  fw arc CLI, Relation to Tasks, Relation to Other Concepts (Inception, Horizon, Learnings,
+  Directives, Component Fabric), D-Immutability. Update FRAMEWORK.md: glossary Arc
+  entry, Quick Reference rows for fw arc create/abandon/close/focus/show, Arc System
+  section paralleling Task System. Deps: T-NEW-1.5, T-NEW-2, T-NEW-3, T-NEW-5*, T-NEW-6
+  (doc describes post-refactor state).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [build, documentation, canonical, T-NEW-9]
-components: [tests/playwright/test_arcs_lifecycle_tabs.py, web/blueprints/arcs.py, web/templates/arcs_index.html]
+components: [tests/playwright/test_arcs_lifecycle_tabs.py, 
+      web/blueprints/arcs.py, web/templates/arcs_index.html]
 related_tasks: [T-1846, T-1847, T-1653]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:22Z
-last_update: 2026-05-18T09:41:02Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-16T22:34:46Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 5
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=5 
+      (body/components:retrieval-layer); F-ORCH=0 (no-signal); F3=0 (no-signal);
+      F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1857: 012-ArcSystem.md + FRAMEWORK.md updates (T-NEW-9)

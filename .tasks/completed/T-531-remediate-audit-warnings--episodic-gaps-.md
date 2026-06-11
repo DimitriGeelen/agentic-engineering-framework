@@ -1,19 +1,39 @@
 ---
 id: T-531
-name: "Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks"
+name: "Remediate audit warnings — episodic gaps, short descriptions, fabric drift,
+  stale tasks"
 description: >
-  Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks
+  Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale
+  tasks
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T07:54:23Z
-last_update: 2026-03-23T09:47:05Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-03-23T09:47:05Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-531: Remediate audit warnings — episodic gaps, short descriptions, fabric drift, stale tasks

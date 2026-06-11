@@ -2,18 +2,40 @@
 id: T-256
 name: "Ask endpoint — /search/ask with ollama SSE streaming"
 description: >
-  Create /search/ask Flask endpoint: retrieve 10 chunks via rag_retrieve() (T-255), format as numbered Markdown context, call ollama.chat(stream=True) with qwen2.5-coder-32b, yield SSE events (data: {token}). Include system prompt instructing LLM to cite sources as [1][2]. Fallback to dolphin-llama3:8b if primary unavailable. ~100 lines. See docs/reports/T-254-llm-assisted-qa-research.md RQ-1 + RQ-2. Predecessor: T-255.
+  Create /search/ask Flask endpoint: retrieve 10 chunks via rag_retrieve() (T-255),
+  format as numbered Markdown context, call ollama.chat(stream=True) with qwen2.5-coder-32b,
+  yield SSE events (data: {token}). Include system prompt instructing LLM to cite
+  sources as [1][2]. Fallback to dolphin-llama3:8b if primary unavailable. ~100 lines.
+  See docs/reports/T-254-llm-assisted-qa-research.md RQ-1 + RQ-2. Predecessor: T-255.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [C-003]
 related_tasks: [T-254]
 created: 2026-02-23T20:38:18Z
-last_update: 2026-02-23T21:26:45Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-23T20:56:44Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=1 (body/components:prompt-incidental); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-256: Ask endpoint — /search/ask with ollama SSE streaming

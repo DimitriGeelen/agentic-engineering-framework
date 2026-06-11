@@ -7,14 +7,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [cli, observability]
 components: [bin/fw, tests/unit/test_orchestrator_status_terminal_events.py]
 related_tasks: [T-1779, T-1784]
 arc_id: orchestrator-rethink
 created: 2026-05-11T09:50:00Z
-last_update: 2026-05-13T21:09:03Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-13T21:09:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1785: fw orchestrator status --since DURATION: time-window filter (1h, 24h, 7d)

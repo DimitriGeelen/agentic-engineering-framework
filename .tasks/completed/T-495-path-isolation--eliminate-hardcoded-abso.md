@@ -2,20 +2,45 @@
 id: T-495
 name: "Path isolation — eliminate hardcoded absolute paths from all committed files"
 description: >
-  G-021. fw init bakes machine-specific absolute paths into .claude/settings.json (12 hooks), .framework.yaml, and CLAUDE.md. On any clone/move/different machine, ALL enforcement hooks silently fail — task gate, tier 0, budget gate, plan mode block, all of them. fw doctor, fw upgrade, and fw self-test all give false green because they dont validate paths. This is existential: the frameworks entire enforcement layer is a facade on any non-original environment. Spikes: (1) fw hook subcommand for runtime path resolution, (2) .framework.yaml path discovery, (3) fw doctor hook path validation, (4) fw upgrade path repair, (5) cross-machine self-test phase, (6) CLAUDE.md template path elimination.
+  G-021. fw init bakes machine-specific absolute paths into .claude/settings.json
+  (12 hooks), .framework.yaml, and CLAUDE.md. On any clone/move/different machine,
+  ALL enforcement hooks silently fail — task gate, tier 0, budget gate, plan mode
+  block, all of them. fw doctor, fw upgrade, and fw self-test all give false green
+  because they dont validate paths. This is existential: the frameworks entire enforcement
+  layer is a facade on any non-original environment. Spikes: (1) fw hook subcommand
+  for runtime path resolution, (2) .framework.yaml path discovery, (3) fw doctor hook
+  path validation, (4) fw upgrade path repair, (5) cross-machine self-test phase,
+  (6) CLAUDE.md template path elimination.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [portability, enforcement, P0]
 components: []
 related_tasks: []
 created: 2026-03-14T22:25:26Z
-last_update: 2026-03-14T22:35:38Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-14T22:35:38Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-495: Path isolation — eliminate hardcoded absolute paths from all committed files

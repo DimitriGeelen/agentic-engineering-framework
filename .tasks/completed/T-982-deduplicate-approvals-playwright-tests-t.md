@@ -2,18 +2,37 @@
 id: T-982
 name: "Deduplicate approvals Playwright tests (T-981 follow-up)"
 description: >
-  Remove duplicate TestApprovalsPage from test_review.py since test_approvals.py now has comprehensive coverage.
+  Remove duplicate TestApprovalsPage from test_review.py since test_approvals.py now
+  has comprehensive coverage.
 
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [tests/playwright/test_review.py, tests/playwright/test_timeline.py]
 related_tasks: []
 created: 2026-04-06T22:51:35Z
-last_update: 2026-04-06T23:19:54Z
+last_update: '2026-06-11T22:24:34Z'
 date_finished: 2026-04-06T23:19:54Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-982: Deduplicate approvals Playwright tests (T-981 follow-up)

@@ -1,6 +1,7 @@
 ---
 id: T-1472
-name: "Annotation-based ceremonial AC ticking — replace AGENT_PATTERNS regex with marker-driven detection (OBS-019)"
+name: "Annotation-based ceremonial AC ticking — replace AGENT_PATTERNS regex with
+  marker-driven detection (OBS-019)"
 description: |
   Level D fix for OBS-019. Replace AGENT_PATTERNS regex in
   lib/inception.sh:tick_inception_decide_acs with HTML-comment marker
@@ -11,13 +12,30 @@ description: |
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [governance, inception, obs-019, level-d]
 components: [lib/inception.sh, tests/unit/inception_tick_marker.bats]
 related_tasks: [T-1466, T-1455, T-1444]
 created: 2026-04-25T19:36:32Z
-last_update: 2026-04-25T19:40:42Z
+last_update: '2026-06-11T22:23:49Z'
 date_finished: 2026-04-25T19:40:42Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1472: Annotation-based ceremonial AC ticking — replace AGENT_PATTERNS regex with marker-driven detection (OBS-019)

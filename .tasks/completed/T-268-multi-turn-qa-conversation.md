@@ -2,18 +2,42 @@
 id: T-268
 name: "Multi-turn Q&A conversation"
 description: >
-  Add chat history to Q&A. Client-side history array sent via POST body. Switch from EventSource (GET-only) to fetch + ReadableStream for SSE consumption. Modify stream_answer() to accept history parameter (last 6 turns). Context window management: system prompt (~200 tokens) + RAG context (~3000) + 3 exchanges (~2000) = ~5200 tokens. Frontend: conversation thread display, 'New conversation' button, follow-up input. Ref: docs/reports/T-261-arch-improvements.md §1 (full architecture design, code sketches for both Python and JS). Predecessor: T-256 (endpoint), T-257 (frontend). Note: EventSource→fetch is a one-way door — changes SSE client code significantly.
+  Add chat history to Q&A. Client-side history array sent via POST body. Switch from
+  EventSource (GET-only) to fetch + ReadableStream for SSE consumption. Modify stream_answer()
+  to accept history parameter (last 6 turns). Context window management: system prompt
+  (~200 tokens) + RAG context (~3000) + 3 exchanges (~2000) = ~5200 tokens. Frontend:
+  conversation thread display, 'New conversation' button, follow-up input. Ref: docs/reports/T-261-arch-improvements.md
+  §1 (full architecture design, code sketches for both Python and JS). Predecessor:
+  T-256 (endpoint), T-257 (frontend). Note: EventSource→fetch is a one-way door —
+  changes SSE client code significantly.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [qa, frontend, chat]
 components: [C-003, web/templates/search.html]
 related_tasks: [T-256, T-257, T-261]
 created: 2026-02-24T08:37:50Z
-last_update: 2026-02-25T20:37:12Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-25T07:21:39Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-268: Multi-turn Q&A conversation

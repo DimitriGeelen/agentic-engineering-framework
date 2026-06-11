@@ -2,17 +2,37 @@
 id: T-172
 name: "Docs page — discover research docs, commands, and skills"
 description: >
-  Extend T-171 docs discovery to also surface: (1) Research/exploration artifacts — agent investigation outputs, spike results (spikes/), inception findings. (2) Claude Code commands (.claude/commands/*.md). (3) Skills definitions. Consider adding these as new categories alongside Governance/Design/Agents/Project.
+  Extend T-171 docs discovery to also surface: (1) Research/exploration artifacts
+  — agent investigation outputs, spike results (spikes/), inception findings. (2)
+  Claude Code commands (.claude/commands/*.md). (3) Skills definitions. Consider adding
+  these as new categories alongside Governance/Design/Agents/Project.
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-18T18:11:20Z
-last_update: 2026-02-19T00:07:32Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-02-19T00:07:32Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-172: Docs page — discover research docs, commands, and skills

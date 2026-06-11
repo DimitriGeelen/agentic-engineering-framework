@@ -1,19 +1,44 @@
 ---
 id: T-1835
-name: "CLAUDE.md AC-tick discipline rule — tick checkboxes as content is written, not after-the-fact (T-1831 C-4 build)"
+name: "CLAUDE.md AC-tick discipline rule — tick checkboxes as content is written,
+  not after-the-fact (T-1831 C-4 build)"
 description: >
-  T-1831 C-4 build sibling. Codify in CLAUDE.md §Verification Before Completion: agent must tick each Agent AC checkbox as soon as the corresponding content/work is in place, NOT after-the-fact. Origin: S-2026-0514 errors 1-3 — agent wrote AC content (RCA, candidates, recommendation) in task body but did not progressively tick boxes; gate measured [x] markers, not body content, blocked completion + decide with misleading error. Same antifragility class as T-1828: gate measures proxy that diverged from reality. Prevention pattern is documentation hygiene — costs nothing, reframes mental model.
+  T-1831 C-4 build sibling. Codify in CLAUDE.md §Verification Before Completion: agent
+  must tick each Agent AC checkbox as soon as the corresponding content/work is in
+  place, NOT after-the-fact. Origin: S-2026-0514 errors 1-3 — agent wrote AC content
+  (RCA, candidates, recommendation) in task body but did not progressively tick boxes;
+  gate measured [x] markers, not body content, blocked completion + decide with misleading
+  error. Same antifragility class as T-1828: gate measures proxy that diverged from
+  reality. Prevention pattern is documentation hygiene — costs nothing, reframes mental
+  model.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade-incident-2026-05-14, claude-md, governance, ac-discipline]
 components: []
 related_tasks: []
 created: 2026-05-14T20:52:33Z
-last_update: 2026-05-14T20:54:51Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T20:54:51Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1835: CLAUDE.md AC-tick discipline rule — tick checkboxes as content is written, not after-the-fact (T-1831 C-4 build)

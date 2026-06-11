@@ -9,13 +9,14 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [v3-followup-A]
-components: [C-004, agents/termlink/bvp-estimator/estimator.py, tests/unit/test_audit_retire_when.bats, tests/unit/test_bvp_estimator.py]
+components: [C-004, agents/termlink/bvp-estimator/estimator.py, 
+      tests/unit/test_audit_retire_when.bats, tests/unit/test_bvp_estimator.py]
 related_tasks: [T-2157, T-2165, T-2166, T-1922, T-1923, T-1935]
 arc_id: value-prioritisation
 created: 2026-06-01T20:28:50Z
-last_update: 2026-06-09T22:45:48Z
+last_update: '2026-06-11T22:24:10Z'
 date_finished: 2026-06-09T22:45:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -53,6 +54,24 @@ bvp_scores_proposed:
     rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); D4=2
       (body:env-class-handled); F-RECALL=1 (body/tag hits for 'F-RECALL': 1); F-ORCH=1
       (body/tag hits for 'F-ORCH': 1)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 5
+      F-ORCH: 5
+      F3: 1
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=5 
+      (body/components:retrieval-layer); F-ORCH=5 (body:substrate-expand); F3=1 
+      (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-01T20:30:02Z'

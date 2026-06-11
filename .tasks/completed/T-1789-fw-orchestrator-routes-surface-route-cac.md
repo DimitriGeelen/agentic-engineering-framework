@@ -1,20 +1,39 @@
 ---
 id: T-1789
-name: "fw orchestrator routes: surface route-cache learned model preferences (CLI mirror of /orchestrator)"
+name: "fw orchestrator routes: surface route-cache learned model preferences (CLI
+  mirror of /orchestrator)"
 description: >
-  fw orchestrator routes: surface route-cache learned model preferences (CLI mirror of /orchestrator)
+  fw orchestrator routes: surface route-cache learned model preferences (CLI mirror
+  of /orchestrator)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [cli, observability]
 components: []
 related_tasks: [T-1647, T-1669, T-1788]
 arc_id: orchestrator-rethink
 created: 2026-05-11T11:30:00Z
-last_update: 2026-05-11T11:17:29Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-11T11:17:29Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1789: fw orchestrator routes — surface route-cache learned preferences

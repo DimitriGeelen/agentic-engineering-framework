@@ -2,18 +2,39 @@
 id: T-805
 name: "Handover token summary — include session token usage in handover documents"
 description: >
-  Add current session token usage summary to the handover document. When fw handover runs, include: total tokens consumed, turns, cache hit rate, and avg tokens/turn. Uses fw costs current data. Enables tracking token consumption per-session in the handover trail.
+  Add current session token usage summary to the handover document. When fw handover
+  runs, include: total tokens consumed, turns, cache hit rate, and avg tokens/turn.
+  Uses fw costs current data. Enables tracking token consumption per-session in the
+  handover trail.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [tokens, handover, observability]
 components: [agents/handover/handover.sh]
 related_tasks: []
 created: 2026-04-03T19:23:46Z
-last_update: 2026-04-12T07:55:16Z
+last_update: '2026-06-11T22:24:29Z'
 date_finished: 2026-04-12T07:55:16Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-805: Handover token summary — include session token usage in handover documents

@@ -2,18 +2,37 @@
 id: T-400
 name: "Mobile responsiveness: nav collapse, table scroll, form stacking"
 description: >
-  Fix mobile breakpoints below 576px. P1: nav doesn't collapse on mobile. P2: 3-col form layout doesn't stack. P3: tables overflow viewport. Pico CSS handles tablets (768px) but phone (<576px) breaks nav, forms, and tables.
+  Fix mobile breakpoints below 576px. P1: nav doesn't collapse on mobile. P2: 3-col
+  form layout doesn't stack. P3: tables overflow viewport. Pico CSS handles tablets
+  (768px) but phone (<576px) breaks nav, forms, and tables.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [web/templates/base.html]
 related_tasks: []
 created: 2026-03-10T09:44:22Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-10T10:37:37Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-400: Mobile responsiveness: nav collapse, table scroll, form stacking

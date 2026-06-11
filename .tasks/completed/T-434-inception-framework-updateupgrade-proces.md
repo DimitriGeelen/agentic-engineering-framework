@@ -3,24 +3,43 @@ id: T-434
 name: "Inception: Framework update/upgrade process for field installations"
 description: >
   Investigate what is needed to update or upgrade existing framework installations
-  in the field. High-risk undertaking: installations at varying versions, version drift
+  in the field. High-risk undertaking: installations at varying versions, version
+  drift
   from local changes, blast radius on live project data. Requires thorough investigation,
-  layered testing, and incremental development. Must design the research approach itself
+  layered testing, and incremental development. Must design the research approach
+  itself
   before executing — scope analysis, blast radius mapping, upgrade strategy, migration
   tooling, test plan.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [governance, portability, upgrade, risk, architecture]
 components: [bin/fw, lib/init.sh, CLAUDE.md, FRAMEWORK.md]
 related_tasks: [T-316]
 created: 2026-03-10T21:13:36Z
-last_update: 2026-03-26T21:19:18Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-25T11:52:00Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-434: Inception: Framework update/upgrade process for field installations

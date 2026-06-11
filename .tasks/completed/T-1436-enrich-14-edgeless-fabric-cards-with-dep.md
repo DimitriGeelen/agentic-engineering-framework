@@ -7,13 +7,31 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-24T16:26:01Z
-last_update: 2026-04-24T16:31:59Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-24T16:31:59Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1436: Enrich 14 edgeless fabric cards with dependency edges

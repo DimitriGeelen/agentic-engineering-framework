@@ -2,7 +2,17 @@
 id: T-047
 name: Timeline page with session narrative
 description: >
-  Build the timeline page and add session narrative generation to the handover process. (1) Modify handover.sh to generate a session_narrative field: 2-3 paragraph prose summary of session arc, connecting tasks to each other and the bigger picture. Stored in handover frontmatter or as new section. (2) Build /timeline page: sessions collapsed by default showing date + task count. Expand session (htmx hx-get) shows session_narrative prose + task list with component tags. Expand task shows episodic summary (outcomes, decisions, challenges). (3) Fallback for pre-feature handovers: stitch existing fragments (Where We Are + episodic summaries). Timeline is read-only. Data source: handover files + episodic files, computed on-the-fly. Design authority: 025-ArtifactDiscovery.md. Relevant sections: Q2 Timeline format, Q5 Timeline freshness, Three levels of progressive disclosure. Depends on: T-045 (web foundation).
+  Build the timeline page and add session narrative generation to the handover process.
+  (1) Modify handover.sh to generate a session_narrative field: 2-3 paragraph prose
+  summary of session arc, connecting tasks to each other and the bigger picture. Stored
+  in handover frontmatter or as new section. (2) Build /timeline page: sessions collapsed
+  by default showing date + task count. Expand session (htmx hx-get) shows session_narrative
+  prose + task list with component tags. Expand task shows episodic summary (outcomes,
+  decisions, challenges). (3) Fallback for pre-feature handovers: stitch existing
+  fragments (Where We Are + episodic summaries). Timeline is read-only. Data source:
+  handover files + episodic files, computed on-the-fly. Design authority: 025-ArtifactDiscovery.md.
+  Relevant sections: Q2 Timeline format, Q5 Timeline freshness, Three levels of progressive
+  disclosure. Depends on: T-045 (web foundation).
 status: work-completed
 workflow_type: build
 owner: claude-code
@@ -12,8 +22,26 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T11:34:22Z
-last_update: 2026-02-14T12:27:34Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-14T12:27:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-047: Timeline page with session narrative

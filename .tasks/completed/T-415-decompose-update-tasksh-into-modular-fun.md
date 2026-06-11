@@ -2,18 +2,38 @@
 id: T-415
 name: "Decompose update-task.sh into modular functions (S13)"
 description: >
-  Break 500-line monolithic update-task.sh into testable functions: check_acceptance_criteria(), run_verification_commands(), check_human_sovereignty(), generate_episodic(). Currently mixes validation, AC checking, sovereignty gate, verification, and episodic generation. Directive score: S13=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  Break 500-line monolithic update-task.sh into testable functions: check_acceptance_criteria(),
+  run_verification_commands(), check_human_sovereignty(), generate_episodic(). Currently
+  mixes validation, AC checking, sovereignty gate, verification, and episodic generation.
+  Directive score: S13=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, shell, reliability, usability]
 components: [agents/task-create/update-task.sh]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:15Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-10T22:47:30Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-415: Decompose update-task.sh into modular functions (S13)

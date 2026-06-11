@@ -2,18 +2,40 @@
 id: T-592
 name: "Scaffold lib/ts/ — TypeScript build infrastructure for framework"
 description: >
-  Create the TypeScript build infrastructure decided in T-586 (GO). Set up lib/ts/src/, lib/ts/dist/, package.json (dev deps only: typescript, @types/node, esbuild), tsconfig.json (ES2022, Node16, strict), build.sh with stale-guard, fw build command, .gitattributes for dist/ linguist-generated. Add TS build health check to fw doctor. Add Node.js check (WARN) to install.sh. Add TS excludes to vendoring rsync. Add tsc --noEmit to CI workflow. Create lib/runtime.sh with fw_run_ts() fallback pattern.
+  Create the TypeScript build infrastructure decided in T-586 (GO). Set up lib/ts/src/,
+  lib/ts/dist/, package.json (dev deps only: typescript, @types/node, esbuild), tsconfig.json
+  (ES2022, Node16, strict), build.sh with stale-guard, fw build command, .gitattributes
+  for dist/ linguist-generated. Add TS build health check to fw doctor. Add Node.js
+  check (WARN) to install.sh. Add TS excludes to vendoring rsync. Add tsc --noEmit
+  to CI workflow. Create lib/runtime.sh with fw_run_ts() fallback pattern.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [architecture, typescript, T-586]
 components: []
 related_tasks: [T-586, T-593, T-594]
 created: 2026-03-23T22:49:40Z
-last_update: 2026-03-24T06:24:33Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-24T06:24:33Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-592: Scaffold lib/ts/ — TypeScript build infrastructure for framework

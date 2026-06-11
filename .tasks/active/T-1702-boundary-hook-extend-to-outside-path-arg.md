@@ -14,11 +14,13 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/context/check-project-boundary.sh, bin/fw, lib/verify-acs.sh, tests/unit/test_boundary_hook_arguments.bats, tests/unit/test_doctor_scope_tags.bats]
+components: [agents/context/check-project-boundary.sh, bin/fw, lib/verify-acs.sh,
+  tests/unit/test_boundary_hook_arguments.bats, 
+      tests/unit/test_doctor_scope_tags.bats]
 related_tasks: [T-559]
 arc_id: orchestrator-rethink
 created: 2026-05-03T18:22:59Z
-last_update: 2026-05-31T18:14:08Z
+last_update: '2026-06-11T22:23:24Z'
 date_finished: 2026-05-31T18:14:08Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -64,6 +66,23 @@ bvp_scores_proposed:
       F1: 1
     rationale: "D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); D4=4
       (body:cross-machine); F1=1 (body/tag hits for 'F1': 1)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=4 (body:cross-machine); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

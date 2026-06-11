@@ -1,21 +1,42 @@
 ---
 id: T-1507
-name: "Inception decide CLI/Watchtower output truncates long rationale comments mid-sentence (T-1506 close: '...sett' cut from '/root/.claude/settings.json'). Affects readability of post-decision side-effect warning. Likely a fixed-width terminal/template buffer; check do_inception_decide post-print + Watchtower /inception/T-XXX rendering of rationale."
+name: "Inception decide CLI/Watchtower output truncates long rationale comments mid-sentence
+  (T-1506 close: '...sett' cut from '/root/.claude/settings.json'). Affects readability
+  of post-decision side-effect warning. Likely a fixed-width terminal/template buffer;
+  check do_inception_decide post-print + Watchtower /inception/T-XXX rendering of
+  rationale."
 description: >
   Promoted from observation OBS-027
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [C-004, lib/inception.sh, lib/review.sh, lib/task-audit.sh]
 related_tasks: []
 created: 2026-04-26T11:35:02Z
-last_update: 2026-04-26T14:46:56Z
+last_update: '2026-06-11T22:23:50Z'
 date_finished: 2026-04-26T14:46:56Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1507: Inception decide CLI/Watchtower output truncates long rationale comments mid-sentence (T-1506 close: '...sett' cut from '/root/.claude/settings.json'). Affects readability of post-decision side-effect warning. Likely a fixed-width terminal/template buffer; check do_inception_decide post-print + Watchtower /inception/T-XXX rendering of rationale.

@@ -2,18 +2,39 @@
 id: T-374
 name: "Build framework walkthrough guides with audience tracks"
 description: >
-  Create docs/walkthrough/ with ordered guides for 3 audience tracks (new user, contributor, agent implementer). Each guide sequences the 12 subsystems in dependency order and links to existing generated docs (Layer 1 component refs, Layer 2 subsystem articles, deep-dives). No new content creation — routing/sequencing only. Source: T-305 GO decision. See docs/reports/T-305-walkthrough-inception.md.
+  Create docs/walkthrough/ with ordered guides for 3 audience tracks (new user, contributor,
+  agent implementer). Each guide sequences the 12 subsystems in dependency order and
+  links to existing generated docs (Layer 1 component refs, Layer 2 subsystem articles,
+  deep-dives). No new content creation — routing/sequencing only. Source: T-305 GO
+  decision. See docs/reports/T-305-walkthrough-inception.md.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-09T07:24:56Z
-last_update: 2026-03-12T12:41:19Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-09T07:28:41Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-374: Build framework walkthrough guides with audience tracks

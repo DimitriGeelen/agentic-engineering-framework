@@ -7,13 +7,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-09T12:28:30Z
-last_update: 2026-04-09T12:40:09Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-09T12:40:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1071: Upgrade 11 consumer projects to v1.5.199 via TermLink dispatch

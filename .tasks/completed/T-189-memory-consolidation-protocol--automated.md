@@ -2,17 +2,40 @@
 id: T-189
 name: "Memory consolidation protocol — automated dedup and staleness pruning"
 description: >
-  Implement automated memory consolidation for project learnings/patterns. Google Context Engineering (T-120) identified this gap: AEF lacks automated deduplication, conflict resolution, and staleness pruning. Build a fw consolidate command that: (1) scans learnings.yaml for semantic duplicates, (2) detects stale/outdated learnings, (3) merges duplicates preserving the richest version, (4) prunes confirmed-stale entries, (5) generates a consolidation report. Must be file-based (D4), deterministic (D2), and safe (dry-run default).
+  Implement automated memory consolidation for project learnings/patterns. Google
+  Context Engineering (T-120) identified this gap: AEF lacks automated deduplication,
+  conflict resolution, and staleness pruning. Build a fw consolidate command that:
+  (1) scans learnings.yaml for semantic duplicates, (2) detects stale/outdated learnings,
+  (3) merges duplicates preserving the richest version, (4) prunes confirmed-stale
+  entries, (5) generates a consolidation report. Must be file-based (D4), deterministic
+  (D2), and safe (dry-run default).
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-19T09:07:11Z
-last_update: 2026-02-19T09:12:23Z
+last_update: '2026-06-11T22:24:02Z'
 date_finished: 2026-02-19T09:12:23Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-189: Memory consolidation protocol — automated dedup and staleness pruning

@@ -1,20 +1,41 @@
 ---
 id: T-1925
-name: "BVP T-NEW-9: document primary-agent arc-scoped-driver suggestion workflow in CLAUDE.md + AGENTS.md (D5/D6, R5 mitigation)"
+name: "BVP T-NEW-9: document primary-agent arc-scoped-driver suggestion workflow in
+  CLAUDE.md + AGENTS.md (D5/D6, R5 mitigation)"
 description: >
-  Documentation slice — defines the workflow primary agents follow when an arc is created: after body is filled but before driver approval, agent reads body and proposes arc-scoped drivers to proposed_scoped_drivers:. R5 mitigation — "manufacturing drivers is worse than proposing zero" verbatim in docs.
+  Documentation slice — defines the workflow primary agents follow when an arc is
+  created: after body is filled but before driver approval, agent reads body and proposes
+  arc-scoped drivers to proposed_scoped_drivers:. R5 mitigation — "manufacturing drivers
+  is worse than proposing zero" verbatim in docs.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-9, docs]
 components: [CLAUDE.md, AGENTS.md]
 related_tasks: [T-1915, T-1916, T-1918]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:44:00Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T07:44:00Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 4
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=4 (body/components:instruction-sync); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1925: BVP T-NEW-9 — arc-scoped-driver suggestion workflow docs

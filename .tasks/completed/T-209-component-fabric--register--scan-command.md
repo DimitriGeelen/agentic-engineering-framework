@@ -2,17 +2,37 @@
 id: T-209
 name: "Component Fabric — register + scan commands"
 description: >
-  Implement fw fabric register (single card creation) and fw fabric scan (batch skeleton creation from watch-patterns.yaml). Refine prototype schema: file-path-as-ID, single-direction edges, unified card format. Related: T-191, T-208.
+  Implement fw fabric register (single card creation) and fw fabric scan (batch skeleton
+  creation from watch-patterns.yaml). Refine prototype schema: file-path-as-ID, single-direction
+  edges, unified card format. Related: T-191, T-208.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [component-fabric, registration]
 related_tasks: []
 created: 2026-02-20T07:14:07Z
-last_update: 2026-02-20T07:19:42Z
+last_update: '2026-06-11T22:24:07Z'
 date_finished: 2026-02-20T07:19:42Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-209: Component Fabric — register + scan commands

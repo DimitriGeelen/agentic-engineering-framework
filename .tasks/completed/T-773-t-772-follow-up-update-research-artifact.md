@@ -2,18 +2,36 @@
 id: T-773
 name: "T-772 follow-up: update research artifact + create build tasks"
 description: >
-  Update docs/reports/T-772-cross-project-pickup.md with full pipeline design from inception task. Create the 5 build tasks from the GO decision.
+  Update docs/reports/T-772-cross-project-pickup.md with full pipeline design from
+  inception task. Create the 5 build tasks from the GO decision.
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-30T13:19:08Z
-last_update: 2026-03-30T13:24:07Z
+last_update: '2026-06-11T22:24:29Z'
 date_finished: 2026-03-30T13:24:07Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-773: T-772 follow-up: update research artifact + create build tasks

@@ -2,18 +2,39 @@
 id: T-275
 name: "Pre-deploy quality gate — audit section + gated fw deploy"
 description: >
-  Add deployment section to audit.sh (clean git, task traceability, deployment files exist, test suite). Replace fw deploy exec passthrough with gated flow that runs pre-deploy audit, blocks on failure, logs to .context/deployments/. Add Swarm rollback to buildspec template. Depends on T-274 (needs deployment files to validate). See docs/reports/T-272-deploy-watchtower-ring20.md RQ-4.
+  Add deployment section to audit.sh (clean git, task traceability, deployment files
+  exist, test suite). Replace fw deploy exec passthrough with gated flow that runs
+  pre-deploy audit, blocks on failure, logs to .context/deployments/. Add Swarm rollback
+  to buildspec template. Depends on T-274 (needs deployment files to validate). See
+  docs/reports/T-272-deploy-watchtower-ring20.md RQ-4.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [deployment, audit, quality-gate, governance]
 components: [C-004, bin/fw]
 related_tasks: [T-272, T-274, T-276, T-277]
 created: 2026-02-25T08:09:44Z
-last_update: 2026-02-25T20:37:13Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-25T09:36:12Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-275: Pre-deploy quality gate — audit section + gated fw deploy

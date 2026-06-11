@@ -1,21 +1,48 @@
 ---
 id: T-584
-name: "Inception: Structured logging helper — subsystem-tagged log function for framework scripts"
+name: "Inception: Structured logging helper — subsystem-tagged log function for framework
+  scripts"
 description: >
-  Every framework shell script currently does echo message to stderr. No subsystem tags, severity levels, timestamps, or filtering. Debugging requires reading undifferentiated wall of text. OpenClaw has per-module loggers with color coding and dual-sink (console + file). Investigate: log.sh sourced by all agents providing log_info/log_warn/log_error with subsystem tag and timestamp. Writes to .context/working/framework.log. Enables grep subsystem framework.log for targeted debugging. Low effort, high debugging value. Research source: /opt/openclaw-evaluation/.context/working/round2-T-019.md (structured logging section). OpenClaw source: src/util/logger.ts (subsystem logger with color + dual sink). Related framework: lib/compat.sh (existing shared utilities), agents/context/*.sh (all hook scripts — consumers of logging).
+  Every framework shell script currently does echo message to stderr. No subsystem
+  tags, severity levels, timestamps, or filtering. Debugging requires reading undifferentiated
+  wall of text. OpenClaw has per-module loggers with color coding and dual-sink (console
+  + file). Investigate: log.sh sourced by all agents providing log_info/log_warn/log_error
+  with subsystem tag and timestamp. Writes to .context/working/framework.log. Enables
+  grep subsystem framework.log for targeted debugging. Low effort, high debugging
+  value. Research source: /opt/openclaw-evaluation/.context/working/round2-T-019.md
+  (structured logging section). OpenClaw source: src/util/logger.ts (subsystem logger
+  with color + dual sink). Related framework: lib/compat.sh (existing shared utilities),
+  agents/context/*.sh (all hook scripts — consumers of logging).
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:21:55Z
-last_update: 2026-04-13T06:23:22Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-28T17:08:13Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-584: Inception: Structured logging helper — subsystem-tagged log function for framework scripts

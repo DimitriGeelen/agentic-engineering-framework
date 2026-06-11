@@ -2,18 +2,36 @@
 id: T-613
 name: "Update Homebrew tap formula to v1.4.0 + fix consumer project hook errors"
 description: >
-  Update Homebrew tap formula to v1.4.0 with git-derived versioning, MCP auto-config, and Watchtower approvals
+  Update Homebrew tap formula to v1.4.0 with git-derived versioning, MCP auto-config,
+  and Watchtower approvals
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T17:08:35Z
-last_update: 2026-04-30T20:48:15Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-27T18:04:50Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-613: Update Homebrew tap formula to v1.3.0 + fix consumer project hook errors

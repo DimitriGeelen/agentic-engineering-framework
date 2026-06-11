@@ -1,19 +1,38 @@
 ---
 id: T-693
-name: "Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere"
+name: "Fix learning prompt false positive — match task names starting with Fix, not
+  containing fix anywhere"
 description: >
-  Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere
+  Fix learning prompt false positive — match task names starting with Fix, not containing
+  fix anywhere
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-03-28T23:50:16Z
-last_update: 2026-03-28T23:51:35Z
+last_update: '2026-06-11T22:24:27Z'
 date_finished: 2026-03-28T23:51:35Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-693: Fix learning prompt false positive — match task names starting with Fix, not containing fix anywhere

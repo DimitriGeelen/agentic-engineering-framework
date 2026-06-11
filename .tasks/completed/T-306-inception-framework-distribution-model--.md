@@ -2,20 +2,48 @@
 id: T-306
 name: "Inception: framework distribution model — split vs self-contained"
 description: >
-  The current shared tooling model has the framework repo serving two roles: (1) self-hosting development project using its own governance, (2) live tool consumed by other projects. This creates version mingling — other projects execute live agents but hold frozen copies of CLAUDE.md, settings.json, seeds, templates. Half the project runs at init-time version, half at current version. This inception explores: how to create a clean distribution boundary between the self-hosting dev repo and what other projects consume. Constraint: the framework MUST remain self-hosting (it develops itself using its own tooling). The dev repo stays. The question is how other projects get a clean, versioned, non-entangled copy. Options include: versioned releases, vendored distribution, clean CLI separation. Related research: docs/reports/T-294-framework-onboarding-portable-bootstrap.md (Area 1, DX comparison). Source: T-294 dialogue — user identified split model as architecturally problematic.
+  The current shared tooling model has the framework repo serving two roles: (1) self-hosting
+  development project using its own governance, (2) live tool consumed by other projects.
+  This creates version mingling — other projects execute live agents but hold frozen
+  copies of CLAUDE.md, settings.json, seeds, templates. Half the project runs at init-time
+  version, half at current version. This inception explores: how to create a clean
+  distribution boundary between the self-hosting dev repo and what other projects
+  consume. Constraint: the framework MUST remain self-hosting (it develops itself
+  using its own tooling). The dev repo stays. The question is how other projects get
+  a clean, versioned, non-entangled copy. Options include: versioned releases, vendored
+  distribution, clean CLI separation. Related research: docs/reports/T-294-framework-onboarding-portable-bootstrap.md
+  (Area 1, DX comparison). Source: T-294 dialogue — user identified split model as
+  architecturally problematic.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T16:41:57Z
-last_update: 2026-03-08T20:49:22Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-08T20:49:22Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-306: Inception: framework distribution model — split vs self-contained

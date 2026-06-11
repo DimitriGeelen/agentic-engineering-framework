@@ -9,7 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [arc-008, claudemd, advisory-model, defer-as-hedge]
 components: [CLAUDE.md]
 related_tasks: [T-2144, T-2143, T-2145, T-679, T-1811, T-1878]
@@ -19,7 +19,7 @@ arc_id: inception-review-loop
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-31T17:12:49Z
-last_update: 2026-05-31T21:18:45Z
+last_update: '2026-06-11T22:24:09Z'
 date_finished: 2026-05-31T21:18:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,6 +52,24 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 4
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=4 
+      (body/components:instruction-sync); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

@@ -1,19 +1,47 @@
 ---
 id: T-1662
-name: "Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-1647 /orchestrator)"
+name: "Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-1647
+  /orchestrator)"
 description: >
-  Generalize the orchestrator-specific /orchestrator page (T-1647) into a generic /arcs/<id> surface that works for any arc registered in .context/arcs/. Each arc gets: header (id, name, status, decision), constituent task table with status badges, three-question section Arc Completion Discipline checklist, link to anchor task, fw arc close CLI snippet. /orchestrator becomes a 302 redirect to /arcs/orchestrator-rethink for back-compat. Closes the user's original 'absolutely unclear what kind of use this page should be' feedback by making the surface generic and reusable. Picks up after orchestrator-rethink arc closure unblocks (T-1643 cross-repo dependency).
+  Generalize the orchestrator-specific /orchestrator page (T-1647) into a generic
+  /arcs/<id> surface that works for any arc registered in .context/arcs/. Each arc
+  gets: header (id, name, status, decision), constituent task table with status badges,
+  three-question section Arc Completion Discipline checklist, link to anchor task,
+  fw arc close CLI snippet. /orchestrator becomes a 302 redirect to /arcs/orchestrator-rethink
+  for back-compat. Closes the user's original 'absolutely unclear what kind of use
+  this page should be' feedback by making the surface generic and reusable. Picks
+  up after orchestrator-rethink arc closure unblocks (T-1643 cross-repo dependency).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [watchtower, arcs, phase-2, from-T-1653]
-components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/shared.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
+components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, 
+      web/blueprints/__init__.py, web/shared.py, web/templates/arc_detail.html, 
+      web/templates/arcs_index.html, web/templates/orchestrator.html]
 related_tasks: [T-1647, T-1661, T-1653]
 created: 2026-05-01T19:34:55Z
-last_update: 2026-05-03T07:43:15Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-03T07:43:15Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 3
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
+      (body:framework-level-ux); D4=3 (body:portability-abstraction); F-RECALL=1
+      (body:episodic-only); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1662: Phase 2: Watchtower /arcs/<id> generic arc surface page (generalize T-1647 /orchestrator)

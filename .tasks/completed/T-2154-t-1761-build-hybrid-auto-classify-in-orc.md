@@ -17,9 +17,10 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [orchestrator-rethink, orchestrator-mcp-scan, T-1761-build]
-components: [agents/audit/orchestrator-mcp-scan.sh, tests/unit/test_orchestrator_mcp_classify.py]
+components: [agents/audit/orchestrator-mcp-scan.sh, 
+      tests/unit/test_orchestrator_mcp_classify.py]
 related_tasks: [T-1761, T-1646, T-1755, T-1760, T-1867, T-2073, T-2150]
 arc_id: orchestrator-rethink
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -27,7 +28,7 @@ arc_id: orchestrator-rethink
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T08:23:36Z
-last_update: 2026-06-01T08:37:20Z
+last_update: '2026-06-11T22:24:09Z'
 date_finished: 2026-06-01T08:37:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -49,6 +50,23 @@ bvp_scores_proposed:
       D4: 3
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=3 (body:portability-abstraction)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-01T08:30:03Z'

@@ -1,21 +1,67 @@
 ---
 id: T-1106
-name: "ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-project task-ID collision serves wrong content"
+name: "ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-project task-ID
+  collision serves wrong content"
 description: >
-  URGENT inception. lib/review.sh:38-52 detects the Watchtower URL by reading PROJECT_ROOT/.context/working/watchtower.pid then ss for the port. If the pid file is missing OR the PID is dead, it FALLS BACK to default_port=3000 (line 51). On any host with multiple consumer projects, the first Watchtower to bind :3000 captures every other project's review URLs. Combined with task-ID collisions across projects (T-434 exists in BOTH /opt/025-WokrshopDesigner AND /opt/999-Agentic-Engineering-Framework as different tasks), this means: /opt/025 user runs 'fw task review T-434', QR opens http://host:3000/inception/T-434, but :3000 is /opt/999's Watchtower, which serves ITS T-434 — wrong content, right URL, right task ID, completely silent failure. Live evidence today (2026-04-11): user ran fw task review T-434 in /opt/025-WokrshopDesigner, the URL took them to /opt/999's Watchtower which served a different T-434 (the inception about framework update/upgrade process), with the After-review-run text correctly pointing back to /opt/025. Investigate: (1) what was the port-detection mechanism BEFORE the current pid+ss approach? grep history for previous review.sh and earlier port-resolution code; check T-885 (configurable Watchtower port project setting) and any predecessor; (2) why the current pid+ss fallback collapses to 3000 silently — is there ANY cross-project safety check? (3) what would a STRUCTURAL fix look like: assign each project a unique deterministic port (e.g., hash of project name into 3000-3999 range), refuse to start Watchtower on a port that already serves another project, embed PROJECT_ROOT in Watchtower's identity endpoint and have fw task review verify the running Watchtower at the chosen URL belongs to PROJECT_ROOT before emitting the link; (4) the underlying task-ID collision is itself a bug — should task IDs be project-namespaced (e.g., 999/T-434, 025/T-434) at least in URL form? (5) recommend GO with chokepoint+invariant test discipline per T-1105: chokepoint = single function that resolves Watchtower URL AND verifies project identity before emitting; invariant test = no fw task review can emit a URL whose Watchtower /identity returns a different PROJECT_ROOT. Severity: high - silent wrong-content serving across project boundaries violates the framework's project isolation guarantee. Origin: live incident 2026-04-11 during structural-fix discipline pass.
+  URGENT inception. lib/review.sh:38-52 detects the Watchtower URL by reading PROJECT_ROOT/.context/working/watchtower.pid
+  then ss for the port. If the pid file is missing OR the PID is dead, it FALLS BACK
+  to default_port=3000 (line 51). On any host with multiple consumer projects, the
+  first Watchtower to bind :3000 captures every other project's review URLs. Combined
+  with task-ID collisions across projects (T-434 exists in BOTH /opt/025-WokrshopDesigner
+  AND /opt/999-Agentic-Engineering-Framework as different tasks), this means: /opt/025
+  user runs 'fw task review T-434', QR opens http://host:3000/inception/T-434, but
+  :3000 is /opt/999's Watchtower, which serves ITS T-434 — wrong content, right URL,
+  right task ID, completely silent failure. Live evidence today (2026-04-11): user
+  ran fw task review T-434 in /opt/025-WokrshopDesigner, the URL took them to /opt/999's
+  Watchtower which served a different T-434 (the inception about framework update/upgrade
+  process), with the After-review-run text correctly pointing back to /opt/025. Investigate:
+  (1) what was the port-detection mechanism BEFORE the current pid+ss approach? grep
+  history for previous review.sh and earlier port-resolution code; check T-885 (configurable
+  Watchtower port project setting) and any predecessor; (2) why the current pid+ss
+  fallback collapses to 3000 silently — is there ANY cross-project safety check? (3)
+  what would a STRUCTURAL fix look like: assign each project a unique deterministic
+  port (e.g., hash of project name into 3000-3999 range), refuse to start Watchtower
+  on a port that already serves another project, embed PROJECT_ROOT in Watchtower's
+  identity endpoint and have fw task review verify the running Watchtower at the chosen
+  URL belongs to PROJECT_ROOT before emitting the link; (4) the underlying task-ID
+  collision is itself a bug — should task IDs be project-namespaced (e.g., 999/T-434,
+  025/T-434) at least in URL form? (5) recommend GO with chokepoint+invariant test
+  discipline per T-1105: chokepoint = single function that resolves Watchtower URL
+  AND verifies project identity before emitting; invariant test = no fw task review
+  can emit a URL whose Watchtower /identity returns a different PROJECT_ROOT. Severity:
+  high - silent wrong-content serving across project boundaries violates the framework's
+  project isolation guarantee. Origin: live incident 2026-04-11 during structural-fix
+  discipline pass.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-885, T-1105, T-1100, T-1093]
 created: 2026-04-11T13:30:22Z
-last_update: 2026-04-13T06:23:16Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-11T20:10:54Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1106: ULTRA-HIGH PRIORITY: fw task review URL defaults to :3000 — cross-project task-ID collision serves wrong content

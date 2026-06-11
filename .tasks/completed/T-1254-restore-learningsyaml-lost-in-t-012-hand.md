@@ -1,19 +1,39 @@
 ---
 id: T-1254
-name: "Restore learnings.yaml (lost in T-012 handover commit 4eb23e81) + add shrinkage guard blocking"
+name: "Restore learnings.yaml (lost in T-012 handover commit 4eb23e81) + add shrinkage
+  guard blocking"
 description: >
-  learnings.yaml reverted from 239 entries (1688 lines) to 1 entry (10 lines) in my handover commit. Same class as T-1242. The T-1250 advisory shrinkage guard didn't prevent this because it only WARNS. This task: restore + investigate blocking enforcement.
+  learnings.yaml reverted from 239 entries (1688 lines) to 1 entry (10 lines) in my
+  handover commit. Same class as T-1242. The T-1250 advisory shrinkage guard didn't
+  prevent this because it only WARNS. This task: restore + investigate blocking enforcement.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-14T19:57:00Z
-last_update: 2026-04-14T19:58:23Z
+last_update: '2026-06-11T22:23:43Z'
 date_finished: 2026-04-14T19:58:23Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1254: Restore learnings.yaml (lost in T-012 handover commit 4eb23e81) + add shrinkage guard blocking

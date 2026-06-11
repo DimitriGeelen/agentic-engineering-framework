@@ -1,21 +1,47 @@
 ---
 id: T-1831
-name: "AC-checkbox-vs-content drift — agent does substantive work in body, gate measures only checkbox state, blocks legitimate completion + decide flows (RCA from 4 errors in S-2026-0514 session)"
+name: "AC-checkbox-vs-content drift — agent does substantive work in body, gate measures
+  only checkbox state, blocks legitimate completion + decide flows (RCA from 4 errors
+  in S-2026-0514 session)"
 description: >
-  Same class as T-1828: gate measures a proxy that diverges from reality. Agent writes ACs content (RCA, candidates, recommendation) in task body but does NOT progressively tick checkboxes. Gate (P-010 for status work-completed, inception-decide preflight at lib/inception.sh:506-524 for decide) fires correctly — content is there to a human reader, but trackable signal says incomplete. Plus error 4 (T-1829 still blocked after checkbox fix) is past preflight — DIFFERENT gate fired inside update-task.sh, full error text needed.
+  Same class as T-1828: gate measures a proxy that diverges from reality. Agent writes
+  ACs content (RCA, candidates, recommendation) in task body but does NOT progressively
+  tick checkboxes. Gate (P-010 for status work-completed, inception-decide preflight
+  at lib/inception.sh:506-524 for decide) fires correctly — content is there to a
+  human reader, but trackable signal says incomplete. Plus error 4 (T-1829 still blocked
+  after checkbox fix) is past preflight — DIFFERENT gate fired inside update-task.sh,
+  full error text needed.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
-tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, antifragility, user-reported-error]
+horizon:
+tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, antifragility,
+  user-reported-error]
 components: [agents-task-create-update-task, lib-inception]
 related_tasks: [T-1828, T-1829, T-1830, T-1603, T-1503]
 created: 2026-05-14T19:30:02Z
-last_update: 2026-05-14T20:29:45Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T20:29:45Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1831: AC-checkbox-vs-content drift — gate measures checkbox, content lives in body

@@ -2,7 +2,10 @@
 id: T-016
 name: Add episodic quality checks to audit agent
 description: >
-  Audit agent has ZERO episodic checks. Add: (1) Check all completed tasks have episodic files, (2) Check episodic summary field is non-empty (>50 chars), (3) Check successes OR challenges has entries, (4) Check decisions populated if Design Record exists. FAIL on missing, WARN on low-quality.
+  Audit agent has ZERO episodic checks. Add: (1) Check all completed tasks have episodic
+  files, (2) Check episodic summary field is non-empty (>50 chars), (3) Check successes
+  OR challenges has entries, (4) Check decisions populated if Design Record exists.
+  FAIL on missing, WARN on low-quality.
 status: work-completed
 workflow_type: build
 owner: human
@@ -12,8 +15,26 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T21:21:30Z
-last_update: 2026-02-13T22:28:00Z
+last_update: '2026-06-11T22:23:35Z'
 date_finished: 2026-02-13T21:27:49Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-016: Add episodic quality checks to audit agent

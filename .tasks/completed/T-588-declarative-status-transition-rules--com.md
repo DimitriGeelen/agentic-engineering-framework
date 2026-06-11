@@ -2,18 +2,45 @@
 id: T-588
 name: "Declarative status transition rules — compiled ACL pattern for task state machine"
 description: >
-  Currently update-task.sh has inline case/esac logic for allowed status transitions. OpenClaw compiles declarative scope groups to O(1) Map lookup at startup (method-scopes.ts, 20 LOC compilation). Adopt: declare allowed transitions in status-transitions.yaml, compile to lookup, validate in update-task.sh. Benefits: visible rules (anyone can read YAML), verifiable (fw doctor validates no orphaned states), extensible (edit YAML not bash), auditable (Watchtower displays state machine). Connects to T-511 governance.yaml (another governance declaration). Implementation language pending T-586. Research source: /opt/openclaw-evaluation/.context/working/round2-T-022.md (Pattern 4, rated 5 stars directly adoptable). OpenClaw source: src/gateway/method-scopes.ts. Related: T-586 (language strategy), T-511 (governance.yaml), agents/task-create/update-task.sh (current inline logic).
+  Currently update-task.sh has inline case/esac logic for allowed status transitions.
+  OpenClaw compiles declarative scope groups to O(1) Map lookup at startup (method-scopes.ts,
+  20 LOC compilation). Adopt: declare allowed transitions in status-transitions.yaml,
+  compile to lookup, validate in update-task.sh. Benefits: visible rules (anyone can
+  read YAML), verifiable (fw doctor validates no orphaned states), extensible (edit
+  YAML not bash), auditable (Watchtower displays state machine). Connects to T-511
+  governance.yaml (another governance declaration). Implementation language pending
+  T-586. Research source: /opt/openclaw-evaluation/.context/working/round2-T-022.md
+  (Pattern 4, rated 5 stars directly adoptable). OpenClaw source: src/gateway/method-scopes.ts.
+  Related: T-586 (language strategy), T-511 (governance.yaml), agents/task-create/update-task.sh
+  (current inline logic).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:35:28Z
-last_update: 2026-03-28T12:30:26Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-28T12:30:26Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-588: Declarative status transition rules — compiled ACL pattern for task state machine

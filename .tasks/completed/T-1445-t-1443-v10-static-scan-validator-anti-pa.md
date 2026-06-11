@@ -1,19 +1,45 @@
 ---
 id: T-1445
-name: "T-1443-v1.0 Static-scan validator: anti-pattern detection on work-completed (4 patterns + feedback stream + task-body verdict)"
+name: "T-1443-v1.0 Static-scan validator: anti-pattern detection on work-completed
+  (4 patterns + feedback stream + task-body verdict)"
 description: >
-  Build v1.0 of T-1443 reviewer agent: static-scan validator hooked on `fw task update --status work-completed`. Detects 4 seed anti-patterns (tautology, empty-body, swallowed-errors / --no-verify, output-spoofing). Writes verdict to task body. Initializes append-only `.context/working/feedback-stream.yaml` for Spike I (override mechanism). NO escalation logic, NO orchestrator routing yet — those come v1.1+. v1.0 measures the unmeasured: % of Human ACs that are mechanically evidenceable in production data. Per T-1443 staged micro-version rollout (D-009).
+  Build v1.0 of T-1443 reviewer agent: static-scan validator hooked on `fw task update
+  --status work-completed`. Detects 4 seed anti-patterns (tautology, empty-body, swallowed-errors
+  / --no-verify, output-spoofing). Writes verdict to task body. Initializes append-only
+  `.context/working/feedback-stream.yaml` for Spike I (override mechanism). NO escalation
+  logic, NO orchestrator routing yet — those come v1.1+. v1.0 measures the unmeasured:
+  % of Human ACs that are mechanically evidenceable in production data. Per T-1443
+  staged micro-version rollout (D-009).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [reviewer-agent, ac-validation, anti-patterns, v1.0, static-scan]
 components: [agents/task-create/update-task.sh, bin/fw]
 related_tasks: [T-1442, T-1443, T-954, T-1064]
 created: 2026-04-25T10:17:40Z
-last_update: 2026-04-26T20:30:47Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-25T22:10:24Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 3
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:learning-ref); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=3 (body:typed-io-or-gate); F3=0
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1445: T-1443-v1.0 Static-scan validator: anti-pattern detection on work-completed (4 patterns + feedback stream + task-body verdict)

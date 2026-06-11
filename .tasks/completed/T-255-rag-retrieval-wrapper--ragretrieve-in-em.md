@@ -2,18 +2,39 @@
 id: T-255
 name: "RAG retrieval wrapper — rag_retrieve() in embeddings.py"
 description: >
-  Add rag_retrieve() wrapper to web/embeddings.py that extends hybrid_search() with: full chunk_text return, category filtering, score thresholding (>0.4), path deduplication. ~30-50 lines. See docs/reports/T-254-llm-assisted-qa-research.md RQ-2 section. Predecessor: T-254 (inception GO). Related: T-245 (semantic search).
+  Add rag_retrieve() wrapper to web/embeddings.py that extends hybrid_search() with:
+  full chunk_text return, category filtering, score thresholding (>0.4), path deduplication.
+  ~30-50 lines. See docs/reports/T-254-llm-assisted-qa-research.md RQ-2 section. Predecessor:
+  T-254 (inception GO). Related: T-245 (semantic search).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-254]
 created: 2026-02-23T20:38:08Z
-last_update: 2026-02-23T20:50:40Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-23T20:50:40Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-255: RAG retrieval wrapper — rag_retrieve() in embeddings.py

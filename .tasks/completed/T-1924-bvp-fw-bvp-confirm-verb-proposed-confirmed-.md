@@ -1,20 +1,40 @@
 ---
 id: T-1924
-name: "BVP T-NEW-8: fw bvp confirm verb — bvp_scores_proposed → bvp_scores (Sovereignty boundary, §ACD gated)"
+name: "BVP T-NEW-8: fw bvp confirm verb — bvp_scores_proposed → bvp_scores (Sovereignty
+  boundary, §ACD gated)"
 description: >
-  Moves estimator's proposed scores into confirmed bvp_scores with `confirmed_by:`/`confirmed_at:`. After confirm, estimator must never overwrite (M3 v2-delta semantics). §ACD agent-gate refuses under $CLAUDECODE=1.
+  Moves estimator's proposed scores into confirmed bvp_scores with `confirmed_by:`/`confirmed_at:`.
+  After confirm, estimator must never overwrite (M3 v2-delta semantics). §ACD agent-gate
+  refuses under $CLAUDECODE=1.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-8, cli, sovereignty, acd-gate]
 components: [012-ArcSystem.md, bin/fw, lib/arc.sh, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1922, T-1671]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:51:59Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T07:51:59Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1924: BVP T-NEW-8 — `fw bvp confirm`

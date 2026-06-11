@@ -2,18 +2,38 @@
 id: T-483
 name: "Fix Python 3.9 compat — replace union type hints (dict | None) with Optional"
 description: >
-  macOS ships Python 3.9 which lacks PEP 604 union syntax (X | Y). web/shared.py line 159 uses dict | None. Need to find and replace all 3.10+ type hints across web/ with typing.Optional or from __future__ import annotations.
+  macOS ships Python 3.9 which lacks PEP 604 union syntax (X | Y). web/shared.py line
+  159 uses dict | None. Need to find and replace all 3.10+ type hints across web/
+  with typing.Optional or from __future__ import annotations.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [portability, bugfix]
-components: [web/embeddings.py, web/search.py, web/search_utils.py, web/shared.py, web/subprocess_utils.py]
+components: [web/embeddings.py, web/search.py, web/search_utils.py, 
+      web/shared.py, web/subprocess_utils.py]
 related_tasks: []
 created: 2026-03-14T15:01:09Z
-last_update: 2026-03-27T17:34:22Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-14T15:06:54Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-483: Fix Python 3.9 compat — replace union type hints (dict | None) with Optional

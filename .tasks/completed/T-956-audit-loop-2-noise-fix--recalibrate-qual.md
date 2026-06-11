@@ -1,19 +1,39 @@
 ---
 id: T-956
-name: "Audit Loop 2 noise fix — recalibrate quality thresholds or escalate differently (T-860 Phase 2)"
+name: "Audit Loop 2 noise fix — recalibrate quality thresholds or escalate differently
+  (T-860 Phase 2)"
 description: >
-  Loop 2 (active task quality) fires warnings that persist for weeks without action. Either recalibrate thresholds so warnings are actionable, or route stale warnings to human review queue. From T-860 GO decision.
+  Loop 2 (active task quality) fires warnings that persist for weeks without action.
+  Either recalibrate thresholds so warnings are actionable, or route stale warnings
+  to human review queue. From T-860 GO decision.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/audit/active-task-scan.py]
 related_tasks: []
 created: 2026-04-06T11:50:13Z
-last_update: 2026-04-06T13:00:45Z
+last_update: '2026-06-11T22:24:33Z'
 date_finished: 2026-04-06T13:00:45Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-956: Audit Loop 2 noise fix — recalibrate quality thresholds or escalate differently (T-860 Phase 2)

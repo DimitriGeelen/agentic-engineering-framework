@@ -2,19 +2,41 @@
 id: T-1854
 name: "fw arc abandon CLI verb (T-NEW-6)"
 description: >
-  Implement fw arc abandon <id> --reason '<≥30 chars>'. Refuses without --reason or reason under 30 chars. Refuses under $CLAUDECODE=1 unless --i-am-human or --from-watchtower (T-1671 agent-gate pattern). Appends JSON to .context/audits/arc-abandon.jsonl. Arc YAML reflects status: abandoned, abandoned_at, abandonment_reason. D-Immutability: YAML stays, never moved/deleted. Deps: T-NEW-5a.
+  Implement fw arc abandon <id> --reason '<≥30 chars>'. Refuses without --reason or
+  reason under 30 chars. Refuses under $CLAUDECODE=1 unless --i-am-human or --from-watchtower
+  (T-1671 agent-gate pattern). Appends JSON to .context/audits/arc-abandon.jsonl.
+  Arc YAML reflects status: abandoned, abandoned_at, abandonment_reason. D-Immutability:
+  YAML stays, never moved/deleted. Deps: T-NEW-5a.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [build, lifecycle, cli, governance-gate, T-NEW-6]
 components: [lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats]
 related_tasks: [T-1846, T-1847, T-1668, T-1671]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:08Z
-last_update: 2026-05-17T22:27:14Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-16T22:02:10Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1854: fw arc abandon CLI verb (T-NEW-6)

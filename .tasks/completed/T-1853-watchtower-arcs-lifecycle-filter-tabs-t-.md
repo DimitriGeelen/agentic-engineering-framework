@@ -2,19 +2,41 @@
 id: T-1853
 name: "Watchtower /arcs lifecycle filter tabs (T-NEW-5b)"
 description: >
-  web/blueprints/arcs.py + templates render 4 filter tabs on /arcs index: draft, in-progress (default), closed, abandoned. Filter restricts list. Playwright test guards rendering + clickability. UI verification needs eyes — element-presence grep forbidden per T-1575; required: Playwright screenshot OR DOM-content assertion. Deps: T-NEW-5a.
+  web/blueprints/arcs.py + templates render 4 filter tabs on /arcs index: draft, in-progress
+  (default), closed, abandoned. Filter restricts list. Playwright test guards rendering
+  + clickability. UI verification needs eyes — element-presence grep forbidden per
+  T-1575; required: Playwright screenshot OR DOM-content assertion. Deps: T-NEW-5a.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [build, lifecycle, ui, watchtower, T-NEW-5b]
-components: [C-004, lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats, tests/unit/audit_stale_arc_warning.bats]
+components: [C-004, lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats, 
+      tests/unit/audit_stale_arc_warning.bats]
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:04Z
-last_update: 2026-05-18T09:41:08Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-16T22:26:31Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1853: Watchtower /arcs lifecycle filter tabs (T-NEW-5b)

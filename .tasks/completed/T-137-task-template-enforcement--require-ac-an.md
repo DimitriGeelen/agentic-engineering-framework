@@ -2,16 +2,40 @@
 id: T-137
 name: Task template enforcement — require AC and Verification on creation
 description: >
-  create-task.sh generates tasks with placeholder AC and Verification sections that the agent never fills in. Sprechloop cycle 2: 11 tasks created as stubs, all completed without AC or Verification. Change: (1) create-task.sh should include a real AC section with at least one placeholder checkbox that must be edited, (2) include a Verification section with a comment explaining what to add, (3) update-task.sh should WARN (not block) when transitioning to started-work if AC section still has only placeholder text. Blocking is too aggressive — but warning makes the obligation visible.
+  create-task.sh generates tasks with placeholder AC and Verification sections that
+  the agent never fills in. Sprechloop cycle 2: 11 tasks created as stubs, all completed
+  without AC or Verification. Change: (1) create-task.sh should include a real AC
+  section with at least one placeholder checkbox that must be edited, (2) include
+  a Verification section with a comment explaining what to add, (3) update-task.sh
+  should WARN (not block) when transitioning to started-work if AC section still has
+  only placeholder text. Blocking is too aggressive — but warning makes the obligation
+  visible.
 status: work-completed
 workflow_type: build
-horizon: null
+horizon:
 owner: human
 tags: []
 related_tasks: []
 created: 2026-02-17T23:49:42Z
-last_update: 2026-02-18T06:17:04Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-02-18T06:17:04Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-137: Task template enforcement — require AC and Verification on creation

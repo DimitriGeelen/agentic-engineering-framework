@@ -1,20 +1,48 @@
 ---
 id: T-1822
-name: "fix project-boundary cwd-trap — vendored .agentic-framework/ cwd traps consumer agent (session-fatal)"
+name: "fix project-boundary cwd-trap — vendored .agentic-framework/ cwd traps consumer
+  agent (session-fatal)"
 description: >
-  B-1 (HIGH/session-fatal) reported by termlink-agent on 2026-05-14. After cd into .agentic-framework/ from a consumer root (normal diagnostic move), every subsequent cd back, git -C, pushd, or Write to the outer consumer is BLOCKED by check-project-boundary.sh. Root cause: the hook resolves PROJECT_ROOT from cwd; .agentic-framework/ ships FRAMEWORK.md so cwd-inside-vendored-copy makes the hook decide we ARE in the framework repo, and everything outside .agentic-framework/ becomes 'another project'. PROJECT_ROOT env doesn't propagate. Symmetric twin of T-1542 (T-1542 is the write-side; this is the read/cd side). Suggested fix: when cwd is inside a vendored copy AND a parent dir has .framework.yaml (i.e. consumer-vendored not standalone-framework), prefer the OUTER as PROJECT_ROOT. Files: agents/context/check-project-boundary.sh.
+  B-1 (HIGH/session-fatal) reported by termlink-agent on 2026-05-14. After cd into
+  .agentic-framework/ from a consumer root (normal diagnostic move), every subsequent
+  cd back, git -C, pushd, or Write to the outer consumer is BLOCKED by check-project-boundary.sh.
+  Root cause: the hook resolves PROJECT_ROOT from cwd; .agentic-framework/ ships FRAMEWORK.md
+  so cwd-inside-vendored-copy makes the hook decide we ARE in the framework repo,
+  and everything outside .agentic-framework/ becomes 'another project'. PROJECT_ROOT
+  env doesn't propagate. Symmetric twin of T-1542 (T-1542 is the write-side; this
+  is the read/cd side). Suggested fix: when cwd is inside a vendored copy AND a parent
+  dir has .framework.yaml (i.e. consumer-vendored not standalone-framework), prefer
+  the OUTER as PROJECT_ROOT. Files: agents/context/check-project-boundary.sh.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [project-boundary, fw-upgrade-incident-2026-05-14, T-559, T-1542, bug]
 components: [lib/paths.sh, tests/unit/lib_paths.bats]
 related_tasks: [T-559, T-1542, T-1634]
 arc_id: project-shape-resilience
 created: 2026-05-14T07:30:21Z
-last_update: 2026-05-14T14:00:15Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-14T14:00:15Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1822: fix project-boundary cwd-trap — vendored .agentic-framework/ cwd traps consumer agent (session-fatal)

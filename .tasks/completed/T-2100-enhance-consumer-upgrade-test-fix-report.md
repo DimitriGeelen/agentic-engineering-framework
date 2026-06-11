@@ -10,12 +10,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [prompt-library, fw-upgrade, reliability, T-2078-cluster]
 components: [bin/fw, lib/upgrade.sh]
 related_tasks: [T-2078, T-2099, T-2097, T-2098]
 created: 2026-05-29T14:22:31Z
-last_update: 2026-05-30T07:38:15Z
+last_update: '2026-06-11T22:24:07Z'
 date_finished: 2026-05-30T07:38:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -29,6 +29,22 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-29T14:30:02Z'

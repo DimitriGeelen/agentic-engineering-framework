@@ -1,22 +1,24 @@
 ---
 id: T-2235
-name: "build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sentinel idempotency"
+name: "build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sentinel
+  idempotency"
 description: >
   build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sentinel idempotency
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [bin/fw, lib/consumer-recover.sh, tests/unit/test_consumer_recover.bats]
+components: [bin/fw, lib/consumer-recover.sh, 
+      tests/unit/test_consumer_recover.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-07T12:15:54Z
-last_update: 2026-06-07T12:24:04Z
+last_update: '2026-06-11T22:24:12Z'
 date_finished: 2026-06-07T12:24:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +30,24 @@ date_finished: 2026-06-07T12:24:04Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2235: build fw consumer-recover wrapper — SSH+TermLink, dry-run-default, sentinel idempotency

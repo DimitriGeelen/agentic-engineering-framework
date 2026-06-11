@@ -2,19 +2,40 @@
 id: T-1706
 name: "v4 build: thin tool-loop worker for ollama-research (Spike A from T-1705)"
 description: >
-  Implement tools/ollama-tool-loop.py — wraps litellm /v1/messages, executes tool_use→tool_result loop, writes wdir contract (result.jsonl/result.md/exit_code/meta.json). Validates A-T1705-1 (≥90% real tool_use on hermes3:8b) before wiring to workflow.
+  Implement tools/ollama-tool-loop.py — wraps litellm /v1/messages, executes tool_use→tool_result
+  loop, writes wdir contract (result.jsonl/result.md/exit_code/meta.json). Validates
+  A-T1705-1 (≥90% real tool_use on hermes3:8b) before wiring to workflow.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [ollama, dispatch, v4, spike]
-components: [agents/termlink/termlink.sh, tools/ollama-tool-loop.py, tools/t1706-tool-loop-probe.sh]
+components: [agents/termlink/termlink.sh, tools/ollama-tool-loop.py, 
+      tools/t1706-tool-loop-probe.sh]
 related_tasks: [T-1705, T-1700, T-1704]
 arc_id: orchestrator-rethink
 created: 2026-05-03T21:47:42Z
-last_update: 2026-05-03T21:57:02Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-03T21:57:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 3
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=3 (body:typed-io-or-gate); F3=1
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1706: v4 build: thin tool-loop worker for ollama-research (Spike A from T-1705)

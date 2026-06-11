@@ -2,18 +2,38 @@
 id: T-497
 name: "fw vendor command — copy framework into project .agentic-framework/"
 description: >
-  Create fw vendor subcommand that copies the complete framework (~7MB: bin, lib, agents, web, docs, seeds, templates, FRAMEWORK.md, metrics.sh) into project/.agentic-framework/. Excludes .git, .context, .tasks/active, .tasks/completed, .fabric. Creates VERSION file. Plain copy, no git-in-git. From T-482 GO.
+  Create fw vendor subcommand that copies the complete framework (~7MB: bin, lib,
+  agents, web, docs, seeds, templates, FRAMEWORK.md, metrics.sh) into project/.agentic-framework/.
+  Excludes .git, .context, .tasks/active, .tasks/completed, .fabric. Creates VERSION
+  file. Plain copy, no git-in-git. From T-482 GO.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [portability, isolation, P0]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T14:00:51Z
-last_update: 2026-03-23T11:04:31Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-15T14:07:12Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-497: fw vendor command — copy framework into project .agentic-framework/

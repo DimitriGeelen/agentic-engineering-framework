@@ -2,18 +2,38 @@
 id: T-285
 name: "Write framework self-audit prompt for cross-project deployment"
 description: >
-  Create a comprehensive self-audit and remediation prompt that agents can use to verify all framework controls are functioning after the framework has been merged/copied into an existing project.
+  Create a comprehensive self-audit and remediation prompt that agents can use to
+  verify all framework controls are functioning after the framework has been merged/copied
+  into an existing project.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [audit, deployment, governance]
 components: [docs/prompts/framework-self-audit.md]
 related_tasks: [T-286]
 created: 2026-03-01T08:59:31Z
-last_update: 2026-03-08T20:49:36Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-03-01T09:38:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=4 (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-285: Write framework self-audit prompt for cross-project deployment

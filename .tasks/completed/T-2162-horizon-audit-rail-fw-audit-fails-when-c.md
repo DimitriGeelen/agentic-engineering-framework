@@ -14,16 +14,19 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: [arc:horizon-axis-hardening]
-components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh, bin/migrate-horizon-null-completed.sh, web/blueprints/tasks.py, web/templates/tasks.html]
+components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, 
+      agents/task-create/create-task.sh, agents/task-create/update-task.sh, 
+      bin/migrate-horizon-null-completed.sh, web/blueprints/tasks.py, 
+      web/templates/tasks.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T10:10:19Z
-last_update: 2026-06-01T11:59:00Z
+last_update: '2026-06-11T22:24:09Z'
 date_finished: 2026-06-01T11:59:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -45,6 +48,23 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-01T10:15:02Z'

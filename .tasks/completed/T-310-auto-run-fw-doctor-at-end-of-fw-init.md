@@ -2,18 +2,37 @@
 id: T-310
 name: "Auto-run fw doctor at end of fw init"
 description: >
-  Terraform pattern: init validates automatically. Currently fw init says 'run fw doctor' but doesn't run it. Fold doctor into init as final step, show results inline. Source: T-294 DX comparison finding.
+  Terraform pattern: init validates automatically. Currently fw init says 'run fw
+  doctor' but doesn't run it. Fold doctor into init as final step, show results inline.
+  Source: T-294 DX comparison finding.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T17:28:41Z
-last_update: 2026-03-04T21:53:34Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T21:53:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-310: Auto-run fw doctor at end of fw init

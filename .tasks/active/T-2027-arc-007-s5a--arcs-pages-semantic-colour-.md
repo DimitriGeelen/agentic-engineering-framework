@@ -18,7 +18,7 @@ components: [tests/playwright/test_arcs_pages_tokens.py,
       web/templates/arcs_index.html]
 related_tasks: [T-1994, T-1987, T-2023, T-2025, T-2026]
 created: 2026-05-24T11:49:08Z
-last_update: '2026-05-28T22:54:11Z'
+last_update: '2026-06-11T22:23:30Z'
 date_finished: 2026-05-26T06:50:45Z
 cost_estimate_proposed:
   - ts: '2026-05-24T12:00:02Z'
@@ -52,6 +52,22 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
       (no-signal); D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

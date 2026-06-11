@@ -2,18 +2,40 @@
 id: T-357
 name: "Implement post-init validation with #@init: tags"
 description: >
-  Implement the T-356 GO decision: (1) Add #@init: tags to lib/init.sh for all 31 creation units, (2) Create lib/validate-init.sh that parses tags and validates each unit, (3) Call validate-init from end of fw init, (4) Register both components in Fabric with dependency edge, (5) Add cron audit check for tag-count drift. See docs/reports/T-356-post-init-validation.md for full design.
+  Implement the T-356 GO decision: (1) Add #@init: tags to lib/init.sh for all 31
+  creation units, (2) Create lib/validate-init.sh that parses tags and validates each
+  unit, (3) Call validate-init from end of fw init, (4) Register both components in
+  Fabric with dependency edge, (5) Add cron audit check for tag-count drift. See docs/reports/T-356-post-init-validation.md
+  for full design.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [bin/fw, lib/init.sh, lib/validate-init.sh]
 related_tasks: [T-356]
 created: 2026-03-08T18:17:48Z
-last_update: 2026-03-08T19:24:03Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-08T19:14:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-357: Implement post-init validation with #@init: tags

@@ -1,19 +1,43 @@
 ---
 id: T-1603
-name: "VERSION monotonicity gate — pre-commit/pre-push hook refusing decreasing VERSION (T-1602 follow-up)"
+name: "VERSION monotonicity gate — pre-commit/pre-push hook refusing decreasing VERSION
+  (T-1602 follow-up)"
 description: >
-  Pre-commit hook (or pre-push) that refuses any commit decreasing VERSION. Trigger: T-1602 surfaced framework VERSION rollback 1.5.463 → 1.5.19 in cc38e98f5 (T-1540 iter1) — silent side-effect of a git checkout against stale ref. No structural gate caught it. 12 consumers paid the cost (pinned 1.5.307, ahead of HEAD for 4 days). Fix: hook reads HEAD VERSION + working-tree VERSION, refuses if working VERSION semver-lower than HEAD. Bypass via Tier 2 (--no-verify with logged reason). Highest leverage of the T-1602 SUMMARY recommendations.
+  Pre-commit hook (or pre-push) that refuses any commit decreasing VERSION. Trigger:
+  T-1602 surfaced framework VERSION rollback 1.5.463 → 1.5.19 in cc38e98f5 (T-1540
+  iter1) — silent side-effect of a git checkout against stale ref. No structural gate
+  caught it. 12 consumers paid the cost (pinned 1.5.307, ahead of HEAD for 4 days).
+  Fix: hook reads HEAD VERSION + working-tree VERSION, refuses if working VERSION
+  semver-lower than HEAD. Bypass via Tier 2 (--no-verify with logged reason). Highest
+  leverage of the T-1602 SUMMARY recommendations.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-29T08:05:09Z
-last_update: 2026-04-29T18:29:24Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-29T18:29:24Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1603: VERSION monotonicity gate — pre-commit/pre-push hook refusing decreasing VERSION (T-1602 follow-up)

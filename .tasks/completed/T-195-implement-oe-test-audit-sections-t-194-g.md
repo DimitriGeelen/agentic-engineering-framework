@@ -2,17 +2,38 @@
 id: T-195
 name: "Implement OE test audit sections (T-194 GO)"
 description: >
-  Implement the 20 automatable OE tests as audit sections in audit.sh: oe-fast (7 tests, 30min), oe-hourly (2 tests), oe-daily (10 tests), oe-weekly (1 test). Each test verifies a specific control from controls.yaml produces its expected effect. Design: outcome-based (D-Phase3-001). Reference: docs/reports/T-194-control-register.md Phase 3 OE Test Register.
+  Implement the 20 automatable OE tests as audit sections in audit.sh: oe-fast (7
+  tests, 30min), oe-hourly (2 tests), oe-daily (10 tests), oe-weekly (1 test). Each
+  test verifies a specific control from controls.yaml produces its expected effect.
+  Design: outcome-based (D-Phase3-001). Reference: docs/reports/T-194-control-register.md
+  Phase 3 OE Test Register.
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: [assurance, oe-testing, t-194-go]
 related_tasks: []
 created: 2026-02-19T19:29:14Z
-last_update: 2026-02-19T19:37:45Z
+last_update: '2026-06-11T22:24:04Z'
 date_finished: 2026-02-19T19:37:45Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-195: Implement OE test audit sections (T-194 GO)

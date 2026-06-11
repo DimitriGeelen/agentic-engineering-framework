@@ -2,18 +2,39 @@
 id: T-360
 name: "Build fw test-onboarding: 8-checkpoint hybrid onboarding test"
 description: >
-  Build agents/onboarding-test/test-onboarding.sh with 8 checkpoints (scaffold, hooks, task, gate, commit, audit, self-audit, handover). Creates temp dir, runs fw init, exercises full onboarding flow. Structured PASS/WARN/FAIL output. Wire into bin/fw as fw test-onboarding. No fw dependency (standalone). Based on T-307 GO decision and docs/reports/T-307-hybrid-onboarding-test.md.
+  Build agents/onboarding-test/test-onboarding.sh with 8 checkpoints (scaffold, hooks,
+  task, gate, commit, audit, self-audit, handover). Creates temp dir, runs fw init,
+  exercises full onboarding flow. Structured PASS/WARN/FAIL output. Wire into bin/fw
+  as fw test-onboarding. No fw dependency (standalone). Based on T-307 GO decision
+  and docs/reports/T-307-hybrid-onboarding-test.md.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [testing, onboarding, cli]
 components: []
 related_tasks: []
 created: 2026-03-08T20:41:29Z
-last_update: 2026-03-08T20:43:29Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-08T20:43:29Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-360: Build fw test-onboarding: 8-checkpoint hybrid onboarding test

@@ -2,22 +2,42 @@
 id: T-325
 name: "Actionable human AC handoffs — enforce quality, surface pending reviews"
 description: >
-  Human ACs have 50% completion rate when vague vs 95% when specific. Two gaps: (1) ACs lack
-  executable steps, (2) no proactive notification when human action is needed. Explore enforcement
+  Human ACs have 50% completion rate when vague vs 95% when specific. Two gaps: (1)
+  ACs lack
+  executable steps, (2) no proactive notification when human action is needed. Explore
+  enforcement
   and surfacing mechanisms.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [governance, ux, handoff]
-components: [agents/task-create/update-task.sh, agents/handover/handover.sh, agents/task-create/create-task.sh]
+components: [agents/task-create/update-task.sh, agents/handover/handover.sh, 
+      agents/task-create/create-task.sh]
 related_tasks: [T-193, T-285, T-289]
 created: 2026-03-04T23:51:59Z
-last_update: 2026-03-08T19:30:13Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-08T19:30:13Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-325: Actionable human AC handoffs — enforce quality, surface pending reviews

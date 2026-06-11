@@ -7,13 +7,30 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [meta, learning, practices]
 components: []
 related_tasks: []
 created: 2026-03-08T12:25:51Z
-last_update: 2026-03-08T19:30:25Z
-date_finished: null
+last_update: '2026-06-11T22:24:19Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref,body:concern-ref); D2=0 (no-signal); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-345: Add bugfix learning checkpoint practice and G-016 gap

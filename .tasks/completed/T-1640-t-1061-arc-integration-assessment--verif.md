@@ -1,19 +1,44 @@
 ---
 id: T-1640
-name: "T-1061 arc integration assessment — verify T-1062/T-1064/T-1065/T-1066 compose end-to-end before human review"
+name: "T-1061 arc integration assessment — verify T-1062/T-1064/T-1065/T-1066 compose
+  end-to-end before human review"
 description: >
-  Cross-cutting verification: cargo check + cargo test on /opt/termlink (via termlink-agent) for the four crates the arc touched (hub, mcp, session, protocol); trace the composition through termlink_dispatch (T-1063 gate -> T-1064 task_type -> T-1065 model resolve -> outcome attribution); confirm T-1062 and T-1066 align as documented designs (read-only consumer / opt-in observer). Deliverable: docs/reports/T-1061-arc-integration-2026-05-01.md. Output: GO recommendation for the four open parents, four follow-ups captured (T-1636-T-1639) for buried supplementary-review notes.
+  Cross-cutting verification: cargo check + cargo test on /opt/termlink (via termlink-agent)
+  for the four crates the arc touched (hub, mcp, session, protocol); trace the composition
+  through termlink_dispatch (T-1063 gate -> T-1064 task_type -> T-1065 model resolve
+  -> outcome attribution); confirm T-1062 and T-1066 align as documented designs (read-only
+  consumer / opt-in observer). Deliverable: docs/reports/T-1061-arc-integration-2026-05-01.md.
+  Output: GO recommendation for the four open parents, four follow-ups captured (T-1636-T-1639)
+  for buried supplementary-review notes.
 
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1061, termlink, orchestrator, integration, verification]
 components: []
 related_tasks: [T-1061, T-1641]
 created: 2026-05-01T10:48:05Z
-last_update: 2026-05-01T10:51:41Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T10:51:41Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (body:wrap-phrase-without-substrate); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1640: T-1061 arc integration assessment — verify T-1062/T-1064/T-1065/T-1066 compose end-to-end before human review

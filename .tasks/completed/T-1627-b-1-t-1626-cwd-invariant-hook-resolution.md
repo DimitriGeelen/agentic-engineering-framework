@@ -1,19 +1,42 @@
 ---
 id: T-1627
-name: "B-1 (T-1626): CWD-invariant hook resolution — fix .agentic-framework/bin/fw not-found from subdirs"
+name: "B-1 (T-1626): CWD-invariant hook resolution — fix .agentic-framework/bin/fw
+  not-found from subdirs"
 description: >
-  Hook commands in .claude/settings.json use CWD-relative .agentic-framework/bin/fw. From any subdir of a consumer project, this resolves to nothing. Pick one: walk-up shim in ~/.local/bin/fw-hook, OR inline cd $(git rev-parse --show-toplevel) in settings.json, OR install-time absolute-path baking in fw upgrade. Bats-test from /tmp and from a deep subdir.
+  Hook commands in .claude/settings.json use CWD-relative .agentic-framework/bin/fw.
+  From any subdir of a consumer project, this resolves to nothing. Pick one: walk-up
+  shim in ~/.local/bin/fw-hook, OR inline cd $(git rev-parse --show-toplevel) in settings.json,
+  OR install-time absolute-path baking in fw upgrade. Bats-test from /tmp and from
+  a deep subdir.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [hooks, resilience, from-T-1626, B-1]
 components: []
 related_tasks: [T-1626]
 created: 2026-04-30T21:19:21Z
-last_update: 2026-04-30T21:27:44Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-04-30T21:27:44Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 0
+      D4: 1
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=2 (body:telemetry-or-audit-entry); 
+      D3=0 (no-signal); D4=1 (body:hard-coded-removed); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1627: B-1 (T-1626): CWD-invariant hook resolution — fix .agentic-framework/bin/fw not-found from subdirs

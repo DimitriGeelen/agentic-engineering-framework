@@ -2,18 +2,41 @@
 id: T-1406
 name: "T-1346-B2 fw doctor and fw version disclose active framework mode"
 description: >
-  Build B2 from T-1346 GO decomposition: fw doctor and fw version print which framework copy resolved (vendored, global, framework-repo) with absolute path and version pin. Closes the silent-leak observability gap from T-1346 — even after T-1356 (B1) flips rule order, users have no signal showing which copy is active. Acceptance: (1) fw version output includes 'Mode: <vendored|global|framework-repo>' + path; (2) fw doctor includes a structural section reporting same; (3) bats test asserts mode line appears for each resolution path.
+  Build B2 from T-1346 GO decomposition: fw doctor and fw version print which framework
+  copy resolved (vendored, global, framework-repo) with absolute path and version
+  pin. Closes the silent-leak observability gap from T-1346 — even after T-1356 (B1)
+  flips rule order, users have no signal showing which copy is active. Acceptance:
+  (1) fw version output includes 'Mode: <vendored|global|framework-repo>' + path;
+  (2) fw doctor includes a structural section reporting same; (3) bats test asserts
+  mode line appears for each resolution path.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [bin/fw]
 related_tasks: []
 created: 2026-04-23T18:43:36Z
-last_update: 2026-04-23T18:48:34Z
+last_update: '2026-06-11T22:23:47Z'
 date_finished: 2026-04-23T18:48:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1406: T-1346-B2 fw doctor and fw version disclose active framework mode

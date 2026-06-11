@@ -2,16 +2,37 @@
 id: T-136
 name: Auto-trigger handover at critical context threshold
 description: >
-  checkpoint.sh fires warnings at 150K tokens but the agent ignores them. Sprechloop cycle 2 reached 152K with no handover. Change: at CRITICAL threshold, checkpoint.sh should auto-run 'fw handover --emergency --commit' instead of just printing a warning. The agent cannot be trusted to act on warnings — structural enforcement is required (L-013, L-038).
+  checkpoint.sh fires warnings at 150K tokens but the agent ignores them. Sprechloop
+  cycle 2 reached 152K with no handover. Change: at CRITICAL threshold, checkpoint.sh
+  should auto-run 'fw handover --emergency --commit' instead of just printing a warning.
+  The agent cannot be trusted to act on warnings — structural enforcement is required
+  (L-013, L-038).
 status: work-completed
 workflow_type: build
-horizon: null
+horizon:
 owner: human
 tags: []
 related_tasks: []
 created: 2026-02-17T23:49:33Z
-last_update: 2026-02-18T06:17:01Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-02-18T06:17:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-136: Auto-trigger handover at critical context threshold

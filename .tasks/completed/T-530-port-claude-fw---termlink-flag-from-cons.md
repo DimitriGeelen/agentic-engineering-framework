@@ -2,18 +2,40 @@
 id: T-530
 name: "Port claude-fw --termlink flag from consumer project to upstream"
 description: >
-  Port the --termlink flag implementation from /opt/995_2021-kosten/.agentic-framework/bin/claude-fw to the upstream bin/claude-fw. Adds TermLink PTY session wrapping so Claude Code sessions can be observed/controlled remotely via termlink attach. Opt-in via --termlink flag or TL_CLAUDE_ENABLED=1 env var. Graceful fallback if termlink not installed. Based on spec at /opt/termlink/docs/specs/T-157-claude-fw-termlink-pickup.md.
+  Port the --termlink flag implementation from /opt/995_2021-kosten/.agentic-framework/bin/claude-fw
+  to the upstream bin/claude-fw. Adds TermLink PTY session wrapping so Claude Code
+  sessions can be observed/controlled remotely via termlink attach. Opt-in via --termlink
+  flag or TL_CLAUDE_ENABLED=1 env var. Graceful fallback if termlink not installed.
+  Based on spec at /opt/termlink/docs/specs/T-157-claude-fw-termlink-pickup.md.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [bin/claude-fw]
 related_tasks: []
 created: 2026-03-18T08:31:44Z
-last_update: 2026-05-02T05:06:25Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-03-23T09:52:05Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 1
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=1 (body/components:prompt-incidental); F1=0
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-530: Port claude-fw --termlink flag from consumer project to upstream

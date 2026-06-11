@@ -1,21 +1,40 @@
 ---
 id: T-200
-name: "Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)"
+name: "Discovery layer design — pattern detection, omission finding, insight surfacing
+  (T-194 Phase 4)"
 description: >
-  Inception: Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)
+  Inception: Discovery layer design — pattern detection, omission finding, insight
+  surfacing (T-194 Phase 4)
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [discovery, assurance, antifragility, temporal-analysis]
 related_tasks: [T-194]
 components: [docs/reports/T-200-discovery-layer-design.md]
 created: 2026-02-19T19:29:30Z
-last_update: 2026-02-22T09:43:12Z
+last_update: '2026-06-11T22:24:05Z'
 date_finished: 2026-02-22T09:43:12Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-200: Discovery layer design — pattern detection, omission finding, insight surfacing (T-194 Phase 4)

@@ -2,19 +2,41 @@
 id: T-1733
 name: "prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-to-end"
 description: >
-  T-1732 build slice 1: file workflow YAML + prompt template + run one dispatch to prove resolver→litellm→ollama-local→envelope works end-to-end. Closes G-064 (zero consumers) with first real consumer. Bounded scope: substrate connection only, not classification accuracy (Spike B).
+  T-1732 build slice 1: file workflow YAML + prompt template + run one dispatch to
+  prove resolver→litellm→ollama-local→envelope works end-to-end. Closes G-064 (zero
+  consumers) with first real consumer. Bounded scope: substrate connection only, not
+  classification accuracy (Spike B).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [G-064-closure, prompt-triage, v0.5]
 components: [bin/fw, lib/resolver.py]
 related_tasks: [T-1732, T-1729, T-1700, T-1689, T-1690, T-1697]
 arc_id: orchestrator-rethink
 created: 2026-05-05T07:27:43Z
-last_update: 2026-05-05T07:37:34Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T07:37:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 3
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=3 
+      (body:typed-io-or-gate); F3=1 (body/components:prompt-incidental); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1733: prompt-triage v0.5 Spike A — first orchestrator substrate consumer end-to-end

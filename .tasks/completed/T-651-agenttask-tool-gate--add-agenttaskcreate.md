@@ -2,18 +2,38 @@
 id: T-651
 name: "Agent/Task tool gate — add Agent|TaskCreate to check-active-task matcher"
 description: >
-  T-630 GO build task 2: Add Agent|TaskCreate|TaskUpdate to check-active-task.sh PreToolUse matcher in settings.json. Zero code changes to check-active-task.sh — empty file_path falls through to task-exists check. Blocked by B-005 (settings.json protection — human must update). Related: T-630, T-650.
+  T-630 GO build task 2: Add Agent|TaskCreate|TaskUpdate to check-active-task.sh PreToolUse
+  matcher in settings.json. Zero code changes to check-active-task.sh — empty file_path
+  falls through to task-exists check. Blocked by B-005 (settings.json protection —
+  human must update). Related: T-630, T-650.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T09:44:55Z
-last_update: 2026-04-13T06:23:23Z
+last_update: '2026-06-11T22:24:26Z'
 date_finished: 2026-03-28T09:45:43Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-651: Agent/Task tool gate — add Agent|TaskCreate to check-active-task matcher

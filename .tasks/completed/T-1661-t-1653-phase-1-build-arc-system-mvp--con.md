@@ -1,20 +1,51 @@
 ---
 id: T-1661
-name: "T-1653 Phase 1 build: Arc system MVP — .context/arcs/<id>.yaml + bin/fw arc {create,focus,list,show,close,tag} + handover injection + Watchtower landing-page section + /tasks?arc= filter chip + migrate orchestrator-rethink arc"
+name: "T-1653 Phase 1 build: Arc system MVP — .context/arcs/<id>.yaml + bin/fw arc
+  {create,focus,list,show,close,tag} + handover injection + Watchtower landing-page
+  section + /tasks?arc= filter chip + migrate orchestrator-rethink arc"
 description: >
-  T-1653 GO'd Phase 1 (Watchtower 19:09:02). MVP scope per Recommendation: 1) data model .context/arcs/<id>.yaml with id/name/description/status/anchor_task/constituent_tasks/created/closed_at/decision; 2) bin/fw arc CLI 7 verbs (create/focus/list/show/close/tag); 3) tag namespace arc:<id> canonical, legacy from-T-XXXX as alias one release; 4) handover.sh adds Current Arc line, SessionStart resume picks up; 5) Watchtower landing-page Arcs in flight section + /tasks?arc=<id> filter chip; 6) migration: auto-create orchestrator-rethink arc from T-1641, seed constituent_tasks. ~4h. Out of scope: dedicated /arcs page (Phase 2), arc-specific CLAUDE.md snippets, multi-arc focus stack. Full design: docs/reports/T-1653-arcs-as-first-class.md.
+  T-1653 GO'd Phase 1 (Watchtower 19:09:02). MVP scope per Recommendation: 1) data
+  model .context/arcs/<id>.yaml with id/name/description/status/anchor_task/constituent_tasks/created/closed_at/decision;
+  2) bin/fw arc CLI 7 verbs (create/focus/list/show/close/tag); 3) tag namespace arc:<id>
+  canonical, legacy from-T-XXXX as alias one release; 4) handover.sh adds Current
+  Arc line, SessionStart resume picks up; 5) Watchtower landing-page Arcs in flight
+  section + /tasks?arc=<id> filter chip; 6) migration: auto-create orchestrator-rethink
+  arc from T-1641, seed constituent_tasks. ~4h. Out of scope: dedicated /arcs page
+  (Phase 2), arc-specific CLAUDE.md snippets, multi-arc focus stack. Full design:
+  docs/reports/T-1653-arcs-as-first-class.md.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [orchestrator]
-components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, bin/fw, lib/arc.sh, tests/unit/test_arc_system.py, web/blueprints/core.py, web/blueprints/tasks.py, web/templates/cockpit.html, web/templates/index.html, web/templates/tasks.html]
+components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, 
+      bin/fw, lib/arc.sh, tests/unit/test_arc_system.py, web/blueprints/core.py, 
+      web/blueprints/tasks.py, web/templates/cockpit.html, 
+      web/templates/index.html, web/templates/tasks.html]
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-01T17:19:00Z
-last_update: 2026-05-02T05:52:34Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-02T05:52:15Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1661: T-1653 Phase 1 build: Arc system MVP — .context/arcs/<id>.yaml + bin/fw arc {create,focus,list,show,close,tag} + handover injection + Watchtower landing-page section + /tasks?arc= filter chip + migrate orchestrator-rethink arc

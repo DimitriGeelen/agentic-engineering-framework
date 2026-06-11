@@ -1,21 +1,48 @@
 ---
 id: T-1100
-name: "Inception: reconcile FIVE isolation patterns (widened from 2 after /opt/termlink T-909 evidence) (G-031)"
+name: "Inception: reconcile FIVE isolation patterns (widened from 2 after /opt/termlink
+  T-909 evidence) (G-031)"
 description: >
-  Inception task — pick canonical isolation model from FIVE patterns currently in production, or document when to use each, then write migration path. Originally scoped as 2 patterns (vendored dir vs shim) on 2026-04-11 morning; widened to 5 same day after /opt/termlink T-909 transcript revealed `fw vendor` and the symlink mode. The five patterns: (1) vendored plain .agentic-framework/ dir, files in project git, no .git inside (proxmox-ring20-management); (2) `fw vendor` subcommand — explicit copy with size exclusions, ~56MB target; (3) project-detecting shim (ring20-dashboard after fw upgrade); (4) manual cp -r — bloated ~349MB, wrong; (5) symlinked .agentic-framework — current /opt/termlink state, contaminates host install with consumer state. None documented as canonical. Origin: G-031.
+  Inception task — pick canonical isolation model from FIVE patterns currently in
+  production, or document when to use each, then write migration path. Originally
+  scoped as 2 patterns (vendored dir vs shim) on 2026-04-11 morning; widened to 5
+  same day after /opt/termlink T-909 transcript revealed `fw vendor` and the symlink
+  mode. The five patterns: (1) vendored plain .agentic-framework/ dir, files in project
+  git, no .git inside (proxmox-ring20-management); (2) `fw vendor` subcommand — explicit
+  copy with size exclusions, ~56MB target; (3) project-detecting shim (ring20-dashboard
+  after fw upgrade); (4) manual cp -r — bloated ~349MB, wrong; (5) symlinked .agentic-framework
+  — current /opt/termlink state, contaminates host install with consumer state. None
+  documented as canonical. Origin: G-031.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-1093, T-1094, T-1099, T-1101, T-1102, T-1103]
 created: 2026-04-11T12:16:16Z
-last_update: 2026-04-13T06:23:14Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-12T09:29:42Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1100: Inception: reconcile FIVE isolation patterns (G-031, widened)

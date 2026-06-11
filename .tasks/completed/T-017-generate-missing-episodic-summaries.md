@@ -2,7 +2,9 @@
 id: T-017
 name: Generate missing episodic summaries
 description: >
-  Four completed tasks have NO episodic summaries: T-002 (core agents), T-003 (bypass log), T-004 (pre-commit hook), T-012 (handover agent). Generate and enrich episodic summaries for each to capture the context that was lost.
+  Four completed tasks have NO episodic summaries: T-002 (core agents), T-003 (bypass
+  log), T-004 (pre-commit hook), T-012 (handover agent). Generate and enrich episodic
+  summaries for each to capture the context that was lost.
 status: work-completed
 workflow_type: build
 owner: human
@@ -12,8 +14,25 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T21:21:35Z
-last_update: 2026-02-13T22:31:00Z
+last_update: '2026-06-11T22:23:35Z'
 date_finished: 2026-02-13T21:31:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-017: Generate missing episodic summaries

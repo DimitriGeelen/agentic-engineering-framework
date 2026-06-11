@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade, reliability, v1, T-2078-slice]
 components: [lib/upgrade.sh]
 related_tasks: [T-2078, T-2092]
@@ -20,7 +20,7 @@ related_tasks: [T-2078, T-2092]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T11:58:34Z
-last_update: 2026-06-06T20:18:54Z
+last_update: '2026-06-11T22:24:07Z'
 date_finished: 2026-06-06T20:18:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,6 +77,24 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=5 (body:class-neutral); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 5
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=5 
+      (body:class-neutral); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

@@ -2,18 +2,40 @@
 id: T-1091
 name: "Watchtower inception detail page removes rationale hint 500-char truncation"
 description: >
-  T-1084 follow-up: web/blueprints/inception.py:221-222 truncates the Recommendation section to 500 chars for the rationale textarea hint. Humans recording an inception decision get incomplete rationale pre-populated (last fragment cut with '...'). The detail page is the full view for a single task — no reason to truncate. Remove the limit so the full Recommendation pre-populates the textarea. approvals.py 200-char limit in its list view is fine and not touched.
+  T-1084 follow-up: web/blueprints/inception.py:221-222 truncates the Recommendation
+  section to 500 chars for the rationale textarea hint. Humans recording an inception
+  decision get incomplete rationale pre-populated (last fragment cut with '...').
+  The detail page is the full view for a single task — no reason to truncate. Remove
+  the limit so the full Recommendation pre-populates the textarea. approvals.py 200-char
+  limit in its list view is fine and not touched.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T10:48:54Z
-last_update: 2026-04-11T10:50:03Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-11T10:50:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1091: Watchtower inception detail page removes rationale hint 500-char truncation

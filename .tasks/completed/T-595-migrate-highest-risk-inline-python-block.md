@@ -2,18 +2,44 @@
 id: T-595
 name: "Migrate highest-risk inline Python blocks to fw-util calls"
 description: >
-  Migrate the 32 inline python3 -c blocks identified as breaking-on-quotes (T-586 Phase 1, docs/reports/T-586-q4-shell-escaping.md) to use fw-util subcommands. Priority order: 1) check-tier0.sh:176-184 (audit log writer, COMMAND injection), 2) create-task.sh:161-199 (multiple interpolated vars), 3) validate-init.sh:155,198,204 (open path pattern), 4) all 22 open(path) patterns. Each migration: replace python3 -c with node fw-util call, verify same behavior, run existing tests. Depends on T-593 (fw-util). Design source: docs/reports/T-586-q4-shell-escaping.md remediation priority.
+  Migrate the 32 inline python3 -c blocks identified as breaking-on-quotes (T-586
+  Phase 1, docs/reports/T-586-q4-shell-escaping.md) to use fw-util subcommands. Priority
+  order: 1) check-tier0.sh:176-184 (audit log writer, COMMAND injection), 2) create-task.sh:161-199
+  (multiple interpolated vars), 3) validate-init.sh:155,198,204 (open path pattern),
+  4) all 22 open(path) patterns. Each migration: replace python3 -c with node fw-util
+  call, verify same behavior, run existing tests. Depends on T-593 (fw-util). Design
+  source: docs/reports/T-586-q4-shell-escaping.md remediation priority.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [security, typescript, T-586]
-components: [agents/audit/self-audit.sh, agents/context/check-tier0.sh, agents/handover/handover.sh, agents/task-create/create-task.sh, lib/assumption.sh, lib/upgrade.sh, lib/validate-init.sh]
+components: [agents/audit/self-audit.sh, agents/context/check-tier0.sh, 
+      agents/handover/handover.sh, agents/task-create/create-task.sh, 
+      lib/assumption.sh, lib/upgrade.sh, lib/validate-init.sh]
 related_tasks: [T-586, T-593, T-592]
 created: 2026-03-23T23:00:57Z
-last_update: 2026-03-24T07:20:00Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-24T07:20:00Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-595: Migrate highest-risk inline Python blocks to fw-util calls

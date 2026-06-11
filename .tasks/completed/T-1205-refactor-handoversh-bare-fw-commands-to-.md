@@ -7,13 +7,32 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/handover/handover.sh, tests/lint/no-bare-fw-in-gate-scripts.bats]
+components: [agents/handover/handover.sh, 
+      tests/lint/no-bare-fw-in-gate-scripts.bats]
 related_tasks: []
 created: 2026-04-13T08:24:08Z
-last_update: 2026-04-13T08:26:01Z
+last_update: '2026-06-11T22:23:42Z'
 date_finished: 2026-04-13T08:26:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1205: Refactor handover.sh bare fw commands to use _emit_user_command (T-1146 GO)

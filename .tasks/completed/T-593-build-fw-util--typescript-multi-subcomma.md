@@ -2,18 +2,41 @@
 id: T-593
 name: "Build fw-util — TypeScript multi-subcommand utility replacing inline Python"
 description: >
-  Build the fw-util TypeScript utility that replaces ~290 inline python3 -c blocks across 49 bash scripts. Subcommands: yaml-get (read YAML key), yaml-set (write YAML key), json-get (read JSON key), json-set (write JSON key), path-rel (relative path), path-resolve (absolute path), date-fmt (ISO date formatting), frontmatter-parse (YAML frontmatter extraction). Single esbuild bundle (~50KB). Called from bash as: node lib/ts/dist/fw-util.js <subcommand> <args>. Depends on T-592 (scaffold). Design source: docs/reports/T-586-migration-path.md section 2 Tier 2 + section 11.
+  Build the fw-util TypeScript utility that replaces ~290 inline python3 -c blocks
+  across 49 bash scripts. Subcommands: yaml-get (read YAML key), yaml-set (write YAML
+  key), json-get (read JSON key), json-set (write JSON key), path-rel (relative path),
+  path-resolve (absolute path), date-fmt (ISO date formatting), frontmatter-parse
+  (YAML frontmatter extraction). Single esbuild bundle (~50KB). Called from bash as:
+  node lib/ts/dist/fw-util.js <subcommand> <args>. Depends on T-592 (scaffold). Design
+  source: docs/reports/T-586-migration-path.md section 2 Tier 2 + section 11.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [architecture, typescript, T-586]
 components: []
 related_tasks: [T-586, T-592, T-595]
 created: 2026-03-23T22:50:30Z
-last_update: 2026-03-24T06:32:37Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-24T06:32:37Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-593: Build fw-util — TypeScript multi-subcommand utility replacing inline Python

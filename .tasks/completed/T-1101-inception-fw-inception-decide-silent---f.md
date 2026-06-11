@@ -1,21 +1,52 @@
 ---
 id: T-1101
-name: "Inception: fw inception decide silent --force bypass — RCA + remediation path (G-032 CRITICAL)"
+name: "Inception: fw inception decide silent --force bypass — RCA + remediation path
+  (G-032 CRITICAL)"
 description: >
-  Inception task — investigate the CRITICAL bug at lib/inception.sh:303 where fw inception decide silently passes --force to update-task.sh, bypassing P-010 (agent AC gate), P-011 (verification gate), AND the Human Task Completion Rule. Trigger: /opt/termlink T-909 transcript 2026-04-11 — fw inception decide T-909 go printed 'Completing human-owned task (--force bypass)' and '3/3 agent AC unchecked (--force bypass)' with the user never having passed --force. Comment at lib/inception.sh:299 cites T-637 with the premise that inception decide is Tier-0-gated, which is FALSE. Investigate: (1) full T-637 history — what problem was it solving and is there a non-bypass solution? (2) the actual call sites of inception decide and whether removing --force breaks anything legitimate; (3) whether splitting decision-recording from task-completion is feasible (decide writes rationale, completion is a separate user action); (4) backwards compat — what existing inceptions would suddenly fail their AC gate if --force is removed; (5) recommend GO/NO-GO/DEFER with concrete remediation path. Origin: G-032.
+  Inception task — investigate the CRITICAL bug at lib/inception.sh:303 where fw inception
+  decide silently passes --force to update-task.sh, bypassing P-010 (agent AC gate),
+  P-011 (verification gate), AND the Human Task Completion Rule. Trigger: /opt/termlink
+  T-909 transcript 2026-04-11 — fw inception decide T-909 go printed 'Completing human-owned
+  task (--force bypass)' and '3/3 agent AC unchecked (--force bypass)' with the user
+  never having passed --force. Comment at lib/inception.sh:299 cites T-637 with the
+  premise that inception decide is Tier-0-gated, which is FALSE. Investigate: (1)
+  full T-637 history — what problem was it solving and is there a non-bypass solution?
+  (2) the actual call sites of inception decide and whether removing --force breaks
+  anything legitimate; (3) whether splitting decision-recording from task-completion
+  is feasible (decide writes rationale, completion is a separate user action); (4)
+  backwards compat — what existing inceptions would suddenly fail their AC gate if
+  --force is removed; (5) recommend GO/NO-GO/DEFER with concrete remediation path.
+  Origin: G-032.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1093, G-032]
 created: 2026-04-11T12:37:23Z
-last_update: 2026-04-13T06:23:14Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-12T10:05:26Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1101: Inception: fw inception decide silent --force bypass — RCA + remediation path (G-032 CRITICAL)

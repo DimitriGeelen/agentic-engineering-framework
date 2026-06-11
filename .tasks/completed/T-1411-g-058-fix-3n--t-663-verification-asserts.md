@@ -1,19 +1,38 @@
 ---
 id: T-1411
-name: "G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute paths"
+name: "G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute
+  paths"
 description: >
-  G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute paths
+  G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute
+  paths
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-23T19:50:06Z
-last_update: 2026-04-23T19:52:04Z
+last_update: '2026-06-11T22:23:47Z'
 date_finished: 2026-04-23T19:52:04Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1411: G-058 fix 3/N — T-663 verification asserts 'bin/fw ' prefix but hooks use absolute paths

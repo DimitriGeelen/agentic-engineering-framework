@@ -1,13 +1,20 @@
 ---
 id: T-2073
-name: "orchestrator-mcp-baseline 168→242 — classify 74 new termlink_agent_*/channel_*/fleet_*/hub_* tools by naming convention (4th batch after T-1755/T-1760/T-1867)"
+name: "orchestrator-mcp-baseline 168→242 — classify 74 new termlink_agent_*/channel_*/fleet_*/hub_*
+  tools by naming convention (4th batch after T-1755/T-1760/T-1867)"
 description: >
-  fw audit orchestrator-mcp-scan reports 74 new unclassified MCP tools since the T-1867 update on 2026-05-15. Same naming-convention approach as the 3 prior batches: action verbs (post/react/edit/pin/quote/redact/typing/forward/poll_start/poll_end/reauth) → mutators_ungated; read shapes (info/list/stats/history/snapshot/digest/members/receipts/thread/ancestors/relations/identity/inbox/mentions/forwards/ping/etc.) → readonly_exempt. /opt/termlink is outside PROJECT_ROOT — handler-level verification deferred per the baseline's established convention; human can correct miscategorisations on review.
+  fw audit orchestrator-mcp-scan reports 74 new unclassified MCP tools since the T-1867
+  update on 2026-05-15. Same naming-convention approach as the 3 prior batches: action
+  verbs (post/react/edit/pin/quote/redact/typing/forward/poll_start/poll_end/reauth)
+  → mutators_ungated; read shapes (info/list/stats/history/snapshot/digest/members/receipts/thread/ancestors/relations/identity/inbox/mentions/forwards/ping/etc.)
+  → readonly_exempt. /opt/termlink is outside PROJECT_ROOT — handler-level verification
+  deferred per the baseline's established convention; human can correct miscategorisations
+  on review.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
@@ -16,7 +23,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T17:47:08Z
-last_update: 2026-05-28T17:51:44Z
+last_update: '2026-06-11T22:24:06Z'
 date_finished: 2026-05-28T17:51:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +35,24 @@ date_finished: 2026-05-28T17:51:44Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 3
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2073: orchestrator-mcp-baseline 168→242 — classify 74 new termlink_agent_*/channel_*/fleet_*/hub_* tools by naming convention (4th batch after T-1755/T-1760/T-1867)

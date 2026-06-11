@@ -2,18 +2,39 @@
 id: T-605
 name: "Fix bus.sh race condition — atomic ID generation for multi-agent safety"
 description: >
-  bus.sh uses find|wc -l for result ID generation (R-001, R-002). Two concurrent fw bus post calls get same ID — second overwrites first. Fix with atomic ID generation (mkdir-based or counter file with flock). bus.sh is the only component explicitly designed for multi-agent use that has zero concurrency protection. Origin: T-579 steelman/strawman analysis. Scope: bus.sh ID generation only, not full dedup layer.
+  bus.sh uses find|wc -l for result ID generation (R-001, R-002). Two concurrent fw
+  bus post calls get same ID — second overwrites first. Fix with atomic ID generation
+  (mkdir-based or counter file with flock). bus.sh is the only component explicitly
+  designed for multi-agent use that has zero concurrency protection. Origin: T-579
+  steelman/strawman analysis. Scope: bus.sh ID generation only, not full dedup layer.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-25T13:51:44Z
-last_update: 2026-03-25T14:08:59Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-25T14:08:59Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 3
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=3 (body:typed-io-or-gate); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-605: Fix bus.sh race condition — atomic ID generation for multi-agent safety

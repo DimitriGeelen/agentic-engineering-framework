@@ -2,7 +2,16 @@
 id: T-046
 name: Dashboard, project docs, and directives pages
 description: >
-  Build three strategic web UI pages. (1) Dashboard /: project overview with vision summary, success stage status, active work count, key stats from metrics. (2) Project docs /project and /project/:doc: list all foundational documents (001-Vision.md through 025-ArtifactDiscovery.md, FRAMEWORK.md), render markdown with sidebar showing related decisions, tasks, gaps for each spec. (3) Directives /directives: traceability hub showing each directive (D1-D4) with linked practices, decisions, experiments, gaps, and tasks. Uses directives.yaml from T-043. Design authority: 025-ArtifactDiscovery.md. Relevant sections: Web UI Pages (full set), Page Details table, The Directives Page Traceability Hub, Foundational Documents table. Depends on: T-043 (directive IDs), T-045 (web foundation).
+  Build three strategic web UI pages. (1) Dashboard /: project overview with vision
+  summary, success stage status, active work count, key stats from metrics. (2) Project
+  docs /project and /project/:doc: list all foundational documents (001-Vision.md
+  through 025-ArtifactDiscovery.md, FRAMEWORK.md), render markdown with sidebar showing
+  related decisions, tasks, gaps for each spec. (3) Directives /directives: traceability
+  hub showing each directive (D1-D4) with linked practices, decisions, experiments,
+  gaps, and tasks. Uses directives.yaml from T-043. Design authority: 025-ArtifactDiscovery.md.
+  Relevant sections: Web UI Pages (full set), Page Details table, The Directives Page
+  Traceability Hub, Foundational Documents table. Depends on: T-043 (directive IDs),
+  T-045 (web foundation).
 status: work-completed
 workflow_type: build
 owner: claude-code
@@ -12,8 +21,25 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T11:34:14Z
-last_update: 2026-02-14T12:27:34Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-14T12:27:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-046: Dashboard, project docs, and directives pages

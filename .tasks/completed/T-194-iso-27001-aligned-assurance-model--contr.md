@@ -1,27 +1,51 @@
 ---
 id: T-194
-name: "ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign"
+name: "ISO 27001-aligned assurance model — control register, OE testing, risk-driven
+  cron redesign"
 description: >
-  Deep inception (3-5 sessions): Formalize AEF's enforcement mechanisms using ISO 27001's
-  four-level assurance model (Risk → Control Design → Operational Effectiveness → Audit).
-  The framework has ~11 controls built organically but no control register, no formal risk
-  linkage, no OE testing, and a cron audit system that reruns structural checks instead of
-  verifying controls work. This inception explores whether ISO 27001 structure fits AEF,
+  Deep inception (3-5 sessions): Formalize AEF's enforcement mechanisms using ISO
+  27001's
+  four-level assurance model (Risk → Control Design → Operational Effectiveness →
+  Audit).
+  The framework has ~11 controls built organically but no control register, no formal
+  risk
+  linkage, no OE testing, and a cron audit system that reruns structural checks instead
+  of
+  verifying controls work. This inception explores whether ISO 27001 structure fits
+  AEF,
   designs the control register, and redesigns cron jobs as proper OE testing.
-  Origin: T-151 review revealed specification completed without human dialogue, and the
+  Origin: T-151 review revealed specification completed without human dialogue, and
+  the
   cron system built from it (T-184) doesn't match the original antifragility intent.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [iso27001, assurance, controls, antifragility, cron]
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
-last_update: 2026-02-19T19:29:03Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-02-19T19:29:03Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-194: ISO 27001-aligned assurance model — control register, OE testing, risk-driven cron redesign

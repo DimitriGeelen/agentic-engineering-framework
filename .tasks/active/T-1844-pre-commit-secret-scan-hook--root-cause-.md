@@ -14,7 +14,7 @@ components: [C-004, agents/git/lib/hooks.sh, agents/git/lib/large-file-scan.sh,
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-05-15T07:04:44Z
-last_update: '2026-05-28T22:54:10Z'
+last_update: '2026-06-11T22:23:26Z'
 date_finished: 2026-05-22T08:10:25Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -38,6 +38,22 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

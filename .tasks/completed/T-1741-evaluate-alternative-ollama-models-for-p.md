@@ -1,20 +1,45 @@
 ---
 id: T-1741
-name: "Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated on T-1740 outcome (Spike D)"
+name: "Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated
+  on T-1740 outcome (Spike D)"
 description: >
-  If T-1740 prompt-template revision fails to reach >=80% accuracy on the T-1736 50-prompt benchmark, evaluate whether switching the underlying ollama model rescues the classifier. Models to test: claude-3-5-sonnet-qwen3, claude-3-5-sonnet-qwen35, claude-3-5-sonnet-gemma4 (all already exposed via litellm:4000). Same harness (.context/spikes/T-1736-runharness.py with --model flag), same benchmark, same metrics. Decision: keep best model + revised template, or escalate to NO-GO on whole prompt-triage workflow.
+  If T-1740 prompt-template revision fails to reach >=80% accuracy on the T-1736 50-prompt
+  benchmark, evaluate whether switching the underlying ollama model rescues the classifier.
+  Models to test: claude-3-5-sonnet-qwen3, claude-3-5-sonnet-qwen35, claude-3-5-sonnet-gemma4
+  (all already exposed via litellm:4000). Same harness (.context/spikes/T-1736-runharness.py
+  with --model flag), same benchmark, same metrics. Decision: keep best model + revised
+  template, or escalate to NO-GO on whole prompt-triage workflow.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [spike, follow-up]
 components: [bin/fw]
 related_tasks: [T-1736, T-1740, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-05T08:13:04Z
-last_update: 2026-05-05T09:26:28Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T09:26:28Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1741: Evaluate alternative ollama models for prompt-triage (qwen3 / gemma4) — gated on T-1740 outcome (Spike D)

@@ -1,19 +1,41 @@
 ---
 id: T-1600
-name: "Playwright interaction suite for review surfaces — click flows, forced-500 toast, mobile viewports"
+name: "Playwright interaction suite for review surfaces — click flows, forced-500
+  toast, mobile viewports"
 description: >
-  Extends tests/playwright/ with real interaction tests that DOM-grep can't cover: click GO/DEFER buttons end-to-end, force a 500 to verify the htmx error toast (T-1582 closure), inception decide flow (open/fill rationale/submit/verify), mobile viewport snapshots for /cockpit /approvals /review. Surfaced by T-1597 sweep where W1-W5 used curl+grep — closes the [REVIEW] subjective gap that grep can't reach.
+  Extends tests/playwright/ with real interaction tests that DOM-grep can't cover:
+  click GO/DEFER buttons end-to-end, force a 500 to verify the htmx error toast (T-1582
+  closure), inception decide flow (open/fill rationale/submit/verify), mobile viewport
+  snapshots for /cockpit /approvals /review. Surfaced by T-1597 sweep where W1-W5
+  used curl+grep — closes the [REVIEW] subjective gap that grep can't reach.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-29T07:47:05Z
-last_update: 2026-04-29T18:49:34Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-29T18:49:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1600: Playwright interaction suite for review surfaces — click flows, forced-500 toast, mobile viewports

@@ -2,18 +2,44 @@
 id: T-244
 name: "Pre-edit fabric awareness — advisory dependency check on Write/Edit"
 description: >
-  Add lightweight PreToolUse advisory check: when agent edits a source file, look up the file in .fabric/components/ and inject dependency count + key dependents into context. Not blocking — just awareness. T-235 Gap #1: 'Fabric invisible to working agents — no agent checks deps before modifying files.' CLAUDE.md says 'Before modifying a file: fw fabric deps <path>' but this is guidance only. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md §Topic 1 Gap 1. Related: T-236 (blast-radius in post-commit — done), T-224 (component auto-populate on completion — done). This closes the pre-edit gap. Example: agent edits bin/fw (15 dependents) and sees 'NOTE: bin/fw has 15 downstream dependents — consider fw fabric blast-radius after commit.'
+  Add lightweight PreToolUse advisory check: when agent edits a source file, look
+  up the file in .fabric/components/ and inject dependency count + key dependents
+  into context. Not blocking — just awareness. T-235 Gap #1: 'Fabric invisible to
+  working agents — no agent checks deps before modifying files.' CLAUDE.md says 'Before
+  modifying a file: fw fabric deps <path>' but this is guidance only. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md
+  §Topic 1 Gap 1. Related: T-236 (blast-radius in post-commit — done), T-224 (component
+  auto-populate on completion — done). This closes the pre-edit gap. Example: agent
+  edits bin/fw (15 dependents) and sees 'NOTE: bin/fw has 15 downstream dependents
+  — consider fw fabric blast-radius after commit.'
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fabric, enforcement, awareness]
 components: [agents/context/check-active-task.sh]
 related_tasks: []
 created: 2026-02-22T09:29:28Z
-last_update: 2026-02-22T15:03:03Z
+last_update: '2026-06-11T22:24:16Z'
 date_finished: 2026-02-22T15:03:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-244: Pre-edit fabric awareness — advisory dependency check on Write/Edit

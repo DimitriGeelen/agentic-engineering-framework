@@ -2,18 +2,39 @@
 id: T-368
 name: "Add fabric drift check to fw audit"
 description: >
-  In agents/audit/audit.sh, add a check that runs fw fabric drift and warns if unregistered source files exist matching watch patterns. Severity: warning not failure. Closes the feedback loop so empty fabric is surfaced during routine audits. See R-2 in fabric silent-degradation analysis.
+  In agents/audit/audit.sh, add a check that runs fw fabric drift and warns if unregistered
+  source files exist matching watch patterns. Severity: warning not failure. Closes
+  the feedback loop so empty fabric is surfaced during routine audits. See R-2 in
+  fabric silent-degradation analysis.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [fabric, audit]
 components: [C-004]
 related_tasks: []
 created: 2026-03-08T22:27:38Z
-last_update: 2026-03-08T22:57:06Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-08T22:57:06Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-368: Add fabric drift check to fw audit

@@ -2,18 +2,44 @@
 id: T-246
 name: "Project memory read-path — query learnings/patterns/decisions at task start"
 description: >
-  When fw context focus T-XXX is set or a new task is created, query project memory (learnings.yaml, patterns.yaml, decisions.yaml) for relevant prior knowledge and inject a 2-3 line summary into working memory. Currently the context fabric scores 7/10 on write-path but 2/10 on read-path — the framework captures knowledge it doesn't use. 58 learnings, 14 patterns, 30+ decisions accumulated but never consulted when starting new work. Depends on: T-245 (sqlite-vec) for semantic matching, or can start with BM25 keyword matching via Tantivy (T-237). Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md §Topic 1 Gap 2. Also: /tmp/fw-agent-fabric-status.md §3.2 'Project Memory Not Consulted'. Related: T-241 (discovery surfacing at session-start — done, pattern to follow).
+  When fw context focus T-XXX is set or a new task is created, query project memory
+  (learnings.yaml, patterns.yaml, decisions.yaml) for relevant prior knowledge and
+  inject a 2-3 line summary into working memory. Currently the context fabric scores
+  7/10 on write-path but 2/10 on read-path — the framework captures knowledge it doesn't
+  use. 58 learnings, 14 patterns, 30+ decisions accumulated but never consulted when
+  starting new work. Depends on: T-245 (sqlite-vec) for semantic matching, or can
+  start with BM25 keyword matching via Tantivy (T-237). Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md
+  §Topic 1 Gap 2. Also: /tmp/fw-agent-fabric-status.md §3.2 'Project Memory Not Consulted'.
+  Related: T-241 (discovery surfacing at session-start — done, pattern to follow).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [context-fabric, knowledge, read-path]
 components: [agents/context/lib/focus.sh, bin/fw]
 related_tasks: []
 created: 2026-02-22T09:29:49Z
-last_update: 2026-02-22T15:37:38Z
+last_update: '2026-06-11T22:24:16Z'
 date_finished: 2026-02-22T15:37:38Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-246: Project memory read-path — query learnings/patterns/decisions at task start

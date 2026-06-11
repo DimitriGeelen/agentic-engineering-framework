@@ -1,20 +1,40 @@
 ---
 id: T-1918
-name: "BVP T-NEW-3: task and arc frontmatter schema extensions (bvp_scores, bvp_scores_proposed, cost_estimate, scoped_drivers, proposed_scoped_drivers)"
+name: "BVP T-NEW-3: task and arc frontmatter schema extensions (bvp_scores, bvp_scores_proposed,
+  cost_estimate, scoped_drivers, proposed_scoped_drivers)"
 description: >
-  Add BVP fields to task template and lib/arc.sh arc-creation defaults; document in CLAUDE.md. Verifies assumption A2 (audit YAML-parse accepts unknown fields).
+  Add BVP fields to task template and lib/arc.sh arc-creation defaults; document in
+  CLAUDE.md. Verifies assumption A2 (audit YAML-parse accepts unknown fields).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-3, schema]
 components: [.tasks/templates/default.md, lib/arc.sh, CLAUDE.md]
 related_tasks: [T-1915, T-1916, T-1917, T-1849]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:26:24Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T07:26:24Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 4
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=4 
+      (body/components:instruction-sync); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1918: BVP T-NEW-3 — task + arc frontmatter schema extensions

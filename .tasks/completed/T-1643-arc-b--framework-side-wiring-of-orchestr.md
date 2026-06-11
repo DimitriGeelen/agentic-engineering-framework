@@ -2,19 +2,55 @@
 id: T-1643
 name: "Arc B — Framework-side wiring of orchestrator substrate (T-1061 follow-up)"
 description: >
-  Make /opt/999 actually USE the substrate it built. W04 confirmed the framework has zero call-sites passing task_type or --model, builds no task-type:X tags, never reads model_used/fallback_used. Six discrete wirings: (1) fw termlink dispatch derives --task-type from active task workflow_type and tags worker; (2) tag long-lived specialist sessions task-type:X; (3) wire --model defaults via .framework.yaml + per-task-type overrides; (4) surface model_used/fallback_used in dispatch result manifest; (5) Watchtower /orchestrator panel subscribing to Governance frames 0x8; (6) update agents/dispatch/preamble.md. Co-arc with /opt/termlink-side hardening: gate the 71 ungated MCP mutators (W03), wire run_with_governance, ship best_model_for min-sample guard (Wilson lower-bound), add fw termlink route CLI verb, surface fallback/breaker state in route response, decide tenancy scope of route-cache, extend audit schema with route/breaker/governance fields. Blocked on Arc A (T-1642) policy decisions. Source: docs/reports/T-1641-worker-04-framework-usage.md, docs/reports/T-1641-worker-03-termlink-current-state.md.
+  Make /opt/999 actually USE the substrate it built. W04 confirmed the framework has
+  zero call-sites passing task_type or --model, builds no task-type:X tags, never
+  reads model_used/fallback_used. Six discrete wirings: (1) fw termlink dispatch derives
+  --task-type from active task workflow_type and tags worker; (2) tag long-lived specialist
+  sessions task-type:X; (3) wire --model defaults via .framework.yaml + per-task-type
+  overrides; (4) surface model_used/fallback_used in dispatch result manifest; (5)
+  Watchtower /orchestrator panel subscribing to Governance frames 0x8; (6) update
+  agents/dispatch/preamble.md. Co-arc with /opt/termlink-side hardening: gate the
+  71 ungated MCP mutators (W03), wire run_with_governance, ship best_model_for min-sample
+  guard (Wilson lower-bound), add fw termlink route CLI verb, surface fallback/breaker
+  state in route response, decide tenancy scope of route-cache, extend audit schema
+  with route/breaker/governance fields. Blocked on Arc A (T-1642) policy decisions.
+  Source: docs/reports/T-1641-worker-04-framework-usage.md, docs/reports/T-1641-worker-03-termlink-current-state.md.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
-tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, framework-integration]
-components: [agents/dispatch/preamble.md, agents/termlink/termlink.sh, lib/config.sh, tests/unit/test_arcs_routes.py, tests/unit/test_termlink_dispatch_task_type.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/arc_detail.html, web/templates/orchestrator.html]
+horizon:
+tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, 
+      framework-integration]
+components: [agents/dispatch/preamble.md, agents/termlink/termlink.sh, 
+      lib/config.sh, tests/unit/test_arcs_routes.py, 
+      tests/unit/test_termlink_dispatch_task_type.py, web/blueprints/arcs.py, 
+      web/blueprints/__init__.py, web/blueprints/orchestrator.py, 
+      web/templates/arc_detail.html, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1642, T-1063, T-1064, T-1065, T-1066]
 arc_id: orchestrator-rethink
 created: 2026-05-01T11:54:52Z
-last_update: 2026-05-02T05:51:46Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-02T05:51:46Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=1 (body/components:prompt-incidental); F1=0
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1643: Arc B — Framework-side wiring of orchestrator substrate (T-1061 follow-up)

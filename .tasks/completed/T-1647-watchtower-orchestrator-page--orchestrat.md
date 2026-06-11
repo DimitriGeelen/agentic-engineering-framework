@@ -2,19 +2,46 @@
 id: T-1647
 name: "Watchtower /orchestrator page — orchestrator-arc surface"
 description: >
-  W10 #2 — directly answers the question that triggered T-1641 ('absolutely seeing nothing that indicates we are now orchestrating'). Single Watchtower page surfacing: (a) MCP audit summary from .context/audits/orchestrator-LATEST.yaml (gated/total, drift findings, deprecated facades), (b) live sessions parsed from termlink list --json with task-type/role/task tag breakdown, (c) per-task-type specialist counts, (d) cross-link panel to T-1641 reconsideration artefact + T-1642/T-1643/T-1644 follow-up arcs. Modeled after web/blueprints/hooks.py shape.
+  W10 #2 — directly answers the question that triggered T-1641 ('absolutely seeing
+  nothing that indicates we are now orchestrating'). Single Watchtower page surfacing:
+  (a) MCP audit summary from .context/audits/orchestrator-LATEST.yaml (gated/total,
+  drift findings, deprecated facades), (b) live sessions parsed from termlink list
+  --json with task-type/role/task tag breakdown, (c) per-task-type specialist counts,
+  (d) cross-link panel to T-1641 reconsideration artefact + T-1642/T-1643/T-1644 follow-up
+  arcs. Modeled after web/blueprints/hooks.py shape.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1641, t-1061-followup, drift-defense, watchtower, observability]
-components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/shared.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
+components: [tests/unit/test_arcs_routes.py, web/blueprints/arcs.py, 
+      web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/shared.py, 
+      web/templates/arc_detail.html, web/templates/arcs_index.html, 
+      web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1644, T-1646, T-1063, T-1064, T-1066]
 arc_id: orchestrator-rethink
 created: 2026-05-01T12:14:30Z
-last_update: 2026-05-02T05:52:00Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-02T05:52:00Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F-RECALL=0 (no-signal); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1647: Watchtower /orchestrator page — orchestrator-arc surface

@@ -1,19 +1,43 @@
 ---
 id: T-1598
-name: "Fix Playwright cross-surface parity test — replace decaying T-967 negative-case fixture (T-1597 follow-up)"
+name: "Fix Playwright cross-surface parity test — replace decaying T-967 negative-case
+  fixture (T-1597 follow-up)"
 description: >
-  Cross-surface parity invariant test (tests/playwright/test_cross_surface_parity.py) ships TASK_WITHOUT_REVIEWER='T-967' as the negative case. The daily reviewer scan systematically writes ## Reviewer Verdict blocks back into completed tasks — T-967 acquired one 16 min after T-1586 completed. Test now fails 1/8 (negative case). Fix: replace the static fixture with a self-renewing approach (synthetic in-test task body OR Jinja2-rendered template OR pick a no-reviewer task at runtime). Surfaced by T-1597 blind-reviewer sweep, W3.
+  Cross-surface parity invariant test (tests/playwright/test_cross_surface_parity.py)
+  ships TASK_WITHOUT_REVIEWER='T-967' as the negative case. The daily reviewer scan
+  systematically writes ## Reviewer Verdict blocks back into completed tasks — T-967
+  acquired one 16 min after T-1586 completed. Test now fails 1/8 (negative case).
+  Fix: replace the static fixture with a self-renewing approach (synthetic in-test
+  task body OR Jinja2-rendered template OR pick a no-reviewer task at runtime). Surfaced
+  by T-1597 blind-reviewer sweep, W3.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-29T07:34:08Z
-last_update: 2026-04-29T18:21:10Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-29T18:21:10Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1598: Fix Playwright cross-surface parity test — replace decaying T-967 negative-case fixture (T-1597 follow-up)

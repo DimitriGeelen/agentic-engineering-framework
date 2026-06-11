@@ -11,7 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [build, data-migration, idempotent, T-NEW-3]
 components: [agents/context/check-arc-id.sh, C-009, 
       lib/migrations/arc-id-migration.sh, 
@@ -19,7 +19,7 @@ components: [agents/context/check-arc-id.sh, C-009,
 related_tasks: [T-1846, T-1847, T-1848, T-1717, T-1719]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:50Z
-last_update: '2026-05-19T17:56:23Z'
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-16T09:27:46Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:23Z'
@@ -31,6 +31,23 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
       (body:framework-level-ux); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 4
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=4
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

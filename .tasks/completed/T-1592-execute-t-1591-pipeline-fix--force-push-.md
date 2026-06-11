@@ -1,19 +1,39 @@
 ---
 id: T-1592
-name: "Execute T-1591 pipeline fix — force-push 6 safe annotated tags to GitHub + investigate v1.5.743 divergence + add fw doctor mirror check"
+name: "Execute T-1591 pipeline fix — force-push 6 safe annotated tags to GitHub +
+  investigate v1.5.743 divergence + add fw doctor mirror check"
 description: >
-  Execute T-1591 pipeline fix — force-push 6 safe annotated tags to GitHub + investigate v1.5.743 divergence + add fw doctor mirror check
+  Execute T-1591 pipeline fix — force-push 6 safe annotated tags to GitHub + investigate
+  v1.5.743 divergence + add fw doctor mirror check
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [bin/fw]
 related_tasks: []
 created: 2026-04-28T21:07:30Z
-last_update: 2026-04-28T21:36:09Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-28T21:36:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 2
+      D4: 0
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=0 (no-signal); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); F3=0 (no-signal); 
+      F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1592: Execute T-1591 pipeline fix — force-push 6 safe annotated tags to GitHub + investigate v1.5.743 divergence + add fw doctor mirror check

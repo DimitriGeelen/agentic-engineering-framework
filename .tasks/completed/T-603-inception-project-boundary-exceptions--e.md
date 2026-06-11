@@ -1,21 +1,46 @@
 ---
 id: T-603
-name: "Inception: Project boundary exceptions — /etc/cron.d and other legitimate outside-PROJECT_ROOT writes"
+name: "Inception: Project boundary exceptions — /etc/cron.d and other legitimate outside-PROJECT_ROOT
+  writes"
 description: >
-  T-602 fixed the cron collision symptom, but the boundary exception itself is unexamined. The project boundary gate (T-559) blocks writes outside PROJECT_ROOT, yet /etc/cron.d/ is a legitimate exception. Questions: (1) Is /etc/cron.d/ the only legitimate outside-boundary write? (2) How should T-559 gate coexist with this exception — whitelist, escape hatch, or structural carve-out? (3) What is the attack surface if agents learn 'some outside writes are OK'? (4) Do the cron-triggered audits cover the full project scope (confirmed: yes via PROJECT_ROOT), and is this documented? Related: T-559, T-602, G-022.
+  T-602 fixed the cron collision symptom, but the boundary exception itself is unexamined.
+  The project boundary gate (T-559) blocks writes outside PROJECT_ROOT, yet /etc/cron.d/
+  is a legitimate exception. Questions: (1) Is /etc/cron.d/ the only legitimate outside-boundary
+  write? (2) How should T-559 gate coexist with this exception — whitelist, escape
+  hatch, or structural carve-out? (3) What is the attack surface if agents learn 'some
+  outside writes are OK'? (4) Do the cron-triggered audits cover the full project
+  scope (confirmed: yes via PROJECT_ROOT), and is this documented? Related: T-559,
+  T-602, G-022.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [urgent, security]
 components: []
 related_tasks: [T-559, T-602, T-601]
 created: 2026-03-24T09:44:00Z
-last_update: 2026-04-13T13:21:32Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-04-13T13:21:32Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-603: Inception: Project boundary exceptions — /etc/cron.d and other legitimate outside-PROJECT_ROOT writes

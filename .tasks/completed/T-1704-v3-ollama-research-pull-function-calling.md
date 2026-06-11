@@ -1,19 +1,45 @@
 ---
 id: T-1704
-name: "v3 ollama-research: pull function-calling-tuned model (hermes-3:8b OR xlam:7b) and re-probe"
+name: "v3 ollama-research: pull function-calling-tuned model (hermes-3:8b OR xlam:7b)
+  and re-probe"
 description: >
-  T-1703 disproved that catalogue restriction rescues tool-use on generalist 8-10B models (0/18 across gemma4:8b, qwen3.5:9.7B). Failure mode is structural — models emit prose/code instead of tool_use JSON. v3: pull a function-calling-tuned model (hermes-3:8b or xlam:7b, both ≤5GB), add litellm alias, re-run tools/t1703-probe-matrix.sh with the new alias substituted in CELLS array. If ≥90% on simple-read: update ollama-research.yaml + T-1700 Recommendation. If not: file v4 inception (claude-code-router OR accept text-only narrow workflow). Predecessors: T-1700 (substrate), T-1703 (catalogue probe + L-347).
+  T-1703 disproved that catalogue restriction rescues tool-use on generalist 8-10B
+  models (0/18 across gemma4:8b, qwen3.5:9.7B). Failure mode is structural — models
+  emit prose/code instead of tool_use JSON. v3: pull a function-calling-tuned model
+  (hermes-3:8b or xlam:7b, both ≤5GB), add litellm alias, re-run tools/t1703-probe-matrix.sh
+  with the new alias substituted in CELLS array. If ≥90% on simple-read: update ollama-research.yaml
+  + T-1700 Recommendation. If not: file v4 inception (claude-code-router OR accept
+  text-only narrow workflow). Predecessors: T-1700 (substrate), T-1703 (catalogue
+  probe + L-347).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [v3-prep]
 components: [tools/t1704-hermes3-probe.sh]
 related_tasks: []
 created: 2026-05-03T19:58:50Z
-last_update: 2026-05-03T20:35:08Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-03T20:35:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 3
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=3 
+      (body:typed-io-or-gate); F3=1 (body/components:prompt-incidental); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1704: v3 ollama-research: pull function-calling-tuned model (hermes-3:8b OR xlam:7b) and re-probe

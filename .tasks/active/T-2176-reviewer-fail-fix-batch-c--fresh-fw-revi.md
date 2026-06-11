@@ -23,7 +23,7 @@ related_tasks: [T-2173, T-2174, T-2175, T-1443, T-1951]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T08:41:56Z
-last_update: 2026-06-06T06:25:15Z
+last_update: '2026-06-11T22:23:33Z'
 date_finished: 2026-06-06T06:25:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,6 +61,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link);
       F-ORCH=5 (body:substrate-expand)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 3
+      F-ORCH: 5
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link);
+      F-ORCH=5 (body:substrate-expand); F3=0 (no-signal); F1=0 (no-signal); F2=0
+      (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-02T08:45:02Z'

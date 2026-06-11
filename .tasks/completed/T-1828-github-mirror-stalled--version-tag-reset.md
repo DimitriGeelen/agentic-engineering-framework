@@ -1,19 +1,52 @@
 ---
 id: T-1828
-name: "github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix-shipped commits from reaching GitHub consumers"
+name: "github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix-shipped
+  commits from reaching GitHub consumers"
 description: >
-  GitHub mirror at 9d52cee27 (T-1725, 2026-05-04), 294 commits behind origin. Auto-recover cron (T-1594) push-failing every 15 min for hours. Root cause: VERSION stamping via `git describe` counter resets at each new tag — v1.6.2 created after last GitHub push, dropped stamped VERSION from 1.6.260 to 1.6.148. T-1603 pre-push hook (correctly per spec) blocks as monotonicity violation. fix-shipped commits for T-1822/T-1823/T-1824/T-1825/T-1634 cannot reach GitHub-cloning consumers; /opt/termlink reports they cannot `fw upgrade` to pick up cwd-trap fix.
+  GitHub mirror at 9d52cee27 (T-1725, 2026-05-04), 294 commits behind origin. Auto-recover
+  cron (T-1594) push-failing every 15 min for hours. Root cause: VERSION stamping
+  via `git describe` counter resets at each new tag — v1.6.2 created after last GitHub
+  push, dropped stamped VERSION from 1.6.260 to 1.6.148. T-1603 pre-push hook (correctly
+  per spec) blocks as monotonicity violation. fix-shipped commits for T-1822/T-1823/T-1824/T-1825/T-1634
+  cannot reach GitHub-cloning consumers; /opt/termlink reports they cannot `fw upgrade`
+  to pick up cwd-trap fix.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, fw-upgrade-incident-2026-05-14, mirror, version-monotonicity]
-components: [C-004, agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, bin/fw, lib/inception.sh, lib/mirror.sh, lib/upgrade.sh, tests/unit/test_doctor_consumer_version_ahead.bats, tests/unit/test_mirror_stderr_capture.bats, tests/unit/test_pre_push_monotonic_ancestor.bats, tests/unit/test_secret_scan.bats, tests/unit/test_upgrade_downgrade_guard.bats, web/templates/prompt_detail.html]
-related_tasks: [T-1542, T-1594, T-1602, T-1603, T-1822, T-1823, T-1824, T-1825, T-1634, T-1826, T-1827, T-1833, T-1834]
+components: [C-004, agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, 
+      bin/fw, lib/inception.sh, lib/mirror.sh, lib/upgrade.sh, 
+      tests/unit/test_doctor_consumer_version_ahead.bats, 
+      tests/unit/test_mirror_stderr_capture.bats, 
+      tests/unit/test_pre_push_monotonic_ancestor.bats, 
+      tests/unit/test_secret_scan.bats, 
+      tests/unit/test_upgrade_downgrade_guard.bats, 
+      web/templates/prompt_detail.html]
+related_tasks: [T-1542, T-1594, T-1602, T-1603, T-1822, T-1823, T-1824, T-1825, 
+      T-1634, T-1826, T-1827, T-1833, T-1834]
 created: 2026-05-14T18:22:32Z
-last_update: 2026-05-15T20:19:25Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-15T20:19:25Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 4
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 1
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=2 (body:telemetry-or-audit-entry); 
+      D3=4 (body:framework-level-ux); D4=0 (no-signal); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=1 (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1828: github mirror stalled — VERSION tag-reset trips T-1603 hook, blocks fix-shipped commits from reaching GitHub consumers

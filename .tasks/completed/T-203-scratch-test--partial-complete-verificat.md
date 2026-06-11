@@ -2,17 +2,35 @@
 id: T-203
 name: "Scratch test — partial-complete verification"
 description: >
-  Temporary task to verify P-010 AC split and partial-complete behavior. Delete after testing.
+  Temporary task to verify P-010 AC split and partial-complete behavior. Delete after
+  testing.
 
 status: work-completed
 workflow_type: test
 owner: human
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-19T21:43:44Z
-last_update: 2026-02-19T21:45:08Z
+last_update: '2026-06-11T22:24:05Z'
 date_finished: 2026-02-19T21:44:11Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-203: Scratch test — partial-complete verification

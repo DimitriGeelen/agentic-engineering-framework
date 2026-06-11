@@ -2,18 +2,40 @@
 id: T-427
 name: "Python utility consolidation — task parser, search routing, SSE formatter (P4+P8+P9)"
 description: >
-  P4: Task frontmatter parsing duplicated 4x — extract parse_task_markdown(). P8: search routing 70+ lines/4 levels — extract select_search_mode(). P9: SSE duplication between discovery.py and ask.py — create web/sse.py utility. Directive scores: P4=6, P8=5, P9=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  P4: Task frontmatter parsing duplicated 4x — extract parse_task_markdown(). P8:
+  search routing 70+ lines/4 levels — extract select_search_mode(). P9: SSE duplication
+  between discovery.py and ask.py — create web/sse.py utility. Directive scores: P4=6,
+  P8=5, P9=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, python, watchtower]
-components: [web/blueprints/core.py, C-003, web/blueprints/inception.py, web/blueprints/metrics.py, web/blueprints/tasks.py, web/blueprints/timeline.py, web/shared.py]
+components: [web/blueprints/core.py, C-003, web/blueprints/inception.py, 
+      web/blueprints/metrics.py, web/blueprints/tasks.py, 
+      web/blueprints/timeline.py, web/shared.py]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:08Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-11T21:56:33Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-427: Python utility consolidation — task parser, search routing, SSE formatter (P4+P8+P9)

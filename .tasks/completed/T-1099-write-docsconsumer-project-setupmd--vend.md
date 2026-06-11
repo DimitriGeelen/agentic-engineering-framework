@@ -1,19 +1,41 @@
 ---
 id: T-1099
-name: "Write docs/consumer-project-setup.md — vendoring + shim + termlink onboarding walkthrough (G-030)"
+name: "Write docs/consumer-project-setup.md — vendoring + shim + termlink onboarding
+  walkthrough (G-030)"
 description: >
-  Create docs/consumer-project-setup.md with: how to clone target project, how to fw init, when/why to fw upgrade, what .framework.yaml fields mean (especially upstream_repo), shim vs vendored isolation models (link to G-031), termlink install (system-wide via brew, NOT per-project), and a worked example. Link from README.md and CLAUDE.md. Origin: G-030. Trigger: cross-session ring20-dashboard onboarding incident 2026-04-11.
+  Create docs/consumer-project-setup.md with: how to clone target project, how to
+  fw init, when/why to fw upgrade, what .framework.yaml fields mean (especially upstream_repo),
+  shim vs vendored isolation models (link to G-031), termlink install (system-wide
+  via brew, NOT per-project), and a worked example. Link from README.md and CLAUDE.md.
+  Origin: G-030. Trigger: cross-session ring20-dashboard onboarding incident 2026-04-11.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1093, T-1094, T-1098]
 created: 2026-04-11T12:16:03Z
-last_update: 2026-04-12T07:32:19Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-12T07:32:19Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=2
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1099: Write docs/consumer-project-setup.md — vendoring + shim + termlink onboarding walkthrough (G-030)

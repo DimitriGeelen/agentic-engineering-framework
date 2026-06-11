@@ -7,13 +7,32 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/docgen/generate-article.sh, agents/mcp/mcp-reaper.sh, agents/onboarding-test/test-onboarding.sh, agents/termlink/termlink.sh]
+components: [agents/docgen/generate-article.sh, agents/mcp/mcp-reaper.sh, 
+      agents/onboarding-test/test-onboarding.sh, agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-03-30T19:10:41Z
-last_update: 2026-03-30T19:15:08Z
+last_update: '2026-06-11T22:24:29Z'
 date_finished: 2026-03-30T19:15:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-798: Shellcheck cleanup: remaining peripheral agent scripts

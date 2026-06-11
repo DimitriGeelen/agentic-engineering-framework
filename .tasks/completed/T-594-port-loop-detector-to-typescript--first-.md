@@ -2,18 +2,41 @@
 id: T-594
 name: "Port loop detector to TypeScript — first real TS hook component"
 description: >
-  Port the T-586 Phase 2 prototype (docs/spikes/T-586-loop-detect-ts/loop-detect.ts, 261 LOC) into lib/ts/src/loop-detect.ts as the first production TS component. Wire as PostToolUse hook in settings.json template. Compile via fw build. 3 detectors: generic_repeat, ping_pong, no_progress. Uses shared state module from T-592 scaffold. Replaces/supersedes T-578 inception (loop detection) — that inception's question is answered by T-586 GO decision. Depends on T-592 (scaffold). Reference: docs/reports/T-586-prototype-comparison.md, docs/spikes/T-586-loop-detect-ts/.
+  Port the T-586 Phase 2 prototype (docs/spikes/T-586-loop-detect-ts/loop-detect.ts,
+  261 LOC) into lib/ts/src/loop-detect.ts as the first production TS component. Wire
+  as PostToolUse hook in settings.json template. Compile via fw build. 3 detectors:
+  generic_repeat, ping_pong, no_progress. Uses shared state module from T-592 scaffold.
+  Replaces/supersedes T-578 inception (loop detection) — that inception's question
+  is answered by T-586 GO decision. Depends on T-592 (scaffold). Reference: docs/reports/T-586-prototype-comparison.md,
+  docs/spikes/T-586-loop-detect-ts/.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [hooks, typescript, T-586]
 components: []
 related_tasks: [T-586, T-592, T-578]
 created: 2026-03-23T23:00:46Z
-last_update: 2026-04-25T14:11:46Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-24T06:35:43Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-594: Port loop detector to TypeScript — first real TS hook component

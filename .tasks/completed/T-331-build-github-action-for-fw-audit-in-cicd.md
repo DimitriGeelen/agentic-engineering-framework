@@ -2,18 +2,37 @@
 id: T-331
 name: "Build GitHub Action for fw audit in CI/CD"
 description: >
-  Create action.yml + Dockerfile for GitHub Actions marketplace. Enables teams to run fw audit as a CI/CD gate on PRs. High discovery channel for compliance-minded teams. Ref: docs/reports/T-327-visibility-strategy.md
+  Create action.yml + Dockerfile for GitHub Actions marketplace. Enables teams to
+  run fw audit as a CI/CD gate on PRs. High discovery channel for compliance-minded
+  teams. Ref: docs/reports/T-327-visibility-strategy.md
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:37Z
-last_update: 2026-03-12T12:41:18Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-05T01:31:31Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-331: Build GitHub Action for fw audit in CI/CD

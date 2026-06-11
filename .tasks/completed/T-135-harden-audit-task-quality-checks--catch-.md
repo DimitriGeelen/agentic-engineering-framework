@@ -2,16 +2,37 @@
 id: T-135
 name: Harden audit task quality checks — catch thin/stub tasks
 description: >
-  Audit passes tasks with no acceptance criteria, no verification section, placeholder context, and descriptions that just say 'see plan Task X'. Add checks: (1) AC section exists with >=1 checkbox, (2) Verification section exists, (3) Context is not template placeholder, (4) Description is self-contained. Discovered in T-124 cycle 2: sprechloop agent created 11 stub tasks that all passed audit.
+  Audit passes tasks with no acceptance criteria, no verification section, placeholder
+  context, and descriptions that just say 'see plan Task X'. Add checks: (1) AC section
+  exists with >=1 checkbox, (2) Verification section exists, (3) Context is not template
+  placeholder, (4) Description is self-contained. Discovered in T-124 cycle 2: sprechloop
+  agent created 11 stub tasks that all passed audit.
 status: work-completed
 workflow_type: build
-horizon: null
+horizon:
 owner: human
 tags: []
 related_tasks: []
 created: 2026-02-17T23:39:34Z
-last_update: 2026-02-17T23:41:40Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-02-17T23:41:40Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-135: Harden audit task quality checks — catch thin/stub tasks

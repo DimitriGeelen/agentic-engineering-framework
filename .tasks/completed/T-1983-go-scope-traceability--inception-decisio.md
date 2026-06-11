@@ -8,31 +8,37 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1984, T-1849, T-1890, T-1442, T-1443, T-1950]
 inception_decisions:
   - id: schema-frontmatter
-    text: "inception_decisions: lives in inception task frontmatter (single source of truth, reuses T-1849 hook pattern)"
+    text: "inception_decisions: lives in inception task frontmatter (single source
+      of truth, reuses T-1849 hook pattern)"
     ships_in: deferred:T-1984
   - id: ships-in-five-shapes
-    text: "ships_in: accepts five shapes — file path / module.function / path::test_func / T-XXX / deferred:T-YYYY"
+    text: "ships_in: accepts five shapes — file path / module.function / path::test_func
+      / T-XXX / deferred:T-YYYY"
     ships_in: deferred:T-1984
   - id: gate-site
-    text: "Close gate fires in update-task.sh --status work-completed on workflow_type: inception (not at inception-decide)"
+    text: "Close gate fires in update-task.sh --status work-completed on workflow_type:
+      inception (not at inception-decide)"
     ships_in: deferred:T-1984
   - id: migration-grandfather
-    text: "Grandfather completed inceptions without the field; gate only fires when inception_decisions: is non-empty"
+    text: "Grandfather completed inceptions without the field; gate only fires when
+      inception_decisions: is non-empty"
     ships_in: deferred:T-1984
   - id: bypass-parity
-    text: "Override is BOTH --skip-inception-scope-trace flag (direct) AND FW_SKIP_INCEPTION_SCOPE_TRACE=1 env-var (downstream) per L-399"
+    text: "Override is BOTH --skip-inception-scope-trace flag (direct) AND FW_SKIP_INCEPTION_SCOPE_TRACE=1
+      env-var (downstream) per L-399"
     ships_in: deferred:T-1984
   - id: defer-then-go-sequencing
-    text: "Ship substrate (T-1984) first, then dogfood via T-1950A/T-1951 (validation by use, not by spec)"
+    text: "Ship substrate (T-1984) first, then dogfood via T-1950A/T-1951 (validation
+      by use, not by spec)"
     ships_in: deferred:T-1984
 created: 2026-05-21T18:53:14Z
-last_update: 2026-05-21T19:29:36Z
+last_update: '2026-06-11T22:24:05Z'
 date_finished: 2026-05-21T19:29:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -46,6 +52,22 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-21T19:00:02Z'

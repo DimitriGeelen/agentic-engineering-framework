@@ -2,20 +2,41 @@
 id: T-1315
 name: "Pickup from email-archive: vendored-vs-repo mode blind spot RCA (sourced T-1043)"
 description: >
-  Inception request from /opt/050-email-archive (T-1043) about systemic vendored-mode blind spots. Two incidents reported: bin/fw path miss (resolved via CLAUDE.md T-1257 update we shipped) and PROJECT_ROOT env leak (resolved by T-1310 we shipped today). Three options proposed (symlink, path-aware CLAUDE.md rule, structural session preflight). Proposal artifact at docs/proposals/T-1315-from-email-archive-vendored-mode-blindspot.md.
+  Inception request from /opt/050-email-archive (T-1043) about systemic vendored-mode
+  blind spots. Two incidents reported: bin/fw path miss (resolved via CLAUDE.md T-1257
+  update we shipped) and PROJECT_ROOT env leak (resolved by T-1310 we shipped today).
+  Three options proposed (symlink, path-aware CLAUDE.md rule, structural session preflight).
+  Proposal artifact at docs/proposals/T-1315-from-email-archive-vendored-mode-blindspot.md.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-18T20:33:25Z
-last_update: 2026-04-22T11:14:38Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-04-22T11:14:26Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1315: Pickup from email-archive: vendored-vs-repo mode blind spot RCA (sourced T-1043)

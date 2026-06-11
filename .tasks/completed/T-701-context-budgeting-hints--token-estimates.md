@@ -2,20 +2,39 @@
 id: T-701
 name: "Context budgeting hints — token estimates and load priority in component cards"
 description: >
-  Add token_estimate, load_strategy, priority fields to fabric component cards. Enhances P-009 budget management with structured per-unit cost data. Score: 17/20 (D1:4 D2:4 D3:4 D4:5). Source: T-697 pattern harvest #15.
+  Add token_estimate, load_strategy, priority fields to fabric component cards. Enhances
+  P-009 budget management with structured per-unit cost data. Score: 17/20 (D1:4 D2:4
+  D3:4 D4:5). Source: T-697 pattern harvest #15.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [context-budget, kcp-pattern]
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:27Z
-last_update: 2026-04-13T06:23:26Z
+last_update: '2026-06-11T22:24:27Z'
 date_finished: 2026-03-29T14:16:01Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-701: Context budgeting hints — token estimates and load priority in component cards

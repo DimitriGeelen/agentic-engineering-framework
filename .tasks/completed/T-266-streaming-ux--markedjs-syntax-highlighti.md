@@ -2,18 +2,42 @@
 id: T-266
 name: "Streaming UX — marked.js, syntax highlighting, copy buttons"
 description: >
-  Replace custom renderAnswer() with marked.js for full CommonMark rendering. Add highlight.js for code syntax highlighting. Add copy buttons on code blocks. Improve thinking phase with progressive status messages and elapsed timer. Debounce markdown rendering to ~100ms intervals to prevent flicker. Add DOMPurify for XSS prevention. Files: web/templates/search.html (JS), web/static/ (marked.min.js, highlight.min.js, purify.min.js). Ref: docs/reports/T-261-arch-improvements.md §4 (full code sketches for marked integration, highlight, copy buttons, thinking phases). Predecessor: T-257 (frontend).
+  Replace custom renderAnswer() with marked.js for full CommonMark rendering. Add
+  highlight.js for code syntax highlighting. Add copy buttons on code blocks. Improve
+  thinking phase with progressive status messages and elapsed timer. Debounce markdown
+  rendering to ~100ms intervals to prevent flicker. Add DOMPurify for XSS prevention.
+  Files: web/templates/search.html (JS), web/static/ (marked.min.js, highlight.min.js,
+  purify.min.js). Ref: docs/reports/T-261-arch-improvements.md §4 (full code sketches
+  for marked integration, highlight, copy buttons, thinking phases). Predecessor:
+  T-257 (frontend).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [qa, frontend, ux]
 components: [web/templates/base.html, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:26Z
-last_update: 2026-02-25T20:37:12Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T09:31:14Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-266: Streaming UX — marked.js, syntax highlighting, copy buttons

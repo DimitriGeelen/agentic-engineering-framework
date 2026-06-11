@@ -2,7 +2,8 @@
 id: T-033
 name: Create fw CLI wrapper with framework.yaml config
 description: >
-  Create the fw CLI wrapper that reads .framework.yaml, resolves PROJECT_ROOT and FRAMEWORK_ROOT, and invokes agents
+  Create the fw CLI wrapper that reads .framework.yaml, resolves PROJECT_ROOT and
+  FRAMEWORK_ROOT, and invokes agents
 status: work-completed
 workflow_type: build
 owner: claude-code
@@ -12,8 +13,25 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T23:45:10Z
-last_update: 2026-02-14T08:55:08Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-14T08:55:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 1
+      D3: 1
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=1 (body:log-or-error-line); 
+      D3=1 (body:error-msg-improved); D4=0 (no-signal); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-033: Create fw CLI wrapper with framework.yaml config

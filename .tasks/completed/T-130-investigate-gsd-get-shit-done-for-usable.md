@@ -2,19 +2,44 @@
 id: T-130
 name: Investigate GSD (get-shit-done) for usable concepts, skills, patterns
 description: >
-  Review github.com/gsd-build/get-shit-done — a meta-prompting and context engineering system for Claude Code. Key areas to investigate: (1) Wave-based parallel execution model — plans grouped by dependency, independent tasks run parallel within waves. (2) Spec-driven development flow — structured requirements extraction before coding. (3) Context rot mitigation — fresh 200K context per executor. (4) Agent specialization — 11 agents (executor, planner, verifier, debugger, researchers, codebase-mapper, etc). (5) XML-structured plans with built-in verification. (6) STATE.md / PLAN.md / ROADMAP.md persistent state pattern. Compare with our framework's approach and identify concepts worth adopting.
+  Review github.com/gsd-build/get-shit-done — a meta-prompting and context engineering
+  system for Claude Code. Key areas to investigate: (1) Wave-based parallel execution
+  model — plans grouped by dependency, independent tasks run parallel within waves.
+  (2) Spec-driven development flow — structured requirements extraction before coding.
+  (3) Context rot mitigation — fresh 200K context per executor. (4) Agent specialization
+  — 11 agents (executor, planner, verifier, debugger, researchers, codebase-mapper,
+  etc). (5) XML-structured plans with built-in verification. (6) STATE.md / PLAN.md
+  / ROADMAP.md persistent state pattern. Compare with our framework's approach and
+  identify concepts worth adopting.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-17T20:37:02Z
-last_update: 2026-02-19T08:12:27Z
+last_update: '2026-06-11T22:23:44Z'
 date_finished: 2026-02-19T08:12:27Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-130: Investigate GSD (get-shit-done) for usable concepts, skills, patterns

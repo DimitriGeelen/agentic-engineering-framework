@@ -1,22 +1,45 @@
 ---
 id: T-1691
-name: "v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs claude-bridge) + per-workflow env-redirect plumbing"
+name: "v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs claude-bridge)
+  + per-workflow env-redirect plumbing"
 description: >
-  v1 multi-provider path for the TermLink Worker via ANTHROPIC_BASE_URL env redirect. Per CONTEXT.md (Q11): Claude Code supports endpoint redirection (52 binary refs in claude 2.1.126); workflows declare env: ANTHROPIC_BASE_URL=http://localhost:PORT pointing at a proxy fronting ollama / OpenAI / OpenRouter. Inception decides WHICH proxy ships as default, how it integrates into fw doctor, and validation against a real ollama instance.
+  v1 multi-provider path for the TermLink Worker via ANTHROPIC_BASE_URL env redirect.
+  Per CONTEXT.md (Q11): Claude Code supports endpoint redirection (52 binary refs
+  in claude 2.1.126); workflows declare env: ANTHROPIC_BASE_URL=http://localhost:PORT
+  pointing at a proxy fronting ollama / OpenAI / OpenRouter. Inception decides WHICH
+  proxy ships as default, how it integrates into fw doctor, and validation against
+  a real ollama instance.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [multi-provider, ollama]
 components: []
 related_tasks: [T-1687]
 arc_id: orchestrator-rethink
 created: 2026-05-02T22:56:02Z
-last_update: 2026-05-03T08:29:35Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-03T08:29:35Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1691: v1 Ollama proxy adapter — pick proxy (litellm vs claude-code-router vs claude-bridge) + per-workflow env-redirect plumbing

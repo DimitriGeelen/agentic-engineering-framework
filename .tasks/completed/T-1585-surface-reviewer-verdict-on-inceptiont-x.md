@@ -1,19 +1,39 @@
 ---
 id: T-1585
-name: "Surface Reviewer Verdict on /inception/T-XXX page (cross-surface parity completing review-surface set, T-1583/T-1584 follow-up)"
+name: "Surface Reviewer Verdict on /inception/T-XXX page (cross-surface parity completing
+  review-surface set, T-1583/T-1584 follow-up)"
 description: >
-  Surface Reviewer Verdict on /inception/T-XXX page (cross-surface parity completing review-surface set, T-1583/T-1584 follow-up)
+  Surface Reviewer Verdict on /inception/T-XXX page (cross-surface parity completing
+  review-surface set, T-1583/T-1584 follow-up)
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 created: 2026-04-28T15:38:13Z
-last_update: 2026-04-29T08:33:52Z
+last_update: '2026-06-11T22:23:52Z'
 date_finished: 2026-04-28T15:42:42Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1585: Surface Reviewer Verdict on /inception/T-XXX page (cross-surface parity completing review-surface set, T-1583/T-1584 follow-up)

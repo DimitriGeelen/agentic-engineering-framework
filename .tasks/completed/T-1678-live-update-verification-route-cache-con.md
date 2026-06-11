@@ -1,19 +1,38 @@
 ---
 id: T-1678
-name: "live-update verification: route-cache continued growth post-demo (orchestrator-rethink arc closure-quality)"
+name: "live-update verification: route-cache continued growth post-demo (orchestrator-rethink
+  arc closure-quality)"
 description: >
-  live-update verification: route-cache continued growth post-demo (orchestrator-rethink arc closure-quality)
+  live-update verification: route-cache continued growth post-demo (orchestrator-rethink
+  arc closure-quality)
 
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T11:27:14Z
-last_update: 2026-05-02T11:29:18Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-02T11:29:18Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1678: live-update verification: route-cache continued growth post-demo (orchestrator-rethink arc closure-quality)

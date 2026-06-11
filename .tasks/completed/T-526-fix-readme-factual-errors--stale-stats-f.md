@@ -2,18 +2,37 @@
 id: T-526
 name: "Fix README factual errors — stale stats, fabricated counts, wrong thresholds"
 description: >
-  Agent evaluation found: (1) task count says 445/312, actual ~523/479, (2) Tier 0 count says 49, actual 13, (3) budget threshold says 85%, should be 90%, (4) traceability says 96%, actual 99%. These appear across multiple locations in README.md.
+  Agent evaluation found: (1) task count says 445/312, actual ~523/479, (2) Tier 0
+  count says 49, actual 13, (3) budget threshold says 85%, should be 90%, (4) traceability
+  says 96%, actual 99%. These appear across multiple locations in README.md.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-17T23:14:40Z
-last_update: 2026-03-23T11:08:47Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-17T23:20:56Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-526: Fix README factual errors — stale stats, fabricated counts, wrong thresholds

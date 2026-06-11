@@ -2,18 +2,38 @@
 id: T-1065
 name: "Multi-LLM routing — task-aware model selection via TermLink dispatch"
 description: >
-  Phase 4 from T-1061: Task-aware model selection with dispatch system spawning per-model workers. Extends Phase 3 orchestrator routing. 2-3 months.
+  Phase 4 from T-1061: Task-aware model selection with dispatch system spawning per-model
+  workers. Extends Phase 3 orchestrator routing. 2-3 months.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [termlink, multi-llm, routing]
-components: [agents/termlink/termlink.sh, tests/unit/test_termlink_dispatch_task_type.py]
+components: [agents/termlink/termlink.sh, 
+      tests/unit/test_termlink_dispatch_task_type.py]
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:25Z
-last_update: 2026-05-03T07:42:38Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-05-03T07:42:38Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=3 (body:portability-abstraction); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1065: Multi-LLM routing — task-aware model selection via TermLink dispatch

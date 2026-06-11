@@ -9,12 +9,12 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [bug, regression, htmx, review-surface, sovereignty-adjacent]
 components: [web/templates/_review_acs.html, web/templates/review.html]
 related_tasks: [T-2131, T-2114, T-2112, T-2113, T-2119, T-2074, T-1597, T-1600]
 created: 2026-05-31T07:11:38Z
-last_update: 2026-05-31T07:15:34Z
+last_update: '2026-06-11T22:24:08Z'
 date_finished: 2026-05-31T07:15:34Z
 bvp_scores_proposed:
   - ts: '2026-05-31T07:13:22Z'
@@ -27,6 +27,22 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
       (no-signal); D4=0 (no-signal); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-31T07:15:03Z'

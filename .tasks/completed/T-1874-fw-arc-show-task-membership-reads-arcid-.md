@@ -2,21 +2,41 @@
 id: T-1874
 name: "fw arc show task-membership reads arc_id frontmatter (T-NEW-10)"
 description: >
-  Closes T-1850 migration blindness: lib/arc.sh _arc_tasks_with_tag scans only legacy ^tags:.*arc:<slug>, so fw arc show, fw arc list constituent count, and --demo task validation all report zero membership after the tags→arc_id migration.
+  Closes T-1850 migration blindness: lib/arc.sh _arc_tasks_with_tag scans only legacy
+  ^tags:.*arc:<slug>, so fw arc show, fw arc list constituent count, and --demo task
+  validation all report zero membership after the tags→arc_id migration.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [arc, arc-grooming, lib-arc, T-NEW-10]
 components: [lib/arc.sh, tests/unit/arc_membership_union.bats]
 related_tasks: [T-1687, T-1846, T-1849, T-1850]
 arc_id: arc-grooming
 created: 2026-05-16T22:46:13Z
-last_update: 2026-05-17T22:39:30Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-16T22:50:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1874: fw arc show task-membership reads arc_id frontmatter (T-NEW-10)

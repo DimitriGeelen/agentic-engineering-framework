@@ -2,18 +2,38 @@
 id: T-1324
 name: "fw inception decide auto-ticks the REVIEW/RUBBER-STAMP Human AC"
 description: >
-  Surgical edit to lib/inception.sh do_inception_decide so that after writing the Decision block it ticks the inception template's [REVIEW] Review exploration findings and approve go/no-go decision (or [RUBBER-STAMP] Record decision) Human AC. Idempotent. Closes the structural gap discovered in T-1322 inception (P-039 from termlink).
+  Surgical edit to lib/inception.sh do_inception_decide so that after writing the
+  Decision block it ticks the inception template's [REVIEW] Review exploration findings
+  and approve go/no-go decision (or [RUBBER-STAMP] Record decision) Human AC. Idempotent.
+  Closes the structural gap discovered in T-1322 inception (P-039 from termlink).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T22:53:49Z
-last_update: 2026-04-18T22:58:45Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-04-18T22:58:45Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1324: fw inception decide auto-ticks the REVIEW/RUBBER-STAMP Human AC

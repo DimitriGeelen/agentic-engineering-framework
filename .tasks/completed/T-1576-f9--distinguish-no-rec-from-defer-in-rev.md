@@ -1,19 +1,43 @@
 ---
 id: T-1576
-name: "F9 — Distinguish NO-REC from DEFER in review-queue and /approvals (build-task gap parallel to T-1570)"
+name: "F9 — Distinguish NO-REC from DEFER in review-queue and /approvals (build-task
+  gap parallel to T-1570)"
 description: >
-  extract_recommendation_verdict returns '?' for both 'no ## Recommendation section' and 'section exists but verdict missing'. fw review-queue and /approvals render both as [?], blending 'agent owes a recommendation' with 'deferred verdict'. Surface as [NO-REC] (or similar) so agent knows to write one; human knows not to act yet. Parallel to T-1570 which fixed inception side.
+  extract_recommendation_verdict returns '?' for both 'no ## Recommendation section'
+  and 'section exists but verdict missing'. fw review-queue and /approvals render
+  both as [?], blending 'agent owes a recommendation' with 'deferred verdict'. Surface
+  as [NO-REC] (or similar) so agent knows to write one; human knows not to act yet.
+  Parallel to T-1570 which fixed inception side.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [agents/handover/handover.sh, bin/fw, web/blueprints/approvals.py, web/shared.py, web/templates/_approvals_content.html]
+components: [agents/handover/handover.sh, bin/fw, web/blueprints/approvals.py, 
+      web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []
 created: 2026-04-28T09:07:46Z
-last_update: 2026-04-29T08:33:51Z
+last_update: '2026-06-11T22:23:52Z'
 date_finished: 2026-04-28T09:26:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=1 (body:episodic-only); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1576: F9 — Distinguish NO-REC from DEFER in review-queue and /approvals (build-task gap parallel to T-1570)

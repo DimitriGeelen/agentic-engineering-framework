@@ -2,18 +2,54 @@
 id: T-450
 name: "Deep-dive articles 08-15: gut rewrite — replace agent filler with real incidents"
 description: >
-  Gut and rewrite unpublished articles 08 (Watchtower), 09 (Context Fabric), 10 (Framework Core), 11 (Git Traceability), 12 (Learnings Pipeline), 13 (Audit), 14 (Handover), 15 (Enforcement). Problems: (1) formulaic openers — 'Governance begins with X' repeated 4 times, article 11 copies article 01 verbatim, (2) fabricated statistics — e.g. '68% of audit failures' (article 09), '47% increase in post-audit rework' (article 11), '93% reduction in handover conflicts' (article 14) — none traceable to actual data, (3) decorative code snippets that illustrate nothing, (4) 2023 timestamp in article 14 (framework didn't exist then), (5) articles 09/10 near-duplicate article 01 at lower quality. Fix: for each article, find the real incident that motivated building the subsystem. Use that as the opener. Kill every unverifiable percentage. Replace with honest language ('I stopped seeing X happen'). Match author voice from articles 01/04/07.
+  Gut and rewrite unpublished articles 08 (Watchtower), 09 (Context Fabric), 10 (Framework
+  Core), 11 (Git Traceability), 12 (Learnings Pipeline), 13 (Audit), 14 (Handover),
+  15 (Enforcement). Problems: (1) formulaic openers — 'Governance begins with X' repeated
+  4 times, article 11 copies article 01 verbatim, (2) fabricated statistics — e.g.
+  '68% of audit failures' (article 09), '47% increase in post-audit rework' (article
+  11), '93% reduction in handover conflicts' (article 14) — none traceable to actual
+  data, (3) decorative code snippets that illustrate nothing, (4) 2023 timestamp in
+  article 14 (framework didn't exist then), (5) articles 09/10 near-duplicate article
+  01 at lower quality. Fix: for each article, find the real incident that motivated
+  building the subsystem. Use that as the opener. Kill every unverifiable percentage.
+  Replace with honest language ('I stopped seeing X happen'). Match author voice from
+  articles 01/04/07.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [content, deep-dives]
-components: [docs/articles/deep-dives/08-watchtower.md, docs/articles/deep-dives/09-context-fabric.md, docs/articles/deep-dives/10-framework-core.md, docs/articles/deep-dives/11-git-traceability.md, docs/articles/deep-dives/12-learnings-pipeline.md, docs/articles/deep-dives/13-audit.md, docs/articles/deep-dives/14-handover.md, docs/articles/deep-dives/15-enforcement.md]
+components: [docs/articles/deep-dives/08-watchtower.md, 
+      docs/articles/deep-dives/09-context-fabric.md, 
+      docs/articles/deep-dives/10-framework-core.md, 
+      docs/articles/deep-dives/11-git-traceability.md, 
+      docs/articles/deep-dives/12-learnings-pipeline.md, 
+      docs/articles/deep-dives/13-audit.md, 
+      docs/articles/deep-dives/14-handover.md, 
+      docs/articles/deep-dives/15-enforcement.md]
 related_tasks: [T-449, T-338, T-446]
 created: 2026-03-12T06:37:47Z
-last_update: 2026-03-17T11:16:08Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-17T11:16:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-450: Deep-dive articles 08-15: gut rewrite — replace agent filler with real incidents

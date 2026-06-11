@@ -2,18 +2,39 @@
 id: T-652
 name: "TermLink dispatch task enforcement — make --task mandatory in fw termlink dispatch"
 description: >
-  T-630 GO build task 3: Make --task flag mandatory in fw termlink dispatch. Workers spawned without task reference have zero governance. Add task requirement + enforcement language to dispatch preamble. ~8 lines changed in lib/dispatch.sh. Related: T-630, T-650, T-651.
+  T-630 GO build task 3: Make --task flag mandatory in fw termlink dispatch. Workers
+  spawned without task reference have zero governance. Add task requirement + enforcement
+  language to dispatch preamble. ~8 lines changed in lib/dispatch.sh. Related: T-630,
+  T-650, T-651.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T09:45:53Z
-last_update: 2026-03-28T09:48:20Z
+last_update: '2026-06-11T22:24:26Z'
 date_finished: 2026-03-28T09:48:20Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-652: TermLink dispatch task enforcement — make --task mandatory in fw termlink dispatch

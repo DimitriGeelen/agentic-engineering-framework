@@ -7,13 +7,33 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [C-007, agents/handover/handover.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh, agents/termlink/termlink.sh]
+components: [C-007, agents/handover/handover.sh, 
+      agents/task-create/create-task.sh, agents/task-create/update-task.sh, 
+      agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-03-30T16:28:06Z
-last_update: 2026-03-30T16:31:31Z
+last_update: '2026-06-11T22:24:29Z'
 date_finished: 2026-03-30T16:31:31Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 1
+      F-ORCH: 2
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=1 (body:episodic-only); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-795: Fix shellcheck warnings across agent scripts — SC2155, SC2144, SC2034, SC2044

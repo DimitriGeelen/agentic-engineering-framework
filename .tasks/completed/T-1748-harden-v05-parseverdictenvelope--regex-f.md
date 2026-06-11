@@ -7,14 +7,33 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [escalation-scan, v0.5, parser]
-components: [tests/unit/test_escalation_v05_parser.py, tools/escalation-scan-v0.5.py]
+components: [tests/unit/test_escalation_v05_parser.py, 
+      tools/escalation-scan-v0.5.py]
 related_tasks: [T-1727]
 arc_id: orchestrator-rethink
 created: 2026-05-05T18:24:26Z
-last_update: 2026-05-05T18:28:45Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T18:28:45Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 3
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=3 (body:typed-io-or-gate); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1748: harden v0.5 parse_verdict_envelope — regex fallback for unquoted rationales

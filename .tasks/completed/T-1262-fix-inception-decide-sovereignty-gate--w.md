@@ -1,6 +1,7 @@
 ---
 id: T-1262
-name: "Fix inception decide sovereignty gate — Watchtower CLAUDECODE inheritance (R-033 downstream)"
+name: "Fix inception decide sovereignty gate — Watchtower CLAUDECODE inheritance (R-033
+  downstream)"
 description: >
   Watchtower /inception/T-XXX/decide POST inherits CLAUDECODE=1 from parent shell.
   Cross-project bug report from 003-NTB-ATC-Plugin T-012.
@@ -8,13 +9,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bugfix, inception, sovereignty, watchtower]
-components: [lib/inception.sh, tests/unit/lib_inception.bats, web/blueprints/inception.py, web/subprocess_utils.py]
+components: [lib/inception.sh, tests/unit/lib_inception.bats, 
+      web/blueprints/inception.py, web/subprocess_utils.py]
 related_tasks: [T-1260, T-1259, T-1223]
 created: 2026-04-15T13:41:48Z
-last_update: 2026-04-15T17:11:43Z
+last_update: '2026-06-11T22:23:44Z'
 date_finished: 2026-04-15T17:11:43Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1262: Fix inception decide sovereignty gate — Watchtower CLAUDECODE inheritance (R-033 downstream)

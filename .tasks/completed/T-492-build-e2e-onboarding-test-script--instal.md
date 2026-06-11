@@ -2,18 +2,39 @@
 id: T-492
 name: "Build E2E onboarding test script — install → init → doctor → serve → smoke"
 description: >
-  From T-489 GO. Build a test script that validates the complete onboarding path in a temp directory. Fix: (1) fw doctor exit code always 0 bug, (2) preflight non-blocking in init, (3) doctor doesn't check Flask. Script: create temp dir, git init, fw init, fw doctor (expect exit 0), start Watchtower on :9877, run smoke_test.py --port 9877, cleanup. Output JSON summary. Target: <2 minutes, CI-friendly.
+  From T-489 GO. Build a test script that validates the complete onboarding path in
+  a temp directory. Fix: (1) fw doctor exit code always 0 bug, (2) preflight non-blocking
+  in init, (3) doctor doesn't check Flask. Script: create temp dir, git init, fw init,
+  fw doctor (expect exit 0), start Watchtower on :9877, run smoke_test.py --port 9877,
+  cleanup. Output JSON summary. Target: <2 minutes, CI-friendly.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [testing, onboarding, ci]
 components: [bin/fw, web/context_loader.py, web/templates/index.html]
 related_tasks: []
 created: 2026-03-14T17:05:26Z
-last_update: 2026-03-23T11:04:29Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-14T20:29:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-492: Build E2E onboarding test script — install → init → doctor → serve → smoke

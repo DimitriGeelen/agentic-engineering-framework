@@ -2,19 +2,54 @@
 id: T-107
 name: Initialize German pronunciation app project
 description: >
-  BRIDGE TASK: This is the transition from framework work to real-world project work. Initialize the German pronunciation training app as a separate project using the framework. CONTEXT: The app shows German text to a non-native speaker, they read it aloud, STT (Whisper) transcribes it, system compares transcription against original text, detects pronunciation errors, and generates targeted exercises. The clever insight: STT errors ARE the pronunciation signal — if Whisper cant understand you, native Germans probably cant either. This naturally prioritizes high-impact pronunciation issues. TECHNICAL DIRECTION: Web app (Python backend + simple frontend) for fastest MVP. Stack: FastAPI/Flask backend, Whisper for STT, Claude API for exercise generation, SQLite for progress tracking. Can access from iPhone via Safari. Native iOS rewrite later if concept validates. STEPS: (1) Create project directory. (2) Run fw setup (from T-104) to do guided onboarding. (3) Verify fw doctor passes. (4) Create first inception task IN THE NEW PROJECT (not here) to explore pronunciation engine design. (5) Validate the full framework loop: task create -> build -> commit -> handover -> harvest. DEPENDS ON: T-101 (hook fix), T-102 (CLAUDE.md template), T-103 (init hardening), T-104 (setup wizard). This task produces a working project scaffold. ALL subsequent app development tasks are created in the apps own .tasks/ directory, not in the framework repo. SEPARATION: After this task, framework work and app work are in separate repos with separate task numbering.
+  BRIDGE TASK: This is the transition from framework work to real-world project work.
+  Initialize the German pronunciation training app as a separate project using the
+  framework. CONTEXT: The app shows German text to a non-native speaker, they read
+  it aloud, STT (Whisper) transcribes it, system compares transcription against original
+  text, detects pronunciation errors, and generates targeted exercises. The clever
+  insight: STT errors ARE the pronunciation signal — if Whisper cant understand you,
+  native Germans probably cant either. This naturally prioritizes high-impact pronunciation
+  issues. TECHNICAL DIRECTION: Web app (Python backend + simple frontend) for fastest
+  MVP. Stack: FastAPI/Flask backend, Whisper for STT, Claude API for exercise generation,
+  SQLite for progress tracking. Can access from iPhone via Safari. Native iOS rewrite
+  later if concept validates. STEPS: (1) Create project directory. (2) Run fw setup
+  (from T-104) to do guided onboarding. (3) Verify fw doctor passes. (4) Create first
+  inception task IN THE NEW PROJECT (not here) to explore pronunciation engine design.
+  (5) Validate the full framework loop: task create -> build -> commit -> handover
+  -> harvest. DEPENDS ON: T-101 (hook fix), T-102 (CLAUDE.md template), T-103 (init
+  hardening), T-104 (setup wizard). This task produces a working project scaffold.
+  ALL subsequent app development tasks are created in the apps own .tasks/ directory,
+  not in the framework repo. SEPARATION: After this task, framework work and app work
+  are in separate repos with separate task numbering.
 
 status: work-completed
-horizon: null
+horizon:
 workflow_type: inception
 owner: human
 tags: [external-project, pronunciation, german, bridge-task]
 related_tasks: []
 created: 2026-02-17T08:54:42Z
-last_update: 2026-02-17T18:53:12Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-02-17T18:53:12Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-107: Initialize German pronunciation app project

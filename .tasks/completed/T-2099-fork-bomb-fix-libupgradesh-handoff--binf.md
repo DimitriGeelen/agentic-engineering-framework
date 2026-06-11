@@ -1,13 +1,18 @@
 ---
 id: T-2099
-name: "fork-bomb fix: lib/upgrade.sh handoff + bin/fw resolve_framework FRAMEWORK_ROOT pass-through (SEV-1)"
+name: "fork-bomb fix: lib/upgrade.sh handoff + bin/fw resolve_framework FRAMEWORK_ROOT
+  pass-through (SEV-1)"
 description: >
-  SEV-1 dispatch from /opt/termlink agent. fw upgrade from a consumer auto-clones upstream then re-invokes the cloned bin/fw without scoping FRAMEWORK_ROOT/PROJECT_ROOT — the cloned fw re-resolves to the consumer's vendored copy and infinite-recurses. Two-line fix: env-scope the handoff + respect caller-supplied FRAMEWORK_ROOT in resolve_framework.
+  SEV-1 dispatch from /opt/termlink agent. fw upgrade from a consumer auto-clones
+  upstream then re-invokes the cloned bin/fw without scoping FRAMEWORK_ROOT/PROJECT_ROOT
+  — the cloned fw re-resolves to the consumer's vendored copy and infinite-recurses.
+  Two-line fix: env-scope the handoff + respect caller-supplied FRAMEWORK_ROOT in
+  resolve_framework.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade, reliability, sev-1, fork-bomb, T-2078-cluster]
 components: []
 related_tasks: [T-2078, T-2092, T-2093, T-2094, T-2095, T-2097, T-2098]
@@ -16,7 +21,7 @@ related_tasks: [T-2078, T-2092, T-2093, T-2094, T-2095, T-2097, T-2098]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-29T14:22:00Z
-last_update: 2026-05-29T14:25:16Z
+last_update: '2026-06-11T22:24:07Z'
 date_finished: 2026-05-29T14:25:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +33,24 @@ date_finished: 2026-05-29T14:25:16Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 5
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=5 (body:class-neutral); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=1 (body/components:prompt-incidental); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2099: fork-bomb fix: lib/upgrade.sh handoff + bin/fw resolve_framework FRAMEWORK_ROOT pass-through (SEV-1)

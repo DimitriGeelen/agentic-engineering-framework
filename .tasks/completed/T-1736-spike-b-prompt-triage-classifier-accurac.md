@@ -2,19 +2,43 @@
 id: T-1736
 name: "Spike B: prompt-triage classifier accuracy on 30-day backlog (T-1733 sibling)"
 description: >
-  T-1733 Spike A proved substrate; classifier defaulted GO across 3 samples (1/3 accuracy). Spike B: harvest 30 days of user prompts from session JSONLs (~/.claude/projects/), label each with manual GO/NO-GO/DEFER ground truth (~50-100 samples), run prompt-triage workflow, compute precision/recall per class. Decide: keep hermes3, switch model (qwen3, gemma4), revise prompt template (calibration examples), or accept under-precision under safety-first defaulting.
+  T-1733 Spike A proved substrate; classifier defaulted GO across 3 samples (1/3 accuracy).
+  Spike B: harvest 30 days of user prompts from session JSONLs (~/.claude/projects/),
+  label each with manual GO/NO-GO/DEFER ground truth (~50-100 samples), run prompt-triage
+  workflow, compute precision/recall per class. Decide: keep hermes3, switch model
+  (qwen3, gemma4), revise prompt template (calibration examples), or accept under-precision
+  under safety-first defaulting.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [spike]
 components: []
 related_tasks: [T-1733, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-05T07:36:42Z
-last_update: 2026-05-05T08:14:09Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T08:14:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1736: Spike B: prompt-triage classifier accuracy on 30-day backlog (T-1733 sibling)

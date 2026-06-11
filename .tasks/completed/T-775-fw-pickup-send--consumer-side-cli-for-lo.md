@@ -2,18 +2,38 @@
 id: T-775
 name: "fw pickup send — consumer-side CLI for local and TermLink push"
 description: >
-  Consumer-side CLI command: serialize pickup envelope YAML, write to local inbox or push via termlink remote push. Supports --type, --summary, --detail, --priority, --remote flags.
+  Consumer-side CLI command: serialize pickup envelope YAML, write to local inbox
+  or push via termlink remote push. Supports --type, --summary, --detail, --priority,
+  --remote flags.
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-772, T-774]
 created: 2026-03-30T13:21:40Z
-last_update: 2026-03-30T14:11:45Z
+last_update: '2026-06-11T22:24:29Z'
 date_finished: 2026-03-30T14:11:45Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 3
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=3 
+      (body:typed-io-or-gate); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-775: fw pickup send — consumer-side CLI for local and TermLink push

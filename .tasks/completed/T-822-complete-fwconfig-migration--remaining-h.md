@@ -1,19 +1,37 @@
 ---
 id: T-822
-name: "Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts"
+name: "Complete fw_config migration — remaining hardcoded settings in hooks and lib
+  scripts"
 description: >
   Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T22:51:09Z
-last_update: 2026-04-03T23:10:39Z
+last_update: '2026-06-11T22:24:30Z'
 date_finished: 2026-04-03T23:10:39Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=1 (body:episodic-only); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-822: Complete fw_config migration — remaining hardcoded settings in hooks and lib scripts

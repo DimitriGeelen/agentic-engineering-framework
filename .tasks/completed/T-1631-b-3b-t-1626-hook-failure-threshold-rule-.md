@@ -2,18 +2,41 @@
 id: T-1631
 name: "B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in concerns.yaml"
 description: >
-  Scan .hook-counter + .hook-failure-counter (T-1628 telemetry); when any hook's failure ratio exceeds N% over M total fires, auto-write a G-XXX entry to concerns.yaml. Closes detection half of the L-329/G-019 immune-system loop.
+  Scan .hook-counter + .hook-failure-counter (T-1628 telemetry); when any hook's failure
+  ratio exceeds N% over M total fires, auto-write a G-XXX entry to concerns.yaml.
+  Closes detection half of the L-329/G-019 immune-system loop.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1626, B-3b, concerns, escalation]
-components: [C-004, agents/context/post-compact-resume.sh, bin/fw, lib/doctor-hook-exercise.py, lib/hook-threshold.py, tests/unit/doctor_hook_exercise.bats, tests/unit/hook_threshold.bats, tests/unit/session_start_hook_warning.bats]
+components: [C-004, agents/context/post-compact-resume.sh, bin/fw, 
+      lib/doctor-hook-exercise.py, lib/hook-threshold.py, 
+      tests/unit/doctor_hook_exercise.bats, tests/unit/hook_threshold.bats, 
+      tests/unit/session_start_hook_warning.bats]
 related_tasks: [T-1626, T-1628, T-1629]
 created: 2026-05-01T07:22:34Z
-last_update: 2026-05-01T09:51:27Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T09:51:27Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1631: B-3b (T-1626): hook-failure threshold rule — auto-register G-XXX in concerns.yaml

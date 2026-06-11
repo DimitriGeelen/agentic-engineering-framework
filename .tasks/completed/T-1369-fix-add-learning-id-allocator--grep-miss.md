@@ -1,19 +1,39 @@
 ---
 id: T-1369
-name: "fix add-learning ID allocator — grep misses indented id: entries, every new L-XXX collides with historical"
+name: "fix add-learning ID allocator — grep misses indented id: entries, every new
+  L-XXX collides with historical"
 description: >
-  fix add-learning ID allocator — grep misses indented id: entries, every new L-XXX collides with historical
+  fix add-learning ID allocator — grep misses indented id: entries, every new L-XXX
+  collides with historical
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [C-002, tests/unit/add_learning_id_allocator.bats]
 related_tasks: []
 created: 2026-04-20T20:52:00Z
-last_update: 2026-04-20T22:06:27Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-04-20T22:06:27Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:learning-ref,body:concern-ref); D2=0 (no-signal); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=3 (body:fw-recall-or-memory-link);
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1369: fix add-learning ID allocator — grep misses indented id: entries, every new L-XXX collides with historical

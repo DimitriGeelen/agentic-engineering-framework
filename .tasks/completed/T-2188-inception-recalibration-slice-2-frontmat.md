@@ -16,16 +16,18 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [inception, schema, T-2186-slice, frontmatter]
-components: [agents/context/check-inception-schema.sh, agents/termlink/bvp-estimator/estimator.py, C-009, tests/unit/check_inception_schema.bats, tools/migrate-inception-schema.py]
+components: [agents/context/check-inception-schema.sh, 
+      agents/termlink/bvp-estimator/estimator.py, C-009, 
+      tests/unit/check_inception_schema.bats, tools/migrate-inception-schema.py]
 related_tasks: [T-2186, T-2187]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-02T22:03:56Z
-last_update: 2026-06-06T11:42:32Z
+last_update: '2026-06-11T22:24:10Z'
 date_finished: 2026-06-06T11:42:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +65,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-02T22:15:03Z'

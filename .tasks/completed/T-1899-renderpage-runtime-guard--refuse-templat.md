@@ -1,13 +1,15 @@
 ---
 id: T-1899
-name: "render_page() runtime guard — refuse template that extends base.html with actionable error pointing at the convention (future-prevention follow-up to T-1898)"
+name: "render_page() runtime guard — refuse template that extends base.html with actionable
+  error pointing at the convention (future-prevention follow-up to T-1898)"
 description: >
-  render_page() runtime guard — refuse template that extends base.html with actionable error pointing at the convention (future-prevention follow-up to T-1898)
+  render_page() runtime guard — refuse template that extends base.html with actionable
+  error pointing at the convention (future-prevention follow-up to T-1898)
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [tests/unit/test_render_page_guard.py, web/shared.py]
 related_tasks: []
@@ -16,10 +18,28 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:18:57Z
-last_update: 2026-05-20T10:40:56Z
+last_update: '2026-06-11T22:24:02Z'
 date_finished: 2026-05-18T17:25:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1899: render_page() runtime guard — refuse template that extends base.html with actionable error pointing at the convention (future-prevention follow-up to T-1898)

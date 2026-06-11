@@ -2,12 +2,15 @@
 id: T-2271
 name: "BVP bundle README — parity status note (sibling of T-2270)"
 description: >
-  policy/prompts/README.md lines 19-22 + 30 reference fw bvp driver suggest|create + fw bvp recompute as if live entry verbs. T-2270 closed the keystone + CLAUDE.md surfaces; README.md is the third document carrying the status invariant (per L-399 producer/consumer parity).
+  policy/prompts/README.md lines 19-22 + 30 reference fw bvp driver suggest|create
+  + fw bvp recompute as if live entry verbs. T-2270 closed the keystone + CLAUDE.md
+  surfaces; README.md is the third document carrying the status invariant (per L-399
+  producer/consumer parity).
 
 status: work-completed
 workflow_type: refactor
 owner: claude-code
-horizon: null
+horizon:
 tags: [arc:value-prioritisation, bvp, prompt-bundle, drift, parity]
 components: []
 related_tasks: [T-2270, T-2245, T-2246]
@@ -16,7 +19,7 @@ related_tasks: [T-2270, T-2245, T-2246]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T21:55:10Z
-last_update: 2026-06-08T21:56:39Z
+last_update: '2026-06-11T22:24:13Z'
 date_finished: 2026-06-08T21:56:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +31,24 @@ date_finished: 2026-06-08T21:56:39Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2271: BVP bundle README — parity status note (sibling of T-2270)

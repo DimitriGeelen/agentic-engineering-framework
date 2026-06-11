@@ -2,18 +2,39 @@
 id: T-454
 name: "Build fw upstream report — safe issue creation from field installations"
 description: >
-  Implement fw upstream report (issue-only mode), fw upstream config, fw upstream status. Add upstream_repo to .framework.yaml via fw init. Dry-run default, confirmation prompt, fw doctor attachment, sent-file tracking. See docs/reports/T-451-upstream-contribution-research.md for full design.
+  Implement fw upstream report (issue-only mode), fw upstream config, fw upstream
+  status. Add upstream_repo to .framework.yaml via fw init. Dry-run default, confirmation
+  prompt, fw doctor attachment, sent-file tracking. See docs/reports/T-451-upstream-contribution-research.md
+  for full design.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [bin/fw, lib/init.sh, lib/upstream.sh, web/templates/base.html]
 related_tasks: []
 created: 2026-03-12T11:03:50Z
-last_update: 2026-03-12T12:41:21Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-12T12:09:19Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-454: Build fw upstream report — safe issue creation from field installations

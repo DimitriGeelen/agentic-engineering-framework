@@ -2,18 +2,37 @@
 id: T-1269
 name: "Monitor termlink hub + Claude instance liveness via cron (1-min + startup)"
 description: >
-  Build: cron job that pings termlink hub and running claude instance every 1 min and on startup, logs results for observability
+  Build: cron job that pings termlink hub and running claude instance every 1 min
+  and on startup, logs results for observability
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/monitor/liveness-check.sh]
 related_tasks: []
 created: 2026-04-15T21:19:51Z
-last_update: 2026-04-15T21:25:38Z
+last_update: '2026-06-11T22:23:44Z'
 date_finished: 2026-04-15T21:25:38Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1269: Monitor termlink hub + Claude instance liveness via cron (1-min + startup)

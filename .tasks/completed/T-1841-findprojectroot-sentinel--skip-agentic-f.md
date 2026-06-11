@@ -1,20 +1,48 @@
 ---
 id: T-1841
-name: "find_project_root sentinel — skip .agentic-framework / rollback dirs (consumer F3-trap)"
+name: "find_project_root sentinel — skip .agentic-framework / rollback dirs (consumer
+  F3-trap)"
 description: >
-  Consumer email-archive's F3-trap finding: agent CWD landed in .agentic-framework.rollback/ → find_project_root walked up, found .agentic-framework.rollback/.tasks/ (from vendored templates), returned .agentic-framework.rollback as PROJECT_ROOT. Boundary hook (T-559) then blocked all cd /opt/... commands. Root cause: bin/fw:61-71 find_project_root returns at the first dir with .framework.yaml OR .tasks/ — but .tasks/ alone is ambiguous (vendored framework has .tasks/templates/, rollback dir inherits it, uninitialized consumer has just .tasks/). Fix: drop a .fw-not-a-project sentinel in .agentic-framework/ and .agentic-framework.rollback/ at vendor/rollback time. find_project_root checks for sentinel and skips the dir. Source: framework:pickup offset 1 F3-trap finding (email-archive, 2026-05-04).
+  Consumer email-archive's F3-trap finding: agent CWD landed in .agentic-framework.rollback/
+  → find_project_root walked up, found .agentic-framework.rollback/.tasks/ (from vendored
+  templates), returned .agentic-framework.rollback as PROJECT_ROOT. Boundary hook
+  (T-559) then blocked all cd /opt/... commands. Root cause: bin/fw:61-71 find_project_root
+  returns at the first dir with .framework.yaml OR .tasks/ — but .tasks/ alone is
+  ambiguous (vendored framework has .tasks/templates/, rollback dir inherits it, uninitialized
+  consumer has just .tasks/). Fix: drop a .fw-not-a-project sentinel in .agentic-framework/
+  and .agentic-framework.rollback/ at vendor/rollback time. find_project_root checks
+  for sentinel and skips the dir. Source: framework:pickup offset 1 F3-trap finding
+  (email-archive, 2026-05-04).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [consumer-fleet, bug, fw-cli]
 components: [bin/fw, lib/update.sh]
 related_tasks: [T-1838, T-1839, T-1840, T-559]
 arc_id: project-shape-resilience
 created: 2026-05-14T22:09:58Z
-last_update: 2026-05-14T22:14:38Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T22:14:38Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1841: find_project_root sentinel — skip .agentic-framework / rollback dirs (consumer F3-trap)

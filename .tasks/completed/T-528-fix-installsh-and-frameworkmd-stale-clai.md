@@ -2,18 +2,38 @@
 id: T-528
 name: "Fix install.sh and FRAMEWORK.md stale claims"
 description: >
-  Agent evaluation found: (1) install.sh reset --hard on update with no dirty-check, (2) PyYAML uses warn() but is fatal, (3) bash version check inconsistency (install.sh=4.4 vs preflight.sh=4.0), (4) FRAMEWORK.md claims automatic updates but vendoring broke that, (5) bin/fw error message references removed framework_path field.
+  Agent evaluation found: (1) install.sh reset --hard on update with no dirty-check,
+  (2) PyYAML uses warn() but is fatal, (3) bash version check inconsistency (install.sh=4.4
+  vs preflight.sh=4.0), (4) FRAMEWORK.md claims automatic updates but vendoring broke
+  that, (5) bin/fw error message references removed framework_path field.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-17T23:14:47Z
-last_update: 2026-03-23T11:08:48Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-17T23:20:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-528: Fix install.sh and FRAMEWORK.md stale claims

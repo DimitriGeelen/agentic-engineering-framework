@@ -1,19 +1,43 @@
 ---
 id: T-1825
-name: "agents/handover/handover.sh:512 unquoted PYEOF heredoc triggers SC2284 lint false-positive"
+name: "agents/handover/handover.sh:512 unquoted PYEOF heredoc triggers SC2284 lint
+  false-positive"
 description: >
-  FB-C-F2 (LOW/lint-only) reported by penelope (050-email-archive). agents/handover/handover.sh line 512 opens 'python3 << PYEOF' (unquoted delimiter); shellcheck attempts to lint the Python content as bash and reports SC2284 false-positive on '==' operator at line 632 (inside the Python block). Suggested fix: quote heredoc delimiter at line 512 → python3 << 'PYEOF'. Audit lines 776 and 802 for same issue. Line 688 (<< 'PCEOF') is already correct.
+  FB-C-F2 (LOW/lint-only) reported by penelope (050-email-archive). agents/handover/handover.sh
+  line 512 opens 'python3 << PYEOF' (unquoted delimiter); shellcheck attempts to lint
+  the Python content as bash and reports SC2284 false-positive on '==' operator at
+  line 632 (inside the Python block). Suggested fix: quote heredoc delimiter at line
+  512 → python3 << 'PYEOF'. Audit lines 776 and 802 for same issue. Line 688 (<< 'PCEOF')
+  is already correct.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade-incident-2026-05-14, lint, bug]
 components: [agents/handover/handover.sh]
 related_tasks: []
 created: 2026-05-14T07:30:58Z
-last_update: 2026-05-14T14:01:57Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-14T14:01:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1825: agents/handover/handover.sh:512 unquoted PYEOF heredoc triggers SC2284 lint false-positive

@@ -2,18 +2,39 @@
 id: T-556
 name: "Handover commit attribution — use session ID not active task ID"
 description: >
-  fw handover --commit attributes the commit to whatever task is in focus (e.g. T-012: Session handover). Handovers are session-level, not task-level. Change to use T-012 housekeeping prefix or session ID (S-YYYY-MMDD-HHMM). Low effort — change commit message format in handover.sh. Origin: T-549 OpenClaw eval — handover committed under T-012 (TermLink learnings task).
+  fw handover --commit attributes the commit to whatever task is in focus (e.g. T-012:
+  Session handover). Handovers are session-level, not task-level. Change to use T-012
+  housekeeping prefix or session ID (S-YYYY-MMDD-HHMM). Low effort — change commit
+  message format in handover.sh. Origin: T-549 OpenClaw eval — handover committed
+  under T-012 (TermLink learnings task).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:21:22Z
-last_update: 2026-03-27T19:13:26Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-03-27T19:13:26Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-556: Handover commit attribution — use session ID not active task ID

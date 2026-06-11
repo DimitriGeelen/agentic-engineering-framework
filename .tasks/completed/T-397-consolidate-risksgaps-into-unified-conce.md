@@ -2,18 +2,39 @@
 id: T-397
 name: "Consolidate risks+gaps into unified concerns register (Option D)"
 description: >
-  Merge risks.yaml + gaps.yaml into concerns.yaml with type: gap|risk. Delete issues.yaml. Update controls.yaml backlinks. Update audit, handover, CLAUDE.md references. Update web routes and templates. Parent: T-396.
+  Merge risks.yaml + gaps.yaml into concerns.yaml with type: gap|risk. Delete issues.yaml.
+  Update controls.yaml backlinks. Update audit, handover, CLAUDE.md references. Update
+  web routes and templates. Parent: T-396.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [C-004, agents/handover/handover.sh, lib/init.sh, C-003, web/blueprints/risks.py, web/templates/risks.html]
+components: [C-004, agents/handover/handover.sh, lib/init.sh, C-003, 
+      web/blueprints/risks.py, web/templates/risks.html]
 related_tasks: []
 created: 2026-03-09T20:07:48Z
-last_update: 2026-03-12T12:41:19Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-10T06:59:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-397: Consolidate risks+gaps into unified concerns register (Option D)

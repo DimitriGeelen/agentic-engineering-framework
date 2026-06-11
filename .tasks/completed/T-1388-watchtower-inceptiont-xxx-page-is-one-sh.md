@@ -1,21 +1,40 @@
 ---
 id: T-1388
-name: "Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance after decision recorded"
+name: "Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance
+  after decision recorded"
 description: >
-  Inception: Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance after decision recorded
+  Inception: Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance
+  after decision recorded
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-22T21:35:53Z
-last_update: 2026-04-26T19:30:17Z
-date_finished: null
+last_update: '2026-06-11T22:23:47Z'
+date_finished:
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1388: Watchtower /inception/T-XXX page is one-shot — no revoke/re-decide affordance after decision recorded

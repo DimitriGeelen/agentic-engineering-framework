@@ -1,25 +1,48 @@
 ---
 id: T-608
-name: "Frictionless Tier 0 human confirmation — prove human acted without terminal switching"
+name: "Frictionless Tier 0 human confirmation — prove human acted without terminal
+  switching"
 description: >
-  Current Tier 0 flow: hook blocks agent → human switches terminal → cd to project → paste command.
-  Maximum friction for minimum governance value. Need: in-band confirmation that provably came from
-  a human, not the agent. Explore: Claude Code permission prompts, challenge-response, Watchtower
-  web UI approval button, TermLink out-of-band channel. Hard constraint: agent must not be able to
-  bypass or fake the confirmation. Related: T-557 (inception decide gate), T-559 (boundary gate).
+  Current Tier 0 flow: hook blocks agent → human switches terminal → cd to project
+  → paste command.
+  Maximum friction for minimum governance value. Need: in-band confirmation that provably
+  came from
+  a human, not the agent. Explore: Claude Code permission prompts, challenge-response,
+  Watchtower
+  web UI approval button, TermLink out-of-band channel. Hard constraint: agent must
+  not be able to
+  bypass or fake the confirmation. Related: T-557 (inception decide gate), T-559 (boundary
+  gate).
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [bin/fw, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-25T15:26:08Z
-last_update: 2026-04-13T13:21:35Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-04-13T13:21:35Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-608: Frictionless Tier 0 human confirmation — prove human acted without terminal switching

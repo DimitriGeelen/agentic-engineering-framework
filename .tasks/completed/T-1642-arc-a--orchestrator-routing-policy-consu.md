@@ -2,21 +2,49 @@
 id: T-1642
 name: "Arc A — Orchestrator routing-policy consultation (T-1061 follow-up)"
 description: >
-  Surface 13 hardcoded routing-policy parameters in /opt/termlink (model fallback chain, bypass thresholds, breaker thresholds, route-cache TTL, confidence threshold, task-type taxonomy, tag prefix, concurrency cap, success/failure attribution, selector role contract, default-on governance) as explicit human decisions; capture rationale in decisions.yaml; produce routing-policy.yaml or per-param fw config keys making them runtime-configurable. Top-5 questions: task_type taxonomy (closed enum or free-string?); model fallback order (quality-first vs cost-aware); bypass promotion threshold (5 — calibrated to what?); circuit breaker (3 fail / 60s cool — production-realistic?); discovery filter strictness (fail-closed or soft-preference). Source: docs/reports/T-1641-worker-08-policy-questions.md. Out of scope: implementing configurable values (separate build tasks). Blocks Arc B framework-wiring completion.
+  Surface 13 hardcoded routing-policy parameters in /opt/termlink (model fallback
+  chain, bypass thresholds, breaker thresholds, route-cache TTL, confidence threshold,
+  task-type taxonomy, tag prefix, concurrency cap, success/failure attribution, selector
+  role contract, default-on governance) as explicit human decisions; capture rationale
+  in decisions.yaml; produce routing-policy.yaml or per-param fw config keys making
+  them runtime-configurable. Top-5 questions: task_type taxonomy (closed enum or free-string?);
+  model fallback order (quality-first vs cost-aware); bypass promotion threshold (5
+  — calibrated to what?); circuit breaker (3 fail / 60s cool — production-realistic?);
+  discovery filter strictness (fail-closed or soft-preference). Source: docs/reports/T-1641-worker-08-policy-questions.md.
+  Out of scope: implementing configurable values (separate build tasks). Blocks Arc
+  B framework-wiring completion.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1641, t-1061-followup, policy, orchestrator, termlink]
-components: [web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+components: [web/blueprints/__init__.py, web/blueprints/orchestrator.py, 
+      web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1061, T-1064, T-1065]
 arc_id: orchestrator-rethink
 created: 2026-05-01T11:54:33Z
-last_update: 2026-05-01T18:58:36Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T17:08:41Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1642: Arc A — Orchestrator routing-policy consultation (T-1061 follow-up)

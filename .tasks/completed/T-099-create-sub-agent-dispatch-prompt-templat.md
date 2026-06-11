@@ -2,15 +2,36 @@
 id: T-099
 name: Create sub-agent dispatch prompt templates
 description: >
-  Create reusable prompt templates in agents/dispatch/ for the 4 identified sub-agent patterns: (1) investigate.md — parallel research/investigation, (2) enrich.md — content generation with file-write convention, (3) audit.md — review/compliance checking, (4) develop.md — sequential TDD development. Each template includes framework context, expected output format, and token hints. Based on T-097 evidence catalog.
+  Create reusable prompt templates in agents/dispatch/ for the 4 identified sub-agent
+  patterns: (1) investigate.md — parallel research/investigation, (2) enrich.md —
+  content generation with file-write convention, (3) audit.md — review/compliance
+  checking, (4) develop.md — sequential TDD development. Each template includes framework
+  context, expected output format, and token hints. Based on T-097 evidence catalog.
 status: work-completed
 workflow_type: build
 owner: agent
 tags: []
 related_tasks: []
 created: 2026-02-17T07:52:51Z
-last_update: 2026-02-17T07:54:12Z
+last_update: '2026-06-11T22:23:37Z'
 date_finished: 2026-02-17T07:54:12Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-099: Create sub-agent dispatch prompt templates

@@ -2,18 +2,37 @@
 id: T-424
 name: "Extract lib/tasks.sh and lib/yaml.sh — task lookup and YAML helpers (S6+S7)"
 description: >
-  S6: Task file lookup duplicated in 4+ files — extract find_task_file(). S7: YAML field extraction with grep/sed in 10+ files — extract get_yaml_field() using Python yaml.safe_load. Directive scores: S6=6, S7=6. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  S6: Task file lookup duplicated in 4+ files — extract find_task_file(). S7: YAML
+  field extraction with grep/sed in 10+ files — extract get_yaml_field() using Python
+  yaml.safe_load. Directive scores: S6=6, S7=6. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, shell, reliability]
 components: []
 related_tasks: [T-411]
 created: 2026-03-10T21:04:05Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-11T10:16:49Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-424: Extract lib/tasks.sh and lib/yaml.sh — task lookup and YAML helpers (S6+S7)

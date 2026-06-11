@@ -1,20 +1,42 @@
 ---
 id: T-1819
-name: "seed peer-consult-prompts.yaml — framework-half runtime gap + joint smoke-readiness with TermLink T-1636"
+name: "seed peer-consult-prompts.yaml — framework-half runtime gap + joint smoke-readiness
+  with TermLink T-1636"
 description: >
-  T-1818 shipped the subscriber loop but the runtime prompts map .context/peer-consult-prompts.yaml is missing — without it every event resolves to miss. Seed the map with a default-fallback entry + at least one explicit channel/addressee binding, and coordinate with TermLink-side T-1636 emitter status so the joint smoke-test slice is sequencable.
+  T-1818 shipped the subscriber loop but the runtime prompts map .context/peer-consult-prompts.yaml
+  is missing — without it every event resolves to miss. Seed the map with a default-fallback
+  entry + at least one explicit channel/addressee binding, and coordinate with TermLink-side
+  T-1636 emitter status so the joint smoke-test slice is sequencable.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [termlink, peer-consult, cross-repo]
 components: [tests/unit/test_peer_subscribe.py]
 related_tasks: [T-1818, T-1804, T-1797]
 arc_id: orchestrator-rethink
 created: 2026-05-13T23:01:36Z
-last_update: 2026-05-13T23:10:57Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-13T23:10:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=1 (body:hand-wired-dispatch); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1819: seed peer-consult-prompts.yaml — framework-half runtime gap + joint smoke-readiness with TermLink T-1636

@@ -1,20 +1,42 @@
 ---
 id: T-1635
-name: "fw upgrade fresh-machine simulation guard — clean container test, blocking on framework release"
+name: "fw upgrade fresh-machine simulation guard — clean container test, blocking
+  on framework release"
 description: >
-  T-1633 child 2/2. Clean LXC or docker container with only .agentic-framework/ from a tagged consumer (no /opt/999, no ~/.local/bin/fw). Run fw upgrade. Assert success + version bump. Block framework release on failure. Codify in CLAUDE.md: every consumer-facing command must run from a clean machine with no developer artifacts. THIS IS THE LOAD-BEARING PIECE — without it we regenerate this class of failure forever (G-019).
+  T-1633 child 2/2. Clean LXC or docker container with only .agentic-framework/ from
+  a tagged consumer (no /opt/999, no ~/.local/bin/fw). Run fw upgrade. Assert success
+  + version bump. Block framework release on failure. Codify in CLAUDE.md: every consumer-facing
+  command must run from a clean machine with no developer artifacts. THIS IS THE LOAD-BEARING
+  PIECE — without it we regenerate this class of failure forever (G-019).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1633, simulation, release-gate, outward-guard]
 components: []
 related_tasks: [T-1633, T-1634]
 arc_id: project-shape-resilience
 created: 2026-05-01T10:30:42Z
-last_update: 2026-05-14T15:32:52Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-14T15:32:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 5
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=5 (body:class-neutral); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1635: fw upgrade fresh-machine simulation guard — clean container test, blocking on framework release

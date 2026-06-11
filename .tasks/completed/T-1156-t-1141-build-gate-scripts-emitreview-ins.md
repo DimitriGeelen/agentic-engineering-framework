@@ -1,19 +1,40 @@
 ---
 id: T-1156
-name: "T-1141 build: Gate scripts emit_review instead of bare commands — PL-007 structural enforcement"
+name: "T-1141 build: Gate scripts emit_review instead of bare commands — PL-007 structural
+  enforcement"
 description: >
-  T-1141 build: Gate scripts emit_review instead of bare commands — PL-007 structural enforcement
+  T-1141 build: Gate scripts emit_review instead of bare commands — PL-007 structural
+  enforcement
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/context/check-tier0.sh, agents/task-create/update-task.sh, lib/inception.sh]
+components: [agents/context/check-tier0.sh, agents/task-create/update-task.sh, 
+      lib/inception.sh]
 related_tasks: []
 created: 2026-04-12T11:50:54Z
-last_update: 2026-04-12T11:54:03Z
+last_update: '2026-06-11T22:23:41Z'
 date_finished: 2026-04-12T11:54:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 1
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=1 (body:hard-coded-removed); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1156: T-1141 build: Gate scripts emit_review instead of bare commands — PL-007 structural enforcement

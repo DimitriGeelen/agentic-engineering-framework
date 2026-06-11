@@ -1,19 +1,48 @@
 ---
 id: T-1591
-name: "RCA: AEF GitHub mirror job failing for 50+ builds — annotated-vs-lightweight tag mismatch on v1.2.0-v1.2.4, v1.5.743, v1.5.746 (plus missing v1.1.0)"
+name: "RCA: AEF GitHub mirror job failing for 50+ builds — annotated-vs-lightweight
+  tag mismatch on v1.2.0-v1.2.4, v1.5.743, v1.5.746 (plus missing v1.1.0)"
 description: >
-  GitHub master is 68 commits behind OneDev master (last GitHub master commit eb18c73c5 from 2026-04-27 23:13). Investigation found tag mismatches: OneDev has annotated tag objects for v1.2.0-v1.2.4, v1.5.743, v1.5.746 while GitHub has lightweight tags pointing directly at the commits. Annotated tag objects have different SHAs than the lightweight versions, so OneDev's mirror push is not a fast-forward update for these refs and GitHub rejects without --force. GitHub also has v1.1.0 that OneDev doesn't have. Action options: (a) convert OneDev annotated tags to lightweight, (b) force-push tags from OneDev to GitHub, (c) delete divergent tags on GitHub then re-push, (d) reconfigure OneDev mirror to push branches only. All options require human decision — destructive or require OneDev/GitHub admin access. Origin: user-reported observation 2026-04-28.
+  GitHub master is 68 commits behind OneDev master (last GitHub master commit eb18c73c5
+  from 2026-04-27 23:13). Investigation found tag mismatches: OneDev has annotated
+  tag objects for v1.2.0-v1.2.4, v1.5.743, v1.5.746 while GitHub has lightweight tags
+  pointing directly at the commits. Annotated tag objects have different SHAs than
+  the lightweight versions, so OneDev's mirror push is not a fast-forward update for
+  these refs and GitHub rejects without --force. GitHub also has v1.1.0 that OneDev
+  doesn't have. Action options: (a) convert OneDev annotated tags to lightweight,
+  (b) force-push tags from OneDev to GitHub, (c) delete divergent tags on GitHub then
+  re-push, (d) reconfigure OneDev mirror to push branches only. All options require
+  human decision — destructive or require OneDev/GitHub admin access. Origin: user-reported
+  observation 2026-04-28.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-28T19:29:33Z
-last_update: 2026-04-28T20:23:37Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-28T20:23:37Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 2
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1591: RCA: AEF GitHub mirror job failing for 50+ builds — annotated-vs-lightweight tag mismatch on v1.2.0-v1.2.4, v1.5.743, v1.5.746 (plus missing v1.1.0)

@@ -1,19 +1,38 @@
 ---
 id: T-1814
-name: "fw verify-acs NUDGE — suppress for genuinely-subjective [REVIEW] ACs (tone/visual keywords)"
+name: "fw verify-acs NUDGE — suppress for genuinely-subjective [REVIEW] ACs (tone/visual
+  keywords)"
 description: >
-  fw verify-acs NUDGE — suppress for genuinely-subjective [REVIEW] ACs (tone/visual keywords)
+  fw verify-acs NUDGE — suppress for genuinely-subjective [REVIEW] ACs (tone/visual
+  keywords)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [governance, ac-classification, reviewer, polish]
 components: [lib/verify-acs.sh]
 related_tasks: [T-1811, T-1812]
 created: 2026-05-13T19:03:07Z
-last_update: 2026-05-13T19:08:09Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-13T19:08:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1814: fw verify-acs NUDGE — suppress for genuinely-subjective [REVIEW] ACs (tone/visual keywords)

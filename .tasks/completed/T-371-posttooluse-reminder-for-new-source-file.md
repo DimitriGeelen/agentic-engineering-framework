@@ -2,18 +2,39 @@
 id: T-371
 name: "PostToolUse reminder for new source files without fabric cards"
 description: >
-  Add advisory check (not blocking) that when a NEW file is created matching watch-patterns.yaml globs, emits: NOTE: New source file created. Consider: fw fabric register <path>. Closes feedback loop so agents know registration is expected. See R-5 in fabric silent-degradation analysis.
+  Add advisory check (not blocking) that when a NEW file is created matching watch-patterns.yaml
+  globs, emits: NOTE: New source file created. Consider: fw fabric register <path>.
+  Closes feedback loop so agents know registration is expected. See R-5 in fabric
+  silent-degradation analysis.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [fabric, hooks]
 components: []
 related_tasks: []
 created: 2026-03-08T22:28:11Z
-last_update: 2026-03-12T12:41:19Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-08T22:57:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-371: PostToolUse reminder for new source files without fabric cards

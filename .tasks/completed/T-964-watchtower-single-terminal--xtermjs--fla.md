@@ -1,19 +1,41 @@
 ---
 id: T-964
-name: "Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)"
+name: "Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase
+  1)"
 description: >
-  Phase 1 of web terminal: Add Flask-SocketIO WebSocket support to Watchtower, embed xterm.js in a /terminal page, implement PTY manager for single terminal session. Includes: pip dependency (flask-socketio, eventlet), xterm.js CDN or vendored JS, WebSocket route for PTY I/O, basic terminal page with PicoCSS styling. From T-962 GO.
+  Phase 1 of web terminal: Add Flask-SocketIO WebSocket support to Watchtower, embed
+  xterm.js in a /terminal page, implement PTY manager for single terminal session.
+  Includes: pip dependency (flask-socketio, eventlet), xterm.js CDN or vendored JS,
+  WebSocket route for PTY I/O, basic terminal page with PicoCSS styling. From T-962
+  GO.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-06T18:25:12Z
-last_update: 2026-04-06T19:13:20Z
+last_update: '2026-06-11T22:24:33Z'
 date_finished: 2026-04-06T18:59:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-964: Watchtower single terminal — xterm.js + Flask-SocketIO PTY bridge (T-962 Phase 1)

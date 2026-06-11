@@ -1,25 +1,50 @@
 ---
 id: T-1900
-name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-387 silent-halt class) when render_surface_files_in piped into head -3 produces output ≥3 lines — script dies at exit 141 with no error printed instead of the actionable gate-failure message"
+name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE
+  (L-387 silent-halt class) when render_surface_files_in piped into head -3 produces
+  output ≥3 lines — script dies at exit 141 with no error printed instead of the actionable
+  gate-failure message"
 description: >
-  update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-387 silent-halt class) when render_surface_files_in piped into head -3 produces output ≥3 lines — script dies at exit 141 with no error printed instead of the actionable gate-failure message
+  update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-387
+  silent-halt class) when render_surface_files_in piped into head -3 produces output
+  ≥3 lines — script dies at exit 141 with no error printed instead of the actionable
+  gate-failure message
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [agents/task-create/update-task.sh, tests/unit/check_render_surface_human_ac_sigpipe.bats]
+components: [agents/task-create/update-task.sh, 
+      tests/unit/check_render_surface_human_ac_sigpipe.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T17:29:32Z
-last_update: 2026-05-20T10:41:07Z
+last_update: '2026-06-11T22:24:02Z'
 date_finished: 2026-05-18T17:35:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 5
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=5 (body:silent-class-removed); 
+      D3=3 (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1900: update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-387 silent-halt class) when render_surface_files_in piped into head -3 produces output ≥3 lines — script dies at exit 141 with no error printed instead of the actionable gate-failure message

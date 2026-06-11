@@ -2,18 +2,40 @@
 id: T-314
 name: "Fix CLAUDE.md template — add missing 7 governance sections"
 description: >
-  Consumer CLAUDE.md template (lib/templates/claude-project.md or inline in init.sh) missing 7 of 18 major sections: authority model, error escalation, budget mgmt, sub-agent dispatch protocol, plan prohibition, behavioral rules, component fabric. ~70%% governance loss. Update template to include all governance sections. Source: T-306 investigation, Agent 5 findings.
+  Consumer CLAUDE.md template (lib/templates/claude-project.md or inline in init.sh)
+  missing 7 of 18 major sections: authority model, error escalation, budget mgmt,
+  sub-agent dispatch protocol, plan prohibition, behavioral rules, component fabric.
+  ~70%% governance loss. Update template to include all governance sections. Source:
+  T-306 investigation, Agent 5 findings.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-04T19:27:14Z
-last_update: 2026-03-04T20:39:02Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T20:39:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-314: Fix CLAUDE.md template — add missing 7 governance sections

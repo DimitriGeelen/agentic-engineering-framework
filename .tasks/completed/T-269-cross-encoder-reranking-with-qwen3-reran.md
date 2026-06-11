@@ -2,18 +2,42 @@
 id: T-269
 name: "Cross-encoder reranking with Qwen3-Reranker"
 description: >
-  Add cross-encoder reranking stage to RAG pipeline. After initial hybrid retrieval (BM25+vector, top-30), rerank with Qwen3-Reranker 0.6B (Q4, ~0.5GB VRAM) and return top-10. Ollama now has native rerank endpoint — use ollama.rerank() or the API equivalent. Add ~30 lines to web/embeddings.py rag_retrieve(). On-demand loading: load reranker only during rerank, unload if VRAM pressure. Ref: docs/reports/T-261-rag-quality-techniques.md §1.1 (cross-encoder models, implementation approach). Prerequisite: ollama pull qwen3-reranker:0.6b. Predecessor: T-255 (RAG retrieval).
+  Add cross-encoder reranking stage to RAG pipeline. After initial hybrid retrieval
+  (BM25+vector, top-30), rerank with Qwen3-Reranker 0.6B (Q4, ~0.5GB VRAM) and return
+  top-10. Ollama now has native rerank endpoint — use ollama.rerank() or the API equivalent.
+  Add ~30 lines to web/embeddings.py rag_retrieve(). On-demand loading: load reranker
+  only during rerank, unload if VRAM pressure. Ref: docs/reports/T-261-rag-quality-techniques.md
+  §1.1 (cross-encoder models, implementation approach). Prerequisite: ollama pull
+  qwen3-reranker:0.6b. Predecessor: T-255 (RAG retrieval).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [qa, rag, reranking]
 components: [agents/context/lib/focus.sh, web/embeddings.py]
 related_tasks: []
 created: 2026-02-24T08:38:02Z
-last_update: 2026-02-25T20:37:13Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T10:54:23Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-269: Cross-encoder reranking with Qwen3-Reranker

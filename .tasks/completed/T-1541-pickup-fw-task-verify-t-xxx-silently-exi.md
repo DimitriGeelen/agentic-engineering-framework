@@ -1,21 +1,40 @@
 ---
 id: T-1541
-name: "Pickup: fw task verify T-XXX silently exits 1 on every task — BRE backtick metachar in pattern strips entire verification block (from 003-NTB-ATC-Plugin)"
+name: "Pickup: fw task verify T-XXX silently exits 1 on every task — BRE backtick
+  metachar in pattern strips entire verification block (from 003-NTB-ATC-Plugin)"
 description: >
-  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-214. Type: bug-report.
+  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-214. Type:
+  bug-report.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-27T12:50:02Z
-last_update: 2026-04-27T13:31:28Z
+last_update: '2026-06-11T22:23:51Z'
 date_finished: 2026-04-27T13:31:28Z
 source_task_id_in_origin: T-214
 source_project_in_origin: "003-NTB-ATC-Plugin"
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1541: Pickup: fw task verify T-XXX silently exits 1 on every task — BRE backtick metachar in pattern strips entire verification block (from 003-NTB-ATC-Plugin)

@@ -1,21 +1,41 @@
 ---
 id: T-1268
-name: "Cross-machine update propagation friction — global install boundary + binary cargo dep"
+name: "Cross-machine update propagation friction — global install boundary + binary
+  cargo dep"
 description: >
-  Inception: structural fix for agent-driven update propagation across boundaries we cannot cross (global install gate, TermLink binary toolchain)
+  Inception: structural fix for agent-driven update propagation across boundaries
+  we cannot cross (global install gate, TermLink binary toolchain)
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [bin/fw, lib/pending.sh, web/blueprints/__init__.py, web/blueprints/pending.py, web/shared.py, web/templates/pending.html]
+components: [bin/fw, lib/pending.sh, web/blueprints/__init__.py, 
+      web/blueprints/pending.py, web/shared.py, web/templates/pending.html]
 related_tasks: []
 created: 2026-04-15T21:03:24Z
-last_update: 2026-04-23T15:15:49Z
+last_update: '2026-06-11T22:23:44Z'
 date_finished: 2026-04-23T15:15:49Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1268: Cross-machine update propagation friction — global install boundary + binary cargo dep

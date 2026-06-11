@@ -1,20 +1,41 @@
 ---
 id: T-1668
-name: "Implement §ACD enforcement gates: --headline-mechanic at create, --demo at close, CLAUDE.md §ACD compression"
+name: "Implement §ACD enforcement gates: --headline-mechanic at create, --demo at
+  close, CLAUDE.md §ACD compression"
 description: >
-  Implement §ACD enforcement gates: --headline-mechanic at create, --demo at close, CLAUDE.md §ACD compression
+  Implement §ACD enforcement gates: --headline-mechanic at create, --demo at close,
+  CLAUDE.md §ACD compression
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py, tests/unit/test_audit_arc_completion.py]
+components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py, 
+      tests/unit/test_audit_arc_completion.py]
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-02T06:11:31Z
-last_update: 2026-05-02T07:28:58Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-02T07:18:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1668: Implement §ACD enforcement gates: --headline-mechanic at create, --demo at close, CLAUDE.md §ACD compression

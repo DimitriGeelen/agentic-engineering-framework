@@ -2,18 +2,40 @@
 id: T-298
 name: "Fix fw init suggested commands to recommend fw work-on"
 description: >
-  fw init prints Next steps recommending 'fw task create --name ...' which hangs without --description flag (O-007) and doesn't set focus even with --start (O-008). Fix: change step 4 to recommend 'fw work-on "My first task" --type build' which is the only end-to-end working path. Location: lib/init.sh echo block at end of do_init(). Source: T-294 simulation O-007.
+  fw init prints Next steps recommending 'fw task create --name ...' which hangs without
+  --description flag (O-007) and doesn't set focus even with --start (O-008). Fix:
+  change step 4 to recommend 'fw work-on "My first task" --type build' which is the
+  only end-to-end working path. Location: lib/init.sh echo block at end of do_init().
+  Source: T-294 simulation O-007.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/context/lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:13:56Z
-last_update: 2026-03-04T18:17:56Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T18:17:56Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-298: Fix fw init suggested commands to recommend fw work-on

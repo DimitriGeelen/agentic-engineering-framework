@@ -2,18 +2,42 @@
 id: T-237
 name: "Add search infrastructure — tantivy BM25 for Watchtower, plan embedding layer"
 description: >
-  Replace grep-based search in Watchtower with tantivy BM25 full-text search. Phase 1: pip install tantivy, index all YAML/Markdown files, wire into /search route. Phase 2 (future): Add sqlite-vec for embedding-based similarity when find-similar use case becomes real need. Phase 3 (future): Consider Qdrant MCP server for agent-queryable knowledge. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md, /tmp/fw-agent-vector-db-options.md, /tmp/fw-agent-vector-db-research.md
+  Replace grep-based search in Watchtower with tantivy BM25 full-text search. Phase
+  1: pip install tantivy, index all YAML/Markdown files, wire into /search route.
+  Phase 2 (future): Add sqlite-vec for embedding-based similarity when find-similar
+  use case becomes real need. Phase 3 (future): Consider Qdrant MCP server for agent-queryable
+  knowledge. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md, /tmp/fw-agent-vector-db-options.md,
+  /tmp/fw-agent-vector-db-research.md
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [C-003, web/search.py, web/templates/base.html, web/templates/search.html]
+components: [C-003, web/search.py, web/templates/base.html, 
+      web/templates/search.html]
 related_tasks: []
 created: 2026-02-21T21:48:32Z
-last_update: 2026-02-22T08:46:18Z
+last_update: '2026-06-11T22:24:16Z'
 date_finished: 2026-02-21T22:39:30Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-237: Add search infrastructure — tantivy BM25 for Watchtower, plan embedding layer

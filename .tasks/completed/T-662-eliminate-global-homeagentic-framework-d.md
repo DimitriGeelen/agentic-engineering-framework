@@ -1,21 +1,40 @@
 ---
 id: T-662
-name: "Eliminate global HOME/.agentic-framework dependency — full project isolation without PATH-based fw resolution"
+name: "Eliminate global HOME/.agentic-framework dependency — full project isolation
+  without PATH-based fw resolution"
 description: >
-  Inception: Eliminate global HOME/.agentic-framework dependency — full project isolation without PATH-based fw resolution
+  Inception: Eliminate global HOME/.agentic-framework dependency — full project isolation
+  without PATH-based fw resolution
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-625, T-660, T-559, T-614]
 created: 2026-03-28T16:44:24Z
-last_update: 2026-04-13T06:23:24Z
+last_update: '2026-06-11T22:24:26Z'
 date_finished: 2026-03-28T17:06:18Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-662: Eliminate global HOME/.agentic-framework dependency — full project isolation without PATH-based fw resolution

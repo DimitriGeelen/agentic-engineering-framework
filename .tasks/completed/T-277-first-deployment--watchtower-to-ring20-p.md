@@ -2,18 +2,39 @@
 id: T-277
 name: "First deployment — Watchtower to Ring20 production"
 description: >
-  Execute first production deployment of Watchtower. Use fw deploy scaffold, validate with /deploy-check, push to registry, deploy via Swarm, verify health through Traefik FQDN. Document deployment runbook. Depends on T-274 (scaffold) and T-275 (quality gate). See docs/reports/T-272-deploy-watchtower-ring20.md.
+  Execute first production deployment of Watchtower. Use fw deploy scaffold, validate
+  with /deploy-check, push to registry, deploy via Swarm, verify health through Traefik
+  FQDN. Document deployment runbook. Depends on T-274 (scaffold) and T-275 (quality
+  gate). See docs/reports/T-272-deploy-watchtower-ring20.md.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [deployment, production, ring20]
 components: [web/app.py]
 related_tasks: [T-272, T-273, T-274, T-275, T-276]
 created: 2026-02-25T08:09:53Z
-last_update: 2026-02-25T20:37:13Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-25T11:25:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-277: First deployment — Watchtower to Ring20 production

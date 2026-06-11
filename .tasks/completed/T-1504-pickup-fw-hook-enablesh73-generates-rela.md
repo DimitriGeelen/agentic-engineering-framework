@@ -1,21 +1,41 @@
 ---
 id: T-1504
-name: "Pickup: fw hook-enable.sh:73 generates relative-path hook commands that fail when shell cwd != project root (680 silent occurrences in one downstream project) (from 003-NTB-ATC-Plugin)"
+name: "Pickup: fw hook-enable.sh:73 generates relative-path hook commands that fail
+  when shell cwd != project root (680 silent occurrences in one downstream project)
+  (from 003-NTB-ATC-Plugin)"
 description: >
-  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-140. Type: bug-report.
+  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-140. Type:
+  bug-report.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [pickup, bug-report]
 components: [bin/hook-enable.sh, tests/unit/hook_enable_absolute_path.bats]
 related_tasks: []
 created: 2026-04-26T11:13:33Z
-last_update: 2026-04-26T12:02:30Z
+last_update: '2026-06-11T22:23:50Z'
 date_finished: 2026-04-26T12:02:30Z
 source_task_id_in_origin: T-140
 source_project_in_origin: "003-NTB-ATC-Plugin"
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1504: Pickup: fw hook-enable.sh:73 generates relative-path hook commands that fail when shell cwd != project root (680 silent occurrences in one downstream project) (from 003-NTB-ATC-Plugin)

@@ -1,19 +1,40 @@
 ---
 id: T-620
-name: "Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI"
+name: "Human AC approval buttons in Watchtower — check/uncheck Human ACs from web
+  UI"
 description: >
-  Add approve/reject buttons for Human ACs on the Watchtower task detail page. When a human clicks approve, it checks the AC checkbox in the task markdown file. This completes the T-608 approval surface chain: T-610 (parse ACs) → T-611 (Tier 0 queue) → T-612 (agent pickup) → this task (Human AC buttons).
+  Add approve/reject buttons for Human ACs on the Watchtower task detail page. When
+  a human clicks approve, it checks the AC checkbox in the task markdown file. This
+  completes the T-608 approval surface chain: T-610 (parse ACs) → T-611 (Tier 0 queue)
+  → T-612 (agent pickup) → this task (Human AC buttons).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-25T21:45:49Z
-last_update: 2026-03-26T15:47:28Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-26T12:30:46Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-620: Human AC approval buttons in Watchtower — check/uncheck Human ACs from web UI

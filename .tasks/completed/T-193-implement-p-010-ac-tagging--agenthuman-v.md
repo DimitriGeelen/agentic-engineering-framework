@@ -3,20 +3,39 @@ id: T-193
 name: "Implement P-010 AC tagging — agent/human verification split"
 description: >
   Build task from T-192 GO decision (G-010). Implement Option A: ### Agent / ### Human
-  AC section headers in task templates. P-010 gate in update-task.sh scopes to ### Agent
-  section only. Partial-complete behavior keeps task in active/ with owner: human when
+  AC section headers in task templates. P-010 gate in update-task.sh scopes to ###
+  Agent
+  section only. Partial-complete behavior keeps task in active/ with owner: human
+  when
   human ACs are unchecked. CLI command fw task verify. Web UI cockpit attention section.
   CLAUDE.md behavioral rule. Backward compatible with all 188+ existing tasks.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [gap, p-010, verification, g-010]
 related_tasks: [T-192]
 created: 2026-02-19T14:56:10Z
-last_update: 2026-02-19T21:45:17Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-02-19T21:06:28Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-193: Implement P-010 AC tagging — agent/human verification split

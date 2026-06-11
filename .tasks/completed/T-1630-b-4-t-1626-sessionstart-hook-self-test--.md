@@ -1,19 +1,42 @@
 ---
 id: T-1630
-name: "B-4 (T-1626): SessionStart hook self-test — invoke each configured hook with safe stdin"
+name: "B-4 (T-1626): SessionStart hook self-test — invoke each configured hook with
+  safe stdin"
 description: >
-  At SessionStart, run each configured hook once with known-safe synthetic stdin (e.g. a no-op tool_use). Warn the agent if any returns command-not-found, non-zero on the safe input, or fails to execute. Catches the next class of broken hooks at the earliest possible moment.
+  At SessionStart, run each configured hook once with known-safe synthetic stdin (e.g.
+  a no-op tool_use). Warn the agent if any returns command-not-found, non-zero on
+  the safe input, or fails to execute. Catches the next class of broken hooks at the
+  earliest possible moment.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [hooks, self-test, session-start, from-T-1626, B-4]
-components: [bin/fw, lib/doctor-hook-exercise.py, lib/hook-telemetry.sh, lib/upgrade.sh, tests/unit/doctor_hook_exercise.bats, tests/unit/hook_telemetry.bats]
+components: [bin/fw, lib/doctor-hook-exercise.py, lib/hook-telemetry.sh, 
+      lib/upgrade.sh, tests/unit/doctor_hook_exercise.bats, 
+      tests/unit/hook_telemetry.bats]
 related_tasks: [T-1626, T-1627, T-1628, T-1629]
 created: 2026-04-30T21:19:34Z
-last_update: 2026-05-01T08:57:13Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T08:57:13Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1630: B-4 (T-1626): SessionStart hook self-test — invoke each configured hook with safe stdin

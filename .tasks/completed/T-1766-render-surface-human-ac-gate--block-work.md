@@ -1,19 +1,39 @@
 ---
 id: T-1766
-name: "render-surface Human-AC gate — block work-completed on render-touching tasks without [REVIEW] Human AC"
+name: "render-surface Human-AC gate — block work-completed on render-touching tasks
+  without [REVIEW] Human AC"
 description: >
-  render-surface Human-AC gate — block work-completed on render-touching tasks without [REVIEW] Human AC
+  render-surface Human-AC gate — block work-completed on render-touching tasks without
+  [REVIEW] Human AC
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: ["bug", "governance-gate", "human-review-surface", "T-1575-followup", "T-1763-T-1764-T-1765-meta"]
-components: [agents/task-create/update-task.sh, lib/render_surface.sh, tests/unit/test_render_surface_gate.bats]
+components: [agents/task-create/update-task.sh, lib/render_surface.sh, 
+      tests/unit/test_render_surface_gate.bats]
 related_tasks: ["T-193", "T-954", "T-1575", "T-1763", "T-1764", "T-1765"]
 created: 2026-05-06T11:30:48Z
-last_update: 2026-05-16T08:13:11Z
+last_update: '2026-06-11T22:23:58Z'
 date_finished: 2026-05-16T08:13:11Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=0 (no-signal); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1766: render-surface Human-AC gate — block work-completed on render-touching tasks without [REVIEW] Human AC

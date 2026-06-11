@@ -2,17 +2,36 @@
 id: T-214
 name: "Component Fabric — batch-register all AEF components"
 description: >
-  Register all ~100 AEF components using fw fabric scan + enrich. Cover all watch-pattern matches. Build the complete fabric for the framework itself. Related: T-191.
+  Register all ~100 AEF components using fw fabric scan + enrich. Cover all watch-pattern
+  matches. Build the complete fabric for the framework itself. Related: T-191.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [component-fabric, registration, bulk]
 related_tasks: []
 created: 2026-02-20T07:14:10Z
-last_update: 2026-02-20T07:23:12Z
+last_update: '2026-06-11T22:24:08Z'
 date_finished: 2026-02-20T07:23:12Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-214: Component Fabric — batch-register all AEF components

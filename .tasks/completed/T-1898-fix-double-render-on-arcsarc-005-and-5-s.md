@@ -1,25 +1,48 @@
 ---
 id: T-1898
-name: "fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html but render_page wraps in _wrapper.html (which also extends base.html), producing two full Watchtower headers"
+name: "fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html
+  but render_page wraps in _wrapper.html (which also extends base.html), producing
+  two full Watchtower headers"
 description: >
-  fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html but render_page wraps in _wrapper.html (which also extends base.html), producing two full Watchtower headers
+  fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html
+  but render_page wraps in _wrapper.html (which also extends base.html), producing
+  two full Watchtower headers
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/orchestrator.html]
+components: [web/templates/arc_detail.html, web/templates/arcs_index.html, 
+      web/templates/orchestrator.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T11:26:56Z
-last_update: 2026-05-20T10:40:25Z
+last_update: '2026-06-11T22:24:02Z'
 date_finished: 2026-05-18T11:42:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1898: fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.html but render_page wraps in _wrapper.html (which also extends base.html), producing two full Watchtower headers

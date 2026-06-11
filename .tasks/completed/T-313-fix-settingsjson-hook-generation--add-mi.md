@@ -2,18 +2,37 @@
 id: T-313
 name: "Fix settings.json hook generation — add missing 5 hooks"
 description: >
-  Consumer projects get 5 of 10 hooks at init time. Missing: budget-gate, block-plan-mode, pre-compact, check-dispatch, resume SessionStart matcher. Update generate_claude_code_config() in lib/init.sh to emit all hooks. Source: T-306 investigation, Agent 4 findings.
+  Consumer projects get 5 of 10 hooks at init time. Missing: budget-gate, block-plan-mode,
+  pre-compact, check-dispatch, resume SessionStart matcher. Update generate_claude_code_config()
+  in lib/init.sh to emit all hooks. Source: T-306 investigation, Agent 4 findings.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [lib/init.sh]
 related_tasks: []
 created: 2026-03-04T19:27:05Z
-last_update: 2026-03-04T20:32:46Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T20:32:46Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-313: Fix settings.json hook generation — add missing 5 hooks

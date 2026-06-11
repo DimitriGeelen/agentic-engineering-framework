@@ -16,7 +16,7 @@ components: [tests/unit/test_orchestrator_workflow_coverage.py,
 related_tasks: [T-1776, T-1797, T-1798]
 arc_id: orchestrator-rethink
 created: 2026-05-12T22:08:26Z
-last_update: '2026-05-28T22:54:09Z'
+last_update: '2026-06-11T22:23:25Z'
 date_finished: 2026-05-12T22:11:39Z
 bvp_scores_proposed:
   - ts: '2026-05-28T22:54:09Z'
@@ -31,6 +31,23 @@ bvp_scores_proposed:
     rationale: "D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); D3=5
       (body:new-collab-mode); D4=0 (no-signal); F1=1 (body/tag hits for 'F1': 1);
       F2=0 (no-signal)"
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 5
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
+      D3=5 (body:new-collab-mode); D4=0 (no-signal); F-RECALL=0 (no-signal); 
+      F-ORCH=2 (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

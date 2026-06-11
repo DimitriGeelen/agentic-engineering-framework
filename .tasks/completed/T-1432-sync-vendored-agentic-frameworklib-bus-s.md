@@ -1,19 +1,38 @@
 ---
 id: T-1432
-name: "sync vendored .agentic-framework/lib/ bus scripts (publish-learning-to-bus, subscribe-learnings-from-bus) — subscribe is v1 stale after T-1219 fix"
+name: "sync vendored .agentic-framework/lib/ bus scripts (publish-learning-to-bus,
+  subscribe-learnings-from-bus) — subscribe is v1 stale after T-1219 fix"
 description: >
-  sync vendored .agentic-framework/lib/ bus scripts (publish-learning-to-bus, subscribe-learnings-from-bus) — subscribe is v1 stale after T-1219 fix
+  sync vendored .agentic-framework/lib/ bus scripts (publish-learning-to-bus, subscribe-learnings-from-bus)
+  — subscribe is v1 stale after T-1219 fix
 
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-24T15:44:43Z
-last_update: 2026-04-24T15:45:43Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-24T15:45:43Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1432: sync vendored .agentic-framework/lib/ bus scripts (publish-learning-to-bus, subscribe-learnings-from-bus) — subscribe is v1 stale after T-1219 fix

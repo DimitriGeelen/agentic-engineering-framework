@@ -2,18 +2,44 @@
 id: T-587
 name: "Keyed async queue — per-key serialization primitive for concurrent operations"
 description: >
-  OpenClaw keyed-async-queue.ts (50 LOC): per-key serialization with cross-key parallelism. Map<string, Promise<void>> chains tasks per key. Rejection in one doesnt block next. Use cases: serialize task operations per task-id (prevent concurrent completion by TermLink workers), serialize hook execution per hook-name, serialize healing operations per error-class. Bash equivalent: flock-based per-key locking (~30 LOC). Implementation language pending T-586 (TypeScript strategy). If TS: direct port from OpenClaw. If bash: flock wrapper. Research source: /opt/openclaw-evaluation/.context/working/round2-T-022.md (Pattern 2, rated 5 stars most reusable primitive). OpenClaw source: src/util/keyed-async-queue.ts. Related: T-586 (language strategy), T-582 (session isolation — concurrent agent operations).
+  OpenClaw keyed-async-queue.ts (50 LOC): per-key serialization with cross-key parallelism.
+  Map<string, Promise<void>> chains tasks per key. Rejection in one doesnt block next.
+  Use cases: serialize task operations per task-id (prevent concurrent completion
+  by TermLink workers), serialize hook execution per hook-name, serialize healing
+  operations per error-class. Bash equivalent: flock-based per-key locking (~30 LOC).
+  Implementation language pending T-586 (TypeScript strategy). If TS: direct port
+  from OpenClaw. If bash: flock wrapper. Research source: /opt/openclaw-evaluation/.context/working/round2-T-022.md
+  (Pattern 2, rated 5 stars most reusable primitive). OpenClaw source: src/util/keyed-async-queue.ts.
+  Related: T-586 (language strategy), T-582 (session isolation — concurrent agent
+  operations).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/task-create/update-task.sh, lib/keylock.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-23T21:35:21Z
-last_update: 2026-03-28T12:27:42Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-28T12:27:42Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 5
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=5 (body:substrate-expand); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-587: Keyed async queue — per-key serialization primitive for concurrent operations

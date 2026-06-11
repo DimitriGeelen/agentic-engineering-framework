@@ -1,18 +1,46 @@
 ---
 id: T-1845
-name: "pre-commit large-file gate + untrack accidentally-tracked binaries (os 36MB, fw-vec-index.db 78MB) — sibling prevention to T-1844 secret-scan"
-description: "T-1834 force-push surfaced two tracked binaries (os 36MB PostScript, fw-vec-index.db 78MB vector index) that GitHub flagged as oversized during the rewritten-history push. They are accidentally-committed runtime/output state, not source. Sibling prevention class to T-1844 (secret-scan) — a structural pre-commit gate that would have caught both files at the moment they were first staged. Deliverables: (1) agents/git/lib/large-file-scan.sh scan-staged+scan-tree+allowlist, (2) pre-commit hook wires it after secret-scan, (3) untrack os + .gitignore /os, (4) untrack fw-vec-index.db + gitignore, (5) seed allowlist with vendored node_modules paths, (6) fw doctor surfaces tracked-large-file warn. Origin: T-1844 allowlist comment about the untracked 36MB file — captured at the time but no follow-up task."
+name: "pre-commit large-file gate + untrack accidentally-tracked binaries (os 36MB,
+  fw-vec-index.db 78MB) — sibling prevention to T-1844 secret-scan"
+description: "T-1834 force-push surfaced two tracked binaries (os 36MB PostScript,
+  fw-vec-index.db 78MB vector index) that GitHub flagged as oversized during the rewritten-history
+  push. They are accidentally-committed runtime/output state, not source. Sibling
+  prevention class to T-1844 (secret-scan) — a structural pre-commit gate that would
+  have caught both files at the moment they were first staged. Deliverables: (1) agents/git/lib/large-file-scan.sh
+  scan-staged+scan-tree+allowlist, (2) pre-commit hook wires it after secret-scan,
+  (3) untrack os + .gitignore /os, (4) untrack fw-vec-index.db + gitignore, (5) seed
+  allowlist with vendored node_modules paths, (6) fw doctor surfaces tracked-large-file
+  warn. Origin: T-1844 allowlist comment about the untracked 36MB file — captured
+  at the time but no follow-up task."
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, security]
 components: ["agents/git/lib/secret-scan.sh", "agents/git/lib/hooks.sh"]
 related_tasks: ["T-1844", "T-1828", "T-1834", "T-1716"]
 arc_id: project-shape-resilience
 created: 2026-05-15T11:20:04Z
-last_update: 2026-05-15T11:20:04Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-15T13:44:00+02:00
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 (no-signal); 
+      F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1845: pre-commit large-file gate + untrack accidentally-tracked binaries (os 36MB, fw-vec-index.db 78MB) — sibling prevention to T-1844 secret-scan

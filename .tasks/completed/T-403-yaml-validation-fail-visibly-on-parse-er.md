@@ -1,19 +1,41 @@
 ---
 id: T-403
-name: "YAML validation: fail visibly on parse errors instead of silent skip (R-018, R-024)"
+name: "YAML validation: fail visibly on parse errors instead of silent skip (R-018,
+  R-024)"
 description: >
-  Two watching risks: R-018 (invalid YAML disappears without error) and R-024 (UI silently drops data on parse errors). Add schema validation to watchtower data loading. Show error state in UI instead of empty sections. Same root cause — all _load_yaml() functions return {} on error.
+  Two watching risks: R-018 (invalid YAML disappears without error) and R-024 (UI
+  silently drops data on parse errors). Add schema validation to watchtower data loading.
+  Show error state in UI instead of empty sections. Same root cause — all _load_yaml()
+  functions return {} on error.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [web/blueprints/core.py, web/blueprints/metrics.py, web/blueprints/risks.py, web/shared.py, web/templates/base.html]
+components: [web/blueprints/core.py, web/blueprints/metrics.py, 
+      web/blueprints/risks.py, web/shared.py, web/templates/base.html]
 related_tasks: []
 created: 2026-03-10T09:44:44Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-10T12:55:58Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 3
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=3 (body:component-silent-failure); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-403: YAML validation: fail visibly on parse errors instead of silent skip (R-018, R-024)

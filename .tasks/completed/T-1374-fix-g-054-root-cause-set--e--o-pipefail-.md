@@ -1,19 +1,38 @@
 ---
 id: T-1374
-name: "Fix G-054 root cause: set -e -o pipefail aborts update-task.sh on grep no-match in components lookup"
+name: "Fix G-054 root cause: set -e -o pipefail aborts update-task.sh on grep no-match
+  in components lookup"
 description: >
-  Fix G-054 root cause: set -e -o pipefail aborts update-task.sh on grep no-match in components lookup
+  Fix G-054 root cause: set -e -o pipefail aborts update-task.sh on grep no-match
+  in components lookup
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-20T23:14:34Z
-last_update: 2026-04-20T23:23:24Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-04-20T23:23:24Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1374: Fix G-054 root cause: set -e -o pipefail aborts update-task.sh on grep no-match in components lookup

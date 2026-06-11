@@ -7,14 +7,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [cli, observability]
 components: [lib/outcome.py, tests/unit/test_outcome.py]
 related_tasks: [T-1777, T-1780, T-1781]
 arc_id: orchestrator-rethink
 created: 2026-05-11T09:10:00Z
-last_update: 2026-05-13T21:07:34Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-13T21:07:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1782: fw outcome list — show terminal_event status flag per row (T-1777 surface)

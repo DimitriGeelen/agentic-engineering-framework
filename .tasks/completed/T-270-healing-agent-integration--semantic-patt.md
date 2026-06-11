@@ -2,18 +2,43 @@
 id: T-270
 name: "Healing agent integration — semantic pattern matching via fw ask"
 description: >
-  Replace healing agent's 126 lines of bash keyword-matching (diagnose.sh find_similar_patterns) with a single fw ask --json --scope patterns call. The LLM understands semantic similarity (e.g. 'context explosion' matches 'memory overflow' even without keyword overlap). Also enhance context agent: on fw context focus T-XXX, generate a 200-word briefing from episodic predecessors + related patterns + CLAUDE.md sections. Files: agents/healing/healing.sh (simplify), agents/context/context.sh (add briefing). Ref: docs/reports/T-261-framework-enhancement.md §4 (programmatic access), §6 (session briefing). Depends on: T-264 (fw ask CLI).
+  Replace healing agent's 126 lines of bash keyword-matching (diagnose.sh find_similar_patterns)
+  with a single fw ask --json --scope patterns call. The LLM understands semantic
+  similarity (e.g. 'context explosion' matches 'memory overflow' even without keyword
+  overlap). Also enhance context agent: on fw context focus T-XXX, generate a 200-word
+  briefing from episodic predecessors + related patterns + CLAUDE.md sections. Files:
+  agents/healing/healing.sh (simplify), agents/context/context.sh (add briefing).
+  Ref: docs/reports/T-261-framework-enhancement.md §4 (programmatic access), §6 (session
+  briefing). Depends on: T-264 (fw ask CLI).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [qa, framework, healing, agents]
 components: [agents/context/lib/focus.sh, agents/healing/lib/diagnose.sh]
 related_tasks: []
 created: 2026-02-24T08:38:16Z
-last_update: 2026-02-24T10:26:22Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T10:26:22Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-270: Healing agent integration — semantic pattern matching via fw ask

@@ -1,20 +1,48 @@
 ---
 id: T-1838
-name: "fw doctor asymmetric version-skew detection — distinguish consumer-behind from consumer-ahead-of-framework (T-1828 surfaces)"
+name: "fw doctor asymmetric version-skew detection — distinguish consumer-behind from
+  consumer-ahead-of-framework (T-1828 surfaces)"
 description: >
-  fw doctor warns 'v$cversion → v$FW_VERSION, Run: fw upgrade $consumer_dir' whenever consumer pinned version != framework version. When the framework's VERSION counter has been rolled back (T-1828 scenario), consumers are AHEAD of framework (e.g. termlink at 1.6.260, framework at 1.6.170). The doctor's remediation suggests running fw upgrade — which would overwrite consumer's higher pinned version with the framework's lower one (silent downgrade). Fix: bin/fw:1498 should distinguish consumer-behind from consumer-ahead via semver-style comparison. For consumer-ahead, emit a different warning class explaining the framework is behind and pointing at T-1828 for context; DO NOT advise fw upgrade. Surfaces as consumer-fw-upgrade-flow issue (the user's standing directive).
+  fw doctor warns 'v$cversion → v$FW_VERSION, Run: fw upgrade $consumer_dir' whenever
+  consumer pinned version != framework version. When the framework's VERSION counter
+  has been rolled back (T-1828 scenario), consumers are AHEAD of framework (e.g. termlink
+  at 1.6.260, framework at 1.6.170). The doctor's remediation suggests running fw
+  upgrade — which would overwrite consumer's higher pinned version with the framework's
+  lower one (silent downgrade). Fix: bin/fw:1498 should distinguish consumer-behind
+  from consumer-ahead via semver-style comparison. For consumer-ahead, emit a different
+  warning class explaining the framework is behind and pointing at T-1828 for context;
+  DO NOT advise fw upgrade. Surfaces as consumer-fw-upgrade-flow issue (the user's
+  standing directive).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [consumer-fleet, fw-doctor]
 components: [bin/fw, tests/unit/test_doctor_consumer_version_ahead.bats]
 related_tasks: [T-1828, T-1542, T-1834]
 arc_id: project-shape-resilience
 created: 2026-05-14T21:33:14Z
-last_update: 2026-05-14T21:51:02Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T21:51:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 5
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=5 (body:class-neutral); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1838: fw doctor asymmetric version-skew detection — distinguish consumer-behind from consumer-ahead-of-framework (T-1828 surfaces)

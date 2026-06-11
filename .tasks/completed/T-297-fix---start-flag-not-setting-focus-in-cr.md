@@ -2,18 +2,38 @@
 id: T-297
 name: "Fix --start flag not setting focus in create-task.sh"
 description: >
-  create-task.sh --start sets status to started-work but does not call context.sh focus. Tier 1 hook blocks Write/Edit because focus.yaml has current_task: null. Fix: add context.sh focus call when START_WORK=true, matching the pattern in fw work-on (bin/fw:1139). Source: T-294 simulation O-008.
+  create-task.sh --start sets status to started-work but does not call context.sh
+  focus. Tier 1 hook blocks Write/Edit because focus.yaml has current_task: null.
+  Fix: add context.sh focus call when START_WORK=true, matching the pattern in fw
+  work-on (bin/fw:1139). Source: T-294 simulation O-008.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/task-create/create-task.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:11:41Z
-last_update: 2026-03-04T18:17:54Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T18:17:54Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-297: Fix --start flag not setting focus in create-task.sh

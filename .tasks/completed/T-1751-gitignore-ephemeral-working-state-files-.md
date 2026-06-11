@@ -1,20 +1,44 @@
 ---
 id: T-1751
-name: "gitignore ephemeral working-state files — focus.yaml.bak + escalation-drift-LATEST-v0.5.yaml accidentally tracked"
+name: "gitignore ephemeral working-state files — focus.yaml.bak + escalation-drift-LATEST-v0.5.yaml
+  accidentally tracked"
 description: >
-  Two ephemeral working-state files were accidentally tracked by git add -A in c2bf1682a (the T-1750 governance close). focus.yaml.bak is a backup created by focus-switching; escalation-drift-LATEST-v0.5.yaml is rewritten every 5:33 UTC cron firing and read by Watchtower for rendering. Both belong in .gitignore alongside .context/dispatches.jsonl and other ephemeral substrate. Untrack via git rm --cached + add gitignore patterns; future commits stay clean.
+  Two ephemeral working-state files were accidentally tracked by git add -A in c2bf1682a
+  (the T-1750 governance close). focus.yaml.bak is a backup created by focus-switching;
+  escalation-drift-LATEST-v0.5.yaml is rewritten every 5:33 UTC cron firing and read
+  by Watchtower for rendering. Both belong in .gitignore alongside .context/dispatches.jsonl
+  and other ephemeral substrate. Untrack via git rm --cached + add gitignore patterns;
+  future commits stay clean.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [hygiene, governance]
 components: []
 related_tasks: [T-1750, T-1727, T-1749]
 arc_id: orchestrator-rethink
 created: 2026-05-05T21:18:12Z
-last_update: 2026-05-05T21:20:53Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T21:20:53Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1751: gitignore ephemeral working-state files — focus.yaml.bak + escalation-drift-LATEST-v0.5.yaml accidentally tracked

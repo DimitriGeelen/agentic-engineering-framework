@@ -2,18 +2,39 @@
 id: T-369
 name: "Make fabric subsystem inference configurable"
 description: >
-  Add .fabric/subsystem-rules.yaml support so non-framework projects can define type/subsystem inference rules. register.sh checks this file BEFORE the hardcoded case statement, falls through to existing patterns if no rules file. See R-3 in fabric silent-degradation analysis.
+  Add .fabric/subsystem-rules.yaml support so non-framework projects can define type/subsystem
+  inference rules. register.sh checks this file BEFORE the hardcoded case statement,
+  falls through to existing patterns if no rules file. See R-3 in fabric silent-degradation
+  analysis.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [fabric, portability]
 components: [agents/fabric/lib/register.sh]
 related_tasks: []
 created: 2026-03-08T22:27:49Z
-last_update: 2026-03-08T22:57:07Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-08T22:57:07Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-369: Make fabric subsystem inference configurable

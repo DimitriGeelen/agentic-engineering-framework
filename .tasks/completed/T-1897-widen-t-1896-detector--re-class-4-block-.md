@@ -1,22 +1,49 @@
 ---
 id: T-1897
-name: "Widen T-1896 detector + re-class 5 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)"
+name: "Widen T-1896 detector + re-class 5 block-message [REVIEW] ACs as [REVIEWER]
+  (T-1878 C)"
 description: >
-  Widen reviewer pattern human-ac-mechanical-signal regex to include conformance-check dialect (names X / shows Y / points at Z / contains override flag / status:closed / row appended); re-class the 5 [REVIEW] ACs the wider detector should have caught: T-1730, T-1731, T-1762, T-1766, T-1893. Sibling to T-1895/T-1896 (T-1878 A+B); origin: 2026-05-18 audits of arc-grooming partial-completes found my T-1896 detector regex too narrow (twice — the 4 first, then T-1893 added after a user-led reviewer-agent sweep showed mech=0 on it despite being pure procedural-conformance).
+  Widen reviewer pattern human-ac-mechanical-signal regex to include conformance-check
+  dialect (names X / shows Y / points at Z / contains override flag / status:closed
+  / row appended); re-class the 5 [REVIEW] ACs the wider detector should have caught:
+  T-1730, T-1731, T-1762, T-1766, T-1893. Sibling to T-1895/T-1896 (T-1878 A+B); origin:
+  2026-05-18 audits of arc-grooming partial-completes found my T-1896 detector regex
+  too narrow (twice — the 4 first, then T-1893 added after a user-led reviewer-agent
+  sweep showed mech=0 on it despite being pure procedural-conformance).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [build, ac-routing, governance, reviewer, T-1878-C]
-components: [lib/reviewer/static_scan.py, tests/unit/reviewer_human_ac_mechanical_signal.bats, tests/unit/test_reviewer_human_ac_mechanical_signal.py]
-related_tasks: [T-1878, T-1895, T-1896, T-1811, T-1730, T-1731, T-1762, T-1766, T-1893]
+components: [lib/reviewer/static_scan.py, 
+      tests/unit/reviewer_human_ac_mechanical_signal.bats, 
+      tests/unit/test_reviewer_human_ac_mechanical_signal.py]
+related_tasks: [T-1878, T-1895, T-1896, T-1811, T-1730, T-1731, T-1762, T-1766, 
+      T-1893]
 arc_id: arc-grooming
 created: 2026-05-18T08:51:35Z
-last_update: 2026-05-18T10:22:24Z
+last_update: '2026-06-11T22:24:02Z'
 date_finished: 2026-05-18T10:22:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1897: Widen T-1896 detector + re-class 5 block-message [REVIEW] ACs as [REVIEWER] (T-1878 C)

@@ -1,19 +1,43 @@
 ---
 id: T-1824
-name: "lib/upgrade.sh:1068 pyc_count grep -c || echo 0 yields 0\n0 — integer-expr breaks every upgrade run"
+name: "lib/upgrade.sh:1068 pyc_count grep -c || echo 0 yields 0\n0 — integer-expr
+  breaks every upgrade run"
 description: >
-  FB-C-F1 (LOW/cosmetic but every-run) reported by penelope (050-email-archive). lib/upgrade.sh:1068-1070 sets pyc_count via 'grep -c ... || echo 0'. grep -c returns exit 1 when zero matches DESPITE outputting 0; the || echo 0 then appends a second '0' line. pyc_count becomes '0\n0', breaking the subsequent [ -gt 0 ] integer test. Symptom: every fw upgrade prints 'line 1070: [: 0\n0: integer expression expected'. Suggested fix: replace with pyc_count=$(cd "$target_dir" && git ls-files .agentic-framework/ 2>/dev/null | grep -E '__pycache__|\.pyc$' | wc -l) — wc -l drops grep's exit code.
+  FB-C-F1 (LOW/cosmetic but every-run) reported by penelope (050-email-archive). lib/upgrade.sh:1068-1070
+  sets pyc_count via 'grep -c ... || echo 0'. grep -c returns exit 1 when zero matches
+  DESPITE outputting 0; the || echo 0 then appends a second '0' line. pyc_count becomes
+  '0\n0', breaking the subsequent [ -gt 0 ] integer test. Symptom: every fw upgrade
+  prints 'line 1070: [: 0\n0: integer expression expected'. Suggested fix: replace
+  with pyc_count=$(cd "$target_dir" && git ls-files .agentic-framework/ 2>/dev/null
+  | grep -E '__pycache__|\.pyc$' | wc -l) — wc -l drops grep's exit code.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade-incident-2026-05-14, cosmetic, bug]
 components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-05-14T07:30:53Z
-last_update: 2026-05-14T14:01:22Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-14T14:01:22Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1824: lib/upgrade.sh:1068 pyc_count grep -c || echo 0 yields 0\n0 — integer-expr breaks every upgrade run

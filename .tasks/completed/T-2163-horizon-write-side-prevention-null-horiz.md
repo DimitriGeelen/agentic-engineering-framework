@@ -2,12 +2,20 @@
 id: T-2163
 name: "horizon write-side prevention: null horizon at close-time in update-task.sh"
 description: >
-  Slice 4 of arc-009 horizon-axis-hardening. After T-2162 added the read-side audit rail (CTL-030 catches drift), every task close still produces a fresh drift candidate that requires running the migration to clean. This slice plugs the source: when update-task.sh moves a task to .tasks/completed/ (full close, not partial-complete), null the stored horizon in the same write so no drift is ever introduced. Partial-complete (stays in active/) keeps its horizon since that branch still renders via the stored value. AC: (i) post-close, the just-moved file has horizon: null; (ii) re-running the migration after a fresh close emits 0 changes; (iii) bats test pinning full-close vs partial-complete behavior.
+  Slice 4 of arc-009 horizon-axis-hardening. After T-2162 added the read-side audit
+  rail (CTL-030 catches drift), every task close still produces a fresh drift candidate
+  that requires running the migration to clean. This slice plugs the source: when
+  update-task.sh moves a task to .tasks/completed/ (full close, not partial-complete),
+  null the stored horizon in the same write so no drift is ever introduced. Partial-complete
+  (stays in active/) keeps its horizon since that branch still renders via the stored
+  value. AC: (i) post-close, the just-moved file has horizon: null; (ii) re-running
+  the migration after a fresh close emits 0 changes; (iii) bats test pinning full-close
+  vs partial-complete behavior.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [arc:horizon-axis-hardening]
 components: []
 related_tasks: []
@@ -16,7 +24,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T12:21:05Z
-last_update: 2026-06-01T12:27:28Z
+last_update: '2026-06-11T22:24:09Z'
 date_finished: 2026-06-01T12:27:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +36,24 @@ date_finished: 2026-06-01T12:27:28Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2163: horizon write-side prevention: null horizon at close-time in update-task.sh

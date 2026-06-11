@@ -3,25 +3,46 @@ id: T-1649
 name: "Tag-format lint for live TermLink sessions (framework-side half of W10 #4)"
 description: >
   W10 #4 — typo'd or wrong-separator task-type tag silently routes to default specialist.
-  Framework-side half of T-1649 split: extend agents/audit/orchestrator-mcp-scan.sh to
+  Framework-side half of T-1649 split: extend agents/audit/orchestrator-mcp-scan.sh
+  to
   inspect `termlink list --json` and warn on unrecognized tag prefixes that resemble
   canonical orchestrator prefixes (task-type:, role:, task:, model:, host=, project=).
   Surfaces in Watchtower /orchestrator and via `fw audit --section orchestrator`.
   Cross-repo half (termlink-side spawn validator) goes as a TermLink push to
-  termlink-agent — the framework cannot edit /opt/termlink directly. Tracks G-061 closure.
+  termlink-agent — the framework cannot edit /opt/termlink directly. Tracks G-061
+  closure.
   Origin: docs/reports/T-1641-worker-10-defenses.md item #4.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1641, t-1061-followup, drift-defense, termlink, validation]
-components: [C-004, agents/audit/orchestrator-mcp-scan.sh, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+components: [C-004, agents/audit/orchestrator-mcp-scan.sh, 
+      web/blueprints/orchestrator.py, web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1644, T-1064, T-1646, T-1647]
 arc_id: orchestrator-rethink
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T18:58:38Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T12:56:47Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1649: Tag-format lint for live TermLink sessions (framework-side)

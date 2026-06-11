@@ -1,19 +1,42 @@
 ---
 id: T-1098
-name: "CLAUDE.md: explicitly contrast termlink (machine-wide) vs framework (per-project) distribution models (G-029)"
+name: "CLAUDE.md: explicitly contrast termlink (machine-wide) vs framework (per-project)
+  distribution models (G-029)"
 description: >
-  Add a section or sentence to CLAUDE.md §TermLink Integration that states termlink is intentionally machine-wide because session discovery uses Unix sockets at system paths — per-project isolation would defeat cross-session discovery. Frame as the deliberate inverse of framework code (per-project governance). Stops agents from proposing per-project termlink vendoring. Origin: G-029. Trigger: cross-session ring20-dashboard onboarding incident 2026-04-11.
+  Add a section or sentence to CLAUDE.md §TermLink Integration that states termlink
+  is intentionally machine-wide because session discovery uses Unix sockets at system
+  paths — per-project isolation would defeat cross-session discovery. Frame as the
+  deliberate inverse of framework code (per-project governance). Stops agents from
+  proposing per-project termlink vendoring. Origin: G-029. Trigger: cross-session
+  ring20-dashboard onboarding incident 2026-04-11.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1093]
 created: 2026-04-11T12:15:59Z
-last_update: 2026-04-12T07:22:38Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-12T07:22:38Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1098: CLAUDE.md: explicitly contrast termlink (machine-wide) vs framework (per-project) distribution models (G-029)

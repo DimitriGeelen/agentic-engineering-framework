@@ -1,21 +1,46 @@
 ---
 id: T-586
-name: "Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo"
+name: "Language strategy — TypeScript adoption for new framework components vs bash+Python
+  hybrid status quo"
 description: >
-  Fundamental architectural decision: should new framework components (loop detection, health checks, event loops, session management, token budget) be written in TypeScript instead of the current bash+Python hybrid? The framework is already three languages (bash orchestration, Python data processing, Python/Flask web). Every non-trivial hook shells out to Python. Patterns extracted from OpenClaw are all TypeScript requiring rewrite. This is a multi-session inception spanning language audit, prototype spikes, migration path analysis, and constitutional directive review.
+  Fundamental architectural decision: should new framework components (loop detection,
+  health checks, event loops, session management, token budget) be written in TypeScript
+  instead of the current bash+Python hybrid? The framework is already three languages
+  (bash orchestration, Python data processing, Python/Flask web). Every non-trivial
+  hook shells out to Python. Patterns extracted from OpenClaw are all TypeScript requiring
+  rewrite. This is a multi-session inception spanning language audit, prototype spikes,
+  migration path analysis, and constitutional directive review.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [architecture, language, constitutional]
 components: [agents/termlink/termlink.sh]
-related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585, T-592, T-593, T-594, T-595]
+related_tasks: [T-578, T-579, T-580, T-581, T-582, T-583, T-584, T-585, T-592, 
+      T-593, T-594, T-595]
 created: 2026-03-23T21:32:53Z
-last_update: 2026-04-13T13:21:29Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-04-13T13:21:29Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-586: Language strategy — TypeScript adoption for new framework components vs bash+Python hybrid status quo

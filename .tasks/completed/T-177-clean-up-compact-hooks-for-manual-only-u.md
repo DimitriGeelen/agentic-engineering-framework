@@ -2,17 +2,40 @@
 id: T-177
 name: "Clean up compact hooks for manual-only use"
 description: >
-  From T-174 GO decision. With auto-compaction disabled, pre-compact.sh and the SessionStart:compact hook fire only on manual /compact. Tasks: (1) Add comment to pre-compact.sh noting it's manual-only now. (2) Review .claude/settings.json PreCompact and SessionStart:compact hooks — simplify or document. (3) Consider if detect_compaction() in checkpoint.sh is dead code. (4) Update compact-log format to distinguish manual vs auto (for diagnostics). (5) Document in CLAUDE.md that /compact is available for manual use but auto-compaction is disabled by design.
+  From T-174 GO decision. With auto-compaction disabled, pre-compact.sh and the SessionStart:compact
+  hook fire only on manual /compact. Tasks: (1) Add comment to pre-compact.sh noting
+  it's manual-only now. (2) Review .claude/settings.json PreCompact and SessionStart:compact
+  hooks — simplify or document. (3) Consider if detect_compaction() in checkpoint.sh
+  is dead code. (4) Update compact-log format to distinguish manual vs auto (for diagnostics).
+  (5) Document in CLAUDE.md that /compact is available for manual use but auto-compaction
+  is disabled by design.
 
 status: work-completed
 workflow_type: refactor
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-18T18:51:35Z
-last_update: 2026-02-19T00:31:22Z
+last_update: '2026-06-11T22:23:58Z'
 date_finished: 2026-02-19T00:31:22Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-177: Clean up compact hooks for manual-only use

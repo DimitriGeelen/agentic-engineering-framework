@@ -1,19 +1,51 @@
 ---
 id: T-1040
-name: "Playwright networkidle migration — replace networkidle with domcontentloaded across 26 test files to fix 132 timeout failures"
+name: "Playwright networkidle migration — replace networkidle with domcontentloaded
+  across 26 test files to fix 132 timeout failures"
 description: >
-  Playwright networkidle migration — replace networkidle with domcontentloaded across 26 test files to fix 132 timeout failures
+  Playwright networkidle migration — replace networkidle with domcontentloaded across
+  26 test files to fix 132 timeout failures
 
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [tests/playwright/test_approvals.py, tests/playwright/test_assumptions.py, tests/playwright/test_cockpit.py, tests/playwright/test_config.py, tests/playwright/test_core.py, tests/playwright/test_costs.py, tests/playwright/test_cron.py, tests/playwright/test_directives.py, tests/playwright/test_discoveries.py, tests/playwright/test_discovery.py, tests/playwright/test_docs.py, tests/playwright/test_enforcement.py, tests/playwright/test_fabric.py, tests/playwright/test_inception.py, tests/playwright/test_metrics.py, tests/playwright/test_patterns.py, tests/playwright/test_project.py, tests/playwright/test_quality.py, tests/playwright/test_review.py, tests/playwright/test_risks.py, tests/playwright/test_search.py, tests/playwright/test_sessions.py, tests/playwright/test_smoke.py, tests/playwright/test_tasks.py, tests/playwright/test_terminal.py, tests/playwright/test_timeline.py]
+components: [tests/playwright/test_approvals.py, 
+      tests/playwright/test_assumptions.py, tests/playwright/test_cockpit.py, 
+      tests/playwright/test_config.py, tests/playwright/test_core.py, 
+      tests/playwright/test_costs.py, tests/playwright/test_cron.py, 
+      tests/playwright/test_directives.py, tests/playwright/test_discoveries.py, 
+      tests/playwright/test_discovery.py, tests/playwright/test_docs.py, 
+      tests/playwright/test_enforcement.py, tests/playwright/test_fabric.py, 
+      tests/playwright/test_inception.py, tests/playwright/test_metrics.py, 
+      tests/playwright/test_patterns.py, tests/playwright/test_project.py, 
+      tests/playwright/test_quality.py, tests/playwright/test_review.py, 
+      tests/playwright/test_risks.py, tests/playwright/test_search.py, 
+      tests/playwright/test_sessions.py, tests/playwright/test_smoke.py, 
+      tests/playwright/test_tasks.py, tests/playwright/test_terminal.py, 
+      tests/playwright/test_timeline.py]
 related_tasks: []
 created: 2026-04-07T15:13:51Z
-last_update: 2026-04-07T16:37:09Z
+last_update: '2026-06-11T22:23:38Z'
 date_finished: 2026-04-07T16:37:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1040: Playwright networkidle migration — replace networkidle with domcontentloaded across 26 test files to fix 132 timeout failures

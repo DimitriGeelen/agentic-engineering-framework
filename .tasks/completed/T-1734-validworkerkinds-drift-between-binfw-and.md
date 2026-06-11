@@ -1,20 +1,42 @@
 ---
 id: T-1734
-name: "VALID_WORKER_KINDS drift between bin/fw and lib/resolver.py — ollama-loop accepted by listing but rejected by dispatch"
+name: "VALID_WORKER_KINDS drift between bin/fw and lib/resolver.py — ollama-loop accepted
+  by listing but rejected by dispatch"
 description: >
-  fw resolver workflows lists prompt-triage.yaml (ollama-loop) but fw resolver dispatch rejects it as invalid worker_kind. Two tables: bin/fw:1804 includes ollama-loop, lib/resolver.py:56 does not. Either consolidate to one table or sync both. Discovered during T-1733 first dispatch attempt.
+  fw resolver workflows lists prompt-triage.yaml (ollama-loop) but fw resolver dispatch
+  rejects it as invalid worker_kind. Two tables: bin/fw:1804 includes ollama-loop,
+  lib/resolver.py:56 does not. Either consolidate to one table or sync both. Discovered
+  during T-1733 first dispatch attempt.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, validation-drift, resolver]
 components: [bin/fw, lib/resolver.py]
 related_tasks: [T-1733, T-1706, T-1689]
 arc_id: orchestrator-rethink
 created: 2026-05-05T07:29:58Z
-last_update: 2026-05-05T07:33:51Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T07:33:51Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 3
+      F3: 4
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=3 
+      (body:typed-io-or-gate); F3=4 (body:prompt-material); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1734: VALID_WORKER_KINDS drift between bin/fw and lib/resolver.py — ollama-loop accepted by listing but rejected by dispatch

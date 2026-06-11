@@ -2,18 +2,38 @@
 id: T-448
 name: "Cron registry v2: web UI controls, registry YAML, LLM docs (Option B)"
 description: >
-  Follow-up to T-433/T-447: add web-based start/stop/frequency controls, .context/cron-registry.yaml as source of truth, LLM-generated job documentation via Ollama. See docs/reports/T-433-cron-registry-inception.md Option B.
+  Follow-up to T-433/T-447: add web-based start/stop/frequency controls, .context/cron-registry.yaml
+  as source of truth, LLM-generated job documentation via Ollama. See docs/reports/T-433-cron-registry-inception.md
+  Option B.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [watchtower, cron]
-components: [bin/fw, lib/upgrade.sh, web/blueprints/cron.py, web/templates/cron.html]
+components: [bin/fw, lib/upgrade.sh, web/blueprints/cron.py, 
+      web/templates/cron.html]
 related_tasks: []
 created: 2026-03-12T06:14:02Z
-last_update: 2026-04-30T08:50:36Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-28T15:22:13Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-448: Cron registry v2: web UI controls, registry YAML, LLM docs (Option B)

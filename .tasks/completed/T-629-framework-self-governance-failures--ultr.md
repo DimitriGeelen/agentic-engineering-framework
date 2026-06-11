@@ -1,21 +1,44 @@
 ---
 id: T-629
-name: "Framework self-governance failures — ultra-deep audit of operational friction, deadlocks, and self-defeating enforcement"
+name: "Framework self-governance failures — ultra-deep audit of operational friction,
+  deadlocks, and self-defeating enforcement"
 description: >
-  The framework's own governance is actively blocking real work. This session hit: stale global scripts deadlocking all tools, task gates blocking memory writes, inception gates blocking commits, hooks failing on missing scripts, long commands breaking in terminals. 12-agent TermLink investigation into every operational friction point, deadlock pattern, and self-defeating enforcement.
+  The framework's own governance is actively blocking real work. This session hit:
+  stale global scripts deadlocking all tools, task gates blocking memory writes, inception
+  gates blocking commits, hooks failing on missing scripts, long commands breaking
+  in terminals. 12-agent TermLink investigation into every operational friction point,
+  deadlock pattern, and self-defeating enforcement.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [bin/fw, web/blueprints/docs.py, web/blueprints/tasks.py, web/templates/task_detail.html]
+components: [bin/fw, web/blueprints/docs.py, web/blueprints/tasks.py, 
+      web/templates/task_detail.html]
 related_tasks: []
 created: 2026-03-26T21:35:09Z
-last_update: 2026-03-27T10:22:30Z
+last_update: '2026-06-11T22:24:26Z'
 date_finished: 2026-03-27T09:56:27Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-629: Framework self-governance failures — ultra-deep audit of operational friction, deadlocks, and self-defeating enforcement

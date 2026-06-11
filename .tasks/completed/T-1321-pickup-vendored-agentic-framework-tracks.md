@@ -1,21 +1,39 @@
 ---
 id: T-1321
-name: "Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted changes present is the #1 audit trend (23×) for consumers (from termlink)"
+name: "Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted
+  changes present is the #1 audit trend (23×) for consumers (from termlink)"
 description: >
   Auto-created from pickup envelope. Source: termlink, task T-1130. Type: bug-report.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [pickup, bug-report]
 components: []
 related_tasks: []
 created: 2026-04-18T22:23:00Z
-last_update: 2026-04-18T22:51:30Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-04-18T22:50:58Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1321: Pickup: Vendored .agentic-framework/ tracks Python __pycache__ files — Uncommitted changes present is the #1 audit trend (23×) for consumers (from termlink)

@@ -2,18 +2,37 @@
 id: T-664
 name: "Project-detecting fw shim — replace global install symlink"
 description: >
-  Phase 2 of T-662: Create bin/fw-shim that walks up from CWD to find project-local fw. Replace install.sh symlink creation with shim installation. Add fw install --shim command. Related: T-662, T-663.
+  Phase 2 of T-662: Create bin/fw-shim that walks up from CWD to find project-local
+  fw. Replace install.sh symlink creation with shim installation. Add fw install --shim
+  command. Related: T-662, T-663.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [T-662, isolation, shim]
 components: []
 related_tasks: []
 created: 2026-03-28T17:11:52Z
-last_update: 2026-04-06T22:29:20Z
+last_update: '2026-06-11T22:24:26Z'
 date_finished: 2026-03-28T17:14:19Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-664: Project-detecting fw shim — replace global install symlink

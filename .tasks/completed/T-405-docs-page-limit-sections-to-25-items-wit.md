@@ -2,20 +2,39 @@
 id: T-405
 name: "Docs page: limit sections to 25 items with Show All links"
 description: >
-  Project Documentation page (/project) shows all items per section, making Research (398) and Design (293)
-  sections overwhelming. Show 25 items by default per section with a "Show all N items" link to expand.
+  Project Documentation page (/project) shows all items per section, making Research
+  (398) and Design (293)
+  sections overwhelming. Show 25 items by default per section with a "Show all N items"
+  link to expand.
   Also remove the hardcoded [:25] limit on episodic loading so all items are available.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [watchtower, ux]
 components: []
 related_tasks: []
 created: 2026-03-10T13:45:24Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-10T13:47:16Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 1
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=1 
+      (body:hard-coded-removed); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-405: Docs page: limit sections to 25 items with Show All links

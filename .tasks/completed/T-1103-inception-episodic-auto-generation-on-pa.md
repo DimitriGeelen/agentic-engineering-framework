@@ -1,21 +1,52 @@
 ---
 id: T-1103
-name: "Inception: episodic auto-generation on partial-complete tasks — premature memory of unfinalized work (G-034)"
+name: "Inception: episodic auto-generation on partial-complete tasks — premature memory
+  of unfinalized work (G-034)"
 description: >
-  Inception task — RCA the auto-trigger that generates episodic memory for tasks in partial-complete state (status=work-completed but file still in .tasks/active/, awaiting human AC verification). Trigger: /opt/termlink T-909 transcript 2026-04-11 — fw inception decide T-909 go printed 'Partial-complete: 1 human AC(s) pending verification' AND 'Task stays in active/' AND 'Episodic generated: T-909.yaml' in the same block. Result: long-term memory now contains a 'done' record for a task the human never finalized. Compounds with G-032 (which silently force-completes) to systematically pollute episodic memory. Investigate: (1) where the episodic auto-trigger fires in update-task.sh — gate condition and timing; (2) whether the trigger should follow physical file location (.tasks/completed/) or status field (work-completed); (3) what happens when human eventually rejects the partial-complete (does episodic get rewritten? deleted? left stale?); (4) backwards compat — how many existing episodic files were generated this way and might need re-generation; (5) recommend GO/NO-GO/DEFER + concrete remediation. Origin: G-034.
+  Inception task — RCA the auto-trigger that generates episodic memory for tasks in
+  partial-complete state (status=work-completed but file still in .tasks/active/,
+  awaiting human AC verification). Trigger: /opt/termlink T-909 transcript 2026-04-11
+  — fw inception decide T-909 go printed 'Partial-complete: 1 human AC(s) pending
+  verification' AND 'Task stays in active/' AND 'Episodic generated: T-909.yaml' in
+  the same block. Result: long-term memory now contains a 'done' record for a task
+  the human never finalized. Compounds with G-032 (which silently force-completes)
+  to systematically pollute episodic memory. Investigate: (1) where the episodic auto-trigger
+  fires in update-task.sh — gate condition and timing; (2) whether the trigger should
+  follow physical file location (.tasks/completed/) or status field (work-completed);
+  (3) what happens when human eventually rejects the partial-complete (does episodic
+  get rewritten? deleted? left stale?); (4) backwards compat — how many existing episodic
+  files were generated this way and might need re-generation; (5) recommend GO/NO-GO/DEFER
+  + concrete remediation. Origin: G-034.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1093, G-034, G-032]
 created: 2026-04-11T12:37:39Z
-last_update: 2026-04-13T06:23:15Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-11T20:08:11Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1103: Inception: episodic auto-generation on partial-complete tasks — premature memory of unfinalized work (G-034)

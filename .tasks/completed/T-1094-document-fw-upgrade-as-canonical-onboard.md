@@ -1,19 +1,41 @@
 ---
 id: T-1094
-name: "Document fw upgrade as canonical onboarding command + clarify what it actually does (G-025)"
+name: "Document fw upgrade as canonical onboarding command + clarify what it actually
+  does (G-025)"
 description: >
-  Surface fw upgrade in CLAUDE.md, fw doctor output, and a new docs/consumer-project-setup.md as the canonical answer to 'set up the framework in this project'. Document exactly what it does (shim migration, governance refresh, vendored script sync, version pin) so agents stop assuming it copies framework files into a per-project directory. Origin: G-025. Trigger: cross-session ring20-dashboard onboarding incident 2026-04-11.
+  Surface fw upgrade in CLAUDE.md, fw doctor output, and a new docs/consumer-project-setup.md
+  as the canonical answer to 'set up the framework in this project'. Document exactly
+  what it does (shim migration, governance refresh, vendored script sync, version
+  pin) so agents stop assuming it copies framework files into a per-project directory.
+  Origin: G-025. Trigger: cross-session ring20-dashboard onboarding incident 2026-04-11.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1093]
 created: 2026-04-11T12:15:33Z
-last_update: 2026-04-12T07:27:52Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-12T07:27:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=4
+      (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1094: Document fw upgrade as canonical onboarding command + clarify what it actually does (G-025)

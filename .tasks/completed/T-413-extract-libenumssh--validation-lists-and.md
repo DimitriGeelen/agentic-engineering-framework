@@ -2,18 +2,38 @@
 id: T-413
 name: "Extract lib/enums.sh — validation lists and status/type/horizon checks (S3+S10)"
 description: >
-  Create lib/enums.sh with VALID_STATUSES, VALID_TYPES, VALID_HORIZONS and is_valid_*() functions. Currently hardcoded in 6+ files with silent divergence risk. Directive score: S3=7, S10=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  Create lib/enums.sh with VALID_STATUSES, VALID_TYPES, VALID_HORIZONS and is_valid_*()
+  functions. Currently hardcoded in 6+ files with silent divergence risk. Directive
+  score: S3=7, S10=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: [refactoring, shell, reliability]
-components: [agents/task-create/create-task.sh, agents/task-create/update-task.sh, lib/enums.sh]
+components: [agents/task-create/create-task.sh, 
+      agents/task-create/update-task.sh, lib/enums.sh]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:13Z
-last_update: 2026-03-10T22:34:35Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-10T22:34:35Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 5
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=5 (body:new-collab-mode); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-413: Extract lib/enums.sh — validation lists and status/type/horizon checks (S3+S10)

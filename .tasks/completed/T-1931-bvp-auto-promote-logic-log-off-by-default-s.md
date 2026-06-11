@@ -1,20 +1,41 @@
 ---
 id: T-1931
-name: "BVP T-NEW-14a: auto-promote logic + log, off by default (split parent T-NEW-14, novel_mechanism)"
+name: "BVP T-NEW-14a: auto-promote logic + log, off by default (split parent T-NEW-14,
+  novel_mechanism)"
 description: >
-  Auto-promote logic reading auto_promote.* from policy/value-drivers.yaml. When enabled and a task is HV/LC (bvp_norm ≥ bvp_norm_min and cost ≤ cost_max), promote captured → started-work. Respects max_concurrent. Logs every promotion to .context/bvp-auto-promote-log.yaml. R4 detection metadata captured.
+  Auto-promote logic reading auto_promote.* from policy/value-drivers.yaml. When enabled
+  and a task is HV/LC (bvp_norm ≥ bvp_norm_min and cost ≤ cost_max), promote captured
+  → started-work. Respects max_concurrent. Logs every promotion to .context/bvp-auto-promote-log.yaml.
+  R4 detection metadata captured.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-14a, novel-mechanism]
 components: [012-ArcSystem.md, lib/arc.sh, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1917, T-1924]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T13:54:28Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T13:54:28Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (tag:novel-mechanism); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1931: BVP T-NEW-14a — auto-promote logic + log (off by default)

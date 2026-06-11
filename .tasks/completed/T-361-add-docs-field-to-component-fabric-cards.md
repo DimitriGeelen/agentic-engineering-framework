@@ -2,18 +2,39 @@
 id: T-361
 name: "Add docs field to Component Fabric cards + Watchtower rendering"
 description: >
-  From T-339 GO: (1) Add optional docs field to ~28 component cards mapping 7 deep-dive articles, (2) Add Documentation section to fabric_detail.html template, (3) Fix dep['target'] safety in traverse.sh. Optional stretch: /fabric/docs reverse-lookup page. See docs/reports/T-339-doc-fabric-linking.md for mapping and research.
+  From T-339 GO: (1) Add optional docs field to ~28 component cards mapping 7 deep-dive
+  articles, (2) Add Documentation section to fabric_detail.html template, (3) Fix
+  dep['target'] safety in traverse.sh. Optional stretch: /fabric/docs reverse-lookup
+  page. See docs/reports/T-339-doc-fabric-linking.md for mapping and research.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [agents/fabric/lib/traverse.sh, web/templates/fabric_detail.html]
 related_tasks: []
 created: 2026-03-08T21:38:56Z
-last_update: 2026-03-12T12:41:19Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-08T21:46:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-361: Add docs field to Component Fabric cards + Watchtower rendering

@@ -2,18 +2,38 @@
 id: T-258
 name: "Model management — pre-load and fallback logic"
 description: >
-  Add model management to the Ask endpoint: pre-load qwen2.5-coder-32b on Watchtower startup (ollama pull/warm), detect if model unavailable or GPU memory <2GB, auto-fallback to dolphin-llama3:8b. Unload unused model to free VRAM. ~30 lines. See docs/reports/T-254-llm-assisted-qa-research.md RQ-4. Predecessor: T-256.
+  Add model management to the Ask endpoint: pre-load qwen2.5-coder-32b on Watchtower
+  startup (ollama pull/warm), detect if model unavailable or GPU memory <2GB, auto-fallback
+  to dolphin-llama3:8b. Unload unused model to free VRAM. ~30 lines. See docs/reports/T-254-llm-assisted-qa-research.md
+  RQ-4. Predecessor: T-256.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-254]
 created: 2026-02-23T20:38:50Z
-last_update: 2026-02-23T20:56:33Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-23T20:56:33Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-258: Model management — pre-load and fallback logic

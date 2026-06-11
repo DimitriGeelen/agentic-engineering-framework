@@ -1,20 +1,42 @@
 ---
 id: T-1926
-name: "BVP T-NEW-10: fw arc approve-driver + fw arc show-suggestions verbs (§ACD-gated, flips draft→in-progress, weight cap ≤6)"
+name: "BVP T-NEW-10: fw arc approve-driver + fw arc show-suggestions verbs (§ACD-gated,
+  flips draft→in-progress, weight cap ≤6)"
 description: >
-  Two new arc verbs. approve-driver appends to scoped_drivers: (cap 3, M2 weight ≤6); on first approval flips draft→in-progress. --none --justification "..." also flips (≥30 char). §ACD agent-gate. show-suggestions renders proposed_scoped_drivers history per D7.
+  Two new arc verbs. approve-driver appends to scoped_drivers: (cap 3, M2 weight ≤6);
+  on first approval flips draft→in-progress. --none --justification "..." also flips
+  (≥30 char). §ACD agent-gate. show-suggestions renders proposed_scoped_drivers history
+  per D7.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-10, cli, arc, acd-gate]
 components: [012-ArcSystem.md, lib/arc.sh, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1918, T-1925, T-1668, T-1671]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:47:44Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T07:47:44Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 1
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 3
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=1 (body:error-msg-improved); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=3 (body:typed-io-or-gate); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1926: BVP T-NEW-10 — `fw arc approve-driver` + `fw arc show-suggestions`

@@ -1,19 +1,42 @@
 ---
 id: T-1447
-name: "T-1443-v1.2 Reviewer agent: Layer 3 audit cron + AC-verify-mismatch transitive-coverage tuning"
+name: "T-1443-v1.2 Reviewer agent: Layer 3 audit cron + AC-verify-mismatch transitive-coverage
+  tuning"
 description: >
-  v1.2 of T-1443 reviewer. (a) Daily audit cron — Pass A drift re-verification, Pass B catalogue re-scan. Fail-soft. Output into reviewer-audit.yaml. Pure compute, no caching (antifragile). (b) AC-verify-mismatch tuning per L-265: add transitive-coverage heuristic — exempt paths exercised by test runners (bin/fw test unit covers all bats files). Per D-009 staged rollout.
+  v1.2 of T-1443 reviewer. (a) Daily audit cron — Pass A drift re-verification, Pass
+  B catalogue re-scan. Fail-soft. Output into reviewer-audit.yaml. Pure compute, no
+  caching (antifragile). (b) AC-verify-mismatch tuning per L-265: add transitive-coverage
+  heuristic — exempt paths exercised by test runners (bin/fw test unit covers all
+  bats files). Per D-009 staged rollout.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [reviewer-agent, ac-validation, audit-cron, v1.2, antifragile]
 components: [bin/fw]
 related_tasks: [T-1443, T-1445, T-1446]
 created: 2026-04-25T10:54:18Z
-last_update: 2026-04-25T13:30:40Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-25T13:30:40Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1447: T-1443-v1.2 Reviewer agent: Layer 3 audit cron + AC-verify-mismatch transitive-coverage tuning

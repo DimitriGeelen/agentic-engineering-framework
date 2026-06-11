@@ -2,18 +2,38 @@
 id: T-559
 name: "Project boundary gate — PreToolUse hook blocking writes outside PROJECT_ROOT"
 description: >
-  Structural enforcement: PreToolUse hook that blocks Write and Edit tool calls targeting file paths outside PROJECT_ROOT. Also detect Bash commands that cd or write to paths outside PROJECT_ROOT. Triggered by T-549 violation where agent created 6 tasks on another project without authorization.
+  Structural enforcement: PreToolUse hook that blocks Write and Edit tool calls targeting
+  file paths outside PROJECT_ROOT. Also detect Bash commands that cd or write to paths
+  outside PROJECT_ROOT. Triggered by T-549 violation where agent created 6 tasks on
+  another project without authorization.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:53:09Z
-last_update: 2026-03-26T15:47:28Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-03-24T10:57:44Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-559: Project boundary gate — PreToolUse hook blocking writes outside PROJECT_ROOT

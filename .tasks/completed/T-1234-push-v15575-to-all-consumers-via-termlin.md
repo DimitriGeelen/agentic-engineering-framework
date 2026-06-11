@@ -1,19 +1,38 @@
 ---
 id: T-1234
-name: "Push v1.5.575+ to all consumers via TermLink — performance cache, learnings, artifacts"
+name: "Push v1.5.575+ to all consumers via TermLink — performance cache, learnings,
+  artifacts"
 description: >
   Push v1.5.575+ to all consumers via TermLink — performance cache, learnings, artifacts
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T18:41:14Z
-last_update: 2026-04-13T18:43:52Z
+last_update: '2026-06-11T22:23:43Z'
 date_finished: 2026-04-13T18:43:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1234: Push v1.5.575+ to all consumers via TermLink — performance cache, learnings, artifacts

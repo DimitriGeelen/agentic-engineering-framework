@@ -1,13 +1,15 @@
 ---
 id: T-1916
-name: "Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006"
+name: "Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md
+  (risks/assumption-review/framings) + file 18 build slices under arc-006"
 description: >
-  Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006
+  Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md
+  (risks/assumption-review/framings) + file 18 build slices under arc-006
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [enrichment, build, bvp, handoff-followup]
 components: [docs/reports/T-1915-bvp-inception.md, .tasks/active/]
 related_tasks: [T-1915, T-1846, T-1849, T-1668]
@@ -17,10 +19,28 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-19T06:41:19Z
-last_update: 2026-05-19T07:07:04Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T07:07:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1916: Enrich T-1915 BVP inception capture — write docs/reports/T-1915-bvp-inception.md (risks/assumption-review/framings) + file 18 build slices under arc-006

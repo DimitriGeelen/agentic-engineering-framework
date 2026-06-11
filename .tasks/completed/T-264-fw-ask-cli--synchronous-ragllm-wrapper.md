@@ -2,18 +2,43 @@
 id: T-264
 name: "fw ask CLI — synchronous RAG+LLM wrapper"
 description: >
-  Build fw ask CLI command: synchronous wrapper around rag_retrieve() + non-streaming Ollama call. Keystone for all framework integrations. Create lib/ask-api.py (~80 lines: wrapper + non-streaming Ollama + JSON output), lib/ask.sh (~30 lines: arg parsing + Python invocation), add route in bin/fw. Support: --scope {all,patterns,episodic,specs,tasks} to bias retrieval, --json for programmatic consumption, --concise for brief answers. Net: ~150 new lines. Ref: docs/reports/T-261-framework-enhancement.md §1 (onboarding), §Architectural Notes. Predecessor: T-255 (RAG), T-256 (ask endpoint). Enables: T-266 (healing integration), T-267 (session briefing).
+  Build fw ask CLI command: synchronous wrapper around rag_retrieve() + non-streaming
+  Ollama call. Keystone for all framework integrations. Create lib/ask-api.py (~80
+  lines: wrapper + non-streaming Ollama + JSON output), lib/ask.sh (~30 lines: arg
+  parsing + Python invocation), add route in bin/fw. Support: --scope {all,patterns,episodic,specs,tasks}
+  to bias retrieval, --json for programmatic consumption, --concise for brief answers.
+  Net: ~150 new lines. Ref: docs/reports/T-261-framework-enhancement.md §1 (onboarding),
+  §Architectural Notes. Predecessor: T-255 (RAG), T-256 (ask endpoint). Enables: T-266
+  (healing integration), T-267 (session briefing).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [qa, cli, framework]
 components: [bin/fw]
 related_tasks: []
 created: 2026-02-24T08:37:00Z
-last_update: 2026-02-24T09:31:19Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T09:31:19Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-264: fw ask CLI — synchronous RAG+LLM wrapper

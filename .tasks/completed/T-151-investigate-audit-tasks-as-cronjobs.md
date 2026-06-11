@@ -2,17 +2,42 @@
 id: T-151
 name: "Investigate audit tasks as cronjobs"
 description: >
-  There are a number of other tasks that we currently idly mainly trigger or should be at the end of a session or start of session which actually isn't also not always reliably happens. So I have a thought that it would be a good possibility to have contracts. Running that for instance, regularly check check task quality or commit quality, another quality criteria standards that we have set if they are adhered to and then report out when they have findings. And this report is always checked at the end or a beginning of a session. So I want to explore that more in detail and also identify which. Enforcement rules or quality requirements, We would be good candidates for all the rents per Chrome job.
+  There are a number of other tasks that we currently idly mainly trigger or should
+  be at the end of a session or start of session which actually isn't also not always
+  reliably happens. So I have a thought that it would be a good possibility to have
+  contracts. Running that for instance, regularly check check task quality or commit
+  quality, another quality criteria standards that we have set if they are adhered
+  to and then report out when they have findings. And this report is always checked
+  at the end or a beginning of a session. So I want to explore that more in detail
+  and also identify which. Enforcement rules or quality requirements, We would be
+  good candidates for all the rents per Chrome job.
 
 status: work-completed
 workflow_type: specification
 owner: human
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-18T12:05:00Z
-last_update: 2026-02-19T20:57:11Z
+last_update: '2026-06-11T22:23:50Z'
 date_finished: 2026-02-19T20:57:11Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-151: Investigate audit tasks as cronjobs

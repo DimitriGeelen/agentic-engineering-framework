@@ -13,7 +13,7 @@ tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:02Z
-last_update: '2026-06-11T16:00:01Z'
+last_update: '2026-06-11T22:23:24Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -78,6 +78,24 @@ bvp_scores_proposed:
       (body:framework-level-ux); D4=0 (no-signal); F-RECALL=2 
       (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F1=0 
       (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 4
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

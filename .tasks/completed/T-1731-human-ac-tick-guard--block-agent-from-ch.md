@@ -2,19 +2,42 @@
 id: T-1731
 name: "Human-AC tick guard — block agent from checking Human ACs (T-1729 sibling 2)"
 description: >
-  Close G2 (path exemption non-diff-aware) from T-1729 meta-RCA. PreToolUse hook on Write/Edit to .tasks/* files: parse old-vs-new diff, detect [ ] toggle [x] under ### Human heading. Block under CLAUDECODE=1 with --i-am-human override (mirrors T-1671 pattern). Origin: T-1716 [REVIEW] checkbox ticked by agent on basis of verbal user waiver — CLAUDE.md says NEVER check Human ACs but no hook enforced it. See docs/reports/T-1729-meta-rca.md sections 2.3 + 5.1.
+  Close G2 (path exemption non-diff-aware) from T-1729 meta-RCA. PreToolUse hook on
+  Write/Edit to .tasks/* files: parse old-vs-new diff, detect [ ] toggle [x] under
+  ### Human heading. Block under CLAUDECODE=1 with --i-am-human override (mirrors
+  T-1671 pattern). Origin: T-1716 [REVIEW] checkbox ticked by agent on basis of verbal
+  user waiver — CLAUDE.md says NEVER check Human ACs but no hook enforced it. See
+  docs/reports/T-1729-meta-rca.md sections 2.3 + 5.1.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
 components: [agents/context/check-human-ac-tick.sh, C-009, lib/init.sh]
 related_tasks: [T-1729, T-1716, T-1671]
 arc_id: orchestrator-rethink
 created: 2026-05-05T05:41:58Z
-last_update: 2026-05-18T10:22:32Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T07:16:25Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (body:wrap-phrase-without-substrate); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1731: Human-AC tick guard — block agent from checking Human ACs (T-1729 sibling 2)

@@ -1,19 +1,44 @@
 ---
 id: T-431
-name: "Architecture cleanup — blueprint imports, metrics retention, audit helpers (A2+A3+A7+A8+A9+A11)"
+name: "Architecture cleanup — blueprint imports, metrics retention, audit helpers
+  (A2+A3+A7+A8+A9+A11)"
 description: >
-  A2: Standardize blueprint imports via __init__.py. A3: Implement metrics-history.yaml retention (currently 1684 lines, growing unbounded). A7: Extract audit_utils.py (load_latest_audit used in 3 blueprints). A8: Split discovery.py (711 lines) into knowledge/patterns/qa. A9: Standardize subprocess timeouts. A11: Ensure fabric drift runs regularly. Directive scores: A2=6, A3=6, A7=5, A8=5, A9=5, A11=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  A2: Standardize blueprint imports via __init__.py. A3: Implement metrics-history.yaml
+  retention (currently 1684 lines, growing unbounded). A7: Extract audit_utils.py
+  (load_latest_audit used in 3 blueprints). A8: Split discovery.py (711 lines) into
+  knowledge/patterns/qa. A9: Standardize subprocess timeouts. A11: Ensure fabric drift
+  runs regularly. Directive scores: A2=6, A3=6, A7=5, A8=5, A9=5, A11=5. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, python, watchtower, reliability]
-components: [C-004, web/app.py, web/blueprints/cockpit.py, web/blueprints/core.py, web/blueprints/inception.py, web/blueprints/__init__.py, web/blueprints/quality.py, web/shared.py]
+components: [C-004, web/app.py, web/blueprints/cockpit.py, 
+      web/blueprints/core.py, web/blueprints/inception.py, 
+      web/blueprints/__init__.py, web/blueprints/quality.py, web/shared.py]
 related_tasks: [T-411]
 created: 2026-03-10T21:04:13Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-11T22:45:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-431: Architecture cleanup — blueprint imports, metrics retention, audit helpers (A2+A3+A7+A8+A9+A11)

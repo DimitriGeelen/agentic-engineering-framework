@@ -2,18 +2,41 @@
 id: T-262
 name: "Replace LLM with Qwen3-14B + thinking mode toggle"
 description: >
-  Replace qwen2.5-coder-32b IQ2_M (4.8 tok/s) with Qwen3-14B Q4_K_M (~33 tok/s). Add thinking mode toggle: simple queries use think=False, complex queries use think=True with 'Thinking...' UI indicator. Update web/ask.py model constants, add query complexity classifier, update frontend to show thinking phase. Ref: docs/reports/T-261-models-16gb-vram.md §Tier 1 #1, T-261-thinking-models.md §4 (Ollama config), §6 (hybrid approach). Predecessor: T-258 (model management). VRAM: 9.3GB model + 3-4GB KV cache = ~13GB. Prerequisite: ollama pull qwen3:14b on host.
+  Replace qwen2.5-coder-32b IQ2_M (4.8 tok/s) with Qwen3-14B Q4_K_M (~33 tok/s). Add
+  thinking mode toggle: simple queries use think=False, complex queries use think=True
+  with 'Thinking...' UI indicator. Update web/ask.py model constants, add query complexity
+  classifier, update frontend to show thinking phase. Ref: docs/reports/T-261-models-16gb-vram.md
+  §Tier 1 #1, T-261-thinking-models.md §4 (Ollama config), §6 (hybrid approach). Predecessor:
+  T-258 (model management). VRAM: 9.3GB model + 3-4GB KV cache = ~13GB. Prerequisite:
+  ollama pull qwen3:14b on host.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [qa, llm, model]
 components: [web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:36:31Z
-last_update: 2026-02-25T20:37:11Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T09:19:45Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-262: Replace LLM with Qwen3-14B + thinking mode toggle

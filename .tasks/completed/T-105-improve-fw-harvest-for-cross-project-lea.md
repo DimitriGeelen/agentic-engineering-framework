@@ -2,15 +2,44 @@
 id: T-105
 name: Improve fw harvest for cross-project learning
 description: >
-  fw harvest (lib/harvest.sh) handles patterns, learnings, and decisions but misses the highest-value knowledge sources. Gaps to fix: (1) Episodic memory not harvested — .context/episodic/T-*.yaml files contain rich completed-task data (summary, outcomes, challenges, decisions, metrics). These are the densest knowledge artifacts and harvest.sh never touches them. Add harvest_episodics() that copies/anonymizes relevant episodics to framework. (2) Practices not harvested — .context/project/practices.yaml (graduated learnings with 3+ applications) never read. Add harvest_practices(). (3) CLAUDE.md improvements not harvested — project may extend CLAUDE.md with project-specific protocols that have framework value. Add diff detection between project CLAUDE.md and template to surface additions. (4) Consider adding provenance tracking — when a learning is harvested, record which project(s) it came from and how many projects have seen the same pattern (feeds graduation pipeline). INDEPENDENT — no dependencies on other tasks, can be done in parallel. Files: lib/harvest.sh.
+  fw harvest (lib/harvest.sh) handles patterns, learnings, and decisions but misses
+  the highest-value knowledge sources. Gaps to fix: (1) Episodic memory not harvested
+  — .context/episodic/T-*.yaml files contain rich completed-task data (summary, outcomes,
+  challenges, decisions, metrics). These are the densest knowledge artifacts and harvest.sh
+  never touches them. Add harvest_episodics() that copies/anonymizes relevant episodics
+  to framework. (2) Practices not harvested — .context/project/practices.yaml (graduated
+  learnings with 3+ applications) never read. Add harvest_practices(). (3) CLAUDE.md
+  improvements not harvested — project may extend CLAUDE.md with project-specific
+  protocols that have framework value. Add diff detection between project CLAUDE.md
+  and template to surface additions. (4) Consider adding provenance tracking — when
+  a learning is harvested, record which project(s) it came from and how many projects
+  have seen the same pattern (feeds graduation pipeline). INDEPENDENT — no dependencies
+  on other tasks, can be done in parallel. Files: lib/harvest.sh.
 status: work-completed
 workflow_type: build
 owner: agent
 tags: [fw-harvest, cross-project, learning, episodic]
 related_tasks: []
 created: 2026-02-17T08:54:11Z
-last_update: 2026-02-17T09:44:00Z
-date_finished: null
+last_update: '2026-06-11T22:23:38Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-105: Improve fw harvest for cross-project learning

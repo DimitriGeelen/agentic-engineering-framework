@@ -15,16 +15,18 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [arc-007, perf, refactor, T-1954-cluster, watchtower]
-components: [web/blueprints/approvals.py, web/blueprints/bvp.py, web/blueprints/cockpit.py, web/blueprints/timeline.py, web/search_utils.py, web/shared.py]
+components: [web/blueprints/approvals.py, web/blueprints/bvp.py, 
+      web/blueprints/cockpit.py, web/blueprints/timeline.py, web/search_utils.py,
+  web/shared.py]
 related_tasks: [T-1954, T-2102, T-2106, T-2107, T-2108]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-30T07:20:51Z
-last_update: 2026-05-31T19:27:49Z
+last_update: '2026-06-11T22:24:07Z'
 date_finished: 2026-05-30T08:21:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -47,6 +49,23 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-30T07:30:02Z'

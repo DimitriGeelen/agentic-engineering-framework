@@ -2,19 +2,38 @@
 id: T-335
 name: "Add Homebrew install to README and verify tap documentation"
 description: >
-  The launch article (T-329) and Homebrew tap (T-330) advertise `brew tap DimitriGeelen/agentic-fw && brew install fw`
-  but the README Quickstart only shows the curl install. Add Homebrew as an install option in the README.
+  The launch article (T-329) and Homebrew tap (T-330) advertise `brew tap DimitriGeelen/agentic-fw
+  && brew install fw`
+  but the README Quickstart only shows the curl install. Add Homebrew as an install
+  option in the README.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [docs, install]
 components: [README.md]
 related_tasks: [T-329, T-330]
 created: 2026-03-06T22:12:20Z
-last_update: 2026-03-08T19:33:25Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-06T22:14:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-335: Add Homebrew install to README and verify tap documentation

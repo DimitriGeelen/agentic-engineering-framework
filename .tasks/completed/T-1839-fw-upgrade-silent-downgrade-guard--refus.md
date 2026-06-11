@@ -1,20 +1,45 @@
 ---
 id: T-1839
-name: "fw upgrade silent-downgrade guard — refuse when target consumer's pinned version is ahead of framework (T-1838 sibling)"
+name: "fw upgrade silent-downgrade guard — refuse when target consumer's pinned version
+  is ahead of framework (T-1838 sibling)"
 description: >
-  lib/upgrade.sh:1082-1112 performs direction-blind version overwrite. If consumer is at 1.6.260 and framework at 1.6.170, fw upgrade /opt/consumer would silently rewrite the consumer's .framework.yaml to 1.6.170 — a downgrade — recording the original as upgraded_from. T-1838 fixed the doctor advice that pointed operators toward this command; T-1839 closes the loop by making the command itself refuse the downgrade direction. Symmetric to the T-1542 fail-fast guard in do_upgrade. Surfaces same Layer 3 T-1828 family.
+  lib/upgrade.sh:1082-1112 performs direction-blind version overwrite. If consumer
+  is at 1.6.260 and framework at 1.6.170, fw upgrade /opt/consumer would silently
+  rewrite the consumer's .framework.yaml to 1.6.170 — a downgrade — recording the
+  original as upgraded_from. T-1838 fixed the doctor advice that pointed operators
+  toward this command; T-1839 closes the loop by making the command itself refuse
+  the downgrade direction. Symmetric to the T-1542 fail-fast guard in do_upgrade.
+  Surfaces same Layer 3 T-1828 family.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [consumer-fleet, fw-upgrade]
 components: [lib/upgrade.sh]
 related_tasks: [T-1838, T-1828, T-1542]
 arc_id: project-shape-resilience
 created: 2026-05-14T21:53:34Z
-last_update: 2026-05-14T21:57:35Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T21:57:35Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 4
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1839: fw upgrade silent-downgrade guard — refuse when target consumer's pinned version is ahead of framework (T-1838 sibling)

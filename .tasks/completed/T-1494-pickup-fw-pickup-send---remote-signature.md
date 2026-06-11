@@ -1,21 +1,40 @@
 ---
 id: T-1494
-name: "Pickup: fw pickup send --remote signature mismatch — broken cross-project delivery (from 003-NTB-ATC-Plugin)"
+name: "Pickup: fw pickup send --remote signature mismatch — broken cross-project delivery
+  (from 003-NTB-ATC-Plugin)"
 description: >
-  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-062. Type: bug-report.
+  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-062. Type:
+  bug-report.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [pickup, bug-report]
 components: [lib/pickup.sh, tests/unit/pickup_send_remote_session.bats]
 related_tasks: []
 created: 2026-04-26T11:09:01Z
-last_update: 2026-04-26T17:35:30Z
+last_update: '2026-06-11T22:23:50Z'
 date_finished: 2026-04-26T17:35:30Z
 source_task_id_in_origin: T-062
 source_project_in_origin: "003-NTB-ATC-Plugin"
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1494: Pickup: fw pickup send --remote signature mismatch — broken cross-project delivery (from 003-NTB-ATC-Plugin)

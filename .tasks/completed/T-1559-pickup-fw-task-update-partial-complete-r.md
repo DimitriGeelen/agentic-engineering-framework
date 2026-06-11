@@ -1,21 +1,40 @@
 ---
 id: T-1559
-name: "Pickup: fw task update partial-complete recheck does not honor --skip-acceptance-criteria (from 003-NTB-ATC-Plugin)"
+name: "Pickup: fw task update partial-complete recheck does not honor --skip-acceptance-criteria
+  (from 003-NTB-ATC-Plugin)"
 description: >
-  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-225. Type: bug-report.
+  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-225. Type:
+  bug-report.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [pickup, bug-report]
 components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-27T18:38:01Z
-last_update: 2026-04-27T20:16:34Z
+last_update: '2026-06-11T22:23:51Z'
 date_finished: 2026-04-27T20:16:34Z
 source_task_id_in_origin: T-225
 source_project_in_origin: "003-NTB-ATC-Plugin"
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1559: Pickup: fw task update partial-complete recheck does not honor --skip-acceptance-criteria (from 003-NTB-ATC-Plugin)

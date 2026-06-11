@@ -2,18 +2,38 @@
 id: T-1424
 name: "harden task-create keylock — fail hard on source/primitive miss (T-1279 followup)"
 description: >
-  T-1279's fix (keylock around ID allocation) fails silently when source errors or when keylock_acquire is unavailable: line 18 uses || true, line 143 uses type guard. Previous session reproduced 3-way collision on T-1424 without subshell wrap. Remove silent skips; fail fast.
+  T-1279's fix (keylock around ID allocation) fails silently when source errors or
+  when keylock_acquire is unavailable: line 18 uses || true, line 143 uses type guard.
+  Previous session reproduced 3-way collision on T-1424 without subshell wrap. Remove
+  silent skips; fail fast.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-24T12:55:59Z
-last_update: 2026-04-24T12:59:27Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-24T12:59:27Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 3
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=3 (body:component-silent-failure); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1424: harden task-create keylock — fail hard on source/primitive miss (T-1279 followup)

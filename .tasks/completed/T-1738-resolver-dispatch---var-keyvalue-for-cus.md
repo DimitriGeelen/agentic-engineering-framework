@@ -1,20 +1,42 @@
 ---
 id: T-1738
-name: "resolver dispatch: --var KEY=VALUE for custom prompt-template substitution (T-1737 prep)"
+name: "resolver dispatch: --var KEY=VALUE for custom prompt-template substitution
+  (T-1737 prep)"
 description: >
-  T-1737 needs to pass user prompt through dispatch; resolver currently only knows TASK_ID/NAME/TYPE/DESCRIPTION/AC. Add --var KEY=VALUE flag (repeatable) to inject arbitrary UPPERCASE vars into task_context before _assembled_substitute. Enables prompt-triage to receive $PROMPT_UNDER_TRIAGE without overloading TASK_DESCRIPTION.
+  T-1737 needs to pass user prompt through dispatch; resolver currently only knows
+  TASK_ID/NAME/TYPE/DESCRIPTION/AC. Add --var KEY=VALUE flag (repeatable) to inject
+  arbitrary UPPERCASE vars into task_context before _assembled_substitute. Enables
+  prompt-triage to receive $PROMPT_UNDER_TRIAGE without overloading TASK_DESCRIPTION.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [prompt-triage, resolver]
 components: [lib/resolver.py]
 related_tasks: [T-1737, T-1733, T-1689]
 arc_id: orchestrator-rethink
 created: 2026-05-05T07:42:18Z
-last_update: 2026-05-05T07:44:30Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T07:44:30Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1738: resolver dispatch: --var KEY=VALUE for custom prompt-template substitution (T-1737 prep)

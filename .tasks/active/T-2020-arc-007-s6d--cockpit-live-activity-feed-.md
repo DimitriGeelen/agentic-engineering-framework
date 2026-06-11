@@ -22,7 +22,7 @@ components: [tests/playwright/test_cockpit_activity.py,
 related_tasks: [T-1993, T-1987, T-2012, T-2013]
 arc_id: watchtower-redesign
 created: 2026-05-24T10:02:00Z
-last_update: '2026-05-28T22:54:11Z'
+last_update: '2026-06-11T22:23:29Z'
 date_finished: 2026-05-25T22:43:40Z
 cost_estimate_proposed:
   - ts: '2026-05-24T10:15:02Z'
@@ -57,6 +57,23 @@ bvp_scores_proposed:
     rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=0 (no-signal); F1=0 (no-signal); F2=0
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 

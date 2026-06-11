@@ -2,7 +2,9 @@
 id: T-041
 name: Add fw task update with auto-healing trigger
 description: >
-  fw task update T-XXX --status issues auto-triggers healing diagnosis. Also handles work-completed (sets date_finished, moves to completed/, triggers episodic generation). Completes deferred auto-healing trigger from T-036.
+  fw task update T-XXX --status issues auto-triggers healing diagnosis. Also handles
+  work-completed (sets date_finished, moves to completed/, triggers episodic generation).
+  Completes deferred auto-healing trigger from T-036.
 status: work-completed
 workflow_type: build
 owner: claude-code
@@ -12,8 +14,25 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T09:36:33Z
-last_update: 2026-02-14T09:37:55Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-14T09:37:55Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-041: Add fw task update with auto-healing trigger

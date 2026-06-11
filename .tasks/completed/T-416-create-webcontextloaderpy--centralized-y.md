@@ -2,18 +2,40 @@
 id: T-416
 name: "Create web/context_loader.py — centralized YAML and context file loading (P1+P3)"
 description: >
-  Create web/context_loader.py with load_learnings(), load_patterns(), load_decisions(), load_concerns(). Replaces 6+ duplicated try/except YAML blocks in discovery.py and 10+ context file loads across core.py, quality.py. shared.py load_yaml() exists but adoption is partial. Directive score: P1=8, P3=8. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  Create web/context_loader.py with load_learnings(), load_patterns(), load_decisions(),
+  load_concerns(). Replaces 6+ duplicated try/except YAML blocks in discovery.py and
+  10+ context file loads across core.py, quality.py. shared.py load_yaml() exists
+  but adoption is partial. Directive score: P1=8, P3=8. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, python, watchtower, reliability]
-components: [web/blueprints/core.py, C-003, web/blueprints/metrics.py, web/blueprints/risks.py, web/context_loader.py]
+components: [web/blueprints/core.py, C-003, web/blueprints/metrics.py, 
+      web/blueprints/risks.py, web/context_loader.py]
 related_tasks: [T-404, T-397, T-411]
 created: 2026-03-10T21:03:16Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-10T23:17:15Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-416: Create web/context_loader.py — centralized YAML and context file loading (P1+P3)

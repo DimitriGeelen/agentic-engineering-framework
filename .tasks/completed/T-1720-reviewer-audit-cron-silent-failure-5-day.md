@@ -1,19 +1,43 @@
 ---
 id: T-1720
-name: "Reviewer audit cron silent-failure: 5 days of missed daily audits despite cron firing"
+name: "Reviewer audit cron silent-failure: 5 days of missed daily audits despite cron
+  firing"
 description: >
-  Cron 'fw reviewer audit' (4:37 AM daily, source .context/cron/agentic-audit.crontab:9) fires per /var/log/syslog Apr 30 - May 4 but produced no .context/audits/reviewer/YYYY-MM-DD.yaml. Manual run today (cron-like minimal env, same PROJECT_ROOT) succeeded cleanly: 1646 tasks scanned, file written. RCA deferred — needs failure capture (drop 2>/dev/null + add stderr log) before the next 4:37 cron fire. G-019 shape: framework allowed 5 days of silent audit blindness because cron stderr is discarded. Backfill committed in 1c1214533. tags: reviewer, cron, silent-failure, G-019-shape
+  Cron 'fw reviewer audit' (4:37 AM daily, source .context/cron/agentic-audit.crontab:9)
+  fires per /var/log/syslog Apr 30 - May 4 but produced no .context/audits/reviewer/YYYY-MM-DD.yaml.
+  Manual run today (cron-like minimal env, same PROJECT_ROOT) succeeded cleanly: 1646
+  tasks scanned, file written. RCA deferred — needs failure capture (drop 2>/dev/null
+  + add stderr log) before the next 4:37 cron fire. G-019 shape: framework allowed
+  5 days of silent audit blindness because cron stderr is discarded. Backfill committed
+  in 1c1214533. tags: reviewer, cron, silent-failure, G-019-shape
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug]
 components: []
 related_tasks: []
 created: 2026-05-04T16:29:04Z
-last_update: 2026-05-06T13:46:30Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-06T13:46:30Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1720: Reviewer audit cron silent-failure: 5 days of missed daily audits despite cron firing

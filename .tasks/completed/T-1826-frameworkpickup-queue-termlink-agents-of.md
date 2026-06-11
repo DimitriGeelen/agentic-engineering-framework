@@ -1,19 +1,44 @@
 ---
 id: T-1826
-name: "framework:pickup queue: termlink-agent's offsets 9+10 (T-1634 status + B-1 detail) not visible — pickup plumbing stall"
+name: "framework:pickup queue: termlink-agent's offsets 9+10 (T-1634 status + B-1
+  detail) not visible — pickup plumbing stall"
 description: >
-  OPS-1 reported by termlink-agent on 2026-05-14. termlink-agent emitted two framework:pickup envelopes (offset 9: T-1634 status-check 2026-05-13T13:29Z; offset 10: B-1 detail 2026-05-14T05:09Z). Neither is visible on framework-agent's bus — only seq 47 (G-082 ring20-management 2026-05-05) shows on the framework:pickup topic. Two envelopes apparently stalled in the cross-hub relay. Probably a TermLink-side delivery issue but framework-half pipeline (fw pickup) may also be implicated. Investigation: trace why these specific envelopes didn't surface; if TermLink-side, file as cross-repo pickup to /opt/termlink.
+  OPS-1 reported by termlink-agent on 2026-05-14. termlink-agent emitted two framework:pickup
+  envelopes (offset 9: T-1634 status-check 2026-05-13T13:29Z; offset 10: B-1 detail
+  2026-05-14T05:09Z). Neither is visible on framework-agent's bus — only seq 47 (G-082
+  ring20-management 2026-05-05) shows on the framework:pickup topic. Two envelopes
+  apparently stalled in the cross-hub relay. Probably a TermLink-side delivery issue
+  but framework-half pipeline (fw pickup) may also be implicated. Investigation: trace
+  why these specific envelopes didn't surface; if TermLink-side, file as cross-repo
+  pickup to /opt/termlink.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade-incident-2026-05-14, pickup, termlink-relay, bug]
 components: []
 related_tasks: [T-1822]
 created: 2026-05-14T07:31:02Z
-last_update: 2026-05-14T14:26:37Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T14:26:37Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1826: framework:pickup queue: termlink-agent's offsets 9+10 (T-1634 status + B-1 detail) not visible — pickup plumbing stall

@@ -1,21 +1,55 @@
 ---
 id: T-1104
-name: "META-Inception: CLAUDE.md / fw help / code drift — structural enforcement of doc parity (G-035)"
+name: "META-Inception: CLAUDE.md / fw help / code drift — structural enforcement of
+  doc parity (G-035)"
 description: >
-  Inception task — investigate the recurring class of bug where CLAUDE.md Quick Reference + agent memory drifts from actual fw command surface (new flags, new subcommands, distribution model changes) and propose structural enforcement. This is the meta-pattern that subsumes G-025 (fw upgrade not surfaced), G-029 (termlink distribution undocumented), G-031 evidence #4 (fw vendor not in CLAUDE.md), AND the THIS-session incident: agent dispatched 4 TermLink workers in parallel without --task because CLAUDE.md Quick Reference table for fw termlink dispatch says '--name N --prompt P [--project DIR] [--model M]' — the required --task added by T-652 is missing. All 4 workers failed identically. Investigate: (1) audit CLAUDE.md Quick Reference table against fw help and bin/fw subcommand parsers — find every drift instance; (2) audit fw help against bin/fw — does fw help cover all subcommands? (3) audit subcommand --help against parser implementation; (4) sketch options for structural enforcement: (a) test that asserts CLAUDE.md table matches fw help, (b) auto-generate CLAUDE.md table from bin/fw introspection, (c) fw doctor doc-drift check, (d) CI step that regenerates docs on every fw change, (e) commit hook that flags doc-less feature commits; (5) recommend ONE remediation pattern with rationale. Origin: G-035 (META). Trigger: same-day triplet 2026-04-11 + this session's --task incident.
+  Inception task — investigate the recurring class of bug where CLAUDE.md Quick Reference
+  + agent memory drifts from actual fw command surface (new flags, new subcommands,
+  distribution model changes) and propose structural enforcement. This is the meta-pattern
+  that subsumes G-025 (fw upgrade not surfaced), G-029 (termlink distribution undocumented),
+  G-031 evidence #4 (fw vendor not in CLAUDE.md), AND the THIS-session incident: agent
+  dispatched 4 TermLink workers in parallel without --task because CLAUDE.md Quick
+  Reference table for fw termlink dispatch says '--name N --prompt P [--project DIR]
+  [--model M]' — the required --task added by T-652 is missing. All 4 workers failed
+  identically. Investigate: (1) audit CLAUDE.md Quick Reference table against fw help
+  and bin/fw subcommand parsers — find every drift instance; (2) audit fw help against
+  bin/fw — does fw help cover all subcommands? (3) audit subcommand --help against
+  parser implementation; (4) sketch options for structural enforcement: (a) test that
+  asserts CLAUDE.md table matches fw help, (b) auto-generate CLAUDE.md table from
+  bin/fw introspection, (c) fw doctor doc-drift check, (d) CI step that regenerates
+  docs on every fw change, (e) commit hook that flags doc-less feature commits; (5)
+  recommend ONE remediation pattern with rationale. Origin: G-035 (META). Trigger:
+  same-day triplet 2026-04-11 + this session's --task incident.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1093, G-035, T-652, T-630]
 created: 2026-04-11T12:44:58Z
-last_update: 2026-04-13T06:23:15Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-12T10:41:08Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1104: META-Inception: CLAUDE.md / fw help / code drift — structural enforcement of doc parity (G-035)

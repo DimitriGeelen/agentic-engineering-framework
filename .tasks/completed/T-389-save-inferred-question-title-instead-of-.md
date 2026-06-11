@@ -2,18 +2,40 @@
 id: T-389
 name: "Save inferred question title instead of raw input in Q&A"
 description: >
-  When saving Q&A answers via /search/save, store the LLM's inferred/rephrased question as the title and filename instead of the raw typed text (which contains voice-transcription typos). Add a 'suggested_title' field to the SSE done event from the LLM, modify the system prompt to request a clean title, update the save endpoint to use it. Predecessor: T-388.
+  When saving Q&A answers via /search/save, store the LLM's inferred/rephrased question
+  as the title and filename instead of the raw typed text (which contains voice-transcription
+  typos). Add a 'suggested_title' field to the SSE done event from the LLM, modify
+  the system prompt to request a clean title, update the save endpoint to use it.
+  Predecessor: T-388.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [C-003]
 related_tasks: []
 created: 2026-03-09T11:35:21Z
-last_update: 2026-03-12T12:41:19Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-09T11:44:17Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-389: Save inferred question title instead of raw input in Q&A

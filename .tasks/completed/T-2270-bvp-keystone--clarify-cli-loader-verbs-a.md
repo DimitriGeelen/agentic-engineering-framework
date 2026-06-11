@@ -2,12 +2,17 @@
 id: T-2270
 name: "BVP keystone — clarify CLI loader verbs are deferred (preamble drift fix)"
 description: >
-  policy/prompts/bvp-driver-session.md line 3 says 'The operator invoked fw bvp driver suggest or fw bvp driver create <topic>' as the entry framing — but lib/bvp.sh:1325 explicitly defers those subverbs per T-2245 IW-3. A fresh agent reading the keystone today and trying the literal verb gets 'unknown subverb'. Add a one-line note to the keystone preamble that the CLI loader verbs are aspirational and the bundle is loaded manually today, parallel to the existing SEE-ALSO comment in lib/bvp.sh.
+  policy/prompts/bvp-driver-session.md line 3 says 'The operator invoked fw bvp driver
+  suggest or fw bvp driver create <topic>' as the entry framing — but lib/bvp.sh:1325
+  explicitly defers those subverbs per T-2245 IW-3. A fresh agent reading the keystone
+  today and trying the literal verb gets 'unknown subverb'. Add a one-line note to
+  the keystone preamble that the CLI loader verbs are aspirational and the bundle
+  is loaded manually today, parallel to the existing SEE-ALSO comment in lib/bvp.sh.
 
 status: work-completed
 workflow_type: refactor
 owner: claude-code
-horizon: null
+horizon:
 tags: [arc:value-prioritisation, bvp, prompt-bundle, drift]
 components: []
 related_tasks: [T-2245, T-2246]
@@ -16,7 +21,7 @@ related_tasks: [T-2245, T-2246]
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-08T21:48:38Z
-last_update: 2026-06-08T21:51:32Z
+last_update: '2026-06-11T22:24:13Z'
 date_finished: 2026-06-08T21:51:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +33,24 @@ date_finished: 2026-06-08T21:51:32Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2270: BVP keystone — clarify CLI loader verbs are deferred (preamble drift fix)

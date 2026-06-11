@@ -2,18 +2,42 @@
 id: T-267
 name: "User feedback — thumbs up/down on Q&A answers"
 description: >
-  Add subtle thumbs up/down buttons after Q&A answers. Store feedback in SQLite: query, answer, model, sources, rating (-1/0/1), optional comment, timestamp. POST /search/feedback endpoint. Basic analytics: GET /search/feedback/analytics showing total queries, positive/negative ratio, recent feedback. Enables quality tracking and prompt engineering iteration. Files: web/qa_feedback.py (NEW ~50 lines), web/blueprints/discovery.py (endpoints), web/templates/search.html (buttons), web/templates/feedback_analytics.html (NEW). Ref: docs/reports/T-261-arch-improvements.md §3 (full schema, endpoint code, frontend integration). Predecessor: T-257 (frontend).
+  Add subtle thumbs up/down buttons after Q&A answers. Store feedback in SQLite: query,
+  answer, model, sources, rating (-1/0/1), optional comment, timestamp. POST /search/feedback
+  endpoint. Basic analytics: GET /search/feedback/analytics showing total queries,
+  positive/negative ratio, recent feedback. Enables quality tracking and prompt engineering
+  iteration. Files: web/qa_feedback.py (NEW ~50 lines), web/blueprints/discovery.py
+  (endpoints), web/templates/search.html (buttons), web/templates/feedback_analytics.html
+  (NEW). Ref: docs/reports/T-261-arch-improvements.md §3 (full schema, endpoint code,
+  frontend integration). Predecessor: T-257 (frontend).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [qa, feedback, analytics]
 components: [C-003, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:37Z
-last_update: 2026-02-25T20:37:12Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T10:14:41Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-267: User feedback — thumbs up/down on Q&A answers

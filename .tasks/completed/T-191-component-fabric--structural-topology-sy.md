@@ -2,24 +2,45 @@
 id: T-191
 name: "Component Fabric — structural topology system for codebase self-awareness"
 description: >
-  Deep inception (5-10 sessions): Design and validate a universal structural topology system
+  Deep inception (5-10 sessions): Design and validate a universal structural topology
+  system
   ("Component Fabric") that gives any project governed by AEF machine-readable self-awareness
-  of its own codebase. Components, dependencies, UI elements, interaction flows, and data
-  paths should be tracked, enforced, and queryable — so agents can navigate, debug, enhance,
-  and impact-assess without reading all code. Adaptive granularity, proactive enforcement +
+  of its own codebase. Components, dependencies, UI elements, interaction flows, and
+  data
+  paths should be tracked, enforced, and queryable — so agents can navigate, debug,
+  enhance,
+  and impact-assess without reading all code. Adaptive granularity, proactive enforcement
+  +
   retroactive validation, universal (not AEF-specific).
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [component-fabric, architecture, enforcement, topology, universal]
 related_tasks: [T-120, T-130, T-190]
 created: 2026-02-19T09:56:36Z
-last_update: 2026-02-20T07:13:43Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-02-20T07:13:43Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-191: Component Fabric — structural topology system for codebase self-awareness

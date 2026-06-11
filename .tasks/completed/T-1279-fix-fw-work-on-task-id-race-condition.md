@@ -11,13 +11,32 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [bug, tooling, race-condition, task-system]
-components: [C-004, agents/task-create/create-task.sh, tests/unit/task_id_race.bats, lib/keylock.sh]
+components: [C-004, agents/task-create/create-task.sh, 
+      tests/unit/task_id_race.bats, lib/keylock.sh]
 related_tasks: [T-1277, T-1278]
 created: 2026-04-17T10:35:00Z
-last_update: 2026-04-20T19:43:31Z
+last_update: '2026-06-11T22:23:44Z'
 date_finished: 2026-04-20T19:41:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=4 (body:fw-audit-or-doctor);
+      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1279: Fix fw work-on / task-create race condition on task-ID allocation

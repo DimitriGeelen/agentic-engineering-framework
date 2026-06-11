@@ -2,18 +2,38 @@
 id: T-510
 name: "Add --force and --no-verify detection to check-tier0.sh"
 description: >
-  Extend Tier 0 patterns to detect fw task update --force, fw inception decide --force, and --no-verify on framework commands. These are Q4 bypass vectors that should require human approval. From T-477 Spike 3, Option A build task 2.
+  Extend Tier 0 patterns to detect fw task update --force, fw inception decide --force,
+  and --no-verify on framework commands. These are Q4 bypass vectors that should require
+  human approval. From T-477 Spike 3, Option A build task 2.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [governance, enforcement, D2]
 components: [agents/context/check-tier0.sh]
 related_tasks: []
 created: 2026-03-17T11:34:10Z
-last_update: 2026-03-17T11:41:59Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-17T11:41:59Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-510: Add --force and --no-verify detection to check-tier0.sh

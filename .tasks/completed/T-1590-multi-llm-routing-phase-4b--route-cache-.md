@@ -2,18 +2,40 @@
 id: T-1590
 name: "Multi-LLM routing Phase 4b — route-cache model tracking + circuit-breaker fallback"
 description: >
-  Phase 4b follow-up from T-1065 (deferred). Implement route-cache learning of model→task-type success rates and circuit-breaker fallback for model unavailability. Scope explicitly split from T-1065 per its Decisions block. Repo: TermLink (/opt/termlink) — changes in crates/termlink-hub/src/router.rs and crates/termlink-mcp/src/tools.rs. Related: T-1061, T-1065.
+  Phase 4b follow-up from T-1065 (deferred). Implement route-cache learning of model→task-type
+  success rates and circuit-breaker fallback for model unavailability. Scope explicitly
+  split from T-1065 per its Decisions block. Repo: TermLink (/opt/termlink) — changes
+  in crates/termlink-hub/src/router.rs and crates/termlink-mcp/src/tools.rs. Related:
+  T-1061, T-1065.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [termlink, multi-llm, routing]
 components: []
 related_tasks: [T-1061, T-1065]
 created: 2026-04-28T18:46:58Z
-last_update: 2026-04-28T18:57:26Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-28T18:57:26Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=1 (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1590: Multi-LLM routing Phase 4b — route-cache model tracking + circuit-breaker fallback

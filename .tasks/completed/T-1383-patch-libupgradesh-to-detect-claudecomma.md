@@ -1,19 +1,39 @@
 ---
 id: T-1383
-name: "Patch lib/upgrade.sh to detect .claude/commands/resume.md template drift — close G-056"
+name: "Patch lib/upgrade.sh to detect .claude/commands/resume.md template drift —
+  close G-056"
 description: >
-  Patch lib/upgrade.sh to detect .claude/commands/resume.md template drift — close G-056
+  Patch lib/upgrade.sh to detect .claude/commands/resume.md template drift — close
+  G-056
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-22T19:48:45Z
-last_update: 2026-04-22T19:53:20Z
+last_update: '2026-06-11T22:23:47Z'
 date_finished: 2026-04-22T19:53:20Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 5
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=5
+      (body:class-neutral); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1383: Patch lib/upgrade.sh to detect .claude/commands/resume.md template drift — close G-056

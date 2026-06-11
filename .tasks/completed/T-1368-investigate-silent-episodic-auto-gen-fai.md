@@ -7,13 +7,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [tests/unit/update_task_episodic_gen.bats]
 related_tasks: []
 created: 2026-04-20T20:35:02Z
-last_update: 2026-04-20T20:37:50Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-04-20T20:37:50Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 3
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=3 
+      (body:component-silent-failure); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1368: investigate silent episodic auto-gen failure across 4 tasks

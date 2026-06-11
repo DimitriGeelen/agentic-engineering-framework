@@ -1,19 +1,40 @@
 ---
 id: T-1113
-name: "Placeholder audit chokepoint: _audit_placeholders + wire fw inception decide + fw task review + bats invariant tests (T-1111 build)"
+name: "Placeholder audit chokepoint: _audit_placeholders + wire fw inception decide
+  + fw task review + bats invariant tests (T-1111 build)"
 description: >
-  Placeholder audit chokepoint: _audit_placeholders + wire fw inception decide + fw task review + bats invariant tests (T-1111 build)
+  Placeholder audit chokepoint: _audit_placeholders + wire fw inception decide + fw
+  task review + bats invariant tests (T-1111 build)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [bin/fw, lib/inception.sh, lib/task-audit.sh, tests/integration/audit_blocks_review_and_decide.bats, tests/unit/lib_task_audit.bats]
+components: [bin/fw, lib/inception.sh, lib/task-audit.sh, 
+      tests/integration/audit_blocks_review_and_decide.bats, 
+      tests/unit/lib_task_audit.bats]
 related_tasks: []
 created: 2026-04-11T21:53:34Z
-last_update: 2026-04-11T22:13:19Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-11T22:13:19Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1113: Placeholder audit chokepoint: _audit_placeholders + wire fw inception decide + fw task review + bats invariant tests (T-1111 build)

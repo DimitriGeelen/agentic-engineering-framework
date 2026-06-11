@@ -1,19 +1,37 @@
 ---
 id: T-1623
-name: "Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves G-060)"
+name: "Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves
+  G-060)"
 description: >
   Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves G-060)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [termlink, tofu, fleet, security, from-g-060]
 components: []
 related_tasks: [T-1051, T-1053, T-1054, T-1055, T-1326, T-1332]
 created: 2026-04-30T19:53:10Z
-last_update: 2026-04-30T20:26:52Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-04-30T20:26:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref,body:concern-ref); D2=0 (no-signal); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1623: Clear stale TOFU pin for ring20-dashboard hub migration .121 → .143 (resolves G-060)

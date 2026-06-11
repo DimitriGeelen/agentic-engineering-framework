@@ -7,13 +7,33 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: ["bug", "render", "governance-render", "human-review-surface"]
-components: [lib/render_surface.sh, tests/unit/test_ac_body_html_comment.py, tests/unit/test_file_route_extensions.py, web/blueprints/docs.py, web/blueprints/tasks.py, web/shared.py]
+components: [lib/render_surface.sh, tests/unit/test_ac_body_html_comment.py, 
+      tests/unit/test_file_route_extensions.py, web/blueprints/docs.py, 
+      web/blueprints/tasks.py, web/shared.py]
 related_tasks: ["T-204", "T-1551", "T-1762"]
 created: 2026-05-06T10:47:12Z
-last_update: 2026-05-16T07:04:01Z
+last_update: '2026-06-11T22:23:58Z'
 date_finished: 2026-05-16T07:04:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1763: fix AC body parser — HTML comment example leaks into render and overrides Steps/Expected/If-not

@@ -4,18 +4,37 @@ name: "PR #5: T-003: Auto-create onboarding tasks after fw init"
 description: >
   OneDev PR #5 (branch: fix/T-003-auto-onboarding-tasks)
 
-Replaces static Choose your path menu with auto-detection: existing projects get 3 onboarding tasks (ingest, fabric, handover), new projects get inception task. Idempotent on re-init.
+Replaces static Choose your path menu with auto-detection: existing projects get
+  3 onboarding tasks (ingest, fabric, handover), new projects get inception 
+  task. Idempotent on re-init.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [onedev, pr]
 components: []
 related_tasks: []
 created: 2026-03-12T10:15:01Z
-last_update: 2026-03-12T10:15:01Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-12T13:00:47Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-452: PR #5: T-003: Auto-create onboarding tasks after fw init

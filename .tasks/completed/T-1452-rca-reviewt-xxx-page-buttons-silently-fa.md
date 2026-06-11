@@ -1,21 +1,44 @@
 ---
 id: T-1452
-name: "RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx POSTs"
+name: "RCA: /review/T-XXX page buttons silently fail — CSRF token not sent on htmx
+  POSTs"
 description: >
-  Mobile review page (/review/T-XXX) renders correctly but every action button silently fails: AC checkbox toggle, 'Complete Task' button, Tier 0 approve/reject. Root cause: review.html is standalone (does not extend base.html) and lacks the htmx:configRequest listener at base.html:430 that injects X-CSRF-Token. csrf_protect in web/app.py:103 (T-1343 / G-048) returns 403 on /api/* mutations. Likely broken since T-1343 landed; no Playwright test on /review/T-XXX caught it because GETs work fine.
+  Mobile review page (/review/T-XXX) renders correctly but every action button silently
+  fails: AC checkbox toggle, 'Complete Task' button, Tier 0 approve/reject. Root cause:
+  review.html is standalone (does not extend base.html) and lacks the htmx:configRequest
+  listener at base.html:430 that injects X-CSRF-Token. csrf_protect in web/app.py:103
+  (T-1343 / G-048) returns 403 on /api/* mutations. Likely broken since T-1343 landed;
+  no Playwright test on /review/T-XXX caught it because GETs work fine.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [bugfix, csrf, watchtower, mobile-review, regression]
 components: []
 related_tasks: [T-667, T-1343, T-1450]
 created: 2026-04-25T13:35:00Z
-last_update: 2026-04-25T13:09:38Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-25T11:51:10Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1452: RCA — /review/T-XXX page buttons silently fail (CSRF regression)

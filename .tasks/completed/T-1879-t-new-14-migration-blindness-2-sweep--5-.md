@@ -2,14 +2,23 @@
 id: T-1879
 name: "T-NEW-14 migration-blindness #2 sweep — 5 remaining surfaces read arc_id"
 description: >
-  T-1850 left 5 more surfaces reading arc:<slug> tags only (silent corpus #2): web/blueprints/core.py (landing card count), web/blueprints/tasks.py (/tasks?arc filter), agents/handover/handover.sh (current-arc count), lib/evolution_log.sh (find_arc_tasks_without_evolution_log), agents/task-create/update-task.sh (check_evolution_log gate). 166 tasks have arc_id but 0 have arc:<slug> tag — all 5 sites return empty/zero for migrated arcs. Sibling to T-NEW-10..13. Future-prevention: codify shared scan helper or audit lint for tag-only patterns.
+  T-1850 left 5 more surfaces reading arc:<slug> tags only (silent corpus #2): web/blueprints/core.py
+  (landing card count), web/blueprints/tasks.py (/tasks?arc filter), agents/handover/handover.sh
+  (current-arc count), lib/evolution_log.sh (find_arc_tasks_without_evolution_log),
+  agents/task-create/update-task.sh (check_evolution_log gate). 166 tasks have arc_id
+  but 0 have arc:<slug> tag — all 5 sites return empty/zero for migrated arcs. Sibling
+  to T-NEW-10..13. Future-prevention: codify shared scan helper or audit lint for
+  tag-only patterns.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [arc-grooming, T-NEW-14, build, migration-blindness]
-components: [agents/handover/handover.sh, agents/task-create/update-task.sh, lib/evolution_log.sh, tests/unit/arc_membership_agent_surfaces.bats, tests/unit/test_arc_membership_web_surfaces.py, web/blueprints/core.py, web/blueprints/tasks.py]
+components: [agents/handover/handover.sh, agents/task-create/update-task.sh, 
+      lib/evolution_log.sh, tests/unit/arc_membership_agent_surfaces.bats, 
+      tests/unit/test_arc_membership_web_surfaces.py, web/blueprints/core.py, 
+      web/blueprints/tasks.py]
 related_tasks: [T-1846, T-1850, T-1874, T-1875, T-1876, T-1877]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,10 +26,29 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T13:53:31Z
-last_update: 2026-05-17T22:39:39Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-17T14:08:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 1
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1879: T-NEW-14 migration-blindness #2 sweep — 5 remaining surfaces read arc_id

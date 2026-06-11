@@ -1,15 +1,19 @@
 ---
 id: T-1888
-name: "ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits to remind agent to refresh enforcement baseline"
+name: "ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits
+  to remind agent to refresh enforcement baseline"
 description: >
-  ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits to remind agent to refresh enforcement baseline
+  ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits to
+  remind agent to refresh enforcement baseline
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [arc-grooming, prevention, governance, hooks]
-components: [agents/context/check-settings-edit.sh, .claude/settings.json, .context/project/enforcement-baseline.sha256, tests/unit/hook_check_settings_edit.bats]
+components: [agents/context/check-settings-edit.sh, .claude/settings.json, 
+      .context/project/enforcement-baseline.sha256, 
+      tests/unit/hook_check_settings_edit.bats]
 related_tasks: [T-1886, T-1887, T-1849, T-1730, T-1731, T-1687]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,10 +21,28 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T20:41:20Z
-last_update: 2026-05-17T20:58:28Z
+last_update: '2026-06-11T22:24:02Z'
 date_finished: 2026-05-17T20:58:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1888: ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits to remind agent to refresh enforcement baseline

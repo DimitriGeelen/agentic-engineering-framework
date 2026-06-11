@@ -1,21 +1,46 @@
 ---
 id: T-589
-name: "Inception: YAML/JSON fuzz testing — security fuzzing for framework parsing surfaces"
+name: "Inception: YAML/JSON fuzz testing — security fuzzing for framework parsing
+  surfaces"
 description: >
-  OpenClaw has dedicated fuzz test files testing 6 attack vector categories (type confusion, Unicode attacks, injection, prototype pollution, XSS vectors, edge cases) against parsing surfaces. Our framework processes YAML frontmatter from task files, component cards, config files, and skill files with zero fuzz coverage. Investigate: which parsing surfaces are security-critical, what attack vectors apply to YAML (anchors, billion laughs, merge keys, prototype-like keys), how to structure fuzz tests in bash/Python, and whether this justifies a dedicated test suite. Source: T-023 comparative analysis, OpenClaw nostr-bus.fuzz.test.ts (548 LOC).
+  OpenClaw has dedicated fuzz test files testing 6 attack vector categories (type
+  confusion, Unicode attacks, injection, prototype pollution, XSS vectors, edge cases)
+  against parsing surfaces. Our framework processes YAML frontmatter from task files,
+  component cards, config files, and skill files with zero fuzz coverage. Investigate:
+  which parsing surfaces are security-critical, what attack vectors apply to YAML
+  (anchors, billion laughs, merge keys, prototype-like keys), how to structure fuzz
+  tests in bash/Python, and whether this justifies a dedicated test suite. Source:
+  T-023 comparative analysis, OpenClaw nostr-bus.fuzz.test.ts (548 LOC).
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-549, T-569]
 created: 2026-03-23T21:49:31Z
-last_update: 2026-03-28T09:31:49Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-28T09:31:49Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-589: Inception: YAML/JSON fuzz testing — security fuzzing for framework parsing surfaces

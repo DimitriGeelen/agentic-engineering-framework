@@ -1,23 +1,28 @@
 ---
 id: T-2165
-name: "T-2157 continuation: complete the deferred consumer-code blast radius walk + open questions 1-10 for value-drivers.yaml v3"
+name: "T-2157 continuation: complete the deferred consumer-code blast radius walk
+  + open questions 1-10 for value-drivers.yaml v3"
 description: >
-  T-2157 continuation: complete the deferred consumer-code blast radius walk + open questions 1-10 for value-drivers.yaml v3
+  T-2157 continuation: complete the deferred consumer-code blast radius walk + open
+  questions 1-10 for value-drivers.yaml v3
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [arc:value-prioritisation, value-drivers, bvp, research]
-components: [docs/reports/T-2157-value-drivers-v3-redesign.md, policy/value-drivers.yaml, lib/bvp.sh, web/blueprints/bvp.py, web/blueprints/arcs.py, lib/arc.sh, policy/bvp-scoring-rubric.md]
-related_tasks: [T-2157, T-1915, T-1921, T-1922, T-1924, T-1926, T-1928, T-1929, T-1930, T-1931, T-1932]
+components: [docs/reports/T-2157-value-drivers-v3-redesign.md, 
+      policy/value-drivers.yaml, lib/bvp.sh, web/blueprints/bvp.py, 
+      web/blueprints/arcs.py, lib/arc.sh, policy/bvp-scoring-rubric.md]
+related_tasks: [T-2157, T-1915, T-1921, T-1922, T-1924, T-1926, T-1928, T-1929, 
+      T-1930, T-1931, T-1932]
 arc_id: value-prioritisation
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T16:48:09Z
-last_update: 2026-06-01T16:59:54Z
+last_update: '2026-06-11T22:24:10Z'
 date_finished: 2026-06-01T16:59:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -29,6 +34,25 @@ date_finished: 2026-06-01T16:59:54Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2165: T-2157 continuation: complete the deferred consumer-code blast radius walk + open questions 1-10 for value-drivers.yaml v3

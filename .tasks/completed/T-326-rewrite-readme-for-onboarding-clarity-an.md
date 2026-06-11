@@ -2,22 +2,45 @@
 id: T-326
 name: "Rewrite README for onboarding clarity and showcase"
 description: >
-  README scores 2.5-3.7/10 across personas. Rewrite with: (1) concrete value prop and problem/solution
-  framing, (2) terminal GIF or screenshot of enforcement in action, (3) progressive disclosure
-  (highlights → install → quickstart → deep docs), (4) provider-neutral framing with clear
-  Claude/Cursor/Copilot paths, (5) team lead section with CI/CD and Watchtower, (6) fix
+  README scores 2.5-3.7/10 across personas. Rewrite with: (1) concrete value prop
+  and problem/solution
+  framing, (2) terminal GIF or screenshot of enforcement in action, (3) progressive
+  disclosure
+  (highlights → install → quickstart → deep docs), (4) provider-neutral framing with
+  clear
+  Claude/Cursor/Copilot paths, (5) team lead section with CI/CD and Watchtower, (6)
+  fix
   lib/setup.sh reference (should be lib/preflight.sh).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [docs, onboarding, ux]
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z
-last_update: 2026-03-08T20:32:48Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-05T02:11:30Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 4
+      D4: 5
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=5 (body:class-neutral); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); F3=0 (no-signal); 
+      F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-326: Rewrite README for onboarding clarity and showcase

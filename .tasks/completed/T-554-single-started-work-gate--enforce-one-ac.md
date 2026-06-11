@@ -2,18 +2,41 @@
 id: T-554
 name: "Single started-work gate — enforce one active task, inception starts as captured"
 description: >
-  Add max-started-tasks check (default 1) to update-task.sh and fw work-on. Block starting a new task when another is already started-work. --force bypasses with logging. Also change fw inception start to create tasks as captured instead of started-work. Cleanup existing 13 started-work tasks to correct status. Origin: T-549 OpenClaw eval — agent started 8 tasks simultaneously. Evidence: all completed tasks show sequential pattern, focus.yaml is single-task, 13 accumulated started-work tasks in current project.
+  Add max-started-tasks check (default 1) to update-task.sh and fw work-on. Block
+  starting a new task when another is already started-work. --force bypasses with
+  logging. Also change fw inception start to create tasks as captured instead of started-work.
+  Cleanup existing 13 started-work tasks to correct status. Origin: T-549 OpenClaw
+  eval — agent started 8 tasks simultaneously. Evidence: all completed tasks show
+  sequential pattern, focus.yaml is single-task, 13 accumulated started-work tasks
+  in current project.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [agents/task-create/update-task.sh, lib/inception.sh]
 related_tasks: []
 created: 2026-03-23T16:18:04Z
-last_update: 2026-04-12T07:56:34Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-04-12T07:56:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-554: Single started-work gate — enforce one active task, inception starts as captured

@@ -1,19 +1,37 @@
 ---
 id: T-1204
-name: "Refactor hooks.sh inception gate messages to use _emit_user_command (T-1146 GO)"
+name: "Refactor hooks.sh inception gate messages to use _emit_user_command (T-1146
+  GO)"
 description: >
   Refactor hooks.sh inception gate messages to use _emit_user_command (T-1146 GO)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T08:13:04Z
-last_update: 2026-04-13T08:16:19Z
+last_update: '2026-06-11T22:23:42Z'
 date_finished: 2026-04-13T08:16:19Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1204: Refactor hooks.sh inception gate messages to use _emit_user_command (T-1146 GO)

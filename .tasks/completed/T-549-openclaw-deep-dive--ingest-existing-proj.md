@@ -1,21 +1,40 @@
 ---
 id: T-549
-name: "OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings"
+name: "OpenClaw deep-dive — ingest existing project, evaluate architecture, extract
+  value, capture framework learnings"
 description: >
-  Inception: OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings
+  Inception: OpenClaw deep-dive — ingest existing project, evaluate architecture,
+  extract value, capture framework learnings
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [agents/context/check-project-boundary.sh, bin/fw]
 related_tasks: []
 created: 2026-03-23T11:32:07Z
-last_update: 2026-04-13T13:22:17Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-04-13T13:22:17Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-549: OpenClaw deep-dive — ingest existing project, evaluate architecture, extract value, capture framework learnings

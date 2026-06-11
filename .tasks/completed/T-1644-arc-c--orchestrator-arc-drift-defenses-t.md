@@ -2,19 +2,49 @@
 id: T-1644
 name: "Arc C — Orchestrator-arc drift defenses (T-1061 follow-up)"
 description: >
-  Ten absent structural defenses identified by W10 — without them new tools silently skip governance, constants drift, frame 0x8 wire format changes, task-type tags get typo'd, route-cache schema breaks restore, all undetected. Sequenced E first (durable register: open G-061 with five decay vectors), then A+C parallel (MCP-tool task_id audit in agents/audit/audit.sh + bundled regression tests: fallback chain, route_cache schema, governance frame golden, termlink list --json schema), then B/D/F (Watchtower /orchestrator blueprint; termlink spawn task-type tag-prefix validator; cross-repo fabric cards for orchestrator/router/fallback/frame). Each follow-up is small (≤4h), reversible, binary pass/fail. Source: docs/reports/T-1641-worker-10-defenses.md, docs/reports/T-1641-worker-06-directive-evidence.md.
+  Ten absent structural defenses identified by W10 — without them new tools silently
+  skip governance, constants drift, frame 0x8 wire format changes, task-type tags
+  get typo'd, route-cache schema breaks restore, all undetected. Sequenced E first
+  (durable register: open G-061 with five decay vectors), then A+C parallel (MCP-tool
+  task_id audit in agents/audit/audit.sh + bundled regression tests: fallback chain,
+  route_cache schema, governance frame golden, termlink list --json schema), then
+  B/D/F (Watchtower /orchestrator blueprint; termlink spawn task-type tag-prefix validator;
+  cross-repo fabric cards for orchestrator/router/fallback/frame). Each follow-up
+  is small (≤4h), reversible, binary pass/fail. Source: docs/reports/T-1641-worker-10-defenses.md,
+  docs/reports/T-1641-worker-06-directive-evidence.md.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
-tags: [from-T-1641, t-1061-followup, drift-defense, orchestrator, termlink, audit, test]
-components: [C-004, agents/audit/orchestrator-mcp-scan.sh, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+horizon:
+tags: [from-T-1641, t-1061-followup, drift-defense, orchestrator, termlink, 
+      audit, test]
+components: [C-004, agents/audit/orchestrator-mcp-scan.sh, 
+      web/blueprints/__init__.py, web/blueprints/orchestrator.py, 
+      web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1063, T-1064, T-1065, T-1066]
 arc_id: orchestrator-rethink
 created: 2026-05-01T11:55:00Z
-last_update: 2026-05-01T18:58:37Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T13:08:53Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=0 (no-signal); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1644: Arc C — Orchestrator-arc drift defenses (T-1061 follow-up)

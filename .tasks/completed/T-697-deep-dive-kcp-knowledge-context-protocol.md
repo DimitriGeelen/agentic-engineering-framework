@@ -2,20 +2,39 @@
 id: T-697
 name: "Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion"
 description: >
-  Path C deep-dive on github.com/Cantara/knowledge-context-protocol. T-487 researched the spec; this ingests the actual codebase under framework governance. Also serves as second Path C experiment validating the path-c-deep-dive.md template (T-696 GO).
+  Path C deep-dive on github.com/Cantara/knowledge-context-protocol. T-487 researched
+  the spec; this ingests the actual codebase under framework governance. Also serves
+  as second Path C experiment validating the path-c-deep-dive.md template (T-696 GO).
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [path-c, deep-dive, external]
 components: []
 related_tasks: [T-487, T-477, T-696]
 created: 2026-03-29T08:06:51Z
-last_update: 2026-04-13T06:23:25Z
+last_update: '2026-06-11T22:24:27Z'
 date_finished: 2026-03-29T08:56:52Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-697: Deep-dive: KCP (Knowledge Context Protocol) — Path C codebase ingestion

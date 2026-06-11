@@ -11,11 +11,13 @@ workflow_type: build
 owner: human
 horizon: next
 tags: [spawn, contract-gap]
-components: [C-004, lib/spawn.py, lib/termlink_worker.py, lib/workflow_coverage.py, tests/unit/test_spawn.py, tests/unit/test_termlink_worker.py, tests/unit/test_workflow_coverage.py]
+components: [C-004, lib/spawn.py, lib/termlink_worker.py, 
+      lib/workflow_coverage.py, tests/unit/test_spawn.py, 
+      tests/unit/test_termlink_worker.py, tests/unit/test_workflow_coverage.py]
 related_tasks: [T-1773, T-1775]
 arc_id: orchestrator-rethink
 created: 2026-05-09T21:18:59Z
-last_update: 2026-05-31T09:26:42Z
+last_update: '2026-06-11T22:23:25Z'
 date_finished: 2026-05-31T09:26:42Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -61,6 +63,23 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
       D4=2 (body:env-class-handled); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

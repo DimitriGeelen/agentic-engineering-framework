@@ -1,20 +1,40 @@
 ---
 id: T-1723
-name: "T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc renderers"
+name: "T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc
+  renderers"
 description: >
-  T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc renderers
+  T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc
+  renderers
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [ux, watchtower]
 components: [web/blueprints/core.py, web/blueprints/inception.py]
 related_tasks: [T-1722, T-1721, T-1575, T-633]
 arc_id: orchestrator-rethink
 created: 2026-05-04T19:10:31Z
-last_update: 2026-05-04T19:14:11Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-04T19:14:11Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1723: T-1722 follow-up: extend artefact linkifier to inception._md and core project-doc renderers

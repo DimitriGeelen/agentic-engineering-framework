@@ -1,21 +1,40 @@
 ---
 id: T-828
-name: "Input/output token breakdown — enrich handover frontmatter and timeline with per-category token counts"
+name: "Input/output token breakdown — enrich handover frontmatter and timeline with
+  per-category token counts"
 description: >
-  Inception: Input/output token breakdown — enrich handover frontmatter and timeline with per-category token counts
+  Inception: Input/output token breakdown — enrich handover frontmatter and timeline
+  with per-category token counts
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-03T23:47:45Z
-last_update: 2026-04-13T06:23:28Z
+last_update: '2026-06-11T22:24:30Z'
 date_finished: 2026-04-03T23:53:36Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-828: Input/output token breakdown — enrich handover frontmatter and timeline with per-category token counts

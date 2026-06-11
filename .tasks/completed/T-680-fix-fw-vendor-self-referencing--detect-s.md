@@ -2,18 +2,37 @@
 id: T-680
 name: "Fix fw vendor self-referencing — detect source==target and pull from upstream"
 description: >
-  F-3: When .agentic-framework/ already exists, fw vendor copies from itself to itself (source==target), making it a no-op. Should detect this and pull from the framework source that invoked the command. Discovered during T-679 Path C experiment.
+  F-3: When .agentic-framework/ already exists, fw vendor copies from itself to itself
+  (source==target), making it a no-op. Should detect this and pull from the framework
+  source that invoked the command. Discovered during T-679 Path C experiment.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-28T21:37:27Z
-last_update: 2026-03-28T22:35:52Z
+last_update: '2026-06-11T22:24:27Z'
 date_finished: 2026-03-28T22:35:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-680: Fix fw vendor self-referencing — detect source==target and pull from upstream

@@ -2,7 +2,9 @@
 id: T-018
 name: Enrich low-quality episodic summaries
 description: >
-  Seven episodic summaries are empty templates: T-001, T-006, T-007, T-008, T-009, T-010, T-011. Each has empty summary, empty successes, empty decisions. Enrich with actual context by reading source task files and writing meaningful summaries.
+  Seven episodic summaries are empty templates: T-001, T-006, T-007, T-008, T-009,
+  T-010, T-011. Each has empty summary, empty successes, empty decisions. Enrich with
+  actual context by reading source task files and writing meaningful summaries.
 status: work-completed
 workflow_type: build
 owner: human
@@ -12,8 +14,25 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T21:21:40Z
-last_update: 2026-02-13T21:58:00Z
+last_update: '2026-06-11T22:23:35Z'
 date_finished: 2026-02-13T22:02:06Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-018: Enrich low-quality episodic summaries

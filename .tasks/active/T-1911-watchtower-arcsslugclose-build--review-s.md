@@ -21,7 +21,7 @@ components: [web/blueprints/arcs.py, web/templates/arc_close.html]
 related_tasks: [T-1902, T-1671, T-1668, T-1626, T-1909, T-1910]
 arc_id: arc-005
 created: 2026-05-18T21:30:46Z
-last_update: '2026-05-28T22:54:10Z'
+last_update: '2026-06-11T22:23:26Z'
 date_finished: 2026-05-20T14:33:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -48,6 +48,23 @@ bvp_scores_proposed:
     rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=2 
       (body:default-change); D4=2 (body:env-class-handled); F1=0 (no-signal); 
       F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

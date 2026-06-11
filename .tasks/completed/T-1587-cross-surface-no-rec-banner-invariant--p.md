@@ -1,19 +1,39 @@
 ---
 id: T-1587
-name: "Cross-surface NO-REC banner invariant — pin recommendation-block[data-verdict=NO-REC] on /tasks and /review (T-1586 follow-up)"
+name: "Cross-surface NO-REC banner invariant — pin recommendation-block[data-verdict=NO-REC]
+  on /tasks and /review (T-1586 follow-up)"
 description: >
-  Extend T-1586's cross-surface parity test with NO-REC banner assertions. T-1576/T-1577/T-1578 shipped NO-REC distinction across queue+landing+review; this pins the per-task structural rendering on /tasks and /review for any task without a Recommendation block.
+  Extend T-1586's cross-surface parity test with NO-REC banner assertions. T-1576/T-1577/T-1578
+  shipped NO-REC distinction across queue+landing+review; this pins the per-task structural
+  rendering on /tasks and /review for any task without a Recommendation block.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [test, invariant, regression, cross-surface, no-rec]
 components: [tests/playwright/test_cross_surface_parity.py]
 related_tasks: [T-1576, T-1577, T-1578, T-1586]
 created: 2026-04-28T16:24:05Z
-last_update: 2026-04-28T16:27:51Z
+last_update: '2026-06-11T22:23:52Z'
 date_finished: 2026-04-28T16:27:51Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1587: Cross-surface NO-REC banner invariant — pin recommendation-block[data-verdict=NO-REC] on /tasks and /review (T-1586 follow-up)

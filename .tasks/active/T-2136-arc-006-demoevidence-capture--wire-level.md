@@ -1,6 +1,7 @@
 ---
 id: T-2136
-name: "arc-006 demo_evidence capture — wire-level artefact for value-prioritisation headline_mechanic"
+name: "arc-006 demo_evidence capture — wire-level artefact for value-prioritisation
+  headline_mechanic"
 description: >
   arc-006 demo_evidence capture — wire-level artefact for value-prioritisation headline_mechanic
 
@@ -8,7 +9,8 @@ status: work-completed
 workflow_type: build
 owner: human
 horizon: now
-tags: [arc-006, demo-evidence, value-prioritisation, arc-closure-prep, G-062-prevention]
+tags: [arc-006, demo-evidence, value-prioritisation, arc-closure-prep, 
+      G-062-prevention]
 components: [docs/reports/value-prioritisation-demo/README.md]
 related_tasks: [T-1915, T-1957, T-1960, T-1961, T-1928, T-1929, T-1930]
 arc_id: value-prioritisation
@@ -17,7 +19,7 @@ arc_id: value-prioritisation
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-31T09:00:49Z
-last_update: 2026-05-31T09:09:15Z
+last_update: '2026-06-11T22:23:32Z'
 date_finished: 2026-05-31T09:09:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -29,6 +31,24 @@ date_finished: 2026-05-31T09:09:15Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2136: arc-006 demo_evidence capture — wire-level artefact for value-prioritisation headline_mechanic

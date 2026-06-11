@@ -2,18 +2,39 @@
 id: T-422
 name: "Fix blueprint circular dep and complete gaps.yaml migration cleanup (A5+A6)"
 description: >
-  A5: Move load_scan() from cockpit.py to shared.py — core.py imports from cockpit creating circular dep risk. A6: Remove gaps.yaml fallback in core.py:42-44 and discovery.py — T-397 migrated to concerns.yaml but fallback code remains. Add audit rule to fail if old gaps.yaml/risks.yaml exist. Directive score: A5=7, A6=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  A5: Move load_scan() from cockpit.py to shared.py — core.py imports from cockpit
+  creating circular dep risk. A6: Remove gaps.yaml fallback in core.py:42-44 and discovery.py
+  — T-397 migrated to concerns.yaml but fallback code remains. Add audit rule to fail
+  if old gaps.yaml/risks.yaml exist. Directive score: A5=7, A6=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: [refactoring, python, watchtower, reliability]
-components: [C-004, web/blueprints/cockpit.py, web/blueprints/core.py, web/shared.py]
+components: [C-004, web/blueprints/cockpit.py, web/blueprints/core.py, 
+      web/shared.py]
 related_tasks: [T-397, T-411]
 created: 2026-03-10T21:03:22Z
-last_update: 2026-03-11T08:01:51Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-11T08:01:51Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-422: Fix blueprint circular dep and complete gaps.yaml migration cleanup (A5+A6)

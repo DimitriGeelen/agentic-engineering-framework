@@ -2,24 +2,51 @@
 id: T-1727
 name: "v0.5 build — escalation-scan with LLM augmentation (T-1726 GO conditional)"
 description: >
-  v0.5 build — implements T-1726 GO decision: escalation-scan v0 augmented with LLM verdict
-  per candidate, dispatched via orchestrator (worker_kind=ollama-loop default + cloud fallback,
-  cost-capped). Wires fw resolver dispatch into oe-daily cron, captures outcomes via T-1697
-  back-prop hook, surfaces dispatches on /orchestrator. Closes G-064 (orchestrator first real
+  v0.5 build — implements T-1726 GO decision: escalation-scan v0 augmented with LLM
+  verdict
+  per candidate, dispatched via orchestrator (worker_kind=ollama-loop default + cloud
+  fallback,
+  cost-capped). Wires fw resolver dispatch into oe-daily cron, captures outcomes via
+  T-1697
+  back-prop hook, surfaces dispatches on /orchestrator. Closes G-064 (orchestrator
+  first real
   consumer) via T-1688 option 4. Now ready: T-1726 GO recorded; T-1741/T-1743 confirmed
-  prompt-triage NO-GO; T-1744 inception names this task as the live G-064 mitigation path.
+  prompt-triage NO-GO; T-1744 inception names this task as the live G-064 mitigation
+  path.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [T-1726-implementation, G-064-closure-pilot, ready-on-t-1744-go]
-components: [prompts/default.md, prompts/escalation-triage.md, tests/playwright/test_escalation_v05.py, tests/unit/escalation_scan_v05.bats, tools/escalation-scan-v0.5.py, web/blueprints/escalation.py, web/templates/escalation_drift.html]
+components: [prompts/default.md, prompts/escalation-triage.md, 
+      tests/playwright/test_escalation_v05.py, 
+      tests/unit/escalation_scan_v05.bats, tools/escalation-scan-v0.5.py, 
+      web/blueprints/escalation.py, web/templates/escalation_drift.html]
 related_tasks: [T-1688, T-1726, T-1741, T-1743, T-1744, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-04T21:39:23Z
-last_update: 2026-05-05T16:50:22Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T16:50:22Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 5
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 3
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=5
+      (body:new-collab-mode); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=3 (body:typed-io-or-gate); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1727: v0.5 build — escalation-scan with LLM augmentation (T-1726 GO conditional)

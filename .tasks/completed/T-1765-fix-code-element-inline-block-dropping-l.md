@@ -1,19 +1,40 @@
 ---
 id: T-1765
-name: "fix code element inline-block dropping long paths to next line — visual cutoff in prose contexts"
+name: "fix code element inline-block dropping long paths to next line — visual cutoff
+  in prose contexts"
 description: >
-  fix code element inline-block dropping long paths to next line — visual cutoff in prose contexts
+  fix code element inline-block dropping long paths to next line — visual cutoff in
+  prose contexts
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: ["bug", "render", "css", "human-review-surface", "ui-visual"]
-components: [lib/render_surface.sh, tests/playwright/test_review_code_inline.py, web/templates/base.html, web/templates/review.html]
+components: [lib/render_surface.sh, tests/playwright/test_review_code_inline.py, 
+      web/templates/base.html, web/templates/review.html]
 related_tasks: ["T-1575", "T-1722", "T-1762", "T-1763", "T-1764"]
 created: 2026-05-06T11:20:05Z
-last_update: 2026-05-16T07:07:48Z
+last_update: '2026-06-11T22:23:58Z'
 date_finished: 2026-05-16T07:07:48Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1765: fix code element inline-block dropping long paths to next line — visual cutoff in prose contexts

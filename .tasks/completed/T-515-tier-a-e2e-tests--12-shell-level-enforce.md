@@ -2,18 +2,38 @@
 id: T-515
 name: "Tier A E2E tests — 12 shell-level enforcement gate tests"
 description: >
-  Write 12 test scripts in tests/e2e/tier-a/ covering: task gate (A1-A2), commit hook (A3-A4), Tier 0 (A5-A6), budget gate (A7-A8), inception gate (A9), verification gate (A10), fw doctor (A11), audit (A12). Zero API cost. From T-513 inception build task 2.
+  Write 12 test scripts in tests/e2e/tier-a/ covering: task gate (A1-A2), commit hook
+  (A3-A4), Tier 0 (A5-A6), budget gate (A7-A8), inception gate (A9), verification
+  gate (A10), fw doctor (A11), audit (A12). Zero API cost. From T-513 inception build
+  task 2.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [testing, termlink, D2]
 components: []
 related_tasks: []
 created: 2026-03-17T21:10:29Z
-last_update: 2026-03-17T21:57:42Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-17T21:57:42Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-515: Tier A E2E tests — 12 shell-level enforcement gate tests

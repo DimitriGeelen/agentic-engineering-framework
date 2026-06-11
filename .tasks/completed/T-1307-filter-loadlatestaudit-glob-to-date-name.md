@@ -2,18 +2,38 @@
 id: T-1307
 name: "Filter load_latest_audit glob to date-named YAML only"
 description: >
-  Change web/shared.py::load_latest_audit glob from '*.yaml' to '[0-9][0-9][0-9][0-9]-*.yaml' so stray non-date YAML in .context/audits/ (e.g. future upgrades.yaml) can't be mis-selected by reverse-alphabetical sort. Sibling to T-1305 inception (pickup from termlink T-1128).
+  Change web/shared.py::load_latest_audit glob from '*.yaml' to '[0-9][0-9][0-9][0-9]-*.yaml'
+  so stray non-date YAML in .context/audits/ (e.g. future upgrades.yaml) can't be
+  mis-selected by reverse-alphabetical sort. Sibling to T-1305 inception (pickup from
+  termlink T-1128).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T19:49:34Z
-last_update: 2026-04-18T19:51:27Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-04-18T19:51:27Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1307: Filter load_latest_audit glob to date-named YAML only

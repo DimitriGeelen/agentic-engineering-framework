@@ -1,19 +1,38 @@
 ---
 id: T-1341
-name: "L-019 follow-up: raise FW_HANDOVER_PUSH_TIMEOUT default from 15s to 60s (pre-push audit consumes ~10s)"
+name: "L-019 follow-up: raise FW_HANDOVER_PUSH_TIMEOUT default from 15s to 60s (pre-push
+  audit consumes ~10s)"
 description: >
-  L-019 follow-up: raise FW_HANDOVER_PUSH_TIMEOUT default from 15s to 60s (pre-push audit consumes ~10s)
+  L-019 follow-up: raise FW_HANDOVER_PUSH_TIMEOUT default from 15s to 60s (pre-push
+  audit consumes ~10s)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-19T17:56:42Z
-last_update: 2026-04-19T17:58:30Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-04-19T17:58:30Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 4
+      D3: 2
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=4 (body:fw-audit-or-doctor); D3=2 
+      (body:default-change); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1341: L-019 follow-up: raise FW_HANDOVER_PUSH_TIMEOUT default from 15s to 60s (pre-push audit consumes ~10s)

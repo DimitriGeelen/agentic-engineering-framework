@@ -1,21 +1,46 @@
 ---
 id: T-1660
-name: "G-015 Option B: PreToolUse hook to redirect /tmp/fw-agent-*.md sub-agent writes through fw bus post"
+name: "G-015 Option B: PreToolUse hook to redirect /tmp/fw-agent-*.md sub-agent writes
+  through fw bus post"
 description: >
-  Companion task to T-1645 GO Option A. T-1645 narrowed T-1061's G-015 claim to 'partial mitigation' via the bus protocol convention. Structural closure requires a PreToolUse hook that intercepts Write/Bash tool calls touching /tmp/fw-agent-*.md and redirects them through 'fw bus post --task T-XXX'. Three feasibility paths to evaluate: (a) FUSE overlay on /tmp/, (b) Linux user namespace + bind-mount, (c) Claude Code PreToolUse hook reading the Write file_path and rejecting if it matches /tmp/fw-agent-*.md (with hint to use fw bus post). Path (c) is by far the cheapest. Inception first, design afterwards. Closes G-015 fully when shipped.
+  Companion task to T-1645 GO Option A. T-1645 narrowed T-1061's G-015 claim to 'partial
+  mitigation' via the bus protocol convention. Structural closure requires a PreToolUse
+  hook that intercepts Write/Bash tool calls touching /tmp/fw-agent-*.md and redirects
+  them through 'fw bus post --task T-XXX'. Three feasibility paths to evaluate: (a)
+  FUSE overlay on /tmp/, (b) Linux user namespace + bind-mount, (c) Claude Code PreToolUse
+  hook reading the Write file_path and rejecting if it matches /tmp/fw-agent-*.md
+  (with hint to use fw bus post). Path (c) is by far the cheapest. Inception first,
+  design afterwards. Closes G-015 fully when shipped.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-05-01T17:18:21Z
-last_update: 2026-05-02T08:39:55Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-02T08:39:55Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1660: G-015 Option B: PreToolUse hook to redirect /tmp/fw-agent-*.md sub-agent writes through fw bus post

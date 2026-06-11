@@ -2,18 +2,38 @@
 id: T-777
 name: "Observation inbox migration — process pickup-051-vinix24 through pipeline"
 description: >
-  Convert existing pickup-051-vinix24 observations (6 issues, 2 HIGH bugs) into pickup envelope YAML files and process through the pipeline. Day-1 validation that the pipeline works with real data.
+  Convert existing pickup-051-vinix24 observations (6 issues, 2 HIGH bugs) into pickup
+  envelope YAML files and process through the pipeline. Day-1 validation that the
+  pipeline works with real data.
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-772, T-774, T-776]
 created: 2026-03-30T13:21:55Z
-last_update: 2026-03-30T14:16:35Z
+last_update: '2026-06-11T22:24:29Z'
 date_finished: 2026-03-30T14:16:35Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=4 (body:cross-machine); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-777: Observation inbox migration — process pickup-051-vinix24 through pipeline

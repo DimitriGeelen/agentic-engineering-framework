@@ -2,18 +2,39 @@
 id: T-610
 name: "Parse Agent/Human AC sections + confidence markers in Watchtower"
 description: >
-  Extend Watchtower task detail page to distinguish Agent vs Human ACs. Parse ### Agent and ### Human section headers in AC parsing. Parse [RUBBER-STAMP] and [REVIEW] confidence markers. Render Human ACs as structured cards (steps/expected/if-not) instead of raw text. Disable agent-side checkbox toggling for Human ACs. Prerequisite for T-608 Watchtower approval surface.
+  Extend Watchtower task detail page to distinguish Agent vs Human ACs. Parse ###
+  Agent and ### Human section headers in AC parsing. Parse [RUBBER-STAMP] and [REVIEW]
+  confidence markers. Render Human ACs as structured cards (steps/expected/if-not)
+  instead of raw text. Disable agent-side checkbox toggling for Human ACs. Prerequisite
+  for T-608 Watchtower approval surface.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: [T-608, T-611, T-612]
 created: 2026-03-25T16:51:14Z
-last_update: 2026-04-13T06:28:07Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-27T18:31:55Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-610: Parse Agent/Human AC sections + confidence markers in Watchtower

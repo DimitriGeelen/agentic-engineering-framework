@@ -1,21 +1,45 @@
 ---
 id: T-1443
-name: "Independent reviewer agent — TermLink-dispatched, evidence-gated, can auto-tick Agent ACs"
+name: "Independent reviewer agent — TermLink-dispatched, evidence-gated, can auto-tick
+  Agent ACs"
 description: >
-  Inception I-B (linked to T-1442 I-A). Design an independent reviewer agent dispatched via TermLink (own profile in agents/reviewer/) that reads recorded evidence (per I-A) and auto-ticks Agent ACs when evidence is sufficient, escalating to human only for genuine judgment ACs. Authority is mechanical-tick only; sovereignty preserved. Open: scope (generic vs per-tier), trigger (work-completed gate vs button), profile location/shape, output protocol (bus? task body? Watchtower?).
+  Inception I-B (linked to T-1442 I-A). Design an independent reviewer agent dispatched
+  via TermLink (own profile in agents/reviewer/) that reads recorded evidence (per
+  I-A) and auto-ticks Agent ACs when evidence is sufficient, escalating to human only
+  for genuine judgment ACs. Authority is mechanical-tick only; sovereignty preserved.
+  Open: scope (generic vs per-tier), trigger (work-completed gate vs button), profile
+  location/shape, output protocol (bus? task body? Watchtower?).
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
-tags: [governance, reviewer-agent, termlink-dispatch, friction-reduction, slash-command, orchestrator-routing]
+horizon:
+tags: [governance, reviewer-agent, termlink-dispatch, friction-reduction, 
+      slash-command, orchestrator-routing]
 components: []
 related_tasks: [T-1442, T-1064, T-1065]
 created: 2026-04-25T06:35:13Z
-last_update: 2026-04-25T09:59:48Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-25T09:59:48Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1443: Independent reviewer agent — TermLink-dispatched, evidence-gated, can auto-tick Agent ACs

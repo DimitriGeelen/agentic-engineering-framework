@@ -1,20 +1,44 @@
 ---
 id: T-1656
-name: "G-062 mechanism #2: fw audit arc-completion check — N child tasks under one parent reach work-completed within M days"
+name: "G-062 mechanism #2: fw audit arc-completion check — N child tasks under one
+  parent reach work-completed within M days"
 description: >
-  Detective half of G-062 closure. When N child tasks (default 3?) under one parent task reach work-completed within M days (default 7?), agents/audit/audit.sh emits a check requiring evidence that the arc-parent has (a) behavioral verification artefact, (b) policy-defaults audit, (c) framework-side use evidence. Exit code 1 (warn) if missing. Pairs with mechanism #3 (fw task review extra gate). T-1655 shipped behavioral mechanism #1 (CLAUDE.md text); structural enforcement still pending.
+  Detective half of G-062 closure. When N child tasks (default 3?) under one parent
+  task reach work-completed within M days (default 7?), agents/audit/audit.sh emits
+  a check requiring evidence that the arc-parent has (a) behavioral verification artefact,
+  (b) policy-defaults audit, (c) framework-side use evidence. Exit code 1 (warn) if
+  missing. Pairs with mechanism #3 (fw task review extra gate). T-1655 shipped behavioral
+  mechanism #1 (CLAUDE.md text); structural enforcement still pending.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-01T16:39:00Z
-last_update: 2026-05-01T19:12:40Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-01T19:12:40Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=1 (body/components:prompt-incidental); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1656: G-062 mechanism #2: fw audit arc-completion check — N child tasks under one parent reach work-completed within M days

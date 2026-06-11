@@ -7,14 +7,34 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [T-679-family, structural-gate, T-1715-implementation]
-components: [C-004, agents/task-create/update-task.sh, bin/fw, lib/evolution_log.sh, lib/inception_recommendation.sh, lib/inception.sh, tests/unit/evolution_log_gate.bats]
+components: [C-004, agents/task-create/update-task.sh, bin/fw, 
+      lib/evolution_log.sh, lib/inception_recommendation.sh, lib/inception.sh, 
+      tests/unit/evolution_log_gate.bats]
 related_tasks: [T-679, T-1259, T-1260, T-1715, T-1668, T-1671]
 arc_id: orchestrator-rethink
 created: 2026-05-04T10:47:53Z
-last_update: 2026-05-04T21:56:52Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-04T21:56:22Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 1
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=1
+      (body:error-msg-improved); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1716: Filing-time --recommendation gate on fw inception start (T-1715 implementation)

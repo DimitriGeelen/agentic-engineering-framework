@@ -1,19 +1,40 @@
 ---
 id: T-1095
-name: "fw doctor: hoist version-pin drift check from lib/upgrade.sh as a read-only doctor check (G-026)"
+name: "fw doctor: hoist version-pin drift check from lib/upgrade.sh as a read-only
+  doctor check (G-026)"
 description: >
-  Add a fw doctor check that runs the same version-pin detection as fw upgrade (e.g. 'Pinned: vdev (behind v2.46.alpha)') without applying changes. Surfaces stale pins between upgrade runs. Origin: G-026. Trigger: cross-session ring20-dashboard onboarding incident 2026-04-11.
+  Add a fw doctor check that runs the same version-pin detection as fw upgrade (e.g.
+  'Pinned: vdev (behind v2.46.alpha)') without applying changes. Surfaces stale pins
+  between upgrade runs. Origin: G-026. Trigger: cross-session ring20-dashboard onboarding
+  incident 2026-04-11.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1093]
 created: 2026-04-11T12:15:36Z
-last_update: 2026-04-12T07:20:54Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-12T07:20:54Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1095: fw doctor: hoist version-pin drift check from lib/upgrade.sh as a read-only doctor check (G-026)

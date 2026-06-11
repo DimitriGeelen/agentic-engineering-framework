@@ -1,13 +1,21 @@
 ---
 id: T-2156
-name: "T-1985 auto-tick HTML-comment FP: _parse_agent_acs skips bullets inside markdown comments (OBS-047)"
+name: "T-1985 auto-tick HTML-comment FP: _parse_agent_acs skips bullets inside markdown
+  comments (OBS-047)"
 description: >
-  Parser-level fix for the T-1985 auto-tick FP class surfaced under T-2155: when an author drops the template's '### Human' heading but keeps its HTML-commented documentation block, the '- [ ] [REVIEWER] Block message names both bypass mechanisms' example bullet at template line 67 gets parsed as a real '### Agent' AC and auto-ticked on PASS. 9+ closed tasks already carry the FP-ticked line. Fix: track <!--/--> state in _parse_agent_acs and skip lines inside, plus same skip in detect_ac_evidence_untick and any other AC-iterating detectors that need it. HV-LC, arc-003 reviewer governance, direct continuation of T-2155.
+  Parser-level fix for the T-1985 auto-tick FP class surfaced under T-2155: when an
+  author drops the template's '### Human' heading but keeps its HTML-commented documentation
+  block, the '- [ ] [REVIEWER] Block message names both bypass mechanisms' example
+  bullet at template line 67 gets parsed as a real '### Agent' AC and auto-ticked
+  on PASS. 9+ closed tasks already carry the FP-ticked line. Fix: track <!--/--> state
+  in _parse_agent_acs and skip lines inside, plus same skip in detect_ac_evidence_untick
+  and any other AC-iterating detectors that need it. HV-LC, arc-003 reviewer governance,
+  direct continuation of T-2155.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [arc-003, reviewer, auto-tick-fp, t-2155-followup]
 components: []
 related_tasks: []
@@ -16,7 +24,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T09:06:12Z
-last_update: 2026-06-01T09:11:36Z
+last_update: '2026-06-11T22:24:09Z'
 date_finished: 2026-06-01T09:11:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +36,24 @@ date_finished: 2026-06-01T09:11:36Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2156: T-1985 auto-tick HTML-comment FP: _parse_agent_acs skips bullets inside markdown comments (OBS-047)

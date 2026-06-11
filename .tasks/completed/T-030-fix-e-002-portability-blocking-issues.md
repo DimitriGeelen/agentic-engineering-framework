@@ -2,7 +2,9 @@
 id: T-030
 name: Fix E-002 portability blocking issues
 description: >
-  Address 4 BLOCKING portability issues from E-002: (1) Create provider-neutral FRAMEWORK.md alongside CLAUDE.md, (2) Add multi-provider guidance to AGENT.md files, (3) Specify provider-agnostic synthesis interface for handover, (4) Make owner field provider-neutral.
+  Address 4 BLOCKING portability issues from E-002: (1) Create provider-neutral FRAMEWORK.md
+  alongside CLAUDE.md, (2) Add multi-provider guidance to AGENT.md files, (3) Specify
+  provider-agnostic synthesis interface for handover, (4) Make owner field provider-neutral.
 status: work-completed
 workflow_type: refactor
 owner: claude-code
@@ -12,8 +14,25 @@ agents:
   primary:
   supporting: []
 created: 2026-02-13T23:01:30Z
-last_update: 2026-02-13T23:01:30Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-13T23:03:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-030: Fix E-002 portability blocking issues

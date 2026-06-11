@@ -1,20 +1,47 @@
 ---
 id: T-1743
-name: "Spike D off-ramp: re-score 4-model results as binary GO / non-GO (drop DEFER class)"
+name: "Spike D off-ramp: re-score 4-model results as binary GO / non-GO (drop DEFER
+  class)"
 description: >
-  DEFER is the consistently weakest class across all 4 models in Spike D (T-1741). Truth distribution is 5/50 DEFER (10%), making it under-represented. Cheapest off-ramp: re-score existing .context/spikes/T-1741-{qwen3,qwen35,gemma4}-results.jsonl + .context/spikes/T-1740-results.jsonl by collapsing DEFER labels into NO-GO and re-running T-1741-metrics.py with a binary CLASSES tuple. ~5 min, no new inference. If binary accuracy clears 90% on any model, T-1737 unblocks with a binary classifier (still meaningful: GO unblocks the prompt, non-GO triggers framework intervention). Filed captured/later per L-349 — preferred first off-ramp per T-1741 Recommendation.
+  DEFER is the consistently weakest class across all 4 models in Spike D (T-1741).
+  Truth distribution is 5/50 DEFER (10%), making it under-represented. Cheapest off-ramp:
+  re-score existing .context/spikes/T-1741-{qwen3,qwen35,gemma4}-results.jsonl + .context/spikes/T-1740-results.jsonl
+  by collapsing DEFER labels into NO-GO and re-running T-1741-metrics.py with a binary
+  CLASSES tuple. ~5 min, no new inference. If binary accuracy clears 90% on any model,
+  T-1737 unblocks with a binary classifier (still meaningful: GO unblocks the prompt,
+  non-GO triggers framework intervention). Filed captured/later per L-349 — preferred
+  first off-ramp per T-1741 Recommendation.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [spike, follow-up]
 components: []
 related_tasks: [T-1741, T-1737]
 arc_id: orchestrator-rethink
 created: 2026-05-05T09:25:32Z
-last_update: 2026-05-05T09:30:01Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T09:30:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1743: Spike D off-ramp: re-score 4-model results as binary GO / non-GO (drop DEFER class)

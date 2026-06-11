@@ -1,19 +1,42 @@
 ---
 id: T-986
-name: "Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement, risks, cron, core"
+name: "Playwright tests for untested Watchtower pages — discovery, metrics, quality,
+  enforcement, risks, cron, core"
 description: >
-  Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement, risks, cron, core
+  Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement,
+  risks, cron, core
 
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [tests/playwright/test_core.py, tests/playwright/test_cron.py, tests/playwright/test_discovery.py, tests/playwright/test_enforcement.py, tests/playwright/test_metrics.py, tests/playwright/test_quality.py, tests/playwright/test_risks.py]
+components: [tests/playwright/test_core.py, tests/playwright/test_cron.py, 
+      tests/playwright/test_discovery.py, tests/playwright/test_enforcement.py, 
+      tests/playwright/test_metrics.py, tests/playwright/test_quality.py, 
+      tests/playwright/test_risks.py]
 related_tasks: []
 created: 2026-04-07T07:58:32Z
-last_update: 2026-04-07T08:02:11Z
+last_update: '2026-06-11T22:24:34Z'
 date_finished: 2026-04-07T08:02:11Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-986: Playwright tests for untested Watchtower pages — discovery, metrics, quality, enforcement, risks, cron, core

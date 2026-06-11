@@ -7,13 +7,32 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [tests/playwright/conftest.py, tests/playwright/test_core.py, tests/playwright/test_health.py, web/app.py, web/blueprints/cockpit.py, web/templates/cockpit.html]
+components: [tests/playwright/conftest.py, tests/playwright/test_core.py, 
+      tests/playwright/test_health.py, web/app.py, web/blueprints/cockpit.py, 
+      web/templates/cockpit.html]
 related_tasks: []
 created: 2026-04-07T10:17:31Z
-last_update: 2026-04-07T10:24:46Z
+last_update: '2026-06-11T22:23:37Z'
 date_finished: 2026-04-07T10:24:46Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1010: Add test health widget to Watchtower landing page — show test counts from /health

@@ -1,19 +1,46 @@
 ---
 id: T-1832
-name: "lib/inception.sh Python decide-handler silently no-ops when '## Decision' heading absent — Layer 2 of T-1831 RCA"
+name: "lib/inception.sh Python decide-handler silently no-ops when '## Decision' heading
+  absent — Layer 2 of T-1831 RCA"
 description: >
-  Found in S-2026-0514 session via errors 4+5. lib/inception.sh:531-582 Python script searches for line.strip() == '## Decision' (singular). If absent (custom-body inception tasks, or template variants using '## Decisions' plural only), decision_written stays False, no Decision block is written, but inception.sh returns 0. Caller's tick + Updates-entry steps run normally. Then update-task.sh's check_inception_decision at line 366 (looking for '**Decision**:' line-start) fails with 'no decision recorded' — error appears AFTER decision was 'successfully recorded' per the CLI. Same class as T-1828: gate measures proxy that diverged from reality. Fix: Python should ERROR if heading absent (or auto-create the section before writing). Sibling to T-1831 Layer 1 (AC checkbox).
+  Found in S-2026-0514 session via errors 4+5. lib/inception.sh:531-582 Python script
+  searches for line.strip() == '## Decision' (singular). If absent (custom-body inception
+  tasks, or template variants using '## Decisions' plural only), decision_written
+  stays False, no Decision block is written, but inception.sh returns 0. Caller's
+  tick + Updates-entry steps run normally. Then update-task.sh's check_inception_decision
+  at line 366 (looking for '**Decision**:' line-start) fails with 'no decision recorded'
+  — error appears AFTER decision was 'successfully recorded' per the CLI. Same class
+  as T-1828: gate measures proxy that diverged from reality. Fix: Python should ERROR
+  if heading absent (or auto-create the section before writing). Sibling to T-1831
+  Layer 1 (AC checkbox).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, lib-inception]
 components: [lib/inception.sh]
 related_tasks: [T-1828, T-1829, T-1830, T-1831]
 created: 2026-05-14T20:13:43Z
-last_update: 2026-05-14T20:49:40Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T20:49:40Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1832: lib/inception.sh Python decide-handler silently no-ops when '## Decision' heading absent — Layer 2 of T-1831 RCA

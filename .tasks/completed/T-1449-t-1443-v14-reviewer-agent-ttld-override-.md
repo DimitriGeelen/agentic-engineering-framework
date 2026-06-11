@@ -1,19 +1,44 @@
 ---
 id: T-1449
-name: "T-1443-v1.4 Reviewer agent: TTL'd override mechanism (suppress known false-positive findings)"
+name: "T-1443-v1.4 Reviewer agent: TTL'd override mechanism (suppress known false-positive
+  findings)"
 description: >
-  Fifth micro-version of T-1443 reviewer per D-009. Adds per-(task, pattern, ac_index) overrides with TTL — humans/authorized agents waive a known false-positive finding for a bounded window. Reviewer filters findings through active overrides; suppressed findings emit override_applied events to feedback-stream.yaml for audit. fw reviewer override add/list/prune/remove subcommands. Out of scope: Pass A drift (v1.5), pattern catalogue expansion (v3+).
+  Fifth micro-version of T-1443 reviewer per D-009. Adds per-(task, pattern, ac_index)
+  overrides with TTL — humans/authorized agents waive a known false-positive finding
+  for a bounded window. Reviewer filters findings through active overrides; suppressed
+  findings emit override_applied events to feedback-stream.yaml for audit. fw reviewer
+  override add/list/prune/remove subcommands. Out of scope: Pass A drift (v1.5), pattern
+  catalogue expansion (v3+).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [reviewer-agent, override-mechanism, ttl, antifragile, v1.4]
-components: [bin/fw, lib/reviewer/override_cli.py, lib/reviewer/overrides.py, tests/unit/test_reviewer_overrides.py]
+components: [bin/fw, lib/reviewer/override_cli.py, lib/reviewer/overrides.py, 
+      tests/unit/test_reviewer_overrides.py]
 related_tasks: [T-1443, T-1445, T-1446, T-1447, T-1448]
 created: 2026-04-25T11:14:00Z
-last_update: 2026-04-29T08:39:48Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-25T18:17:51Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1449: T-1443-v1.4 Reviewer agent: TTL'd override mechanism

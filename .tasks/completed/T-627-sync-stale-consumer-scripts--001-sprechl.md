@@ -2,18 +2,36 @@
 id: T-627
 name: "Sync stale consumer scripts — 001-sprechloop and 050-email-archive"
 description: >
-  Run fw upgrade on 001-sprechloop (1 stale script) and 050-email-archive (3 stale scripts) to bring them current. Part of T-625.
+  Run fw upgrade on 001-sprechloop (1 stale script) and 050-email-archive (3 stale
+  scripts) to bring them current. Part of T-625.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [lib/upgrade.sh]
 related_tasks: [T-625, T-626]
 created: 2026-03-26T15:59:42Z
-last_update: 2026-03-26T21:19:33Z
+last_update: '2026-06-11T22:24:26Z'
 date_finished: 2026-03-26T16:02:55Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-627: Sync stale consumer scripts — 001-sprechloop and 050-email-archive

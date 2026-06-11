@@ -2,12 +2,17 @@
 id: T-2322
 name: "Fix budget-gate.sh compact_boundary reset (T-1088 sidecar-degradation defense-in-depth)"
 description: >
-  Inbound bug report from proxmox-ring20-management framework-agent (commit bea5c9bc): when .session-start-ts sidecar is missing/stale/empty, the T-1088 filter degrades to no-op and pre-compact 290K-token usage entries surface as 'critical' post-/compact. Apply 3-line patch to slow-path Python loop in agents/context/budget-gate.sh at line 207 — detect type=system + subtype=compact_boundary JSON event, reset t=0, continue. Complements (not replaces) T-1088 sidecar filter.
+  Inbound bug report from proxmox-ring20-management framework-agent (commit bea5c9bc):
+  when .session-start-ts sidecar is missing/stale/empty, the T-1088 filter degrades
+  to no-op and pre-compact 290K-token usage entries surface as 'critical' post-/compact.
+  Apply 3-line patch to slow-path Python loop in agents/context/budget-gate.sh at
+  line 207 — detect type=system + subtype=compact_boundary JSON event, reset t=0,
+  continue. Complements (not replaces) T-1088 sidecar filter.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, context, budget-gate, inbound, proxmox-ring20]
 components: []
 related_tasks: []
@@ -22,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-10T19:50:28Z
-last_update: 2026-06-10T19:55:02Z
+last_update: '2026-06-11T22:24:15Z'
 date_finished: 2026-06-10T19:55:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -34,6 +39,24 @@ date_finished: 2026-06-10T19:55:02Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 5
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=5 (body:silent-class-removed); 
+      D3=2 (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2322: Fix budget-gate.sh compact_boundary reset (T-1088 sidecar-degradation defense-in-depth)

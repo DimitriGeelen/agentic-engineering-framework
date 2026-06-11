@@ -1,19 +1,44 @@
 ---
 id: T-1658
-name: "Vendored .agentic-framework/ drift sync — pull T-1620, T-1626/T-1627/T-1628, T-1542 fixes from upstream lib/ into .agentic-framework/lib/"
+name: "Vendored .agentic-framework/ drift sync — pull T-1620, T-1626/T-1627/T-1628,
+  T-1542 fixes from upstream lib/ into .agentic-framework/lib/"
 description: >
-  The framework dogfoods consumer mode via .agentic-framework/. Upstream lib/inception.sh, lib/upgrade.sh, lib/verify-acs.sh have been changed since last vendor (e50b96bc2 'T-012: Resync vendored .agentic-framework/'). New file lib/hook-telemetry.sh (T-1628) is missing from the vendored copy. Hygiene resync — run fw vendor or copy 4 files manually. Low-risk; reversible.
+  The framework dogfoods consumer mode via .agentic-framework/. Upstream lib/inception.sh,
+  lib/upgrade.sh, lib/verify-acs.sh have been changed since last vendor (e50b96bc2
+  'T-012: Resync vendored .agentic-framework/'). New file lib/hook-telemetry.sh (T-1628)
+  is missing from the vendored copy. Hygiene resync — run fw vendor or copy 4 files
+  manually. Low-risk; reversible.
 
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: null
+horizon:
 tags: [hygiene, vendoring, dogfood, framework-self-fix]
-components: [.agentic-framework/lib/inception.sh, .agentic-framework/lib/upgrade.sh, .agentic-framework/lib/verify-acs.sh, .agentic-framework/lib/hook-telemetry.sh]
+components: [.agentic-framework/lib/inception.sh, 
+      .agentic-framework/lib/upgrade.sh, .agentic-framework/lib/verify-acs.sh, 
+      .agentic-framework/lib/hook-telemetry.sh]
 related_tasks: [T-1620, T-1626, T-1627, T-1628, T-1542, T-012]
 created: 2026-05-01T16:39:49Z
-last_update: 2026-05-01T16:48:01Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-01T16:48:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1658: Vendored .agentic-framework/ drift sync — pull T-1620, T-1626/T-1627/T-1628, T-1542 fixes from upstream lib/ into .agentic-framework/lib/

@@ -1,19 +1,42 @@
 ---
 id: T-849
-name: "Fix Fabric Explorer double-refresh bug — componentData hoisting + hardcoded OpenClaw data"
+name: "Fix Fabric Explorer double-refresh bug — componentData hoisting + hardcoded
+  OpenClaw data"
 description: >
-  Fabric Explorer at /fabric/graph requires two page refreshes to render. Root cause: componentData const referenced before initialization in JS execution order. Additionally, ~100 lines of hardcoded OpenClaw project data (layers, subsystems, edges) remain from the integration (T-730). Evidence: processed pickups P-001 and P-002 from 051-vinix24 OpenClaw evaluation.
+  Fabric Explorer at /fabric/graph requires two page refreshes to render. Root cause:
+  componentData const referenced before initialization in JS execution order. Additionally,
+  ~100 lines of hardcoded OpenClaw project data (layers, subsystems, edges) remain
+  from the integration (T-730). Evidence: processed pickups P-001 and P-002 from 051-vinix24
+  OpenClaw evaluation.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-04T15:03:56Z
-last_update: 2026-04-13T06:28:11Z
+last_update: '2026-06-11T22:24:30Z'
 date_finished: 2026-04-04T21:59:51Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 2
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=2 
+      (body:component-fabric-minor)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-849: Fix Fabric Explorer double-refresh bug — componentData hoisting + hardcoded OpenClaw data

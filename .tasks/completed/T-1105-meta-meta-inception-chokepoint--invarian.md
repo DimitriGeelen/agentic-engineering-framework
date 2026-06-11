@@ -1,21 +1,55 @@
 ---
 id: T-1105
-name: "META-META Inception: Chokepoint + Invariant Test discipline as framework governance rule"
+name: "META-META Inception: Chokepoint + Invariant Test discipline as framework governance
+  rule"
 description: >
-  Inception task — codify the structural-fix discipline 'fix via chokepoint + invariant test, never via manual call-site edit' as a framework governance rule (CLAUDE.md addition + downstream enforcement). This emerged from the structural-fix discipline pass on T-1100..T-1104, where every worker's RCA proposed a tactical patch (one call site, one conditional, one helper) that left the bug class free to recur. The user's question 'can we make the fix more reliable/structural?' is the meta-question this task answers permanently. Investigate: (1) extract the chokepoint+test pattern from the 5 RCAs (T-1100..T-1104) — what's common about the structural upgrades? (2) draft a CLAUDE.md governance section: 'Recurring Bug Class Fix Discipline' — when a bug recurs (3+ times) or is registered as a class (G-XXX), the fix MUST land via (a) a single chokepoint that's the only legal way to perform the operation AND (b) an invariant test that asserts no code bypasses the chokepoint; (3) define the trigger: when does the discipline apply vs when is a tactical fix sufficient? (4) integrate with existing framework process: how does this discipline land in commit gates, fw doctor, code review, task acceptance criteria? (5) recommend GO/DEFER/NO-GO with cited evidence from T-1100..T-1104. Origin: structural-fix discipline pass. Trigger: 5 same-day RCAs all proposed tactical fixes when structural was needed.
+  Inception task — codify the structural-fix discipline 'fix via chokepoint + invariant
+  test, never via manual call-site edit' as a framework governance rule (CLAUDE.md
+  addition + downstream enforcement). This emerged from the structural-fix discipline
+  pass on T-1100..T-1104, where every worker's RCA proposed a tactical patch (one
+  call site, one conditional, one helper) that left the bug class free to recur. The
+  user's question 'can we make the fix more reliable/structural?' is the meta-question
+  this task answers permanently. Investigate: (1) extract the chokepoint+test pattern
+  from the 5 RCAs (T-1100..T-1104) — what's common about the structural upgrades?
+  (2) draft a CLAUDE.md governance section: 'Recurring Bug Class Fix Discipline' —
+  when a bug recurs (3+ times) or is registered as a class (G-XXX), the fix MUST land
+  via (a) a single chokepoint that's the only legal way to perform the operation AND
+  (b) an invariant test that asserts no code bypasses the chokepoint; (3) define the
+  trigger: when does the discipline apply vs when is a tactical fix sufficient? (4)
+  integrate with existing framework process: how does this discipline land in commit
+  gates, fw doctor, code review, task acceptance criteria? (5) recommend GO/DEFER/NO-GO
+  with cited evidence from T-1100..T-1104. Origin: structural-fix discipline pass.
+  Trigger: 5 same-day RCAs all proposed tactical fixes when structural was needed.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1100, T-1101, T-1102, T-1103, T-1104, T-1093]
 created: 2026-04-11T13:11:13Z
-last_update: 2026-04-13T06:23:16Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-12T09:31:53Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1105: META-META Inception: Chokepoint + Invariant Test discipline as framework governance rule

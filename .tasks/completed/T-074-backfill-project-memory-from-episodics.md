@@ -2,13 +2,38 @@
 id: T-074
 name: Backfill project memory from episodics
 description: >
-  Project memory only references 35% of tasks (25/71). Promote knowledge from enriched episodics to project memory files. DECISIONS: Promote 7+ from episodics (Flask+htmx T-045, files-as-truth T-045, 4-status lifecycle T-051, blueprints T-054, PreToolUse T-063, fw work-on T-064, plugin 3-tier T-067). PATTERNS: Add plugin authority failure FP-005 (T-061), graduated enforcement success SP-004, experiment protocol workflow WP-002. PRACTICES: Add vendor-deps, defense-in-depth, experiment-driven-validation. LEARNINGS: Backfill from T-022/T-024/T-025 experiments. See docs/reports/2026-02-15-context-memory-audit.md Section 3-4.
+  Project memory only references 35% of tasks (25/71). Promote knowledge from enriched
+  episodics to project memory files. DECISIONS: Promote 7+ from episodics (Flask+htmx
+  T-045, files-as-truth T-045, 4-status lifecycle T-051, blueprints T-054, PreToolUse
+  T-063, fw work-on T-064, plugin 3-tier T-067). PATTERNS: Add plugin authority failure
+  FP-005 (T-061), graduated enforcement success SP-004, experiment protocol workflow
+  WP-002. PRACTICES: Add vendor-deps, defense-in-depth, experiment-driven-validation.
+  LEARNINGS: Backfill from T-022/T-024/T-025 experiments. See docs/reports/2026-02-15-context-memory-audit.md
+  Section 3-4.
 status: work-completed
 workflow_type: build
 owner: agent
 created: 2026-02-15T16:56:22Z
-last_update: 2026-02-16T19:35:14Z
+last_update: '2026-06-11T22:23:37Z'
 date_finished: 2026-02-16T19:35:14Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-074: Backfill project memory from episodics

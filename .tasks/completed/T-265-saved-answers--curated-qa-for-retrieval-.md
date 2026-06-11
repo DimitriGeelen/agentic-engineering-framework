@@ -2,18 +2,41 @@
 id: T-265
 name: "Saved answers — curated Q&A for retrieval flywheel"
 description: >
-  Add 'Save Answer' button to Q&A UI. Saved answers stored as .context/qa/YYYY-MM-DD-{slug}.md with question, answer, sources, date. Files get indexed by existing BM25+vector search infrastructure on next rebuild. Creates a knowledge flywheel: good answers become first-class retrieval sources for future queries. Implementation: POST /search/save endpoint (~20 lines in discovery.py), save-answer JS function (~15 lines in search.html), .context/qa/ directory. Ref: conversation Q3 in docs/reports/T-261-qa-phase2-research.md §Dialogue Log Q3. Predecessor: T-256 (ask endpoint), T-257 (frontend).
+  Add 'Save Answer' button to Q&A UI. Saved answers stored as .context/qa/YYYY-MM-DD-{slug}.md
+  with question, answer, sources, date. Files get indexed by existing BM25+vector
+  search infrastructure on next rebuild. Creates a knowledge flywheel: good answers
+  become first-class retrieval sources for future queries. Implementation: POST /search/save
+  endpoint (~20 lines in discovery.py), save-answer JS function (~15 lines in search.html),
+  .context/qa/ directory. Ref: conversation Q3 in docs/reports/T-261-qa-phase2-research.md
+  §Dialogue Log Q3. Predecessor: T-256 (ask endpoint), T-257 (frontend).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [qa, knowledge, search]
 components: [C-003, web/embeddings.py, web/search.py, web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:37:11Z
-last_update: 2026-02-25T20:37:12Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-24T10:09:38Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-265: Saved answers — curated Q&A for retrieval flywheel

@@ -1,21 +1,45 @@
 ---
 id: T-1451
-name: "Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere agent surfaces work for human"
+name: "Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere
+  agent surfaces work for human"
 description: >
-  Audit every code path + agent output template where the agent hands work to the human (Human ACs pending, inception decision, Tier 0 approval, gap acknowledgement, observation triage, pickup processing, pending-update reminders, handover Suggested-First-Action). Each surface should render the corresponding Watchtower URL clickably (e.g. $URL/review/T-XXX, $URL/inception/T-XXX, $URL/approvals, $URL/reviewer/overrides). Triggered by user feedback 2026-04-25 — agent listed task IDs only, friction caused human to ask for links explicitly. Goal: zero-friction review queue.
+  Audit every code path + agent output template where the agent hands work to the
+  human (Human ACs pending, inception decision, Tier 0 approval, gap acknowledgement,
+  observation triage, pickup processing, pending-update reminders, handover Suggested-First-Action).
+  Each surface should render the corresponding Watchtower URL clickably (e.g. $URL/review/T-XXX,
+  $URL/inception/T-XXX, $URL/approvals, $URL/reviewer/overrides). Triggered by user
+  feedback 2026-04-25 — agent listed task IDs only, friction caused human to ask for
+  links explicitly. Goal: zero-friction review queue.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-25T11:29:09Z
-last_update: 2026-04-25T14:01:37Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-25T14:01:37Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1451: Sweep all human-handoff touchpoints — render clickable Watchtower URLs everywhere agent surfaces work for human

@@ -1,19 +1,41 @@
 ---
 id: T-560
-name: "Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently"
+name: "Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not
+  firing consistently"
 description: >
-  User reports being able to write files without being prompted to create tasks. This happens all the time on Linux. Previously on macOS the hook worked. Investigate: is check-active-task.sh firing? Is there a platform difference? Check hook registration, PATH resolution, and Claude Code hook execution on Linux.
+  User reports being able to write files without being prompted to create tasks. This
+  happens all the time on Linux. Previously on macOS the hook worked. Investigate:
+  is check-active-task.sh firing? Is there a platform difference? Check hook registration,
+  PATH resolution, and Claude Code hook execution on Linux.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [agents/context/check-active-task.sh, agents/context/lib/focus.sh]
 related_tasks: []
 created: 2026-03-23T17:00:05Z
-last_update: 2026-03-26T15:47:29Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-03-24T10:52:42Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-560: Investigate task hook reliability on Linux — PreToolUse Write/Edit gate not firing consistently

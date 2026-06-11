@@ -1,19 +1,38 @@
 ---
 id: T-1862
-name: "audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses — split classes"
+name: "audit gate-bypass WARN conflates --switch-focus drift overrides with safety
+  bypasses — split classes"
 description: >
-  audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses — split classes
+  audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses
+  — split classes
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, fix, audit, signal-noise-ratio, follow-up]
 components: [agents/audit/audit.sh]
 related_tasks: [T-1573, T-1730, T-1861]
 created: 2026-05-15T18:38:17Z
-last_update: 2026-05-15T18:38:17Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-15T20:45:18+02:00
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1862: audit gate-bypass WARN conflates --switch-focus drift overrides with safety bypasses — split classes

@@ -2,20 +2,46 @@
 id: T-307
 name: "Inception: hybrid onboarding test (deterministic + AI interpretation)"
 description: >
-  A pure deterministic script cannot interpret nuanced onboarding results (expected day-1 noise vs real failures, CLAUDE.md quality, UX clarity). Need hybrid approach: deterministic scaffolding (bash runs steps, captures output) + stochastic reasoning (AI interprets results). Follows CLI/Agent/Skill hierarchy: (1) CLI fw test-onboarding runs mechanical steps, (2) agents/onboarding-test/ with bash script + AGENT.md intelligence, (3) /test-onboarding skill for in-session use. This inception scopes: what checkpoints, what interpretation criteria, how to structure the AGENT.md, what 'good' looks like at each step. Evidence: T-294 live simulation found 9 issues that no deterministic script would have caught. L-029: dry-running onboarding catches bugs unit tests miss. Source: T-294 dialogue.
+  A pure deterministic script cannot interpret nuanced onboarding results (expected
+  day-1 noise vs real failures, CLAUDE.md quality, UX clarity). Need hybrid approach:
+  deterministic scaffolding (bash runs steps, captures output) + stochastic reasoning
+  (AI interprets results). Follows CLI/Agent/Skill hierarchy: (1) CLI fw test-onboarding
+  runs mechanical steps, (2) agents/onboarding-test/ with bash script + AGENT.md intelligence,
+  (3) /test-onboarding skill for in-session use. This inception scopes: what checkpoints,
+  what interpretation criteria, how to structure the AGENT.md, what 'good' looks like
+  at each step. Evidence: T-294 live simulation found 9 issues that no deterministic
+  script would have caught. L-029: dry-running onboarding catches bugs unit tests
+  miss. Source: T-294 dialogue.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-294]
 created: 2026-03-04T17:15:20Z
-last_update: 2026-03-08T20:49:25Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-08T20:49:25Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-307: Inception: hybrid onboarding test (deterministic + AI interpretation)

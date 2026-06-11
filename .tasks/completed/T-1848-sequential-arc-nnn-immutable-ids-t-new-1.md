@@ -2,19 +2,42 @@
 id: T-1848
 name: "Sequential arc-NNN immutable IDs (T-NEW-1.5)"
 description: >
-  Introduce arc-NNN sequential ID scheme on .context/arcs/*.yaml: id field with arc-NNN value, counter persisted, 4 existing arcs migrated to arc-001..004, arc-grooming gets arc-005, Watchtower URL routing accepts slug + ID. Encodes D-Immutability in lib/arc.sh comments (no renumber, no reuse). Foundation slice — T-NEW-2 (arc_id validation) needs stable target. Anchor: T-1846 inception decide-go GO.
+  Introduce arc-NNN sequential ID scheme on .context/arcs/*.yaml: id field with arc-NNN
+  value, counter persisted, 4 existing arcs migrated to arc-001..004, arc-grooming
+  gets arc-005, Watchtower URL routing accepts slug + ID. Encodes D-Immutability in
+  lib/arc.sh comments (no renumber, no reuse). Foundation slice — T-NEW-2 (arc_id
+  validation) needs stable target. Anchor: T-1846 inception decide-go GO.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [build, schema-migration, arc-system, immutability, T-NEW-1.5]
-components: [C-004, lib/arc.sh, tests/unit/arc_dual_identity_verbs.bats, web/blueprints/arcs.py, web/blueprints/core.py]
+components: [C-004, lib/arc.sh, tests/unit/arc_dual_identity_verbs.bats, 
+      web/blueprints/arcs.py, web/blueprints/core.py]
 related_tasks: [T-1846, T-1847, T-1653, T-1661]
 arc_id: arc-grooming
 created: 2026-05-15T14:51:15Z
-last_update: 2026-05-17T22:39:26Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-16T09:08:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 5
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=5 (body:silent-class-removed); 
+      D3=3 (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1848: Sequential arc-NNN immutable IDs (T-NEW-1.5)

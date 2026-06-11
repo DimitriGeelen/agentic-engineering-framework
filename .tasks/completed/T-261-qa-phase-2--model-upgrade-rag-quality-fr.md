@@ -2,7 +2,8 @@
 id: T-261
 name: "Q&A Phase 2 — model upgrade, RAG quality, framework integration, saved answers"
 description: >
-  Inception: Investigate and plan improvements to the Q&A system shipped in Phase 1
+  Inception: Investigate and plan improvements to the Q&A system shipped in Phase
+  1
   (T-254..T-259). Five research agents explored: model selection for 16GB VRAM,
   RAG quality techniques, thinking/reasoning models, framework self-enhancement
   via Q&A, and UX/architecture improvements. Research complete, GO decision pending.
@@ -10,15 +11,33 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [qa, llm, rag, search, watchtower]
-components: [web/ask.py, web/embeddings.py, web/blueprints/discovery.py, web/templates/search.html]
+components: [web/ask.py, web/embeddings.py, web/blueprints/discovery.py, 
+      web/templates/search.html]
 related_tasks: [T-254, T-255, T-256, T-257, T-258, T-259]
 created: 2026-02-24T08:33:55Z
-last_update: 2026-02-25T20:37:38Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-25T20:37:38Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-261: Q&A Phase 2 — model upgrade, RAG quality, framework integration, saved answers

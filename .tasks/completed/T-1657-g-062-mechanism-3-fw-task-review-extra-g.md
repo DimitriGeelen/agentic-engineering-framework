@@ -1,20 +1,43 @@
 ---
 id: T-1657
-name: "G-062 mechanism #3: fw task review extra gate — interactive three-question check for arc-parent tasks"
+name: "G-062 mechanism #3: fw task review extra gate — interactive three-question
+  check for arc-parent tasks"
 description: >
-  Preventive half of G-062 closure. fw task review for arc-parent tasks (umbrella tasks tagged arc-parent or having related_tasks > 3 children) emits an interactive prompt asking the three questions from CLAUDE.md §Arc Completion Discipline — wire-level observation, constants audit, framework-side use evidence — before opening the Watchtower review URL. Pairs with mechanism #2. T-1655 shipped mechanism #1 (text).
+  Preventive half of G-062 closure. fw task review for arc-parent tasks (umbrella
+  tasks tagged arc-parent or having related_tasks > 3 children) emits an interactive
+  prompt asking the three questions from CLAUDE.md §Arc Completion Discipline — wire-level
+  observation, constants audit, framework-side use evidence — before opening the Watchtower
+  review URL. Pairs with mechanism #2. T-1655 shipped mechanism #1 (text).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [C-004, tests/unit/test_audit_arc_completion.py]
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-01T16:39:23Z
-last_update: 2026-05-01T19:17:07Z
+last_update: '2026-06-11T22:23:55Z'
 date_finished: 2026-05-01T19:17:07Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=1 (body/components:prompt-incidental); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1657: G-062 mechanism #3: fw task review extra gate — interactive three-question check for arc-parent tasks

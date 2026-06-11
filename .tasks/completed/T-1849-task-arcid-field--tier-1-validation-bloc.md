@@ -2,19 +2,43 @@
 id: T-1849
 name: "Task arc_id field + Tier-1 validation block (T-NEW-2)"
 description: >
-  Add arc_id: optional frontmatter field to task schema (template + CLAUDE.md doc); PreToolUse hook refuses task save when arc_id is set + non-empty + does not resolve to .context/arcs/*.yaml (Tier-1 block, Q1 answer). Empty arc_id passes through. Predicated on D-Immutability: valid refs stay valid forever; no hostage state possible. Deps: T-1848 (T-NEW-1.5). Anchor: T-1846.
+  Add arc_id: optional frontmatter field to task schema (template + CLAUDE.md doc);
+  PreToolUse hook refuses task save when arc_id is set + non-empty + does not resolve
+  to .context/arcs/*.yaml (Tier-1 block, Q1 answer). Empty arc_id passes through.
+  Predicated on D-Immutability: valid refs stay valid forever; no hostage state possible.
+  Deps: T-1848 (T-NEW-1.5). Anchor: T-1846.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [build, schema-migration, task-system, validation, T-NEW-2]
-components: [C-004, agents/context/check-arc-id.sh, C-009, lib/arc.sh, tests/unit/arc_id_validation_guard.bats, web/blueprints/arcs.py, web/blueprints/core.py]
+components: [C-004, agents/context/check-arc-id.sh, C-009, lib/arc.sh, 
+      tests/unit/arc_id_validation_guard.bats, web/blueprints/arcs.py, 
+      web/blueprints/core.py]
 related_tasks: [T-1846, T-1847, T-1848]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:45Z
-last_update: 2026-05-16T09:19:36Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-16T09:19:36Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1849: Task arc_id field + Tier-1 validation block (T-NEW-2)

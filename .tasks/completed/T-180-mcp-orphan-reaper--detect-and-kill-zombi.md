@@ -2,17 +2,40 @@
 id: T-180
 name: "MCP orphan reaper — detect and kill zombie MCP processes"
 description: >
-  When Claude Code sessions crash or end, MCP server processes (playwright-mcp, context7-mcp) become orphaned (PPID=1), accumulating ~50-80MB each. Evidence: 12 orphans found consuming ~600MB (sprechloop session 2026-02-18). Research complete: docs/reports/experiment-zombie-mcp-orphan-reaper.md covers detection (PGID-leader-alive check), cleanup approaches, safety, implementation sketch. Source brief: /opt/001-sprechloop/.context/briefs/framework-zombie-mcp-cleanup.md. Deliverables: (1) reap script in framework repo, (2) fw doctor warns about orphans, (3) crontab integration via fw init.
+  When Claude Code sessions crash or end, MCP server processes (playwright-mcp, context7-mcp)
+  become orphaned (PPID=1), accumulating ~50-80MB each. Evidence: 12 orphans found
+  consuming ~600MB (sprechloop session 2026-02-18). Research complete: docs/reports/experiment-zombie-mcp-orphan-reaper.md
+  covers detection (PGID-leader-alive check), cleanup approaches, safety, implementation
+  sketch. Source brief: /opt/001-sprechloop/.context/briefs/framework-zombie-mcp-cleanup.md.
+  Deliverables: (1) reap script in framework repo, (2) fw doctor warns about orphans,
+  (3) crontab integration via fw init.
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-18T20:06:33Z
-last_update: 2026-02-19T07:47:18Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-02-19T07:47:18Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-180: MCP orphan reaper — detect and kill zombie MCP processes

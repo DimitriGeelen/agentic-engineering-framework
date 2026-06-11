@@ -1,20 +1,40 @@
 ---
 id: T-1919
-name: "BVP T-NEW-4: fw bvp read-only CLI verbs (rank, detail T-<id>, arcs, --quadrant filter)"
+name: "BVP T-NEW-4: fw bvp read-only CLI verbs (rank, detail T-<id>, arcs, --quadrant
+  filter)"
 description: >
-  Read-only `fw bvp` CLI surface — computes BVP scores live from policy weights + task scores (D9 reactive). Composes 3-signal cost (blast_radius/tier/effort) per F8-mechanic and Q2 default.
+  Read-only `fw bvp` CLI surface — computes BVP scores live from policy weights +
+  task scores (D9 reactive). Composes 3-signal cost (blast_radius/tier/effort) per
+  F8-mechanic and Q2 default.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-4, cli]
 components: [012-ArcSystem.md, lib/arc.sh]
 related_tasks: [T-1915, T-1916, T-1918]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:30:38Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T07:30:38Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1919: BVP T-NEW-4 — `fw bvp` read-only CLI verbs

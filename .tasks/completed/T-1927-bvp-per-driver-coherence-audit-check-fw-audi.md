@@ -1,20 +1,41 @@
 ---
 id: T-1927
-name: "BVP T-NEW-11: per-driver coherence audit check (fw audit warns when arc claims D_n≥4 but ≥70% constituents score D_n≤1)"
+name: "BVP T-NEW-11: per-driver coherence audit check (fw audit warns when arc claims
+  D_n≥4 but ≥70% constituents score D_n≤1)"
 description: >
-  Audit-side coherence check. Per-driver, not aggregated (D3 rejected aggregation). Non-blocking — fw audit exit code unaffected. Thresholds (4/70%/1) configurable. R2 detection — rubric bias surfaces here.
+  Audit-side coherence check. Per-driver, not aggregated (D3 rejected aggregation).
+  Non-blocking — fw audit exit code unaffected. Thresholds (4/70%/1) configurable.
+  R2 detection — rubric bias surfaces here.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-11, audit]
 components: [lib/arc.sh]
 related_tasks: [T-1915, T-1916, T-1924, T-1850]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T08:38:12Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T08:38:12Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1927: BVP T-NEW-11 — per-driver coherence audit

@@ -1,19 +1,38 @@
 ---
 id: T-1318
-name: "Fix _load_subsystems KeyError on subsystems.yaml entries with name only (T-1314 GO)"
+name: "Fix _load_subsystems KeyError on subsystems.yaml entries with name only (T-1314
+  GO)"
 description: >
-  Fix _load_subsystems KeyError on subsystems.yaml entries with name only (T-1314 GO)
+  Fix _load_subsystems KeyError on subsystems.yaml entries with name only (T-1314
+  GO)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-18T21:16:06Z
-last_update: 2026-04-18T22:00:18Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-04-18T22:00:18Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1318: Fix _load_subsystems KeyError on subsystems.yaml entries with name only (T-1314 GO)

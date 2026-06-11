@@ -2,18 +2,41 @@
 id: T-850
 name: "Fix session metrics — per-session deltas instead of cumulative transcript analysis"
 description: >
-  Session quality metrics (CPT, error rate, edit bursts, productive ratio) are identical across handovers because session-metrics.sh always analyzes the most recent JSONL file cumulatively. After /compact, multiple handovers within the same Claude Code session all read the same 7551-turn transcript. Fix: track turn offset at session start, compute deltas per handover window.
+  Session quality metrics (CPT, error rate, edit bursts, productive ratio) are identical
+  across handovers because session-metrics.sh always analyzes the most recent JSONL
+  file cumulatively. After /compact, multiple handovers within the same Claude Code
+  session all read the same 7551-turn transcript. Fix: track turn offset at session
+  start, compute deltas per handover window.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [agents/context/lib/init.sh, agents/context/session-metrics.sh, agents/handover/handover.sh]
+components: [agents/context/lib/init.sh, agents/context/session-metrics.sh, 
+      agents/handover/handover.sh]
 related_tasks: []
 created: 2026-04-04T15:04:18Z
-last_update: 2026-04-04T22:02:56Z
+last_update: '2026-06-11T22:24:30Z'
 date_finished: 2026-04-04T22:02:56Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-850: Fix session metrics — per-session deltas instead of cumulative transcript analysis

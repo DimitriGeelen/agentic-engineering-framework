@@ -1,19 +1,46 @@
 ---
 id: T-1837
-name: "Auto-tick '[REVIEW] Decide...' Human ACs on fw inception decide — pattern coverage gap (cluster Layer 1.5)"
+name: "Auto-tick '[REVIEW] Decide...' Human ACs on fw inception decide — pattern coverage
+  gap (cluster Layer 1.5)"
 description: >
-  tick_inception_decide_acs PATTERNS only match '[REVIEW]...go/no-go decision' literal phrasing. Caught in S-2026-0514 cluster: T-1829/T-1830/T-1831 Human ACs read '[REVIEW] Decide go/no-go AND which approach', '[REVIEW] Decide GO/NO-GO/DEFER on the umbrella...', '[REVIEW] Decide on prevention pattern (Layer 1)' — wording diverged from regex. User decided all three via Watchtower; decisions recorded in task body as **Decision**: GO; but the AC checkboxes did NOT auto-tick → tasks stuck in partial-complete asking for re-review. Same antifragility class as T-1828/T-1832 (gate measures proxy diverged from reality). Fix: broaden regex to '\[REVIEW\].*\bdecide\b' (case-insensitive) — for inception tasks, '[REVIEW] Decide ...' canonically IS the go/no-go authorization. Add bats test pinning all three real-world wordings.
+  tick_inception_decide_acs PATTERNS only match '[REVIEW]...go/no-go decision' literal
+  phrasing. Caught in S-2026-0514 cluster: T-1829/T-1830/T-1831 Human ACs read '[REVIEW]
+  Decide go/no-go AND which approach', '[REVIEW] Decide GO/NO-GO/DEFER on the umbrella...',
+  '[REVIEW] Decide on prevention pattern (Layer 1)' — wording diverged from regex.
+  User decided all three via Watchtower; decisions recorded in task body as **Decision**:
+  GO; but the AC checkboxes did NOT auto-tick → tasks stuck in partial-complete asking
+  for re-review. Same antifragility class as T-1828/T-1832 (gate measures proxy diverged
+  from reality). Fix: broaden regex to '\[REVIEW\].*\bdecide\b' (case-insensitive)
+  — for inception tasks, '[REVIEW] Decide ...' canonically IS the go/no-go authorization.
+  Add bats test pinning all three real-world wordings.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade-incident-2026-05-14, gate-vs-content-drift, ac-discipline, bug]
 components: [lib/inception.sh]
 related_tasks: []
 created: 2026-05-14T21:14:36Z
-last_update: 2026-05-14T21:16:57Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T21:16:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1837: Auto-tick '[REVIEW] Decide...' Human ACs on fw inception decide — pattern coverage gap (cluster Layer 1.5)

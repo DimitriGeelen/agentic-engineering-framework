@@ -2,18 +2,38 @@
 id: T-499
 name: "fw update for vendored projects — pull upstream into .agentic-framework/"
 description: >
-  Create/update fw update command to: fetch latest framework from upstream repo (GitHub/OneDev), diff against local .agentic-framework/, report changes (dry-run), apply update (overwrite plain copy), preserve VERSION file. Human-initiated only, agent can suggest. From T-482 GO.
+  Create/update fw update command to: fetch latest framework from upstream repo (GitHub/OneDev),
+  diff against local .agentic-framework/, report changes (dry-run), apply update (overwrite
+  plain copy), preserve VERSION file. Human-initiated only, agent can suggest. From
+  T-482 GO.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [portability, isolation]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T14:01:20Z
-last_update: 2026-03-23T11:04:35Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-15T20:52:05Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-499: fw update for vendored projects — pull upstream into .agentic-framework/

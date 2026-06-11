@@ -4,22 +4,40 @@ name: "Testing methodology: TermLink-driven Claude Code E2E framework validation
 description: >
   Design a testing methodology and step-by-step workflow that uses TermLink to spawn
   and orchestrate Claude Code sessions for automated end-to-end testing of framework
-  installations. Existing tests (bats, fw self-test, fw doctor) validate shell mechanics —
+  installations. Existing tests (bats, fw self-test, fw doctor) validate shell mechanics
+  —
   this validates the full agent experience: does Claude Code, governed by the framework,
   actually work correctly through task lifecycle, hook enforcement, and session management?
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [testing, termlink, e2e, quality, D2]
 components: [agents/termlink/termlink.sh, bin/fw]
 related_tasks: [T-491, T-492, T-502, T-503, T-473, T-476]
 created: 2026-03-17T20:26:00Z
-last_update: 2026-03-26T21:19:18Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-17T21:09:58Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-513: Testing methodology: TermLink-driven Claude Code E2E framework validation

@@ -2,18 +2,45 @@
 id: T-247
 name: "Dispatch fabric context + auto-registration — close agent blind spots"
 description: >
-  Two related fixes for agent blind spots: (1) Update dispatch preamble (agents/dispatch/preamble.md) to include fabric awareness guidance — sub-agents should run fw fabric deps before modifying registered components. Currently dispatch preamble has zero fabric references and cross-agent awareness scores 1/10. (2) Add auto-registration of new files in post-commit hook — when git diff shows files not matching any component card, run fw fabric scan on them (advisory, not blocking). Currently new files created during tasks don't get registered until manual fw fabric register. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md §Topic 1 Gaps 3-5. Also: /tmp/fw-agent-fabric-status.md §3.4 and §3.5. Related: T-236 (blast-radius in post-commit — done, extend same hook), T-244 (pre-edit awareness — companion task).
+  Two related fixes for agent blind spots: (1) Update dispatch preamble (agents/dispatch/preamble.md)
+  to include fabric awareness guidance — sub-agents should run fw fabric deps before
+  modifying registered components. Currently dispatch preamble has zero fabric references
+  and cross-agent awareness scores 1/10. (2) Add auto-registration of new files in
+  post-commit hook — when git diff shows files not matching any component card, run
+  fw fabric scan on them (advisory, not blocking). Currently new files created during
+  tasks don't get registered until manual fw fabric register. Research: docs/reports/T-235-agent-fabric-awareness-vector-db.md
+  §Topic 1 Gaps 3-5. Also: /tmp/fw-agent-fabric-status.md §3.4 and §3.5. Related:
+  T-236 (blast-radius in post-commit — done, extend same hook), T-244 (pre-edit awareness
+  — companion task).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fabric, dispatch, auto-registration]
 components: [agents/dispatch/preamble.md, agents/git/lib/hooks.sh]
 related_tasks: []
 created: 2026-02-22T09:29:59Z
-last_update: 2026-02-22T15:07:02Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-22T15:07:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=2 (components:substrate-edit);
+      F3=1 (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-247: Dispatch fabric context + auto-registration — close agent blind spots

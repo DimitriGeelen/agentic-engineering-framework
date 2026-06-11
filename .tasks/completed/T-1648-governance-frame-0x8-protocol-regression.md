@@ -2,7 +2,8 @@
 id: T-1648
 name: "Governance frame 0x8 protocol regression test (T-1066 wire format pin)"
 description: >
-  W10 #3 — T-1066's data plane Governance frame (FrameType::Governance = 0x8) has zero
+  W10 #3 — T-1066's data plane Governance frame (FrameType::Governance = 0x8) has
+  zero
   non-test emit callers; if its byte value or payload schema changes, no production
   caller will fail loud — only the dormant subscriber's tests. This task adds a
   framework-side regression test that parses /opt/termlink/crates/termlink-protocol/src/
@@ -13,14 +14,32 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1641, t-1061-followup, drift-defense, protocol, contract, t-1066]
-components: [tests/fixtures/termlink-protocol-frame-types.json, tests/unit/test_termlink_governance_frame_contract.py]
+components: [tests/fixtures/termlink-protocol-frame-types.json, 
+      tests/unit/test_termlink_governance_frame_contract.py]
 related_tasks: [T-1641, T-1644, T-1066, T-1651, T-1652]
 arc_id: orchestrator-rethink
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T18:58:37Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T13:05:31Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1648: Governance frame 0x8 protocol regression test

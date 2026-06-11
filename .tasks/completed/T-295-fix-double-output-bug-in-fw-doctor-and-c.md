@@ -2,18 +2,39 @@
 id: T-295
 name: "Fix double output bug in fw doctor and context init"
 description: >
-  fw doctor and fw context init print all output twice. Root cause: bin/fw:1687 missing exit after do_doctor call, agents/context/context.sh:71 missing exit after do_init call. Fix: add exit $? after function calls in case blocks. Source: T-294 simulation O-004/O-006, confirmed by bug analysis agent.
+  fw doctor and fw context init print all output twice. Root cause: bin/fw:1687 missing
+  exit after do_doctor call, agents/context/context.sh:71 missing exit after do_init
+  call. Fix: add exit $? after function calls in case blocks. Source: T-294 simulation
+  O-004/O-006, confirmed by bug analysis agent.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [agents/context/lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T15:02:55Z
-last_update: 2026-03-08T19:37:26Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T18:16:58Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-295: Fix double output bug in fw doctor and context init

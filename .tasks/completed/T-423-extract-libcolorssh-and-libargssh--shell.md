@@ -2,18 +2,38 @@
 id: T-423
 name: "Extract lib/colors.sh and lib/args.sh — shell utility consolidation (S2+S4)"
 description: >
-  S2: Color variables duplicated in 19 files — extract to lib/colors.sh with TTY fallback. S4: Argument parsing duplicated in 8+ files — extract shared while-case pattern to lib/args.sh. Directive scores: S2=5, S4=6. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  S2: Color variables duplicated in 19 files — extract to lib/colors.sh with TTY fallback.
+  S4: Argument parsing duplicated in 8+ files — extract shared while-case pattern
+  to lib/args.sh. Directive scores: S2=5, S4=6. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, shell]
 components: []
 related_tasks: [T-411]
 created: 2026-03-10T21:04:04Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-11T10:11:03Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-423: Extract lib/colors.sh and lib/args.sh — shell utility consolidation (S2+S4)

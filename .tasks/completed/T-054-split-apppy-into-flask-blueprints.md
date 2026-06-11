@@ -2,13 +2,32 @@
 id: T-054
 name: Split app.py into Flask blueprints
 description: >
-  Split web/app.py (700+ lines) into Flask blueprints to avoid concurrent-modification issues and improve maintainability. Separate: core (dashboard, project docs), tasks, discovery (decisions, learnings, gaps, search), timeline, directives, API.
+  Split web/app.py (700+ lines) into Flask blueprints to avoid concurrent-modification
+  issues and improve maintainability. Separate: core (dashboard, project docs), tasks,
+  discovery (decisions, learnings, gaps, search), timeline, directives, API.
 status: work-completed
 workflow_type: refactor
 owner: claude-code
 created: 2026-02-14T13:09:05Z
-last_update: 2026-02-14T13:15:10Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-14T13:15:10Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-054: Split app.py into Flask blueprints

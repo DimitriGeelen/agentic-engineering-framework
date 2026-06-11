@@ -1,21 +1,40 @@
 ---
 id: T-1127
-name: "Pickup: U-003: send-file reports ok on hub acceptance, not delivery — silent file loss to event-only sessions (from 999-Agentic-Engineering-Framework)"
+name: "Pickup: U-003: send-file reports ok on hub acceptance, not delivery — silent
+  file loss to event-only sessions (from 999-Agentic-Engineering-Framework)"
 description: >
-  Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task T-1125. Type: bug-report.
+  Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task
+  T-1125. Type: bug-report.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [pickup, bug-report]
 components: [web/shared.py]
 related_tasks: []
 created: 2026-04-12T08:30:01Z
-last_update: 2026-04-22T05:25:38Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-22T05:25:38Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1127: Pickup: U-003: send-file reports ok on hub acceptance, not delivery — silent file loss to event-only sessions (from 999-Agentic-Engineering-Framework)

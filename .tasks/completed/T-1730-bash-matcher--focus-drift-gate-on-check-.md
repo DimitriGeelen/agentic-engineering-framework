@@ -11,14 +11,14 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [meta-rca:T-1729, structural-gate, governance-bypass-prevention]
 components: [agents/context/check-active-task.sh, C-009, lib/init.sh, 
       tests/unit/focus_drift_gate.bats]
 related_tasks: [T-1729, T-1671, T-1259]
 arc_id: orchestrator-rethink
 created: 2026-05-05T05:41:36Z
-last_update: '2026-05-19T17:56:23Z'
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T07:08:19Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:23Z'
@@ -30,6 +30,24 @@ bvp_scores_proposed:
       D4: 0
     rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
       D3=0 (no-signal); D4=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
+      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); F3=0 (no-signal); 
+      F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 

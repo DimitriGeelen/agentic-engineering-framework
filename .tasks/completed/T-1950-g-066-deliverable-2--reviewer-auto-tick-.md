@@ -11,29 +11,33 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-1985, T-1443, T-1811, T-1947]
 inception_decisions:
   - id: trigger
-    text: "Reviewer auto-tick fires whenever scan runs (writeback in same pass as verdict block)"
+    text: "Reviewer auto-tick fires whenever scan runs (writeback in same pass as
+      verdict block)"
     ships_in: deferred:T-1985
   - id: scope
-    text: "v1.0 scope — [REVIEWER]-prefixed Agent ACs ONLY (never Human ACs, never non-prefixed Agent ACs)"
+    text: "v1.0 scope — [REVIEWER]-prefixed Agent ACs ONLY (never Human ACs, never
+      non-prefixed Agent ACs)"
     ships_in: deferred:T-1985
   - id: evidence-sufficiency
-    text: "Conjunctive 5-condition: overall PASS + zero per-AC findings + AC unticked + no suppress override + prefix matches"
+    text: "Conjunctive 5-condition: overall PASS + zero per-AC findings + AC unticked
+      + no suppress override + prefix matches"
     ships_in: deferred:T-1985
   - id: sovereignty-rail
-    text: "Digest-keyed feedback-stream: one tick per (task_id, ac_index, ac_text_digest) tuple; respects human un-tick"
+    text: "Digest-keyed feedback-stream: one tick per (task_id, ac_index, ac_text_digest)
+      tuple; respects human un-tick"
     ships_in: deferred:T-1985
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-20T09:50:12Z
-last_update: 2026-05-21T21:55:22Z
+last_update: '2026-06-11T22:24:04Z'
 date_finished: 2026-05-21T21:55:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,6 +78,22 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)

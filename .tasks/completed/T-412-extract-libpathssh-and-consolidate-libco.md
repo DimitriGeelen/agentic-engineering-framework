@@ -2,18 +2,48 @@
 id: T-412
 name: "Extract lib/paths.sh and consolidate lib/compat.sh (S1+S5)"
 description: >
-  Extract duplicated path resolution (SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT) into lib/paths.sh — currently copy-pasted in 25+ files. Consolidate _sed_i compat fallback (5 files) into guaranteed lib/compat.sh sourcing. Directive score: S1=10 (highest), S5=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  Extract duplicated path resolution (SCRIPT_DIR/FRAMEWORK_ROOT/PROJECT_ROOT) into
+  lib/paths.sh — currently copy-pasted in 25+ files. Consolidate _sed_i compat fallback
+  (5 files) into guaranteed lib/compat.sh sourcing. Directive score: S1=10 (highest),
+  S5=7. Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, shell, reliability, portability]
-components: [C-004, agents/audit/plugin-audit.sh, agents/audit/self-audit.sh, C-007, agents/context/bus-handler.sh, agents/context/check-active-task.sh, C-008, agents/context/check-tier0.sh, C-001, agents/context/post-compact-resume.sh, agents/context/pre-compact.sh, agents/docgen/generate-article.sh, agents/docgen/generate-component.sh, agents/fabric/fabric.sh, agents/git/git.sh, agents/handover/handover.sh, agents/healing/healing.sh, agents/observe/observe.sh, agents/onboarding-test/test-onboarding.sh, agents/resume/resume.sh, agents/task-create/create-task.sh, agents/task-create/update-task.sh, bin/watchtower.sh, lib/ask.sh, lib/paths.sh]
+components: [C-004, agents/audit/plugin-audit.sh, agents/audit/self-audit.sh, 
+      C-007, agents/context/bus-handler.sh, agents/context/check-active-task.sh, 
+      C-008, agents/context/check-tier0.sh, C-001, 
+      agents/context/post-compact-resume.sh, agents/context/pre-compact.sh, 
+      agents/docgen/generate-article.sh, agents/docgen/generate-component.sh, 
+      agents/fabric/fabric.sh, agents/git/git.sh, agents/handover/handover.sh, 
+      agents/healing/healing.sh, agents/observe/observe.sh, 
+      agents/onboarding-test/test-onboarding.sh, agents/resume/resume.sh, 
+      agents/task-create/create-task.sh, agents/task-create/update-task.sh, 
+      bin/watchtower.sh, lib/ask.sh, lib/paths.sh]
 related_tasks: [T-406, T-411]
 created: 2026-03-10T21:03:12Z
-last_update: 2026-03-12T12:41:20Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-03-10T22:28:17Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=1 (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-412: Extract lib/paths.sh and consolidate lib/compat.sh (S1+S5)

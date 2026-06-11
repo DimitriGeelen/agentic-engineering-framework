@@ -2,15 +2,45 @@
 id: T-102
 name: Build comprehensive CLAUDE.md template for external projects
 description: >
-  The generated project CLAUDE.md (lib/init.sh generate_claude_md, ~44 lines) is a thin cheat sheet. The framework CLAUDE.md (506 lines) contains 14 governance sections critical for agent operation. An agent working on an external project gets none of: Constitutional Directives, Authority Model, Enforcement Tiers, Error Escalation Ladder, Context Budget Management (P-009), Sub-Agent Dispatch Protocol, Session Start/End Protocol, full agent command reference, Task File Format, Workflow Types, Instruction Precedence. TASK: Extract universal governance from framework CLAUDE.md into a template. Separate into: (1) universal rules (goes in every project ~350 lines), (2) framework-dev-specific (stays in framework CLAUDE.md only), (3) project-specific sections (generated per project: name, tech stack, conventions). Create lib/templates/claude-project.md as the master template. Update generate_claude_md() in lib/init.sh to use it. ACCEPTANCE: Generated CLAUDE.md includes all enforcement tiers, escalation ladder, context budget, session protocols, dispatch protocol, full fw command reference. DEPENDS ON: Nothing, parallel with T-103. Files: lib/init.sh:197-253, CLAUDE.md (source of truth).
+  The generated project CLAUDE.md (lib/init.sh generate_claude_md, ~44 lines) is a
+  thin cheat sheet. The framework CLAUDE.md (506 lines) contains 14 governance sections
+  critical for agent operation. An agent working on an external project gets none
+  of: Constitutional Directives, Authority Model, Enforcement Tiers, Error Escalation
+  Ladder, Context Budget Management (P-009), Sub-Agent Dispatch Protocol, Session
+  Start/End Protocol, full agent command reference, Task File Format, Workflow Types,
+  Instruction Precedence. TASK: Extract universal governance from framework CLAUDE.md
+  into a template. Separate into: (1) universal rules (goes in every project ~350
+  lines), (2) framework-dev-specific (stays in framework CLAUDE.md only), (3) project-specific
+  sections (generated per project: name, tech stack, conventions). Create lib/templates/claude-project.md
+  as the master template. Update generate_claude_md() in lib/init.sh to use it. ACCEPTANCE:
+  Generated CLAUDE.md includes all enforcement tiers, escalation ladder, context budget,
+  session protocols, dispatch protocol, full fw command reference. DEPENDS ON: Nothing,
+  parallel with T-103. Files: lib/init.sh:197-253, CLAUDE.md (source of truth).
 status: work-completed
 workflow_type: build
 owner: agent
 tags: [critical, fw-init, claude-md, template, external-project]
 related_tasks: []
 created: 2026-02-17T08:53:24Z
-last_update: 2026-02-17T09:44:00Z
-date_finished: null
+last_update: '2026-06-11T22:23:37Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-102: Build comprehensive CLAUDE.md template for external projects

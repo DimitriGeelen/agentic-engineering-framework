@@ -2,18 +2,40 @@
 id: T-1089
 name: "Project boundary gate mentions TermLink dispatch as cross-project escape"
 description: >
-  T-1084 follow-up: check-project-boundary.sh's BLOCKED error message tells the agent cross-project work requires human approval but doesn't show HOW. Add a pointer to 'fw termlink dispatch --project /opt/other' or direct termlink session spawn as the documented cross-project mechanism. Single-file change: agents/context/check-project-boundary.sh lines 180-195.
+  T-1084 follow-up: check-project-boundary.sh's BLOCKED error message tells the agent
+  cross-project work requires human approval but doesn't show HOW. Add a pointer to
+  'fw termlink dispatch --project /opt/other' or direct termlink session spawn as
+  the documented cross-project mechanism. Single-file change: agents/context/check-project-boundary.sh
+  lines 180-195.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T10:45:20Z
-last_update: 2026-04-11T10:46:57Z
+last_update: '2026-06-11T22:23:39Z'
 date_finished: 2026-04-11T10:46:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 4
+      D4: 4
+      F-RECALL: 0
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=4 
+      (body:framework-level-ux); D4=4 (body:cross-machine); F-RECALL=0 
+      (no-signal); F-ORCH=1 (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1089: Project boundary gate mentions TermLink dispatch as cross-project escape

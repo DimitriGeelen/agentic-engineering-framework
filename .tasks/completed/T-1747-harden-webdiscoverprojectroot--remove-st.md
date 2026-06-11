@@ -7,14 +7,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, watchtower, path-discovery]
 components: [bin/fw, tests/unit/test_project_root_discovery.py, web/shared.py]
 related_tasks: [T-1727, T-1310]
 arc_id: orchestrator-rethink
 created: 2026-05-05T17:57:51Z
-last_update: 2026-05-05T18:05:58Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T18:05:58Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1747: harden web._discover_project_root + remove stray /.framework.yaml (G-069)

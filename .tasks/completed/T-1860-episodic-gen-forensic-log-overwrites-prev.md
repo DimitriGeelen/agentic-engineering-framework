@@ -1,19 +1,44 @@
 ---
 id: T-1860
-name: "episodic-gen forensic log overwrites previous invocation — defeats T-1371/G-054 intent"
+name: "episodic-gen forensic log overwrites previous invocation — defeats T-1371/G-054
+  intent"
 description: >
-  agents/task-create/update-task.sh:1429 truncates .context/working/.last-episodic-gen.log on every invocation (single `>`). T-1371/G-054 added this log to capture forensic context for silent episodic-gen failures, but the truncation guarantees you only ever see the last (usually successful) run — meaning when the next failure occurs, the previous failure's diagnostic context is already gone. Origin: T-1859 backfilled T-1829/T-1830/T-1831 episodics; the log only contained T-1858's successful run, so the actual silent-failure context is unrecoverable.
+  agents/task-create/update-task.sh:1429 truncates .context/working/.last-episodic-gen.log
+  on every invocation (single `>`). T-1371/G-054 added this log to capture forensic
+  context for silent episodic-gen failures, but the truncation guarantees you only
+  ever see the last (usually successful) run — meaning when the next failure occurs,
+  the previous failure's diagnostic context is already gone. Origin: T-1859 backfilled
+  T-1829/T-1830/T-1831 episodics; the log only contained T-1858's successful run,
+  so the actual silent-failure context is unrecoverable.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bug, fix, forensic-logging, silent-failure, follow-up]
 components: [agents/task-create/update-task.sh]
 related_tasks: [T-1859, T-1371]
 created: 2026-05-15T18:25:00Z
-last_update: 2026-05-15T18:24:34Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-15T20:31:14+02:00
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1860: episodic-gen forensic log overwrites previous invocation — defeats T-1371/G-054 intent

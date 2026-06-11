@@ -2,18 +2,37 @@
 id: T-333
 name: "Create CONTRIBUTING.md and tag good first issues"
 description: >
-  Write CONTRIBUTING.md with: setup instructions, PR process, code style, architecture overview (500 words). Tag 5-10 existing issues/tasks as good-first-issue. Create issue templates (bug report, feature request). Ref: docs/reports/T-327-visibility-strategy.md
+  Write CONTRIBUTING.md with: setup instructions, PR process, code style, architecture
+  overview (500 words). Tag 5-10 existing issues/tasks as good-first-issue. Create
+  issue templates (bug report, feature request). Ref: docs/reports/T-327-visibility-strategy.md
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-05T01:12:44Z
-last_update: 2026-03-08T20:32:50Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-05T01:25:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-333: Create CONTRIBUTING.md and tag good first issues

@@ -2,18 +2,36 @@
 id: T-708
 name: "ntfy: lib/notify.sh — thin wrapper calling skills-manager alert dispatcher"
 description: >
-  Build lib/notify.sh that wraps skills-manager dispatch_alert. Fire-and-forget, NTFY_ENABLED opt-in, backgrounded. Related: T-707 GO.
+  Build lib/notify.sh that wraps skills-manager dispatch_alert. Fire-and-forget, NTFY_ENABLED
+  opt-in, backgrounded. Related: T-707 GO.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [ntfy, notifications]
 components: [lib/notify.sh]
 related_tasks: []
 created: 2026-03-29T11:14:11Z
-last_update: 2026-05-02T05:06:44Z
+last_update: '2026-06-11T22:24:27Z'
 date_finished: 2026-03-29T11:16:12Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-708: lib/notify.sh — thin wrapper calling skills-manager alert dispatcher

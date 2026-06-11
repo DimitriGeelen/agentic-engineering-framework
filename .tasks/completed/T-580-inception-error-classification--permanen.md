@@ -1,21 +1,51 @@
 ---
 id: T-580
-name: "Inception: Error classification — permanent vs transient separation in healing loop"
+name: "Inception: Error classification — permanent vs transient separation in healing
+  loop"
 description: >
-  OpenClaw classifies delivery errors as permanent (chat not found, bot blocked — move to failed/) vs transient (network, 5xx — retry with backoff). This prevents wasting retries on unrecoverable failures. Our healing agent classifies errors by type (code, dependency, environment, design, external) but has no permanent/transient separation — it suggests retry for ALL failures including ones that can never succeed. Investigate: add permanent/transient markers to patterns.yaml entries, healing agent should skip retry suggestions for permanent errors, auto-classify based on error pattern history (same error 3+ times = likely permanent). Research source: docs/reports/T-549-openclaw-value-extraction.md (P6: multi-provider failover with error classification), .context/working/round2-T-016.md on OpenClaw eval project (error classification section). OpenClaw source: src/delivery/delivery-queue.ts (permanent error detection), src/agents/auth-profiles.ts (billing/auth error classification for provider rotation). Related: T-562 (safety guardrails), agents/healing/ (our healing loop implementation).
+  OpenClaw classifies delivery errors as permanent (chat not found, bot blocked —
+  move to failed/) vs transient (network, 5xx — retry with backoff). This prevents
+  wasting retries on unrecoverable failures. Our healing agent classifies errors by
+  type (code, dependency, environment, design, external) but has no permanent/transient
+  separation — it suggests retry for ALL failures including ones that can never succeed.
+  Investigate: add permanent/transient markers to patterns.yaml entries, healing agent
+  should skip retry suggestions for permanent errors, auto-classify based on error
+  pattern history (same error 3+ times = likely permanent). Research source: docs/reports/T-549-openclaw-value-extraction.md
+  (P6: multi-provider failover with error classification), .context/working/round2-T-016.md
+  on OpenClaw eval project (error classification section). OpenClaw source: src/delivery/delivery-queue.ts
+  (permanent error detection), src/agents/auth-profiles.ts (billing/auth error classification
+  for provider rotation). Related: T-562 (safety guardrails), agents/healing/ (our
+  healing loop implementation).
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T21:09:57Z
-last_update: 2026-03-28T09:31:57Z
+last_update: '2026-06-11T22:24:25Z'
 date_finished: 2026-03-28T09:31:57Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-580: Inception: Error classification — permanent vs transient separation in healing loop

@@ -1,19 +1,41 @@
 ---
 id: T-1703
-name: "v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90% real tool-use"
+name: "v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to
+  90% real tool-use"
 description: >
-  v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90% real tool-use
+  v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90%
+  real tool-use
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [v2-prep]
-components: [agents/termlink/termlink.sh, tools/t1700-ollama-harness.sh, tools/t1703-probe-matrix.sh]
+components: [agents/termlink/termlink.sh, tools/t1700-ollama-harness.sh, 
+      tools/t1703-probe-matrix.sh]
 related_tasks: []
 created: 2026-05-03T19:33:36Z
-last_update: 2026-05-03T20:00:15Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-03T20:00:15Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=2 (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); 
+      F3=1 (body/components:prompt-incidental); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1703: v2 probe: gemma4 + qwen3.5 against curated tool catalogue — cheapest path to 90% real tool-use

@@ -2,18 +2,40 @@
 id: T-227
 name: "Fix fabric page — subsystem cards link to themselves, dropdown filters broken"
 description: >
-  Two bugs on /fabric page: (1) Subsystem cards always show all 12 tiles even when filtered, linking back to the same page — causes visual flicker/confusion. Fix: hide cards grid when filter active, show focused subsystem header instead. (2) Dropdown filter names (subsystem_filter, type_filter) don't match route params (subsystem, type) — dropdown filtering completely broken. Fix: rename select names to match route.
+  Two bugs on /fabric page: (1) Subsystem cards always show all 12 tiles even when
+  filtered, linking back to the same page — causes visual flicker/confusion. Fix:
+  hide cards grid when filter active, show focused subsystem header instead. (2) Dropdown
+  filter names (subsystem_filter, type_filter) don't match route params (subsystem,
+  type) — dropdown filtering completely broken. Fix: rename select names to match
+  route.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [web/templates/base.html, web/templates/fabric.html]
 related_tasks: []
 created: 2026-02-21T13:14:36Z
-last_update: 2026-02-22T08:46:14Z
+last_update: '2026-06-11T22:24:13Z'
 date_finished: 2026-02-21T13:20:58Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 2
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=2 (body:component-fabric-minor)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-227: Fix fabric page — subsystem cards link to themselves, dropdown filters broken

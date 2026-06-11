@@ -2,19 +2,41 @@
 id: T-1852
 name: "Lifecycle state machine: add draft + abandoned (T-NEW-5a)"
 description: >
-  lib/arc.sh defines 4 states: draft, in-progress, closed, abandoned. arc_create writes status: draft for new arcs going forward. Existing 5 arcs (incl arc-grooming) stay status: in-progress (no force-migration per D3). arc_close transitions in-progress→closed unchanged. Block draft→closed (only draft→in-progress or draft→abandoned allowed). audit YAML-parse accepts all 4 states. Deps: T-1846. novel_mechanism: yes.
+  lib/arc.sh defines 4 states: draft, in-progress, closed, abandoned. arc_create writes
+  status: draft for new arcs going forward. Existing 5 arcs (incl arc-grooming) stay
+  status: in-progress (no force-migration per D3). arc_close transitions in-progress→closed
+  unchanged. Block draft→closed (only draft→in-progress or draft→abandoned allowed).
+  audit YAML-parse accepts all 4 states. Deps: T-1846. novel_mechanism: yes.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [build, lifecycle, state-machine, novel-mechanism, T-NEW-5a]
 components: []
 related_tasks: [T-1846, T-1847, T-1668]
 arc_id: arc-grooming
 created: 2026-05-15T14:52:59Z
-last_update: 2026-05-18T09:52:30Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-16T21:46:05Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (tag:novel-mechanism,body:structural-gate); D2=4 
+      (body:fw-audit-or-doctor); D3=2 (body:default-change); D4=0 (no-signal); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1852: Lifecycle state machine: add draft + abandoned (T-NEW-5a)

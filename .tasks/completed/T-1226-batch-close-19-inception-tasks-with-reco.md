@@ -1,19 +1,38 @@
 ---
 id: T-1226
-name: "Batch-close 19 inception tasks with recorded decisions stuck in captured status (T-1223 backlog)"
+name: "Batch-close 19 inception tasks with recorded decisions stuck in captured status
+  (T-1223 backlog)"
 description: >
-  Batch-close 19 inception tasks with recorded decisions stuck in captured status (T-1223 backlog)
+  Batch-close 19 inception tasks with recorded decisions stuck in captured status
+  (T-1223 backlog)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T13:17:20Z
-last_update: 2026-04-13T13:24:32Z
+last_update: '2026-06-11T22:23:43Z'
 date_finished: 2026-04-13T13:24:32Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1226: Batch-close 19 inception tasks with recorded decisions stuck in captured status (T-1223 backlog)

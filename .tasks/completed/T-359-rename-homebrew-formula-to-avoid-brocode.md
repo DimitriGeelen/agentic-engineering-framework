@@ -2,18 +2,39 @@
 id: T-359
 name: "Rename Homebrew formula to avoid brocode/fw collision"
 description: >
-  Our Homebrew formula 'fw' collides with brocode/fw (Workspace productivity booster) in Homebrew core. When users run 'brew install fw' without qualifying the tap, they get the wrong package. Rename formula to 'agentic-fw' or similar unique name. Update: tap formula filename, install instructions in README, any docs referencing 'brew install fw'. Consider adding a migration note for existing users.
+  Our Homebrew formula 'fw' collides with brocode/fw (Workspace productivity booster)
+  in Homebrew core. When users run 'brew install fw' without qualifying the tap, they
+  get the wrong package. Rename formula to 'agentic-fw' or similar unique name. Update:
+  tap formula filename, install instructions in README, any docs referencing 'brew
+  install fw'. Consider adding a migration note for existing users.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [homebrew, distribution]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T19:14:22Z
-last_update: 2026-03-08T19:56:34Z
+last_update: '2026-06-11T22:24:19Z'
 date_finished: 2026-03-08T19:56:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-359: Rename Homebrew formula to avoid brocode/fw collision

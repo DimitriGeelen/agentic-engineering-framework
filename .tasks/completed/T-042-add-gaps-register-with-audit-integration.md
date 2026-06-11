@@ -2,7 +2,9 @@
 id: T-042
 name: Add gaps register with audit integration
 description: >
-  Structural memory for spec-reality gaps with decision triggers. Prevents forgetting deferred decisions without committing to build them. Gaps register in .context/project/gaps.yaml, audit checks trigger conditions, handover shows open gaps count.
+  Structural memory for spec-reality gaps with decision triggers. Prevents forgetting
+  deferred decisions without committing to build them. Gaps register in .context/project/gaps.yaml,
+  audit checks trigger conditions, handover shows open gaps count.
 status: work-completed
 workflow_type: build
 owner: claude-code
@@ -12,8 +14,25 @@ agents:
   primary:
   supporting: []
 created: 2026-02-14T09:57:56Z
-last_update: 2026-02-14T10:01:09Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-14T10:01:09Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-042: Add gaps register with audit integration

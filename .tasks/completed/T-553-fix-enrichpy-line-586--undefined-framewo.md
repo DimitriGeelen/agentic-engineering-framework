@@ -2,18 +2,38 @@
 id: T-553
 name: "Fix enrich.py line 586 — undefined framework_root should be project_root"
 description: >
-  enrich.py:586 calls compute_forward_edges with framework_root which is undefined in main() scope. Should be project_root (defined on line 550). One-line fix. Blocks all fabric edge enrichment. Origin: T-549 OpenClaw eval, confirmed by path isolation investigation.
+  enrich.py:586 calls compute_forward_edges with framework_root which is undefined
+  in main() scope. Should be project_root (defined on line 550). One-line fix. Blocks
+  all fabric edge enrichment. Origin: T-549 OpenClaw eval, confirmed by path isolation
+  investigation.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T16:13:28Z
-last_update: 2026-03-24T08:52:18Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-03-24T08:52:18Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-553: Fix enrich.py line 586 — undefined framework_root should be project_root

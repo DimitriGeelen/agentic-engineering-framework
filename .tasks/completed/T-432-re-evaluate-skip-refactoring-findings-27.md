@@ -2,20 +2,48 @@
 id: T-432
 name: "Re-evaluate SKIP refactoring findings (27 items, score ≤4)"
 description: >
-  Re-evaluate 27 refactoring findings that scored ≤4 against the four directives. These were deprioritized in T-411 as cosmetic or low-impact. After DO and MAYBE phases complete, reassess whether: (a) any findings upgraded by new evidence, (b) any became moot from other refactoring, (c) any patterns emerged that change scoring. SKIP findings: S9 (inline template dup, 5), S11 (dir init, 5), S12 (shopt, 2), S14 (help text, 3), J5 (abort cleanup, 4), J7 (hardcoded colors, 4), J8 (DOM queries, 2), J9 (naming, 3), J10 (null checks, 4), J11 (magic numbers, 4), J12 (addEventListener, 2), P2 (logger naming, 3), P5 (handover parsing, 4), P6 (task caching, 3), P10 (magic numbers, 4), P12 (regex compile, 1), P13 (error context, 4), H5 (page headers, 3), H6 (table macro, 3), H8 (htmx boilerplate, 3), H9 (badge styling, 3), H12 (grid utils, 2), H13 (snippets, 2), H14 (form rows, 2), A1 (scanner wrapper, 3), A4 (stale backup, 3), A10 (directives drift, 4). Ref: docs/reports/T-411-refactoring-directive-scoring.md
+  Re-evaluate 27 refactoring findings that scored ≤4 against the four directives.
+  These were deprioritized in T-411 as cosmetic or low-impact. After DO and MAYBE
+  phases complete, reassess whether: (a) any findings upgraded by new evidence, (b)
+  any became moot from other refactoring, (c) any patterns emerged that change scoring.
+  SKIP findings: S9 (inline template dup, 5), S11 (dir init, 5), S12 (shopt, 2), S14
+  (help text, 3), J5 (abort cleanup, 4), J7 (hardcoded colors, 4), J8 (DOM queries,
+  2), J9 (naming, 3), J10 (null checks, 4), J11 (magic numbers, 4), J12 (addEventListener,
+  2), P2 (logger naming, 3), P5 (handover parsing, 4), P6 (task caching, 3), P10 (magic
+  numbers, 4), P12 (regex compile, 1), P13 (error context, 4), H5 (page headers, 3),
+  H6 (table macro, 3), H8 (htmx boilerplate, 3), H9 (badge styling, 3), H12 (grid
+  utils, 2), H13 (snippets, 2), H14 (form rows, 2), A1 (scanner wrapper, 3), A4 (stale
+  backup, 3), A10 (directives drift, 4). Ref: docs/reports/T-411-refactoring-directive-scoring.md
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [refactoring, quality, audit]
 components: []
 related_tasks: []
 created: 2026-03-10T21:04:40Z
-last_update: 2026-04-12T07:56:23Z
+last_update: '2026-06-11T22:24:21Z'
 date_finished: 2026-04-12T07:56:23Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-432: Re-evaluate SKIP refactoring findings (27 items, score ≤4)

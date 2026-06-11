@@ -1,22 +1,31 @@
 ---
 id: T-2155
-name: "reviewer detector — Agent AC body-evidence present but checkbox unticked (T-1761 prevention)"
+name: "reviewer detector — Agent AC body-evidence present but checkbox unticked (T-1761
+  prevention)"
 description: >
-  Static-scan detector for the recurring T-1761-class block: Agent AC text describes work that is plainly satisfied in the body (Recommendation / RCA / Decision / Evolution / referenced artifact) but the checkbox stays unticked. Reviewer agent currently has no scan for this — agent ticks manually after the gate refuses, which is exactly the after-the-fact pattern T-1831 C-4 calls out. CONCERN-level, partial-confidence pattern; pair-task to T-2145 (defer-as-hedge) and T-2147 (audience-mismatch). HV-LC: ~1 detector + unit tests + a real-task smoke. Arc cut: arc-003 (reviewer is orchestrator-adjacent) + arc-006 (BVP scoring depends on Agent AC ticks).
+  Static-scan detector for the recurring T-1761-class block: Agent AC text describes
+  work that is plainly satisfied in the body (Recommendation / RCA / Decision / Evolution
+  / referenced artifact) but the checkbox stays unticked. Reviewer agent currently
+  has no scan for this — agent ticks manually after the gate refuses, which is exactly
+  the after-the-fact pattern T-1831 C-4 calls out. CONCERN-level, partial-confidence
+  pattern; pair-task to T-2145 (defer-as-hedge) and T-2147 (audience-mismatch). HV-LC:
+  ~1 detector + unit tests + a real-task smoke. Arc cut: arc-003 (reviewer is orchestrator-adjacent)
+  + arc-006 (BVP scoring depends on Agent AC ticks).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [arc-003, arc-006, reviewer, governance, t-1761-prevention]
-components: [lib/reviewer/static_scan.py, tests/unit/test_reviewer_ac_evidence_untick.py]
+components: [lib/reviewer/static_scan.py, 
+      tests/unit/test_reviewer_ac_evidence_untick.py]
 related_tasks: [T-1761, T-2145, T-2147, T-2059, T-1985, T-1831]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-01T08:50:00Z
-last_update: 2026-06-01T08:58:30Z
+last_update: '2026-06-11T22:24:09Z'
 date_finished: 2026-06-01T08:58:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +37,24 @@ date_finished: 2026-06-01T08:58:30Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 5
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4-5 (body:new-class); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2155: reviewer detector — Agent AC body-evidence present but checkbox unticked (T-1761 prevention)

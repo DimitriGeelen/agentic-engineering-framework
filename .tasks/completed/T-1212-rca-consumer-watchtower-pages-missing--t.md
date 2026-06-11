@@ -1,21 +1,40 @@
 ---
 id: T-1212
-name: "RCA: Consumer Watchtower pages missing — terminal page 404, approvals bare, recurring across all consumers"
+name: "RCA: Consumer Watchtower pages missing — terminal page 404, approvals bare,
+  recurring across all consumers"
 description: >
-  Inception: RCA: Consumer Watchtower pages missing — terminal page 404, approvals bare, recurring across all consumers
+  Inception: RCA: Consumer Watchtower pages missing — terminal page 404, approvals
+  bare, recurring across all consumers
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-13T09:08:36Z
-last_update: 2026-04-25T18:35:01Z
+last_update: '2026-06-11T22:23:42Z'
 date_finished: 2026-04-13T13:20:41Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1212: RCA: Consumer Watchtower pages missing — terminal page 404, approvals bare, recurring across all consumers

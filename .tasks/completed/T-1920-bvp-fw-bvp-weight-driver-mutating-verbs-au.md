@@ -1,20 +1,41 @@
 ---
 id: T-1920
-name: "BVP T-NEW-5: fw bvp weight + fw bvp driver mutating verbs + weight history audit log (§ACD agent-gate)"
+name: "BVP T-NEW-5: fw bvp weight + fw bvp driver mutating verbs + weight history
+  audit log (§ACD agent-gate)"
 description: >
-  Mutating CLI surface for BVP: change weights and add/remove free drivers. §ACD agent-gate (refuses under $CLAUDECODE=1, requires --rationale ≥30 chars). Reactive — weight changes re-rank live (D9). Add-one-drop-one rule (M1) enforced; protected D1-D4 cannot be removed.
+  Mutating CLI surface for BVP: change weights and add/remove free drivers. §ACD agent-gate
+  (refuses under $CLAUDECODE=1, requires --rationale ≥30 chars). Reactive — weight
+  changes re-rank live (D9). Add-one-drop-one rule (M1) enforced; protected D1-D4
+  cannot be removed.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-5, cli, acd-gate]
 components: [012-ArcSystem.md, bin/fw, lib/arc.sh, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1917, T-1919, T-1668, T-1671]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-19T07:36:43Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-19T07:36:43Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 1
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=1 
+      (body:error-msg-improved); D4=0 (no-signal); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1920: BVP T-NEW-5 — `fw bvp weight` + `fw bvp driver` mutating verbs

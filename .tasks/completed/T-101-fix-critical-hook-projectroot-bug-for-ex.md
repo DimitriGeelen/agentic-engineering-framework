@@ -2,15 +2,39 @@
 id: T-101
 name: Fix critical hook PROJECT_ROOT bug for external projects
 description: >
-  CRITICAL BUG: When fw init generates .claude/settings.json for external projects, the hook commands (check-active-task.sh, check-tier0.sh, checkpoint.sh) do not set PROJECT_ROOT. All three scripts fall back to FRAMEWORK_ROOT, meaning enforcement silently operates against the framework repo state, not the project. This is invisible — no errors, just wrong behavior. Fix: Add PROJECT_ROOT placeholder to generated settings.json hook commands and substitute via sed alongside FRAMEWORK_ROOT. Acceptance: hooks in generated settings.json include PROJECT_ROOT=/path/to/project prefix. Files: lib/init.sh (generate_claude_code_config function, lines 256-305).
+  CRITICAL BUG: When fw init generates .claude/settings.json for external projects,
+  the hook commands (check-active-task.sh, check-tier0.sh, checkpoint.sh) do not set
+  PROJECT_ROOT. All three scripts fall back to FRAMEWORK_ROOT, meaning enforcement
+  silently operates against the framework repo state, not the project. This is invisible
+  — no errors, just wrong behavior. Fix: Add PROJECT_ROOT placeholder to generated
+  settings.json hook commands and substitute via sed alongside FRAMEWORK_ROOT. Acceptance:
+  hooks in generated settings.json include PROJECT_ROOT=/path/to/project prefix. Files:
+  lib/init.sh (generate_claude_code_config function, lines 256-305).
 status: work-completed
 workflow_type: build
 owner: agent
 tags: [critical, fw-init, hooks, external-project]
 related_tasks: []
 created: 2026-02-17T08:53:08Z
-last_update: 2026-02-17T09:44:00Z
-date_finished: null
+last_update: '2026-06-11T22:23:37Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-101: Fix critical hook PROJECT_ROOT bug for external projects

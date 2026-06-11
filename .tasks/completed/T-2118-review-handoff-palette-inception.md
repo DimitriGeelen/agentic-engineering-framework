@@ -19,7 +19,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [governance, handoff, watchtower, inception, ux, antifragility]
 components: [agents/task-create/update-task.sh, lib/task.sh, CLAUDE.md, 
       docs/reports/]
@@ -27,7 +27,7 @@ related_tasks: [T-2112, T-2113, T-2114, T-2115, T-2116, T-2117, T-679, T-1257,
       T-1259, T-1260, T-1671]
 arc_id: watchtower-redesign
 created: 2026-05-30T18:50:00Z
-last_update: 2026-05-30T21:32:00Z
+last_update: '2026-06-11T22:24:08Z'
 date_finished: 2026-05-30T21:32:00Z
 bvp_scores_proposed:
   - ts: '2026-05-30T19:00:02Z'
@@ -40,6 +40,22 @@ bvp_scores_proposed:
       F1: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
       (body:framework-level-ux); D4=0 (no-signal); F1=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-30T19:00:02Z'

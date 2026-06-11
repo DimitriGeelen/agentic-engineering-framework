@@ -2,20 +2,41 @@
 id: T-562
 name: "OpenClaw comparative: safety guardrails — rate limiting, dedup, runaway prevention"
 description: >
-  Dispatch to OpenClaw eval agent: Investigate rate limiting, deduplication (idempotency keys), max-consecutive-same-tool detection. What safety patterns have no equivalent in our framework? How do they prevent runaway agents? Compare to our budget-gate.sh. Whats their blast radius containment for tool execution? Write findings. Review with human.
+  Dispatch to OpenClaw eval agent: Investigate rate limiting, deduplication (idempotency
+  keys), max-consecutive-same-tool detection. What safety patterns have no equivalent
+  in our framework? How do they prevent runaway agents? Compare to our budget-gate.sh.
+  Whats their blast radius containment for tool execution? Write findings. Review
+  with human.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-23T17:17:41Z
-last_update: 2026-03-28T09:31:40Z
+last_update: '2026-06-11T22:24:24Z'
 date_finished: 2026-03-28T09:31:40Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-562: OpenClaw comparative: safety guardrails — rate limiting, dedup, runaway prevention

@@ -1,19 +1,40 @@
 ---
 id: T-1586
-name: "Cross-surface parity invariant — pin Recommendation + Reviewer Verdict on all 4 review surfaces (L-316 closure)"
+name: "Cross-surface parity invariant — pin Recommendation + Reviewer Verdict on all
+  4 review surfaces (L-316 closure)"
 description: >
-  Playwright invariant test that asserts every review surface (/approvals, /review, /tasks, /inception) renders Recommendation + Reviewer Verdict structurally for a known task with both blocks. Closes L-316 cross-surface drift class structurally — future regressions on any one surface fail this test.
+  Playwright invariant test that asserts every review surface (/approvals, /review,
+  /tasks, /inception) renders Recommendation + Reviewer Verdict structurally for a
+  known task with both blocks. Closes L-316 cross-surface drift class structurally
+  — future regressions on any one surface fail this test.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [test, invariant, regression, cross-surface]
 components: [tests/playwright/test_cross_surface_parity.py]
 related_tasks: [T-1531, T-1569, T-1575, T-1583, T-1584, T-1585]
 created: 2026-04-28T16:10:14Z
-last_update: 2026-04-29T08:40:56Z
+last_update: '2026-06-11T22:23:52Z'
 date_finished: 2026-04-28T16:16:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1586: Cross-surface parity invariant — pin Recommendation + Reviewer Verdict on all 4 review surfaces (L-316 closure)

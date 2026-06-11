@@ -1,20 +1,40 @@
 ---
 id: T-1759
-name: "extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close drift blindspot (T-1758 follow-up)"
+name: "extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close drift
+  blindspot (T-1758 follow-up)"
 description: >
-  extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close drift blindspot (T-1758 follow-up)
+  extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close drift blindspot
+  (T-1758 follow-up)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: ["fabric", "drift-defense"]
 components: [".fabric/watch-patterns.yaml"]
 related_tasks: ["T-1758"]
 arc_id: orchestrator-rethink
 created: 2026-05-06T05:44:44Z
-last_update: 2026-05-06T06:02:22Z
+last_update: '2026-06-11T22:23:58Z'
 date_finished: 2026-05-06T06:02:22Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1759: extend fabric watch-patterns — add lib/**/*.py + tools/*.py to close drift blindspot (T-1758 follow-up)

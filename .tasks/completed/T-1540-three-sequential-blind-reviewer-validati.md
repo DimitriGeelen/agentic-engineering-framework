@@ -1,19 +1,40 @@
 ---
 id: T-1540
-name: "Three sequential blind-reviewer validation loops — convergence test for the verdict-workflow arc"
+name: "Three sequential blind-reviewer validation loops — convergence test for the
+  verdict-workflow arc"
 description: >
-  Three sequential blind-reviewer validation loops — convergence test for the verdict-workflow arc
+  Three sequential blind-reviewer validation loops — convergence test for the verdict-workflow
+  arc
 
 status: work-completed
 workflow_type: test
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [bin/fw, web/blueprints/cockpit.py, web/templates/_approvals_content.html, web/templates/cockpit.html]
+components: [bin/fw, web/blueprints/cockpit.py, 
+      web/templates/_approvals_content.html, web/templates/cockpit.html]
 related_tasks: []
 created: 2026-04-27T12:23:33Z
-last_update: 2026-04-29T08:40:31Z
+last_update: '2026-06-11T22:23:51Z'
 date_finished: 2026-04-27T13:03:55Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1540: Three sequential blind-reviewer validation loops — convergence test for the verdict-workflow arc

@@ -1,21 +1,40 @@
 ---
 id: T-1492
-name: "Pickup: review.sh emit_review silent-exit on missing top-level Recommendation line + pipefail interaction (from 003-NTB-ATC-Plugin)"
+name: "Pickup: review.sh emit_review silent-exit on missing top-level Recommendation
+  line + pipefail interaction (from 003-NTB-ATC-Plugin)"
 description: >
-  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-154. Type: bug-report.
+  Auto-created from pickup envelope. Source: 003-NTB-ATC-Plugin, task T-154. Type:
+  bug-report.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [pickup, bug-report]
 components: [lib/review.sh, tests/unit/lib_review.bats]
 related_tasks: []
 created: 2026-04-26T10:57:02Z
-last_update: 2026-04-26T11:04:56Z
+last_update: '2026-06-11T22:23:50Z'
 date_finished: 2026-04-26T11:04:56Z
 source_task_id_in_origin: T-154
 source_project_in_origin: "003-NTB-ATC-Plugin"
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1492: Pickup: review.sh emit_review silent-exit on missing top-level Recommendation line + pipefail interaction (from 003-NTB-ATC-Plugin)

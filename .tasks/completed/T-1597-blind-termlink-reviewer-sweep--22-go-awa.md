@@ -2,18 +2,37 @@
 id: T-1597
 name: "Blind TermLink reviewer sweep — 22 GO awaiting-review tasks"
 description: >
-  Dispatch 5 parallel TermLink blind reviewers (one per surface group) to verify Human AC evidence on the 22 GO 'now' awaiting-review tasks. Each reviewer writes docs/reports/T-XXXX-blind-review.md per task. Consolidate into a single packet for the human's stamp. Precedent: T-1539/T-1540.
+  Dispatch 5 parallel TermLink blind reviewers (one per surface group) to verify Human
+  AC evidence on the 22 GO 'now' awaiting-review tasks. Each reviewer writes docs/reports/T-XXXX-blind-review.md
+  per task. Consolidate into a single packet for the human's stamp. Precedent: T-1539/T-1540.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-29T07:07:04Z
-last_update: 2026-04-29T07:30:01Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-29T07:30:01Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=4 (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1597: Blind TermLink reviewer sweep — 22 GO awaiting-review tasks

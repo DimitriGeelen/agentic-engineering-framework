@@ -2,7 +2,9 @@
 id: T-009
 name: Document falsifiability criteria
 description: >
-  Answer: What would prove this approach wrong? Define criteria that would indicate the framework is not working. Critical for D1 Antifragility - we need to know when to pivot.
+  Answer: What would prove this approach wrong? Define criteria that would indicate
+  the framework is not working. Critical for D1 Antifragility - we need to know when
+  to pivot.
 status: work-completed
 workflow_type: specification
 owner: human
@@ -12,8 +14,26 @@ agents:
   primary: claude-code
   supporting: []
 created: 2026-02-13T18:19:20Z
-last_update: 2026-02-13T21:55:00Z
+last_update: '2026-06-11T22:23:35Z'
 date_finished: 2026-02-13T20:56:27Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 3
+      D3: 2
+      D4: 3
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=3 (body:component-silent-failure); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=1 
+      (body:episodic-only); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-009: Document falsifiability criteria

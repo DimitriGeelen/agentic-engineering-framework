@@ -1,20 +1,50 @@
 ---
 id: T-1823
-name: "web/test_app.py consumer-vs-framework data-shape bleed — 5-7 tests assume framework-repo state"
+name: "web/test_app.py consumer-vs-framework data-shape bleed — 5-7 tests assume framework-repo
+  state"
 description: >
-  FB-B (MEDIUM) reported independently by penelope (050-email-archive), claude-002-cpn (002-CPN), termlink-agent (010-termlink) on 2026-05-13/14. web/test_app.py contains 5-7 tests that assert framework-repo fixture data (G-001 in /gaps, '001-Vision' in /project, 'Watchtower v' prefix in footer, 'System Health' heading) which consumers cannot satisfy. fw doctor SKIPs 'Test infrastructure (consumer project — tests live in framework repo)' but fw test all runs them anyway — inconsistent intent. Suggested fix (consistent across reporters): add @pytest.mark.framework_repo and auto-skip when .framework.yaml exists at PROJECT_ROOT (i.e. running in consumer mode). OR have fw test all honor the same consumer-skip the doctor uses. Affected tests: TestErrorHandlers::test_404_for_nonexistent_task, TestDataIntegrity::test_gaps_page_shows_gaps, TestDataIntegrity::test_project_page_lists_docs, TestDataIntegrity::test_project_doc_renders_markdown, TestPhase3Integration::test_dashboard_has_system_health, TestNavigation::test_footer_shows_watchtower, TestEmptyTaskFiles::test_task_file_no_frontmatter, TestEmptyTaskFiles::test_task_file_empty.
+  FB-B (MEDIUM) reported independently by penelope (050-email-archive), claude-002-cpn
+  (002-CPN), termlink-agent (010-termlink) on 2026-05-13/14. web/test_app.py contains
+  5-7 tests that assert framework-repo fixture data (G-001 in /gaps, '001-Vision'
+  in /project, 'Watchtower v' prefix in footer, 'System Health' heading) which consumers
+  cannot satisfy. fw doctor SKIPs 'Test infrastructure (consumer project — tests live
+  in framework repo)' but fw test all runs them anyway — inconsistent intent. Suggested
+  fix (consistent across reporters): add @pytest.mark.framework_repo and auto-skip
+  when .framework.yaml exists at PROJECT_ROOT (i.e. running in consumer mode). OR
+  have fw test all honor the same consumer-skip the doctor uses. Affected tests: TestErrorHandlers::test_404_for_nonexistent_task,
+  TestDataIntegrity::test_gaps_page_shows_gaps, TestDataIntegrity::test_project_page_lists_docs,
+  TestDataIntegrity::test_project_doc_renders_markdown, TestPhase3Integration::test_dashboard_has_system_health,
+  TestNavigation::test_footer_shows_watchtower, TestEmptyTaskFiles::test_task_file_no_frontmatter,
+  TestEmptyTaskFiles::test_task_file_empty.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [test-infra, fw-upgrade-incident-2026-05-14, bug]
 components: []
 related_tasks: [T-1822, T-1634]
 arc_id: project-shape-resilience
 created: 2026-05-14T07:30:49Z
-last_update: 2026-05-14T14:22:11Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-05-14T14:22:11Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=2
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1823: web/test_app.py consumer-vs-framework data-shape bleed — 5-7 tests assume framework-repo state

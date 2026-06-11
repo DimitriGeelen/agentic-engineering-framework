@@ -8,19 +8,39 @@ description: >
   framework-side contract test in tests/unit/: shared JSON-schema file in
   tests/fixtures/termlink-list-schema.json; pytest validates that live
   `termlink list --json` output matches the required-key set. Skips gracefully
-  when termlink is not installed. Origin: docs/reports/T-1641-worker-10-defenses.md item #6.
+  when termlink is not installed. Origin: docs/reports/T-1641-worker-10-defenses.md
+  item #6.
 
 status: work-completed
 workflow_type: test
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1641, t-1061-followup, drift-defense, wezterm, framework, contract]
-components: [tests/fixtures/termlink-list-schema.json, tests/unit/test_termlink_list_contract.py]
+components: [tests/fixtures/termlink-list-schema.json, 
+      tests/unit/test_termlink_list_contract.py]
 related_tasks: [T-1641, T-1644, T-1062, T-1647, T-1649]
 arc_id: orchestrator-rethink
 created: 2026-05-01T12:20:27Z
-last_update: 2026-05-01T18:58:38Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T12:59:06Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=3 
+      (body:portability-abstraction); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1651: TermLink list --json contract test

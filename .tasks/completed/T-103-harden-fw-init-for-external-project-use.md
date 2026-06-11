@@ -2,15 +2,49 @@
 id: T-103
 name: Harden fw init for external project use
 description: >
-  Collection of medium-severity gaps in fw init that degrade external project experience. Items to fix: (1) No .gitignore for .context/working/ — volatile files (tool-counter, focus.yaml, session.yaml, tier0-approval) get committed on first git add. Fix: create .context/working/.gitignore with * or add to project .gitignore. (2) Template naming inconsistency — CLAUDE.md references zzz-default.md but init copies default.md. Fix: copy all .md from templates/ or rename consistently. (3) Missing assumptions.yaml — fw assumption commands write to it but init doesnt create it. Fix: add to init alongside patterns/decisions/learnings. (4) Missing .context/scans/ directory — resume.sh and context init read from it. Fix: mkdir -p in init. (5) Write/Edit blocked immediately after init — .context/working/ exists but no focus.yaml stub, so check-active-task.sh blocks with confusing error. Fix: create stub focus.yaml with current_task: null or add clear error message. (6) Git hook installation errors silently swallowed (2>/dev/null). Fix: remove blanket stderr suppression. (7) Watchtower hardcoded to cd FRAMEWORK_ROOT — fails in external projects. Fix: guard with PROJECT_ROOT != FRAMEWORK_ROOT check. (8) Hardcoded FRAMEWORK_ROOT paths in settings.json — document brittleness or add runtime resolution. (9) .framework.yaml missing metadata (project_name, initialized_at, provider). DEPENDS ON: T-101 (hook fix should land first). PARALLEL WITH: T-102. Files: lib/init.sh, agents/context/lib/init.sh, agents/context/check-active-task.sh.
+  Collection of medium-severity gaps in fw init that degrade external project experience.
+  Items to fix: (1) No .gitignore for .context/working/ — volatile files (tool-counter,
+  focus.yaml, session.yaml, tier0-approval) get committed on first git add. Fix: create
+  .context/working/.gitignore with * or add to project .gitignore. (2) Template naming
+  inconsistency — CLAUDE.md references zzz-default.md but init copies default.md.
+  Fix: copy all .md from templates/ or rename consistently. (3) Missing assumptions.yaml
+  — fw assumption commands write to it but init doesnt create it. Fix: add to init
+  alongside patterns/decisions/learnings. (4) Missing .context/scans/ directory —
+  resume.sh and context init read from it. Fix: mkdir -p in init. (5) Write/Edit blocked
+  immediately after init — .context/working/ exists but no focus.yaml stub, so check-active-task.sh
+  blocks with confusing error. Fix: create stub focus.yaml with current_task: null
+  or add clear error message. (6) Git hook installation errors silently swallowed
+  (2>/dev/null). Fix: remove blanket stderr suppression. (7) Watchtower hardcoded
+  to cd FRAMEWORK_ROOT — fails in external projects. Fix: guard with PROJECT_ROOT
+  != FRAMEWORK_ROOT check. (8) Hardcoded FRAMEWORK_ROOT paths in settings.json — document
+  brittleness or add runtime resolution. (9) .framework.yaml missing metadata (project_name,
+  initialized_at, provider). DEPENDS ON: T-101 (hook fix should land first). PARALLEL
+  WITH: T-102. Files: lib/init.sh, agents/context/lib/init.sh, agents/context/check-active-task.sh.
 status: work-completed
 workflow_type: build
 owner: agent
 tags: [fw-init, hardening, external-project]
 related_tasks: []
 created: 2026-02-17T08:53:40Z
-last_update: 2026-02-17T09:44:00Z
-date_finished: null
+last_update: '2026-06-11T22:23:38Z'
+date_finished:
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-103: Harden fw init for external project use

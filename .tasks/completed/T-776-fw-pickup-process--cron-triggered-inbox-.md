@@ -2,18 +2,38 @@
 id: T-776
 name: "fw pickup process — cron-triggered inbox scanner"
 description: >
-  Deterministic, idempotent inbox scanner: read all pending envelopes from .context/pickup/inbox/, process each (validate, dedup, create inception task, notify), move to processed/. Exit 0 if no work.
+  Deterministic, idempotent inbox scanner: read all pending envelopes from .context/pickup/inbox/,
+  process each (validate, dedup, create inception task, notify), move to processed/.
+  Exit 0 if no work.
 
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-772, T-774, T-778]
 created: 2026-03-30T13:21:48Z
-last_update: 2026-03-30T14:13:08Z
+last_update: '2026-06-11T22:24:29Z'
 date_finished: 2026-03-30T14:13:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 3
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=4 
+      (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=3 
+      (body:typed-io-or-gate); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-776: fw pickup process — cron-triggered inbox scanner

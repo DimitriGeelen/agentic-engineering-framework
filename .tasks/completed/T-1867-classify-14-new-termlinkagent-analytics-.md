@@ -1,21 +1,40 @@
 ---
 id: T-1867
-name: "classify 14 new termlink_agent_* analytics tools — convention-based readonly_exempt (T-1755/T-1760 follow-up)"
+name: "classify 14 new termlink_agent_* analytics tools — convention-based readonly_exempt
+  (T-1755/T-1760 follow-up)"
 description: >
-  classify 14 new termlink_agent_* analytics tools — convention-based readonly_exempt (T-1755/T-1760 follow-up)
+  classify 14 new termlink_agent_* analytics tools — convention-based readonly_exempt
+  (T-1755/T-1760 follow-up)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-05-15T20:26:38Z
-last_update: 2026-05-15T20:28:25Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-15T20:28:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=3 (body:portability-abstraction); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1867: classify 14 new termlink_agent_* analytics tools — convention-based readonly_exempt (T-1755/T-1760 follow-up)

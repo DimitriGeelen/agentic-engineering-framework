@@ -3,20 +3,40 @@ id: T-182
 name: "Reframe handover messaging from emergency panic to calm wrap-up"
 description: >
   From sprechloop brief: /opt/001-sprechloop/.context/briefs/framework-single-handover-design.md.
-  Task system captures all essential state continuously. Handover is a navigation aid, not a
-  safety net. Reframe critical-level messages from panic ("WILL be lost", "imminent", "exhaustion")
+  Task system captures all essential state continuously. Handover is a navigation
+  aid, not a
+  safety net. Reframe critical-level messages from panic ("WILL be lost", "imminent",
+  "exhaustion")
   to calm wrap-up ("session wrapping up", "task files already have all essential state").
   String/comment changes only — zero logic changes. 4 files affected.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-18T21:45:43Z
-last_update: 2026-02-18T23:20:28Z
+last_update: '2026-06-11T22:23:59Z'
 date_finished: 2026-02-18T23:20:28Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); 
+      F3=1 (body/components:prompt-incidental); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-182: Reframe handover messaging from emergency panic to calm wrap-up

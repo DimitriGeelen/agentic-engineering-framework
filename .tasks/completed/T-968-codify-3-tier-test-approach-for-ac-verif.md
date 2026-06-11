@@ -1,26 +1,49 @@
 ---
 id: T-968
-name: "Codify 3-tier test approach for AC verification — programmatic, TermLink E2E, Playwright regression"
+name: "Codify 3-tier test approach for AC verification — programmatic, TermLink E2E,
+  Playwright regression"
 description: >
-  The framework has rules (CLAUDE.md §AC Classification, §Verification Tiers) but no tooling
-  enforcement. 127 bats tests exist for Tier 1, but zero Playwright tests and zero TermLink E2E
-  tests. Human ACs pile up (110+ unchecked) because functional checks that could be automated
-  are written as Human ACs instead. This inception researches how to close the gap between
-  the rules and the infrastructure — fw test command, tests/playwright/ directory, CI integration,
+  The framework has rules (CLAUDE.md §AC Classification, §Verification Tiers) but
+  no tooling
+  enforcement. 127 bats tests exist for Tier 1, but zero Playwright tests and zero
+  TermLink E2E
+  tests. Human ACs pile up (110+ unchecked) because functional checks that could be
+  automated
+  are written as Human ACs instead. This inception researches how to close the gap
+  between
+  the rules and the infrastructure — fw test command, tests/playwright/ directory,
+  CI integration,
   AC-to-test conversion pipeline.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [testing, governance, infrastructure]
 components: []
 related_tasks: [T-954, T-823, T-516, T-158]
 created: 2026-04-06T19:21:20Z
-last_update: 2026-04-13T06:23:30Z
+last_update: '2026-06-11T22:24:33Z'
 date_finished: 2026-04-06T19:37:23Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-968: Codify 3-tier test approach for AC verification — programmatic, TermLink E2E, Playwright regression

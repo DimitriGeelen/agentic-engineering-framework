@@ -1,6 +1,7 @@
 ---
 id: T-1491
-name: "RCA — do_inception_decide records Decision but status transition silently fails (T-1388 Class B limbo)"
+name: "RCA — do_inception_decide records Decision but status transition silently fails
+  (T-1388 Class B limbo)"
 description: >
   RCA on the bug that caused T-1346, T-1388, and the T-1423 sweep's 49 historical
   stuck inceptions: the AC gate (P-010) blocks update-task.sh from transitioning
@@ -11,13 +12,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [rca, inception, governance, silent-failure, g-019]
 components: [lib/inception.sh]
 related_tasks: [T-1346, T-1388, T-1466, T-1472, T-1490, T-1423]
 created: 2026-04-26T09:48:00Z
-last_update: 2026-04-26T10:59:38Z
+last_update: '2026-06-11T22:23:50Z'
 date_finished: 2026-04-26T09:56:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 3
+      D3: 1
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=3 
+      (body:component-silent-failure); D3=1 (body:error-msg-improved); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1491: RCA — do_inception_decide records Decision but status transition silently fails

@@ -1,21 +1,47 @@
 ---
 id: T-1617
-name: "Inception DEFER does not move task to completed — semantics question (parking vs done)"
+name: "Inception DEFER does not move task to completed — semantics question (parking
+  vs done)"
 description: >
-  lib/inception.sh:491 explicitly excludes DEFER from the work-completed transition: `if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then ... update-task.sh ... --status work-completed`. Per code comment line 485 ("Complete task if go or no-go (not defer)"), this is intentional — DEFER means "park for later, not done". But it surfaces a semantic gap: a DEFER'd inception sits in `.tasks/active/` indefinitely, appears in Work-In-Progress lists, and in the case of T-1611 (DEFER'd 2026-04-30T08:48Z) creates the impression of unfinished work even though the decision is final. Question: should DEFER auto-move to completed/ (with a `parked` sub-status), stay in active/ as designed, or get a new state entirely?
+  lib/inception.sh:491 explicitly excludes DEFER from the work-completed transition:
+  `if [ "$decision" = "go" ] || [ "$decision" = "no-go" ]; then ... update-task.sh
+  ... --status work-completed`. Per code comment line 485 ("Complete task if go or
+  no-go (not defer)"), this is intentional — DEFER means "park for later, not done".
+  But it surfaces a semantic gap: a DEFER'd inception sits in `.tasks/active/` indefinitely,
+  appears in Work-In-Progress lists, and in the case of T-1611 (DEFER'd 2026-04-30T08:48Z)
+  creates the impression of unfinished work even though the decision is final. Question:
+  should DEFER auto-move to completed/ (with a `parked` sub-status), stay in active/
+  as designed, or get a new state entirely?
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [inception, lifecycle, semantics, governance-noise]
 components: []
 related_tasks: [T-1611]
 created: 2026-04-30T08:55:00Z
-last_update: 2026-04-30T09:22:10Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-30T09:22:10Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1617: Inception DEFER does not move task to completed — semantics question (parking vs done)

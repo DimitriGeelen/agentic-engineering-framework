@@ -2,18 +2,40 @@
 id: T-966
 name: "TermLink session observation in Watchtower terminal (T-962 Phase 3)"
 description: >
-  Phase 3: Integrate TermLink session discovery and observation into Watchtower terminal UI. List existing TermLink sessions as attachable tabs, poll TermLink PTY output for monitoring, inject input for interactive control. Hybrid architecture: Flask-owned PTYs for interactive, TermLink polling for observation. Depends on T-965.
+  Phase 3: Integrate TermLink session discovery and observation into Watchtower terminal
+  UI. List existing TermLink sessions as attachable tabs, poll TermLink PTY output
+  for monitoring, inject input for interactive control. Hybrid architecture: Flask-owned
+  PTYs for interactive, TermLink polling for observation. Depends on T-965.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [web/app.py, web/blueprints/terminal.py, web/templates/terminal.html, web/terminal.py]
+components: [web/app.py, web/blueprints/terminal.py, web/templates/terminal.html,
+  web/terminal.py]
 related_tasks: []
 created: 2026-04-06T18:25:32Z
-last_update: 2026-04-06T19:16:05Z
+last_update: '2026-06-11T22:24:33Z'
 date_finished: 2026-04-06T19:15:57Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-966: TermLink session observation in Watchtower terminal (T-962 Phase 3)

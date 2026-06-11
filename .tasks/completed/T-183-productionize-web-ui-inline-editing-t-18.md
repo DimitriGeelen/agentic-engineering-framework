@@ -2,17 +2,38 @@
 id: T-183
 name: "Productionize web UI inline editing (T-181 follow-up)"
 description: >
-  Build task from T-181 GO decision. The spike code (name edit, AC checkboxes, description edit) is functional but needs polish: (1) better error feedback on save failures, (2) loading states during API calls, (3) edge case handling for multi-line description editing (folded scalars), (4) status/horizon dropdown editing, (5) tag editing UI. See T-181 episodic and web/blueprints/tasks.py for spike code.
+  Build task from T-181 GO decision. The spike code (name edit, AC checkboxes, description
+  edit) is functional but needs polish: (1) better error feedback on save failures,
+  (2) loading states during API calls, (3) edge case handling for multi-line description
+  editing (folded scalars), (4) status/horizon dropdown editing, (5) tag editing UI.
+  See T-181 episodic and web/blueprints/tasks.py for spike code.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-19T00:02:28Z
-last_update: 2026-02-19T00:26:53Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-02-19T00:26:53Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-183: Productionize web UI inline editing (T-181 follow-up)

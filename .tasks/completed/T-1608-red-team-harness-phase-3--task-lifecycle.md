@@ -1,19 +1,38 @@
 ---
 id: T-1608
-name: "Red-team harness Phase 3 — task-lifecycle gates (P-010, P-011, RCA, inception-decide CLAUDECODE)"
+name: "Red-team harness Phase 3 — task-lifecycle gates (P-010, P-011, RCA, inception-decide
+  CLAUDECODE)"
 description: >
-  Red-team harness Phase 3 — task-lifecycle gates (P-010, P-011, RCA, inception-decide CLAUDECODE)
+  Red-team harness Phase 3 — task-lifecycle gates (P-010, P-011, RCA, inception-decide
+  CLAUDECODE)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-29T21:39:09Z
-last_update: 2026-04-29T21:43:02Z
+last_update: '2026-06-11T22:23:53Z'
 date_finished: 2026-04-29T21:43:02Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1608: Red-team harness Phase 3 — task-lifecycle gates (P-010, P-011, RCA, inception-decide CLAUDECODE)

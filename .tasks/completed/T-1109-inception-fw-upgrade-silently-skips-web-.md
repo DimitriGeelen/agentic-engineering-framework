@@ -1,21 +1,61 @@
 ---
 id: T-1109
-name: "Inception: fw upgrade silently skips web/ sync — consumer terminal + blueprints missing despite include list"
+name: "Inception: fw upgrade silently skips web/ sync — consumer terminal + blueprints
+  missing despite include list"
 description: >
-  RCA inception. Live evidence 2026-04-11: /opt/025-WokrshopDesigner ran fw upgrade today (last_upgrade 2026-04-11T10:50:34Z, .framework.yaml says version 1.5.246) but the vendored .agentic-framework/VERSION file still says 1.1.16, and web/blueprints/terminal.py is missing. 4 of 5 inspected consumer projects (025, 051, 050, openclaw) have the same failure. lib/update.sh:183-192 includes 'web' in the rsync list, so theoretically web/blueprints/terminal.py should have been copied. Yet the consumer has no terminal.py and its Watchtower on :3001 returns 404 on /terminal. Two contradictory signals: (a) upgrade reports success + updates the yaml + writes last_upgrade timestamp; (b) actual vendored files are stale. TWO separate but possibly related issues: (1) WHY does fw upgrade claim success without syncing web/ (matches G-024 but code looks correct) — possible causes: alternate code path, rsync error silenced, nested .agentic-framework (Pattern 6 from T-1100), source tmpdir pointing at wrong version, dry-run flag stuck; (2) WHY does .framework.yaml/VERSION file drift — two different writers, two different reads. Investigate: (i) trace every upgrade code path in bin/fw + lib/upgrade.sh + lib/update.sh + lib/init.sh + any agents/upgrade/*; (ii) reproduce on a throwaway consumer; (iii) identify the chokepoint where upgrade sync SHOULD converge; (iv) design invariant test that fails CI if any file in upstream web/ is missing from a consumer's vendored web/ after upgrade; (v) recommend structural fix with validation plan. Per T-1105 chokepoint+test discipline. Related: G-024, T-1094 (fw upgrade docs), T-1100 (5 isolation patterns including Pattern 6 nested), T-1106 (Bug 2 PID path — another consumer-vs-framework path inconsistency). Deliverable: docs/reports/T-NNNN-web-sync-rca.md with code-path trace, reproduction, structural fix design, invariant test design, validation plan.
+  RCA inception. Live evidence 2026-04-11: /opt/025-WokrshopDesigner ran fw upgrade
+  today (last_upgrade 2026-04-11T10:50:34Z, .framework.yaml says version 1.5.246)
+  but the vendored .agentic-framework/VERSION file still says 1.1.16, and web/blueprints/terminal.py
+  is missing. 4 of 5 inspected consumer projects (025, 051, 050, openclaw) have the
+  same failure. lib/update.sh:183-192 includes 'web' in the rsync list, so theoretically
+  web/blueprints/terminal.py should have been copied. Yet the consumer has no terminal.py
+  and its Watchtower on :3001 returns 404 on /terminal. Two contradictory signals:
+  (a) upgrade reports success + updates the yaml + writes last_upgrade timestamp;
+  (b) actual vendored files are stale. TWO separate but possibly related issues: (1)
+  WHY does fw upgrade claim success without syncing web/ (matches G-024 but code looks
+  correct) — possible causes: alternate code path, rsync error silenced, nested .agentic-framework
+  (Pattern 6 from T-1100), source tmpdir pointing at wrong version, dry-run flag stuck;
+  (2) WHY does .framework.yaml/VERSION file drift — two different writers, two different
+  reads. Investigate: (i) trace every upgrade code path in bin/fw + lib/upgrade.sh
+  + lib/update.sh + lib/init.sh + any agents/upgrade/*; (ii) reproduce on a throwaway
+  consumer; (iii) identify the chokepoint where upgrade sync SHOULD converge; (iv)
+  design invariant test that fails CI if any file in upstream web/ is missing from
+  a consumer's vendored web/ after upgrade; (v) recommend structural fix with validation
+  plan. Per T-1105 chokepoint+test discipline. Related: G-024, T-1094 (fw upgrade
+  docs), T-1100 (5 isolation patterns including Pattern 6 nested), T-1106 (Bug 2 PID
+  path — another consumer-vs-framework path inconsistency). Deliverable: docs/reports/T-NNNN-web-sync-rca.md
+  with code-path trace, reproduction, structural fix design, invariant test design,
+  validation plan.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-11T20:12:21Z
-last_update: 2026-04-13T06:23:17Z
+last_update: '2026-06-11T22:23:40Z'
 date_finished: 2026-04-12T11:01:55Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1109: Inception: fw upgrade silently skips web/ sync — consumer terminal + blueprints missing despite include list

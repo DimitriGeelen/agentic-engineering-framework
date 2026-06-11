@@ -2,14 +2,23 @@
 id: T-1880
 name: "Extract shared lib/arc_membership helper — consolidate 4 dual-read patterns"
 description: >
-  After T-1874/75/76/77/1879, four code paths implement union-of-arc_id-and-arc:slug-tag scans: lib/arc.sh _arc_tasks_for, agents/audit/audit.sh inline python, web/blueprints/arcs.py _scan_tasks_by_arc_membership, web/blueprints/core.py inline. Plus lib/evolution_log.sh task_has_arc_membership shell helper. Future-prevention proposal from T-1879 Recommendation: extract canonical lib/arc_membership.{sh,py} module that all 4-5 consumers call. Without this, silent-corpus #3 recurs next time storage format changes. Sibling to arc-grooming T-NEW-14.
+  After T-1874/75/76/77/1879, four code paths implement union-of-arc_id-and-arc:slug-tag
+  scans: lib/arc.sh _arc_tasks_for, agents/audit/audit.sh inline python, web/blueprints/arcs.py
+  _scan_tasks_by_arc_membership, web/blueprints/core.py inline. Plus lib/evolution_log.sh
+  task_has_arc_membership shell helper. Future-prevention proposal from T-1879 Recommendation:
+  extract canonical lib/arc_membership.{sh,py} module that all 4-5 consumers call.
+  Without this, silent-corpus #3 recurs next time storage format changes. Sibling
+  to arc-grooming T-NEW-14.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [arc-grooming, future-prevention, refactor]
-components: [agents/handover/handover.sh, lib/arc_membership.py, lib/evolution_log.sh, tests/unit/arc_membership_shared.bats, tests/unit/test_arc_membership_shared.py, web/blueprints/arcs.py, web/blueprints/core.py, web/blueprints/tasks.py]
+components: [agents/handover/handover.sh, lib/arc_membership.py, 
+      lib/evolution_log.sh, tests/unit/arc_membership_shared.bats, 
+      tests/unit/test_arc_membership_shared.py, web/blueprints/arcs.py, 
+      web/blueprints/core.py, web/blueprints/tasks.py]
 related_tasks: [T-1850, T-1874, T-1875, T-1876, T-1877, T-1879, T-1881]
 arc_id: arc-grooming
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -17,10 +26,28 @@ arc_id: arc-grooming
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-17T14:07:04Z
-last_update: 2026-05-17T22:39:44Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-17T15:39:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=1 
+      (body:episodic-only); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1880: Extract shared lib/arc_membership helper — consolidate 4 dual-read patterns

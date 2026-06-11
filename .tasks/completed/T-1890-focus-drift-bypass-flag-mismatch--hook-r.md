@@ -1,25 +1,50 @@
 ---
 id: T-1890
-name: "focus-drift bypass flag mismatch — hook recommends --switch-focus but downstream rejects (Unknown option)"
+name: "focus-drift bypass flag mismatch — hook recommends --switch-focus but downstream
+  rejects (Unknown option)"
 description: >
-  focus-drift bypass flag mismatch — hook recommends --switch-focus but downstream rejects (Unknown option)
+  focus-drift bypass flag mismatch — hook recommends --switch-focus but downstream
+  rejects (Unknown option)
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
-tags: [bug, hook-ux, focus-drift, meta-rca:T-1729, structural-gate, governance-bypass-prevention]
-components: [agents/context/check-active-task.sh, agents/context/lib/decision.sh, C-002, agents/context/lib/pattern.sh, agents/task-create/update-task.sh, tests/unit/check_active_task_switch_focus.bats]
+horizon:
+tags: [bug, hook-ux, focus-drift, meta-rca:T-1729, structural-gate, 
+      governance-bypass-prevention]
+components: [agents/context/check-active-task.sh, agents/context/lib/decision.sh,
+  C-002, agents/context/lib/pattern.sh, agents/task-create/update-task.sh, 
+      tests/unit/check_active_task_switch_focus.bats]
 related_tasks: [T-1730, T-1731, T-1729]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-18T06:04:06Z
-last_update: 2026-05-18T18:37:39Z
+last_update: '2026-06-11T22:24:02Z'
 date_finished: 2026-05-18T06:11:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=3 (body:fw-recall-or-memory-link); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1890: focus-drift bypass flag mismatch — hook recommends --switch-focus but downstream rejects (Unknown option)

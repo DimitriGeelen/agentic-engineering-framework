@@ -2,16 +2,36 @@
 id: T-134
 name: Replace superpowers with framework-native behavioral rules and skills
 description: >
-  Strip superpowers/feature-dev plugin references. Add two behavioral rules to CLAUDE.md (verification before completion, hypothesis-driven debugging). Create two lightweight framework-native skills (/explore, /plan). Update template. Clean up start-work skill references.
+  Strip superpowers/feature-dev plugin references. Add two behavioral rules to CLAUDE.md
+  (verification before completion, hypothesis-driven debugging). Create two lightweight
+  framework-native skills (/explore, /plan). Update template. Clean up start-work
+  skill references.
 status: work-completed
 workflow_type: build
-horizon: null
+horizon:
 owner: human
 tags: []
 related_tasks: []
 created: 2026-02-17T23:31:32Z
-last_update: 2026-02-17T23:41:25Z
+last_update: '2026-06-11T22:23:45Z'
 date_finished: 2026-02-17T23:41:25Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-134: Replace superpowers with framework-native behavioral rules and skills

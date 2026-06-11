@@ -2,19 +2,41 @@
 id: T-1855
 name: "Stale-arc audit warning (30d, T-NEW-7)"
 description: >
-  agents/audit/audit.sh adds check: warn when arc has status: in-progress AND no git commit in last 30 days touches any task with matching arc_id:. Threshold configurable via single constant (FW_STALE_ARC_DAYS). Check does not fire on draft/closed/abandoned arcs. Watchtower /arcs displays stale badge on affected arcs. Deps: T-NEW-3 (needs arc_id: to compute relevant commit).
+  agents/audit/audit.sh adds check: warn when arc has status: in-progress AND no git
+  commit in last 30 days touches any task with matching arc_id:. Threshold configurable
+  via single constant (FW_STALE_ARC_DAYS). Check does not fire on draft/closed/abandoned
+  arcs. Watchtower /arcs displays stale badge on affected arcs. Deps: T-NEW-3 (needs
+  arc_id: to compute relevant commit).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [build, audit, freshness, T-NEW-7]
 components: []
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming
 created: 2026-05-15T14:53:13Z
-last_update: 2026-05-17T22:27:09Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-16T21:37:39Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1855: Stale-arc audit warning (30d, T-NEW-7)

@@ -2,18 +2,39 @@
 id: T-281
 name: "Deploy Watchtower to LXC — dev and prod services"
 description: >
-  Clone framework repo from OneDev into LXC: /opt/watchtower-dev (master) and /opt/watchtower-prod (tagged release). Create two systemd services: watchtower-dev on :5051, watchtower on :5050. Configure env vars (OLLAMA_HOST, FW_SECRET_KEY, FW_PORT). Install Python deps via pip. Verify both services start and respond on /health. Depends on T-280 (LXC provisioned). See T-279 research. Parent: T-279.
+  Clone framework repo from OneDev into LXC: /opt/watchtower-dev (master) and /opt/watchtower-prod
+  (tagged release). Create two systemd services: watchtower-dev on :5051, watchtower
+  on :5050. Configure env vars (OLLAMA_HOST, FW_SECRET_KEY, FW_PORT). Install Python
+  deps via pip. Verify both services start and respond on /health. Depends on T-280
+  (LXC provisioned). See T-279 research. Parent: T-279.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [deployment, lxc, systemd]
 components: []
 related_tasks: []
 created: 2026-02-25T17:48:21Z
-last_update: 2026-02-25T20:37:13Z
+last_update: '2026-06-11T22:24:17Z'
 date_finished: 2026-02-25T18:35:39Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-281: Deploy Watchtower to LXC — dev and prod services

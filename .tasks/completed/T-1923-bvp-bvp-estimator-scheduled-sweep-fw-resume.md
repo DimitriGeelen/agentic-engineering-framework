@@ -10,13 +10,18 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [bvp, build, slice-7b, termlink, cron]
-components: [agents/resume/resume.sh, agents/task-create/update-task.sh, agents/termlink/bvp-estimator/AGENT.md, agents/termlink/bvp-estimator/bvp-estimator.sh, agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh, tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, web/blueprints/bvp.py, web/templates/bvp.html]
+components: [agents/resume/resume.sh, agents/task-create/update-task.sh, 
+      agents/termlink/bvp-estimator/AGENT.md, 
+      agents/termlink/bvp-estimator/bvp-estimator.sh, 
+      agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh, 
+      tests/unit/test_bvp_blueprint_cost.py, tests/unit/test_bvp_estimator.py, 
+      web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: [T-1915, T-1916, T-1922]
 arc_id: value-prioritisation
 created: 2026-05-19T07:00:00Z
-last_update: 2026-05-20T18:57:41Z
+last_update: '2026-06-11T22:24:03Z'
 date_finished: 2026-05-20T18:57:41Z
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -38,6 +43,23 @@ bvp_scores_proposed:
       D4: 2
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
       (body:env-class-handled)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

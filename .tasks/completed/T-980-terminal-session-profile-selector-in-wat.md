@@ -2,18 +2,36 @@
 id: T-980
 name: "Terminal session profile selector in Watchtower UI"
 description: >
-  Add session type selector to /terminal page using the profile data from /api/sessions/profiles. Users can choose between Bash, Zsh, Claude Code, or Dispatch when creating new sessions.
+  Add session type selector to /terminal page using the profile data from /api/sessions/profiles.
+  Users can choose between Bash, Zsh, Claude Code, or Dispatch when creating new sessions.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 components: [tests/playwright/test_terminal.py, web/templates/terminal.html]
 related_tasks: []
 created: 2026-04-06T22:40:09Z
-last_update: 2026-04-13T06:28:11Z
+last_update: '2026-06-11T22:24:34Z'
 date_finished: 2026-04-06T22:43:16Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-980: Terminal session profile selector in Watchtower UI

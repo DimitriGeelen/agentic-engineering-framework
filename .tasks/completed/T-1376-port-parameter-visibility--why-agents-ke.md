@@ -1,21 +1,43 @@
 ---
 id: T-1376
-name: "Port parameter visibility — why agents keep defaulting to :3000 after T-1154 + T-1287 + T-885 + T-1284 landed, and the minimum fix"
+name: "Port parameter visibility — why agents keep defaulting to :3000 after T-1154
+  + T-1287 + T-885 + T-1284 landed, and the minimum fix"
 description: >
-  Despite 5 prior tasks on Watchtower port parameterization (T-885 config, T-903 verify, T-1154 eliminate hardcoded 3000, T-1287 triple-file source of truth, T-1284 discovery redesign), agents still default to `:3000` — killing existing sessions or picking wrong-port services. This inception identifies the surviving hardcoded sites and asks whether a minimum fix exists.
+  Despite 5 prior tasks on Watchtower port parameterization (T-885 config, T-903 verify,
+  T-1154 eliminate hardcoded 3000, T-1287 triple-file source of truth, T-1284 discovery
+  redesign), agents still default to `:3000` — killing existing sessions or picking
+  wrong-port services. This inception identifies the surviving hardcoded sites and
+  asks whether a minimum fix exists.
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: [T-885, T-903, T-1154, T-1284, T-1287, T-1292]
 created: 2026-04-22T08:07:28Z
-last_update: 2026-04-26T20:30:12Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-04-22T18:29:45Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1376: Port parameter visibility — why agents keep defaulting to :3000 after T-1154 + T-1287 + T-885 + T-1284 landed, and the minimum fix

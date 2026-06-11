@@ -1,19 +1,38 @@
 ---
 id: T-408
-name: "Remediate audit warnings: fabric edges, uncommitted changes, bugfix-learning, T-203 lifecycle"
+name: "Remediate audit warnings: fabric edges, uncommitted changes, bugfix-learning,
+  T-203 lifecycle"
 description: >
-  Remediate audit warnings: fabric edges, uncommitted changes, bugfix-learning, T-203 lifecycle
+  Remediate audit warnings: fabric edges, uncommitted changes, bugfix-learning, T-203
+  lifecycle
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [audit, housekeeping]
 components: []
 related_tasks: []
 created: 2026-03-10T16:59:57Z
-last_update: 2026-03-10T17:07:23Z
+last_update: '2026-06-11T22:24:20Z'
 date_finished: 2026-03-10T17:07:23Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-408: Remediate audit warnings: fabric edges, uncommitted changes, bugfix-learning, T-203 lifecycle

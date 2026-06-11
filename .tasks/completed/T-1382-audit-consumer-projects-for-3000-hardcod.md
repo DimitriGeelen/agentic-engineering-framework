@@ -1,19 +1,39 @@
 ---
 id: T-1382
-name: "Audit consumer projects for :3000 hardcodes — T-1376 recurrence prevention cross-consumer sweep"
+name: "Audit consumer projects for :3000 hardcodes — T-1376 recurrence prevention
+  cross-consumer sweep"
 description: >
-  Audit consumer projects for :3000 hardcodes — T-1376 recurrence prevention cross-consumer sweep
+  Audit consumer projects for :3000 hardcodes — T-1376 recurrence prevention cross-consumer
+  sweep
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-22T19:38:02Z
-last_update: 2026-04-22T19:41:04Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-04-22T19:41:04Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1382: Audit consumer projects for :3000 hardcodes — T-1376 recurrence prevention cross-consumer sweep

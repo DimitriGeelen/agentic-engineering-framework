@@ -1,20 +1,45 @@
 ---
 id: T-1752
-name: "fw gaps surfaces closure_check_command verdicts inline — generic substrate for mechanical gap closure"
+name: "fw gaps surfaces closure_check_command verdicts inline — generic substrate
+  for mechanical gap closure"
 description: >
-  Extend fw gaps to honor an optional closure_check_command field on watching gaps. When present, fw gaps shells out to run it (with timeout), parses verdict from JSON output, and renders the result inline alongside the gap (READY in green / NOT_READY in yellow / ERROR in red). First consumer: G-064, whose closure-readiness gauge tools/g064-readiness.py was shipped in T-1750. Generic so future gaps with mechanical closure checks just add the field to concerns.yaml; no code changes per gap. Direct orchestrator-arc work — turns 'human remembers to run the script' into 'human sees verdict on every fw gaps run.'
+  Extend fw gaps to honor an optional closure_check_command field on watching gaps.
+  When present, fw gaps shells out to run it (with timeout), parses verdict from JSON
+  output, and renders the result inline alongside the gap (READY in green / NOT_READY
+  in yellow / ERROR in red). First consumer: G-064, whose closure-readiness gauge
+  tools/g064-readiness.py was shipped in T-1750. Generic so future gaps with mechanical
+  closure checks just add the field to concerns.yaml; no code changes per gap. Direct
+  orchestrator-arc work — turns 'human remembers to run the script' into 'human sees
+  verdict on every fw gaps run.'
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [governance, observability]
 components: [bin/fw, tests/unit/test_fw_gaps_closure_check.bats]
 related_tasks: [T-1750, T-1687]
 arc_id: orchestrator-rethink
 created: 2026-05-05T21:35:53Z
-last_update: 2026-05-05T21:40:05Z
+last_update: '2026-06-11T22:23:58Z'
 date_finished: 2026-05-05T21:40:05Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1752: fw gaps surfaces closure_check_command verdicts inline — generic substrate for mechanical gap closure

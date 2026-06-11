@@ -1,20 +1,43 @@
 ---
 id: T-1654
-name: "Fix framework dispatch tag drift — agents/termlink/termlink.sh emits task= instead of canonical task:"
+name: "Fix framework dispatch tag drift — agents/termlink/termlink.sh emits task=
+  instead of canonical task:"
 description: >
-  agents/termlink/termlink.sh:86 emits --tags task=$task; canonical per T-1649 / tests/fixtures/termlink-list-schema.json is task:$task. Witness: 20 live sessions on this hub carry task=NUM (non-canonical); 1 carries role= (also non-canonical, separate fix). Audit (agents/audit/orchestrator-mcp-scan.sh) explicitly knows task= → task: in KNOWN_DRIFT_MAP — framework produces the drift its own audit detects. One-line fix + regression test on the spawn primitive.
+  agents/termlink/termlink.sh:86 emits --tags task=$task; canonical per T-1649 / tests/fixtures/termlink-list-schema.json
+  is task:$task. Witness: 20 live sessions on this hub carry task=NUM (non-canonical);
+  1 carries role= (also non-canonical, separate fix). Audit (agents/audit/orchestrator-mcp-scan.sh)
+  explicitly knows task= → task: in KNOWN_DRIFT_MAP — framework produces the drift
+  its own audit detects. One-line fix + regression test on the spawn primitive.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [orchestrator, arc-c, drift, termlink, framework-self-fix]
 components: [agents/termlink/termlink.sh]
 related_tasks: [T-1644, T-1649, T-1641]
 arc_id: orchestrator-rethink
 created: 2026-05-01T16:27:50Z
-last_update: 2026-05-01T16:38:14Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T16:38:14Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-ORCH: 2
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=3 (body:portability-abstraction); F-RECALL=0 (no-signal); F-ORCH=2 
+      (components:substrate-edit); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1654: Fix framework dispatch tag drift — agents/termlink/termlink.sh emits task= instead of canonical task:

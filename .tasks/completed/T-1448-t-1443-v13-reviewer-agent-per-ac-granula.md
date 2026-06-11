@@ -2,18 +2,39 @@
 id: T-1448
 name: "T-1443-v1.3 Reviewer agent: per-AC granular verdicts (split findings + AC linkage)"
 description: >
-  Fourth micro-version of T-1443 reviewer per D-009 staged rollout. Adds per-AC granular verdicts: each finding links to a specific Acceptance Criteria checkbox by index/text. Watchtower can render verdicts inline next to ACs. Foundation for v1.4 override mechanism (per-pattern TTL'd waivers). Out of scope: override enforcement (v1.4), Pass A drift (v1.5).
+  Fourth micro-version of T-1443 reviewer per D-009 staged rollout. Adds per-AC granular
+  verdicts: each finding links to a specific Acceptance Criteria checkbox by index/text.
+  Watchtower can render verdicts inline next to ACs. Foundation for v1.4 override
+  mechanism (per-pattern TTL'd waivers). Out of scope: override enforcement (v1.4),
+  Pass A drift (v1.5).
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [reviewer-agent, ac-validation, granular-verdicts, v1.3]
 components: []
 related_tasks: [T-1443, T-1445, T-1446, T-1447]
 created: 2026-04-25T11:07:41Z
-last_update: 2026-04-29T08:33:53Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-25T18:17:42Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1448: T-1443-v1.3 Reviewer agent: per-AC granular verdicts (split findings + AC linkage)

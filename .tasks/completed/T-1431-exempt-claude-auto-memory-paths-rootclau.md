@@ -1,19 +1,38 @@
 ---
 id: T-1431
-name: "exempt claude auto-memory paths (/root/.claude/projects/*/memory/) in check-active-task.sh hook — addresses T-1274"
+name: "exempt claude auto-memory paths (/root/.claude/projects/*/memory/) in check-active-task.sh
+  hook — addresses T-1274"
 description: >
-  exempt claude auto-memory paths (/root/.claude/projects/*/memory/) in check-active-task.sh hook — addresses T-1274
+  exempt claude auto-memory paths (/root/.claude/projects/*/memory/) in check-active-task.sh
+  hook — addresses T-1274
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-24T15:37:53Z
-last_update: 2026-04-24T15:40:06Z
+last_update: '2026-06-11T22:23:48Z'
 date_finished: 2026-04-24T15:40:06Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1431: exempt claude auto-memory paths (/root/.claude/projects/*/memory/) in check-active-task.sh hook — addresses T-1274

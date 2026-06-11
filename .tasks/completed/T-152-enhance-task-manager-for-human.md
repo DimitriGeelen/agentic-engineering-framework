@@ -2,17 +2,39 @@
 id: T-152
 name: "enhance task manager for human"
 description: >
-  OK, I want to enhance the manual task management. So now I've got very little to change the status from capture team progress issues and moved it back and forth. So I want to have a manual ability to change what the status is. Furthermore, the later now or horizon values I cannot set in the task, so that would be quite beneficial I would say. also when a task is submitted by a human user refresh the view so it show up
+  OK, I want to enhance the manual task management. So now I've got very little to
+  change the status from capture team progress issues and moved it back and forth.
+  So I want to have a manual ability to change what the status is. Furthermore, the
+  later now or horizon values I cannot set in the task, so that would be quite beneficial
+  I would say. also when a task is submitted by a human user refresh the view so it
+  show up
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: []
 related_tasks: []
 created: 2026-02-18T12:07:22Z
-last_update: 2026-02-18T12:39:43Z
+last_update: '2026-06-11T22:23:50Z'
 date_finished: 2026-02-18T12:39:43Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-152: enhance task manager for human

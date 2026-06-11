@@ -2,7 +2,8 @@
 id: T-239
 name: "Implement discovery jobs — episodic decay, review queue, handover quality"
 description: >
-  Implement top-scoring omission detection discoveries from T-200 inception. Three jobs:
+  Implement top-scoring omission detection discoveries from T-200 inception. Three
+  jobs:
   D1 (episodic quality decay, score 25), D2 (human review queue aging, score 20),
   D8 (handover quality decay, score 20). These run as cron-compatible scripts that
   output YAML findings. Research: docs/reports/T-200-discovery-layer-design.md
@@ -10,13 +11,31 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [discovery, omission]
 components: [C-004]
 related_tasks: [T-200, T-194, T-238]
 created: 2026-02-21T23:38:55Z
-last_update: 2026-02-22T00:10:34Z
+last_update: '2026-06-11T22:24:16Z'
 date_finished: 2026-02-22T00:10:34Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-239: Implement discovery jobs — episodic decay, review queue, handover quality

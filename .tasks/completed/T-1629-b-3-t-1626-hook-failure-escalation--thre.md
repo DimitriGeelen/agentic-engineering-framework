@@ -2,18 +2,41 @@
 id: T-1629
 name: "B-3a (T-1626): fw doctor exercise-from-/tmp hook check"
 description: >
-  fw doctor adds a check that invokes each Claude-Code-configured hook from /tmp (a stable CWD that mimics agent CWD drift) and reports any that fail. Companion to T-1628's passive telemetry: doctor is the active probe. Threshold-rule (T-1631 / B-3b) and Watchtower /hooks page (T-1632 / B-3c) carved out as separate tasks (one task = one deliverable; T-1626 had bundled three).
+  fw doctor adds a check that invokes each Claude-Code-configured hook from /tmp (a
+  stable CWD that mimics agent CWD drift) and reports any that fail. Companion to
+  T-1628's passive telemetry: doctor is the active probe. Threshold-rule (T-1631 /
+  B-3b) and Watchtower /hooks page (T-1632 / B-3c) carved out as separate tasks (one
+  task = one deliverable; T-1626 had bundled three).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [hooks, escalation, watchtower, doctor, from-T-1626, B-3]
-components: [bin/fw, lib/hook-telemetry.sh, lib/upgrade.sh, tests/unit/hook_telemetry.bats]
+components: [bin/fw, lib/hook-telemetry.sh, lib/upgrade.sh, 
+      tests/unit/hook_telemetry.bats]
 related_tasks: [T-1626, T-1627, T-1628]
 created: 2026-04-30T21:19:30Z
-last_update: 2026-05-01T08:02:27Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T08:02:27Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 (no-signal); 
+      F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1629: B-3a (T-1626): fw doctor exercise-from-/tmp hook check

@@ -1,22 +1,47 @@
 ---
 id: T-1641
-name: "T-1061 orchestrator arc reconsideration — what got lost between inception, exploration, and shipped phases?"
+name: "T-1061 orchestrator arc reconsideration — what got lost between inception,
+  exploration, and shipped phases?"
 description: >
-  User flagged (2026-05-01 mid-loop): the arc is being treated as 'shipped' but nothing has been demonstrated to actually orchestrate; no test cases run; no human consultation on routing rules. Re-examine the original T-1061 inception, exploration, and scoping artefacts to surface what got lost. Multi-agent investigation via TermLink (up to 10 workers) writing to docs/reports/T-XXXX-worker-NN-*.md. C-001 research-artefact-first discipline. Output: aggregated findings + concrete arc-or-arcs proposal.
+  User flagged (2026-05-01 mid-loop): the arc is being treated as 'shipped' but nothing
+  has been demonstrated to actually orchestrate; no test cases run; no human consultation
+  on routing rules. Re-examine the original T-1061 inception, exploration, and scoping
+  artefacts to surface what got lost. Multi-agent investigation via TermLink (up to
+  10 workers) writing to docs/reports/T-XXXX-worker-NN-*.md. C-001 research-artefact-first
+  discipline. Output: aggregated findings + concrete arc-or-arcs proposal.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1061, termlink, orchestrator, reconsideration, multi-agent]
-components: [C-004, agents/audit/orchestrator-mcp-scan.sh, web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+components: [C-004, agents/audit/orchestrator-mcp-scan.sh, 
+      web/blueprints/__init__.py, web/blueprints/orchestrator.py, 
+      web/templates/orchestrator.html]
 related_tasks: []
 arc_id: orchestrator-rethink
 created: 2026-05-01T11:30:01Z
-last_update: 2026-05-01T18:58:36Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T12:29:12Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1641: T-1061 orchestrator arc reconsideration — what got lost between inception, exploration, and shipped phases?

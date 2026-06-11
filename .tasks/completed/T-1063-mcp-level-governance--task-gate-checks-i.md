@@ -2,18 +2,39 @@
 id: T-1063
 name: "MCP-level governance — task-gate checks in TermLink MCP tools"
 description: >
-  Phase 2 from T-1061: Add task-gate checks to TermLink MCP tools (termlink_exec, termlink_spawn, termlink_dispatch) so cross-session operations are governed. Structured, reliable, blockable. 2-4 weeks.
+  Phase 2 from T-1061: Add task-gate checks to TermLink MCP tools (termlink_exec,
+  termlink_spawn, termlink_dispatch) so cross-session operations are governed. Structured,
+  reliable, blockable. 2-4 weeks.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [termlink, governance, mcp]
 components: [agents/context/lib/focus.sh, agents/termlink/termlink.sh]
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:10Z
-last_update: 2026-04-24T09:15:08Z
+last_update: '2026-06-11T22:23:38Z'
 date_finished: 2026-04-24T09:15:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 2
+      D3: 1
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 1
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=1 
+      (body:error-msg-improved); D4=3 (body:portability-abstraction); F-RECALL=2
+      (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1063: MCP-level governance — task-gate checks in TermLink MCP tools

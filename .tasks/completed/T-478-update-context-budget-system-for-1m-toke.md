@@ -2,18 +2,38 @@
 id: T-478
 name: "Update context budget system for 1M token window (Opus 4.6 GA)"
 description: >
-  Anthropic announced 1M context GA for Opus 4.6/Sonnet 4.6 on 2026-03-13. Framework budget-gate.sh, checkpoint.sh, and CLAUDE.md all hardcode 200K window with thresholds at 120K/150K/170K. Update to reflect new 1M window while keeping sensible handover headroom.
+  Anthropic announced 1M context GA for Opus 4.6/Sonnet 4.6 on 2026-03-13. Framework
+  budget-gate.sh, checkpoint.sh, and CLAUDE.md all hardcode 200K window with thresholds
+  at 120K/150K/170K. Update to reflect new 1M window while keeping sensible handover
+  headroom.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [enforcement, budget, context]
 components: []
 related_tasks: []
 created: 2026-03-14T11:54:22Z
-last_update: 2026-03-14T11:58:49Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-14T11:58:49Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-478: Update context budget system for 1M token window (Opus 4.6 GA)

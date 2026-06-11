@@ -7,13 +7,33 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
-components: [agents/task-create/update-task.sh, bin/fw, lib/outcome.py, lib/resolver.py, tests/unit/test_outcome.py, tests/unit/test_resolver.py]
+components: [agents/task-create/update-task.sh, bin/fw, lib/outcome.py, 
+      lib/resolver.py, tests/unit/test_outcome.py, tests/unit/test_resolver.py]
 related_tasks: []
 created: 2026-05-03T12:59:11Z
-last_update: 2026-05-03T13:07:23Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-03T13:05:28Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1697: v1 Outcome enrichment — default evaluator + back-prop hook + append-only dispatch-outcomes.jsonl

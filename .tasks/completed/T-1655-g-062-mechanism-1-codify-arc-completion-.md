@@ -1,20 +1,46 @@
 ---
 id: T-1655
-name: "G-062 mechanism #1: Codify Arc Completion Discipline in CLAUDE.md — three-question checklist before declaring arcs 'shipped'"
+name: "G-062 mechanism #1: Codify Arc Completion Discipline in CLAUDE.md — three-question
+  checklist before declaring arcs 'shipped'"
 description: >
-  G-062 (high, score 16) tracks the framework-blindness pattern where agents declare arcs 'shipped' based on code/test artifacts without (a) end-to-end behavioral verification on fresh substrate, (b) policy-defaults audit, (c) framework-side use evidence. Three documented incidents in 5 weeks: T-1626, T-1633, T-1641. Mechanism #1 from the gap: add CLAUDE.md §Arc Completion Discipline section with explicit three-question checklist + 'no symptom-conflation' reminder. Closes the behavioral half of G-062; mechanisms #2 (fw audit arc-completion check) and #3 (fw task review extra gate) deferred.
+  G-062 (high, score 16) tracks the framework-blindness pattern where agents declare
+  arcs 'shipped' based on code/test artifacts without (a) end-to-end behavioral verification
+  on fresh substrate, (b) policy-defaults audit, (c) framework-side use evidence.
+  Three documented incidents in 5 weeks: T-1626, T-1633, T-1641. Mechanism #1 from
+  the gap: add CLAUDE.md §Arc Completion Discipline section with explicit three-question
+  checklist + 'no symptom-conflation' reminder. Closes the behavioral half of G-062;
+  mechanisms #2 (fw audit arc-completion check) and #3 (fw task review extra gate)
+  deferred.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [orchestrator, arc-c, governance, claude-md, framework-blindness]
 components: [CLAUDE.md]
 related_tasks: [T-1641, T-1644, T-1626, T-1633, T-1654]
 arc_id: orchestrator-rethink
 created: 2026-05-01T16:35:45Z
-last_update: 2026-05-01T16:38:08Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T16:38:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 4
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=4 
+      (body/components:instruction-sync); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1655: G-062 mechanism #1: Codify Arc Completion Discipline in CLAUDE.md — three-question checklist before declaring arcs 'shipped'

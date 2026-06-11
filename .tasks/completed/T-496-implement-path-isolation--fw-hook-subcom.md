@@ -1,19 +1,42 @@
 ---
 id: T-496
-name: "Implement path isolation — fw hook subcommand + portable settings.json + doctor validation"
+name: "Implement path isolation — fw hook subcommand + portable settings.json + doctor
+  validation"
 description: >
-  From T-495 GO. Build: (1) fw hook subcommand in bin/fw — resolves FRAMEWORK_ROOT from symlink, PROJECT_ROOT from cwd, execs agents/context/$1.sh. (2) Update generate_claude_code_config() in lib/init.sh — use fw hook instead of hardcoded paths. (3) fw upgrade step 5 detects old-style hardcoded paths and regenerates. (4) fw doctor validates hook commands resolve to real executables. (5) E2E test phase for path isolation in self-test.
+  From T-495 GO. Build: (1) fw hook subcommand in bin/fw — resolves FRAMEWORK_ROOT
+  from symlink, PROJECT_ROOT from cwd, execs agents/context/$1.sh. (2) Update generate_claude_code_config()
+  in lib/init.sh — use fw hook instead of hardcoded paths. (3) fw upgrade step 5 detects
+  old-style hardcoded paths and regenerates. (4) fw doctor validates hook commands
+  resolve to real executables. (5) E2E test phase for path isolation in self-test.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [portability, enforcement, P0]
 components: [bin/fw, C-009, lib/init.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-14T22:35:59Z
-last_update: 2026-03-23T11:04:30Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-14T22:58:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 1
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=1 (body:hard-coded-removed); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-496: Implement path isolation — fw hook subcommand + portable settings.json + doctor validation

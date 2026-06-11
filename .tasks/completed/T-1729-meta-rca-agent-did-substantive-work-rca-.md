@@ -1,22 +1,41 @@
 ---
 id: T-1729
-name: "meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — multiple breakdown points in single session"
+name: "meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task
+  — multiple breakdown points in single session"
 description: >
-  Inception: meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — multiple breakdown points in single session
+  Inception: meta-rca: agent did substantive work (RCA, diagnostics, edits) without
+  a task — multiple breakdown points in single session
 
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [meta-rca-anchor]
 components: []
 related_tasks: [T-1730, T-1731, T-1732, T-1716, T-1726, T-1727]
 arc_id: orchestrator-rethink
 created: 2026-05-04T22:03:56Z
-last_update: 2026-05-05T06:47:06Z
+last_update: '2026-06-11T22:23:57Z'
 date_finished: 2026-05-05T06:47:06Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1729: meta-rca: agent did substantive work (RCA, diagnostics, edits) without a task — multiple breakdown points in single session

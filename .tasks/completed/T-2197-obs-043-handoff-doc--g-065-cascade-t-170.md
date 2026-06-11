@@ -1,13 +1,14 @@
 ---
 id: T-2197
-name: "OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + concerns.yaml flip)"
+name: "OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + concerns.yaml
+  flip)"
 description: >
   OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + concerns.yaml flip)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
@@ -16,7 +17,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-06-03T22:01:41Z
-last_update: 2026-06-03T22:06:35Z
+last_update: '2026-06-11T22:24:11Z'
 date_finished: 2026-06-03T22:06:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +29,24 @@ date_finished: 2026-06-03T22:06:35Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2197: OBS-043 handoff doc — G-065 cascade (T-1702 + T-1707 [REVIEW] + concerns.yaml flip)

@@ -1,21 +1,43 @@
 ---
 id: T-487
-name: "Research KCP (Knowledge Context Protocol) — evaluate for T-477 governance declaration layer"
+name: "Research KCP (Knowledge Context Protocol) — evaluate for T-477 governance declaration
+  layer"
 description: >
-  Thor Henning Hetland (Cantara) pointed to KCP as prior art for the machine-readable declaration layer T-477 is designing. Evaluate: (1) Does KCP's manifest format solve what T-477 needs? (2) 284 pre-built CLI manifests — useful starting point? (3) Spec v0.10 federation/query — relevant for multi-agent? (4) MIT licensed — can we adopt/adapt? GitHub: github.com/Cantara/knowledge-context-protocol
+  Thor Henning Hetland (Cantara) pointed to KCP as prior art for the machine-readable
+  declaration layer T-477 is designing. Evaluate: (1) Does KCP's manifest format solve
+  what T-477 needs? (2) 284 pre-built CLI manifests — useful starting point? (3) Spec
+  v0.10 federation/query — relevant for multi-agent? (4) MIT licensed — can we adopt/adapt?
+  GitHub: github.com/Cantara/knowledge-context-protocol
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [governance, research, external]
 components: []
 related_tasks: []
 created: 2026-03-14T16:13:49Z
-last_update: 2026-03-14T16:28:33Z
+last_update: '2026-06-11T22:24:22Z'
 date_finished: 2026-03-14T16:28:33Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-487: Research KCP (Knowledge Context Protocol) — evaluate for T-477 governance declaration layer

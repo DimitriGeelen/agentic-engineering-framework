@@ -1,22 +1,48 @@
 ---
 id: T-1645
-name: "G-015 reframe — sub-agent /tmp/ bypass: narrow T-1061 claim or open non-TermLink workstream"
+name: "G-015 reframe — sub-agent /tmp/ bypass: narrow T-1061 claim or open non-TermLink
+  workstream"
 description: >
-  T-1061 was framed partly on closing G-015 (sub-agent results bypass task governance via /tmp/fw-agent-*.md writes). Original review-feedback artefact (item W4) explicitly said TermLink cannot solve this — sub-agents write to /tmp/ outside the PTY TermLink observes. T-1641 W02 surfaced that no follow-up workstream was opened. Decision-only inception, ~1 session: either (a) narrow T-1061's stated benefit by removing the G-015 claim and update concerns.yaml, or (b) open a non-TermLink workstream (FUSE / Linux namespace / hook-side) to govern sub-agent file writes. Pick one, commit. Source: docs/reports/T-1641-worker-02-review-feedback-mining.md item L1.
+  T-1061 was framed partly on closing G-015 (sub-agent results bypass task governance
+  via /tmp/fw-agent-*.md writes). Original review-feedback artefact (item W4) explicitly
+  said TermLink cannot solve this — sub-agents write to /tmp/ outside the PTY TermLink
+  observes. T-1641 W02 surfaced that no follow-up workstream was opened. Decision-only
+  inception, ~1 session: either (a) narrow T-1061's stated benefit by removing the
+  G-015 claim and update concerns.yaml, or (b) open a non-TermLink workstream (FUSE
+  / Linux namespace / hook-side) to govern sub-agent file writes. Pick one, commit.
+  Source: docs/reports/T-1641-worker-02-review-feedback-mining.md item L1.
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: [from-T-1641, from-T-1061, G-015, sub-agent-bypass]
-components: [web/blueprints/__init__.py, web/blueprints/orchestrator.py, web/templates/orchestrator.html]
+components: [web/blueprints/__init__.py, web/blueprints/orchestrator.py, 
+      web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1061, T-329]
 arc_id: orchestrator-rethink
 created: 2026-05-01T11:55:08Z
-last_update: 2026-05-01T18:58:37Z
+last_update: '2026-06-11T22:23:54Z'
 date_finished: 2026-05-01T17:09:08Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1645: G-015 reframe — sub-agent /tmp/ bypass: narrow T-1061 claim or open non-TermLink workstream

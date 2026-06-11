@@ -2,19 +2,38 @@
 id: T-1489
 name: "Fabric enrich — close 17/26 no-edge cards (mechanical dependency detection)"
 description: >
-  Run fw fabric enrich to add 29 mechanically-detectable edges (9 forward, 20 reverse) to 17 cards
+  Run fw fabric enrich to add 29 mechanically-detectable edges (9 forward, 20 reverse)
+  to 17 cards
   that previously had no graph connections. Closes long-standing audit advisory.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fabric, enrichment, audit-warn]
 components: [.fabric/components/]
 related_tasks: []
 created: 2026-04-26T09:18:26Z
-last_update: 2026-04-26T09:23:30Z
+last_update: '2026-06-11T22:23:49Z'
 date_finished: 2026-04-26T09:23:30Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:learning-ref); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1489: Fabric enrich — close 17/26 no-edge cards (mechanical dependency detection)

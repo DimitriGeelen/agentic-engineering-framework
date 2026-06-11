@@ -1,21 +1,40 @@
 ---
 id: T-490
-name: "fw self-test — agent-driven self-verification with terminal spawning, failure capture, and fix-retest loop"
+name: "fw self-test — agent-driven self-verification with terminal spawning, failure
+  capture, and fix-retest loop"
 description: >
-  Inception: fw self-test — agent-driven self-verification with terminal spawning, failure capture, and fix-retest loop
+  Inception: fw self-test — agent-driven self-verification with terminal spawning,
+  failure capture, and fix-retest loop
 
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-14T16:54:16Z
-last_update: 2026-03-14T17:04:29Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-14T17:04:29Z
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-490: fw self-test — agent-driven self-verification with terminal spawning, failure capture, and fix-retest loop

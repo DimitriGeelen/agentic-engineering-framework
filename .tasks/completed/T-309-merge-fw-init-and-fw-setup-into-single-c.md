@@ -2,18 +2,37 @@
 id: T-309
 name: "Merge fw init and fw setup into single command"
 description: >
-  DX comparison top finding: two entry points (fw init vs fw setup) confuses new users. Every other tool has ONE command. Auto-detect TTY for interactive vs non-interactive, --yes flag for defaults. Source: T-294 DX comparison finding.
+  DX comparison top finding: two entry points (fw init vs fw setup) confuses new users.
+  Every other tool has ONE command. Auto-detect TTY for interactive vs non-interactive,
+  --yes flag for defaults. Source: T-294 DX comparison finding.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [bin/fw]
 related_tasks: [T-294]
 created: 2026-03-04T17:28:40Z
-last_update: 2026-03-04T21:59:08Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T21:59:08Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-309: Merge fw init and fw setup into single command

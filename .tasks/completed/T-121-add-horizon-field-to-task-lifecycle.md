@@ -2,16 +2,35 @@
 id: T-121
 name: Add horizon field to task lifecycle
 description: >
-  Add horizon: now|next|later field to task frontmatter. Distinguishes "ready to work on" from "backlog/deferred" tasks. Handover agent filters by horizon so deferred tasks don't appear as suggested actions.
+  Add horizon: now|next|later field to task frontmatter. Distinguishes "ready to work
+  on" from "backlog/deferred" tasks. Handover agent filters by horizon so deferred
+  tasks don't appear as suggested actions.
 status: work-completed
-horizon: null
+horizon:
 workflow_type: build
 owner: agent
 tags: []
 related_tasks: []
 created: 2026-02-17T16:07:24Z
-last_update: 2026-02-17T16:16:07Z
+last_update: '2026-06-11T22:23:42Z'
 date_finished: 2026-02-17T16:16:07Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-121: Add horizon field to task lifecycle

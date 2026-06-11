@@ -2,13 +2,35 @@
 id: T-066
 name: Implement Tier 1 enforcement from 011-EnforcementConfig spec
 description: >
-  T-061 finding: The 4-tier enforcement system (011-EnforcementConfig.md) is pure documentation with zero implementation. Gap G-001 decision trigger has now fired — plugins acting as second agent caused task bypass. Implement at minimum Tier 1 (default enforcement): all standard operations require active task context. Tier 0 (consequential actions like deploy/delete/destroy) should block unconditionally. This fulfills the framework's own spec and closes G-001.
+  T-061 finding: The 4-tier enforcement system (011-EnforcementConfig.md) is pure
+  documentation with zero implementation. Gap G-001 decision trigger has now fired
+  — plugins acting as second agent caused task bypass. Implement at minimum Tier 1
+  (default enforcement): all standard operations require active task context. Tier
+  0 (consequential actions like deploy/delete/destroy) should block unconditionally.
+  This fulfills the framework's own spec and closes G-001.
 status: work-completed
 workflow_type: build
 owner: human
 created: 2026-02-15T08:35:19Z
-last_update: 2026-02-15T08:48:04Z
+last_update: '2026-06-11T22:23:36Z'
 date_finished: 2026-02-15T08:48:04Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-066: Implement Tier 1 enforcement from 011-EnforcementConfig spec

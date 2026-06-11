@@ -2,19 +2,41 @@
 id: T-1708
 name: "worker_kind drift regression test — pin validator + dispatcher in sync"
 description: >
-  Pin the worker_kind drift class. T-1706 added `ollama-loop` to the termlink dispatcher's `--worker-kind` flag but missed `VALID_WORKER_KINDS` in `bin/fw`'s workflow validator → `fw doctor` silently failed on the new workflow until T-1707 caught it. Test asserts the validator set and the dispatcher case-statement stay in sync, so the next worker_kind addition can't ship half-wired.
+  Pin the worker_kind drift class. T-1706 added `ollama-loop` to the termlink dispatcher's
+  `--worker-kind` flag but missed `VALID_WORKER_KINDS` in `bin/fw`'s workflow validator
+  → `fw doctor` silently failed on the new workflow until T-1707 caught it. Test asserts
+  the validator set and the dispatcher case-statement stay in sync, so the next worker_kind
+  addition can't ship half-wired.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [tests/unit/test_worker_kind_drift.bats]
 related_tasks: [T-1706, T-1707]
 arc_id: orchestrator-rethink
 created: 2026-05-03T22:44:23Z
-last_update: 2026-05-03T23:38:43Z
+last_update: '2026-06-11T22:23:56Z'
 date_finished: 2026-05-03T23:38:43Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 3
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=3 
+      (body:typed-io-or-gate); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1708: worker_kind drift regression test — pin validator + dispatcher in sync

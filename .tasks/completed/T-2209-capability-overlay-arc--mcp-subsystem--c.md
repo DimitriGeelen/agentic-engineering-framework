@@ -9,12 +9,13 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: []
-components: [agents/task-create/update-task.sh, tests/unit/disposition_gate.bats, web/blueprints/inception.py]
+components: [agents/task-create/update-task.sh, tests/unit/disposition_gate.bats,
+  web/blueprints/inception.py]
 related_tasks: []
 created: 2026-06-05T12:04:51Z
-last_update: 2026-06-05T20:52:39Z
+last_update: '2026-06-11T22:24:11Z'
 date_finished: 2026-06-05T20:52:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -27,19 +28,24 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 # T-1984: machine-readable GO scope — each IW question's answer ships in a research-spike child task.
 inception_decisions:
   - id: iw1-delivery-shape
-    text: "MCP server vs CLI-overlay vs both-as-siblings vs federate-into-skills — which delivery shape does the arc produce?"
+    text: "MCP server vs CLI-overlay vs both-as-siblings vs federate-into-skills —
+      which delivery shape does the arc produce?"
     ships_in: deferred:T-2210
   - id: iw2-verb-scope
-    text: "Which fw verbs are in scope — curated 22, curated 40, or full 129; what's the classification rule?"
+    text: "Which fw verbs are in scope — curated 22, curated 40, or full 129; what's
+      the classification rule?"
     ships_in: deferred:T-2211
   - id: iw3-auth-model
-    text: "Auth model — env-inherit / per-client token / capability handshake / shell-only — which preserves §B-005 sovereignty?"
+    text: "Auth model — env-inherit / per-client token / capability handshake / shell-only
+      — which preserves §B-005 sovereignty?"
     ships_in: deferred:T-2212
   - id: iw4-headline-mechanic
-    text: "Wire-level headline mechanic per G-062 §ACD — one named user-visible deliverable that proves the arc fires"
+    text: "Wire-level headline mechanic per G-062 §ACD — one named user-visible deliverable
+      that proves the arc fires"
     ships_in: deferred:T-2213
   - id: iw5-overlap
-    text: "Existing-MCP overlap — sibling framework MCP server vs federate into mcp__skills__*; what does the surface analysis say?"
+    text: "Existing-MCP overlap — sibling framework MCP server vs federate into mcp__skills__*;
+      what does the surface analysis say?"
     ships_in: deferred:T-2214
 bvp_scores_proposed:
   - ts: '2026-06-05T12:05:51Z'
@@ -53,6 +59,22 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T22:24:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-06-05T12:15:02Z'

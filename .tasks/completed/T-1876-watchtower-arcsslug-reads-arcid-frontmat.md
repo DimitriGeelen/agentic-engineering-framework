@@ -2,21 +2,43 @@
 id: T-1876
 name: "Watchtower /arcs/<slug> reads arc_id frontmatter (T-NEW-12)"
 description: >
-  _resolve_constituents in web/blueprints/arcs.py scans legacy arc:<slug> tags only — same T-1850 migration blindness as T-1874 (CLI display) and T-1875 (audit fallback), now on the Watchtower arc-detail page. Union with arc_id frontmatter via the existing _scan_tasks_by_arc_membership index.
+  _resolve_constituents in web/blueprints/arcs.py scans legacy arc:<slug> tags only
+  — same T-1850 migration blindness as T-1874 (CLI display) and T-1875 (audit fallback),
+  now on the Watchtower arc-detail page. Union with arc_id frontmatter via the existing
+  _scan_tasks_by_arc_membership index.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [arc, arc-grooming, watchtower, web, T-NEW-12]
-components: [tests/playwright/test_arcs_detail_arc_id_membership.py, web/blueprints/arcs.py]
+components: [tests/playwright/test_arcs_detail_arc_id_membership.py, 
+      web/blueprints/arcs.py]
 related_tasks: [T-1687, T-1849, T-1850, T-1874, T-1875]
 arc_id: arc-grooming
 created: 2026-05-17T06:53:01Z
-last_update: 2026-05-17T22:39:35Z
+last_update: '2026-06-11T22:24:01Z'
 date_finished: 2026-05-17T06:59:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1876: Watchtower /arcs/<slug> reads arc_id frontmatter (T-NEW-12)

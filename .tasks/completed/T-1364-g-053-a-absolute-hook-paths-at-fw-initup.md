@@ -1,19 +1,38 @@
 ---
 id: T-1364
-name: "G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade class)"
+name: "G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade
+  class)"
 description: >
-  G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade class)
+  G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade
+  class)
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [C-009, lib/init.sh, tests/unit/hook_absolute_paths.bats]
 related_tasks: []
 created: 2026-04-20T19:00:11Z
-last_update: 2026-04-20T19:11:45Z
+last_update: '2026-06-11T22:23:46Z'
 date_finished: 2026-04-20T19:11:45Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1364: G-053-A: absolute hook paths at fw init/upgrade (eliminate CWD-drift hook-cascade class)

@@ -1,19 +1,43 @@
 ---
 id: T-1836
-name: "Gate diagnostic upgrade — surface body-vs-checkbox drift in AC-unchecked error message (T-1831 C-3 build)"
+name: "Gate diagnostic upgrade — surface body-vs-checkbox drift in AC-unchecked error
+  message (T-1831 C-3 build)"
 description: >
-  T-1831 C-3 build sibling. Enhance the error message in P-010 (update-task.sh:110) and inception-decide preflight (lib/inception.sh:517) when ACs are unchecked: append a hint pointing at CLAUDE.md §Progressive AC ticking, and (when a ## Recommendation block is filled) explicitly suggest 'AC content likely present — tick the boxes if work is complete'. Origin: S-2026-0514 errors 1-3 — agent wrote content, didn't tick, gate refused with no signal that the fix is 'tick the box', leading to repeated retries. Sibling to T-1835 (C-4 documentation half).
+  T-1831 C-3 build sibling. Enhance the error message in P-010 (update-task.sh:110)
+  and inception-decide preflight (lib/inception.sh:517) when ACs are unchecked: append
+  a hint pointing at CLAUDE.md §Progressive AC ticking, and (when a ## Recommendation
+  block is filled) explicitly suggest 'AC content likely present — tick the boxes
+  if work is complete'. Origin: S-2026-0514 errors 1-3 — agent wrote content, didn't
+  tick, gate refused with no signal that the fix is 'tick the box', leading to repeated
+  retries. Sibling to T-1835 (C-4 documentation half).
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: [fw-upgrade-incident-2026-05-14, gate-diagnostic, ac-discipline, bug]
 components: [agents/task-create/update-task.sh, lib/inception.sh]
 related_tasks: []
 created: 2026-05-14T20:56:18Z
-last_update: 2026-05-14T20:59:15Z
+last_update: '2026-06-11T22:24:00Z'
 date_finished: 2026-05-14T20:59:15Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 1
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); 
+      F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1836: Gate diagnostic upgrade — surface body-vs-checkbox drift in AC-unchecked error message (T-1831 C-3 build)

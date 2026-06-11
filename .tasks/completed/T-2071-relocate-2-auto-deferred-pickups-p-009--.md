@@ -1,13 +1,19 @@
 ---
 id: T-2071
-name: "relocate 2 auto-deferred pickups (P-009 + P-041) whose blockers (T-1498 + T-1541) shipped — files no longer block, manual cleanup"
+name: "relocate 2 auto-deferred pickups (P-009 + P-041) whose blockers (T-1498 + T-1541)
+  shipped — files no longer block, manual cleanup"
 description: >
-  P-009 (status query, low priority) and P-041 (bugfix-fw-task-verify) sit in .context/pickup/auto-deferred/ blocked by T-1498 and T-1541 respectively. Both blockers shipped (work-completed in .tasks/completed/). The pickup pipeline has no auto-promotion mechanism for auto-deferred envelopes when their blockers complete — they sit indefinitely. Cleanup: relocate both envelopes (+ breadcrumb sidecars) from auto-deferred/ to processed/. RCA: note the missing promotion mechanism so a future task can ship it structurally.
+  P-009 (status query, low priority) and P-041 (bugfix-fw-task-verify) sit in .context/pickup/auto-deferred/
+  blocked by T-1498 and T-1541 respectively. Both blockers shipped (work-completed
+  in .tasks/completed/). The pickup pipeline has no auto-promotion mechanism for auto-deferred
+  envelopes when their blockers complete — they sit indefinitely. Cleanup: relocate
+  both envelopes (+ breadcrumb sidecars) from auto-deferred/ to processed/. RCA: note
+  the missing promotion mechanism so a future task can ship it structurally.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
@@ -16,7 +22,7 @@ related_tasks: []
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
 created: 2026-05-28T17:40:50Z
-last_update: 2026-05-28T17:42:57Z
+last_update: '2026-06-11T22:24:06Z'
 date_finished: 2026-05-28T17:42:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -28,6 +34,24 @@ date_finished: 2026-05-28T17:42:57Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2071: relocate 2 auto-deferred pickups (P-009 + P-041) whose blockers (T-1498 + T-1541) shipped — files no longer block, manual cleanup

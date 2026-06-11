@@ -2,18 +2,39 @@
 id: T-296
 name: "Fix fw context init exit code 1 on success"
 description: >
-  fw context init returns exit code 1 even on successful initialization. Root cause: do_init() in agents/context/lib/init.sh ends without explicit return 0 — last command exit code leaks through. Fix: add return 0 at end of function. Source: T-294 simulation O-005.
+  fw context init returns exit code 1 even on successful initialization. Root cause:
+  do_init() in agents/context/lib/init.sh ends without explicit return 0 — last command
+  exit code leaks through. Fix: add return 0 at end of function. Source: T-294 simulation
+  O-005.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: [agents/context/lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:06:35Z
-last_update: 2026-03-04T18:17:52Z
+last_update: '2026-06-11T22:24:18Z'
 date_finished: 2026-03-04T18:17:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-296: Fix fw context init exit code 1 on success

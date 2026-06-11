@@ -2,18 +2,40 @@
 id: T-491
 name: "Build fw self-test command — phases 1-5 with JSON output and CI integration"
 description: >
-  From T-490 GO. Build agents/self-test/self-test.sh with 5 phases: (1) preflight — deps, temp project; (2) gate validation — Tier 0/1/2 via exit codes; (3) task lifecycle — create/update/complete; (4) Watchtower — start on :9877, poll health, run smoke_test.py; (5) cleanup + JSON report. Also fix fw doctor exit code bug (always returns 0). Key constraints: all lifecycle in single chained commands (shell state doesn't persist), sleep 4 for Flask startup, pipe JSON to stdin for hook scripts.
+  From T-490 GO. Build agents/self-test/self-test.sh with 5 phases: (1) preflight
+  — deps, temp project; (2) gate validation — Tier 0/1/2 via exit codes; (3) task
+  lifecycle — create/update/complete; (4) Watchtower — start on :9877, poll health,
+  run smoke_test.py; (5) cleanup + JSON report. Also fix fw doctor exit code bug (always
+  returns 0). Key constraints: all lifecycle in single chained commands (shell state
+  doesn't persist), sleep 4 for Flask startup, pipe JSON to stdin for hook scripts.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: null
+horizon:
 tags: [testing, self-test, ci]
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-14T17:05:01Z
-last_update: 2026-03-23T11:04:29Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-14T20:28:52Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-491: Build fw self-test command — phases 1-5 with JSON output and CI integration

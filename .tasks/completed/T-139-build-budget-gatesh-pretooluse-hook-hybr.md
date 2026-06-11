@@ -2,16 +2,38 @@
 id: T-139
 name: Build budget-gate.sh PreToolUse hook (hybrid budget enforcement)
 description: >
-  Build the PreToolUse budget-gate.sh hook that reads token usage and BLOCKS tool calls at critical threshold. Hybrid approach: keep PostToolUse checkpoint.sh as fallback. Deliverables: (1) agents/context/budget-gate.sh — PreToolUse hook, (2) .budget-status file protocol, (3) settings.json update to add PreToolUse hook, (4) deprecate .commit-counter from hooks. Design: docs/T-138-inception-findings.md. Decision: T-138 GO — hybrid.
+  Build the PreToolUse budget-gate.sh hook that reads token usage and BLOCKS tool
+  calls at critical threshold. Hybrid approach: keep PostToolUse checkpoint.sh as
+  fallback. Deliverables: (1) agents/context/budget-gate.sh — PreToolUse hook, (2)
+  .budget-status file protocol, (3) settings.json update to add PreToolUse hook, (4)
+  deprecate .commit-counter from hooks. Design: docs/T-138-inception-findings.md.
+  Decision: T-138 GO — hybrid.
 status: work-completed
 workflow_type: build
-horizon: null
+horizon:
 owner: agent
 tags: []
 related_tasks: []
 created: 2026-02-18T07:29:16Z
-last_update: 2026-02-18T07:36:29Z
+last_update: '2026-06-11T22:23:47Z'
 date_finished: 2026-02-18T07:36:29Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=1 (body:episodic-only); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-139: Build budget-gate.sh PreToolUse hook (hybrid budget enforcement)

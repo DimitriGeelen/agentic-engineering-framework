@@ -2,18 +2,37 @@
 id: T-529
 name: "Capture Task vs TermLink dispatch learning"
 description: >
-  Capture learning on when to use Task tool agents vs TermLink dispatch — decision matrix in CLAUDE.md
+  Capture learning on when to use Task tool agents vs TermLink dispatch — decision
+  matrix in CLAUDE.md
 
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-03-17T23:24:22Z
-last_update: 2026-03-23T11:08:48Z
+last_update: '2026-06-11T22:24:23Z'
 date_finished: 2026-03-17T23:33:32Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:24:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 3
+      F-ORCH: 1
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=1 
+      (body:hand-wired-dispatch); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-529: Capture Task vs TermLink dispatch learning

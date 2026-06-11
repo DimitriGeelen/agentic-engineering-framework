@@ -2,18 +2,42 @@
 id: T-1407
 name: "T-1346-B3 install.sh scans for vendored consumer projects before linking shim"
 description: >
-  Build B3 from T-1346 GO decomposition: install.sh enumerates vendored consumer projects (FW_CONSUMER_SCAN_DIRS, default /opt) before linking the global shim, so users see which existing installs may be affected if the legacy symlink path is taken. T-1356 (B1) already closes the leak structurally (vendored beats global), so B3 is informational/observability — print discovered vendored consumers + active mode after install. Acceptance: (1) install.sh prints 'Vendored framework copies detected:' section listing scanned consumers; (2) suppression via --no-scan flag for CI; (3) bats covers found-zero, found-some, --no-scan.
+  Build B3 from T-1346 GO decomposition: install.sh enumerates vendored consumer projects
+  (FW_CONSUMER_SCAN_DIRS, default /opt) before linking the global shim, so users see
+  which existing installs may be affected if the legacy symlink path is taken. T-1356
+  (B1) already closes the leak structurally (vendored beats global), so B3 is informational/observability
+  — print discovered vendored consumers + active mode after install. Acceptance: (1)
+  install.sh prints 'Vendored framework copies detected:' section listing scanned
+  consumers; (2) suppression via --no-scan flag for CI; (3) bats covers found-zero,
+  found-some, --no-scan.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: null
+horizon:
 tags: []
 components: []
 related_tasks: []
 created: 2026-04-23T18:50:05Z
-last_update: 2026-04-23T18:52:44Z
+last_update: '2026-06-11T22:23:47Z'
 date_finished: 2026-04-23T18:52:44Z
+bvp_scores_proposed:
+  - ts: '2026-06-11T22:23:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-1407: T-1346-B3 install.sh scans for vendored consumer projects before linking shim
