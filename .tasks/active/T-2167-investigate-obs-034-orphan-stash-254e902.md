@@ -272,8 +272,8 @@ out=$(grep -E "^- \[ ?x?\]" .tasks/active/T-2167-investigate-obs-034-orphan-stas
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-19fbdb9f
-- **Timestamp:** 2026-06-01T20:21:52Z
+- **Scan ID:** R-c8000672
+- **Timestamp:** 2026-06-11T12:13:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -285,6 +285,5 @@ out=$(grep -E "^- \[ ?x?\]" .tasks/active/T-2167-investigate-obs-034-orphan-stas
      - evidence: `git stash list | grep -q "stash@{0}.*WIP on master: 8a8a7b0a T-2086"`
   2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 38
      - evidence: `out=$(grep -E "^- \[ ?x?\]" .tasks/active/T-2167-investigate-obs-034-orphan-stash-254e902.md); echo "$out" | grep -E "^- \[x\]" | wc -l | grep -q "^6$"`
-
 ### 2026-06-01T20:21:51Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

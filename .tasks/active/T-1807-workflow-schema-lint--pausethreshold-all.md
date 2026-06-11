@@ -133,18 +133,20 @@ out=$(bin/fw doctor 2>&1 || true); echo "$out" | grep "Workflow schema:" | grep 
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1807-workflow-schema-lint--pausethreshold-all.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-1a438696
-- **Timestamp:** 2026-05-18T09:30:57Z
+- **Scan ID:** R-c7eed71d
+- **Timestamp:** 2026-06-11T11:49:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** 2
 
 **Verification-level findings:**
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `python3 -m pytest tests/unit/test_workflow_schema_pause_lint.py -q 2>&1 | tail -5`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 5
+     - evidence: `out=$(bin/fw doctor 2>&1 || true); echo "$out" | grep "Workflow schema:" | grep -qE "lint clean|warning" || (echo "FAIL: existing workflows must remain clean"; exit 1)`
 ### 2026-05-13T16:00:21Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -277,10 +277,33 @@ def pre_flight_check(
 def _main(argv: list[str]) -> int:
     if len(argv) >= 2 and argv[1] in ("--help", "-h", "help"):
         sys.stderr.write(
-            "usage: orchestrator-graph.py [next-dispatch]\n"
-            "Reads .tasks/active/T-*.md and emits (task_id, mode) one per line.\n"
+            "usage: orchestrator-graph.py [next-dispatch | pre-flight <T-XXX>]\n"
+            "  next-dispatch  Reads .tasks/active/T-*.md, emits (task_id, mode) per line\n"
+            "  pre-flight     Decide if task is safe to dispatch vs in-flight pool\n"
+            "                 Exit 0=allowed, 1=refused, 2=task-not-found, 64=usage\n"
         )
         return 0
+
+    cmd = argv[1] if len(argv) >= 2 else "next-dispatch"
+
+    if cmd == "pre-flight":
+        if len(argv) < 3:
+            sys.stderr.write("usage: orchestrator-graph.py pre-flight <T-XXX>\n")
+            return 64
+        task_id = argv[2]
+        try:
+            ok, msg = pre_flight_check(task_id)
+        except FileNotFoundError as e:
+            sys.stderr.write(f"error: {e}\n")
+            return 2
+        if ok:
+            print(f"allowed{(': ' + msg) if msg else ''}")
+            return 0
+        sys.stderr.write(f"refused: {msg}\n")
+        print("refused")
+        return 1
+
+    # Default (or explicit "next-dispatch"): emit dispatch plan
     graph = build_graph()
     for tid, mode in next_dispatch(graph):
         print(f"{tid}\t{mode}")

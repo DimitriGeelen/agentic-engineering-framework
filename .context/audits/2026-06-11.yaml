@@ -1,8 +1,8 @@
-# Audit Results - 2026-06-11-0906
-timestamp: 2026-06-11T07:06:57Z
+# Audit Results - 2026-06-11-2011
+timestamp: 2026-06-11T18:11:19Z
 sections: "structure"
 summary:
-  pass: 19
+  pass: 22
   warn: 2
   fail: 0
 findings:
@@ -27,6 +27,12 @@ findings:
   - level: WARN
     check: "free driver F-ORCH: retire_when condition appears met (T-1643 completed cleanly OR G-064 closed) — review whether to retire"
     mitigation: "Review the driver; if truly retired, comment it out or move to candidates section. Silence with FW_RETIRE_WHEN_ADVISORY=0."
+  - level: INFO
+    check: "free driver F3: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F1: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
   - level: PASS
     check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881)"
   - level: PASS
@@ -34,12 +40,12 @@ findings:
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
   - level: PASS
-    check: "Fabric: 820 registered, 0 unregistered"
+    check: "Fabric: 828 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 88/811 cards have no edges"
+    check: "Fabric: 96/819 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (820 cards)"
+    check: "Fabric drift: All watched source files registered (828 cards)"
   - level: PASS
     check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
   - level: PASS

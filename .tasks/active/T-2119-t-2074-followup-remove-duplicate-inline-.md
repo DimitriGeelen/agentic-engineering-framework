@@ -256,8 +256,8 @@ any other standalone).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4278d582
-- **Timestamp:** 2026-06-06T06:18:38Z
+- **Scan ID:** R-40285306
+- **Timestamp:** 2026-06-11T12:13:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -267,6 +267,5 @@ any other standalone).
 
 - **AC#4 (Agent)** — `web/static/htmx-toast.js` unchanged (extraction owns wiring).
   - **AC-verify-mismatch** (narrow, heuristic) — `path=web/static/htmx-toast.js in: `web/static/htmx-toast.js` unchanged (extraction owns wiring).`
-
 ### 2026-06-06T06:18:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

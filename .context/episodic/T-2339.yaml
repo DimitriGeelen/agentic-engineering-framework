@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2339: arc-011 M1 §1 — orchestrator-graph: parallel/serial dispatch decision over
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T18:04:16Z
+# ============================================================================
+
+task_id: T-2339
+task_name: "arc-011 M1 §1 — orchestrator-graph: parallel/serial dispatch decision over"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T17:54:44Z
+completed: 2026-06-11T18:01:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-11T19:56:06+02:00
+last_commit: 2026-06-11T20:01:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file arc-011 M1 §1 — orchestrator-graph (ACs). refresh vendored .agentic-framework/ (yield-point + preamble). arc-011 M1 §1 — orchestrator-graph dispatch decision
+
+# Key outcomes
+outcomes:
+  - '`agents/orchestrator/orchestrator-graph.py` exists with `build_graph(task_dir) -> Graph` reading `.tasks/active/T-*.md` frontmatters and `next_dispatch(graph) -> list[tuple[str, str]]` returning `(task_id, mode)` pairs where mode is `parallel` or `serial`'
+  - 'Reuses `lib/write_set.py` (T-2337) for disjointness checks — does NOT re-implement the glob/set logic'
+  - '`bin/fw orchestrator next-dispatch` CLI verb prints the dispatch sequence (one `<task_id>\t<mode>` per line, exit 0)'
+  - '`tests/unit/test_orchestrator_graph.bats` covers: 2 disjoint tasks → both parallel; 2 overlapping tasks → 1 parallel 1 serial; 3 tasks with chain dependency (A→B→C) → A parallel, B+C serial; empty active pool → exit 0 + empty output; task without write_set → mode=`serial` (conservative undecidable handling) — all 5 PASS (6/6 with sibling 3-task parallel-round)'
+  - 'Worked-example smoke: 6/6 bats includes the worked example (2 disjoint → parallel, overlap → serial, 3 disjoint → parallel-round); cleanup is automatic via bats teardown'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/dispatch/preamble.md'
+  - '.agentic-framework/agents/dispatch/yield-point.sh'
+  - 'agents/orchestrator/orchestrator-graph.py'
+  - 'bin/fw'
+  - '.fabric/components/agents-orchestrator-orchestrator-graph.yaml'
+  - '.fabric/components/lib-write_set.yaml'
+  - '.fabric/components/tests-unit-test_orchestrator_graph.yaml'
+  - '.fabric/components/tests-unit-test_write_set.yaml'
+  - '.tasks/active/T-2339-arc-011-m1-1--orchestrator-graph-paralle.md'
+  - '.tasks/completed/T-2338-arc-011-m1-2--harness-yield-point-spike-.md'
+  - 'tests/unit/test_orchestrator_graph.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-11T19:56:06"
+    action: "T-2339: file arc-011 M1 §1 — orchestrator-graph (ACs)"
+  - time: "2026-06-11T19:56:14"
+    action: "T-2339: refresh vendored .agentic-framework/ (yield-point + preamble)"
+  - time: "2026-06-11T20:01:10"
+    action: "T-2339: arc-011 M1 §1 — orchestrator-graph dispatch decision"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 3
+  files_changed: 11
+  lines_added: 860
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2339-arc-011-m1-1--orchestrator-graph-paralle.md
+generated_by: context-agent-hybrid

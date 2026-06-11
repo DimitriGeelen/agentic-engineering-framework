@@ -23,8 +23,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T18:04:38Z
-last_update: 2026-06-11T18:04:38Z
-date_finished: null
+last_update: '2026-06-11T18:15:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +35,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T18:15:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-11T18:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2340: arc-011 M1 §6 — disjointness pre-flight gate (intercept dispatch path)
@@ -62,50 +90,16 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:277-313` (§6).
 ### Agent
 - [x] `agents/orchestrator/orchestrator-graph.py` extended with `pre_flight_check(task_id, dispatches_jsonl_path=None) -> tuple[bool, str]` that returns `(True, "")` when no in-flight overlap exists, or `(False, "write_set overlap with in-flight dispatch <D-ID>: <conflicting path>")` when one does
 - [x] Reuses `lib/write_set.py` for the overlap check; reads `.context/dispatches.jsonl` and filters to entries where `outcome` is empty (in-flight) — does NOT re-implement either
-- [ ] `bin/fw orchestrator pre-flight T-XXX` CLI verb prints the verdict + exit code (0=allowed, 1=refused, 2=task-not-found) — **PARTIAL: `_main()` extension authored but Edit blocked by budget gate at 97%; next session lands the CLI wire + `bin/fw` dispatch verb + bats**
-- [ ] `tests/unit/test_orchestrator_preflight.bats` covers: no in-flight → exit 0; in-flight overlap → exit 1 + stderr reason names dispatch id + path; in-flight non-overlap → exit 0; completed-only history → exit 0; task without write_set → exit 0 with note (conservative undecidable = allowed for pre-flight, since downstream §2 yield-point + §3 declaration both refuse) — all 5 PASS — **PENDING next session**
+- [x] `bin/fw orchestrator pre-flight T-XXX` CLI verb prints the verdict + exit code (0=allowed, 1=refused, 2=task-not-found, 64=usage)
+- [x] `tests/unit/test_orchestrator_preflight.bats` covers: no in-flight → exit 0; in-flight overlap → exit 1 + stderr reason names dispatch id + path; in-flight non-overlap → exit 0; completed-only history → exit 0; task without write_set → exit 0 with note (conservative undecidable = allowed for pre-flight, since downstream §2 yield-point + §3 declaration both refuse) — 7/7 PASS (5 AC scenarios + 2 error paths for task-not-found and usage)
 
-## Resume Notes (T-2340 pick-up — next session)
+## Evolution
 
-**Status:** 2/4 Agent ACs verified. `pre_flight_check()` function is shipped in `agents/orchestrator/orchestrator-graph.py:172-227` (reads `_in_flight_dispatches()`, reuses `lib/write_set.py`). Budget critical at 97% before the `_main()` extension + CLI wire + bats could land.
+### 2026-06-11 — slice landed across two sessions
 
-**Next steps:**
-1. **Extend `_main()` in `agents/orchestrator/orchestrator-graph.py`** to dispatch `pre-flight <T-XXX>` subverb (~25 lines). Pattern from existing `next-dispatch` default branch:
-   ```python
-   if cmd == "pre-flight":
-       if len(argv) < 3:
-           sys.stderr.write("usage: ... pre-flight <T-XXX>\n")
-           return 64
-       task_id = argv[2]
-       try:
-           ok, msg = pre_flight_check(task_id)
-       except FileNotFoundError as e:
-           sys.stderr.write(f"error: {e}\n")
-           return 2
-       if ok:
-           print(f"allowed{(': ' + msg) if msg else ''}")
-           return 0
-       sys.stderr.write(f"refused: {msg}\n")
-       print("refused")
-       return 1
-   ```
-
-2. **Add `pre-flight)` branch in `bin/fw` orchestrator dispatch** (near `next-dispatch)` at bin/fw:~3730):
-   ```bash
-   pre-flight)
-       shift
-       exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/agents/orchestrator/orchestrator-graph.py" pre-flight "$@"
-       ;;
-   ```
-
-3. **Author `tests/unit/test_orchestrator_preflight.bats`** with 5 scenarios per AC list. Fixture pattern: write to `$TEST_REPO/.context/dispatches.jsonl` with synthetic in-flight rows like `{"dispatch_id":"D-001","task_id":"T-COL-A","outcome":""}` + create the matching task fixtures under `.tasks/active/`.
-
-4. **Run reviewer + close + push.** Pattern verified across T-2337/T-2338/T-2339 in this session — chain to T-2341 §4 demo (the L-sized headline_mechanic-firing slice).
-
-**Reference files for resume:**
-- Spec: `docs/reports/arc-011-m1-single-host-sketch.md:277-313`
-- Reused: `lib/write_set.py:resolve_task_path` + `lib/write_set.py:read_write_set` + `lib/write_set.py:expand_globs`
-- In-flight format: see `.context/dispatches.jsonl` schema (existing T-1696/T-1697 contracts)
+- **What changed:** Originally planned as one slice. Budget gate at 97% in the first session split it cleanly: function logic (ACs #1-2) shipped first, CLI wire + bats (ACs #3-4) shipped second. Resume Notes documented the exact code snippets needed → second-session pick-up was mechanical.
+- **Plan impact:** None. The split is a non-event for the arc — same final surface, two commits instead of one.
+- **Triggered:** None. T-2341 (§4 single-host parallel demo, L-sized, headline_mechanic-firing) remains the immediate next slice on the arc-011 M1 path.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -171,6 +165,11 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:277-313` (§6).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/test_orchestrator_preflight.bats > /tmp/.t2340-bats.out 2>&1 && grep -q "ok 7 missing arg" /tmp/.t2340-bats.out
+bats tests/unit/test_orchestrator_graph.bats > /tmp/.t2340-sib.out 2>&1 && grep -q "ok 6" /tmp/.t2340-sib.out
+out=$(bin/fw orchestrator pre-flight T-2340 2>&1); echo "$out" | grep -q "allowed"
+bin/fw orchestrator pre-flight 2>&1; [ $? -eq 64 ]
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -232,9 +231,34 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:277-313` (§6).
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 4 Agent ACs verified. Sliced cleanly across two sessions: prior session shipped `pre_flight_check()` function (ACs #1 + #2); this session lands the `_main()` extension, `bin/fw orchestrator pre-flight` CLI wire, and `tests/unit/test_orchestrator_preflight.bats` (ACs #3 + #4 → 7/7 PASS including 5 AC scenarios + 2 error paths). Sibling regression net intact: 23/23 across T-2337 (write-set validator), T-2338 (yield-point), T-2339 (orchestrator-graph), and T-2340 (pre-flight). No Human ACs — pure CLI/orchestrator surface with deterministic exit codes (0=allowed, 1=refused, 2=task-not-found, 64=usage).
+
+**Evidence:**
+- `agents/orchestrator/orchestrator-graph.py:277-318` — `_main()` extended with `pre-flight` subverb
+- `bin/fw:3736-3744` — `pre-flight)` dispatch branch wired
+- `tests/unit/test_orchestrator_preflight.bats` — 7/7 PASS (run: `bats tests/unit/test_orchestrator_preflight.bats`)
+- Live smoke: `bin/fw orchestrator pre-flight T-DOES-NOT-EXIST` → exit 2 + "not found"; `bin/fw orchestrator pre-flight T-2340` → exit 0 + "allowed: ... no write_set declared" (conservative undecidable)
+- Sibling regression: T-2337 + T-2338 + T-2339 bats all green (16/16)
+
 ## Updates
 
 ### 2026-06-11T18:04:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2340-arc-011-m1-6--disjointness-pre-flight-ga.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a436363f
+- **Timestamp:** 2026-06-11T18:34:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - AC-verify-mismatch @ AC#2 (Agent)

@@ -2004,3 +2004,31 @@ decisions:
     date: 2026-06-10
     task: T-2319
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-289
+    decision: "`.context/bvp-driver-proposals.jsonl` (append-only JSONL in working-state dir)"
+    scope: project
+    date: 2026-06-11
+    task: T-2331
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-290
+    decision: "Append-only JSONL — two agents proposing same driver-id produce 2 rows, both surface in queue, operator picks one to Approve. No merge logic needed."
+    scope: project
+    date: 2026-06-11
+    task: T-2331
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-291
+    decision: "Inline `<section>` on `/bvp` above the existing Add-driver form, only renders when proposals pending"
+    scope: project
+    date: 2026-06-11
+    task: T-2332
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-292
+    decision: "Reject-with-rationale via `HX-Prompt` (same pattern as `/api/bvp/driver/remove` T-2079). State-change row appended with `rationale_decision` field, history preserved."
+    scope: project
+    date: 2026-06-11
+    task: T-2332
+    rationale: "Auto-captured from task file on completion"

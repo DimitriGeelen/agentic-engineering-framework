@@ -864,3 +864,13 @@ overrides:
   expires_at: '2026-09-09T10:12:19Z'
   added_by: root
   added_at: '2026-06-11T10:12:19Z'
+- id: OV-7d4daafb
+  task_id: T-2340
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  reason: "AC#2 describes what pre_flight_check REUSES (lib/write_set.py + .context/dispatches.jsonl),\
+    \ not what it promises to verify \u2014 narrow path-grep heuristic FP. Sibling\
+    \ to T-2265 OV-822b8648."
+  expires_at: '2026-09-09T18:34:45Z'
+  added_by: root
+  added_at: '2026-06-11T18:34:45Z'

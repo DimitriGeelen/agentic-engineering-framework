@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2337: arc-011 M1 §3 — disjoint write-set validator (lib/write_set.py + fw write-set
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T17:46:35Z
+# ============================================================================
+
+task_id: T-2337
+task_name: "arc-011 M1 §3 — disjoint write-set validator (lib/write_set.py + fw write-set"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T17:40:12Z
+completed: 2026-06-11T17:46:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-11T19:45:47+02:00
+last_commit: 2026-06-11T19:45:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-011 M1 §3 — disjoint write-set validator
+
+# Key outcomes
+outcomes:
+  - '`lib/write_set.py` exists with `read_write_set(task_path) -> list[str]`, `is_disjoint(set_a, set_b) -> bool`, and a `compare(task_a_path, task_b_path) -> str` returning one of `disjoint | overlap | undecidable`'
+  - '`bin/fw` exposes `cmd_write_set` so `fw write-set check T-A T-B` resolves both task paths from `.tasks/{active,completed}/` and prints the verdict + exit code (0=disjoint, 1=overlap, 2=undecidable)'
+  - '`tests/unit/test_write_set.bats` covers: disjoint case, overlap case, glob-collision case (`**/T-*.md` vs `.tasks/active/T-X.md`), empty-write-set undecidable case, missing-task-file error case — all 5 PASS (8/8 total including help/usage/empty siblings)'
+  - '`fw write-set check` with disjoint test fixtures returns exit 0 + prints `disjoint`; with overlap fixtures returns exit 1 + prints `overlap`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'lib/write_set.py'
+  - '.tasks/active/T-2337-arc-011-m1-3--disjoint-write-set-validat.md'
+  - 'tests/unit/test_write_set.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-11T19:45:47"
+    action: "T-2337: arc-011 M1 §3 — disjoint write-set validator"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 4
+  lines_added: 592
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2337-arc-011-m1-3--disjoint-write-set-validat.md
+generated_by: context-agent-hybrid

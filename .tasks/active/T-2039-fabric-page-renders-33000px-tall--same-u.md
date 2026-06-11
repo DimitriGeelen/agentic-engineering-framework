@@ -262,8 +262,8 @@ python3 -m pytest tests/playwright/test_fabric_height.py -q >/tmp/.t2039_pt.out 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-86380c4a
-- **Timestamp:** 2026-05-26T06:53:37Z
+- **Scan ID:** R-a1a47491
+- **Timestamp:** 2026-06-11T12:12:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -273,6 +273,5 @@ python3 -m pytest tests/playwright/test_fabric_height.py -q >/tmp/.t2039_pt.out 
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 25
      - evidence: `curl -sf "$(bin/fw watchtower url)/fabric" >/dev/null`
-
 ### 2026-05-26T06:53:12Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

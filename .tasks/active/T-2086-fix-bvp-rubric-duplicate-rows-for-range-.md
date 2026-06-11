@@ -219,8 +219,8 @@ Human eyes-on at http://192.168.10.107:3000/bvp closes the [REVIEW].
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a007fd35
-- **Timestamp:** 2026-05-29T09:28:37Z
+- **Scan ID:** R-78bc96e3
+- **Timestamp:** 2026-06-11T12:12:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -230,6 +230,5 @@ Human eyes-on at http://192.168.10.107:3000/bvp closes the [REVIEW].
 
 - **AC#3 (Agent)** — Existing unit tests (tests/unit/test_driver_rubrics.py) updated to assert the new shape. New test pins F1's range-collapse (`policy/value-drivers.yaml` declares F1 with `1–2 — desc` → result has one e
   - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: Existing unit tests (tests/unit/test_driver_rubrics.py) updated to assert the new shape. New test pins F1's range-collapse (`policy/value-drivers.yaml`
-
 ### 2026-05-29T09:28:36Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

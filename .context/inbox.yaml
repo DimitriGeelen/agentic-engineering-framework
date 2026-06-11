@@ -603,3 +603,10 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-071
+  text: "T-2329 shipped score_f_autonomy dedicated handler (commit 9d5377baa); satisfies AC#5 — 'or a documented decision to defer that to a sibling task'. Handler is latent until this task uncomments the policy carve. 14 unit tests + dispatch-on-register pin + dedicated-vs-fallback contrast at tests/unit/test_bvp_estimator.py"
+  captured: 2026-06-11T11:08:45Z
+  context_task: T-2171
+  tags: []
+  status: dismissed
+  promoted_to: null

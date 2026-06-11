@@ -256,12 +256,17 @@ test -f tests/unit/test_reviewer_auto_tick.py
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-da404e35
-- **Timestamp:** 2026-05-22T08:03:01Z
+- **Scan ID:** R-c96fd8e6
+- **Timestamp:** 2026-06-11T12:12:58Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+     - evidence: ``bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.`
 
 - **Suppressed:** 2 (by override)
   - mock-only-integration @ AC vs Verification cross-check

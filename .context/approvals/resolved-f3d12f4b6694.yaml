@@ -1,0 +1,17 @@
+command_hash: f3d12f4b66942ad0af8ea2d5dfd0b82f1f237ae6732135533d2ebfbf12cf214f
+command_preview: 'FW_SWITCH_FOCUS=1 git commit --no-verify -m "T-2336: V_* rubrics
+  + parser YAML support + t2079probe cleanup + T-2335 captured
+
+
+  Three operator follow-ups: 1) V_* drivers got rubric/guardrails/polarity
+
+  '
+risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+status: approved
+timestamp: '2026-06-11T16:14:03Z'
+type: tier0
+response:
+  decision: approved
+  feedback: null
+  responded_at: '2026-06-11T16:19:40Z'
+  mechanism: watchtower

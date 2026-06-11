@@ -157,10 +157,10 @@ The endpoint piggybacks on `lib/pause_resolve.resolve_pause()` (slice 5), so the
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1810-watchtower-paused-dispatch-resolve-form-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a1a1a93b
-- **Timestamp:** 2026-05-18T09:30:57Z
+- **Scan ID:** R-39006a91
+- **Timestamp:** 2026-06-11T11:49:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no

@@ -5,12 +5,12 @@ name: "arc-011 M1 §3 — disjoint write-set validator (lib/write_set.py + fw wr
 description: >
   arc-011 M1 §3 — disjoint write-set validator (lib/write_set.py + fw write-set check)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/write_set.py, tests/unit/test_write_set.bats]
 related_tasks: []
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -24,8 +24,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T17:40:12Z
-last_update: '2026-06-11T17:45:03Z'
-date_finished:
+last_update: 2026-06-11T17:46:27Z
+date_finished: 2026-06-11T17:46:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -228,9 +228,41 @@ bats tests/unit/test_write_set.bats > /tmp/.t2337-bats.out 2>&1 && [ "$(grep -c 
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** First arc-011 M1 build slice landed clean. 4/4 Agent ACs verified, reviewer R-a742fbe5 PASS (0 findings, needs_human=no), 8/8 bats PASS. The validator is the proof generator that downstream M1 slices (§1 orchestrator-graph, §6 disjointness pre-flight, §4 single-host parallel demo) consume — without it the headline_mechanic "two agents on disjoint write-set tasks run concurrently" cannot be falsifiably demonstrated. Pure functions (read frontmatter, expand globs, set intersection) — no orchestrator surface modified, low blast radius. Exit codes pin the contract (0/1/2 for disjoint/overlap/undecidable) so downstream consumers can treat this as a structural gate without parsing the human-readable verdict.
+
+**Evidence:**
+- `lib/write_set.py` — 192 lines, 8 public functions, `include_hidden=True` + `os.walk`/`fnmatch` fallback for dot-dirs (.tasks/, .context/, .fabric/)
+- `bin/fw write-set check T-A T-B` — exit 0/1/2 + verdict on stdout; `--help` prints usage
+- `tests/unit/test_write_set.bats` — 8/8 PASS covering disjoint / overlap / glob-collision / undecidable / missing-task / --help / no-args / empty-write-set
+- Reviewer: R-a742fbe5 PASS (catalogue v1.3-seed, no Layer-1/2 findings)
+- Commit: `d13a545d1`
+
+**Next M1 slices unlocked:**
+- §2 yield-point spike (independent, ships parallel with §1)
+- §1 orchestrator-graph (consumes §3)
+- §6 disjointness gate pre-flight (extends §1 + reuses §3)
+- §4 single-host parallel demo (depends on §1+§2)
+- §5 /orchestrator/parallel Watchtower view (depends on §4)
+
 ## Updates
 
 ### 2026-06-11T17:40:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2337-arc-011-m1-3--disjoint-write-set-validat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-90604217
+- **Timestamp:** 2026-06-11T17:46:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-11T17:46:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

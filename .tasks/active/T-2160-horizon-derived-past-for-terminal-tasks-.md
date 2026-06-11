@@ -276,8 +276,8 @@ One remaining Human AC verifies the filter dropdown UI change in Watchtower (`/t
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-04eeeaff
-- **Timestamp:** 2026-06-01T10:47:58Z
+- **Scan ID:** R-d25b57c8
+- **Timestamp:** 2026-06-11T12:13:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -294,6 +294,5 @@ One remaining Human AC verifies the filter dropdown UI change in Watchtower (`/t
 
   1. **empty-output-success** (partial, heuristic) @ Verification:line 48
      - evidence: `bash -c 'source lib/enums.sh; is_valid_horizon now && is_valid_horizon next && is_valid_horizon later && ! is_valid_horizon past' >/dev/null 2>&1`
-
 ### 2026-06-01T10:47:46Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

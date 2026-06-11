@@ -228,8 +228,8 @@ Same shape as T-2087 (max-height scroll container + sticky thead + row-count hin
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f69fab10
-- **Timestamp:** 2026-05-29T10:22:58Z
+- **Scan ID:** R-cb3145a9
+- **Timestamp:** 2026-06-11T12:13:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

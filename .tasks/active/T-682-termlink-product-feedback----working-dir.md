@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-03-28T21:37:45Z
-last_update: '2026-06-05T18:00:04Z'
+last_update: '2026-06-11T16:00:04Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -95,6 +95,21 @@ bvp_scores_proposed:
       F-ORCH: 2
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T16:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F1=2 
+      (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

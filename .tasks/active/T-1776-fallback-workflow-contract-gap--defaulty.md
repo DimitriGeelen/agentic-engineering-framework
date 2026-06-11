@@ -232,8 +232,8 @@ grep -q "worker_kind: TermLink" .context/project/workflows/default.yaml
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e2c65f90
-- **Timestamp:** 2026-05-31T09:26:43Z
+- **Scan ID:** R-815bef49
+- **Timestamp:** 2026-06-11T11:49:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -243,6 +243,5 @@ grep -q "worker_kind: TermLink" .context/project/workflows/default.yaml
 
 - **AC#2 (Agent)** — No edits to lib/spawn.py, lib/resolver.py, or default.yaml in this task.
   - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/spawn.py in: No edits to lib/spawn.py, lib/resolver.py, or default.yaml in this task.`
-
 ### 2026-05-31T09:26:42Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

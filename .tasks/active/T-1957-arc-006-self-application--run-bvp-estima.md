@@ -243,10 +243,10 @@ bvp_scores_proposed:
 ### 2026-05-20T12:26:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-48910dcb
-- **Timestamp:** 2026-05-20T12:31:50Z
+- **Scan ID:** R-6c04d7d5
+- **Timestamp:** 2026-06-11T12:12:58Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -256,6 +256,5 @@ bvp_scores_proposed:
 
 - **AC#2 (Agent)** — `.context/arcs/value-prioritisation.yaml` `proposed_scoped_drivers:` populated with 3 candidates per T-1925 workflow (each with name, weight, rationale, source: agent, ts)
   - **AC-verify-mismatch** (narrow, heuristic) — `path=context/arcs/value-prioritisation.yaml in: `.context/arcs/value-prioritisation.yaml` `proposed_scoped_drivers:` populated with 3 candidates per T-1925 workflow (each with name, weight, rational`
-
 ### 2026-05-20T12:31:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

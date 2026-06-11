@@ -221,23 +221,21 @@ python3 -m pytest tests/unit/test_ollama_loop.py tests/unit/test_spawn.py -v
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1775-libollamalooppy--claude--p-worker-primit.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0bdf3c7b
-- **Timestamp:** 2026-05-18T09:30:53Z
+- **Scan ID:** R-0244378d
+- **Timestamp:** 2026-06-11T11:49:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#1 (Human)** — [REVIEW] **#H1: End-to-end ollama-loop smoke (after T-1700 #H1+#H2 — litellm running)**
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='status: success' in Expected: stdout shows `status: success`, `events_count > 0`; dispatches.jsonl last row has `outcome: success` (not `pending`).`
+- **Findings:** 1
 
 **Verification-level findings:**
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `test -f tests/unit/test_ollama_loop.py`
+
+- **Suppressed:** 1 (by override)
+  - human-ac-mechanical-signal @ AC#1 (Human)
 ### 2026-05-13T21:20:30Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

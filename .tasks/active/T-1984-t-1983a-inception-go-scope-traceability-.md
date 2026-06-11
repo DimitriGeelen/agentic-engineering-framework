@@ -228,14 +228,18 @@ bin/fw enforcement baseline 2>&1 | grep -q "baseline saved\|baseline unchanged\|
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-1984-t-1983a-inception-go-scope-traceability-.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-5e4c3cba
-- **Timestamp:** 2026-05-21T22:50:47Z
+- **Scan ID:** R-bc66e439
+- **Timestamp:** 2026-06-11T12:12:58Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 8
+     - evidence: `bin/fw enforcement baseline 2>&1 | grep -q "baseline saved\|baseline unchanged\|Hash:"`
 ### 2026-05-21T22:50:29Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

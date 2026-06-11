@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-10T10:27:09Z
-last_update: '2026-06-10T10:30:03Z'
+last_update: '2026-06-11T10:30:03Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -60,6 +60,19 @@ bvp_scores_proposed:
       (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=2 
       (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-11T10:30:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); 
+      F-ORCH=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

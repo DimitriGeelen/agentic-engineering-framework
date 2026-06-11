@@ -225,23 +225,21 @@ The three deferred routes (ollama-loop, TermLink, Task) raise `NotImplementedErr
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-## Reviewer Verdict (v1.4)
+## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-de6edbd6
-- **Timestamp:** 2026-05-18T09:39:15Z
+- **Scan ID:** R-5781d0c1
+- **Timestamp:** 2026-06-11T11:49:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** 2
-
-**Per-AC findings:**
-
-- **AC#1 (Human)** — [REVIEW] **#H1: End-to-end smoke (after T-1701 #H1 + #H2)**
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='status: success' in Expected: stdout shows `status: success`, `events_count > 0`, exit code 0; `.context/dispatches.jsonl` last row has `outcome: success` (not `pending`)`
+- **Findings:** 1
 
 **Verification-level findings:**
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `test -f tests/unit/test_spawn.py`
+
+- **Suppressed:** 1 (by override)
+  - human-ac-mechanical-signal @ AC#1 (Human)
 ### 2026-05-13T21:19:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

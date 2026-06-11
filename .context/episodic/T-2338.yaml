@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2338: arc-011 M1 §2 — harness yield-point spike (orchestrator-graph hook)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T17:54:20Z
+# ============================================================================
+
+task_id: T-2338
+task_name: "arc-011 M1 §2 — harness yield-point spike (orchestrator-graph hook)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T17:47:29Z
+completed: 2026-06-11T17:54:14Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-11T19:48:50+02:00
+last_commit: 2026-06-11T19:53:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file arc-011 M1 §2 — harness yield-point spike (ACs). arc-011 M1 §2 — harness yield-point spike
+
+# Key outcomes
+outcomes:
+  - '`agents/dispatch/yield-point.sh` exists with a `check_yield <target_path>` function: reads `.context/working/.dispatch-flag` if present; if flag content matches `refuse-write:<target_path>`, prints reason on stderr and exits non-zero'
+  - '`tests/unit/test_yield_point.bats` covers: no-flag → exit 0 (write allowed); matching-flag → non-zero + stderr reason; non-matching-flag → exit 0; stale-flag (>5min old) → ignored with WARN; malformed-flag → ignored with WARN — all 5 PASS (9/9 total including multi-line/comment/help/usage siblings)'
+  - '`agents/dispatch/preamble.md` documents the yield-point convention (one paragraph: when worker invokes it, what the flag format is, expected exit-code semantics)'
+  - 'Worked-example smoke: from this session shell, write the flag to `refuse-write:/tmp/.t2338-target`, run `agents/dispatch/yield-point.sh check /tmp/.t2338-target` — observe non-zero exit + stderr "refusing write to /tmp/.t2338-target"; then clear flag, re-run — observe exit 0'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/dispatch/preamble.md'
+  - 'agents/dispatch/yield-point.sh'
+  - '.fabric/components/agents-dispatch-yield-point.yaml'
+  - '.tasks/active/T-2338-arc-011-m1-2--harness-yield-point-spike-.md'
+  - 'tests/unit/test_yield_point.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-11T19:48:50"
+    action: "T-2338: file arc-011 M1 §2 — harness yield-point spike (ACs)"
+  - time: "2026-06-11T19:53:59"
+    action: "T-2338: arc-011 M1 §2 — harness yield-point spike"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 5
+  lines_added: 525
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2338-arc-011-m1-2--harness-yield-point-spike-.md
+generated_by: context-agent-hybrid
