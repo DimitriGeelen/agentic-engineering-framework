@@ -1,18 +1,52 @@
-# BVP weight + driver mutation log (T-1920, arc-006). Append-only.
-# Schema per entry:
-#   verb:           weight | driver_add | driver_remove
-#   driver:         Dn or Fn id affected
-#   section:        protected_drivers | free_drivers (weight verb only)
-#   from_weight:    previous weight (weight verb only)
-#   to_weight:      new weight (weight verb only)
-#   name:           free-driver name (driver_add only)
-#   weight:         free-driver weight (driver_add only)
-#   dropped:        Fn id displaced by M1 add-one-drop-one (driver_add only)
-#   rationale:      ≥30-char explanation (R6 mitigation)
-#   who:            $USER who ran the command
-#   agent_session:  true iff $CLAUDECODE=1 (audit signal for §ACD override usage)
-#   ts:             UTC ISO-8601 timestamp
-#
-# Smoke-test history from T-1920 build session purged before ship; the file
-# starts clean for first genuine human-approved edit.
-entries: []
+entries:
+# 2026-06-11: 2 orphan `t2079probe` add entries removed (T-2334 follow-up).
+# Origin: tests/playwright/test_bvp_form_htmx.py::test_add_form_submit_keeps_user_on_bvp
+# adds + removes a probe driver each run. Cleanup curl POST in the test ran but
+# the remove leg didn't write a matching remove entry to this history file \u2014
+# the orphans accumulated visibly on /bvp until operator approved 3 V_* drivers
+# which overrode F1+F2 slots. Operator caught the noise; T-2336 captures the
+# Playwright cleanup hardening + remove-writes-history audit.
+- verb: driver_add
+  driver: F3
+  name: V_PROMPT_QUALITY
+  weight: 7
+  rationale: 'Discriminates LLM prompt-quality work from work on other aspects. Core
+    to AEF''s value as an agentic framework. Source: docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md'
+  dropped: null
+  who: root
+  agent_session: true
+  ts: '2026-06-11T16:01:24Z'
+- verb: driver_remove
+  driver: F1
+  rationale: sdafeasdffffffffffffffffffffffffffffffffffffffffffffffffffff
+  who: root
+  agent_session: true
+  ts: '2026-06-11T16:01:42Z'
+- verb: driver_remove
+  driver: F2
+  rationale: dfasffffffffffffffffffffffffffffffffffffffffffffffffffff
+  who: root
+  agent_session: true
+  ts: '2026-06-11T16:01:49Z'
+- verb: driver_add
+  driver: F1
+  name: V_CONTEXT_FABRIC
+  weight: 7
+  rationale: 'Discriminates memory-layer work (Context Fabric: working/project/episodic
+    memory, semantic search) from work elsewhere. Load-bearing for cross-session continuity.
+    Source: docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md'
+  dropped: null
+  who: root
+  agent_session: true
+  ts: '2026-06-11T16:01:54Z'
+- verb: driver_add
+  driver: F2
+  name: V_COMPONENT_FABRIC
+  weight: 6
+  rationale: 'Discriminates topology-layer work (Component Fabric: dependency mapping,
+    blast-radius, drift detection) from work elsewhere. Load-bearing for BVP cost
+    composite and audit. Source: docs/reports/T-2305-bvp-drivers-batch-2026-06-10.md'
+  dropped: null
+  who: root
+  agent_session: true
+  ts: '2026-06-11T16:01:58Z'
