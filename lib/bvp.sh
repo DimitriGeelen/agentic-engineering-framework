@@ -1045,7 +1045,7 @@ def _driver_propose(args):
 
     print(f"OK: proposal {entry['id']} filed — name='{name}' weight={weight} (state: pending)")
     print(f"  Storage: {PROPOSALS_PATH.relative_to(PROJECT_ROOT)}")
-    print(f"  Operator approves via Watchtower /bvp/proposed (T-2330 S2 — not yet shipped).")
+    print(f"  Operator approves via Watchtower /bvp — Pending driver proposals section (T-2332 shipped this surface).")
     return 0
 
 
