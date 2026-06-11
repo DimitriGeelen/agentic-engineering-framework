@@ -864,6 +864,121 @@ def score_v_component_fabric(fm: dict, body: str, tags: list[str]) -> tuple[int,
     return 0, ev + ["→0 (no Component Fabric signal)"]
 
 
+def score_f_autonomy(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """F-AUTONOMY — Autonomy / Unattended Operation.
+
+    T-2329 (sibling of T-2171 AC#5). Anchored to policy/value-drivers.yaml
+    lines 171-195 (currently carved/commented; activation gated by T-2171
+    when T-2158 continuous-run cycle lands + L5/L6 milestone operational).
+    Handler stays LATENT until policy uncomments the carve — `_load_drivers()`
+    won't yield F-AUTONOMY, so estimate_task() won't dispatch here.
+
+    Rubric (policy lines 178-188):
+      0: Adds nothing, OR would remove a safety-critical human gate
+         (Sovereignty violation — ZERO, never high).
+      1: Runs unattended only by hand-wiring; no durable reduction.
+      2: Narrow, single-use reduction in human relay.
+      3: Closes a feedback loop so signal reaches ACTION without human relay.
+      4: Class of low-risk work safely auto-eligible (auto_promote bounded), caps intact.
+      5: Replaces REDUNDANT human gate with at-least-as-safe mechanical one,
+         or lands L6 autonomy criterion. NEVER removes Tier 0.
+
+    Refuse-rule (R5 sibling, T-2168 F-ORCH precedent): if body indicates
+    REMOVING a Tier-0 / safety-critical / irreversible gate without naming
+    an at-least-as-safe mechanical replacement, return 0 with rationale
+    `f-autonomy-refuse:sovereignty-violation`. Anchors on the policy
+    guardrail text (lines 189-192) and CLAUDE.md §Authority Model.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    # ---- R5 refuse-rule (Sovereignty guardrail) ---------------------------
+    # Body says "remove tier 0 gate" / "bypass safety gate" / "skip approval"
+    # WITHOUT also citing an at-least-as-safe mechanical replacement → 0.
+    sovereignty_remove = _has_any(body, [
+        r"remov(e|ing|al) (the|a) tier[- ]?0 (gate|approval|check)",
+        r"remov(e|ing|al) (the|a) safety[- ]critical (gate|check|approval)",
+        r"bypass (the|a) (safety|tier[- ]?0|irreversible) (gate|check|approval)",
+        r"remov(e|ing) (the|a)? ?human approval (for|on)",
+        r"skip (the|a) tier[- ]?0",
+        r"disable (the|a) (safety|tier[- ]?0|approval) (gate|check)",
+        r"remove (the|a) approval requirement",
+        r"remove (the|a) tier[- ]?0 approval requirement",
+    ])
+    safe_replacement = _has_any(body, [
+        r"at[- ]least[- ]as[- ]safe", r"mechanical (replacement|equivalent|check)",
+        r"structural (gate|check) replac",
+        r"replac(e|es|ing) (a |the |redundant )?human gate",
+    ])
+    if sovereignty_remove and not safe_replacement:
+        return 0, ev + ["body:sovereignty-remove-without-replacement",
+                        "→0 (f-autonomy-refuse:sovereignty-violation)"]
+
+    # ---- Level 5 — replaces REDUNDANT human gate, or lands L6 ------------
+    # MUST be at-least-as-safe; MUST NOT remove Tier 0.
+    redundant_gate_replace = _has_any(body, [
+        r"replac(e|es|ing) (a |the )?redundant human gate",
+        r"replac(e|es|ing) (a |the )?human gate with (a |an )?(at[- ]least[- ]as[- ]safe |mechanical )",
+        r"l6 autonomy criterion",
+        r"closed production[- ]feedback loop",
+        r"\bauto[- ]merge (lands|operational|green)",
+    ])
+    # Defense-in-depth: even at level 5, refuse if Tier-0 removal is implied
+    if redundant_gate_replace and not sovereignty_remove:
+        ev.append("body:redundant-gate-replace-or-L6")
+        return 5, ev + ["→5 (redundant human gate replaced with mechanical, or L6 lands)"]
+
+    # ---- Level 4 — class of low-risk work safely auto-eligible ----------
+    auto_promote_class = _has_any(body, [
+        r"auto[- ]?promot(e|ion|able)",
+        r"\bauto[- ]eligible\b",
+        r"hv/lc.*(captured|in[- ]progress).*auto",
+        r"class of low[- ]risk work.*auto",
+        r"caps? intact",
+        r"safely auto[- ]advances?",
+    ])
+    if auto_promote_class:
+        ev.append("body:auto-promote-class-eligibility")
+        return 4, ev + ["→4 (low-risk-class auto-eligibility with caps)"]
+
+    # ---- Level 3 — closes feedback loop signal→ACTION without human ----
+    feedback_close = _has_any(body, [
+        r"clos(e|es|ing) (a |the )?(feedback )?loop",
+        r"wires? (observation|signal|feedback) (back )?into (dispatch|action)",
+        r"signal[- ]?to[- ]?action without (a )?human",
+        r"observation feedback (back )?into dispatch",
+        r"feedback loop (without|sans) (a )?human relay",
+        r"reaches? action without (a )?human relay",
+    ])
+    if feedback_close:
+        ev.append("body:feedback-loop-closed")
+        return 3, ev + ["→3 (feedback loop closes signal→action without human relay)"]
+
+    # ---- Level 2 — narrow single-use reduction in human relay ----------
+    narrow_reduce = _has_any(body, [
+        r"narrow.{0,20}reduction in human (relay|touch|gate)",
+        r"single[- ]use.{0,20}(automation|reduction)",
+        r"one[- ]off.{0,20}(automation|gate removal)",
+        r"reduc(e|es|ing) (a |one )?human (relay|touchpoint|step)",
+    ])
+    if narrow_reduce:
+        ev.append("body:narrow-single-use-reduction")
+        return 2, ev + ["→2 (narrow single-use human-relay reduction)"]
+
+    # ---- Level 1 — hand-wired unattended only, no durable reduction ----
+    hand_wired = _has_any(body, [
+        r"hand[- ]wired (unattended|run|automation)",
+        r"runs? unattended (only )?by hand[- ]wiring",
+        r"manual (setup|wiring) for unattended",
+        r"no durable reduction",
+    ])
+    if hand_wired:
+        ev.append("body:hand-wired-unattended")
+        return 1, ev + ["→1 (hand-wired unattended; no durable reduction)"]
+
+    return 0, ev + ["→0 (no autonomy signal)"]
+
+
 def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """Heuristic fallback for free drivers without a dedicated scorer — keyword-
     on-driver-id only.
@@ -939,6 +1054,12 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         "V_PROMPT_QUALITY": score_v_prompt_quality,
         "V_CONTEXT_FABRIC": score_v_context_fabric,
         "V_COMPONENT_FABRIC": score_v_component_fabric,
+        # T-2329 — sibling of T-2171 AC#5. Latent until T-2171 uncomments
+        # the F-AUTONOMY carve in policy/value-drivers.yaml (Sovereign,
+        # gated by T-2158 continuous-run cycle + L5/L6 milestone). Carries
+        # the Sovereignty refuse-rule (level 0 on Tier-0 / safety-critical
+        # gate removal without at-least-as-safe replacement).
+        "F-AUTONOMY": score_f_autonomy,
     }
     for driver_id in drivers:
         if is_inception:

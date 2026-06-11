@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2329: BVP estimator score_f_autonomy dedicated handler (latent until T-2171 activation)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-11T11:01:09Z
+# ============================================================================
+
+task_id: T-2329
+task_name: "BVP estimator score_f_autonomy dedicated handler (latent until T-2171 activation)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-11T10:55:00Z
+completed: 2026-06-11T11:01:01Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`score_f_autonomy(fm, body, tags) -> tuple[int, list[str]]` exists in `agents/termlink/bvp-estimator/estimator.py`, mirroring the F-ORCH / V_* handler signature and the policy rubric 0-5. Verification: `out=$(python3 -c "import sys; sys.path.insert(0,''agents/termlink/bvp-estimator''); import estimator; assert callable(estimator.score_f_autonomy); print(''callable'')" 2>&1); echo "$out" | grep -q callable`'
+  - 'Sovereignty refuse-rule fires (level 0) when body signals removing a Tier-0 / safety-critical / irreversible gate (e.g. "removes the Tier 0 gate", "bypass safety gate", "remove the destructive-action approval requirement"). Returns `(0, [...])` with rationale tagged `f-autonomy-refuse:sovereignty-violation`. Verification: `out=$(python3 -c "import sys; sys.path.insert(0,''agents/termlink/bvp-estimator''); import estimator; s,ev=estimator.score_f_autonomy({''workflow_type'':''build''}, ''Remove the Tier 0 approval requirement to speed merges'', []); assert s==0, s; assert any(''sovereignty'' in e.lower() for e in ev), ev; print(''refused'')" 2>&1); echo "$out" | grep -q refused`'
+  - 'Level 5 fires when body describes replacing a redundant human gate with mechanical equivalent (NEVER removing Tier-0). Verification: `out=$(python3 -c "import sys; sys.path.insert(0,''agents/termlink/bvp-estimator''); import estimator; s,_=estimator.score_f_autonomy({''workflow_type'':''build''}, ''Replaces redundant human gate with at-least-as-safe mechanical check; L6 autonomy criterion met'', []); assert s==5, s; print(''5'')" 2>&1); echo "$out" | grep -q ''^5''`'
+  - 'Level 4 fires when body describes a class of low-risk work becoming safely auto-eligible (auto_promote bounded). Verification: `out=$(python3 -c "import sys; sys.path.insert(0,''agents/termlink/bvp-estimator''); import estimator; s,_=estimator.score_f_autonomy({''workflow_type'':''build''}, ''Makes HV/LC tasks safely auto_promote eligible with caps intact'', []); assert s==4, s; print(''4'')" 2>&1); echo "$out" | grep -q ''^4''`'
+  - 'Level 3 fires when body describes closing a signal→action feedback loop without a human relay. Verification: `out=$(python3 -c "import sys; sys.path.insert(0,''agents/termlink/bvp-estimator''); import estimator; s,_=estimator.score_f_autonomy({''workflow_type'':''build''}, ''Wires observation feedback back into dispatch — closes the loop without human relay'', []); assert s==3, s; print(''3'')" 2>&1); echo "$out" | grep -q ''^3''`'
+  - 'Level 2 fires for narrow single-use reduction in human relay. Level 1 fires for hand-wiring (no durable reduction). Level 0 fires when no autonomy signal. Verification: covered by unit tests below.'
+  - '`handlers` dict in `estimate_task()` registers `"F-AUTONOMY": score_f_autonomy`. Comment notes "latent until T-2171 uncomments policy carve (Sovereign-gated by T-2158)." Verification: `grep -q ''"F-AUTONOMY": score_f_autonomy'' agents/termlink/bvp-estimator/estimator.py`'
+  - 'Latent-mode guaranteed: handler does NOT appear in `estimate_task()` output when F-AUTONOMY is not in policy `free_drivers:` (today''s state). Verification: covered by `test_f_autonomy_latent_until_driver_registered` unit test.'
+  - '`tests/unit/test_bvp_estimator.py` adds level-by-level coverage (0 sovereignty-refuse, 0 no-signal, 1, 2, 3, 4, 5) + latent-mode pin + dispatch-on-register pin. Verification: `out=$(python3 -m pytest tests/unit/test_bvp_estimator.py -q 2>&1); echo "$out" | grep -qE "passed"`'
+  - 'No regression on the v3 smoke: `bin/fw bvp` rc=0, `bin/fw bvp --include-proposed` rc=0. Verification: `out=$(bin/fw bvp 2>&1); [ $? = 0 ] && out=$(bin/fw bvp --include-proposed 2>&1) && [ $? = 0 ]`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, estimator, f-autonomy, latent-handler, arc:value-prioritisation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2329-bvp-estimator-scorefautonomy-dedicated-h.md
+generated_by: context-agent-hybrid

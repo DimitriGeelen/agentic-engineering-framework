@@ -826,5 +826,115 @@ def test_v_handlers_latent_until_drivers_registered(tmp_path):
     assert "V_COMPONENT_FABRIC" not in result["scores"]
 
 
+# ---------------------------------------------------------------------------
+# T-2329 — score_f_autonomy dedicated handler (latent until T-2171 activation)
+# Anchored to policy/value-drivers.yaml lines 171-195. Mirrors V_* test pattern.
+# ---------------------------------------------------------------------------
+
+def test_f_autonomy_no_signal_scores_zero():
+    s, ev = estimator.score_f_autonomy(FM_BUILD, "Refactor handler. No autonomy mechanism mentioned.", [])
+    assert s == 0
+    assert any("no autonomy signal" in e for e in ev)
+
+
+def test_f_autonomy_sovereignty_violation_refuses_to_zero():
+    """R5 sibling: removing Tier-0 / safety-critical gate without at-least-as-safe
+    replacement scores ZERO with explicit sovereignty-violation rationale."""
+    body = "Remove the Tier 0 approval requirement to speed merges"
+    s, ev = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 0, (s, ev)
+    assert any("sovereignty" in e.lower() for e in ev), ev
+
+
+def test_f_autonomy_sovereignty_removal_with_replacement_does_not_refuse():
+    """When removal is paired with at-least-as-safe mechanical replacement,
+    the refuse-rule does NOT fire — level 5 path is available."""
+    body = ("Replaces the redundant human gate with an at-least-as-safe mechanical check "
+            "that runs at every PR open. L6 autonomy criterion lands.")
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_f_autonomy_bypass_safety_gate_refuses():
+    body = "Bypass the safety gate so the worker can autonomously merge."
+    s, ev = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 0
+    assert any("sovereignty" in e.lower() for e in ev)
+
+
+def test_f_autonomy_hand_wired_scores_one():
+    body = "Runs unattended only by hand-wiring; no durable reduction."
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_f_autonomy_narrow_single_use_scores_two():
+    body = "Single-use automation: reduces one human relay step on a specific dispatch."
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_f_autonomy_feedback_loop_scores_three():
+    body = "Wires observation feedback back into dispatch — closes the loop without human relay."
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_f_autonomy_signal_to_action_scores_three():
+    body = "Reaches action without a human relay; feedback loop closes."
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_f_autonomy_auto_promote_class_scores_four():
+    body = "Makes HV/LC tasks safely auto_promote eligible with caps intact."
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_f_autonomy_redundant_gate_replace_scores_five():
+    body = "Replaces a redundant human gate with at-least-as-safe mechanical equivalent."
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_f_autonomy_l6_criterion_scores_five():
+    body = "Closed production-feedback loop lands; L6 autonomy criterion green."
+    s, _ = estimator.score_f_autonomy(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_f_autonomy_registered_in_estimate_task_dispatch(tmp_path):
+    """When drivers dict contains F-AUTONOMY, estimate_task dispatches to the
+    dedicated scorer (not the weak score_free_driver fallback)."""
+    body = "Wires observation feedback back into dispatch — closes the loop without human relay."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {"F-AUTONOMY": 4})
+    # Dedicated handler returns 3; fallback would return 0 (no "F-AUTONOMY" string in body)
+    assert result["scores"]["F-AUTONOMY"] == 3
+
+
+def test_f_autonomy_latent_until_driver_registered(tmp_path):
+    """Handler exists in dispatch table but is only invoked when policy
+    registers F-AUTONOMY. With drivers={} the slot never fires."""
+    body = "Wires observation feedback back into dispatch — closes the loop without human relay."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "F-AUTONOMY" not in result["scores"]
+
+
+def test_f_autonomy_dispatch_distinguishes_dedicated_vs_fallback(tmp_path):
+    """Direct contrast: the dedicated handler scores feedback-loop body at 3;
+    score_free_driver would score it 0 because 'F-AUTONOMY' is not in the body."""
+    body = "Wires observation feedback back into dispatch — closes the loop without human relay."
+    task = _make_task(tmp_path, body)
+    # Via dedicated handler
+    result_dedicated = estimator.estimate_task(task, {"F-AUTONOMY": 4})
+    assert result_dedicated["scores"]["F-AUTONOMY"] == 3
+    # Via fallback (force score_free_driver directly — body has no F-AUTONOMY mention)
+    s_fallback, _ = estimator.score_free_driver("F-AUTONOMY", FM_BUILD, body, [])
+    assert s_fallback == 0
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
