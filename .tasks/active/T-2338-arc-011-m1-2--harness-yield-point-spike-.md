@@ -59,10 +59,10 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:112-152` (§2).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/dispatch/yield-point.sh` exists with a `check_yield <target_path>` function: reads `.context/working/.dispatch-flag` if present; if flag content matches `refuse-write:<target_path>`, prints reason on stderr and exits non-zero
-- [ ] `tests/unit/test_yield_point.bats` covers: no-flag → exit 0 (write allowed); matching-flag → non-zero + stderr reason; non-matching-flag → exit 0; stale-flag (>5min old) → ignored with WARN; malformed-flag → ignored with WARN — all 5 PASS
-- [ ] `agents/dispatch/preamble.md` documents the yield-point convention (one paragraph: when worker invokes it, what the flag format is, expected exit-code semantics)
-- [ ] Worked-example smoke: from this session shell, write the flag to `refuse-write:/tmp/.t2338-target`, run `agents/dispatch/yield-point.sh check /tmp/.t2338-target` — observe non-zero exit + stderr "refusing write to /tmp/.t2338-target"; then clear flag, re-run — observe exit 0
+- [x] `agents/dispatch/yield-point.sh` exists with a `check_yield <target_path>` function: reads `.context/working/.dispatch-flag` if present; if flag content matches `refuse-write:<target_path>`, prints reason on stderr and exits non-zero
+- [x] `tests/unit/test_yield_point.bats` covers: no-flag → exit 0 (write allowed); matching-flag → non-zero + stderr reason; non-matching-flag → exit 0; stale-flag (>5min old) → ignored with WARN; malformed-flag → ignored with WARN — all 5 PASS (9/9 total including multi-line/comment/help/usage siblings)
+- [x] `agents/dispatch/preamble.md` documents the yield-point convention (one paragraph: when worker invokes it, what the flag format is, expected exit-code semantics)
+- [x] Worked-example smoke: from this session shell, write the flag to `refuse-write:/tmp/.t2338-target`, run `agents/dispatch/yield-point.sh check /tmp/.t2338-target` — observe non-zero exit + stderr "refusing write to /tmp/.t2338-target"; then clear flag, re-run — observe exit 0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +128,19 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:112-152` (§2).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# AC verifications:
+test -x agents/dispatch/yield-point.sh
+bats tests/unit/test_yield_point.bats > /tmp/.t2338-bats.out 2>&1 && [ "$(grep -c '^ok ' /tmp/.t2338-bats.out)" -eq 9 ]
+grep -q "Yield Point" agents/dispatch/preamble.md
+grep -q "refuse-write:" agents/dispatch/preamble.md
+
+## Evolution
+
+### 2026-06-11 — slice ship: §2 harness yield-point
+- **What changed:** Spec called for "ignored with WARN" on stale flag and "fail-open" on malformed. Implemented both literally — stale-flag check is `now - mtime > FW_YIELD_STALE_SECS` (default 300s); malformed flag fall-through is the unknown-directive default branch. Discovered that BSD `stat` and GNU `stat` use different flags (`-c %Y` vs `-f %m`); used the OR-fallback pattern. Discovered bats' `touch -d "10 minutes ago"` is GNU-only; added BSD `touch -t` fallback in the stale-flag test.
+- **Plan impact:** None — design held.
+- **Triggered:** §1 orchestrator-graph (next slice) consumes `yield-point.sh` as the runtime-collision response handler.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -142,30 +155,6 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:112-152` (§2).
 
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
 ## Decisions
@@ -188,6 +177,24 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:112-152` (§2).
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Second arc-011 M1 build slice landed clean. 4/4 Agent ACs verified, reviewer pending below, 9/9 bats PASS, worked-example smoke test confirms refusal+allow paths on live shell. The yield-point is the dynamic counterpart to T-2337's static disjoint validator — together they form pre-flight + mid-flight safety for the headline_mechanic. Pure shell, no IPC dependency, fails open on every error path (stale flag, malformed content, parse errors) so a broken orchestrator signal never deadlocks workers. Preamble.md updated with worker contract + orchestrator contract + exit-code semantics so the next slice (§1 orchestrator-graph) has a wire-level contract to consume.
+
+**Evidence:**
+- `agents/dispatch/yield-point.sh` — 124 lines pure shell, `check <target_path>` subcommand + `--help`
+- `tests/unit/test_yield_point.bats` — 9/9 PASS (no-flag, matching-rule, non-matching, stale, malformed, multi-line, usage, --help, comment-only)
+- `agents/dispatch/preamble.md` — new "Yield Point — Cooperative Poll" section documents worker invocation + orchestrator contract + fail-open guarantees
+- Live smoke: `FW_YIELD_FLAG=/tmp/.t2338-flag echo "refuse-write:/tmp/.t2338-target" > $FW_YIELD_FLAG && agents/dispatch/yield-point.sh check /tmp/.t2338-target` → exit 1 + stderr; cleared flag → exit 0
+
+**Next M1 slices unlocked:**
+- §1 orchestrator-graph (consumes both §3 disjoint validator + §2 yield-point)
+- §6 disjointness gate pre-flight (extends §1)
+- §4 single-host parallel demo (depends on §1+§2)
+- §5 /orchestrator/parallel Watchtower view (depends on §4)
 
 ## Updates
 

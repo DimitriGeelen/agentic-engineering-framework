@@ -158,3 +158,44 @@ After dispatching agents:
 3. If you need details, read the output file the agent wrote — don't ask the agent
 4. NEVER use `TaskOutput` with `block: true` for background agents (returns full JSONL transcript)
 5. Use `Bash: tail -5 /tmp/claude-*/tasks/{agent-id}.output` to get just the summary
+
+## Yield Point — Cooperative Poll (T-2338, arc-011 M1 §2)
+
+When two agents are dispatched in parallel against tasks with declared-disjoint
+write-sets (validated pre-flight by `fw write-set check`, T-2337), the orchestrator
+needs a mid-flight safety net for the case where reality drifts from the declaration
+— a glob that expands unexpectedly, a task that touches a file outside its declared
+set, etc.
+
+The single-host mechanism is a file flag at `.context/working/.dispatch-flag`:
+
+```
+refuse-write:/abs/path/to/conflicting-file
+refuse-write:/another/path
+# lines starting with # are comments
+```
+
+**Worker contract.** Dispatched workers MUST invoke
+`agents/dispatch/yield-point.sh check <target_path>` immediately before each
+`Write` or `Edit` tool call (single-host dispatches only — multi-host arc M2
+introduces a sidecar). Exit-code semantics:
+
+| Exit | Meaning | Worker action |
+|------|---------|---------------|
+| 0    | Write allowed (no flag, no match, stale flag, malformed flag) | Proceed |
+| 1    | Write refused (rule matched the target path) | Skip write, log refusal, post outcome row, exit cleanly |
+| 64   | Usage error (no target path) | Bug in worker — fix the invocation |
+
+**Stale-flag protection.** Flag mtime older than `FW_YIELD_STALE_SECS` (default
+300s) is ignored with a WARN — the orchestrator was meant to clean up and didn't,
+and we fail open rather than deadlock.
+
+**Orchestrator contract.** When the orchestrator detects a collision (post-flight
+audit, or runtime intelligence not yet built), it writes the flag, waits one
+worker poll-cycle, then expects the affected worker to post a refusal outcome.
+The orchestrator then either re-dispatches with adjusted scope or escalates.
+
+**Fail-open by design.** A broken orchestrator signal must NEVER deadlock workers.
+Any parse error / malformed content / stale flag → write allowed. The disjoint
+write-set declaration (T-2337) is the primary correctness barrier; this is a
+real-time safety supplement.
