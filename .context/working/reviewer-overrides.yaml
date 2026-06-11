@@ -874,3 +874,23 @@ overrides:
   expires_at: '2026-09-09T18:34:45Z'
   added_by: root
   added_at: '2026-06-11T18:34:45Z'
+- id: OV-60e71634
+  task_id: T-2341
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "AC#1 describes WHERE workers WRITE TO (sandbox .context/dispatches.jsonl),\
+    \ not what the AC promises to verify \u2014 narrow path-grep FP. Sibling to T-2340\
+    \ OV-7d4daafb, T-2265 OV-822b8648."
+  expires_at: '2026-09-09T18:44:25Z'
+  added_by: root
+  added_at: '2026-06-11T18:44:25Z'
+- id: OV-c1c64546
+  task_id: T-2341
+  pattern_id: AC-verify-mismatch
+  ac_index: 3
+  reason: "AC#3 describes the sandbox-isolation invariant (demo does NOT touch real\
+    \ .context/dispatches.jsonl), not what the AC promises to verify \u2014 narrow\
+    \ path-grep FP. Sibling class."
+  expires_at: '2026-09-09T18:44:25Z'
+  added_by: root
+  added_at: '2026-06-11T18:44:25Z'
