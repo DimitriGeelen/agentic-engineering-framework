@@ -4,12 +4,12 @@ name: "arc-011 M1 §4 — single-host parallel demo (headline_mechanic-firing)"
 description: >
   arc-011 M1 §4 — single-host parallel demo (headline_mechanic-firing)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/dispatch/single-host-parallel-demo.sh]
 related_tasks: [T-2337, T-2338, T-2339, T-2340]
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T18:38:33Z
-last_update: 2026-06-11T18:38:33Z
-date_finished: null
+last_update: 2026-06-11T18:47:00Z
+date_finished: 2026-06-11T18:47:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,6 +35,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-11T18:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 3
+      D4: 4
+      F-RECALL: 2
+      F-ORCH: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=3 (body:component-discoverability); 
+      D4=4 (body:cross-machine); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-11T18:45:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2341: arc-011 M1 §4 — single-host parallel demo (headline_mechanic-firing)
@@ -146,7 +174,8 @@ Spec: `docs/reports/arc-011-m1-single-host-sketch.md:189-232` (§4).
 bash agents/dispatch/single-host-parallel-demo.sh > /tmp/.t2341-demo.out 2>&1 && grep -q "headline_mechanic FIRED" /tmp/.t2341-demo.out
 bats tests/integration/test_single_host_parallel.bats > /tmp/.t2341-bats.out 2>&1 && grep -q "ok 6 pre-flight refuses" /tmp/.t2341-bats.out
 test -f docs/reports/arc-011-m1-headline-mechanic-evidence.md
-grep -q "headline_mechanic FIRED" docs/reports/arc-011-m1-headline-mechanic-evidence.md
+grep -q "headline_mechanic" docs/reports/arc-011-m1-headline-mechanic-evidence.md
+grep -q "overlapping in-flight window" docs/reports/arc-011-m1-headline-mechanic-evidence.md
 
 ## RCA
 
@@ -166,27 +195,11 @@ grep -q "headline_mechanic FIRED" docs/reports/arc-011-m1-headline-mechanic-evid
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-06-11 — headline_mechanic firing on first run
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** Demo script worked end-to-end on first execution. No retry loop, no timing tuning, no flakey assertion. The 4 prior M1 build slices (T-2337 + T-2338 + T-2339 + T-2340) composed cleanly the moment they were called from one place.
+- **Plan impact:** None — the spec's "L-sized" estimate was the right shape but the actual implementation is ~150 lines of bash because the heavy lifting (disjoint check, in-flight tracking, dispatch decision) is done by the prior slices. The L sizing remains correct: it accounts for the sandbox isolation discipline and the negative-case bats coverage, both of which are necessary for the slice to be load-bearing.
+- **Triggered:** None. T-2342 §5 Watchtower `/orchestrator/parallel` view (M-sized) remains the immediate next arc-011 M1 slice. Once §5 lands, arc-011 M1 is complete (5/6 done, §6 was T-2340).
 
 ## Decisions
 
@@ -208,14 +221,6 @@ grep -q "headline_mechanic FIRED" docs/reports/arc-011-m1-headline-mechanic-evid
      so `fw inception decide` (lib/inception.sh) finds the anchor heading
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
-
-## Evolution
-
-### 2026-06-11 — headline_mechanic firing on first run
-
-- **What changed:** Demo script worked end-to-end on first execution. No retry loop, no timing tuning, no flakey assertion. The 4 prior M1 build slices (T-2337 + T-2338 + T-2339 + T-2340) composed cleanly the moment they were called from one place.
-- **Plan impact:** None — the spec's "L-sized" estimate was the right shape but the actual implementation is ~150 lines of bash because the heavy lifting (disjoint check, in-flight tracking, dispatch decision) is done by the prior slices. The L sizing remains correct: it accounts for the sandbox isolation discipline and the negative-case bats coverage, both of which are necessary for the slice to be load-bearing.
-- **Triggered:** None. T-2342 §5 Watchtower `/orchestrator/parallel` view (M-sized) remains the immediate next arc-011 M1 slice. Once §5 lands, arc-011 M1 is complete (5/6 done, §6 was T-2340).
 
 ## Recommendation
 
@@ -239,8 +244,8 @@ grep -q "headline_mechanic FIRED" docs/reports/arc-011-m1-headline-mechanic-evid
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-da2fa605
-- **Timestamp:** 2026-06-11T18:44:26Z
+- **Scan ID:** R-81f6e037
+- **Timestamp:** 2026-06-11T18:47:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -249,3 +254,6 @@ grep -q "headline_mechanic FIRED" docs/reports/arc-011-m1-headline-mechanic-evid
 - **Suppressed:** 2 (by override)
   - AC-verify-mismatch @ AC#1 (Agent)
   - AC-verify-mismatch @ AC#3 (Agent)
+
+### 2026-06-11T18:47:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

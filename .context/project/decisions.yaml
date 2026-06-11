@@ -2032,3 +2032,10 @@ decisions:
     date: 2026-06-11
     task: T-2332
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-293
+    decision: "Deterministic bash-stub workers that touch their declared write_set and exit."
+    scope: project
+    date: 2026-06-11
+    task: T-2341
+    rationale: "Auto-captured from task file on completion"
