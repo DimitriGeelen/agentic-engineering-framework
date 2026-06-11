@@ -4,12 +4,12 @@ name: "arc-011 M1 §6 — disjointness pre-flight gate (intercept dispatch path)
 description: >
   arc-011 M1 §6 — disjointness pre-flight gate (intercept dispatch path)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/orchestrator/orchestrator-graph.py, bin/fw]
 related_tasks: []
 arc_id: parallel-execution-aef
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T18:04:38Z
-last_update: '2026-06-11T18:15:03Z'
-date_finished:
+last_update: 2026-06-11T18:35:56Z
+date_finished: 2026-06-11T18:35:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -253,8 +253,8 @@ bin/fw orchestrator pre-flight 2>&1; [ $? -eq 64 ]
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a436363f
-- **Timestamp:** 2026-06-11T18:34:49Z
+- **Scan ID:** R-8f33d801
+- **Timestamp:** 2026-06-11T18:35:59Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -262,3 +262,6 @@ bin/fw orchestrator pre-flight 2>&1; [ $? -eq 64 ]
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#2 (Agent)
+
+### 2026-06-11T18:35:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

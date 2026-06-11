@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T19:15:25Z
-last_update: '2026-06-11T16:00:02Z'
+last_update: 2026-06-11T18:36:11Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'

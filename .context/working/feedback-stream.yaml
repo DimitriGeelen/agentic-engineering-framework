@@ -16580,3 +16580,30 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 2
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-11T18:35:59Z'
+scan_id: R-8f33d801
+task_id: T-2340
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T18:35:59Z'
+scan_id: R-8f33d801
+task_id: T-2340
+payload:
+  task_file: .tasks/active/T-2340-arc-011-m1-6--disjointness-pre-flight-ga.md
+---
+kind: override_applied
+timestamp: '2026-06-11T18:35:59Z'
+scan_id: R-8f33d801
+task_id: T-2340
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent

@@ -3733,6 +3733,14 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 shift
                 exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/agents/orchestrator/orchestrator-graph.py" next-dispatch "$@"
                 ;;
+            pre-flight)
+                # T-2340 (arc-011 M1 §6): pre-dispatch disjointness gate.
+                # Refuses if any in-flight dispatch has write_set overlap with
+                # the candidate task. Exit codes: 0=allowed, 1=refused,
+                # 2=task-not-found, 64=usage.
+                shift
+                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/agents/orchestrator/orchestrator-graph.py" pre-flight "$@"
+                ;;
             improve)
                 shift
                 cat <<EOF
