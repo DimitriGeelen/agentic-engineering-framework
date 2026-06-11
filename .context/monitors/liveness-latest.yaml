@@ -1,5 +1,5 @@
 # Liveness snapshot (T-1269, T-1273)
-timestamp: 2026-06-11T21:58:01+02:00
+timestamp: 2026-06-11T23:26:01+02:00
 host: dimitrimintdev
 boot_marker: 0
 termlink:
@@ -9,4 +9,4 @@ claude_instances: 2
 framework_agent:
   session: ready
   id: "tl-chgzyrlq"
-watchtower: stopped
+watchtower: running

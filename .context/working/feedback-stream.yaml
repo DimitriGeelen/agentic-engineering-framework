@@ -16967,3 +16967,201 @@ scan_id: R-0bca758b
 task_id: T-1542
 payload:
   task_file: .tasks/active/T-1542-fw-upgrade-run-from-inside-a-consumer-pr.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T20:36:47Z'
+scan_id: R-4e19bf6f
+task_id: T-1624
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T20:36:47Z'
+scan_id: R-4e19bf6f
+task_id: T-1624
+payload:
+  task_file: .tasks/active/T-1624-refresh-ring20-dashboard-hubsecret-on-th.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T20:37:17Z'
+scan_id: R-860f57e3
+task_id: T-801
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T20:37:17Z'
+scan_id: R-860f57e3
+task_id: T-801
+payload:
+  task_file: .tasks/active/T-801-fw-costs-cli--token-usage-tracking-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T20:37:24Z'
+scan_id: R-805cdd68
+task_id: T-802
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T20:37:24Z'
+scan_id: R-805cdd68
+task_id: T-802
+payload:
+  task_file: .tasks/active/T-802-watchtower-token-dashboard--costs-page-w.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T20:37:32Z'
+scan_id: R-adaca47c
+task_id: T-803
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T20:37:32Z'
+scan_id: R-adaca47c
+task_id: T-803
+payload:
+  task_file: .tasks/active/T-803-landing-page-token-widget--show-current-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T20:37:56Z'
+scan_id: R-66779113
+task_id: T-801
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T20:37:56Z'
+scan_id: R-66779113
+task_id: T-801
+payload:
+  task_file: .tasks/active/T-801-fw-costs-cli--token-usage-tracking-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T20:38:58Z'
+scan_id: R-48d6af36
+task_id: T-801
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T20:38:58Z'
+scan_id: R-48d6af36
+task_id: T-801
+payload:
+  task_file: .tasks/active/T-801-fw-costs-cli--token-usage-tracking-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T20:40:04Z'
+scan_id: R-b4d2db1c
+task_id: T-801
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T20:40:04Z'
+scan_id: R-b4d2db1c
+task_id: T-801
+payload:
+  task_file: .tasks/active/T-801-fw-costs-cli--token-usage-tracking-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T21:13:32Z'
+scan_id: R-61918cf1
+task_id: T-2345
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T21:13:32Z'
+scan_id: R-61918cf1
+task_id: T-2345
+payload:
+  task_file: .tasks/active/T-2345-update-tasksh--auto-clean-reviewed-t-xxx.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T21:14:00Z'
+scan_id: R-e699a591
+task_id: T-2345
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T21:14:00Z'
+scan_id: R-e699a591
+task_id: T-2345
+payload:
+  task_file: .tasks/active/T-2345-update-tasksh--auto-clean-reviewed-t-xxx.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T21:14:18Z'
+scan_id: R-e7b5395b
+task_id: T-2345
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T21:14:18Z'
+scan_id: R-e7b5395b
+task_id: T-2345
+payload:
+  task_file: .tasks/active/T-2345-update-tasksh--auto-clean-reviewed-t-xxx.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T21:14:19Z'
+scan_id: R-f5245304
+task_id: T-2345
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T21:14:19Z'
+scan_id: R-f5245304
+task_id: T-2345
+payload:
+  task_file: .tasks/active/T-2345-update-tasksh--auto-clean-reviewed-t-xxx.md

@@ -3647,3 +3647,64 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>" '
   caller: 'check-active-task focus-drift'
   target: 'T-2344'
   command: 'bin/fw context add-learning "Workflow A (arc-scoped driver session per T-1925) trigger is agent-discipline, NOT hook-enforced. New arcs created via fw arc create do not auto-prompt the agent to run '
+- timestamp: '2026-06-11T20:40:08Z'
+  task: 'T-803'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-801'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw task update T-801 --status work-completed 2>&1 | tail -5'
+- timestamp: '2026-06-11T20:41:03Z'
+  task: 'T-803'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'git add .tasks/active/T-1624-*.md .tasks/active/T-801-*.md .tasks/active/T-802-*.md .tasks/active/T-803-*.md
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: stale-PC sweep — surface T-1624 + T'
+- timestamp: '2026-06-11T20:44:04Z'
+  task: 'T-803'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'git add .fabric/components/
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: fabric enrich — 8 cards enriched, 14 edges (audit WARN 100→94)
+
+Run `fw fabric enrich`. Cards processed: 833. Forw'
+- timestamp: '2026-06-11T20:56:26Z'
+  task: 'T-803'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'git add .agentic-framework/
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: refresh vendored .agentic-framework/ (web/templates/bvp.html drift)
+
+`fw doctor` flagged 1 file out of sync (web/templ'
+- timestamp: '2026-06-11T21:09:45Z'
+  task: 'T-803'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: prune 316 orphan review markers (.reviewed-T-* whose tasks moved to completed/)
+
+Review markers in .context/working/.reviewed-T-* are created by
+f'
+- timestamp: '2026-06-11T21:15:20Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2345'
+  command: 'bin/fw vendor self 2>&1 | tail -5
+git add .agentic-framework/
+FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-2345: refresh vendored copies (self-vendor sync for update-task.sh)
+
+T-2240 pre-push gate'
+- timestamp: '2026-06-11T21:26:02Z'
+  task: 'T-1687'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/audits/ .context/handovers/ .context/monitors/ .context/project/ .context/working/ .tasks/active/T-2321*.md .tasks/active/T-2323*.md .tasks/active/T-2324*.md .tasks/'

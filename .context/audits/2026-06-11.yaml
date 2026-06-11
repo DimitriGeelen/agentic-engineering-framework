@@ -1,5 +1,5 @@
-# Audit Results - 2026-06-11-2147
-timestamp: 2026-06-11T19:47:06Z
+# Audit Results - 2026-06-11-2318
+timestamp: 2026-06-11T21:18:33Z
 sections: "structure"
 summary:
   pass: 22
@@ -42,7 +42,7 @@ findings:
   - level: PASS
     check: "Fabric: 832 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 100/823 cards have no edges"
+    check: "Fabric: 94/823 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: PASS
     check: "Fabric drift: All watched source files registered (832 cards)"
