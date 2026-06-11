@@ -3260,6 +3260,46 @@ case "$cmd" in
         bvp_dispatch "$@"
         exit $?
         ;;
+    write-set)
+        # T-2337 (arc-011 M1 §3): disjoint write-set validator.
+        # Verbs: check <T-A> <T-B> — compare two tasks' declared write_set: frontmatter
+        # Exit codes: 0=disjoint, 1=overlap, 2=undecidable
+        ws_subcmd="${1:-}"
+        shift || true
+        case "$ws_subcmd" in
+            check)
+                if [ $# -lt 2 ]; then
+                    echo "usage: fw write-set check <T-A> <T-B>" >&2
+                    exit 64
+                fi
+                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/write_set.py" check "$1" "$2"
+                ;;
+            ""|--help|-h|help)
+                cat <<'EOF'
+fw write-set check <T-A> <T-B>
+
+Compare two tasks' declared `write_set:` frontmatter and report whether
+they are disjoint, overlap, or undecidable. Used by the arc-011 orchestrator
+before emitting parallel dispatch (T-2337, arc-011 M1 §3).
+
+Exit codes:
+  0  disjoint    — both write-sets declared, no path overlap
+  1  overlap     — both declared, at least one shared path
+  2  undecidable — at least one task lacks write_set: frontmatter
+
+Examples:
+  fw write-set check T-PAR-A T-PAR-B    # Two disjoint tasks → exit 0
+  fw write-set check T-COL-A T-COL-B    # Two overlapping tasks → exit 1
+EOF
+                exit 0
+                ;;
+            *)
+                echo "ERROR: unknown write-set subcommand: $ws_subcmd" >&2
+                echo "Run 'fw write-set --help' for usage." >&2
+                exit 64
+                ;;
+        esac
+        ;;
     cron)
         # T-448: Cron registry management
         cron_subcmd="${1:-}"
