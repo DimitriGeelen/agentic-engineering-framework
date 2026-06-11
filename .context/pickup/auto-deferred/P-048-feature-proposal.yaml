@@ -1,0 +1,22 @@
+pickup_id: P-048
+version: 1
+type: feature-proposal
+source:
+  project: 999-Agentic-Engineering-Framework
+  task_id: T-2303
+  agent: claude-code
+  timestamp: '2026-06-11T22:06:12Z'
+payload:
+  summary: T-2303 arc-011 parallel-execution scoping — first-contact (U-008)
+  detail: 'Please review /opt/999-Agentic-Engineering-Framework/docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md
+    (88 lines). Three questions: (1) substrate ADR ratification (2) §6 primitive priority/ETA
+    for foundation triple (3) ongoing-coordination mechanism. Expecting structured
+    reply per §Expected response shape. 7-day timeout; after that AEF fires downstream
+    inceptions with provisional caveat. Operator-authorised delivery 2026-06-12 (standing
+    directive). Previous termlink inject delivery failed because target session at
+    bash prompt, not claude-p — see U-008 delivery_attempts log in .context/working/pending-updates.yaml'
+  priority: high
+  tags:
+  - arc-011
+  - cross-repo
+  - scoping-inception

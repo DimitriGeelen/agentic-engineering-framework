@@ -1,17 +1,17 @@
 scan_date: '2026-06-11'
-scan_timestamp: '2026-06-11T02:37:05Z'
+scan_timestamp: '2026-06-11T22:47:48Z'
 pass: B
 catalogue_version: v1.3-seed
 escalation_version: v1.1-seed
-tasks_scanned: 2078
+tasks_scanned: 2095
 errors: []
 totals:
-  PASS: 1541
-  CONCERN: 537
+  PASS: 1556
+  CONCERN: 539
   FAIL: 0
-  needs_human: 67
+  needs_human: 69
 pattern_fire_counts:
-  AC-verify-mismatch: 366
+  AC-verify-mismatch: 369
   l387-sigpipe-risk: 402
   empty-output-success: 79
   mock-only-integration: 21
@@ -24,16 +24,16 @@ suppressed_fire_counts:
   tautology: 3
   swallowed-errors: 11
   empty-output-success: 1
-  AC-verify-mismatch: 19
+  AC-verify-mismatch: 25
   skip-as-pass: 3
   l387-sigpipe-risk: 7
   mock-only-integration: 9
-suppressed_total: 64
-active_overrides: 73
+suppressed_total: 70
+active_overrides: 82
 escalation_fire_counts:
   external-publish: 4
-  cross-project-blast: 40
-  destructive-action: 22
+  cross-project-blast: 41
+  destructive-action: 23
   secret-handling: 1
 top_findings:
 - pattern_id: l387-sigpipe-risk
@@ -45,7 +45,7 @@ top_findings:
   - T-1064
   - T-1066
 - pattern_id: AC-verify-mismatch
-  count: 366
+  count: 369
   examples:
   - T-1020
   - T-1020

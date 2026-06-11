@@ -3708,3 +3708,43 @@ T-2240 pre-push gate'
   caller: 'check-active-task focus-drift'
   target: 'T-077'
   command: 'FW_SWITCH_FOCUS=1 git add .context/audits/ .context/handovers/ .context/monitors/ .context/project/ .context/working/ .tasks/active/T-2321*.md .tasks/active/T-2323*.md .tasks/active/T-2324*.md .tasks/'
+- timestamp: '2026-06-11T21:42:05Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'cat .context/working/.budget-status 2>&1 ; echo "---" ; FW_SWITCH_FOCUS=1 git add CLAUDE.md && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: CLAUDE.md Quick Reference — add `fw write-set che'
+- timestamp: '2026-06-11T22:02:14Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git add .context/working/pending-updates.yaml && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: revert U-002/U-003/U-004/U-007/U-008 — termlink inject delivery failed
+
+Marke'
+- timestamp: '2026-06-11T22:02:23Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 bin/fw context add-learning "termlink inject to a session not currently running claude -p silently succeeds (Injected N bytes returns 0) but the bash receiver errors on every char.'
+- timestamp: '2026-06-11T22:34:11Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git add .tasks/ && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: bvp estimator sweep — V_* trio fully integrated (2303 tasks rescored)
+
+Triggered fw bvp estimate all after '
+- timestamp: '2026-06-11T22:53:45Z'
+  task: 'T-2306'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-077'
+  command: 'FW_SWITCH_FOCUS=1 git add -A && FW_SWITCH_FOCUS=1 git commit -m "$(cat <<EOF
+T-077: housekeeping — session state files + cron audits
+
+Roll forward audit/monitor/learnings/metrics state from this s'

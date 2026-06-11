@@ -3651,3 +3651,10 @@ X'` returning empty group."
   date: 2026-06-11
   context: Added via context agent
   application: TBD
+- id: L-479
+  learning: "termlink inject to a session not currently running claude -p silently 'succeeds' (Injected N bytes returns 0) but the bash receiver errors on every char. Precondition before inject: verify target is in agent mode via 'termlink output <id> | tail -1' or 'termlink describe <id> | grep mode'. Lacking that check, use 'fw pickup send' (file-based async) — does not depend on target session state."
+  source: P-009
+  task: T-077
+  date: 2026-06-11
+  context: Added via context agent
+  application: TBD
