@@ -1250,6 +1250,11 @@ if [ -n "$NEW_STATUS" ]; then
                 fi
                 echo -e "${GREEN}Moved to completed/${NC}"
 
+                # T-2345: clean orphan review marker — marker exists to unblock
+                # fw inception decide (T-973), moot once task is in completed/.
+                # Idempotent; sibling cleanup at lib/inception.sh:731.
+                rm -f "$PROJECT_ROOT/.context/working/.reviewed-$TASK_ID" 2>/dev/null || true
+
                 # Generate episodic if not already present
                 if [ ! -f "$CONTEXT_DIR/episodic/$TASK_ID.yaml" ]; then
                     echo ""
@@ -1767,6 +1772,10 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 exit 1
             fi
             echo -e "${GREEN}Moved to completed/${NC}"
+            # T-2345: clean orphan review marker — marker exists to unblock
+            # fw inception decide (T-973), moot once task is in completed/.
+            # Idempotent; sibling cleanup at lib/inception.sh:731.
+            rm -f "$PROJECT_ROOT/.context/working/.reviewed-$TASK_ID" 2>/dev/null || true
         fi
 
         # T-2163 (arc-009 horizon-axis-hardening, Slice 4): null the stored
