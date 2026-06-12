@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2347: Arc closure UX RCA — Watchtower arc-action handoff defaults to CLI
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-12T10:32:37Z
+# ============================================================================
+
+task_id: T-2347
+task_name: "Arc closure UX RCA — Watchtower arc-action handoff defaults to CLI"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T10:25:35Z
+completed: 2026-06-12T10:32:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-12T12:29:02+02:00
+last_commit: 2026-06-12T12:29:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — Arc closure UX RCA + T-2121 placeholder fix
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file inception — Arc closure UX RCA + T-2121 placeholder fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-06-12.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/T-2347-arc-closure-ux-rca.md'
+  - '.tasks/active/T-2121-t-2091-rca-prevention-follow-up-structur.md'
+  - '.tasks/active/T-2347-arc-closure-ux-rca--watchtower-arc-actio.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-12T12:29:02"
+    action: "T-2347: file inception — Arc closure UX RCA + T-2121 placeholder fix"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, arc-mechanics, ux, arc:arc-grooming]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 21
+  lines_added: 3629
+  lines_removed: 257
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2347-arc-closure-ux-rca--watchtower-arc-actio.md
+generated_by: context-agent-hybrid
