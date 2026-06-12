@@ -1516,5 +1516,188 @@ def test_sovereignty_latent_without_arc(tmp_path):
     assert "sovereignty-preservation" not in result["scores"]
 
 
+# ---------------------------------------------------------------------------
+# T-2360 — score_aesthetic_cohesion + score_render_fidelity + score_theme_portability
+# arc-007 watchtower-redesign scoped drivers (3 latent handlers).
+# ---------------------------------------------------------------------------
+
+
+# aesthetic-cohesion per-level
+
+def test_aesthetic_cohesion_no_signal_zero():
+    s, _ = estimator.score_aesthetic_cohesion(FM_BUILD, "Refactor unrelated handler.", [])
+    assert s == 0
+
+
+def test_aesthetic_cohesion_incidental_one():
+    body = "Mentions aesthetic cohesion as upstream goal."
+    s, _ = estimator.score_aesthetic_cohesion(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_aesthetic_cohesion_single_tweak_two():
+    body = "Tweaks the palette contrast on the cockpit accent button. Small."
+    s, _ = estimator.score_aesthetic_cohesion(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_aesthetic_cohesion_component_three():
+    body = "Added palette-contrast test in tests/unit/test_palette.py. Sibling of T-2004."
+    s, _ = estimator.score_aesthetic_cohesion(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_aesthetic_cohesion_framework_four():
+    body = "WCAG contrast audit gate ships; framework-level aesthetic check at audit time."
+    s, _ = estimator.score_aesthetic_cohesion(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_aesthetic_cohesion_new_class_five():
+    body = "New design-token system lands; design-system substrate ships at framework level."
+    s, _ = estimator.score_aesthetic_cohesion(FM_BUILD, body, [])
+    assert s == 5
+
+
+# render-fidelity per-level
+
+def test_render_fidelity_no_signal_zero():
+    s, _ = estimator.score_render_fidelity(FM_BUILD, "Refactor handler.", [])
+    assert s == 0
+
+
+def test_render_fidelity_incidental_one():
+    body = "References render-fidelity work as background context."
+    s, _ = estimator.score_render_fidelity(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_render_fidelity_single_fix_two():
+    body = "Fixes one render bug — accent button alignment off in dark mode."
+    s, _ = estimator.score_render_fidelity(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_render_fidelity_component_three():
+    body = "WCAG contrast fix on accent token; playwright test guards the regression."
+    s, _ = estimator.score_render_fidelity(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_render_fidelity_framework_four():
+    body = "Playwright contrast baseline lands; audit FAIL on WCAG violations across all pages."
+    s, _ = estimator.score_render_fidelity(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_render_fidelity_new_class_five():
+    body = ("New render-fidelity primitive class: automated visual-regression substrate makes "
+            "render-fidelity regressions structurally impossible.")
+    s, _ = estimator.score_render_fidelity(FM_BUILD, body, [])
+    assert s == 5
+
+
+# theme-portability per-level
+
+def test_theme_portability_no_signal_zero():
+    s, _ = estimator.score_theme_portability(FM_BUILD, "Refactor handler.", [])
+    assert s == 0
+
+
+def test_theme_portability_incidental_one():
+    body = "Notes theme portability work upcoming."
+    s, _ = estimator.score_theme_portability(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_theme_portability_single_fix_two():
+    body = "Single missed-surface fix: applies preset to /approvals page properly."
+    s, _ = estimator.score_theme_portability(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_theme_portability_component_three():
+    body = "Theme sweep on two pages — Cockpit and Tasks now respect the editorial preset."
+    s, _ = estimator.score_theme_portability(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_theme_portability_framework_four():
+    body = "Multi-page theme sweep lands; token-substrate adoption across Cockpit/Tasks/Approvals."
+    s, _ = estimator.score_theme_portability(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_theme_portability_new_class_five():
+    body = ("New theme-portability primitive class — design-token-substrate auto-propagates "
+            "across every surface; theme-apply becomes a structural mechanism.")
+    s, _ = estimator.score_theme_portability(FM_BUILD, body, [])
+    assert s == 5
+
+
+# Dispatch via arc-scope
+
+def test_aesthetic_cohesion_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-watchtower", [
+        {"name": "aesthetic-cohesion", "weight": 5},
+    ])
+    body = "WCAG contrast audit gate ships; framework-level aesthetic check at audit time."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-watchtower"})
+    result = estimator.estimate_task(task, {})
+    assert "aesthetic-cohesion" in result["scores"]
+    assert result["scores"]["aesthetic-cohesion"] == 4
+
+
+def test_render_fidelity_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-watchtower-2", [
+        {"name": "render-fidelity", "weight": 5},
+    ])
+    body = "Playwright contrast baseline lands; audit FAIL on WCAG violations across all pages."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-watchtower-2"})
+    result = estimator.estimate_task(task, {})
+    assert "render-fidelity" in result["scores"]
+    assert result["scores"]["render-fidelity"] == 4
+
+
+def test_theme_portability_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-watchtower-3", [
+        {"name": "theme-portability", "weight": 4},
+    ])
+    body = "Multi-page theme sweep lands; token-substrate adoption across Cockpit/Tasks/Approvals."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-watchtower-3"})
+    result = estimator.estimate_task(task, {})
+    assert "theme-portability" in result["scores"]
+    assert result["scores"]["theme-portability"] == 4
+
+
+# Latency (no arc, no dispatch)
+
+def test_aesthetic_cohesion_latent_without_arc(tmp_path):
+    body = "WCAG contrast audit gate ships."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "aesthetic-cohesion" not in result["scores"]
+
+
+def test_render_fidelity_latent_without_arc(tmp_path):
+    body = "Playwright contrast baseline lands."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "render-fidelity" not in result["scores"]
+
+
+def test_theme_portability_latent_without_arc(tmp_path):
+    body = "Multi-page theme sweep lands."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "theme-portability" not in result["scores"]
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
