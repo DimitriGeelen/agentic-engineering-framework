@@ -17183,3 +17183,48 @@ scan_id: R-140a591f
 task_id: T-2306
 payload:
   task_file: .tasks/active/T-2306-t-2305-go-implement-3-bvp-drivers-vpromp.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T23:07:41Z'
+scan_id: R-7c44115a
+task_id: T-2171
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T23:07:41Z'
+scan_id: R-7c44115a
+task_id: T-2171
+payload:
+  task_file: .tasks/active/T-2171-bvp-t-new-e-f-autonomy-activation-gate--.md
+---
+kind: scan_emitted
+timestamp: '2026-06-11T23:08:00Z'
+scan_id: R-8378e6d8
+task_id: T-2171
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-11T23:08:00Z'
+scan_id: R-8378e6d8
+task_id: T-2171
+payload:
+  task_file: .tasks/active/T-2171-bvp-t-new-e-f-autonomy-activation-gate--.md
+---
+kind: override_applied
+timestamp: '2026-06-11T23:08:00Z'
+scan_id: R-8378e6d8
+task_id: T-2171
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  ac_subhead: Agent

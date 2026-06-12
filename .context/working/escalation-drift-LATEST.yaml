@@ -1,46 +1,46 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-06-11T03:23:01.626943+00:00
-corpus_total: 2078
-bug_class_total: 452
-bug_class_pct: 21
-h1_flagged: 347
-h1_pct_of_bug_class: 76
+generated: 2026-06-12T03:23:02.353909+00:00
+corpus_total: 2095
+bug_class_total: 435
+bug_class_pct: 20
+h1_flagged: 337
+h1_pct_of_bug_class: 77
 h2_repeat_patterns: 114
-h3_flagged: 270
-h3_pct_of_bug_class: 59
+h3_flagged: 265
+h3_pct_of_bug_class: 60
 recent_30d_flagged: 21
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
+  - tid: "T-101-fix-critical-hook-projectroot-bug-for-ex"
+    name: "Fix critical hook PROJECT_ROOT bug for external projects"
   - tid: "T-1813-audit-arc-completion-check-ignores-tag-t"
-    name: "audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks onl"
+    name: "audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks"
   - tid: "T-1829-version-stamping-algorithm-not-cross-tag"
-    name: "VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 clas"
+    name: "VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828"
   - tid: "T-1830-fw-upgrade-incident-2026-05-14-meta-rca-"
     name: "fw-upgrade-incident-2026-05-14 meta-RCA umbrella — boundary-crossing invisibilit"
   - tid: "T-1831-ac-checkbox-vs-content-drift--agent-does"
     name: "AC-checkbox-vs-content drift — agent does substantive work in body, gate measure"
   - tid: "T-1833-t-1736-spike-harvest-read-session-jsonls"
-    name: "T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation v"
+    name: "T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation"
   - tid: "T-1887-ship-t-1886-rca-candidate-a--task-templa"
     name: "ship T-1886 RCA Candidate A — task-template hint to remind .claude/settings.json"
   - tid: "T-1888-ship-t-1886-rca-candidate-b--posttooluse"
-    name: "ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits t"
+    name: "ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits"
   - tid: "T-1898-fix-double-render-on-arcsarc-005-and-5-s"
     name: "fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.ht"
-  - tid: "T-1899-renderpage-runtime-guard--refuse-templat"
-    name: "render_page() runtime guard — refuse template that extends base.html with action"
   - tid: "T-1900-update-tasksh-checkrendersurfacehumanac-"
-    name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-"
+    name: "update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE"
 h2_top:
   - learning: "P-011"
-    task_count: 755
+    task_count: 787
   - learning: "L-387"
-    task_count: 593
+    task_count: 627
   - learning: "L-291"
-    task_count: 425
+    task_count: 442
   - learning: "L-398"
-    task_count: 237
+    task_count: 252
   - learning: "P-010"
     task_count: 165
   - learning: "L-006"
