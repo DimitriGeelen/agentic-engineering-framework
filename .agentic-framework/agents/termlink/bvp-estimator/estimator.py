@@ -1307,6 +1307,340 @@ def score_d_wire_evidence(fm: dict, body: str, tags: list[str]) -> tuple[int, li
     return 0, ev + ["→0 (no wire-evidence signal)"]
 
 
+def score_uncertainty_recognition(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """uncertainty-recognition — arc-001 (dispatch-safety) scoped driver.
+
+    T-2359. Anchored to .context/arcs/dispatch-safety.yaml proposed_scoped_drivers
+    with weight 5. Rewards worker-DECISION-level recognition of "I don't have
+    enough information to proceed safely" — distinct from D1 (Antifragility,
+    framework-level stress-strengthening) and D2 (Reliability, framework-level
+    no-silent-failures). This driver scores the worker's *epistemic act*
+    (pause_requested, severity×likelihood self-assessment, risk-policy preamble).
+
+    Handler stays LATENT until two events: (1) operator approves the arc-scoped
+    driver via Watchtower (`fw arc approve-driver dispatch-safety
+    uncertainty-recognition --weight 5 --from-watchtower`), AND (2) tasks
+    tagged `arc_id: dispatch-safety` dispatch through `estimate_task()` —
+    T-2357 already shipped the merge path so condition (2) is automatic once
+    (1) lands.
+
+    Rubric (anchored to arc-001 proposed driver rationale):
+      0: No worker-DECISION uncertainty signal.
+      1: Incidental uncertainty/pause mention (narrative, no structural artefact).
+      2: Single risk-policy preamble addition / pause-flag wiring without rubric.
+      3: Component-level pause-detection helper or test (e.g. lib/pause_request.py + test).
+      4: Framework-level pause-detection gate / risk-policy enforcement hook /
+         self-assessment rubric integrated into dispatch flow.
+      5: New pause-detection mechanism class — self-assessment becomes a fw
+         verb, new structural mechanism for worker-side uncertainty signalling,
+         risk-policy preamble structurally enforced.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    uncertainty_comps = _has_any(comps, [
+        r"lib/pause", r"pause_request", r"risk[- ]policy",
+        r"agents/dispatch/.*pause", r"agents/dispatch/.*risk",
+        r"self[- ]assessment",
+    ])
+    uncertainty_body = _has_any(body, [
+        r"\bpause[_-]?requested?\b", r"\bpause[- ]protocol\b",
+        r"\bself[- ]assessment\b", r"severity[- _]?times[- _]?likelihood",
+        r"severity.{0,10}likelihood", r"risk[- ]policy (preamble|score)",
+        r"worker[- ](decision|side|epistemic|uncertainty)",
+        r"\buncertainty (recognition|signal|signaling|signalling)\b",
+        r"\bproceed safely\b",
+        r"epistemic (act|recognition|self[- ]assessment)",
+    ])
+    if not (uncertainty_comps or uncertainty_body):
+        return 0, ev + ["→0 (no uncertainty-recognition signal)"]
+
+    # ---- Level 5 — new pause-detection class -----------------------------
+    new_class = _has_any(body, [
+        r"new pause[- ]detection (mechanism|class|primitive)",
+        r"new self[- ]assessment (mechanism|primitive|class|verb)",
+        r"self[- ]assessment becomes a fw verb",
+        r"new (mechanism|class) (for )?worker[- ]side uncertainty",
+        r"risk[- ]policy preamble structurally enforced",
+        r"new pause[- ]protocol (class|mechanism)",
+        r"structurally enforces? (the )?pause",
+    ])
+    if new_class:
+        ev.append("body:uncertainty-recognition-new-class")
+        return 5, ev + ["→5 (new pause-detection class)"]
+
+    # ---- Level 4 — framework-level pause/risk gate ----------------------
+    framework_gate = _has_any(body, [
+        r"PreToolUse hook.{0,40}(pause|risk[- ]policy|self[- ]assessment)",
+        r"PostToolUse hook.{0,40}(pause|risk[- ]policy)",
+        r"audit FAIL.{0,40}(pause|uncertainty|risk[- ]policy)",
+        r"audit WARN.{0,40}(pause|uncertainty|risk[- ]policy)",
+        r"(risk[- ]policy|self[- ]assessment) (enforcement|hook|gate)",
+        r"pause[- ]detection (hook|gate|enforcement)",
+        r"framework[- ]level (pause|risk[- ]policy)",
+    ])
+    if framework_gate:
+        ev.append("body:framework-pause-gate")
+        return 4, ev + ["→4 (framework-level pause/risk gate)"]
+
+    # ---- Level 3 — component-level pause-detection helper or test --------
+    component = _has_any(body, [
+        r"(unit|regression|integration) test.{0,40}(pause|uncertainty|risk[- ]policy)",
+        r"tests?/.*pause", r"tests?/.*risk[- ]policy",
+        r"lib/pause", r"pause[_-]request",
+        r"pause[- ]detection (helper|util|module)",
+        r"risk[- ]policy (helper|module|test)",
+    ])
+    component_touch = _has_any(comps, [
+        r"lib/pause", r"tests/.*pause", r"risk[- ]policy",
+    ])
+    if component or component_touch:
+        if component:
+            ev.append("body:uncertainty-component")
+        if component_touch:
+            ev.append("components:pause-code")
+        return 3, ev + ["→3 (component-level pause helper or test)"]
+
+    # ---- Level 2 — single risk-policy preamble / threshold tweak --------
+    single_tweak = _has_any(body, [
+        r"(adds?|writes?) (a |the )?risk[- ]policy preamble",
+        r"single (pause[- ]flag|risk[- ]policy) (addition|wiring)",
+        r"adds? (a |the )?pause[- ]flag( wiring)?",
+        r"tunes? (the )?(pause|risk[- ]policy) (threshold|flag)",
+        r"narrow .{0,20}(pause|risk[- ]policy)",
+    ])
+    if single_tweak:
+        ev.append("body:uncertainty-single-tweak")
+        return 2, ev + ["→2 (single pause/risk-policy wiring)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if uncertainty_body or uncertainty_comps:
+        ev.append("body/components:uncertainty-incidental")
+        return 1, ev + ["→1 (incidental uncertainty mention)"]
+
+    return 0, ev + ["→0 (no uncertainty-recognition signal)"]
+
+
+def score_severity_likelihood_calibration(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """severity-likelihood-calibration — arc-001 (dispatch-safety) scoped driver.
+
+    T-2359. Anchored to .context/arcs/dispatch-safety.yaml proposed_scoped_drivers
+    with weight 4. Rewards calibration quality of the pause-trigger threshold —
+    distinct from D2's binary "emits / silent" observability floor. D2 is
+    satisfied when ANY signal fires; this driver scores the *quality of when*
+    pauses fire (false-positive rate → operator-cost waste; false-negative
+    rate → wrong work shipped).
+
+    Handler stays LATENT until operator approves the arc-scoped driver via
+    Watchtower (same activation path as score_uncertainty_recognition).
+
+    Rubric:
+      0: No calibration signal.
+      1: Incidental calibration mention (narrative, no measurement).
+      2: Single threshold adjustment with rationale (one pause-flag tweak,
+         documented).
+      3: Component-level threshold-tuning test or audit script (e.g. compare
+         pause rate against retrospective should-have-paused classification).
+      4: Framework-level pause-rate audit / live calibration loop (recurring
+         calibration check; audit emits WARN on threshold drift).
+      5: New calibration mechanism class — live false-positive/false-negative
+         auto-audit becomes a structural primitive (e.g. fw verb that compares
+         live pause-rate against expected operator-cost budget).
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    calibration_comps = _has_any(comps, [
+        r"calibration", r"pause[_-]rate", r"threshold[_-]tune",
+        r"agents/dispatch/.*calibrat", r"tests/.*calibrat",
+    ])
+    calibration_body = _has_any(body, [
+        r"severity[- ]likelihood (calibration|threshold|tuning)",
+        r"\bcalibrat(e|es|ed|ing|ion)\b",
+        r"\bfalse[- ]positive\b", r"\bfalse[- ]negative\b",
+        r"pause[- ]trigger threshold",
+        r"pause[- ]rate (audit|drift|monitoring)",
+        r"should[- ]have[- ]paused.{0,20}classification",
+        r"threshold[- ]tune?", r"threshold (tweak|adjustment|drift|miscalibration)",
+        r"\bpause[- ]flag\b",
+        r"audit emits? (a )?WARN.{0,40}(threshold|calibration|pause)",
+    ])
+    if not (calibration_comps or calibration_body):
+        return 0, ev + ["→0 (no calibration signal)"]
+
+    # ---- Level 5 — new calibration class ---------------------------------
+    new_class = _has_any(body, [
+        r"new calibration (mechanism|class|primitive)",
+        r"new (pause[- ]rate|threshold) (audit|monitor) (mechanism|primitive)",
+        r"live (false[- ]positive|fp).{0,30}auto[- ]audit",
+        r"live (false[- ]negative|fn).{0,30}auto[- ]audit",
+        r"new structural (calibration|threshold) (mechanism|primitive)",
+        r"fw verb.{0,40}(calibration|pause[- ]rate|threshold)",
+    ])
+    if new_class:
+        ev.append("body:calibration-new-class")
+        return 5, ev + ["→5 (new calibration mechanism class)"]
+
+    # ---- Level 4 — framework-level pause-rate audit / live loop ----------
+    framework_audit = _has_any(body, [
+        r"audit (FAIL|WARN).{0,40}(threshold|calibration|pause[- ]rate)",
+        r"live calibration (loop|cycle)",
+        r"recurring calibration (check|audit)",
+        r"audit emits? (a )?WARN.{0,40}(threshold|calibration|pause)",
+        r"pause[- ]rate (audit|monitor) at the framework level",
+        r"framework[- ]level (calibration|pause[- ]rate)",
+    ])
+    if framework_audit:
+        ev.append("body:framework-calibration-audit")
+        return 4, ev + ["→4 (framework-level pause-rate audit / live loop)"]
+
+    # ---- Level 3 — component-level threshold-tuning test or audit -------
+    component = _has_any(body, [
+        r"(unit|regression|integration) test.{0,40}(calibration|threshold|pause[- ]rate)",
+        r"audit script.{0,40}(calibration|threshold|pause[- ]rate)",
+        r"compares? (the )?(live )?pause[- ]rate (against|vs)",
+        r"retrospective (should[- ]have[- ]paused|miss(ed)?) (classification|audit)",
+    ])
+    if component:
+        ev.append("body:calibration-component")
+        return 3, ev + ["→3 (component-level threshold-tuning test/audit)"]
+
+    # ---- Level 2 — single threshold adjustment with rationale -----------
+    single_adjustment = _has_any(body, [
+        r"single (threshold|pause[- ]flag) (adjustment|tweak)",
+        r"(adjusts?|tunes?|tweaks?) (the |a )?(threshold|pause[- ]flag)",
+        r"narrow .{0,20}(threshold|calibration)",
+    ])
+    if single_adjustment:
+        ev.append("body:calibration-single-adjustment")
+        return 2, ev + ["→2 (single threshold adjustment)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if calibration_body or calibration_comps:
+        ev.append("body/components:calibration-incidental")
+        return 1, ev + ["→1 (incidental calibration mention)"]
+
+    return 0, ev + ["→0 (no calibration signal)"]
+
+
+def score_sovereignty_preservation(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """sovereignty-preservation — arc-006 (value-prioritisation) scoped driver.
+
+    T-2359. Anchored to .context/arcs/value-prioritisation.yaml proposed_scoped_drivers
+    with weight 5. Rewards work that strengthens the §ACD-gated Sovereign
+    boundary — `fw bvp confirm` robustness, Watchtower-only routing for
+    Sovereign verbs, --i-am-human / --from-watchtower bypass-parity (per
+    L-399 / T-1890). Distinct from global D1-D4 by focusing specifically on
+    score-confirmation and weight-adjustment boundary preservation.
+
+    Handler stays LATENT until operator approves the arc-scoped driver via
+    Watchtower (`fw arc approve-driver value-prioritisation
+    sovereignty-preservation --weight 5 --from-watchtower`).
+
+    Rubric:
+      0: No Sovereignty / §ACD signal.
+      1: Incidental Sovereign-boundary mention.
+      2: Single --i-am-human / --from-watchtower wiring fix or extension.
+      3: Component-level Sovereign-verb test or bypass-log assertion
+         (e.g. tests verifying CLAUDECODE blocking + flag bypass).
+      4: Framework-level §ACD gate or bypass-parity hook (L-399 / T-1890
+         producer/consumer parity, sibling parity hooks).
+      5: New §ACD primitive class — new Sovereign verb routing pattern,
+         new gate type that makes Sovereignty boundary structurally
+         unbypassable without logged Tier-2.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    sovereignty_comps = _has_any(comps, [
+        r"lib/inception", r"lib/arc", r"lib/bvp",
+        r"agents/.*sovereign", r"\.gate-bypass-log",
+        r"web/blueprints/inception", r"web/blueprints/approvals",
+        r"agents/.*\bbypass\b",
+    ])
+    sovereignty_body = _has_any(body, [
+        r"§ACD", r"Sovereign(ty)?[- ]bound", r"\bSovereign(ty)? boundary\b",
+        r"\bSovereign(ty)? gate\b", r"\bSovereign verb\b",
+        r"--i-am-human", r"--from-watchtower",
+        r"CLAUDECODE.{0,20}(gate|block|refuse)",
+        r"score[- ]confirmation boundary",
+        r"weight[- ]adjustment boundary",
+        r"fw bvp confirm", r"\bbypass[- ]log\b",
+        r"\bgate-bypass-log\b", r"Tier[- ]?2 (entry|log|logged)",
+        r"L-399", r"T-1890",
+        r"producer[- ]consumer parity",
+    ])
+    if not (sovereignty_comps or sovereignty_body):
+        return 0, ev + ["→0 (no sovereignty signal)"]
+
+    # ---- Level 5 — new §ACD primitive class -----------------------------
+    new_class = _has_any(body, [
+        r"new (§ACD|Sovereign(ty)?) (primitive|class|mechanism|verb)",
+        r"new Sovereign verb routing pattern",
+        r"structurally unbypassable",
+        r"new gate type.{0,40}Sovereign(ty)?",
+        r"structurally enforces? (the )?Sovereign(ty)? boundary",
+        r"new §ACD gate primitive",
+    ])
+    if new_class:
+        ev.append("body:sovereignty-new-class")
+        return 5, ev + ["→5 (new §ACD primitive class)"]
+
+    # ---- Level 4 — framework-level §ACD gate / bypass-parity hook --------
+    framework_gate = _has_any(body, [
+        r"PreToolUse hook.{0,40}(§ACD|Sovereign|--i-am-human|--from-watchtower)",
+        r"PostToolUse hook.{0,40}(§ACD|Sovereign|bypass[- ]log)",
+        r"audit FAIL.{0,40}(Sovereign|§ACD|bypass)",
+        r"audit WARN.{0,40}(Sovereign|§ACD|bypass)",
+        r"producer/consumer parity.{0,40}(Sovereign|§ACD|bypass)",
+        r"L-399.{0,20}(parity|fix|extension)",
+        r"T-1890.{0,20}(parity|fix|extension)",
+        r"framework[- ]level (§ACD|Sovereign(ty)?)",
+        r"refuses? (work-completed|--status).{0,40}(§ACD|Sovereign)",
+    ])
+    if framework_gate:
+        ev.append("body:framework-sovereignty-gate")
+        return 4, ev + ["→4 (framework-level §ACD gate / bypass-parity hook)"]
+
+    # ---- Level 3 — component-level Sovereign-verb test / bypass-log ----
+    component = _has_any(body, [
+        r"(unit|regression|integration) test.{0,40}(§ACD|Sovereign|CLAUDECODE|--i-am-human|--from-watchtower)",
+        r"bypass[- ]log (assertion|test)",
+        r"Sovereign[- ]verb (test|assertion)",
+        r"tests?/.*sovereign",
+        r"tests?/.*inception_decide",
+    ])
+    component_touch = _has_any(comps, [
+        r"lib/inception", r"\.gate-bypass-log",
+        r"tests/.*sovereign",
+    ])
+    if component or component_touch:
+        if component:
+            ev.append("body:sovereignty-component")
+        if component_touch:
+            ev.append("components:sovereignty-code")
+        return 3, ev + ["→3 (component-level Sovereign-verb test or bypass-log)"]
+
+    # ---- Level 2 — single --i-am-human / --from-watchtower wiring ------
+    single_wiring = _has_any(body, [
+        r"adds? (a |the )?--i-am-human (flag|wiring|bypass)",
+        r"adds? (a |the )?--from-watchtower (flag|wiring|bypass)",
+        r"single (--i-am-human|--from-watchtower) (wiring|fix)",
+        r"narrow .{0,20}(--i-am-human|--from-watchtower)",
+        r"extends? (the )?bypass[- ](mechanism|wiring) (to|for)",
+    ])
+    if single_wiring:
+        ev.append("body:sovereignty-single-wiring")
+        return 2, ev + ["→2 (single --i-am-human/--from-watchtower wiring)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if sovereignty_body or sovereignty_comps:
+        ev.append("body/components:sovereignty-incidental")
+        return 1, ev + ["→1 (incidental Sovereign-boundary mention)"]
+
+    return 0, ev + ["→0 (no sovereignty signal)"]
+
+
 def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """Heuristic fallback for free drivers without a dedicated scorer — keyword-
     on-driver-id only.
@@ -1408,6 +1742,14 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # drivers is a separate slice. Keys match the IDs in arc-011.yaml.
         "D-DISJOINT": score_d_disjoint,
         "D-WIRE-EVIDENCE": score_d_wire_evidence,
+        # T-2359 — arc-001 (dispatch-safety) + arc-006 (value-prioritisation)
+        # scoped drivers. Latent until operator approves the proposed_scoped_drivers
+        # via Watchtower. T-2357 dispatch wiring + T-2358 name-form widening
+        # make activation immediate on approval. Keys match canonical name-form
+        # per T-2358 / lib/arc.sh:1258.
+        "uncertainty-recognition": score_uncertainty_recognition,
+        "severity-likelihood-calibration": score_severity_likelihood_calibration,
+        "sovereignty-preservation": score_sovereignty_preservation,
     }
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).
