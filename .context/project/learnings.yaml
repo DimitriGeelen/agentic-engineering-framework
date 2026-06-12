@@ -3665,3 +3665,10 @@ X'` returning empty group."
   date: 2026-06-11
   context: Added via context agent
   application: TBD
+- id: L-481
+  learning: "Slice-1 build carve-up under autonomous-mode budget pressure: when a multi-AC build task can split cleanly into (template-only) + (JS/test-heavy), ship the template slice as Slice 1 (immediately reviewable, low-risk), file a captured/next sibling for Slice 2. Carve criterion: identifiable shared dependency that justifies bundling deferred ACs (here scatter.js axis-swap is shared by AC#3 facet toggle + AC#5 Playwright). Operator gets immediate per-driver visibility today; remaining JS work batches cleanly for next session. Decisions entry naming Slice 1 vs Slice 2 carve-up rationale is mandatory at slice boundary. Sibling to L-480 (gated-AC tick pattern)."
+  source: P-009
+  task: T-2170
+  date: 2026-06-12
+  context: Added via context agent
+  application: TBD

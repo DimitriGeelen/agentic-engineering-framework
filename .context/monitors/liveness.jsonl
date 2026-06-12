@@ -1,5 +1,3 @@
-{"ts":"2026-05-04T04:39:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":0,"fw_agent_session":"ready","fw_agent_id":"tl-kr4ulsog","watchtower":"running"}
-{"ts":"2026-05-04T04:40:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":0,"fw_agent_session":"ready","fw_agent_id":"tl-kr4ulsog","watchtower":"stopped"}
 {"ts":"2026-05-04T04:41:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":0,"fw_agent_session":"ready","fw_agent_id":"tl-kr4ulsog","watchtower":"stopped"}
 {"ts":"2026-05-04T04:42:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":0,"fw_agent_session":"ready","fw_agent_id":"tl-kr4ulsog","watchtower":"stopped"}
 {"ts":"2026-05-04T04:43:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":0,"fw_agent_session":"ready","fw_agent_id":"tl-kr4ulsog","watchtower":"running"}
@@ -10078,3 +10076,5 @@
 {"ts":"2026-06-12T09:01:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":2,"fw_agent_session":"ready","fw_agent_id":"tl-chgzyrlq","watchtower":"stopped"}
 {"ts":"2026-06-12T09:02:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":2,"fw_agent_session":"ready","fw_agent_id":"tl-chgzyrlq","watchtower":"stopped"}
 {"ts":"2026-06-12T09:03:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":2,"fw_agent_session":"ready","fw_agent_id":"tl-chgzyrlq","watchtower":"stopped"}
+{"ts":"2026-06-12T09:04:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":2,"fw_agent_session":"ready","fw_agent_id":"tl-chgzyrlq","watchtower":"stopped"}
+{"ts":"2026-06-12T09:05:01+02:00","host":"dimitrimintdev","boot":0,"termlink_hub":"running","termlink_hub_detail":"","claude_instances":2,"fw_agent_session":"ready","fw_agent_id":"tl-chgzyrlq","watchtower":"stopped"}

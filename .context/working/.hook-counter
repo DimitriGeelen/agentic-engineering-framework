@@ -1,16 +1,16 @@
 check-human-ac-tick=2
 
-loop-detect=16
-checkpoint=16
+loop-detect=20
+checkpoint=20
 check-inception-decisions=2
-budget-gate=18
-check-active-task=16
-check-project-boundary=18
-audit-task-tools=15
+budget-gate=22
+check-active-task=20
+check-project-boundary=22
+audit-task-tools=19
 check-settings-edit=2
 commit-cadence=2
 check-arc-id=1
 check-inception-schema=1
 check-heredoc-cmd-sub=1
-check-tier0=16
-error-watchdog=12
+check-tier0=20
+error-watchdog=16
