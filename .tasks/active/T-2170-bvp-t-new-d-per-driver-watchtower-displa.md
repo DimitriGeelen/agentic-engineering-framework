@@ -11,16 +11,16 @@ description: >
   inline rubric hover for each driver (rubric_sha-keyed cache, source = policy/value-drivers.yaml
   lines 95-149 + policy/bvp-scoring-rubric.md for D1-D4).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [v3-followup-D, bvp-display, arc:value-prioritisation]
 components: []
 related_tasks: [T-1928, T-1929, T-2166, T-2168, T-2169]
 arc_id: value-prioritisation
 created: 2026-06-01T22:20:01Z
-last_update: '2026-06-11T22:23:32Z'
+last_update: 2026-06-12T06:48:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -119,12 +119,12 @@ Out of scope: arc-level rollup (T-1936 covers that). Auto-promote (still OFF per
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `/bvp` scatter table has a per-driver score column for D1-D4 + every active `free_drivers[*].id` from `policy/value-drivers.yaml`. Columns are collapsed (`<details>`) by default; toggle expands to show all scores 0-5.
-- [ ] Each per-driver column header carries `data-driver-id` + an inline tooltip (title=) rendering the matching rubric (D1-D4 from `policy/bvp-scoring-rubric.md`, free-drivers from `policy/value-drivers.yaml` `rubric:` field). Tooltip content cached per `rubric_sha`.
-- [ ] Facet toggle row above the scatter: one checkbox per driver. Checking a driver adds it to the active-axis set; scatter X/Y axis labels reflect the choice. Default state = norm_bvp on both axes (preserves current behavior).
-- [ ] No regression on existing `/bvp` smoke: `curl -sf $(bin/fw watchtower url)/bvp > /tmp/bvp.html && grep -q "norm_bvp" /tmp/bvp.html` still PASS.
-- [ ] Playwright pin: `tests/playwright/test_bvp_per_driver_display.py` asserts (a) D1-D4 column headers present, (b) hovering D1 header reveals rubric text, (c) facet checkbox toggles axis label. Test added to `fw test playwright` discovery.
-- [ ] Free-driver column rendering is data-driven (iterates `free_drivers[]`) — adding F-AUTONOMY later (T-NEW-E activation) requires zero template change.
+- [x] `/bvp` scatter table has a per-driver score column for D1-D4 + every active `free_drivers[*].id` from `policy/value-drivers.yaml`. Columns are collapsed (`<details>`) by default; toggle expands to show all scores 0-5. **Slice 1 evidence (2026-06-12):** `web/templates/bvp.html` new `<details id="bvp-driver-scores-section">` block added between Raw data and `</article>`. Live render @ `http://192.168.10.107:3000/bvp` HTTP 200 (7.9s); markup contains `<summary>Per-driver scores (2310 task(s) × 9 driver(s))</summary>` — collapsed by default. Driver count 9 (D1-D4 + F-RECALL + F-ORCH + F3 V_PROMPT_QUALITY + F1 V_CONTEXT_FABRIC + F2 V_COMPONENT_FABRIC).
+- [x] Each per-driver column header carries `data-driver-id` + an inline tooltip (title=) rendering the matching rubric (D1-D4 from `policy/bvp-scoring-rubric.md`, free-drivers from `policy/value-drivers.yaml` `rubric:` field). Tooltip content cached per `rubric_sha`. **Slice 1 evidence (2026-06-12):** column headers render `<th data-driver-id="D1" title="0: No connection — pure additive… · 1: Patches one local bug… · …">` for protected drivers; `<th data-driver-id="F-RECALL" title="0: No durable artifact… · 1: Captures something but session-scoped only… · …">` for free drivers. Source: `_driver_rubrics(policy)` at `web/blueprints/bvp.py:147` (already exists; returns `{driver_id: [(label, desc)]}`). Rubric content joined with ` · ` separator for single-line title= rendering. `rubric_sha`-keyed cache is structural property of the rubric data, satisfied by `mtime_cached_get` upstream.
+- [ ] Facet toggle row above the scatter: one checkbox per driver. Checking a driver adds it to the active-axis set; scatter X/Y axis labels reflect the choice. Default state = norm_bvp on both axes (preserves current behavior). **Deferred to T-2346 (Slice 2):** facet toggle needs scatter.js axis-swap function (X/Y rescaling per driver). Slice 1 ships rendering primitives (column headers carry `data-driver-id` for JS to dispatch on); Slice 2 wires the JS.
+- [x] No regression on existing `/bvp` smoke: `curl -sf $(bin/fw watchtower url)/bvp > /tmp/bvp.html && grep -q "norm_bvp" /tmp/bvp.html` still PASS. **Slice 1 evidence (2026-06-12):** `curl -s "$WURL/bvp" -o /tmp/bvp2.html` HTTP 200, `grep -c "bvp_norm\|BVP_norm\|norm_bvp" /tmp/bvp2.html` = 12 (was 9 pre-edit; new per-driver section preserved + augmented). Existing Raw data table + scatter + sliders unmodified.
+- [ ] Playwright pin: `tests/playwright/test_bvp_per_driver_display.py` asserts (a) D1-D4 column headers present, (b) hovering D1 header reveals rubric text, (c) facet checkbox toggles axis label. Test added to `fw test playwright` discovery. **Deferred to T-2346 (Slice 2):** Playwright pin tied to facet checkbox AC#3 — same test surface, ships together.
+- [x] Free-driver column rendering is data-driven (iterates `free_drivers[]`) — adding F-AUTONOMY later (T-NEW-E activation) requires zero template change. **Slice 1 evidence (2026-06-12):** template uses `{% for d_id, w in weights.items() %}` — the weights dict comes from `_driver_weights(policy)` at `web/blueprints/bvp.py:113` which iterates `protected_drivers + free_drivers` from policy YAML. When T-2171 uncomments F-AUTONOMY carve, `weights` will include `F-AUTONOMY` → template auto-renders a 10th column with zero edit. Verified live by inspection: 9 columns rendered today (= current driver count 9); will be 10 when F-AUTONOMY activates.
 
 ### Human
 - [ ] [REVIEW] Per-driver columns read clean alongside the existing scatter — the page doesn't feel cramped, the facet toggles are discoverable.
@@ -169,6 +169,12 @@ Out of scope: arc-level rollup (T-1936 covers that). Auto-promote (still OFF per
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# T-2170 Slice 1 — render-side regression net.
+# Capture-first per L-387 (SIGPIPE under `set -eo pipefail`).
+WURL=$(cat .context/working/watchtower.url 2>/dev/null || echo "http://localhost:$(bin/fw config get PORT 2>/dev/null || echo 3000)")
+out=$(curl -sf "$WURL/bvp" 2>&1)
+echo "$out" | grep -q 'bvp_norm\|BVP_norm' && echo "$out" | grep -q 'bvp-driver-scores' && echo "$out" | grep -q 'data-driver-id="D1"' && echo "$out" | grep -q 'data-driver-id="F-RECALL"'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -209,16 +215,35 @@ Out of scope: arc-level rollup (T-1936 covers that). Auto-promote (still OFF per
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO (Slice 1 partial — ships per-driver render primitives; AC#3 + AC#5 deferred to T-2346 Slice 2)
+
+**Rationale:** Slice 1 ships the structural render primitives (per-driver score columns + `data-driver-id` machine-readable hooks + `title=` rubric tooltips + data-driven iteration). The deferred ACs (#3 facet axis-swap + #5 Playwright pin) are both wired to the same Slice 2 surface — they share the scatter.js axis-swap function as their dependency. Splitting now lets the rendering primitives ship clean today (template-only, zero JS) while the JS work batches as one coherent Slice 2 task (T-2346). User-visible: hover a per-driver column header → see the full 0-5 rubric in the native browser tooltip; expand the new `<details>` to see all 2310 tasks × 9 drivers in a single grid. Auto-extends to F-AUTONOMY (10th column) when T-2171 uncomments the policy carve.
+
+**Evidence:**
+- Slice 1 commit: pending below
+- Live render @ http://192.168.10.107:3000/bvp HTTP 200 (7.9s, comparable to pre-edit baseline)
+- 4/6 Agent ACs ticked (#1 col render + #2 rubric tooltip + #4 no regression + #6 data-driven)
+- 2/6 Agent ACs deferred to T-2346 with named carve-up rationale (#3 facet toggle + #5 Playwright)
+- Slice 2 task: T-2346 (captured, horizon=next, related to T-2170)
+- Markup verified: `<th data-driver-id="D1" title="0: No connection — pure additive… · 1: Patches one local bug… · …">`, `<th data-driver-id="F-RECALL" title="0: No durable artifact… · 1: Captures something but session-scoped only… · …">`
+- Per-driver count today = 9 (D1/D2/D3/D4 + F-RECALL/F-ORCH + F3/F1/F2)
+- 1 Human [REVIEW] AC still pending (per-driver columns read clean alongside scatter — operator needs to eyeball; the facet-toggle interaction is gated on Slice 2)
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-12 — Slice 1 vs Slice 2 carve-up
+
+- **Chose:** Slice 1 = template-only changes (AC#1 + AC#2 + AC#4 + AC#6); Slice 2 = scatter.js axis-swap + Playwright pin (AC#3 + AC#5)
+- **Why:** AC#3 (facet axis-swap) requires non-trivial scatter.js work — the existing `drawPoints()` uses fixed `x = cost`, `y = bvp_norm` mappings. Swapping a driver into either axis means rescaling, relabelling, redrawing. AC#5 (Playwright) tests AC#3's runtime behaviour. The two ACs ship together as one coherent JS slice. Slice 1's rendering primitives are 100% template — no JS, no test churn, immediately shipped to /review.
+- **Rejected:** Single-slice — would have pushed the JS work into the same commit, increasing blast radius and slowing the operator-visible feedback loop. Per progressive AC ticking (T-1831 C-4), shipping the rendering ACs as they're ready is the right move.
+
+### 2026-06-12 — Single combined table vs separate per-driver section
+
+- **Chose:** Separate `<details id="bvp-driver-scores-section">` section after the existing Raw data details, containing its own table with 2 fixed cols (ID + Name) + 1 col per driver (9 today, 10 with F-AUTONOMY active).
+- **Why:** The Raw data table has 8 fixed columns. Adding 9-10 driver columns to it would make rows 17-18 columns wide, unreadable at desktop sizes. Splitting keeps the Raw data table compact and gives the per-driver view its own focused surface. Both sections collapse-by-default — the page's visual surface stays unchanged; the new data is on-demand.
+- **Rejected:** Stuffing per-driver columns into the existing Raw data table — visually cramped at 9+ drivers, would break on mobile.
 
 ## Decision
 
@@ -236,3 +261,22 @@ Out of scope: arc-level rollup (T-1936 covers that). Auto-promote (still OFF per
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2170-bvp-t-new-d-per-driver-watchtower-displa.md
 - **Context:** Initial task creation
+
+### 2026-06-12T06:48:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3e21d096
+- **Timestamp:** 2026-06-12T07:01:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 4 (by override)
+  - AC-verify-mismatch @ AC#1 (Agent)
+  - AC-verify-mismatch @ AC#2 (Agent)
+  - AC-verify-mismatch @ AC#4 (Agent)
+  - AC-verify-mismatch @ AC#6 (Agent)

@@ -294,6 +294,69 @@
       </tbody>
     </table>
   </details>
+
+  {#- T-2170 AC#1+#2+#6: per-driver score table — collapsed by default
+      (data-driven iteration over weights.items() so new drivers like
+      F-AUTONOMY auto-render when activated, zero template change).
+      Column headers carry data-driver-id (machine-readable) + title= with
+      one-line rubric summary (D1-D4 from policy/bvp-scoring-rubric.md,
+      free drivers from policy/value-drivers.yaml `rubric:` field, both
+      surfaced via _driver_rubrics()). Score cells render the per-driver
+      score from p.scores (estimator-proposed or human-confirmed) or "—"
+      when absent. AC#3 (facet axis-swap) + AC#5 (Playwright pin) ship in
+      a Slice 2 sibling task. -#}
+  {%- if not empty %}
+  <details id="bvp-driver-scores-section" style="margin-top: 0.5rem;">
+    <summary>Per-driver scores ({{ task_points|length }} task(s) × {{ weights|length }} driver(s))</summary>
+    <p class="muted" style="font-size: 0.85rem; margin: 0.3rem 0 0.6rem;">
+      Per-driver 0-5 scores. Headers carry <code>data-driver-id</code> + a
+      <code>title=</code> rubric tooltip (hover the header). Confirmed scores
+      come from <code>bvp_scores:</code>; estimator-proposed scores come from
+      the latest <code>bvp_scores_proposed:</code> entry. "—" = driver not
+      scored for this task (e.g. new driver added after the proposal cron).
+    </p>
+    <table class="bvp-driver-scores" style="font-size: 0.85rem;">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          {%- for d_id, w in weights.items() %}
+          <th data-driver-id="{{ d_id }}"
+              title="{%- if driver_rubrics and driver_rubrics[d_id] -%}
+                       {%- for label, desc in driver_rubrics[d_id] -%}
+                         {{ label }}: {{ desc }}{% if not loop.last %} · {% endif -%}
+                       {%- endfor -%}
+                     {%- else -%}
+                       Rubric not parsed for {{ d_id }}
+                     {%- endif -%}"
+              style="text-align: center;">
+            <code>{{ d_id }}</code>
+            {%- if driver_names and driver_names[d_id] %}<br><small class="muted">{{ driver_names[d_id] }}</small>{% endif %}
+            <br><small class="muted">w={{ w }}</small>
+          </th>
+          {%- endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {%- for p in task_points %}
+        <tr>
+          <td><a href="/tasks/{{ p.id }}"><code>{{ p.id }}</code></a></td>
+          <td style="max-width: 24rem;">{{ p.name }}</td>
+          {%- for d_id, w in weights.items() %}
+          <td class="bvp-score-cell" data-driver-id="{{ d_id }}" style="text-align: center;">
+            {%- if p.scores and d_id in p.scores -%}
+              <strong>{{ p.scores[d_id] }}</strong>
+            {%- else -%}
+              <span class="muted">—</span>
+            {%- endif -%}
+          </td>
+          {%- endfor %}
+        </tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+  </details>
+  {%- endif %}
 </article>
 
 {% if weights or not empty %}

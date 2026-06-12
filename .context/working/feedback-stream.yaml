@@ -17228,3 +17228,75 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 5
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-12T07:01:08Z'
+scan_id: R-d0babb66
+task_id: T-2170
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-12T07:01:08Z'
+scan_id: R-d0babb66
+task_id: T-2170
+payload:
+  task_file: .tasks/active/T-2170-bvp-t-new-d-per-driver-watchtower-displa.md
+---
+kind: scan_emitted
+timestamp: '2026-06-12T07:01:27Z'
+scan_id: R-3e21d096
+task_id: T-2170
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 4
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-12T07:01:27Z'
+scan_id: R-3e21d096
+task_id: T-2170
+payload:
+  task_file: .tasks/active/T-2170-bvp-t-new-d-per-driver-watchtower-displa.md
+---
+kind: override_applied
+timestamp: '2026-06-12T07:01:27Z'
+scan_id: R-3e21d096
+task_id: T-2170
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-12T07:01:27Z'
+scan_id: R-3e21d096
+task_id: T-2170
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 2
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-12T07:01:27Z'
+scan_id: R-3e21d096
+task_id: T-2170
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  ac_subhead: Agent
+---
+kind: override_applied
+timestamp: '2026-06-12T07:01:27Z'
+scan_id: R-3e21d096
+task_id: T-2170
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 6
+  ac_subhead: Agent

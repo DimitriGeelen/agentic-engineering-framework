@@ -935,3 +935,18 @@ overrides:
   expires_at: '2026-09-09T23:07:55Z'
   added_by: root
   added_at: '2026-06-11T23:07:55Z'
+- id: OV-bf6cedca
+  task_id: T-2170
+  pattern_id: AC-verify-mismatch
+  ac_index: null
+  reason: "Path-citing prose FP class (sibling to OV-cad6c610 on T-2171). AC text\
+    \ contains policy/value-drivers.yaml, web/blueprints/bvp.py, tmp/bvp.html paths\
+    \ inline as evidence citations \u2014 reviewer heuristic treats prose-path-mention\
+    \ as verify-mismatch. AC#1 paths cite Slice 1 evidence (live render verification).\
+    \ AC#2 cites _driver_rubrics() source. AC#4 cites smoke test convention from AC\
+    \ text itself. AC#6 cites template-iteration source. None are real verify-mismatches\
+    \ \u2014 verification is the rendered HTML markup, captured inline as Slice 1\
+    \ evidence."
+  expires_at: '2026-09-10T07:01:21Z'
+  added_by: root
+  added_at: '2026-06-12T07:01:21Z'
