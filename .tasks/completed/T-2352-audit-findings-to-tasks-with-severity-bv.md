@@ -4,16 +4,16 @@ name: "audit-findings-to-tasks-with-severity-bvp-boost"
 description: >
   Inception: audit-findings-to-tasks-with-severity-bvp-boost
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-12T11:49:03Z
-last_update: 2026-06-12T11:51:42Z
-date_finished:
+last_update: 2026-06-12T12:21:20Z
+date_finished: 2026-06-12T12:21:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -38,6 +38,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-12T12:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -134,15 +144,15 @@ For whom: agent + operator (both lose track of which findings are old, which are
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -199,7 +209,11 @@ Audit WARN/FAIL findings have no structural carrier into the task system today; 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Audit WARN/FAIL findings have no structural carrier into the task system today; they re-emit silently across daily/30m/hourly audit crons and pile up unaddressed. Direction: post-audit hook creates one bugfix-class task per finding (workflow_type=bugfix gets T-1550 RCA gate for free; G-019 root-cause escalation enforces structural-or-not classification at close), dedupe by sha1 of normalized finding text, BVP boost via audit_severity:fail|warn carrier (FAIL=1.0 normalized, WARN=0.75) so they out-rank routine backlog and drain. Reuses two existing gates with no new RCA infrastructure. Only genuine evidence gap is IW-8 volume safety (50-finding fan-out on a bad audit day) — first dry-run answers it.
+
+**Date**: 2026-06-12T12:21:20Z
 
 ## Updates
 
@@ -208,3 +222,34 @@ Audit WARN/FAIL findings have no structural carrier into the task system today; 
 
 ### 2026-06-12T11:51:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-12T12:21:20Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Audit WARN/FAIL findings have no structural carrier into the task system today; they re-emit silently across daily/30m/hourly audit crons and pile up unaddressed. Direction: post-audit hook creates one bugfix-class task per finding (workflow_type=bugfix gets T-1550 RCA gate for free; G-019 root-cause escalation enforces structural-or-not classification at close), dedupe by sha1 of normalized finding text, BVP boost via audit_severity:fail|warn carrier (FAIL=1.0 normalized, WARN=0.75) so they out-rank routine backlog and drain. Reuses two existing gates with no new RCA infrastructure. Only genuine evidence gap is IW-8 volume safety (50-finding fan-out on a bad audit day) — first dry-run answers it.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-82d9319f
+- **Timestamp:** 2026-06-12T12:21:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 5
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  5. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-6
+     - evidence: `IW-6 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-12T12:21:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
