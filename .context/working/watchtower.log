@@ -3013,3 +3013,190 @@ inception decide T-2121 failed: primary_landed=False stdout='' stderr='ERROR: Pl
 192.168.10.107 - - [12/Jun/2026 12:28:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
 192.168.10.107 - - [12/Jun/2026 12:28:44] "GET /api/_identity HTTP/1.1" 200 -
 192.168.10.107 - - [12/Jun/2026 12:28:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:28:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:28:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:29:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:30:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:31:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /inception/T-2347 HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/pico.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/manrope-400.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/htmx.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/css/foundations.css HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/highlight-github-dark.min.css HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/inter-400.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/inter-600.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/geist-400.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/geist-600.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/plex-600.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/plex-400.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/newsreader-400.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/newsreader-600.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/jetbrainsmono-400.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/fonts/manrope-600.woff2 HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/htmx-toast.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/highlight.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/purify.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/marked.min.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/csrf-htmx.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/htmx-ext-sse.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/logo.png HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/command-palette.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/shortcuts-overlay.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/kanban-drag.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/task-panel.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:12] "GET /static/bulk-actions.js HTTP/1.1" 304 -
+192.168.10.107 - - [12/Jun/2026 12:32:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:38] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:39] "POST /inception/T-2347/decide HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:32:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:33:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:34:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:35:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:36:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+[2026-06-12 12:37:03,001] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2348-slice-c1--claudemd-arc-action-handoffs--.md'
+192.168.10.107 - - [12/Jun/2026 12:37:03] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [12/Jun/2026 12:37:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:47] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:52] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:37:57] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:02] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:07] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:12] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:17] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:22] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:27] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:32] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:37] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:42] "GET /review/T-2274/acs HTTP/1.1" 200 -
+192.168.10.107 - - [12/Jun/2026 12:38:47] "GET /review/T-2274/acs HTTP/1.1" 200 -

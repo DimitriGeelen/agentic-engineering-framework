@@ -884,6 +884,28 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 
 **Evidence:** T-1626, T-1633, T-1641 (origin); T-1667 (3rd-incident RCA → demo+headline-mechanic gates); T-1670 (4th-incident agent auto-close → T-1671 closure-decision gate).
 
+### Arc Action Handoffs — surface URLs, not CLI (T-2347)
+
+When surfacing an arc-mutating action to the operator — `fw arc close`, `fw arc approve-driver`, `fw arc abandon`, `fw arc set-scoped-weight`, `fw arc remove-driver` — paste the **Watchtower URL**, not the CLI command. The same rule that T-679 establishes for task review (`fw task review T-XXX` → URL) extends to arc actions because every arc-mutating verb has a Watchtower endpoint that wraps it (`web/blueprints/arcs.py:919-1322`).
+
+| Action | Watchtower surface | Underlying verb (CLI is fallback) |
+|--------|--------------------|-----------------------------------|
+| Close arc | `/arcs/<slug>/close` (form + §ACD prompt + demo modes) | `fw arc close <slug> --demo <…> --from-watchtower` |
+| Approve proposed driver | Button on `/arcs/<slug>` (proposed_scoped_drivers table) | `fw arc approve-driver <slug> "<name>" --weight N --from-watchtower` |
+| Approve `--none` | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> --none --justification "…" --from-watchtower` |
+| Add ad-hoc driver | Form on `/arcs/<slug>` | `fw arc approve-driver <slug> "<name>" --weight N --rationale "…" --from-watchtower` |
+| Remove scoped driver | Button on `/arcs/<slug>` | `fw arc remove-driver <slug> "<name>" --rationale "…" --from-watchtower` |
+| Adjust scoped weight | Slider on `/arcs/<slug>` | `fw arc set-scoped-weight <slug> "<name>" <N> --from-watchtower` |
+
+**The rule:** when handing off an arc action, the **primary** affordance is the URL (`{watchtower_url}/arcs/<slug>` or `{watchtower_url}/arcs/<slug>/close`). The CLI block is the **fallback**, only for headless / no-Watchtower contexts (cron, SSH, scripted), and only when explicitly asked. CLI handoffs in chat re-introduce the `--from-watchtower` vs `--i-am-human` complexity the Watchtower path was built to absorb.
+
+**Discovery surfaces (operator-side, no CLI needed):**
+- `/arcs` → list of in-progress arcs with completion-ratio badges
+- `/arcs/<slug>` → arc detail with proposed-driver approve buttons + (when ≥80% complete with anchor Recommendation) close button (T-2347a slice)
+- `/approvals` → "Arc Closure" section auto-surfaces close-ready arcs (T-2347b slice closes the constituent-count parity gap)
+
+**Why this rule exists (T-2347 origin, 2026-06-12):** the agent surfaced CLI for both arc-011 approve-driver and arc-006 close in one session despite the Watchtower buttons + close form existing (`web/blueprints/arcs.py:1253`). Operator pushed back: *"why can this not be done through teh watchtower"*. The class is sibling to T-679 but distinct in scope — task review URLs were memorised; arc action URLs were not. RCA at `docs/reports/T-2347-arc-closure-ux-rca.md` (5-Whys, three defects A/B/C).
+
 ### Arc-Scoped Driver Suggestion Workflow (T-1925, arc-006)
 
 When a new arc is created (via `fw arc create` or `fw work-on` of an arc anchor task), the primary agent runs this 5-step workflow **after the arc's anchor-task body is filled** but **before any driver is approved**. The goal is to surface arc-specific drivers that would distinguish the arc from the global D1-D4 directives. Approval stays with the human (M6, D8).

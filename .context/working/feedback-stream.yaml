@@ -17300,3 +17300,86 @@ payload:
   pattern_id: AC-verify-mismatch
   ac_index: 6
   ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-12T10:32:32Z'
+scan_id: R-8e101cc3
+task_id: T-2347
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-12T10:32:32Z'
+scan_id: R-8e101cc3
+task_id: T-2347
+payload:
+  task_file: .tasks/active/T-2347-arc-closure-ux-rca--watchtower-arc-actio.md
+---
+kind: scan_emitted
+timestamp: '2026-06-12T10:36:15Z'
+scan_id: R-8c21bc12
+task_id: T-2348
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 1
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-12T10:36:15Z'
+scan_id: R-8c21bc12
+task_id: T-2348
+payload:
+  task_file: .tasks/active/T-2348-slice-c1--claudemd-arc-action-handoffs--.md
+---
+kind: auto_tick
+timestamp: '2026-06-12T10:36:15Z'
+scan_id: R-8c21bc12
+task_id: T-2348
+payload:
+  key: auto_tick:T-2348:4:2d9e9fee0692
+  ac_index: 4
+  digest: 2d9e9fee0692
+  text_excerpt: "[REVIEWER] Reviewer PASS \u2014 `bin/fw reviewer T-2348` returns\
+    \ `Overall: PASS` (or "
+---
+kind: scan_emitted
+timestamp: '2026-06-12T10:37:01Z'
+scan_id: R-4d67f7af
+task_id: T-2348
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-12T10:37:01Z'
+scan_id: R-4d67f7af
+task_id: T-2348
+payload:
+  task_file: .tasks/active/T-2348-slice-c1--claudemd-arc-action-handoffs--.md
+---
+kind: scan_emitted
+timestamp: '2026-06-12T10:37:02Z'
+scan_id: R-1b619a22
+task_id: T-2348
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-12T10:37:02Z'
+scan_id: R-1b619a22
+task_id: T-2348
+payload:
+  task_file: .tasks/active/T-2348-slice-c1--claudemd-arc-action-handoffs--.md
