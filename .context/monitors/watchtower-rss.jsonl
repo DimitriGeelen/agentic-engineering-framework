@@ -2162,3 +2162,6 @@
 {"timestamp":"2026-06-12T12:25:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":12491,"rss_kb":873236,"vsz_kb":4711056,"pcpu":17.7,"state":"up"}
 {"timestamp":"2026-06-12T12:30:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":12791,"rss_kb":189192,"vsz_kb":4711056,"pcpu":17.6,"state":"up"}
 {"timestamp":"2026-06-12T12:35:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":13091,"rss_kb":180592,"vsz_kb":4711056,"pcpu":17.5,"state":"up"}
+{"timestamp":"2026-06-12T12:40:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":13391,"rss_kb":180596,"vsz_kb":4711056,"pcpu":17.4,"state":"up"}
+{"timestamp":"2026-06-12T12:45:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":13691,"rss_kb":180596,"vsz_kb":4711056,"pcpu":17.3,"state":"up"}
+{"timestamp":"2026-06-12T12:50:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":13990,"rss_kb":180636,"vsz_kb":4711056,"pcpu":17.2,"state":"up"}
