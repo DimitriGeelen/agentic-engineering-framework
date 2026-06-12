@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2358: BVP estimator arc-scoped driver helper — accept name: as fallback when id: is absent (canonical shape per lib/arc.sh:1258 write path)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-12T23:36:00Z
+# ============================================================================
+
+task_id: T-2358
+task_name: "BVP estimator arc-scoped driver helper — accept name: as fallback when id: is absent (canonical shape per lib/arc.sh:1258 write path)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T23:32:30Z
+completed: 2026-06-12T23:35:52Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_arc_scoped_drivers_for_task` accepts entries with `name:` field (no `id:` field) — uses `sd.get("id") or sd.get("name")` as the driver key. Entries with neither field are silently skipped (no crash, no log spam).'
+  - 'Entries with BOTH `id:` and `name:` use `id:` (preserves T-2356 / arc-011 behaviour).'
+  - 'New test `test_arc_scoped_drivers_name_only_form_resolves` covers an arc YAML with `scoped_drivers: [{name: foo, weight: 3}]` and asserts the helper returns `{"foo": 3}`.'
+  - 'New test `test_arc_scoped_drivers_id_wins_when_both_present` covers `{id: A, name: B, weight: 4}` and asserts the helper returns `{"A": 4}` (not `{"B": 4}`).'
+  - 'New test `test_arc_006_estimator_fidelity_activates` writes a temp arc YAML matching arc-006''s real shape (one scoped driver with name+weight+approved_at, no id) and asserts `_arc_scoped_drivers_for_task({"arc_id": "test-arc-006"})` yields `{"estimator-fidelity": 3}`.'
+  - 'All 12 existing T-2357 tests still PASS (no regression on id-form helper).'
+  - 'Total bvp_estimator test count ≥ 125 (was 122). Wider BVP regression net ≥ 207/207 (was 204).'
+  - 'Reviewer PASS on T-2358 (no FAIL).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, estimator, hot-fix, arc-scoped]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2358-bvp-estimator-arc-scoped-driver-helper--.md
+generated_by: context-agent-hybrid

@@ -151,14 +151,19 @@ def _arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]:
     for sd in (arc_data.get("scoped_drivers") or []):
         if not isinstance(sd, dict):
             continue
-        d_id = sd.get("id")
-        if not d_id or not isinstance(d_id, str):
+        # T-2358: lib/arc.sh:1258 writes scoped_drivers as `{name, weight,
+        # approved_at}` with NO `id:` field (canonical write path). arc-011's
+        # `id: D-DISJOINT` shape is the outlier (T-2344 retroactive prompt
+        # template). Accept whichever is present, preferring `id` for
+        # backwards-compat with arc-011.
+        d_key = sd.get("id") or sd.get("name")
+        if not d_key or not isinstance(d_key, str):
             continue
         try:
             w = int(sd.get("weight") or 0)
         except (TypeError, ValueError):
             w = 0
-        out[d_id] = w
+        out[d_key] = w
     return out
 
 

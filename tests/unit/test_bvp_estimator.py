@@ -1188,6 +1188,45 @@ def test_arc_scoped_drivers_arc_nnn_dual_form_resolves(tmp_path, monkeypatch):
     assert result == {"D-DISJOINT": 5}
 
 
+def test_arc_scoped_drivers_name_only_form_resolves(tmp_path, monkeypatch):
+    """T-2358: arc scoped_drivers written via lib/arc.sh:1258 use {name,
+    weight, approved_at} with NO id: field. Helper must accept this canonical
+    shape. Sibling to test_arc_scoped_drivers_valid_yaml_returns_map which
+    covers the id-form arc-011 case."""
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    _write_arc_yaml(tmp_path, "test-name-arc", [
+        {"name": "estimator-fidelity", "weight": 3, "approved_at": "2026-05-21T12:42:38Z"},
+        {"name": "another-driver", "weight": 5},
+    ])
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "test-name-arc"})
+    assert result == {"estimator-fidelity": 3, "another-driver": 5}
+
+
+def test_arc_scoped_drivers_id_wins_when_both_present(tmp_path, monkeypatch):
+    """T-2358: when an entry carries BOTH id: AND name:, id wins. Preserves
+    T-2356 arc-011 (id: D-DISJOINT) behaviour while opening the door to the
+    canonical name-form."""
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    _write_arc_yaml(tmp_path, "test-both-arc", [
+        {"id": "ID-WINS", "name": "NAME-LOSES", "weight": 4},
+    ])
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "test-both-arc"})
+    assert result == {"ID-WINS": 4}
+    assert "NAME-LOSES" not in result
+
+
+def test_arc_006_estimator_fidelity_activates(tmp_path, monkeypatch):
+    """T-2358: end-to-end activation of arc-006's already-approved
+    estimator-fidelity scoped driver. Pre-T-2358 helper would silently return
+    empty for arc-006 (name-only entry). Post-fix it surfaces."""
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    _write_arc_yaml(tmp_path, "test-arc-006", [
+        {"name": "estimator-fidelity", "weight": 3, "approved_at": "2026-05-21T12:42:38Z"},
+    ])
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "test-arc-006"})
+    assert result == {"estimator-fidelity": 3}
+
+
 def test_arc_scoped_drivers_skips_invalid_entries(tmp_path, monkeypatch):
     monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
     _write_arc_yaml(tmp_path, "mixed-arc", [
