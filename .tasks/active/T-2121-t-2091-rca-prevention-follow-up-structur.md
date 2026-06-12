@@ -12,10 +12,10 @@ name: "T-2091 RCA prevention follow-up: structural detector for active↔complet
 description: >
   Promoted from observation OBS-035
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +23,10 @@ related_tasks: []
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
+target_blast_radius: 3
+voi_score: 0.4
 created: 2026-05-30T20:16:09Z
-last_update: '2026-06-11T22:23:32Z'
+last_update: '2026-06-12T10:15:03Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,6 +64,15 @@ cost_estimate_proposed:
       tier: 4
       effort: 7
     rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-06-12T10:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -133,8 +144,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Inception decision recorded (GO / NO-GO / DEFER) on whether to ship any of the three prongs from the task body — (1) PreToolUse hook on Write|Edit refusing same-id duplicates between `.tasks/active/` and `.tasks/completed/`, (2) BVP estimator + last_update bumper cross-check before mutating `.tasks/active/` files, (3) `bin/fw doctor` surfacing untracked files in `.tasks/{active,completed}/`.
+- [ ] If GO: each prong filed as its own build task (per "one bug = one task") with `unlocks_inception_decision: [T-2121:<decision-id>]` traceability. If NO-GO or DEFER: rationale recorded in `## Recommendation` block citing why the T-2091 cleanup pattern is sufficient without structural prevention, or what evidence would push the next revisit toward GO.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,3 +294,7 @@ Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface wh
 
 <!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
 
+
+### 2026-06-12T10:13:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
