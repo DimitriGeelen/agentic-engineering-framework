@@ -1001,6 +1001,242 @@ def score_f_autonomy(fm: dict, body: str, tags: list[str]) -> tuple[int, list[st
     return 0, ev + ["→0 (no autonomy signal)"]
 
 
+def score_d_disjoint(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """D-DISJOINT — Disjoint Write-Set Discipline (arc-011 scoped).
+
+    T-2356. Anchored to docs/reports/T-2344-bvp-driver-arc-011.md §Candidate 1.
+    Proposed in .context/arcs/parallel-execution-aef.yaml proposed_scoped_drivers
+    with weight 5.
+
+    Handler stays LATENT until two events: (1) operator approves the arc-scoped
+    driver via Watchtower (`fw arc approve-driver arc-011 D-DISJOINT --weight 5
+    --from-watchtower`), AND (2) the estimator's `estimate_task()` dispatch loop
+    is extended to resolve arc-scoped drivers when the task's `arc_id:` matches
+    an arc with `scoped_drivers:` populated. `_load_drivers()` reads only the
+    global policy/value-drivers.yaml today, so this handler is reachable from
+    the handlers dict but the dispatch loop never asks for it.
+
+    Rubric (T-2344 §Candidate 1):
+      0: No disjointness signal (no write-set / collision / concurrent-write mention).
+      1: Incidental reference (mentions disjointness narratively, no structural artefact).
+      2: Partial declaration / lint (ad-hoc write-set documentation, convention).
+      3: Component-level write-set test (unit test for collision detection,
+         lib/write_set.py callable helper, not yet gate-wired).
+      4: Framework-level pre-flight gate (PreToolUse hook / `fw write-set check` CLI /
+         audit FAIL on overlap — STRUCTURALLY refuses dispatch).
+      5: New structural invariant class (mechanism that makes disjointness violation
+         structurally impossible at dispatch-envelope construction; new gate type).
+
+    Rewards PRE-FLIGHT collision refusal — distinguishes from D2 (Reliability) which
+    rewards POST-HOC observability of the same failure class.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    # Components that signal write-set work
+    write_set_comps = _has_any(comps, [
+        r"lib/write_?set", r"write[_-]?set\.py",
+        r"tests/.*write[_-]?set", r"fw[_-]write[-_]?set",
+        r"bin/fw write-set",
+    ])
+    write_set_body = _has_any(body, [
+        r"\bdisjoint(ness)?\b", r"\bwrite[- _]?set\b", r"\bdisjoint write[- _]?set\b",
+        r"collision (refusal|prevention|detection|gate)",
+        r"concurrent (write|edit) (collision|conflict)",
+        r"\bpre[- ]?flight (collision|disjoint|write[- ]?set|gate)",
+        r"\bgovernance[- ]plane (corruption|conflict)\b",
+    ])
+    if not (write_set_comps or write_set_body):
+        return 0, ev + ["→0 (no disjointness signal)"]
+
+    # ---- Level 5 — new structural invariant class ----------------------
+    new_class = _has_any(body, [
+        r"new structural invariant",
+        r"new (sovereignty boundary|gate type) (for|on) (write[- ]?set|disjoint)",
+        r"structurally impossible.{0,40}(collision|overlap|disjoint)",
+        r"capability[- ]overlay.{0,40}(write[- ]?set|disjoint)",
+        r"new (mechanism|class) (for )?write[- ]?set (isolation|enforcement)",
+        r"dispatch[- ]envelope (write[- ]?set|disjoint) (enforcement|construction)",
+    ])
+    if new_class:
+        ev.append("body:disjoint-new-class")
+        return 5, ev + ["→5 (new structural invariant class for disjointness)"]
+
+    # ---- Level 4 — framework-level pre-flight gate ----------------------
+    gate = _has_any(body, [
+        r"PreToolUse hook.{0,40}(write[- ]?set|disjoint|collision|overlap)",
+        r"PostToolUse hook.{0,40}(write[- ]?set|disjoint|collision)",
+        r"completion gate.{0,40}(write[- ]?set|disjoint)",
+        r"fw write-set check",
+        r"audit FAIL.{0,40}(write[- ]?set|disjoint|collision|overlap)",
+        r"audit WARN.{0,40}(write[- ]?set|disjoint|collision|overlap)",
+        r"structural(ly)? refuses?.{0,40}(dispatch|write[- ]?set|disjoint)",
+        r"refuses? (the )?dispatch.{0,40}(overlap|collision|disjoint)",
+        r"(disjoint(ness)?|write[- ]?set) (gate|enforcement|verifier)",
+    ])
+    if gate:
+        ev.append("body:framework-disjoint-gate")
+        return 4, ev + ["→4 (framework-level disjoint pre-flight gate)"]
+
+    # ---- Level 3 — component-level write-set test or helper ------------
+    component_test = _has_any(body, [
+        r"(unit|regression|integration) test.{0,40}(write[- ]?set|disjoint|collision)",
+        r"tests?/.*write[- ]?set",
+        r"lib/write[_-]?set",
+        r"write[- ]?set (validator|helper|util|module)",
+        r"collision (test|detector|check) (in|added)",
+    ])
+    # Heavy component touch — write-set / disjoint code edited
+    component_touch = _has_any(comps, [
+        r"lib/write[_-]?set", r"tests/.*write[_-]?set",
+    ])
+    if component_test or component_touch:
+        if component_test:
+            ev.append("body:disjoint-component-test")
+        if component_touch:
+            ev.append("components:write-set-code")
+        return 3, ev + ["→3 (component-level write-set test/helper)"]
+
+    # ---- Level 2 — partial declaration / lint / documentation ----------
+    partial = _has_any(body, [
+        r"\bwrite[- _]?set:?\s*(scope|declaration|fields?)",
+        r"declare(s|d)?.{0,30}(write[- ]?set|scope)",
+        r"(disjoint(ness)?|write[- ]?set) (lint|convention|documentation|discipline)",
+        r"ad[- ]hoc (write[- ]?set|disjoint)",
+        r"(disjoint(ness)?|write[- ]?set) (policy|spec)",
+    ])
+    if partial:
+        ev.append("body:disjoint-partial-or-lint")
+        return 2, ev + ["→2 (partial declaration / lint / documentation)"]
+
+    # ---- Level 1 — incidental reference --------------------------------
+    if write_set_body or write_set_comps:
+        ev.append("body/components:disjoint-incidental")
+        return 1, ev + ["→1 (incidental disjointness reference)"]
+
+    return 0, ev + ["→0 (no disjointness signal)"]
+
+
+def score_d_wire_evidence(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """D-WIRE-EVIDENCE — Wire-Evidence Falsifiability (arc-011 scoped).
+
+    T-2356. Anchored to docs/reports/T-2344-bvp-driver-arc-011.md §Candidate 2.
+    Proposed in .context/arcs/parallel-execution-aef.yaml proposed_scoped_drivers
+    with weight 4.
+
+    Handler stays LATENT until two events: (1) operator approves the arc-scoped
+    driver via Watchtower (`fw arc approve-driver arc-011 D-WIRE-EVIDENCE
+    --weight 4 --from-watchtower`), AND (2) the estimator's `estimate_task()`
+    dispatch loop is extended to resolve arc-scoped drivers when the task's
+    `arc_id:` matches an arc with `scoped_drivers:` populated.
+
+    Rubric (T-2344 §Candidate 2):
+      0: No wire-evidence signal.
+      1: Incidental log reference (narrative "log says X" without captured artefact).
+      2: Narrative claim + one re-runnable command in body (no persisted excerpt).
+      3: Component-level evidence artefact (docs/reports evidence file with embedded
+         jsonl excerpts + timing.yaml — outside party can re-check by re-running).
+      4: Framework-level wire-evidence capture surface (Watchtower page / CLI verb
+         that reads dispatches.jsonl / auto-refreshes; `fw orchestrator status`).
+      5: New falsifiability primitive class (every dispatch auto-writes wire-evidence
+         YAML; structural mechanism makes claim-without-evidence impossible).
+
+    Rewards CAPTURED, RE-RUNNABLE artefacts tied to a specific arc claim. Counters
+    G-062 substrate-vs-deliverable conflation at arc-close time. Distinguishes from
+    D2 (Reliability) which is satisfied by a log line; this driver requires the
+    evidence be re-runnable by an outside party.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    # Components that signal evidence-capture work
+    evidence_comps = _has_any(comps, [
+        r"\.context/dispatches\.jsonl", r"dispatches\.jsonl",
+        r"\.context/dispatch-outcomes\.jsonl", r"dispatch-outcomes\.jsonl",
+        r"docs/reports/arc-\d+.*evidence",
+        r"web/blueprints/orchestrator", r"web/templates/orchestrator",
+        r"fw orchestrator", r"agents/dispatch/", r"timing\.yaml",
+    ])
+    evidence_body = _has_any(body, [
+        r"\bwire[- ]evidence\b", r"\bwire artefact(s)?\b",
+        r"\bdispatches?\.jsonl\b",
+        r"dispatch[- ]outcomes\.jsonl",
+        r"timing\.yaml", r"git status snapshot",
+        r"\bfalsifiab(le|ility)\b", r"\bre[- ]runnable\b",
+        r"captured (wire )?artefact", r"captured evidence",
+        r"headline[- ]mechanic.{0,40}(evidence|fire|captured)",
+        r"evidence (file|capture|excerpt|artefact)",
+    ])
+    if not (evidence_comps or evidence_body):
+        return 0, ev + ["→0 (no wire-evidence signal)"]
+
+    # ---- Level 5 — new falsifiability primitive class -------------------
+    new_class = _has_any(body, [
+        r"new falsifiabil(ity|ities) primitive",
+        r"every dispatch auto[- ]writes? (wire )?evidence",
+        r"structural(ly)? (mechanism|gate) (makes|prevents) claim[- ]without[- ]evidence",
+        r"new (wire )?evidence (primitive|class|mechanism|substrate)",
+        r"auto[- ](capture|emit)d? (wire[- ]?)?evidence (yaml|file|row)",
+        r"evidence (auto[- ]written|auto[- ]captured) (per|alongside) (dispatch|outcome)",
+    ])
+    if new_class:
+        ev.append("body:wire-evidence-new-class")
+        return 5, ev + ["→5 (new falsifiability primitive class)"]
+
+    # ---- Level 4 — framework-level wire-evidence capture surface --------
+    framework_surface = _has_any(body, [
+        r"Watchtower (page|view|surface).{0,40}(dispatch|orchestrator|evidence|wire)",
+        r"/orchestrator/parallel", r"/orchestrator (page|view)",
+        r"reads? (\.context/)?dispatches\.jsonl",
+        r"fw orchestrator (status|read|explain)",
+        r"auto[- ]refreshe?s?.{0,40}(dispatch|evidence|wire)",
+        r"htmx.{0,40}(dispatch|orchestrator|evidence|wire)",
+        r"(in[- ]flight )?dispatch (cards|view|page)",
+    ])
+    if framework_surface:
+        ev.append("body:framework-wire-evidence-surface")
+        return 4, ev + ["→4 (framework-level wire-evidence capture surface)"]
+
+    # ---- Level 3 — component-level evidence artefact -------------------
+    component_artefact = _has_any(body, [
+        r"docs/reports/.*evidence",
+        r"evidence (file|artefact).{0,40}(embedded|excerpts?|timing)",
+        r"embedded (dispatches?\.jsonl|jsonl) excerpts?",
+        r"captured (jsonl|dispatches) (excerpt|rows)",
+        r"timing\.yaml (capture|file|artefact)",
+        r"re[- ]runnable (evidence|artefact|capture)",
+    ])
+    component_touch = _has_any(comps, [
+        r"docs/reports/arc-\d+.*evidence",
+        r"\.context/dispatches\.jsonl", r"timing\.yaml",
+    ])
+    if component_artefact or component_touch:
+        if component_artefact:
+            ev.append("body:wire-evidence-component-artefact")
+        if component_touch:
+            ev.append("components:evidence-file")
+        return 3, ev + ["→3 (component-level evidence artefact)"]
+
+    # ---- Level 2 — narrative claim + one re-runnable command -----------
+    narrative_plus_command = _has_any(body, [
+        r"`(cat|jq|grep|tail).{0,80}(dispatches?\.jsonl|outcomes?\.jsonl)",
+        r"`bin/fw (orchestrator|outcome) (status|read|list|explain)",
+        r"`fw orchestrator",
+        r"\bre[- ]run(nable)? command\b",
+        r"narrative claim.{0,40}(re[- ]runnable|command)",
+    ])
+    if narrative_plus_command:
+        ev.append("body:wire-evidence-narrative-plus-command")
+        return 2, ev + ["→2 (narrative claim + one re-runnable command)"]
+
+    # ---- Level 1 — incidental log reference ----------------------------
+    if evidence_body or evidence_comps:
+        ev.append("body/components:wire-evidence-incidental")
+        return 1, ev + ["→1 (incidental log reference)"]
+
+    return 0, ev + ["→0 (no wire-evidence signal)"]
+
+
 def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """Heuristic fallback for free drivers without a dedicated scorer — keyword-
     on-driver-id only.
@@ -1084,6 +1320,13 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # the Sovereignty refuse-rule (level 0 on Tier-0 / safety-critical
         # gate removal without at-least-as-safe replacement).
         "F-AUTONOMY": score_f_autonomy,
+        # T-2356 — arc-011 scoped drivers (proposed via T-2344 batch_propose).
+        # Latent in two ways: (1) _load_drivers() reads only global policy, so
+        # arc-scoped drivers never reach `drivers:` here today; (2) even after
+        # operator approval via Watchtower, dispatch wiring for arc-scoped
+        # drivers is a separate slice. Keys match the IDs in arc-011.yaml.
+        "D-DISJOINT": score_d_disjoint,
+        "D-WIRE-EVIDENCE": score_d_wire_evidence,
     }
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).

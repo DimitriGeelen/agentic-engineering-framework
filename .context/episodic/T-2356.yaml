@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2356: BVP estimator dedicated handlers for arc-011 scoped drivers (D-DISJOINT + D-WIRE-EVIDENCE)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-12T23:22:05Z
+# ============================================================================
+
+task_id: T-2356
+task_name: "BVP estimator dedicated handlers for arc-011 scoped drivers (D-DISJOINT + D-WIRE-EVIDENCE)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T23:13:40Z
+completed: 2026-06-12T23:21:57Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`score_d_disjoint(fm, body, tags) -> tuple[int, list[str]]` added to `agents/termlink/bvp-estimator/estimator.py` with full 6-level rubric (0-5) anchored to D-DISJOINT rationale in T-2344 §Candidate 1: L5 new structural invariant class, L4 framework-level pre-flight gate, L3 component-level write-set test, L2 partial declaration + lint, L1 incidental disjointness reference, L0 no signal'
+  - '`score_d_wire_evidence(fm, body, tags) -> tuple[int, list[str]]` added to the same file with full 6-level rubric (0-5) anchored to D-WIRE-EVIDENCE rationale in T-2344 §Candidate 2: L5 new falsifiability primitive class, L4 framework-level wire-evidence capture surface, L3 component-level evidence artefact (jsonl excerpt + timing.yaml), L2 narrative claim + one re-runnable command, L1 incidental log reference, L0 no signal'
+  - 'Both handlers registered in the `handlers` dict in `estimate_task()` (alongside D1-D4, F-RECALL/F-ORCH, V_*, F-AUTONOMY) — keys exactly `"D-DISJOINT"` and `"D-WIRE-EVIDENCE"` (match the IDs in arc-011.yaml proposed_scoped_drivers)'
+  - 'Header docstring on each handler references T-2356 + T-2344 + states the latency invariant explicitly (mirrors T-2329''s `Handler stays LATENT until ...` phrasing)'
+  - 'Test coverage in `tests/unit/test_bvp_estimator.py` matches T-2329 F-AUTONOMY shape: per-level test (0/1/2/3/4/5 for each handler = 12 tests minimum) + dispatch-registration test (when drivers dict contains D-DISJOINT, `estimate_task` returns the dedicated handler''s score not the fallback) + non-registration test (when drivers dict doesn''t include D-DISJOINT, slot doesn''t fire)'
+  - 'Total new test count ≥ 14 (12 per-level + 2 dispatch). All new tests PASS; existing test suite green (regression net)'
+  - 'Reviewer PASS on T-2356: `bin/fw reviewer T-2356` returns `Overall: PASS` or `CONCERN`, no FAIL'
+  - 'Latency verified: with default policy (no D-DISJOINT in `_load_drivers()` output), `estimate_task()` on an arc-011 member task does NOT include `D-DISJOINT` or `D-WIRE-EVIDENCE` in the returned `scores:` dict (the handlers are reachable from the dict but the dispatch loop never asks for them) — covered by the non-registration tests above'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, estimator, arc-011, latent]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2356-bvp-estimator-dedicated-handlers-for-arc.md
+generated_by: context-agent-hybrid

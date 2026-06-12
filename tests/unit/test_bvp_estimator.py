@@ -936,5 +936,184 @@ def test_f_autonomy_dispatch_distinguishes_dedicated_vs_fallback(tmp_path):
     assert s_fallback == 0
 
 
+# ---------------------------------------------------------------------------
+# T-2356 — score_d_disjoint + score_d_wire_evidence dedicated handlers
+# (arc-011 scoped drivers proposed in T-2344). Both stay LATENT until the
+# operator approves the scoped drivers via Watchtower AND the estimator
+# dispatch loop is extended to resolve arc-scoped drivers from arc YAMLs.
+# Mirrors T-2329 F-AUTONOMY test shape.
+# ---------------------------------------------------------------------------
+
+
+def test_d_disjoint_no_signal_scores_zero():
+    s, ev = estimator.score_d_disjoint(FM_BUILD, "Refactor unrelated handler. Nothing structural here.", [])
+    assert s == 0
+    assert any("no disjointness signal" in e for e in ev)
+
+
+def test_d_disjoint_incidental_reference_scores_one():
+    body = "Notes mention disjointness as upstream context but no structural artefact here."
+    s, ev = estimator.score_d_disjoint(FM_BUILD, body, [])
+    assert s == 1
+    assert any("incidental" in e for e in ev)
+
+
+def test_d_disjoint_partial_declaration_scores_two():
+    body = "Declare a write-set scope on the dispatch envelope. Ad-hoc write-set lint added."
+    s, _ = estimator.score_d_disjoint(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_d_disjoint_component_test_scores_three():
+    body = "Added unit test for write-set collision detection in tests/unit/test_write_set.py."
+    s, _ = estimator.score_d_disjoint(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_d_disjoint_component_touch_via_components_scores_three():
+    """When the task's components include lib/write_set.py, score 3 even with thin body."""
+    fm = {"workflow_type": "build", "tags": [],
+          "components": ["lib/write_set.py", "tests/unit/test_write_set.py"]}
+    body = "Body has no narrative."
+    s, _ = estimator.score_d_disjoint(fm, body, [])
+    assert s == 3
+
+
+def test_d_disjoint_framework_gate_scores_four():
+    body = ("Added PreToolUse hook that structurally refuses the dispatch on write-set overlap. "
+            "fw write-set check verifies before dispatch.")
+    s, _ = estimator.score_d_disjoint(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_d_disjoint_audit_fail_on_overlap_scores_four():
+    body = "audit FAIL on write-set overlap surfaces the collision class structurally."
+    s, _ = estimator.score_d_disjoint(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_d_disjoint_new_class_scores_five():
+    body = ("New structural invariant for disjointness — write-set isolation enforced "
+            "at dispatch-envelope construction. Collision is structurally impossible.")
+    s, _ = estimator.score_d_disjoint(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_d_disjoint_registered_in_estimate_task_dispatch(tmp_path):
+    """When drivers dict contains D-DISJOINT, estimate_task dispatches to the
+    dedicated scorer (not the weak score_free_driver fallback)."""
+    body = "Added PreToolUse hook structurally refuses dispatch on write-set overlap."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {"D-DISJOINT": 5})
+    # Dedicated handler returns 4 on framework-gate body; fallback would return 0
+    # because the body text doesn't contain the literal 'D-DISJOINT'.
+    assert result["scores"]["D-DISJOINT"] == 4
+
+
+def test_d_disjoint_latent_until_driver_registered(tmp_path):
+    """Handler exists in dispatch table but is only invoked when policy
+    registers D-DISJOINT (which today happens via arc-scoped approval +
+    estimator-dispatch wiring, neither of which exists yet). With drivers={}
+    the slot never fires."""
+    body = "Added PreToolUse hook structurally refuses dispatch on write-set overlap."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "D-DISJOINT" not in result["scores"]
+
+
+def test_d_disjoint_dispatch_distinguishes_dedicated_vs_fallback(tmp_path):
+    """Direct contrast: the dedicated handler scores write-set body at 3+; the
+    fallback would score it 0 because 'D-DISJOINT' is not a substring of the body."""
+    body = "Added unit test for write-set collision detection."
+    task = _make_task(tmp_path, body)
+    result_dedicated = estimator.estimate_task(task, {"D-DISJOINT": 5})
+    assert result_dedicated["scores"]["D-DISJOINT"] == 3
+    s_fallback, _ = estimator.score_free_driver("D-DISJOINT", FM_BUILD, body, [])
+    assert s_fallback == 0
+
+
+def test_d_wire_evidence_no_signal_scores_zero():
+    s, ev = estimator.score_d_wire_evidence(FM_BUILD, "Refactor handler unrelated to dispatch.", [])
+    assert s == 0
+    assert any("no wire-evidence signal" in e for e in ev)
+
+
+def test_d_wire_evidence_incidental_log_reference_scores_one():
+    body = "Captured wire artefact noted incidentally; no structural surface added."
+    s, ev = estimator.score_d_wire_evidence(FM_BUILD, body, [])
+    assert s == 1
+    assert any("incidental" in e for e in ev)
+
+
+def test_d_wire_evidence_narrative_plus_command_scores_two():
+    body = "Verification: `cat .context/dispatches.jsonl | jq '.outcome'` shows the claim."
+    s, _ = estimator.score_d_wire_evidence(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_d_wire_evidence_component_artefact_scores_three():
+    body = ("Wrote docs/reports/arc-011-m1-headline-mechanic-evidence.md with embedded "
+            "dispatches.jsonl excerpts and timing.yaml. Re-runnable by an outside party.")
+    s, _ = estimator.score_d_wire_evidence(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_d_wire_evidence_component_touch_via_components_scores_three():
+    """When task's components include docs/reports arc evidence files, score 3."""
+    fm = {"workflow_type": "build", "tags": [],
+          "components": ["docs/reports/arc-011-m1-headline-mechanic-evidence.md"]}
+    body = "Body has no narrative."
+    s, _ = estimator.score_d_wire_evidence(fm, body, [])
+    assert s == 3
+
+
+def test_d_wire_evidence_framework_surface_scores_four():
+    body = ("New Watchtower page /orchestrator/parallel reads .context/dispatches.jsonl "
+            "and auto-refreshes via htmx every 2s.")
+    s, _ = estimator.score_d_wire_evidence(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_d_wire_evidence_new_class_scores_five():
+    body = ("New falsifiability primitive: every dispatch auto-writes a wire-evidence "
+            "yaml alongside its outcome row, indexed by arc. Structural mechanism makes "
+            "claim-without-evidence impossible.")
+    s, _ = estimator.score_d_wire_evidence(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_d_wire_evidence_registered_in_estimate_task_dispatch(tmp_path):
+    """When drivers dict contains D-WIRE-EVIDENCE, estimate_task dispatches to
+    the dedicated scorer (not the weak score_free_driver fallback)."""
+    body = ("New Watchtower page /orchestrator/parallel reads .context/dispatches.jsonl "
+            "and auto-refreshes via htmx every 2s.")
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {"D-WIRE-EVIDENCE": 4})
+    # Dedicated handler returns 4 on framework-surface body; fallback would return 0.
+    assert result["scores"]["D-WIRE-EVIDENCE"] == 4
+
+
+def test_d_wire_evidence_latent_until_driver_registered(tmp_path):
+    """Same latency invariant as D-DISJOINT — slot only fires when policy
+    registers D-WIRE-EVIDENCE (arc-scoped approval + dispatch wiring, neither
+    of which exists yet)."""
+    body = "New Watchtower page /orchestrator/parallel reads .context/dispatches.jsonl."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "D-WIRE-EVIDENCE" not in result["scores"]
+
+
+def test_d_wire_evidence_dispatch_distinguishes_dedicated_vs_fallback(tmp_path):
+    """Direct contrast: dedicated handler scores evidence body at 3+; the
+    fallback would score 0 because 'D-WIRE-EVIDENCE' is not a substring of the body."""
+    body = ("Wrote docs/reports/arc-011-m1-headline-mechanic-evidence.md with embedded "
+            "dispatches.jsonl excerpts and timing.yaml.")
+    task = _make_task(tmp_path, body)
+    result_dedicated = estimator.estimate_task(task, {"D-WIRE-EVIDENCE": 4})
+    assert result_dedicated["scores"]["D-WIRE-EVIDENCE"] == 3
+    s_fallback, _ = estimator.score_free_driver("D-WIRE-EVIDENCE", FM_BUILD, body, [])
+    assert s_fallback == 0
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
