@@ -59,6 +59,7 @@ PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT") or
                     Path(__file__).resolve().parents[3])
 RUBRIC_PATH = PROJECT_ROOT / "policy" / "bvp-scoring-rubric.md"
 POLICY_PATH = PROJECT_ROOT / "policy" / "value-drivers.yaml"
+ARCS_DIR = PROJECT_ROOT / ".context" / "arcs"
 
 _FM_RE = re.compile(r"^---\n(.*?)\n---\n?(.*)\Z", re.S)
 
@@ -94,6 +95,70 @@ def _load_drivers() -> dict[str, int]:
     for d in (policy.get("free_drivers") or []):
         if d.get("id"):
             out[d["id"]] = int(d.get("weight", 0))
+    return out
+
+
+def _arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]:
+    """T-2357 — return {driver_id: weight} from the task's arc's scoped_drivers.
+
+    Resolves the task's `arc_id:` frontmatter to `.context/arcs/<arc_id>.yaml`
+    (slug form, T-1849), falling back to a `arc-NNN` dual-form scan that
+    matches each arc YAML's top-level `id:` or `slug:`. Returns the operator-
+    approved `scoped_drivers:` map (driver_id → weight). Empty on any
+    missing/error path: no arc_id, file missing, YAML parse error, empty
+    scoped_drivers.
+
+    Read-only; never mutates arc YAMLs. Does NOT consult
+    proposed_scoped_drivers: — only operator-approved scoped_drivers: fires
+    here (Sovereignty boundary, T-1924).
+
+    Activates the LATENT handlers shipped in T-2356 (score_d_disjoint,
+    score_d_wire_evidence) for arc-tagged tasks. Once the operator approves
+    the proposed_scoped_drivers via Watchtower (`fw arc approve-driver
+    arc-011 D-DISJOINT --weight 5 --from-watchtower` + same for
+    D-WIRE-EVIDENCE), this helper yields them and estimate_task() dispatches.
+    """
+    arc_id = fm.get("arc_id")
+    if not arc_id or not isinstance(arc_id, str):
+        return {}
+
+    # Slug form first (cheapest path)
+    direct = ARCS_DIR / f"{arc_id}.yaml"
+    arc_data: dict | None = None
+    if direct.is_file():
+        try:
+            arc_data = yaml.safe_load(direct.read_text()) or {}
+        except yaml.YAMLError:
+            return {}
+    else:
+        # arc-NNN dual-form fallback (T-1849: arc_id may be `arc-011` while
+        # the file lives at slug `parallel-execution-aef.yaml`).
+        if ARCS_DIR.is_dir():
+            for arc_yaml in sorted(ARCS_DIR.glob("*.yaml")):
+                try:
+                    candidate = yaml.safe_load(arc_yaml.read_text()) or {}
+                except yaml.YAMLError:
+                    continue
+                if (candidate.get("id") == arc_id
+                        or candidate.get("slug") == arc_id):
+                    arc_data = candidate
+                    break
+
+    if not arc_data:
+        return {}
+
+    out: dict[str, int] = {}
+    for sd in (arc_data.get("scoped_drivers") or []):
+        if not isinstance(sd, dict):
+            continue
+        d_id = sd.get("id")
+        if not d_id or not isinstance(d_id, str):
+            continue
+        try:
+            w = int(sd.get("weight") or 0)
+        except (TypeError, ValueError):
+            w = 0
+        out[d_id] = w
     return out
 
 
@@ -1292,6 +1357,17 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
     fm, body = parse_task(task_path)
     tags = list(fm.get("tags") or [])
     is_inception = (fm.get("workflow_type") or "").lower() == "inception"
+
+    # T-2357: merge arc-scoped drivers (from the task's arc YAML's
+    # scoped_drivers:) into the dispatch driver set. Global drivers WIN on
+    # name collision — operator-approved policy weights take precedence over
+    # arc-scoped weights. Skipped for inceptions (voi_score is the composite).
+    if not is_inception:
+        arc_drivers = _arc_scoped_drivers_for_task(fm)
+        if arc_drivers:
+            merged = dict(arc_drivers)
+            merged.update(drivers)  # passed-in drivers win on collision
+            drivers = merged
 
     scores: dict[str, int] = {}
     evidence: dict[str, list[str]] = {}

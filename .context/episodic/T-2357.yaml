@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2357: BVP estimator arc-scoped driver dispatch — wire arc YAML resolution into estimate_task() so latent D-* handlers (T-2356) fire on arc-tagged tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-12T23:30:01Z
+# ============================================================================
+
+task_id: T-2357
+task_name: "BVP estimator arc-scoped driver dispatch — wire arc YAML resolution into estimate_task() so latent D-* handlers (T-2356) fire on arc-tagged tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T23:22:36Z
+completed: 2026-06-12T23:29:49Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]` added to `agents/termlink/bvp-estimator/estimator.py`. Reads task''s `arc_id:` frontmatter, resolves to `.context/arcs/<arc_id>.yaml` (direct + slug-fallback per T-1849 dual form), returns `{driver_id: weight}` from arc''s `scoped_drivers:`. Returns `{}` on any missing/error path (no arc_id, file missing, YAML parse error, empty scoped_drivers).'
+  - '`estimate_task()` extended to merge arc-scoped drivers into the dispatch loop: after `drivers = _load_drivers()` (callers may override), if the task has `arc_id:` AND that arc has populated `scoped_drivers:`, the arc-scoped driver IDs are added to the dispatch iteration. Global drivers win on name collision (do NOT clobber operator-approved policy weights).'
+  - 'When called with a task whose `arc_id: parallel-execution-aef` AND arc-011''s `scoped_drivers:` contains `D-DISJOINT` (e.g. via test fixture writing to a tmp arc YAML), `estimate_task()` returns `D-DISJOINT` in the `scores:` dict with the dedicated handler''s score — flips T-2356 handlers from latent to active for arc-011 tasks'
+  - 'Latency / no-arc behaviour preserved: a task with no `arc_id:` (or arc YAML absent / empty `scoped_drivers:`) still produces the same `scores:` dict as before — no behavioural change for non-arc-tagged tasks. Existing 110 BVP estimator tests stay green.'
+  - 'CLI/dispatch surfaces (`fw bvp` and `bvp_auto_promote`) work unchanged for the default policy case — the new helper is read-only and falls through to `{}` whenever arc context isn''t present'
+  - 'Test coverage in `tests/unit/test_bvp_estimator.py`: per-leg coverage of the helper (no arc_id → `{}`; arc YAML missing → `{}`; valid YAML with scoped_drivers → returns map; invalid YAML → `{}`; arc_id slug-form resolves via dual-form fallback) + integration coverage of dispatch (task with arc-011 tag + arc YAML with D-DISJOINT in scoped_drivers → result has D-DISJOINT score; collision with global driver → global wins). ≥ 8 new tests, all PASS'
+  - 'Reviewer PASS on T-2357: `bin/fw reviewer T-2357` returns `Overall: PASS` or `CONCERN`, no FAIL'
+  - 'Regression net: 192/192 existing BVP-related tests stay green after the change. Verification block runs `python3 -m pytest tests/unit/ -q -k ''bvp or estimator''` and asserts no failures'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, estimator, arc-scoped, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2357-bvp-estimator-arc-scoped-driver-dispatch.md
+generated_by: context-agent-hybrid

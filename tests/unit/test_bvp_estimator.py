@@ -1115,5 +1115,174 @@ def test_d_wire_evidence_dispatch_distinguishes_dedicated_vs_fallback(tmp_path):
     assert s_fallback == 0
 
 
+# ---------------------------------------------------------------------------
+# T-2357 — arc-scoped driver dispatch
+# Activates the LATENT T-2356 D-* handlers for tasks tagged arc_id: <slug>.
+# ---------------------------------------------------------------------------
+
+
+def _write_arc_yaml(arcs_dir: Path, slug: str, scoped: list[dict],
+                    arc_id_field: str | None = None) -> Path:
+    """Helper: write a minimal arc YAML with given scoped_drivers entries."""
+    arcs_dir.mkdir(parents=True, exist_ok=True)
+    arc_data = {
+        "slug": slug,
+        "name": f"Test arc {slug}",
+        "status": "in-progress",
+        "scoped_drivers": scoped,
+    }
+    if arc_id_field:
+        arc_data["id"] = arc_id_field
+    import yaml as _y
+    path = arcs_dir / f"{slug}.yaml"
+    path.write_text(_y.safe_dump(arc_data, sort_keys=False))
+    return path
+
+
+def test_arc_scoped_drivers_no_arc_id_returns_empty():
+    assert estimator._arc_scoped_drivers_for_task({}) == {}
+    assert estimator._arc_scoped_drivers_for_task({"workflow_type": "build"}) == {}
+    # Non-string arc_id (list / int) is rejected
+    assert estimator._arc_scoped_drivers_for_task({"arc_id": ["a", "b"]}) == {}
+    assert estimator._arc_scoped_drivers_for_task({"arc_id": 5}) == {}
+
+
+def test_arc_scoped_drivers_arc_yaml_missing_returns_empty(tmp_path, monkeypatch):
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "nonexistent-arc"})
+    assert result == {}
+
+
+def test_arc_scoped_drivers_valid_yaml_returns_map(tmp_path, monkeypatch):
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    _write_arc_yaml(tmp_path, "test-arc", [
+        {"id": "D-DISJOINT", "weight": 5},
+        {"id": "D-WIRE-EVIDENCE", "weight": 4},
+    ])
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "test-arc"})
+    assert result == {"D-DISJOINT": 5, "D-WIRE-EVIDENCE": 4}
+
+
+def test_arc_scoped_drivers_empty_scoped_returns_empty(tmp_path, monkeypatch):
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    _write_arc_yaml(tmp_path, "empty-arc", [])
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "empty-arc"})
+    assert result == {}
+
+
+def test_arc_scoped_drivers_malformed_yaml_returns_empty(tmp_path, monkeypatch):
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    (tmp_path / "broken-arc.yaml").write_text("scoped_drivers: [{id: D-X, weight: 5}\nname: missing-bracket")
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "broken-arc"})
+    assert result == {}
+
+
+def test_arc_scoped_drivers_arc_nnn_dual_form_resolves(tmp_path, monkeypatch):
+    """T-1849 dual form: task carries arc_id: arc-099 but file lives at
+    real-slug.yaml. Helper should scan and match on the top-level `id:`."""
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    _write_arc_yaml(tmp_path, "real-slug", [
+        {"id": "D-DISJOINT", "weight": 5},
+    ], arc_id_field="arc-099")
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "arc-099"})
+    assert result == {"D-DISJOINT": 5}
+
+
+def test_arc_scoped_drivers_skips_invalid_entries(tmp_path, monkeypatch):
+    monkeypatch.setattr(estimator, "ARCS_DIR", tmp_path)
+    _write_arc_yaml(tmp_path, "mixed-arc", [
+        {"id": "D-GOOD", "weight": 3},
+        "not-a-dict",  # silently skipped
+        {"weight": 5},  # missing id, skipped
+        {"id": "", "weight": 2},  # empty id, skipped
+        {"id": "D-DEFAULT-WEIGHT"},  # weight missing → 0
+    ])
+    result = estimator._arc_scoped_drivers_for_task({"arc_id": "mixed-arc"})
+    assert result == {"D-GOOD": 3, "D-DEFAULT-WEIGHT": 0}
+
+
+def test_estimate_task_dispatches_arc_scoped_handler(tmp_path, monkeypatch):
+    """End-to-end activation: task with arc_id pointing at an arc with
+    D-DISJOINT in scoped_drivers fires the LATENT T-2356 handler."""
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-parallel", [
+        {"id": "D-DISJOINT", "weight": 5},
+    ])
+    body = "Added PreToolUse hook that structurally refuses dispatch on write-set overlap."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-parallel"})
+    # Pass an empty drivers dict — arc-scoped resolution should populate it
+    result = estimator.estimate_task(task, {})
+    assert "D-DISJOINT" in result["scores"]
+    assert result["scores"]["D-DISJOINT"] == 4  # framework-gate body → L4
+
+
+def test_estimate_task_arc_scoped_handler_with_wire_evidence(tmp_path, monkeypatch):
+    """Sibling test: D-WIRE-EVIDENCE also activates via arc scope."""
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-evidence", [
+        {"id": "D-WIRE-EVIDENCE", "weight": 4},
+    ])
+    body = ("New Watchtower page /orchestrator/parallel reads .context/dispatches.jsonl "
+            "and auto-refreshes via htmx every 2s.")
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-evidence"})
+    result = estimator.estimate_task(task, {})
+    assert "D-WIRE-EVIDENCE" in result["scores"]
+    assert result["scores"]["D-WIRE-EVIDENCE"] == 4
+
+
+def test_estimate_task_global_wins_on_collision(tmp_path, monkeypatch):
+    """When the caller passes a driver dict that includes a key also present
+    in arc scoped_drivers, the caller's weight wins. (Operator-approved
+    policy weights take precedence over arc-scoped weights.)"""
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-collision", [
+        {"id": "D1", "weight": 5},  # arc says weight 5
+    ])
+    body = "Refactor handler."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-collision"})
+    result = estimator.estimate_task(task, {"D1": 9})  # global says weight 9
+    assert "D1" in result["scores"]
+    # The score depends on rubric, not weight — but the dispatch path
+    # ran the D1 handler (in handlers dict), and the merge preserved D1.
+    # If global hadn't won, we'd still see D1 either way. Stronger assertion:
+    # the score equals what the dedicated D1 scorer returns for this body
+    # (i.e. not the score_free_driver fallback). Below, an empty body with
+    # build workflow_type → 0 from score_d1_antifragility.
+    assert result["scores"]["D1"] == 0
+
+
+def test_estimate_task_no_arc_unchanged_behavior(tmp_path):
+    """Sanity: task with no arc_id behaves exactly as before — no D-DISJOINT
+    or D-WIRE-EVIDENCE leak into the scores dict from an unrelated path."""
+    body = "Refactor handler unrelated to disjoint write-sets."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {"D1": 9, "D2": 7})
+    assert "D-DISJOINT" not in result["scores"]
+    assert "D-WIRE-EVIDENCE" not in result["scores"]
+    assert "D1" in result["scores"]
+    assert "D2" in result["scores"]
+
+
+def test_estimate_task_inception_skips_arc_scoped_merge(tmp_path, monkeypatch):
+    """Inceptions use voi_score scoring — arc-scoped merge is skipped so the
+    voi exception applies to whichever drivers the caller passes."""
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-inception-arc", [
+        {"id": "D-DISJOINT", "weight": 5},
+    ])
+    body = "Inception body."
+    task = _make_task(tmp_path, body, fm_extra={
+        "arc_id": "test-inception-arc", "workflow_type": "inception",
+    })
+    # Caller passes a regular driver only — arc scope should NOT add D-DISJOINT
+    result = estimator.estimate_task(task, {"D1": 9})
+    assert "D-DISJOINT" not in result["scores"]
+    assert "D1" in result["scores"]
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

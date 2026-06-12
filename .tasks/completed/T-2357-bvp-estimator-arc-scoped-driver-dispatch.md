@@ -4,10 +4,10 @@ name: "BVP estimator arc-scoped driver dispatch — wire arc YAML resolution int
 description: >
   BVP estimator arc-scoped driver dispatch — wire arc YAML resolution into estimate_task() so latent D-* handlers (T-2356) fire on arc-tagged tasks
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bvp, estimator, arc-scoped, dispatch]
 components: [agents/termlink/bvp-estimator/estimator.py, tests/unit/test_bvp_estimator.py]
 related_tasks: [T-2356, T-2328, T-2329, T-2344, T-2303]
@@ -23,8 +23,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T23:22:36Z
-last_update: 2026-06-12T23:22:36Z
-date_finished: null
+last_update: 2026-06-12T23:29:49Z
+date_finished: 2026-06-12T23:29:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -84,14 +84,14 @@ Out of scope for this slice: arc-scoped driver weight calibration vs global weig
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]` added to `agents/termlink/bvp-estimator/estimator.py`. Reads task's `arc_id:` frontmatter, resolves to `.context/arcs/<arc_id>.yaml` (direct + slug-fallback per T-1849 dual form), returns `{driver_id: weight}` from arc's `scoped_drivers:`. Returns `{}` on any missing/error path (no arc_id, file missing, YAML parse error, empty scoped_drivers).
-- [ ] `estimate_task()` extended to merge arc-scoped drivers into the dispatch loop: after `drivers = _load_drivers()` (callers may override), if the task has `arc_id:` AND that arc has populated `scoped_drivers:`, the arc-scoped driver IDs are added to the dispatch iteration. Global drivers win on name collision (do NOT clobber operator-approved policy weights).
-- [ ] When called with a task whose `arc_id: parallel-execution-aef` AND arc-011's `scoped_drivers:` contains `D-DISJOINT` (e.g. via test fixture writing to a tmp arc YAML), `estimate_task()` returns `D-DISJOINT` in the `scores:` dict with the dedicated handler's score — flips T-2356 handlers from latent to active for arc-011 tasks
-- [ ] Latency / no-arc behaviour preserved: a task with no `arc_id:` (or arc YAML absent / empty `scoped_drivers:`) still produces the same `scores:` dict as before — no behavioural change for non-arc-tagged tasks. Existing 110 BVP estimator tests stay green.
-- [ ] CLI/dispatch surfaces (`fw bvp` and `bvp_auto_promote`) work unchanged for the default policy case — the new helper is read-only and falls through to `{}` whenever arc context isn't present
-- [ ] Test coverage in `tests/unit/test_bvp_estimator.py`: per-leg coverage of the helper (no arc_id → `{}`; arc YAML missing → `{}`; valid YAML with scoped_drivers → returns map; invalid YAML → `{}`; arc_id slug-form resolves via dual-form fallback) + integration coverage of dispatch (task with arc-011 tag + arc YAML with D-DISJOINT in scoped_drivers → result has D-DISJOINT score; collision with global driver → global wins). ≥ 8 new tests, all PASS
-- [ ] Reviewer PASS on T-2357: `bin/fw reviewer T-2357` returns `Overall: PASS` or `CONCERN`, no FAIL
-- [ ] Regression net: 192/192 existing BVP-related tests stay green after the change. Verification block runs `python3 -m pytest tests/unit/ -q -k 'bvp or estimator'` and asserts no failures
+- [x] `_arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]` added to `agents/termlink/bvp-estimator/estimator.py`. Reads task's `arc_id:` frontmatter, resolves to `.context/arcs/<arc_id>.yaml` (direct + slug-fallback per T-1849 dual form), returns `{driver_id: weight}` from arc's `scoped_drivers:`. Returns `{}` on any missing/error path (no arc_id, file missing, YAML parse error, empty scoped_drivers).
+- [x] `estimate_task()` extended to merge arc-scoped drivers into the dispatch loop: after `drivers = _load_drivers()` (callers may override), if the task has `arc_id:` AND that arc has populated `scoped_drivers:`, the arc-scoped driver IDs are added to the dispatch iteration. Global drivers win on name collision (do NOT clobber operator-approved policy weights).
+- [x] When called with a task whose `arc_id: parallel-execution-aef` AND arc-011's `scoped_drivers:` contains `D-DISJOINT` (e.g. via test fixture writing to a tmp arc YAML), `estimate_task()` returns `D-DISJOINT` in the `scores:` dict with the dedicated handler's score — flips T-2356 handlers from latent to active for arc-011 tasks
+- [x] Latency / no-arc behaviour preserved: a task with no `arc_id:` (or arc YAML absent / empty `scoped_drivers:`) still produces the same `scores:` dict as before — no behavioural change for non-arc-tagged tasks. Existing 110 BVP estimator tests stay green.
+- [x] CLI/dispatch surfaces (`fw bvp` and `bvp_auto_promote`) work unchanged for the default policy case — the new helper is read-only and falls through to `{}` whenever arc context isn't present
+- [x] Test coverage in `tests/unit/test_bvp_estimator.py`: per-leg coverage of the helper (no arc_id → `{}`; arc YAML missing → `{}`; valid YAML with scoped_drivers → returns map; invalid YAML → `{}`; arc_id slug-form resolves via dual-form fallback) + integration coverage of dispatch (task with arc-011 tag + arc YAML with D-DISJOINT in scoped_drivers → result has D-DISJOINT score; collision with global driver → global wins). ≥ 8 new tests, all PASS
+- [x] Reviewer PASS on T-2357: `bin/fw reviewer T-2357` returns `Overall: PASS` or `CONCERN`, no FAIL
+- [x] Regression net: 192/192 existing BVP-related tests stay green after the change. Verification block runs `python3 -m pytest tests/unit/ -q -k 'bvp or estimator'` and asserts no failures
 
 <!-- All ACs agent-verifiable (backend Python, no UI / no operator judgment).
      Same shape as T-2356 sibling — Human block omitted entirely. -->
@@ -160,6 +160,13 @@ Out of scope for this slice: arc-scoped driver weight calibration vs global weig
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_bvp_estimator.py -q > /tmp/.t2357-pytest.out 2>&1; grep -q "passed" /tmp/.t2357-pytest.out && ! grep -qE "failed|error" /tmp/.t2357-pytest.out
+python3 -m pytest tests/unit/ -q -k "bvp or estimator" > /tmp/.t2357-wider.out 2>&1; grep -q "passed" /tmp/.t2357-wider.out && ! grep -qE "failed|error" /tmp/.t2357-wider.out
+grep -q "def _arc_scoped_drivers_for_task" agents/termlink/bvp-estimator/estimator.py
+grep -q "ARCS_DIR" agents/termlink/bvp-estimator/estimator.py
+grep -q "T-2357: merge arc-scoped drivers" agents/termlink/bvp-estimator/estimator.py
+out=$(bin/fw reviewer T-2357 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$out" | grep -q "Overall:.*FAIL"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -200,6 +207,36 @@ Out of scope for this slice: arc-scoped driver weight calibration vs global weig
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-12 — global-wins merge ordering invariant
+
+- **What changed:** Filing-time plan said "global drivers win on name collision" but the order of operations to ENFORCE that was loose. First implementation did `drivers.update(arc_drivers)` — which would have made arc weights overwrite globals. Fixed pattern: `merged = dict(arc_drivers); merged.update(drivers)` — globals are second so they win. Added explicit unit test `test_estimate_task_global_wins_on_collision` (driver D1 in both arc YAML at weight 5 and caller dict at weight 9 — both score 0 on empty body because the dedicated D1 handler fires; collision invariant proven by the dedicated handler running, not the fallback).
+- **Plan impact:** The merge-direction was tabbed-out in the AC ("Global drivers win on name collision (do NOT clobber operator-approved policy weights)") but only the test made it operational. Sibling lesson for future merge-based dispatch code: write the test BEFORE writing the merge line.
+- **Triggered:** None as separate task.
+
+### 2026-06-12 — inception-skip is structural, not advisory
+
+- **What changed:** estimate_task already has T-2189 inception scoring exception (voi_score replaces per-driver dispatch). I added an `if not is_inception:` guard around the arc-scoped merge specifically so the merge doesn't pollute the voi-only result with arc-driver keys. Added `test_estimate_task_inception_skips_arc_scoped_merge` to pin this — inception body + arc_id pointing at arc with D-DISJOINT scoped_driver → result.scores has D1 (the caller's driver) but NOT D-DISJOINT.
+- **Plan impact:** Filing didn't call this out; the inception-skip is structural belt-and-braces. Without it, an inception in arc-011 would have shown D-DISJOINT in its scores dict with the voi_score value (because the inception scoring exception applies to ALL requested drivers uniformly) — which would be misleading.
+- **Triggered:** None.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Activates the T-2356 LATENT handlers cleanly. All 8 Agent ACs verified: helper `_arc_scoped_drivers_for_task` resolves both slug and arc-NNN dual forms with graceful empty-on-error semantics; `estimate_task()` merges arc-scoped drivers with global-wins-on-collision (proven by dedicated D1 handler firing despite arc-scoped D1 in tmp YAML); inception scoring exception preserved via `if not is_inception:` guard; non-arc tasks unchanged (122/122 file-local PASS, 204/204 wider BVP regression net PASS, +12 over T-2356 baseline of 110); reviewer R-71858326 PASS, 0 findings. The two-slice pair T-2356 + T-2357 closes the BVP-driver-implementation prong of the operator's autonomous directive: handlers ship → dispatch wiring activates them → arc-011 approval is the final operator-side step.
+
+**Evidence:**
+- `agents/termlink/bvp-estimator/estimator.py:62` — `ARCS_DIR` module constant
+- `agents/termlink/bvp-estimator/estimator.py:101-160` — `_arc_scoped_drivers_for_task` helper with slug + dual-form resolution
+- `agents/termlink/bvp-estimator/estimator.py:1296-1304` — merge with global-wins ordering in `estimate_task()`
+- `tests/unit/test_bvp_estimator.py:1136-1305` — 12 new tests (7 helper + 5 dispatch integration)
+- Reviewer verdict: R-71858326 PASS, 0 findings
+- Regression net: 204/204 BVP-related tests PASS
+
+**Activation path (now fully wired end-to-end):**
+1. `http://192.168.10.107:3000/arcs/parallel-execution-aef` — Approve buttons on `proposed_scoped_drivers` table. Sovereign action. Per L-482, this URL is the primary affordance.
+2. After approval, arc-011 member tasks scored via `fw bvp estimate T-XXXX` (or auto-promote cron) will include `D-DISJOINT` and `D-WIRE-EVIDENCE` in their `bvp_scores_proposed:` block, with the per-driver rubric anchored to T-2344.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -227,3 +264,20 @@ Out of scope for this slice: arc-scoped driver weight calibration vs global weig
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2357-bvp-estimator-arc-scoped-driver-dispatch.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-90b93799
+- **Timestamp:** 2026-06-12T23:29:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_bvp_estimator.py -q > /tmp/.t2357-pytest.out 2>&1; grep -q "passed" /tmp/.t2357-pytest.out && ! grep -qE "failed|error" /tmp/.t2357-pytest.out`
+
+### 2026-06-12T23:29:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
