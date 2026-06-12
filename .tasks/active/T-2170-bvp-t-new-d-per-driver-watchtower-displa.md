@@ -13,14 +13,14 @@ description: >
 
 status: started-work
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [v3-followup-D, bvp-display, arc:value-prioritisation]
 components: []
 related_tasks: [T-1928, T-1929, T-2166, T-2168, T-2169]
 arc_id: value-prioritisation
 created: 2026-06-01T22:20:01Z
-last_update: 2026-06-12T06:48:12Z
+last_update: 2026-06-12T07:03:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -280,3 +280,6 @@ echo "$out" | grep -q 'bvp_norm\|BVP_norm' && echo "$out" | grep -q 'bvp-driver-
   - AC-verify-mismatch @ AC#2 (Agent)
   - AC-verify-mismatch @ AC#4 (Agent)
   - AC-verify-mismatch @ AC#6 (Agent)
+
+### 2026-06-12T07:03:02Z — status-update [task-update-agent]
+- **Change:** owner: agent → human

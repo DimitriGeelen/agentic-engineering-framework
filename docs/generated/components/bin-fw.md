@@ -74,7 +74,7 @@ When run from inside the framework repo itself, it auto-detects.
 | [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | calls | TODO: describe what this component does |
 | [manifest](/docs/generated/agents-mcp-manifest) | calls | TODO: describe what this component does |
 
-## Used By (230)
+## Used By (234)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -307,6 +307,10 @@ When run from inside the framework repo itself, it auto-detects.
 | [g065_readiness](/docs/generated/tests-unit-g065_readiness) | tests_by | TODO: describe what this component does |
 | [g065-readiness](/docs/generated/tools-g065-readiness) | called_by | TODO: describe what this component does |
 | [t2318_retrofit_injector_append_missing](/docs/generated/tests-unit-t2318_retrofit_injector_append_missing) | tests_by | TODO: describe what this component does |
+| [t2331_driver_propose](/docs/generated/tests-unit-t2331_driver_propose) | tests_by | TODO: describe what this component does |
+| [t2332_bvp_propose_queue](/docs/generated/tests-unit-t2332_bvp_propose_queue) | tests_by | TODO: describe what this component does |
+| [test_orchestrator_graph](/docs/generated/tests-unit-test_orchestrator_graph) | tests_by | TODO: describe what this component does |
+| [test_write_set](/docs/generated/tests-unit-test_write_set) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

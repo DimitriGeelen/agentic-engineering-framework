@@ -1,26 +1,26 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-06-11T03:23:01.626639+00:00
-**Corpus:** 2078 completed tasks
-**Bug-class identified:** 452 (21%)
+**Run:** 2026-06-12T03:23:02.353535+00:00
+**Corpus:** 2095 completed tasks
+**Bug-class identified:** 435 (20%)
 
 ## H1 — Bug-class tasks with no `## RCA` section
 
-**Flagged:** 347 / 452 bug-class tasks (76%)
+**Flagged:** 337 / 435 bug-class tasks (77%)
 
 **Last 30 days sample (FP triage candidates):**
 
-- `T-1813-audit-arc-completion-check-ignores-tag-t` — audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks onl
-- `T-1829-version-stamping-algorithm-not-cross-tag` — VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828 clas
+- `T-101-fix-critical-hook-projectroot-bug-for-ex` — Fix critical hook PROJECT_ROOT bug for external projects
+- `T-1813-audit-arc-completion-check-ignores-tag-t` — audit arc-completion check ignores tag-tagged tasks — uses constituent_tasks
+- `T-1829-version-stamping-algorithm-not-cross-tag` — VERSION-stamping algorithm not cross-tag-monotonic — Level-C fix for T-1828
 - `T-1830-fw-upgrade-incident-2026-05-14-meta-rca-` — fw-upgrade-incident-2026-05-14 meta-RCA umbrella — boundary-crossing invisibilit
 - `T-1831-ac-checkbox-vs-content-drift--agent-does` — AC-checkbox-vs-content drift — agent does substantive work in body, gate measure
-- `T-1833-t-1736-spike-harvest-read-session-jsonls` — T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation v
+- `T-1833-t-1736-spike-harvest-read-session-jsonls` — T-1736 spike harvest read session JSONLs outside PROJECT_ROOT — path-isolation
 - `T-1887-ship-t-1886-rca-candidate-a--task-templa` — ship T-1886 RCA Candidate A — task-template hint to remind .claude/settings.json
-- `T-1888-ship-t-1886-rca-candidate-b--posttooluse` — ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits t
+- `T-1888-ship-t-1886-rca-candidate-b--posttooluse` — ship T-1886 RCA Candidate B — PostToolUse nudge on .claude/settings.json edits
 - `T-1898-fix-double-render-on-arcsarc-005-and-5-s` — fix double-render on arcs/arc-005 and 2 sibling pages — templates extend base.ht
-- `T-1899-renderpage-runtime-guard--refuse-templat` — render_page() runtime guard — refuse template that extends base.html with action
-- `T-1900-update-tasksh-checkrendersurfacehumanac-` — update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE (L-
-- `T-1967-l-414-root-cause-fix-ac-parser-sed-range` — L-414 root-cause fix: AC parser sed-range comment strip swallows Agent ACs when 
+- `T-1900-update-tasksh-checkrendersurfacehumanac-` — update-task.sh check_render_surface_human_ac error path crashes with SIGPIPE
+- `T-1967-l-414-root-cause-fix-ac-parser-sed-range` — L-414 root-cause fix: AC parser sed-range comment strip swallows Agent ACs
 - `T-1996-g-069-regression-discoverprojectroot-cli` — G-069 regression: _discover_project_root climbs past FRAMEWORK_ROOT to stray
 - `T-2032-arc-007-settings-gear-in-top-bar-nav-to-` — arc-007 settings gear in top-bar nav to /settings/appearance
 - `T-2037-t-1934-has-malformed-yaml-frontmatter--p` — T-1934 has malformed YAML frontmatter — parse error on every get_all_task_metada
@@ -34,10 +34,10 @@
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
-- `P-011` — referenced by 755 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
-- `L-387` — referenced by 593 tasks: T-1828-github-mirror-stalled--version-tag-reset, T-1851-deprecate-constituenttasks-field-t-new-4, T-1852-lifecycle-state-machine-add-draft--aband, T-1853-watchtower-arcs-lifecycle-filter-tabs-t-, T-1854-fw-arc-abandon-cli-verb-t-new-6 …
-- `L-291` — referenced by 425 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
-- `L-398` — referenced by 237 tasks: T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa …
+- `P-011` — referenced by 787 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
+- `L-387` — referenced by 627 tasks: T-1828-github-mirror-stalled--version-tag-reset, T-1851-deprecate-constituenttasks-field-t-new-4, T-1852-lifecycle-state-machine-add-draft--aband, T-1853-watchtower-arcs-lifecycle-filter-tabs-t-, T-1854-fw-arc-abandon-cli-verb-t-new-6 …
+- `L-291` — referenced by 442 tasks: T-1518-approvals-page-surface-deferred-inceptio, T-1521-extend-fw-doctor-vendor-drift-glob-to-co, T-1522-self-lock-in-handoversh-to-prevent-concu, T-1523-update-tasksh-git-stage-both-sides-of-ac, T-1524-t-1523-throwaway-test …
+- `L-398` — referenced by 252 tasks: T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa, T-1887-ship-t-1886-rca-candidate-a--task-templa …
 - `P-010` — referenced by 165 tasks: T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f, T-1101-inception-fw-inception-decide-silent---f …
 - `L-006` — referenced by 54 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
 - `L-001` — referenced by 38 tasks: T-011-define-practice-graduation-criteria, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le, T-1258-rca-fw-context-add-learning-truncates-le …
@@ -52,7 +52,7 @@
 
 ## H3 — Bug-class with no RCA AND no learning captured
 
-**Flagged:** 270 / 452 (59%)
+**Flagged:** 265 / 435 (60%)
 
 This is the strongest symptom-fix signal: fix shipped, no root cause stated, no learning captured for next time.
 
@@ -66,11 +66,11 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 
 | Metric | Value |
 |---|---|
-| Total completed tasks | 2078 |
-| Bug-class tasks | 452 (21%) |
-| H1 flagged | 347 |
+| Total completed tasks | 2095 |
+| Bug-class tasks | 435 (20%) |
+| H1 flagged | 337 |
 | H2 repeat-learning patterns | 114 |
-| H3 flagged (strongest signal) | 270 |
+| H3 flagged (strongest signal) | 265 |
 | Last-30-days bug-class | 21 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
