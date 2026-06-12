@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2359: BVP estimator dedicated handlers batch — arc-001 uncertainty-recognition +
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-12T23:45:51Z
+# ============================================================================
+
+task_id: T-2359
+task_name: "BVP estimator dedicated handlers batch — arc-001 uncertainty-recognition +"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T23:39:10Z
+completed: 2026-06-12T23:45:39Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`score_uncertainty_recognition(fm, body, tags) -> tuple[int, list[str]]` added to `agents/termlink/bvp-estimator/estimator.py` with full 6-level rubric: L5 new pause-detection class/mechanism (e.g. self-assessment scoring becomes a fw verb), L4 framework-level pause/risk gate (new hook or audit check), L3 component-level pause-detection helper/test, L2 single risk-policy preamble addition / threshold tweak, L1 incidental uncertainty mention, L0 no signal'
+  - '`score_severity_likelihood_calibration(fm, body, tags) -> tuple[int, list[str]]` added with rubric: L5 new calibration mechanism class (e.g. live false-positive/negative auto-audit), L4 framework-level pause-rate audit / live calibration loop, L3 component-level threshold-tuning test / audit script, L2 single threshold adjustment with rationale, L1 incidental calibration mention, L0 no signal'
+  - '`score_sovereignty_preservation(fm, body, tags) -> tuple[int, list[str]]` added with rubric: L5 new §ACD-gate primitive class (e.g. new Sovereign verb routing pattern), L4 framework-level §ACD gate / bypass-parity hook, L3 component-level Sovereign-verb test / bypass log assertion, L2 single --i-am-human / --from-watchtower wiring fix, L1 incidental sovereignty mention, L0 no signal'
+  - 'All three handlers registered in the `handlers` dict in `estimate_task()` with keys `"uncertainty-recognition"`, `"severity-likelihood-calibration"`, `"sovereignty-preservation"` (canonical name-form per T-2358)'
+  - 'Each handler''s docstring references T-2359 + the originating arc YAML + the rationale anchor + states the LATENT-until-X invariant explicitly (mirrors T-2329 / T-2356 phrasing)'
+  - 'Test coverage: per-level test (0/1/2/3/4/5 for each handler = 18 per-level tests minimum) + dispatch-via-arc-scope test (3 dispatches showing each handler fires when its driver is in the arc''s scoped_drivers and the task carries the arc''s arc_id) + non-registration test (3 tests showing drivers absent when no arc context). Total ≥ 24 new tests'
+  - 'All new tests PASS; existing test suite green (bvp_estimator file ≥ 149, wider BVP regression ≥ 231)'
+  - 'Reviewer PASS on T-2359: `bin/fw reviewer T-2359 2>&1` returns `Overall: PASS` or `CONCERN`, no FAIL'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, estimator, arc-001, arc-006, latent, batch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2359-bvp-estimator-dedicated-handlers-batch--.md
+generated_by: context-agent-hybrid

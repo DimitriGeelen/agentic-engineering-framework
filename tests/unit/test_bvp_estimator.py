@@ -1323,5 +1323,198 @@ def test_estimate_task_inception_skips_arc_scoped_merge(tmp_path, monkeypatch):
     assert "D1" in result["scores"]
 
 
+# ---------------------------------------------------------------------------
+# T-2359 — score_uncertainty_recognition + score_severity_likelihood_calibration
+# + score_sovereignty_preservation dedicated handlers (arc-001 + arc-006 scoped).
+# All three LATENT until operator approves the respective arc's proposed_scoped_drivers
+# via Watchtower. Activation path via T-2357 dispatch wiring + T-2358 name widening.
+# ---------------------------------------------------------------------------
+
+
+# uncertainty-recognition (arc-001) per-level
+
+def test_uncertainty_recognition_no_signal_zero():
+    s, ev = estimator.score_uncertainty_recognition(FM_BUILD, "Refactor unrelated handler.", [])
+    assert s == 0
+    assert any("no uncertainty-recognition signal" in e for e in ev)
+
+
+def test_uncertainty_recognition_incidental_one():
+    body = "Notes mention uncertainty recognition as upstream context."
+    s, _ = estimator.score_uncertainty_recognition(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_uncertainty_recognition_single_tweak_two():
+    body = "Adds the risk-policy preamble to the dispatch envelope. Small change."
+    s, _ = estimator.score_uncertainty_recognition(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_uncertainty_recognition_component_three():
+    body = "Added unit test for pause_requested in tests/unit/test_pause_request.py."
+    s, _ = estimator.score_uncertainty_recognition(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_uncertainty_recognition_framework_four():
+    body = ("PreToolUse hook for pause_requested fires risk-policy gate before dispatch. "
+            "Framework-level pause-detection gate ships.")
+    s, _ = estimator.score_uncertainty_recognition(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_uncertainty_recognition_new_class_five():
+    body = ("New pause-detection mechanism class — self-assessment becomes a fw verb. "
+            "Risk-policy preamble structurally enforced.")
+    s, _ = estimator.score_uncertainty_recognition(FM_BUILD, body, [])
+    assert s == 5
+
+
+# severity-likelihood-calibration (arc-001) per-level
+
+def test_calibration_no_signal_zero():
+    s, _ = estimator.score_severity_likelihood_calibration(FM_BUILD, "Nothing related here.", [])
+    assert s == 0
+
+
+def test_calibration_incidental_one():
+    body = "Mentions calibration of the pause threshold as background."
+    s, _ = estimator.score_severity_likelihood_calibration(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_calibration_single_adjustment_two():
+    body = "Tunes the pause-flag from 0.7 to 0.65 based on operator feedback."
+    s, _ = estimator.score_severity_likelihood_calibration(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_calibration_component_three():
+    body = ("Audit script compares the live pause-rate against retrospective "
+            "should-have-paused classification on the last 100 dispatches.")
+    s, _ = estimator.score_severity_likelihood_calibration(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_calibration_framework_audit_four():
+    body = "Live calibration loop runs every 6h; audit emits a WARN on threshold drift."
+    s, _ = estimator.score_severity_likelihood_calibration(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_calibration_new_class_five():
+    body = ("New calibration mechanism class — live false-positive auto-audit becomes "
+            "a fw verb measuring threshold against expected operator-cost budget.")
+    s, _ = estimator.score_severity_likelihood_calibration(FM_BUILD, body, [])
+    assert s == 5
+
+
+# sovereignty-preservation (arc-006) per-level
+
+def test_sovereignty_no_signal_zero():
+    s, _ = estimator.score_sovereignty_preservation(FM_BUILD, "Refactor estimator helper.", [])
+    assert s == 0
+
+
+def test_sovereignty_incidental_one():
+    body = "Discusses §ACD gates as background context; no structural change."
+    s, _ = estimator.score_sovereignty_preservation(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_sovereignty_single_wiring_two():
+    body = "Extends the bypass wiring to fw bvp confirm — adds --i-am-human flag."
+    s, _ = estimator.score_sovereignty_preservation(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_sovereignty_component_three():
+    body = ("Added regression test for CLAUDECODE blocking with bypass-log assertion "
+            "covering --i-am-human + --from-watchtower routes.")
+    s, _ = estimator.score_sovereignty_preservation(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_sovereignty_framework_gate_four():
+    body = ("L-399 producer/consumer parity hook ships: PreToolUse refuses work-completed "
+            "on Sovereign-bound write paths without --i-am-human, framework-level §ACD gate.")
+    s, _ = estimator.score_sovereignty_preservation(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_sovereignty_new_class_five():
+    body = ("New §ACD primitive class — Sovereign-verb routing pattern makes Sovereignty "
+            "boundary structurally unbypassable without logged Tier-2.")
+    s, _ = estimator.score_sovereignty_preservation(FM_BUILD, body, [])
+    assert s == 5
+
+
+# Dispatch via arc-scope (T-2357 merge path) for each handler
+
+def test_uncertainty_recognition_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-dispatch-safety", [
+        {"name": "uncertainty-recognition", "weight": 5},
+    ])
+    body = ("PreToolUse hook for pause_requested fires risk-policy gate before dispatch. "
+            "Framework-level pause-detection gate ships.")
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-dispatch-safety"})
+    result = estimator.estimate_task(task, {})
+    assert "uncertainty-recognition" in result["scores"]
+    assert result["scores"]["uncertainty-recognition"] == 4
+
+
+def test_calibration_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-dispatch-safety-2", [
+        {"name": "severity-likelihood-calibration", "weight": 4},
+    ])
+    body = "Live calibration loop runs every 6h; audit emits a WARN on threshold drift."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-dispatch-safety-2"})
+    result = estimator.estimate_task(task, {})
+    assert "severity-likelihood-calibration" in result["scores"]
+    assert result["scores"]["severity-likelihood-calibration"] == 4
+
+
+def test_sovereignty_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-value-prio", [
+        {"name": "sovereignty-preservation", "weight": 5},
+    ])
+    body = ("L-399 producer/consumer parity hook ships: PreToolUse refuses work-completed "
+            "on Sovereign-bound write paths without --i-am-human, framework-level §ACD gate.")
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-value-prio"})
+    result = estimator.estimate_task(task, {})
+    assert "sovereignty-preservation" in result["scores"]
+    assert result["scores"]["sovereignty-preservation"] == 4
+
+
+# Non-registration (latency invariant: handler reachable but never fires without arc)
+
+def test_uncertainty_recognition_latent_without_arc(tmp_path):
+    body = "PreToolUse hook for pause_requested fires risk-policy gate before dispatch."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "uncertainty-recognition" not in result["scores"]
+
+
+def test_calibration_latent_without_arc(tmp_path):
+    body = "Live calibration loop runs every 6h; audit emits a WARN on threshold drift."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "severity-likelihood-calibration" not in result["scores"]
+
+
+def test_sovereignty_latent_without_arc(tmp_path):
+    body = "L-399 producer/consumer parity hook ships."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "sovereignty-preservation" not in result["scores"]
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
