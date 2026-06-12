@@ -4,16 +4,16 @@ name: "Arc close form pre-population — same mechanic as task/inception ## Reco
 description: >
   T-2347 RCA missed Defect D. The /arcs/<slug>/close form has slots for demo_value, decision, justification but on GET only pre-populates demo_value from anchor task's ## Recommendation -> Suggested demo: field (web/blueprints/arcs.py:1318). prev_decision and prev_justification are hardcoded empty strings on GET (line 1335). When agent surfaces an arc for closure with a recommendation in hand, the operator faces an empty form and must hand-type demo path + decision narrative — even though the same agent could have written all of it. Tasks/inceptions don't have this gap: ## Recommendation block renders, operator confirms or amends. The arc YAML has decision:/demo_evidence: fields (currently set ONLY by fw arc close itself) — by design they could be agent-set pre-handoff. Three viable approaches: (X) extend anchor task ## Recommendation parser with Suggested decision: + Suggested justification: fields and wire form. (Y) Add proposed_decision: / proposed_demo: fields to arc YAML schema. (Z) Hybrid — read arc YAML fields if present, fall back to anchor task block.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [watchtower, arc-mechanics, ux, inception-rca]
 components: []
 related_tasks: [T-2347, T-2348, T-2349, T-2350]
 created: 2026-06-12T10:49:57Z
-last_update: 2026-06-12T10:49:57Z
-date_finished: null
+last_update: 2026-06-12T10:55:44Z
+date_finished: 2026-06-12T10:55:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -81,15 +81,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -138,9 +138,40 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Three concrete defect classes already evidenced at file:line. (A) web/blueprints/arcs.py:1318 reads ONLY suggested_demo, never reads arc.demo_evidence or anchor Suggested decision:. (B) line 1335 hardcodes prev_decision='' on GET. (C) _anchor_recommendation parser at arcs.py:556-606 only extracts one field (suggested_demo). Each is a small change; together they close the parity gap with task/inception review. High value: arc closure UX presently demands operator hand-typing data the agent already has. Recommendation GO with rationale walked.
+
+**Date**: 2026-06-12T10:55:44Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-12T10:55:44Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Three concrete defect classes already evidenced at file:line. (A) web/blueprints/arcs.py:1318 reads ONLY suggested_demo, never reads arc.demo_evidence or anchor Suggested decision:. (B) line 1335 hardcodes prev_decision='' on GET. (C) _anchor_recommendation parser at arcs.py:556-606 only extracts one field (suggested_demo). Each is a small change; together they close the parity gap with task/inception review. High value: arc closure UX presently demands operator hand-typing data the agent already has. Recommendation GO with rationale walked.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c031b55d
+- **Timestamp:** 2026-06-12T10:55:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-12T10:55:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
