@@ -1641,6 +1641,342 @@ def score_sovereignty_preservation(fm: dict, body: str, tags: list[str]) -> tupl
     return 0, ev + ["→0 (no sovereignty signal)"]
 
 
+def score_aesthetic_cohesion(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """aesthetic-cohesion — arc-007 (watchtower-redesign) scoped driver.
+
+    T-2360. Anchored to .context/arcs/watchtower-redesign.yaml proposed_scoped_drivers
+    with weight 5. Rewards visual rhythm / typography spacing / palette contrast
+    harmony / restraint — qualities a CLI with perfect D3 (Usability) has no
+    concern for. arc-007 ships 6 palettes × light/dark + 6 type pairings + 3
+    density tiers as user levers; this driver scores whether each slice
+    advances the "looks right" axis vs the "works right" axis.
+
+    Handler stays LATENT until operator approves the arc-scoped driver via
+    Watchtower (`fw arc approve-driver watchtower-redesign aesthetic-cohesion
+    --weight 5 --from-watchtower`).
+
+    Rubric:
+      0: No aesthetic signal.
+      1: Incidental aesthetic mention.
+      2: Single palette/density/typography tweak with rationale.
+      3: Component-level aesthetic test or sweep (palette-contrast / typography
+         picker / density spacing-scale tests, sibling of T-2004 / T-2029).
+      4: Framework-level aesthetic check or design-token-system enforcement
+         (typography & density picker axes / palette-contrast lint at audit
+         level / contrast-WCAG audit gate).
+      5: New aesthetic primitive class — new design-token system, new
+         palette-contrast lint as structural mechanism, framework-level
+         design-system substrate.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    aesthetic_comps = _has_any(comps, [
+        r"web/templates/", r"web/static/(css|js)",
+        r"palette", r"typography", r"design[- ]token",
+        r"density", r"theme", r"\baccent\b",
+    ])
+    aesthetic_body = _has_any(body, [
+        r"\baesthetic (cohesion|rhythm|harmony|restraint)\b",
+        r"\bvisual rhythm\b", r"\btypography (spacing|pairing|picker)\b",
+        r"\bpalette (contrast|harmony|swap|picker)\b",
+        r"palette[- ]contrast",
+        r"\bdesign[- ]token\b", r"\bdensity (tier|picker|spacing)\b",
+        r"WCAG contrast", r"contrast (ratio|harmony|lint)",
+        r"\baesthetic (cohesion|primitive|substrate)\b",
+        r"\bdesign[- ]system substrate\b",
+        r"looks right axis",
+        r"\bT-2004\b", r"\bT-2029\b",
+    ])
+    if not (aesthetic_comps or aesthetic_body):
+        return 0, ev + ["→0 (no aesthetic signal)"]
+
+    # ---- Level 5 — new aesthetic primitive class ------------------------
+    new_class = _has_any(body, [
+        r"new design[- ]token system",
+        r"new aesthetic (primitive|class|substrate|mechanism)",
+        r"new palette[- ]contrast lint",
+        r"design[- ]system substrate (lands|ships)",
+        r"new (palette|typography|density) (primitive|substrate|system)",
+        r"structural design[- ]token (system|substrate|mechanism)",
+    ])
+    if new_class:
+        ev.append("body:aesthetic-new-class")
+        return 5, ev + ["→5 (new aesthetic primitive class)"]
+
+    # ---- Level 4 — framework-level aesthetic check ----------------------
+    framework_check = _has_any(body, [
+        r"audit (FAIL|WARN).{0,40}(contrast|palette|typography|aesthetic|density)",
+        r"contrast[- ]lint (gate|hook|enforcement)",
+        r"WCAG (contrast )?audit gate",
+        r"(typography|density) picker axes",
+        r"framework[- ]level (aesthetic|palette|typography)",
+        r"design[- ]token enforcement",
+    ])
+    if framework_check:
+        ev.append("body:framework-aesthetic-check")
+        return 4, ev + ["→4 (framework-level aesthetic check)"]
+
+    # ---- Level 3 — component-level aesthetic test / sweep ----------------
+    component = _has_any(body, [
+        r"(unit|regression|integration|playwright) test.{0,40}(palette|typography|density|contrast|aesthetic)",
+        r"(palette|aesthetic)[- ]contrast test",
+        r"\bpalette-contrast test\b",
+        r"typography (picker|pairing) test",
+        r"density spacing[- ]scale test",
+        r"sibling of T-2004", r"sibling of T-2029",
+    ])
+    component_touch = _has_any(comps, [
+        r"web/static/css", r"web/templates/.*\.html",
+        r"tests/.*(palette|typography|density|contrast)",
+    ])
+    if component or component_touch:
+        if component:
+            ev.append("body:aesthetic-component")
+        if component_touch:
+            ev.append("components:aesthetic-code")
+        return 3, ev + ["→3 (component-level aesthetic test/sweep)"]
+
+    # ---- Level 2 — single palette/density/typography tweak --------------
+    single_tweak = _has_any(body, [
+        r"single (palette|density|typography) (tweak|adjustment|fix)",
+        r"\btweak(s|ed)? (the |a )?(palette|density|typography|contrast)\b",
+        r"adjust(s|ed)? (the |a )?(palette|density|typography|spacing)",
+        r"narrow .{0,20}(palette|density|typography|aesthetic)",
+    ])
+    if single_tweak:
+        ev.append("body:aesthetic-single-tweak")
+        return 2, ev + ["→2 (single palette/density/typography tweak)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if aesthetic_body or aesthetic_comps:
+        ev.append("body/components:aesthetic-incidental")
+        return 1, ev + ["→1 (incidental aesthetic mention)"]
+
+    return 0, ev + ["→0 (no aesthetic signal)"]
+
+
+def score_render_fidelity(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """render-fidelity — arc-007 (watchtower-redesign) scoped driver.
+
+    T-2360. Anchored to .context/arcs/watchtower-redesign.yaml proposed_scoped_drivers
+    with weight 5. Rewards work that catches VISUAL failures that pass every
+    D2 (Reliability) functional check. arc-007 cites concrete instances:
+    accent at 3.83:1 contrast (WCAG fail, T-2006), Pico-bridge bleed-through
+    in light mode (T-2003), unbounded page height 30-90kpx degradation
+    (T-2038 through T-2047). Each shipped under green D2 verification and was
+    caught only by eyes-on review.
+
+    Handler stays LATENT until operator approves the arc-scoped driver via
+    Watchtower.
+
+    Rubric:
+      0: No render-fidelity signal.
+      1: Incidental render mention.
+      2: Single render-bug fix without structural prevention.
+      3: Component-level render-fidelity fix (e.g. one WCAG contrast fix +
+         visual-regression test for that accent).
+      4: Framework-level render check (audit FAIL on contrast / Playwright
+         contrast baseline / unbounded-height detector at framework level).
+      5: New render-fidelity primitive class (automated visual-regression
+         substrate, Playwright contrast baseline becomes a fw verb, new gate
+         type that makes render-fidelity regressions structurally impossible).
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    render_comps = _has_any(comps, [
+        r"web/templates/", r"web/static/css",
+        r"tests/playwright", r"playwright",
+    ])
+    render_body = _has_any(body, [
+        r"\brender[- ]fidelity\b", r"\brender bug\b",
+        r"\bWCAG\b", r"\bcontrast\b", r"\bplaywright\b",
+        r"\bPico[- ]bridge\b", r"\bpico[- ]bleed\b",
+        r"unbounded (page )?height", r"\bpage[- ]height degradation\b",
+        r"visual (failure|regression|fidelity)",
+        r"eyes[- ]on (review|check)",
+        r"\bT-2003\b", r"\bT-2006\b",  # arc-007 rationale-cited siblings
+        r"\bT-2038\b|\bT-2039\b|\bT-2040\b|\bT-2041\b",
+        r"\bT-2042\b|\bT-2043\b|\bT-2044\b|\bT-2045\b|\bT-2046\b|\bT-2047\b",
+        r"3\.83:1", r"30[- ]?90kpx",
+    ])
+    if not (render_comps or render_body):
+        return 0, ev + ["→0 (no render-fidelity signal)"]
+
+    # ---- Level 5 — new render-fidelity primitive class ------------------
+    new_class = _has_any(body, [
+        r"new render[- ]fidelity (primitive|class|substrate|mechanism)",
+        r"automated visual[- ]regression substrate",
+        r"playwright contrast baseline.{0,30}(becomes|ships).{0,30}fw verb",
+        r"structurally impossible.{0,40}(render|contrast|bleed)",
+        r"new gate.{0,40}render[- ]fidelity",
+    ])
+    if new_class:
+        ev.append("body:render-fidelity-new-class")
+        return 5, ev + ["→5 (new render-fidelity primitive class)"]
+
+    # ---- Level 4 — framework-level render check ------------------------
+    framework_check = _has_any(body, [
+        r"audit (FAIL|WARN).{0,40}(contrast|WCAG|height|render|Pico)",
+        r"playwright contrast baseline",
+        r"unbounded[- ]height detector",
+        r"framework[- ]level (render|contrast|height)",
+        r"(visual|render)[- ]regression (gate|hook|check)",
+        r"contrast[- ]lint at audit level",
+    ])
+    if framework_check:
+        ev.append("body:framework-render-check")
+        return 4, ev + ["→4 (framework-level render check)"]
+
+    # ---- Level 3 — component-level render-fidelity fix + test ----------
+    component = _has_any(body, [
+        r"WCAG contrast fix",
+        r"contrast (ratio )?(fix|repair)",
+        r"\bPico[- ]bleed (fix|repair)",
+        r"unbounded[- ]height (fix|repair)",
+        r"playwright.{0,30}(contrast|WCAG|render)",
+        r"visual[- ]regression test.{0,40}(accent|contrast)",
+    ])
+    component_touch = _has_any(comps, [
+        r"tests/playwright", r"web/static/css",
+    ])
+    if component or component_touch:
+        if component:
+            ev.append("body:render-fidelity-component")
+        if component_touch:
+            ev.append("components:render-code")
+        return 3, ev + ["→3 (component-level render-fidelity fix + test)"]
+
+    # ---- Level 2 — single render-bug fix without prevention -------------
+    single_fix = _has_any(body, [
+        r"single (render|contrast|visual) (bug |)?fix",
+        r"fix(es|ed)?( one)? (a |the )?(render|contrast|visual) (bug|defect|issue)",
+        r"one[- ]off (render|contrast|visual) fix",
+    ])
+    if single_fix:
+        ev.append("body:render-single-fix")
+        return 2, ev + ["→2 (single render-bug fix without prevention)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if render_body or render_comps:
+        ev.append("body/components:render-incidental")
+        return 1, ev + ["→1 (incidental render mention)"]
+
+    return 0, ev + ["→0 (no render-fidelity signal)"]
+
+
+def score_theme_portability(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """theme-portability — arc-007 (watchtower-redesign) scoped driver.
+
+    T-2360. Anchored to .context/arcs/watchtower-redesign.yaml proposed_scoped_drivers
+    with weight 4. Rewards work that closes the "user picks Editorial once →
+    Cockpit/Tasks/Approvals/Fabric/Arcs/Settings all re-theme without manual
+    reapply" promise (headline_mechanic acid test). Distinct from D4
+    Portability which is about provider/lang/env boundaries; theme-portability
+    is about uniformity across surfaces inside THIS app.
+
+    Handler stays LATENT until operator approves the arc-scoped driver via
+    Watchtower.
+
+    Rubric:
+      0: No theme-portability signal.
+      1: Incidental theme mention.
+      2: Single missed-surface fix with rationale (e.g. /approvals page
+         now respects preset).
+      3: Component-level theme fix on 1-2 surfaces (e.g. T-2005-class
+         multi-page sweep on a subset).
+      4: Framework-level theme apply-sweep — multi-page sweep / token-substrate
+         adoption / dark-mode toggle across ALL surfaces.
+      5: New theme-portability primitive class — design-token-substrate that
+         auto-propagates across every surface, theme-apply becomes a structural
+         mechanism that makes missed-surface regressions impossible.
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    theme_comps = _has_any(comps, [
+        r"web/templates/", r"web/static/css",
+        r"theme", r"palette", r"design[- ]token",
+    ])
+    theme_body = _has_any(body, [
+        r"\btheme[- ]portability\b", r"theme (apply|sweep|substrate|toggle)",
+        r"preset (applies|re[- ]themes|propagates)",
+        r"\bmissed[- ]surface\b", r"(applies|adds?) (a |the )?preset",
+        r"multi[- ]page (sweep|theme)",
+        r"design[- ]token (substrate|propagation)",
+        r"dark[- ]mode toggle",
+        r"every surface (inside )?(this app)?",
+        r"palette[- ]contrast lint",
+        r"\bT-2005\b", r"\bT-2007\b", r"\bT-2031\b",  # arc-007 rationale-cited siblings
+        r"Cockpit/Tasks/Approvals/Fabric",
+    ])
+    if not (theme_comps or theme_body):
+        return 0, ev + ["→0 (no theme-portability signal)"]
+
+    # ---- Level 5 — new theme-portability primitive class ---------------
+    new_class = _has_any(body, [
+        r"new theme[- ]portability (primitive|class|substrate|mechanism)",
+        r"design[- ]token[- ]substrate.{0,40}auto[- ]propagat",
+        r"theme[- ]apply becomes a structural mechanism",
+        r"structurally impossible.{0,40}missed[- ]surface",
+        r"every surface.{0,30}auto[- ]propagat",
+    ])
+    if new_class:
+        ev.append("body:theme-new-class")
+        return 5, ev + ["→5 (new theme-portability primitive class)"]
+
+    # ---- Level 4 — framework-level theme apply-sweep -------------------
+    # NOTE: L4 requires 3+ surfaces, "all/every/across" qualifier, or explicit
+    # framework-level wiring. 1-2 surface bodies are L3, not L4 (handled below).
+    framework_sweep = _has_any(body, [
+        r"multi[- ]page (theme )?sweep (lands|ships)",
+        r"token[- ]substrate adoption",
+        r"dark[- ]mode toggle.{0,40}(all|every) surface",
+        # 3+ surfaces named explicitly (with / or , separators — "and" doesn't count for L4)
+        r"(Cockpit|Tasks|Approvals|Fabric|Arcs|Settings)[/,] ?(Cockpit|Tasks|Approvals|Fabric|Arcs|Settings)[/,] ?(Cockpit|Tasks|Approvals|Fabric|Arcs|Settings)",
+        r"theme (apply|sweep).{0,40}(all|every|across) (the )?(surfaces|pages)",
+        r"framework[- ]level theme",
+        r"palette[- ]contrast lint at framework",
+    ])
+    if framework_sweep:
+        ev.append("body:framework-theme-sweep")
+        return 4, ev + ["→4 (framework-level theme apply-sweep)"]
+
+    # ---- Level 3 — component-level theme fix on 1-2 surfaces -----------
+    component = _has_any(body, [
+        r"theme (fix|sweep) on (one|two|1|2|specific) (page|surface|surfaces)",
+        r"single[- ]page theme (sweep|fix)",
+        r"(adds?|applies) (a )?preset to (one|two|the).{0,30}(page|surface|view)",
+    ])
+    component_touch = _has_any(comps, [
+        r"web/static/css", r"web/templates/",
+    ])
+    if component or component_touch:
+        if component:
+            ev.append("body:theme-component")
+        if component_touch:
+            ev.append("components:theme-code")
+        return 3, ev + ["→3 (component-level theme fix on 1-2 surfaces)"]
+
+    # ---- Level 2 — single missed-surface fix ---------------------------
+    single_fix = _has_any(body, [
+        r"missed[- ]surface fix",
+        r"(adds?|applies) (the )?(preset|theme) to (the )?/(approvals|fabric|arcs|settings|cockpit|tasks|review|inception)",
+        r"single (theme|preset) fix",
+    ])
+    if single_fix:
+        ev.append("body:theme-single-fix")
+        return 2, ev + ["→2 (single missed-surface fix)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if theme_body or theme_comps:
+        ev.append("body/components:theme-incidental")
+        return 1, ev + ["→1 (incidental theme mention)"]
+
+    return 0, ev + ["→0 (no theme-portability signal)"]
+
+
 def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """Heuristic fallback for free drivers without a dedicated scorer — keyword-
     on-driver-id only.
@@ -1750,6 +2086,11 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         "uncertainty-recognition": score_uncertainty_recognition,
         "severity-likelihood-calibration": score_severity_likelihood_calibration,
         "sovereignty-preservation": score_sovereignty_preservation,
+        # T-2360 — arc-007 (watchtower-redesign) scoped drivers. Latent until
+        # operator approves the proposed_scoped_drivers via Watchtower.
+        "aesthetic-cohesion": score_aesthetic_cohesion,
+        "render-fidelity": score_render_fidelity,
+        "theme-portability": score_theme_portability,
     }
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).
