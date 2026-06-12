@@ -3318,17 +3318,33 @@ fi
 if should_run_section "compliance" || should_run_section "oe-daily"; then
     ac_fail=0
     if [ -n "$COMPLETED_SCAN" ]; then
-        while IFS='|' read -r task_id ac_line; do
+        # T-2202: 3-class taxonomy.
+        # - class=drift           → genuine CTL-012 (real outstanding AC)
+        # - class=missing-decide  → CTL-012-MISSING-DECIDE (inception task flipped
+        #                            to work-completed without running
+        #                            `fw inception decide`; auto-tick never ran)
+        # Prose-DEFERRED scope-cut markers are filtered upstream in the scanner.
+        while IFS='|' read -r ac_class task_id ac_line; do
             [ -z "$task_id" ] && continue
-            warn "CTL-012: Completed task $task_id has unchecked AC" \
-                 "$ac_line" \
-                 "Review task completion — AC gate may have been bypassed"
+            case "$ac_class" in
+                missing-decide)
+                    warn "CTL-012-MISSING-DECIDE: Inception task $task_id flipped without decide ceremony" \
+                         "$ac_line" \
+                         "Auto-tick markers present but ## Decision section empty — run: fw inception decide $task_id go|no-go|defer --rationale '...' OR backfill the Decision section manually then tick the auto-tick ACs"
+                    ;;
+                *)
+                    warn "CTL-012: Completed task $task_id has unchecked AC" \
+                         "$ac_line" \
+                         "Review task completion — AC gate may have been bypassed"
+                    ;;
+            esac
             ac_fail=$((ac_fail + 1))
         done < <(echo "$COMPLETED_SCAN" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 for item in data.get('unchecked_ac', []):
-    print(f\"{item['id']}|{item['line']}\")
+    cls = item.get('class', 'drift')
+    print(f\"{cls}|{item['id']}|{item['line']}\")
 " 2>/dev/null)
     fi
     if [ "$ac_fail" -eq 0 ]; then
