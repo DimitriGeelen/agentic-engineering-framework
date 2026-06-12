@@ -10,7 +10,7 @@ Output (JSON):
   {
     "missing_episodic": ["T-123", ...],
     "missing_research": ["T-456", ...],
-    "unchecked_ac": [{"id": "T-789", "line": "- [ ] criterion"}],
+    "unchecked_ac": [{"id": "T-789", "line": "- [ ] criterion", "class": "drift"}],
     "status_desync": [{"id": "T-1846", "status": "started-work"}],
     "horizon_drift": [{"id": "T-1234", "horizon": "now"}],
     "stats": {"total": N, "inception_count": M}
@@ -23,6 +23,17 @@ T-2162 (arc-009 Slice 3): Add horizon_drift — completed/ tasks whose stored
         horizon is non-null/non-empty/non-~ (i.e. carries stale "now"/"next"/"later"
         from before T-2160 derived-past + T-2161 migration). Empty/absent horizon
         is legitimate (pre-frontmatter-template-era) and NOT flagged.
+T-2202 (PL-212 closure): CTL-012 3-class taxonomy refinement.
+        - Skip prose-DEFERRED prefix lines ("- [ ] **DEFERRED**", "- [ ] **Deferred to")
+          — these are scope-cut markers, not real outstanding ACs. False-positives
+          observed on T-1213 and T-1299.
+        - Tag unchecked ACs with class: "missing-decide" when the preceding line is
+          `<!-- @auto-tick-on-decide -->` AND the task's `## Decision` section is
+          empty. This is the T-1993 pattern: direct frontmatter-flip to work-completed
+          bypassed `fw inception decide`, so the auto-tick path never ran. Distinct
+          from the genuine AC-drift class so the auditor can render a different hint.
+        - Class field on every entry: "drift" (default, real CTL-012) or "missing-decide"
+          (new CTL-012-MISSING-DECIDE sub-class).
 """
 
 import json
@@ -141,24 +152,71 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
                 missing_research.append(task_id)
 
         # Loop 7: AC gate check (unchecked non-Human ACs)
+        # T-2202: CTL-012 3-class taxonomy refinement.
+        #   - Skip prose-DEFERRED prefix (scope-cut markers, not real ACs).
+        #   - Detect missing-decide class (auto-tick marker + empty Decision section).
         in_ac = False
         in_human = False
+        prev_was_auto_tick = False
+        # Pre-compute Decision-section emptiness for the missing-decide classifier.
+        # An empty Decision section is just the heading + optional whitespace/comments
+        # before the next `## ` heading or end-of-file. Render-time decision: the
+        # auto-tick path writes a structured Decision block; its absence means the
+        # decide ceremony never ran.
+        decision_empty = True
+        in_decision = False
+        for line in content.split("\n"):
+            if line.startswith("## Decision") and not line.startswith("## Decisions"):
+                in_decision = True
+                continue
+            if in_decision and line.startswith("## "):
+                break
+            if in_decision:
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                if stripped.startswith("<!--") or stripped.startswith("-->") or stripped.endswith("-->"):
+                    continue
+                # Any non-blank, non-comment content means the section has been filled.
+                decision_empty = False
+                break
         for line in content.split("\n"):
             if line.startswith("## Acceptance Criteria"):
                 in_ac = True
                 in_human = False
+                prev_was_auto_tick = False
                 continue
             if line.startswith("## ") and in_ac:
                 break
             if in_ac and line.startswith("### Human"):
                 in_human = True
+                prev_was_auto_tick = False
                 continue
             if in_ac and line.startswith("### "):
                 in_human = False
+                prev_was_auto_tick = False
                 continue
-            if in_ac and not in_human and re.match(r"^- \[ \]", line):
-                unchecked_ac.append({"id": task_id, "line": line[:80]})
-                break  # One unchecked AC is enough to flag
+            if in_ac and not in_human:
+                # Track @auto-tick-on-decide marker for the missing-decide classifier.
+                if "@auto-tick-on-decide" in line:
+                    prev_was_auto_tick = True
+                    continue
+                if re.match(r"^- \[ \]", line):
+                    # Skip prose-DEFERRED scope-cut markers (T-1213, T-1299 class).
+                    # Match "- [ ] **DEFERRED" and "- [ ] **Deferred" prefixes.
+                    if re.match(r"^- \[ \]\s+\*\*(DEFERRED|Deferred)", line):
+                        prev_was_auto_tick = False
+                        continue
+                    # Classify: missing-decide if the marker line preceded AND
+                    # the Decision section is empty (T-1993 class).
+                    ac_class = "drift"
+                    if prev_was_auto_tick and decision_empty:
+                        ac_class = "missing-decide"
+                    unchecked_ac.append({"id": task_id, "line": line[:80], "class": ac_class})
+                    break  # One unchecked AC is enough to flag
+                # Reset marker after a non-marker, non-AC line (prevents stale stick).
+                if line.strip() and not line.startswith("<!--"):
+                    prev_was_auto_tick = False
 
     return {
         "missing_episodic": missing_episodic,
