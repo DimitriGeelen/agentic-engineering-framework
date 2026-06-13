@@ -6,15 +6,15 @@ description: >
   Inception: continuous-run arc — agent-driven compact→resume loop with bounded-autonomy
   ceiling
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: later
+horizon: now
 tags: [priority, arc-003, orchestrator, autonomy, continuous-run]
 components: []
 related_tasks: []
 created: 2026-06-01T09:39:33Z
-last_update: '2026-06-11T22:23:32Z'
+last_update: 2026-06-13T08:36:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -223,17 +223,33 @@ Total: ~125 min read-only research. No source edits, no `fw arc create`, no hook
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** **GO — with refinements**
 
 **Rationale:**
 
-Human-filed arc inception draft. Closes the compact→resume loop so a long-running agent self-compacts and self-resumes at context-budget boundaries, bounded by tier/blast-radius ceiling, run-length cap, and a discard manifest for review. Sits under T-1643 orchestrator-substrate territory. Genuine evidence gap (T-2144): need to walk existing primitives (agents/resume/, fw handover, budget-gate.sh, criterion 28+55), critique the three proposed scoped drivers (Loop closure / Bounded-safety integrity / Discard fidelity) against F-AUTONOMY (T-2157), validate the F7 Sovereignty tension framing, and scope the boundary with T-1643. Research artifact will host the proposed arc YAML verbatim plus the evidence walk.
+Spike walk S1-S6 completed 2026-06-13 (read-only, ~30 min wall-clock with parallel dispatch). All six assumptions A1-A6 hold: T-111 substrate INTACT (S1 — proof-of-life this morning's compact at 2026-06-13T09:50:39Z); cleanest self-trigger surface is `agents/context/checkpoint.sh:176` — a single JSON-field extension to a payload that already writes successfully (S2); bounded-autonomy primitives `agents/context/check-tier0.sh` + `bin/fw fabric blast-radius` confirmed invocable from hook context (S3); sovereignty narrowing acceptable — Tier 0 stays gated, only compaction gate surrendered (S3); scoped-driver set reduces 3→1-firm-plus-1-conditional with F-AUTONOMY at global covering rejected leg (S4); continuous-run is SIBLING of orchestrator-rethink, not child (S5); F-AUTONOMY tandem activation structurally required — carved `retire_when` text in `policy/value-drivers.yaml` *names this arc by name* (S4 + S5). Full evidence walk in `docs/reports/T-2158-continuous-run.md` §Spike Findings.
+
+**Refinements vs original draft:**
+1. Scoped-driver count 1-2 not 3 (drop Bounded-safety — F-AUTONOMY L4 covers; conditional Loop closure if F-AUTONOMY tandem-activates)
+2. SIBLING of orchestrator-rethink (distinct mechanism axes; child framing muddies arc-003 §ACD ledger)
+3. Recover `constraints`/`non_goals`/`relation_to_existing_primitives` via anchor task body (lib/arc.sh template doesn't carry them)
+4. F-AUTONOMY activation in same commit as arc create (carved → active per carved gate text)
+
+**Build slice shape (~10-11h across 5-6 tasks):**
+- S0: `fw arc create continuous-run` + anchor task body holds dropped fields + F-AUTONOMY uncarve (<1h)
+- S1: directive file schema + checkpoint.sh single-line extension + claude-fw consumer (~2h)
+- S2: SessionStart:resume reads directive + iteration counter increment (~2h)
+- S3: run-length cap + `.continuous-mode.yaml` config (~1h)
+- S4: discard manifest enhancement to `fw handover --emergency` (~2-3h)
+- S5: post-resume Tier 0 + blast-radius re-check (~2h)
 
 **Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- T-111 substrate intact: `agents/context/pre-compact.sh:54-80` + `agents/context/post-compact-resume.sh:24-278` cited
+- checkpoint.sh:176 single-line add identified for self-trigger
+- check-tier0.sh + fw fabric blast-radius invocable at hook layer (S3)
+- F-AUTONOMY carved gate matches arc landing trigger verbatim (`policy/value-drivers.yaml` §CANDIDATE F-AUTONOMY retire_when)
+- orchestrator-rethink scope delta < 5% per arc-003 YAML headline_mechanic comparison
+- All 10 open questions resolved with file:line evidence in §S6 table
 
 ## Decisions
 
@@ -298,3 +314,7 @@ Evidence:
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** Inception decision: DEFER — parking task
+
+### 2026-06-13T08:36:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

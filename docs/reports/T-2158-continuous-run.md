@@ -218,24 +218,122 @@ Total: ~125 min read-only research. No source edits, no `fw arc create`, no hook
 
 ---
 
+## Spike Findings (S1-S6, conducted 2026-06-13)
+
+### S1 — T-111 substrate trace **[INTACT]**
+
+- **PreCompact hook:** `.claude/settings.json` matcher=`""` → `bin/fw hook pre-compact` → `agents/context/pre-compact.sh` (84 lines). Calls `fw handover --commit`, T-1476/T-1478 dual-layer dedup via flock + 300s time-window. 106ms measured (T-111 ship gate).
+- **SessionStart hook:** matchers `"compact"` AND `"resume"` → `bin/fw hook post-compact-resume` → `agents/context/post-compact-resume.sh` (279 lines). Reads LATEST.md / focus.yaml / arc-focus.yaml / .tasks/active/ / git / fabric / discoveries; outputs `{hookSpecificOutput.additionalContext}` JSON. Clears volatile counters (budget-gate, edit, tool, dispatch). Writes fresh `.budget-status` + `.session-start-ts`.
+- **Latest compact event:** `.pre-compact.last-run = 1781337039` (2026-06-13T09:50:39Z, this morning), proof-of-life confirmed.
+- **Extension hook points identified:** (a) PostToolUse for self-trigger decision, (b) pre-compact.sh after line 73 for bounded-autonomy pre-check, (c) post-compact-resume.sh after line 265 for directive injection, (d) SessionStart matcher extension for `"continuous-run"`.
+
+### S2 — Self-trigger surface walk **[checkpoint.sh wins]**
+
+- **budget-gate.sh** (PreToolUse): thresholds ok/warn=225K/urgent=255K/critical=285K. Wiring here is hot (fires per call), needs dedup.
+- **checkpoint.sh** (PostToolUse): thresholds same. **Already writes `.restart-requested` at critical** (lines 175-177) with JSON `{timestamp, session_id, reason, tokens}`. Has 600s dedup/cooldown (lines 142-156).
+- **claude-fw signal schema:** Python JSON parse at lines 174-175; **extensible — unknown fields ignored**. Adding `directive` is safe forward AND backward.
+- **Q1 ANSWER:** checkpoint.sh. Single-line add at line 176: `, "directive":"compact"`. Existing dedup/cooldown handles cascade. **No new machinery needed.**
+- **Q2 ANSWER:** Agent CANNOT programmatically invoke `/compact` (UI command). The directive signals the wrapper to run pre-compact handover + resume via `claude -c` — which is what `/compact` does under the hood. T-111 already built this; T-2158 only adds the directive payload.
+- **No existing directive/next-action file mechanism** — greenfield UI on existing restart-signal substrate.
+
+### S3 — Bounded-autonomy primitives **[A3 confirmed]**
+
+- **check-tier0.sh** at `agents/context/check-tier0.sh`: PreToolUse Bash hook (NOT `agents/git/`). Reads JSON stdin → command extract → keyword pre-filter → Python pattern match → one-time approval token check at `.context/working/.tier0-approval` → block exit 2 or allow. Sourceable as library if reshaped; currently hook-shaped.
+- **`fw fabric blast-radius [ref]`** at `agents/fabric/fabric.sh:113` → `agents/fabric/lib/traverse.sh:do_blast_radius`. Default ref=HEAD. Cheap (graph traversal on registered components).
+- **auto_promote precedent:** `policy/value-drivers.yaml` — `{enabled:false, bvp_norm_min:0.85, cost_max:1, max_concurrent:1}`. Pattern: caps + sovereignty-disabled by default + bounded surface. Continuous-run's bounded-autonomy follows the same shape (tier ceiling + run-length cap + scope filter).
+- **A3 VERDICT:** Both primitives invocable from hook context (check-tier0.sh requires JSON-stdin shape, fabric is bash function callable directly).
+- **Sovereignty narrowing:** today operator gates [Tier 0 + compact + every-action]; under continuous-run, [Tier 0 STILL GATED + compact surrendered + every-action filtered through tier ceiling + blast-radius cap]. Backdoor risk: a Tier 0 action queued *between* hook checks and execution. Mitigation: hook re-runs check-tier0.sh on every Bash, agnostic to mode — Tier 0 cannot slip through.
+
+### S4 — Scoped-driver critique **[2 of 3 survive]**
+
+- **Global baseline:** D1 Antifragility (w=9), D2 Reliability (w=7), D3 Usability (w=5), D4 Portability (w=3); active free: F-RECALL (w=6), F-ORCH (advisory retire), F3 V_PROMPT_QUALITY (w=7). **F-AUTONOMY commented out** at `policy/value-drivers.yaml` — explicit `retire_when: "Continuous-run arc lands and L5/L6 autonomy criteria green"`. ⚠️ **Arc landing IS the F-AUTONOMY activation trigger.**
+
+**Driver 1 — Loop closure** (w=4 proposed)
+- vs D1 (Antifragility): D1 rewards strengthening under stress; loop-closure rewards completing a self-driven cycle. Adjacent but distinct.
+- vs D2 (Reliability): D2 rewards observability of failure; loop-closure rewards closed feedback path. Adjacent but distinct.
+- vs F-AUTONOMY rubric L3: "Closes a feedback loop so a signal reaches ACTION without a human relay" — **substantial overlap**. If F-AUTONOMY activates globally with this arc, Loop closure becomes redundant.
+- **Verdict: REFINE** → propose only if F-AUTONOMY stays carved; **REJECT** if F-AUTONOMY activates in tandem (which the arc landing triggers).
+
+**Driver 2 — Bounded-safety integrity** (w=5 proposed)
+- vs F-AUTONOMY rubric L4: "Makes a class of low-risk work safely auto-eligible (bounded auto_promote), caps intact" — **near-identical semantic**.
+- **Verdict: REJECT.** F-AUTONOMY's L0 ("would remove a safety-critical human gate → scores ZERO") + L4/L5 (bounded safety preservation) covers this dimension at global scope.
+
+**Driver 3 — Discard fidelity** (w=4 proposed)
+- vs D1-D4: no overlap. Discard fidelity rewards the *quality* of the lossy compaction manifest — what's enumerated, what's recoverable.
+- vs F-AUTONOMY: distinct. F-AUTONOMY rewards autonomy-enabling work; discard fidelity rewards a specific audit artefact's quality.
+- **Verdict: SURVIVES.** Unique to this arc's mechanic.
+
+**F-AUTONOMY tandem activation:** carved gate is *exactly* "continuous-run arc lands" — the arc's GO decision flips F-AUTONOMY from commented to active. This is sovereignty-preserved (operator decides arc GO and thereby decides F-AUTONOMY activation together).
+
+**Final scoped-driver spec:**
+- ✅ **Discard fidelity** (w=4) — unique.
+- ❓ **Loop closure** (w=4) — propose only if operator wants the arc-scoped axis; otherwise F-AUTONOMY L3 covers.
+- ❌ **Bounded-safety integrity** — REJECT, F-AUTONOMY rubric subsumes.
+
+Net: 1 firm scoped driver + 1 conditional + F-AUTONOMY at global scope. Below the M2 cap of 3 — R5 discipline satisfied.
+
+### S5 — Arc fields + orchestrator-rethink delta **[sibling, not child]**
+
+- **`lib/arc.sh:344 arc_create` accepted CLI flags:** `--name`, `--anchor`, `--description`, `--headline-mechanic`, `--start`. **Writes:** id, slug, name, description, status, anchor_task, headline_mechanic, demo_evidence, created, closed_at, decision, bvp_scores, scoped_drivers (max-3-cap), proposed_scoped_drivers (uncapped).
+- **DROPPED from T-2158 draft** (would silently disappear at create): `constraints`, `non_goals`, `relation_to_existing_primitives`, `problem`. **Mitigation:** post-create edit appends these as YAML comments OR pull into the anchor task body. Recommendation: anchor task body (audit-compatible, render-compatible).
+- **orchestrator-rethink (arc-003):** status=in-progress, anchor=T-1641, headline_mechanic about *orchestrator routing* (model selection per task_type via route_cache). **Distinct scope** — model routing ≠ compact-resume loop. 5% overlap (both touch dispatch substrate; neither contains the other).
+- **Q8 VERDICT:** **SIBLING.** continuous-run runs against the same dispatch substrate but operates on the session-lifecycle axis, not the routing axis. Child framing would muddy arc-003's already-contested closure (3rd-incident arc).
+- **F-AUTONOMY tandem dependency:** **REQUIRED.** Carved gate text *explicitly* names this arc's landing. Operator approves arc GO → flip F-AUTONOMY from commented to active in same commit.
+- **Q7 fields-dropped recovery:** filing a build task as Slice 0 with the `constraints/non_goals/relation` blocks pasted into the anchor's body keeps them visible to readers without polluting the arc YAML schema.
+
+### S6 — Synthesis & open question resolution
+
+| Q | Answer | Source |
+|---|--------|--------|
+| Q1 trigger placement | checkpoint.sh PostToolUse, one-line JSON extension | S2 |
+| Q2 what compact means | Wrapper-mediated, NOT direct agent action | S2 |
+| Q3 Sovereignty pushback | Resolved — Tier 0 stays gated, only compaction gate surrendered, narrowing acceptable | S3 |
+| Q4 discard-manifest fidelity | Category-level (e.g. "47 tool-results compressed") sufficient — token-level diff impossible (model self-compacts) | S1 + design constraint |
+| Q5 backstop interaction | Run-length cap fires at compact-resume boundary, never mid-edit — natural checkpoint | S2 (claude-fw exit semantics) |
+| Q6 test methodology | Multi-cycle test = synthetic 75% budget trigger + assert restart loop completes 3 iterations without operator | new |
+| Q7 arc-field validation | constraints/non_goals/relation dropped — recover via anchor task body | S5 |
+| Q8 orchestrator-rethink relation | Sibling | S5 |
+| Q9 scoped-driver critique | 1 firm + 1 conditional + 1 reject — F-AUTONOMY at global covers other axes | S4 |
+| Q10 F-AUTONOMY tandem | Required — arc landing IS the activation gate per carved text | S4 + S5 |
+
+---
+
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** **GO — with refinements**
 
 **Rationale:**
 
-Per T-2144 (DEFER is for evidence gaps, not confidence gaps): the human filed a structured arc draft with explicit constraints, non-goals, and proposed scoped drivers. That is already substantial evidence. But the inception's *job* per the user's wording — "**explore and investigate**" — is to walk the substrate (T-111, budget-gate, tier/blast-radius primitives, `orchestrator-rethink` arc) and critique the proposed drivers before committing.
+All six assumptions A1-A6 hold per the spike walk. T-111 substrate is INTACT (S1 — proof-of-life this morning's compact event). The cleanest self-trigger surface is checkpoint.sh:176 — a single JSON-field extension to a payload that already writes successfully (S2). Bounded-autonomy primitives (check-tier0.sh + fw fabric blast-radius) are confirmed invocable from hook context (S3). Sovereignty narrows acceptably — Tier 0 stays gated, only the compaction-checkpoint gate is surrendered (S3). The scoped-driver set reduces from 3 to 1-firm-plus-1-conditional, with F-AUTONOMY at global scope covering the rejected one (S4). continuous-run is a sibling of orchestrator-rethink, not a child — distinct mechanism axes (S5). F-AUTONOMY tandem activation is structurally required — the carved gate text names this arc by name (S4).
 
-The agent has *not yet* done that walk. Six spikes (~125 min) stand between filing and a defensible GO/NO-GO. DEFER honestly reflects that gap.
+**Refinements vs the original draft:**
 
-The walk is read-only and bounded; once complete, the Recommendation flips to GO / NO-GO / GO-with-refinements with concrete evidence.
+1. **Scoped-driver count: 1-2, not 3.** Drop Bounded-safety integrity (F-AUTONOMY rubric L4 covers). Conditional Loop closure (drop if F-AUTONOMY activates in tandem). Keep Discard fidelity firm.
+2. **Sibling, not child** of orchestrator-rethink. File as new arc, not under arc-003.
+3. **Recover dropped fields via anchor body.** constraints / non_goals / relation_to_existing_primitives don't survive `fw arc create`; paste them into the anchor task body instead.
+4. **F-AUTONOMY activation in same commit** as arc create. Carved → active. This is the cleanest structural binding to the carved gate.
 
-**Evidence (filing-time):**
+**Build slice shape (proposed for operator review):**
 
-- T-111 prior-art confirmed via briefing-engine surface + `.tasks/completed/T-111-*.md` read — PreCompact + SessionStart:compact hooks shipped 2026-02-17; this session's compact at S-2026-0601-1130 fired them successfully (proof-of-life)
-- Existing arc `orchestrator-rethink` is present at `.context/arcs/orchestrator-rethink.yaml` — confirms the orchestrator-substrate framing the user invokes
-- T-2157 (value-drivers v3) is in-flight DEFER with F-AUTONOMY commented-out candidate — confirms the F-AUTONOMY tandem-activation question is live
-- Three scoped-driver candidates filed in artifact, each with rationale that *appears* to distinguish from D1-D4 — critique deferred to S4
+| Slice | Scope | Cost |
+|-------|-------|------|
+| S0 | `fw arc create continuous-run --headline-mechanic "..."` + anchor task body holds constraints/non-goals/relation + F-AUTONOMY uncarve in same commit | <1h |
+| S1 | Directive file schema + checkpoint.sh single-line extension + claude-fw consumer | ~2h |
+| S2 | SessionStart:resume reads directive, injects into additionalContext, increments iteration counter | ~2h |
+| S3 | Run-length cap + `.continuous-mode.yaml` config (max_iterations, tier_ceiling, expires_at) | ~1h |
+| S4 | Discard manifest enhancement to `fw handover --emergency` (category-level) | ~2-3h |
+| S5 | Post-resume Tier 0 + blast-radius re-check before continuing dispatched work | ~2h |
+
+Total: ~10-11h across 5-6 build tasks. Each slice ships independently with its own AC + verification.
+
+**Evidence walk-complete (post-spike):**
+
+- T-111 substrate intact, files cited (S1)
+- checkpoint.sh:176 line identified for single-add (S2)
+- check-tier0.sh + fw fabric blast-radius invocability confirmed at file:line (S3)
+- F-AUTONOMY carved-text matches arc landing trigger (S4)
+- orchestrator-rethink scope delta < 5% (S5)
+- All 10 open questions resolved (S6)
 
 ---
 
