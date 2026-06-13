@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2375: budget detector blind in git worktrees — transcript dir-name drops dot
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T16:35:38Z
+# ============================================================================
+
+task_id: T-2375
+task_name: "budget detector blind in git worktrees — transcript dir-name drops dot"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T16:30:25Z
+completed: 2026-06-13T16:35:32Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/paths.sh` provides `fw_claude_project_dir_name <path>` that replaces every'
+  - '`agents/context/checkpoint.sh` `find_transcript()` computes the project dir name via the'
+  - '`agents/context/budget-gate.sh` computes `PROJECT_DIR_NAME` via the helper (no longer `${PROJECT_ROOT//\//-}`)'
+  - 'Regression test `tests/integration/transcript_dir_name_sanitization.bats` proves the helper'
+  - 'Live proof in this worktree: `./agents/context/checkpoint.sh status` resolves the transcript'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2375-budget-detector-blind-in-git-worktrees--.md
+generated_by: context-agent-hybrid

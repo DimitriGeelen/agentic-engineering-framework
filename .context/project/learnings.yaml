@@ -3672,3 +3672,10 @@ X'` returning empty group."
   date: 2026-06-12
   context: Added via context agent
   application: TBD
+- id: L-482
+  learning: "When reconstructing Claude Code's projects dir name from a cwd, replace EVERY non-alphanumeric char with dash (tr -c alnum dash), not just slash — Claude Code converts dot to dash too, so parameter-expansion slash-replacement mismatches dotted paths (worktrees) and blinds the budget gauge. Use lib/paths.sh fw_claude_project_dir_name()."
+  source: P-009
+  task: T-2375
+  date: 2026-06-13
+  context: Added via context agent
+  application: TBD

@@ -18202,3 +18202,39 @@ scan_id: R-2ca83c0c
 task_id: T-2374
 payload:
   task_file: .tasks/active/T-2374-precompact-handover-leaves-dangling-late.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T16:34:56Z'
+scan_id: R-a86c20d1
+task_id: T-2375
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T16:34:56Z'
+scan_id: R-a86c20d1
+task_id: T-2375
+payload:
+  task_file: .tasks/active/T-2375-budget-detector-blind-in-git-worktrees--.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T16:35:33Z'
+scan_id: R-62ef2c5f
+task_id: T-2375
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T16:35:33Z'
+scan_id: R-62ef2c5f
+task_id: T-2375
+payload:
+  task_file: .tasks/active/T-2375-budget-detector-blind-in-git-worktrees--.md
