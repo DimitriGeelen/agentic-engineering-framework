@@ -464,3 +464,117 @@ def test_legacy_state_file_migrates_to_unified(tmp_path):
     assert state["enabled"] is False
     # Legacy file removed
     assert not legacy.is_file()
+
+
+# ─── S5 (T-2367): bounded-autonomy ceiling — blast-radius vs tier_ceiling ─────
+
+
+def _write_task(tmp_path, task_id, blast_radius=None, proposed_blast=None):
+    """Seed .tasks/active/<task_id>-slug.md with a cost_estimate frontmatter.
+    blast_radius → confirmed cost_estimate; proposed_blast → cost_estimate_proposed."""
+    tasks = tmp_path / ".tasks" / "active"
+    tasks.mkdir(parents=True, exist_ok=True)
+    fm = {"id": task_id}
+    if blast_radius is not None:
+        fm["cost_estimate"] = {"blast_radius": blast_radius, "tier": 2, "effort": 4}
+    if proposed_blast is not None:
+        fm["cost_estimate_proposed"] = [
+            {"ts": "2026-06-13T00:00:00Z",
+             "cost_estimate": {"blast_radius": proposed_blast, "tier": 1, "effort": 2}}
+        ]
+    (tasks / f"{task_id}-slug.md").write_text("---\n" + yaml.safe_dump(fm) + "---\n# body\n")
+
+
+def test_blast_radius_over_ceiling_refuses_and_freezes_counter(tmp_path):
+    """AC#2/#5b: planned task blast-radius > tier_ceiling → operator-continuation
+    notice, iteration counter frozen (not advanced)."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working, directive="continue T-9001 big task", next_task="T-9001",
+                     max_iterations=10)
+    _write_task(tmp_path, "T-9001", blast_radius=3)
+    stdout, rc = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert rc == 0
+    assert "TIER CEILING EXCEEDED" in stdout
+    assert "T-9001" in stdout and "blast-radius **3**" in stdout
+    state = yaml.safe_load((working / ".continuous-mode.yaml").read_text())
+    assert state["current_iteration"] == 1  # frozen, not advanced to 2
+    assert "tier ceiling exceeded" in state["last_terminated_reason"]
+
+
+def test_blast_radius_within_ceiling_continues(tmp_path):
+    """AC#5a: planned task blast-radius <= tier_ceiling → normal directive,
+    counter advances."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working, directive="continue T-9002 small task", next_task="T-9002",
+                     max_iterations=10)
+    _write_task(tmp_path, "T-9002", blast_radius=1)
+    stdout, rc = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert rc == 0
+    assert "TIER CEILING EXCEEDED" not in stdout
+    assert "## Next Directive (iteration 2/" in stdout
+    state = yaml.safe_load((working / ".continuous-mode.yaml").read_text())
+    assert state["current_iteration"] == 2
+
+
+def test_proposed_cost_estimate_used_when_confirmed_absent(tmp_path):
+    """Resolver falls back to cost_estimate_proposed[].cost_estimate.blast_radius."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working, directive="continue T-9003", next_task="T-9003",
+                     max_iterations=10)
+    _write_task(tmp_path, "T-9003", proposed_blast=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "TIER CEILING EXCEEDED" in stdout
+    assert "blast-radius **5**" in stdout
+
+
+def test_next_task_field_takes_precedence_over_prose_ref(tmp_path):
+    """next_task: wins over the first T-NNNN in prose (prose names a low-blast
+    completed task first, but next_task points at the high-blast planned one)."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working,
+                     directive="T-9004 done. Now continue T-9005 (the real next).",
+                     next_task="T-9005", max_iterations=10)
+    _write_task(tmp_path, "T-9004", blast_radius=0)
+    _write_task(tmp_path, "T-9005", blast_radius=4)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "TIER CEILING EXCEEDED" in stdout
+    assert "T-9005" in stdout
+
+
+def test_first_prose_task_ref_used_when_next_task_absent(tmp_path):
+    """No next_task: → first T-NNNN in prose is the planned action."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working, directive="continue T-9006 then T-9007", max_iterations=10)
+    _write_task(tmp_path, "T-9006", blast_radius=9)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "TIER CEILING EXCEEDED" in stdout
+    assert "T-9006" in stdout
+
+
+def test_unresolvable_blast_radius_proceeds(tmp_path):
+    """AC#4: task ref present but no cost_estimate frontmatter → no ceiling
+    breach (cannot assess) → directive proceeds normally."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working, directive="continue T-9008", next_task="T-9008",
+                     max_iterations=10)
+    _write_task(tmp_path, "T-9008")  # no cost_estimate at all
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "TIER CEILING EXCEEDED" not in stdout
+    assert "## Next Directive (iteration 2/" in stdout
+
+
+def test_no_task_reference_proceeds(tmp_path):
+    """AC#5c-adjacent: directive with no T-NNNN reference → no ceiling check,
+    directive proceeds (zero ceiling overhead)."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working, directive="refactor the widget styles", max_iterations=10)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "TIER CEILING EXCEEDED" not in stdout
+    assert "## Next Directive (iteration 2/" in stdout

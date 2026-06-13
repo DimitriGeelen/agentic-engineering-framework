@@ -4,10 +4,10 @@ name: "T-2158 S5: post-resume Tier 0 + blast-radius re-check before continuing"
 description: >
   Slice S5 of T-2158. Extend agents/context/post-compact-resume.sh post-injection to invoke fw fabric blast-radius on the planned next-action; refuse continuation (clear directive, fall back to operator-wait) if blast-radius exceeds tier_ceiling. check-tier0.sh remains the PreToolUse Bash guard (untouched). This is the bounded-autonomy ceiling.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [arc:continuous-run, t-2158-slice, bounded-autonomy]
 components: []
 related_tasks: [T-2158]
@@ -22,7 +22,7 @@ related_tasks: [T-2158]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T08:45:43Z
-last_update: 2026-06-13T08:45:43Z
+last_update: 2026-06-13T11:04:47Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,16 +40,28 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice S5 of T-2158 (arc-012 continuous-run) — the **bounded-autonomy ceiling**.
+Without it, `tier_ceiling` in `.continuous-mode.yaml` is informational only. On
+resume, the next-directive injector (`inject-next-directive.py`, the S2/S3
+substrate) now resolves the planned next task's blast-radius and refuses
+auto-continuation when it exceeds the ceiling — freezing the loop for operator
+sign-off. `check-tier0.sh` is untouched and remains the PreToolUse Bash guard.
+
+**Spec-vs-reality (see Evolution):** `fw fabric blast-radius` (named in AC#1 at
+filing) is a *post-commit* ref tool — it measures a committed change's downstream
+impact and cannot score a not-yet-started task. The pre-execution blast-radius of
+a planned task is its BVP `cost_estimate.blast_radius` (already computed by the
+estimator), which is what the ceiling gates on — the directive's own S5 design
+note sanctioned this ("cost_estimate.blast_radius OR fw fabric blast-radius shortcut").
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/context/post-compact-resume.sh` post-injection invokes `bin/fw fabric blast-radius` on the planned next action (from directive)
-- [ ] When blast-radius exceeds `tier_ceiling` (from .continuous-mode.yaml), the directive section in additionalContext is replaced with "Tier ceiling exceeded — operator continuation required" and the iteration counter is frozen
-- [ ] `check-tier0.sh` remains untouched — it stays the PreToolUse Bash guard
-- [ ] No regression: when continuous-mode disabled OR no directive present, no blast-radius check fires (zero overhead)
-- [ ] Unit/integration test covers (a) within-ceiling continue, (b) over-ceiling refuse, (c) no-directive no-op
+- [x] `agents/context/inject-next-directive.py` (the post-resume injector wired into `post-compact-resume.sh`) resolves the planned next task's blast-radius — its BVP `cost_estimate.blast_radius` (confirmed → proposed), which supersedes `fw fabric blast-radius` (a post-commit ref tool, unfit for pre-execution scoring; see Evolution). Planned action = directive `next_task:` field, else first `T-NNNN` in prose.
+- [x] When blast-radius exceeds `tier_ceiling` (from .continuous-mode.yaml), the directive section in additionalContext is replaced with "TIER CEILING EXCEEDED — operator continuation required" and the iteration counter is frozen (not advanced)
+- [x] `check-tier0.sh` remains untouched — it stays the PreToolUse Bash guard
+- [x] No regression: when continuous-mode disabled OR no directive present OR no resolvable task/blast-radius, no ceiling refusal fires (zero overhead)
+- [x] Unit/integration test covers (a) within-ceiling continue, (b) over-ceiling refuse, (c) no-directive no-op
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +127,14 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# inject-next-directive.py parses
+python3 -c "import ast; ast.parse(open('agents/context/inject-next-directive.py').read()); print('syntax OK')"
+# S5 ceiling logic lives in the injector, NOT in check-tier0.sh (AC#3: tier0 guard untouched)
+out=$(grep -c "TIER CEILING EXCEEDED" agents/context/inject-next-directive.py 2>&1); test "$out" -ge 1
+out=$(grep -c "blast\|TIER CEILING\|tier_ceiling" agents/context/check-tier0.sh 2>&1); test "$out" -eq 0 && echo "check-tier0 untouched OK"
+# Full inject-next-directive suite green (33 baseline + 7 S5 = 40)
+python3 -m pytest tests/unit/test_inject_next_directive.py -q 2>&1 | tail -1
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -155,6 +175,31 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-13 — `fw fabric blast-radius` is the wrong tool for a *planned* action
+
+- **What changed:** AC#1 named `bin/fw fabric blast-radius` as the signal. On
+  inspection that command takes a git ref and reports the downstream impact of an
+  *already-committed* change ("N registered components changed"). The bounded-
+  autonomy ceiling must score a task that has **not run yet** — there are no
+  changed files to measure. So the right pre-execution signal is the task's BVP
+  `cost_estimate.blast_radius` (computed by the estimator cron), which is exactly
+  what the directive's own S5 design note proposed as the alternative.
+- **Plan impact:** AC#1 reworded to gate on `cost_estimate.blast_radius`
+  (confirmed → latest `cost_estimate_proposed`). The ceiling check lives in
+  `inject-next-directive.py` (the S2/S3 injector already wired into
+  `post-compact-resume.sh`), not as a separate shell-out — keeping it on the same
+  pure, unit-testable `evaluate()` path. `check-tier0.sh` is untouched (AC#3).
+- **Triggered:** new directive field `next_task:` — the directive prose names many
+  tasks (T-2362…T-2367), so "first T-NNNN" is ambiguous. `next_task:` lets the
+  filer state the planned action explicitly; the implementation falls back to the
+  first prose `T-NNNN` when it is absent.
+- **Fail-open vs fail-closed:** when the planned task has no resolvable
+  blast-radius (no `cost_estimate`), the loop **proceeds** rather than refusing —
+  the ceiling only fires on a *positive* breach. Rationale: most active tasks
+  carry an estimator-proposed blast-radius, and a hard fail-closed on every
+  unscored task would make the loop unusable. The Tier-0 PreToolUse guard
+  (`check-tier0.sh`) remains the hard safety net for consequential actions.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -182,3 +227,19 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md
 - **Context:** Initial task creation
+
+### 2026-06-13T11:04:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7ebfc48a
+- **Timestamp:** 2026-06-13T11:12:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check

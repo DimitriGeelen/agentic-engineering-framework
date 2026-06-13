@@ -950,3 +950,14 @@ overrides:
   expires_at: '2026-09-10T07:01:21Z'
   added_by: root
   added_at: '2026-06-12T07:01:21Z'
+- id: OV-14fbc8f3
+  task_id: T-2367
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "FP: tests/unit/test_inject_next_directive.py spawns the REAL inject-next-directive.py\
+    \ via subprocess against real temp-dir YAML+task fixtures (_run_subprocess) \u2014\
+    \ genuine end-to-end integration, not mocks. Canonical mock-only-integration heuristic\
+    \ FP class."
+  expires_at: '2026-09-11T11:12:36Z'
+  added_by: root
+  added_at: '2026-06-13T11:12:36Z'
