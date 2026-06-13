@@ -87,8 +87,9 @@ protected_drivers:
 #
 # v3 activates two: F-RECALL (positive-accumulation gap left by D1's failure-
 # driven loop) and F-ORCH (routable-surface expansion the orchestrator
-# substrate T-1643 makes possible). F-AUTONOMY is carved (commented) -- see
-# §CANDIDATE block below for the activation gate.
+# substrate T-1643 makes possible). F-AUTONOMY ACTIVATED 2026-06-13 alongside
+# arc-012 continuous-run landing — see §CANDIDATE block below for the activation
+# trail and retirement gate (now: L5/L6 autonomy criteria green, not arc landing).
 # ---------------------------------------------------------------------------
 free_drivers:
 
@@ -164,37 +165,39 @@ free_drivers:
   # Tier 0 blocks, and `auto_promote.enabled: false` exist on purpose. The rubric
   # rewards EARNING autonomy, never removing oversight.
   #
-  # NOTE: the concrete "continuous unattended run" capability is being handled as
-  # an ARC (T-2158), not this driver. Only activate this driver if you want to
-  # PRIORITISE gate-reduction work broadly, not to build one continuous-run feature.
-  # See docs/reports/T-2157-value-drivers-v3-redesign.md §F-AUTONOMY Verdict for
-  # the activation gate (T-NEW-E follow-up).
+  # NOTE: F-AUTONOMY ACTIVATED 2026-06-13 — continuous-run arc (arc-012) landed
+  # GO via T-2158. Carved gate text named this arc by name; arc creation IS the
+  # activation trigger. T-2362 ships this uncarve in the same commit per the
+  # T-2158 §S4 finding (build slice S0).
+  #
+  # Retirement gate stays: retire when L5/L6 autonomy criteria (auto-issue gen,
+  # auto-merge, closed production-feedback loop) are green.
   # -------------------------------------------------------------------------
-  # - id: F-AUTONOMY
-  #   name: Autonomy / Unattended Operation
-  #   weight: 4                     # below Orchestration; the most safety-sensitive axis
-  #   rationale: >
-  #     Reduces the number of human checkpoints low-risk work must pass, earning
-  #     autonomy by replacing human gates with at-least-as-safe mechanical ones.
-  #   polarity: positive
-  #   rubric:
-  #     0: Adds nothing, OR would remove a safety-critical human gate
-  #        (that is a Sovereignty violation -- scores ZERO, never high).
-  #     1: Runs unattended only by hand-wiring; no durable reduction in human touch.
-  #     2: Narrow, single-use reduction in human relay.
-  #     3: Closes a feedback loop so a signal reaches ACTION without a human relay
-  #        (e.g. wires observations back into dispatch).
-  #     4: Makes a class of low-risk work safely auto-eligible (bounded
-  #        auto_promote for HV/LC Captured->In Progress), caps intact.
-  #     5: Replaces a REDUNDANT human gate with an at-least-as-safe mechanical one,
-  #        or lands an L6 autonomy criterion. NEVER removes a Tier 0 gate.
-  #   guardrails: >
-  #     Reducing oversight on consequential (Tier 0, irreversible, high-blast-radius)
-  #     actions scores ZERO or NEGATIVE, never positive. Earn autonomy; don't
-  #     remove oversight.
-  #   retire_when: >
-  #     Continuous-run arc lands and L5/L6 autonomy criteria (auto-issue gen,
-  #     auto-merge, closed production-feedback loop) are green.
+  - id: F-AUTONOMY
+    name: Autonomy / Unattended Operation
+    weight: 4                     # below Orchestration; the most safety-sensitive axis
+    rationale: >
+      Reduces the number of human checkpoints low-risk work must pass, earning
+      autonomy by replacing human gates with at-least-as-safe mechanical ones.
+    polarity: positive
+    rubric:
+      0: Adds nothing, OR would remove a safety-critical human gate
+         (that is a Sovereignty violation -- scores ZERO, never high).
+      1: Runs unattended only by hand-wiring; no durable reduction in human touch.
+      2: Narrow, single-use reduction in human relay.
+      3: Closes a feedback loop so a signal reaches ACTION without a human relay
+         (e.g. wires observations back into dispatch).
+      4: Makes a class of low-risk work safely auto-eligible (bounded
+         auto_promote for HV/LC Captured->In Progress), caps intact.
+      5: Replaces a REDUNDANT human gate with an at-least-as-safe mechanical one,
+         or lands an L6 autonomy criterion. NEVER removes a Tier 0 gate.
+    guardrails: >
+      Reducing oversight on consequential (Tier 0, irreversible, high-blast-radius)
+      actions scores ZERO or NEGATIVE, never positive. Earn autonomy; don't
+      remove oversight.
+    retire_when: >
+      L5/L6 autonomy criteria (auto-issue gen, auto-merge, closed
+      production-feedback loop) are green.
 
 # ---------------------------------------------------------------------------
 # AUTO-PROMOTION  -- ships OFF. This is the autonomy-IN-OPERATION dial, distinct
