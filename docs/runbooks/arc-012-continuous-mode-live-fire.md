@@ -50,6 +50,22 @@ Arc: `arc-012` (`continuous-run`). Anchor: `T-2158`. Slices: S0–S5.
    - Max **5 consecutive** auto-restarts, then the wrapper stops.
    - **3-second cancel window** before each restart (Ctrl-C to abort).
    - Opt out entirely with `claude-fw --no-restart`.
+7. **Quiet repo — no OTHER `claude-fw` wrappers running on this repo** (OBS-075,
+   discovered in the T-2381 controlled live-fire). The loop's coordination files
+   are **repo-global, not per-session**: `.context/working/.restart-requested`,
+   `.tool-counter`, and `.budget-status` are shared by every session on the repo.
+   So when the gauge writes `.restart-requested`, the terminator in **every**
+   running `claude-fw` wrapper sees the same "fresh" signal and SIGTERMs its claude
+   child — restarting unrelated sessions, not just yours. Before a live-fire,
+   confirm yours is the only wrapper:
+   ```
+   ps -eo pid,cmd | grep '[b]in/claude-fw'
+   ```
+   Expected: only the wrapper(s) of your own live-fire session. If you see others
+   (e.g. other terminals or background jobs running `claude-fw` on this repo),
+   either stop them first or run the live-fire on an isolated clone/worktree of the
+   repo. (A per-session signal namespace would lift this constraint — tracked as a
+   possible follow-up; today the file is global.)
 
 ---
 
