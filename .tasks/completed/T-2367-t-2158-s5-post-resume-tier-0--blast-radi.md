@@ -4,12 +4,12 @@ name: "T-2158 S5: post-resume Tier 0 + blast-radius re-check before continuing"
 description: >
   Slice S5 of T-2158. Extend agents/context/post-compact-resume.sh post-injection to invoke fw fabric blast-radius on the planned next-action; refuse continuation (clear directive, fall back to operator-wait) if blast-radius exceeds tier_ceiling. check-tier0.sh remains the PreToolUse Bash guard (untouched). This is the bounded-autonomy ceiling.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, t-2158-slice, bounded-autonomy]
-components: []
+components: [agents/context/inject-next-directive.py, agents/context/post-compact-resume.sh, agents/resume/resume.sh, lib/config-file.sh, tests/unit/test_inject_next_directive.py]
 related_tasks: [T-2158]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: [T-2158]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T08:45:43Z
-last_update: 2026-06-13T11:04:47Z
-date_finished: null
+last_update: 2026-06-13T11:13:13Z
+date_finished: 2026-06-13T11:13:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -234,8 +234,8 @@ python3 -m pytest tests/unit/test_inject_next_directive.py -q 2>&1 | tail -1
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7ebfc48a
-- **Timestamp:** 2026-06-13T11:12:36Z
+- **Scan ID:** R-5841b031
+- **Timestamp:** 2026-06-13T11:13:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -243,3 +243,6 @@ python3 -m pytest tests/unit/test_inject_next_directive.py -q 2>&1 | tail -1
 
 - **Suppressed:** 1 (by override)
   - mock-only-integration @ AC vs Verification cross-check
+
+### 2026-06-13T11:13:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

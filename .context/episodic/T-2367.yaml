@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2367: T-2158 S5: post-resume Tier 0 + blast-radius re-check before continuing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T11:13:22Z
+# ============================================================================
+
+task_id: T-2367
+task_name: "T-2158 S5: post-resume Tier 0 + blast-radius re-check before continuing"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T08:45:43Z
+completed: 2026-06-13T11:13:13Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/context/inject-next-directive.py` (the post-resume injector wired into `post-compact-resume.sh`) resolves the planned next task''s blast-radius — its BVP `cost_estimate.blast_radius` (confirmed → proposed), which supersedes `fw fabric blast-radius` (a post-commit ref tool, unfit for pre-execution scoring; see Evolution). Planned action = directive `next_task:` field, else first `T-NNNN` in prose.'
+  - 'When blast-radius exceeds `tier_ceiling` (from .continuous-mode.yaml), the directive section in additionalContext is replaced with "TIER CEILING EXCEEDED — operator continuation required" and the iteration counter is frozen (not advanced)'
+  - '`check-tier0.sh` remains untouched — it stays the PreToolUse Bash guard'
+  - 'No regression: when continuous-mode disabled OR no directive present OR no resolvable task/blast-radius, no ceiling refusal fires (zero overhead)'
+  - 'Unit/integration test covers (a) within-ceiling continue, (b) over-ceiling refuse, (c) no-directive no-op'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 147 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, t-2158-slice, bounded-autonomy]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 147
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md
+generated_by: context-agent-hybrid
