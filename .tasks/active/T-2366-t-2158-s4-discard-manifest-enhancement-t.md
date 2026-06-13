@@ -4,10 +4,10 @@ name: "T-2158 S4: discard manifest enhancement to fw handover --emergency"
 description: >
   Slice S4 of T-2158. Extend agents/handover/handover.sh --emergency to enumerate category-level discards (counts of tool-results compressed, turns summarised, files dropped from working set) into .context/handovers/SESSION.discard-manifest.yaml. Category-level fidelity sufficient (S6 Q4 — model self-compacts so token-level diff impossible). The Discard fidelity scoped driver rewards work here.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [arc:continuous-run, t-2158-slice, discard-fidelity]
 components: []
 related_tasks: [T-2158]
@@ -22,7 +22,7 @@ related_tasks: [T-2158]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T08:45:37Z
-last_update: 2026-06-13T08:45:37Z
+last_update: 2026-06-13T10:42:48Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,16 +40,24 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice S4 of T-2158 (arc-012 continuous-run). The compact-resume loop's handover
+should leave a machine-readable record of what the self-compacting model discarded,
+so the operator can review post-hoc. Implemented as a standalone, testable helper
+`agents/handover/discard-manifest.sh` wired into the normal handover path.
+
+**Spec-vs-reality:** `--emergency` was deprecated by D-028 (T-175) — it is now an
+alias for the normal handover. The continuous-run triggers (`pre-compact.sh`,
+`checkpoint.sh`) all route through the normal path, so the manifest is emitted
+there; the deprecated `--emergency` flag therefore still produces it. See Evolution.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `agents/handover/handover.sh --emergency` writes `.context/handovers/<SESSION>.discard-manifest.yaml` alongside the handover
-- [ ] Manifest enumerates category-level discards: `{tool_results_compressed_count, turns_summarized_count, files_dropped_from_working_set: [...]}`
-- [ ] Manifest is human-readable YAML and parseable (`python3 -c "import yaml; yaml.safe_load(open(...))"` exits 0)
-- [ ] Manifest is referenced from the handover Markdown body via a "Discard Manifest:" line so post-hoc operator review is one-click
-- [ ] `fw handover --emergency` continues to complete in <500ms (manifest generation overhead negligible)
+- [x] `agents/handover/handover.sh --emergency` writes `.context/handovers/<SESSION>.discard-manifest.yaml` alongside the handover
+- [x] Manifest enumerates category-level discards: `{tool_results_compressed_count, turns_summarized_count, files_dropped_from_working_set: [...]}`
+- [x] Manifest is human-readable YAML and parseable (`python3 -c "import yaml; yaml.safe_load(open(...))"` exits 0)
+- [x] Manifest is referenced from the handover Markdown body via a "Discard Manifest:" line so post-hoc operator review is one-click
+- [x] `fw handover --emergency` continues to complete in <500ms (manifest generation overhead negligible)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +123,14 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# Manifest helper produces parseable YAML with all three category keys (capture-then-grep, L-387)
+out=$(bash agents/handover/discard-manifest.sh S-VERIFY-2366 2>&1); test -f "$(echo "$out" | tail -1)"
+python3 -c "import yaml; d=yaml.safe_load(open('.context/handovers/S-VERIFY-2366.discard-manifest.yaml')); assert all(k in d for k in ('tool_results_compressed_count','turns_summarized_count','files_dropped_from_working_set')), d; print('manifest keys OK')"
+# T-2366 bats suite green (8 tests: standalone helper + handover wiring + degradation + perf)
+bats tests/unit/t2366_discard_manifest.bats >/dev/null 2>&1 && echo "t2366 bats PASS"
+# No regression in the existing handover suite
+bats tests/unit/handover.bats >/dev/null 2>&1 && echo "handover regression PASS"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -155,6 +171,27 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-13 — `--emergency` is a dead flag (D-028)
+
+- **What changed:** The filing assumed `handover.sh --emergency` was a distinct
+  code path to extend. It is not — D-028 (T-175) eliminated the emergency/full
+  distinction; `--emergency` only sets `AUTO_COMMIT=true` and is treated as a
+  normal handover. Both continuous-run triggers (`pre-compact.sh`,
+  `checkpoint.sh`) call the normal handover path.
+- **Plan impact:** The manifest is emitted in the **normal** handover path (after
+  telemetry gathering, before the body heredoc), not behind an `--emergency`
+  branch that doesn't exist. The deprecated flag still produces the manifest
+  because it aliases to that same path — so the literal AC wording holds.
+- **What it cost / where fidelity stops:** the model self-compacts internally, so
+  a token-level before/after diff is impossible (S6 Q4). The manifest is
+  category-level: tool-results, model turns, and working-set files *at risk* of
+  being shed — mined from the session transcript, with graceful degradation to a
+  `metrics-fallback`/`unavailable` placeholder when no transcript is reachable.
+- **Triggered:** new standalone helper `agents/handover/discard-manifest.sh` (with
+  a `FW_DISCARD_JSONL_DIR` test seam) rather than inlining into handover.sh, so
+  the logic is unit-testable in isolation (`tests/unit/t2366_discard_manifest.bats`).
+  One-line testability improvement to handover.sh: `HANDOVER_DIR` is now env-overridable.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -182,3 +219,16 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2366-t-2158-s4-discard-manifest-enhancement-t.md
 - **Context:** Initial task creation
+
+### 2026-06-13T10:42:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fc9c96bb
+- **Timestamp:** 2026-06-13T10:55:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
