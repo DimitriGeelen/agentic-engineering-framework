@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2368: arc-012 end-to-end continuous-loop integration test — drive resume->inject across multi-cycle + cap + ceiling
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T12:49:47Z
+# ============================================================================
+
+task_id: T-2368
+task_name: "arc-012 end-to-end continuous-loop integration test — drive resume->inject across multi-cycle + cap + ceiling"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-06-13T12:41:17Z
+completed: 2026-06-13T12:49:35Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`tests/integration/continuous_loop.bats` exists and drives the real `agents/context/post-compact-resume.sh` (feeding SessionStart JSON on stdin, capturing the emitted `additionalContext` JSON) — not a reimplementation of the injector logic'
+  - 'Multi-cycle: running the resume hook 3× with continuous-mode `enabled: true` advances `current_iteration` 0→1→2→3 in `.continuous-mode.yaml` and surfaces a `## Next Directive (iteration N/...)` section each cycle'
+  - 'Cap-termination: at `current_iteration == max_iterations`, the next resume emits `## Next Directive — LOOP TERMINATED` and WITHHOLDS the directive body from auto-pickup (the counter records the over-cap attempt `new_iter`, per shipped spec — what the cap withholds is the directive, not the increment)'
+  - 'Tier-ceiling freeze (S5 end-to-end): a directive whose planned `next_task` resolves to a task with `cost_estimate.blast_radius > tier_ceiling` emits `## Next Directive — TIER CEILING EXCEEDED` and FREEZES `current_iteration` (counter unchanged through the real script)'
+  - 'Compact-reset: a SessionStart with `source: compact` resets `current_iteration` to 0 before the post-resume advance (fresh-loop semantics) — proves the manual `/compact` path through the real hook'
+  - '`bats tests/integration/continuous_loop.bats` is green AND `python3 -m pytest tests/unit/test_inject_next_directive.py -q` still passes (no regression)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2368-arc-012-end-to-end-continuous-loop-integ.md
+generated_by: context-agent-hybrid

@@ -4,12 +4,12 @@ name: "arc-012 end-to-end continuous-loop integration test — drive resume->inj
 description: >
   arc-012 end-to-end continuous-loop integration test — drive resume->inject across multi-cycle + cap + ceiling
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/integration/continuous_loop.bats]
 related_tasks: [T-2158, T-2363, T-2364, T-2365, T-2366, T-2367]
 arc_id: continuous-run
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: continuous-run
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T12:41:17Z
-last_update: 2026-06-13T12:41:17Z
-date_finished: null
+last_update: 2026-06-13T12:49:35Z
+date_finished: 2026-06-13T12:49:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -229,8 +229,8 @@ out=$(bin/fw reviewer T-2368 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b258d262
-- **Timestamp:** 2026-06-13T12:48:50Z
+- **Scan ID:** R-4aa4001d
+- **Timestamp:** 2026-06-13T12:49:42Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -238,3 +238,6 @@ out=$(bin/fw reviewer T-2368 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#1 (Agent)
+
+### 2026-06-13T12:49:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
