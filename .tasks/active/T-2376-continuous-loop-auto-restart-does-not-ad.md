@@ -57,20 +57,20 @@ Pairs with [[project_t2373_budget_terminator_shipped]] (terminator) and T-2375 (
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/init.sh` canonical SessionStart generator includes a `startup` matcher block →
+- [x] `lib/init.sh` canonical SessionStart generator includes a `startup` matcher block →
       `$fw_prefix hook post-compact-resume` (so `fw init` / `fw upgrade` wire it for all projects)
-- [ ] `bin/claude-fw` writes a one-shot `.context/working/.auto-restart-pending` sentinel immediately
+- [x] `bin/claude-fw` writes a one-shot `.context/working/.auto-restart-pending` sentinel immediately
       before restarting via `claude -c` (placed at the shared restart point so both plain and
       TermLink restarts, which converge at `CLAUDE_ARGS=("-c")`, are covered)
-- [ ] `agents/context/post-compact-resume.sh`: `source=startup` WITHOUT the sentinel → no-op
+- [x] `agents/context/post-compact-resume.sh`: `source=startup` WITHOUT the sentinel → no-op
       (exit 0, preserves pre-T-2376 cold-start behavior — this hook never fired on cold starts);
       `source=startup` WITH the sentinel → consume it (rm) + run the full resume path so the
       directive injector advances the loop; `compact`/`resume` behavior unchanged
-- [ ] `tests/integration/continuous_loop_auto_restart_advance.bats` proves: (a) claude-fw writes the
+- [x] `tests/integration/continuous_loop_auto_restart_advance.bats` proves: (a) claude-fw writes the
       sentinel before restart, (b) the resume hook advances `current_iteration` on startup+sentinel,
       (c) does NOT advance (and emits nothing) on startup-without-sentinel, (d) still advances on
       compact/resume; bats green
-- [ ] `fw hook-enable --name post-compact-resume --event SessionStart --matcher startup --dry-run`
+- [x] `fw hook-enable --name post-compact-resume --event SessionStart --matcher startup --dry-run`
       emits the would-be settings.json addition (evidence artifact for the Human wiring step)
 
 ### Human
@@ -170,6 +170,26 @@ sentinel makes the auto-restart-vs-cold-start distinction explicit and testable 
 inherit the gap. Residual: the live E2E (Human AC) is the only place the real `claude -c` SessionStart
 source is confirmed — documented as the assumption this fix rests on.
 
+## Recommendation
+
+**Recommendation:** GO (pending the two Human ACs)
+
+**Rationale:** The autonomous loop's missing leg is closed in code. All 5 Agent ACs pass: the
+`startup` matcher is in the canonical generator, claude-fw writes the one-shot sentinel before
+`claude -c`, the resume hook advances on auto-restart-startup while leaving cold starts untouched,
+and the bats suite pins all four source behaviors. Reviewer PASS, no findings. The two remaining
+Human ACs are the parts the agent structurally cannot complete: (1) wiring the matcher into this
+repo's `.claude/settings.json` (B-005 — operator runs `fw hook-enable`), and (2) the live real-`claude
+-c` E2E that confirms the SessionStart source is actually `startup` (the one assumption code can't
+self-verify). Together with T-2373 (terminator) and T-2375 (worktree budget gauge), this completes
+the three prerequisites for a fully self-driving continuous loop.
+
+**Evidence:**
+- 5/5 Agent ACs ticked; reviewer R-951bb2f9 PASS, 0 findings.
+- `tests/integration/continuous_loop_auto_restart_advance.bats` 5/5; T-2373 terminator 3/3 (regression);
+  `continuous_loop.bats` 6/6 + `test_inject_next_directive.py` 40/40 (no regression from the stdin restructure).
+- `fw hook-enable ... --matcher startup --dry-run` emits the would-be settings block (Human-AC #1 evidence).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -221,3 +241,12 @@ source is confirmed — documented as the assumption this fix rests on.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2376-continuous-loop-auto-restart-does-not-ad.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-951bb2f9
+- **Timestamp:** 2026-06-13T16:47:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

@@ -271,6 +271,15 @@ while true; do
         # Clean up signal before restart
         rm -f "$signal_file"
 
+        # T-2376: mark this restart as a continuous-loop auto-restart. `claude -c`
+        # emits SessionStart source "startup" (not "compact"/"resume"), so the
+        # resume hook needs a way to tell an auto-restart continuation (advance
+        # the loop + reinject the directive) from an unrelated cold `claude`
+        # start. The sentinel sits beside the restart signal in .context/working/
+        # and is consumed (rm) by post-compact-resume.sh on the next startup.
+        restart_sentinel="$(dirname "$signal_file")/.auto-restart-pending"
+        : > "$restart_sentinel" 2>/dev/null || true
+
         # Brief pause for user to cancel
         sleep 3
 
