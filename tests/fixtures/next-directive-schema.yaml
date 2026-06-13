@@ -1,0 +1,35 @@
+# T-2363 (T-2158 S1): schema fixture for .context/working/.next-directive.yaml
+#
+# This file documents the schema. It is NOT loaded by the runtime; the runtime
+# reads `.context/working/.next-directive.yaml` directly. This fixture is the
+# round-trip reference for unit tests (test_next_directive_schema.py) and the
+# documentation source for operators / agents authoring directives.
+#
+# A directive is the agent's queued "what to do after restart" payload.
+# Continuous-mode (T-2365) reads it on resume; without it, claude-fw still
+# restarts but the resumed session has no auto-injected next-action.
+
+# REQUIRED FIELDS
+directive: "string — one-line task or sub-goal the resumed session should pick up next"
+filed_by: "operator | self | <session-id>"
+filed_at: "ISO-8601 Z timestamp"
+
+# OPTIONAL FIELDS (continuous-mode bounding parameters)
+expires_at: "ISO-8601 Z timestamp; resumed session ignores directive past this point"
+iteration: 0          # current cycle index (incremented by post-compact-resume.sh per T-2364)
+max_iterations: 10    # hard cap; resumed session aborts continuous mode at this count
+tier_ceiling: 1       # max Tier the resumed session may operate at; Tier 0 always blocked
+
+# EXAMPLE INSTANCE (operator-issued, no continuous-mode wiring yet):
+# directive: "continue T-2364 — wire SessionStart resume to read directive and inject"
+# filed_by: operator
+# filed_at: 2026-06-13T09:00:00Z
+
+# EXAMPLE INSTANCE (self-issued by checkpoint.sh at budget critical):
+# directive: "continue current focus task T-XXXX (auto-resumed by checkpoint.sh)"
+# filed_by: self
+# filed_at: 2026-06-13T11:30:00Z
+# expires_at: 2026-06-13T20:00:00Z
+# iteration: 3
+# max_iterations: 10
+# tier_ceiling: 1

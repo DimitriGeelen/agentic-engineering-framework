@@ -173,9 +173,18 @@ while true; do
         # Read signal metadata for display
         local_session=$(python3 -c "import json,sys; d=json.load(open('$signal_file')); print(d.get('session_id','?'))" 2>/dev/null) || local_session="?"
         local_tokens=$(python3 -c "import json,sys; d=json.load(open('$signal_file')); print(d.get('tokens',0))" 2>/dev/null) || local_tokens="?"
+        # T-2363 (T-2158 S1): read optional directive from signal. When present,
+        # export as FW_NEXT_DIRECTIVE so the resumed session's SessionStart
+        # hook (T-2364) can surface it as additionalContext. Absent → no env
+        # var set, behavior identical to pre-T-2363.
+        local_directive=$(python3 -c "import json,sys; d=json.load(open('$signal_file')); v=d.get('directive',''); print(v if isinstance(v,str) else '')" 2>/dev/null) || local_directive=""
 
         echo ""
         echo "claude-fw: Auto-restart #${restart_count} (session: ${local_session}, tokens: ${local_tokens})"
+        if [ -n "$local_directive" ]; then
+            echo "  Directive: ${local_directive}"
+            export FW_NEXT_DIRECTIVE="$local_directive"
+        fi
         echo "  Handover committed. Continuing in 3 seconds..."
         echo "  Press Ctrl+C to cancel."
         echo ""
