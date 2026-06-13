@@ -4498,10 +4498,18 @@ echo "=== ORCHESTRATOR ARC CHECKS ==="
 ORCH_SCRIPT="$FRAMEWORK_ROOT/agents/audit/orchestrator-mcp-scan.sh"
 ORCH_LATEST="$CONTEXT_DIR/audits/orchestrator-LATEST.yaml"
 
-if [ ! -x "$ORCH_SCRIPT" ]; then
-    warn "Orchestrator scan: $ORCH_SCRIPT not executable" \
-         "$ORCH_SCRIPT missing or not +x" \
-         "chmod +x $ORCH_SCRIPT"
+# T-2384: precondition is existence, not +x. The script is invoked via `bash`
+# (line ~4511 below), so the executable bit is never required at runtime — the
+# repo convention is non-+x agent scripts run via `bash`/sourced (30+ siblings),
+# and the test (test_orchestrator_mcp_classify.py) only read_text()s it. The
+# prior `[ ! -x ]` check was stricter than the invocation, so it WARNed on a
+# git mode of 100644 that nothing actually breaks on. Relaxing to `[ ! -f ]`
+# fixes the check/invocation mismatch at the root and is recurrence-proof
+# (a `chmod +x` would re-fire this WARN on the next mode-strip).
+if [ ! -f "$ORCH_SCRIPT" ]; then
+    warn "Orchestrator scan: $ORCH_SCRIPT not found" \
+         "$ORCH_SCRIPT missing" \
+         "Restore the file (invoked via 'bash', +x not required)"
 elif ! [ -d "${FW_TERMLINK_REPO:-/opt/termlink}/crates/termlink-mcp/src" ] && ! command -v termlink >/dev/null 2>&1; then
     info "Orchestrator scan: skipped — TermLink repo unreachable on this host"
 else
