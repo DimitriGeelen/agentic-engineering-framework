@@ -115,9 +115,10 @@ T-2381's controlled live-fire discovered (OBS-075) that the continuous-run loop'
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 # precondition text present (repo-global + quiet-repo + OBS-075) and headers intact
-out=$(cat docs/runbooks/arc-012-continuous-mode-live-fire.md); echo "$out" | grep -qi "repo-global"
-echo "$out" | grep -qi "OBS-075"
-echo "$out" | grep -q "claude-fw" && echo "$out" | grep -q "## Prerequisites" && echo "$out" | grep -q "## Troubleshooting"
+# (each line runs in a separate shell — grep the file directly, no shared vars, no pipe)
+grep -qi "repo-global" docs/runbooks/arc-012-continuous-mode-live-fire.md
+grep -qi "OBS-075" docs/runbooks/arc-012-continuous-mode-live-fire.md
+grep -q "## Prerequisites" docs/runbooks/arc-012-continuous-mode-live-fire.md && grep -q "## Troubleshooting" docs/runbooks/arc-012-continuous-mode-live-fire.md && grep -q "claude-fw" docs/runbooks/arc-012-continuous-mode-live-fire.md
 
 ## RCA
 
