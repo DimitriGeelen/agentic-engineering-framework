@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2370: fix OBS-072 — arc-012 S2/S3 (T-2364/T-2365) status-vs-directory drift
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T13:05:42Z
+# ============================================================================
+
+task_id: T-2370
+task_name: "fix OBS-072 — arc-012 S2/S3 (T-2364/T-2365) status-vs-directory drift"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T13:00:22Z
+completed: 2026-06-13T13:05:36Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`.tasks/completed/T-2364-*.md` has `status: work-completed` (drift resolved)'
+  - '`.tasks/completed/T-2365-*.md` has `status: work-completed` (drift resolved)'
+  - 'No arc-012 task in `.tasks/completed/` carries `status: started-work` (full-class scan clean)'
+  - 'OBS-072 marked resolved in `.context/inbox.yaml` with a one-line evidence note (edited in place per the fw-note backfill rule — no dismiss-and-refile)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md
+generated_by: context-agent-hybrid
