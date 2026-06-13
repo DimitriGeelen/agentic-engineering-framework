@@ -172,8 +172,28 @@ warn_by_tokens() {
                 if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
                     session_id=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
                 fi
+                # T-2363 (T-2158 S1): if .next-directive.yaml exists, fold its
+                # `directive:` value into the restart signal so the resumed
+                # session can pick it up. Absent file → JSON shape unchanged
+                # (backward-compat with all pre-T-2363 sessions and old
+                # claude-fw wrapper versions, which ignore unknown JSON keys).
+                local _directive_file="$CONTEXT_DIR/working/.next-directive.yaml"
+                local _directive_json=""
+                if [ -f "$_directive_file" ]; then
+                    _directive_json=$(python3 -c "
+import yaml, json, sys
+try:
+    with open('$_directive_file') as f:
+        d = yaml.safe_load(f) or {}
+    v = d.get('directive')
+    if isinstance(v, str) and v.strip():
+        print(',\"directive\":' + json.dumps(v.strip()))
+except Exception:
+    pass
+" 2>/dev/null) || _directive_json=""
+                fi
                 cat > "$restart_signal" << SIGNAL_EOF
-{"timestamp":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session_id":"${session_id:-unknown}","reason":"critical_budget_auto_handover","tokens":${tokens:-0}}
+{"timestamp":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session_id":"${session_id:-unknown}","reason":"critical_budget_auto_handover","tokens":${tokens:-0}${_directive_json}}
 SIGNAL_EOF
                 echo "AUTO-RESTART: Signal written — wrapper will auto-restart on exit." >&2
             else
