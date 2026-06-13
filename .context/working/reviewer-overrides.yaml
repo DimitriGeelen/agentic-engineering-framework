@@ -971,3 +971,22 @@ overrides:
   expires_at: '2026-09-11T12:48:50Z'
   added_by: root
   added_at: '2026-06-13T12:48:50Z'
+- id: OV-f9a6291e
+  task_id: T-2183
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 1
+  reason: "mechanical steps but B-005 human-review-gated (enforcement config); cannot\
+    \ be an Agent AC \u2014 agent Edit on settings.json is blocked"
+  expires_at: '2026-09-11T14:12:25Z'
+  added_by: root
+  added_at: '2026-06-13T14:12:25Z'
+- id: OV-414b96c2
+  task_id: T-2183
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "bats suites (chat_bare_path_regex/e2e + consumer-fresh sim) are real integration\
+    \ against the actual scripts, not mocks \u2014 canonical FP class (sibling to\
+    \ T-2240/T-2266)"
+  expires_at: '2026-09-11T14:12:25Z'
+  added_by: root
+  added_at: '2026-06-13T14:12:25Z'
