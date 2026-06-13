@@ -4,12 +4,12 @@ name: "fw costs + 2 surfaces blind in worktrees — migrate stale transcript-dir
 description: >
   fw costs + 2 surfaces blind in worktrees — migrate stale transcript-dir reconstruction to fw_claude_project_dir_name (T-2375 completion)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [capture-reader, agents/handover/discard-manifest.sh, lib/costs.sh, tests/unit/t2380_transcript_dir_encoding.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T20:37:21Z
-last_update: 2026-06-13T20:37:21Z
-date_finished: null
+last_update: 2026-06-13T20:45:05Z
+date_finished: 2026-06-13T20:45:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -202,9 +202,17 @@ bats tests/unit/t2380_transcript_dir_encoding.bats
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8cfc55c3
-- **Timestamp:** 2026-06-13T20:44:07Z
+- **Scan ID:** R-0f10a636
+- **Timestamp:** 2026-06-13T20:45:06Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+     - evidence: `out=$(bin/fw costs session 2>&1); ! echo "$out" | grep -q "No JSONL directory found"`
+
+### 2026-06-13T20:45:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

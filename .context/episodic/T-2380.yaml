@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2380: fw costs + 2 surfaces blind in worktrees — migrate stale transcript-dir reconstruction to fw_claude_project_dir_name (T-2375 completion)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T20:45:11Z
+# ============================================================================
+
+task_id: T-2380
+task_name: "fw costs + 2 surfaces blind in worktrees — migrate stale transcript-dir reconstruction to fw_claude_project_dir_name (T-2375 completion)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T20:37:21Z
+completed: 2026-06-13T20:45:05Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/costs.sh` `_costs_jsonl_dir()` resolves the projects dir via `fw_claude_project_dir_name()` (no `tr ''/'' ''-''`), sourcing `lib/paths.sh` if the helper is not already defined'
+  - '`agents/handover/discard-manifest.sh` resolves the projects dir via `fw_claude_project_dir_name()` (no `tr ''/'' ''-''`)'
+  - '`agents/capture/read-transcript.py` sanitizes the project root with full non-alnum replacement (`re.sub(r''[^A-Za-z0-9]'', ''-'', ...)`), not slash-only'
+  - '`bin/fw costs session` run from this worktree exits 0 and finds the JSONL dir (no "No JSONL directory found")'
+  - 'Regression test pins the worktree-path encoding for the migrated surface(s) (a path containing a dot encodes the dot to `-`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2380-fw-costs--2-surfaces-blind-in-worktrees-.md
+generated_by: context-agent-hybrid

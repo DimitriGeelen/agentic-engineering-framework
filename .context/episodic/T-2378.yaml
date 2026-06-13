@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2378: integration test: gauge-critical writes .restart-requested with folded directive (loop link #2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T19:48:54Z
+# ============================================================================
+
+task_id: T-2378
+task_name: "integration test: gauge-critical writes .restart-requested with folded directive (loop link #2)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T19:45:01Z
+completed: 2026-06-13T19:48:47Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'A new integration test drives the REAL `agents/context/checkpoint.sh post-tool` with a stdin `transcript_path` pointing at a critical-token transcript, and asserts `.context/working/.restart-requested` is written'
+  - 'The test stubs `handover.sh` (via a fake FRAMEWORK_ROOT tree) so it performs NO real git commit/push'
+  - 'The test asserts the restart signal JSON contains `reason":"critical_budget_auto_handover"`'
+  - 'The test asserts the T-2363 directive-fold: when `.next-directive.yaml` has a `directive:`, the signal JSON contains a `"directive"` key; when absent, it does not'
+  - 'The test asserts a sub-critical (e.g. ok-level) transcript does NOT write `.restart-requested` (negative control)'
+  - 'All assertions pass (`bats tests/integration/continuous_loop_critical_signal.bats`)'
+  - '`bin/fw reviewer T-2378` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2378-integration-test-gauge-critical-writes-r.md
+generated_by: context-agent-hybrid
