@@ -618,3 +618,19 @@ observations:
   status: resolved
   promoted_to: T-2370
   resolution: "Fixed in T-2370 — set status: work-completed + date_finished on both T-2364 and T-2365 in .tasks/completed/ to match their directory. Full-class scan of completed/ arc-012 tasks is clean (no residual started-work). The detector follow-on (completed/-dir + non-completed-status, mentioned in the OBS text) is NOT done here — left as a separate concern if the class recurs."
+- id: OBS-073
+  text: "arc-012 live-fire finding (T-2373 demo): budget gauge did NOT advance in a spawned claude-fw session — context reached ~140k but .budget-status stayed stale and 24 tool calls ran unblocked, so checkpoint never wrote .restart-requested. Either FW_CONTEXT_WINDOW=40000 env did not reach the hook subprocesses (hooks used 300k default) or checkpoint could not resolve the transcript in the tmux-spawned context (manual checkpoint.sh status = 'no transcript'). Needs root-cause + scope (does it affect normal interactive claude-fw, or only spawned?). Sibling to T-2372. The terminator (T-2373) itself fired correctly once a signal was written manually."
+  captured: 2026-06-13T16:19:59Z
+  context_task: T-2373
+  tags: []
+  status: resolved
+  promoted_to: T-2375
+  resolution: "Root-caused + fixed in T-2375. Real cause was NOT the FW_CONTEXT_WINDOW env (red herring) but the transcript-dir-name computation: find_transcript (checkpoint.sh) + budget-gate.sh used ${PROJECT_ROOT//\\//-} which only replaces '/' — Claude Code replaces EVERY non-alnum char ('.'→'-' too). In any worktree (path contains '.claude/'), the computed dir ('-…-.claude-worktrees-…') ≠ actual ('-…--claude-worktrees-…') → 'no transcript' → gauge blind. Scope: affects EVERY git-worktree session (the framework's own isolation model), not just spawned/tmux. Fix: shared lib/paths.sh fw_claude_project_dir_name() (tr -c alnum dash); live-proven (worktree transcript now resolves, 141646 tokens readable). Regression test tests/integration/transcript_dir_name_sanitization.bats 4/4."
+- id: OBS-074
+  text: "arc-012 live-fire finding (T-2373 demo): resume hook did NOT fire on the claude -c auto-restart path. After the terminator fired and claude-fw restarted via 'claude -c', current_iteration stayed 0, .budget-status was not reseeded, last_source stayed 'compact'. SessionStart matchers are 'compact' + 'resume' (both registered) but a cold 'claude -c' launched from the wrapper likely emits source 'startup', which neither matches — so inject-next-directive.py never advanced the counter and post-compact-resume.sh never reinjected the directive. Consequence: the autonomous-restart path RESTARTS (T-2373) but does NOT self-advance the continuous loop the way manual /compact does. Fix candidate: add a 'startup' SessionStart matcher (guarded) OR make claude-fw restart with a source the resume hook matches. Confirm actual SessionStart source emitted by 'claude -c' first."
+  captured: 2026-06-13T16:20:08Z
+  context_task: T-2373
+  tags: []
+  status: resolved
+  promoted_to: T-2376
+  resolution: "Root-caused + fixed in T-2376 (partial-complete). Confirmed: SessionStart matchers in settings.json are ONLY 'compact'+'resume'; 'claude -c' auto-restart emits source 'startup' → no matcher → post-compact-resume never fires → loop restarts but doesn't advance. The hook+injector already accept 'startup'; only the matcher was missing. Fix: (1) lib/init.sh generator adds startup matcher (fw init/upgrade wire it); (2) bin/claude-fw writes one-shot .auto-restart-pending sentinel before 'claude -c'; (3) post-compact-resume proceeds on startup ONLY with the sentinel (loop continuation, consumes it) — cold starts stay no-op. bats continuous_loop_auto_restart_advance.bats 5/5. 2 Human ACs remain: settings.json wiring (B-005, via fw hook-enable) + live claude -c E2E confirming source=startup."
