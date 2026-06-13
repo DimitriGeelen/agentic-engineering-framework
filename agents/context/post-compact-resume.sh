@@ -250,16 +250,34 @@ ${HOOK_PROBE_DETAIL}
     fi
 fi
 
-# T-2364 (T-2158 S2): Inject next-directive when .next-directive.yaml is present.
-# Increments the iteration counter at .context/working/.continuous-mode-state.yaml
-# and refuses to inject (replaces with "LOOP TERMINATED" notice) when iteration
-# exceeds max_iterations OR expires_at has passed. Helper exits 0 always; empty
-# stdout means "no directive present" — degrades to no-op like the rest of this
-# hook. Sibling of T-2363 substrate (checkpoint.sh writes directive into restart
-# signal; this hook surfaces it in additionalContext on resume).
+# T-2364/T-2365 (T-2158 S2+S3): Inject next-directive when continuous-mode is
+# enabled AND .next-directive.yaml is present. Increments current_iteration in
+# .context/working/.continuous-mode.yaml; refuses to inject (LOOP TERMINATED)
+# when caps are hit. Helper exits 0 always; empty stdout = no-op (continuous-mode
+# off OR no directive present) — matches the degrade-to-no-op posture of the
+# rest of this hook. Sibling of T-2363 substrate (checkpoint.sh writes directive
+# into restart signal; this hook surfaces it in additionalContext on resume).
+#
+# T-2365 AC#3: read stdin to extract the SessionStart matcher (`source` field
+# in the hook input JSON). Manual `/compact` resets the iteration counter to 0
+# before the post-resume increment, so a fresh manual compact begins a fresh
+# loop. The hook input arrives on stdin once — capture early so later subshells
+# can re-read it. SAVED_STDIN holds the raw JSON; SOURCE_TAG is the extracted
+# matcher (defaults to "resume" when the field is absent).
+SAVED_STDIN=$(cat 2>/dev/null || echo "")
+SOURCE_TAG=$(python3 -c "
+import json, sys
+try:
+    d = json.loads(sys.stdin.read() or '{}')
+    src = d.get('source') or d.get('matcher') or 'resume'
+    print(src if src in ('startup', 'resume', 'compact') else 'resume')
+except Exception:
+    print('resume')
+" <<< "$SAVED_STDIN" 2>/dev/null || echo "resume")
+
 INJECTOR="$FRAMEWORK_ROOT/agents/context/inject-next-directive.py"
 if [ -f "$INJECTOR" ]; then
-    DIRECTIVE_SECTION=$(python3 "$INJECTOR" --project-root "$PROJECT_ROOT" 2>/dev/null || echo "")
+    DIRECTIVE_SECTION=$(python3 "$INJECTOR" --project-root "$PROJECT_ROOT" --source "$SOURCE_TAG" 2>/dev/null || echo "")
     if [ -n "$DIRECTIVE_SECTION" ]; then
         CONTEXT="${CONTEXT}
 

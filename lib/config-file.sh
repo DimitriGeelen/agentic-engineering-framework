@@ -16,6 +16,32 @@
 _FW_CONFIG_FILE_LOADED=1
 
 _config_yaml="${PROJECT_ROOT:-.}/.framework.yaml"
+# T-2365 (T-2158 S3): keys prefixed `continuous-mode.` route to a dedicated
+# config-plus-state file under .context/working/ instead of .framework.yaml.
+# Keeps continuous-mode runtime state (current_iteration) out of the project
+# config, while the config-shaped fields (enabled, max_iterations, etc.) are
+# still settable via the standard `fw config set/get` verb.
+_continuous_mode_yaml="${PROJECT_ROOT:-.}/.context/working/.continuous-mode.yaml"
+_continuous_mode_prefix="continuous-mode."
+
+# Default schema for .continuous-mode.yaml — conservative caps.
+_continuous_mode_defaults() {
+    cat <<DEFAULTS
+enabled: false
+max_iterations: 10
+tier_ceiling: 1
+expires_after_seconds: 86400
+current_iteration: 0
+DEFAULTS
+}
+
+# Initialise .continuous-mode.yaml with defaults if absent.
+_continuous_mode_init_if_absent() {
+    if [ ! -f "$_continuous_mode_yaml" ]; then
+        mkdir -p "$(dirname "$_continuous_mode_yaml")"
+        _continuous_mode_defaults > "$_continuous_mode_yaml"
+    fi
+}
 
 do_config() {
     local subcmd="${1:-help}"
@@ -61,13 +87,24 @@ _config_set() {
         exit 1
     fi
 
-    if [ ! -f "$_config_yaml" ]; then
-        echo -e "${RED:-}No .framework.yaml found at $_config_yaml${NC:-}" >&2
+    # T-2365 (T-2158 S3): keys under `continuous-mode.` write to the
+    # dedicated continuous-mode file under .context/working/. Trim the
+    # prefix before passing to the python writer.
+    local target_yaml="$_config_yaml"
+    local effective_key="$key"
+    if [[ "$key" == "$_continuous_mode_prefix"* ]]; then
+        _continuous_mode_init_if_absent
+        target_yaml="$_continuous_mode_yaml"
+        effective_key="${key#$_continuous_mode_prefix}"
+    fi
+
+    if [ ! -f "$target_yaml" ]; then
+        echo -e "${RED:-}No config file found at $target_yaml${NC:-}" >&2
         echo "Run 'fw init' first to create a project configuration." >&2
         exit 1
     fi
 
-    python3 - "$_config_yaml" "$key" "$value" << 'PYSET'
+    python3 - "$target_yaml" "$effective_key" "$value" << 'PYSET'
 import sys
 
 yaml_file = sys.argv[1]
@@ -148,12 +185,22 @@ _config_get() {
         exit 1
     fi
 
-    if [ ! -f "$_config_yaml" ]; then
-        echo -e "${RED:-}No .framework.yaml found at $_config_yaml${NC:-}" >&2
+    # T-2365 (T-2158 S3): keys under `continuous-mode.` read from the
+    # dedicated continuous-mode file. Auto-init with defaults on first read.
+    local target_yaml="$_config_yaml"
+    local effective_key="$key"
+    if [[ "$key" == "$_continuous_mode_prefix"* ]]; then
+        _continuous_mode_init_if_absent
+        target_yaml="$_continuous_mode_yaml"
+        effective_key="${key#$_continuous_mode_prefix}"
+    fi
+
+    if [ ! -f "$target_yaml" ]; then
+        echo -e "${RED:-}No config file found at $target_yaml${NC:-}" >&2
         exit 1
     fi
 
-    python3 - "$_config_yaml" "$key" << 'PYGET'
+    python3 - "$target_yaml" "$effective_key" << 'PYGET'
 import sys, yaml
 
 yaml_file = sys.argv[1]

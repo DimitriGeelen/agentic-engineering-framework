@@ -1,10 +1,14 @@
-"""T-2364 (T-2158 S2) — unit tests for inject-next-directive.py.
+"""T-2364/T-2365 (T-2158 S2+S3) — unit tests for inject-next-directive.py.
 
 Covers:
-  AC#1 — helper reads .next-directive.yaml and emits "## Next Directive" section
-  AC#2 — iteration counter increments across invocations + persists to state file
-  AC#3 — refuse-to-inject when iteration > max_iterations OR expires_at passed
-  AC#4 — no-directive / no-state degrades silently (empty stdout, exit 0)
+  S2 AC#1 — helper reads .next-directive.yaml and emits "## Next Directive" section
+  S2 AC#2 — iteration counter increments across invocations + persists to state file
+  S2 AC#3 — refuse-to-inject when iteration > max_iterations OR expires_at passed
+  S2 AC#4 — no-directive / no-state degrades silently (empty stdout, exit 0)
+  S3 AC#1 — .context/working/.continuous-mode.yaml unified config + state schema
+  S3 AC#2 — default-disabled means no behavior when enabled: false
+  S3 AC#3 — --source compact resets current_iteration to 0 before increment
+  S3 AC#5 — conservative defaults seeded by helper / fw config get
 """
 
 import importlib.util
@@ -21,7 +25,6 @@ HELPER = PROJECT_ROOT / "agents" / "context" / "inject-next-directive.py"
 
 
 def _load_helper():
-    """Import the helper module by file path (it has a hyphen in the name)."""
     spec = importlib.util.spec_from_file_location("inject_next_directive", HELPER)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -29,14 +32,12 @@ def _load_helper():
 
 
 def _file_layout(tmp_path):
-    """Create the expected .context/working/ layout under tmp_path."""
     working = tmp_path / ".context" / "working"
     working.mkdir(parents=True)
     return working
 
 
 def _write_directive(working, **overrides):
-    """Write a default .next-directive.yaml; allow per-test overrides."""
     payload = {
         "directive": "continue T-XXXX",
         "filed_by": "operator",
@@ -50,19 +51,57 @@ def _write_directive(working, **overrides):
     (working / ".next-directive.yaml").write_text(yaml.safe_dump(payload))
 
 
-def _run_subprocess(tmp_path, now=None):
-    """Invoke the helper as a subprocess and return (stdout, exitcode)."""
+def _write_cmode(working, **overrides):
+    """Seed .continuous-mode.yaml with enabled-by-default for S2-style tests
+    that pre-date the S3 disable-by-default rule."""
+    payload = {
+        "enabled": True,
+        "max_iterations": 10,
+        "tier_ceiling": 1,
+        "expires_after_seconds": 86400,
+        "current_iteration": 0,
+    }
+    payload.update(overrides)
+    (working / ".continuous-mode.yaml").write_text(yaml.safe_dump(payload))
+
+
+def _run_subprocess(tmp_path, now=None, source=None):
     args = [sys.executable, str(HELPER), "--project-root", str(tmp_path)]
     if now:
         args += ["--now", now]
+    if source:
+        args += ["--source", source]
     result = subprocess.run(args, capture_output=True, text=True)
     return result.stdout, result.returncode
 
 
-# ─── AC#4 baseline: degrade-to-no-op paths ──────────────────────────────────
+# ─── S3 AC#2: default-disabled is the default ────────────────────────────────
+
+def test_disabled_continuous_mode_is_silent_even_with_directive(tmp_path):
+    """When .continuous-mode.yaml is absent or has enabled: false, helper
+    emits nothing — backward compat with all pre-S3 sessions."""
+    working = _file_layout(tmp_path)
+    _write_directive(working)
+    # No .continuous-mode.yaml at all
+    stdout, rc = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert rc == 0
+    assert stdout == ""
+
+
+def test_explicit_disabled_short_circuits(tmp_path):
+    working = _file_layout(tmp_path)
+    _write_directive(working)
+    _write_cmode(working, enabled=False)
+    stdout, rc = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert rc == 0
+    assert stdout == ""
+
+
+# ─── S2 AC#4 baseline: degrade-to-no-op paths (continuous-mode ENABLED) ─────
 
 def test_no_directive_file_is_silent_no_op(tmp_path):
-    _file_layout(tmp_path)
+    working = _file_layout(tmp_path)
+    _write_cmode(working)
     stdout, rc = _run_subprocess(tmp_path)
     assert rc == 0
     assert stdout == ""
@@ -70,6 +109,7 @@ def test_no_directive_file_is_silent_no_op(tmp_path):
 
 def test_directive_file_empty_directive_field_is_silent(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working)
     (working / ".next-directive.yaml").write_text("directive: ''\nfiled_by: self\n")
     stdout, rc = _run_subprocess(tmp_path)
     assert rc == 0
@@ -78,6 +118,7 @@ def test_directive_file_empty_directive_field_is_silent(tmp_path):
 
 def test_directive_file_missing_directive_field_is_silent(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working)
     (working / ".next-directive.yaml").write_text("filed_by: self\n")
     stdout, rc = _run_subprocess(tmp_path)
     assert rc == 0
@@ -86,45 +127,52 @@ def test_directive_file_missing_directive_field_is_silent(tmp_path):
 
 def test_malformed_yaml_is_silent_no_op(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working)
     (working / ".next-directive.yaml").write_text("not: [valid: yaml")
     stdout, rc = _run_subprocess(tmp_path)
     assert rc == 0
     assert stdout == ""
 
 
-# ─── AC#1: helper emits "## Next Directive" section ─────────────────────────
+# ─── S2 AC#1: helper emits "## Next Directive" section ─────────────────────
 
 def test_first_resume_emits_next_directive_section(tmp_path):
     working = _file_layout(tmp_path)
-    _write_directive(working, directive="extend post-compact-resume.sh")
+    _write_cmode(working, max_iterations=5)
+    _write_directive(working, directive="extend post-compact-resume.sh", max_iterations=5)
     stdout, rc = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
     assert rc == 0
     assert stdout.startswith("## Next Directive (iteration 1/5, tier_ceiling 1)")
     assert "extend post-compact-resume.sh" in stdout
     assert "Filed by: operator at 2026-06-13T09:15:00Z" in stdout
     assert "LOOP TERMINATED" not in stdout
+    # T-2365 AC#1 schema: state file written at unified path
+    assert (working / ".continuous-mode.yaml").is_file()
 
 
 def test_section_renders_max_iter_unset_as_infinity(tmp_path):
     working = _file_layout(tmp_path)
+    # Both config and directive unset → ∞
+    _write_cmode(working, max_iterations=None)
     _write_directive(working, max_iterations=None)
     stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
-    # ∞ renders when max_iterations is unset
     assert "iteration 1/∞" in stdout
 
 
 def test_section_renders_tier_ceiling_unset(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=None)
     _write_directive(working, tier_ceiling=None)
     stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
     assert "tier_ceiling unset" in stdout
 
 
-# ─── AC#2: iteration counter increments + persists ──────────────────────────
+# ─── S2 AC#2: iteration counter increments + persists ──────────────────────
 
 def test_iteration_counter_increments_across_invocations(tmp_path):
     working = _file_layout(tmp_path)
-    _write_directive(working)
+    _write_cmode(working, max_iterations=5)
+    _write_directive(working, max_iterations=5)
     stdout1, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
     stdout2, _ = _run_subprocess(tmp_path, now="2026-06-13T11:00:00Z")
     stdout3, _ = _run_subprocess(tmp_path, now="2026-06-13T12:00:00Z")
@@ -135,30 +183,37 @@ def test_iteration_counter_increments_across_invocations(tmp_path):
 
 def test_state_file_persists_after_first_resume(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working)
     _write_directive(working, directive="hello world")
     _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
-    state_file = working / ".continuous-mode-state.yaml"
+    state_file = working / ".continuous-mode.yaml"
     assert state_file.is_file()
     state = yaml.safe_load(state_file.read_text())
-    assert state["iteration"] == 1
+    assert state["current_iteration"] == 1
     assert state["last_resumed_at"] == "2026-06-13T10:00:00Z"
     assert state["last_directive_seen"] == "hello world"
     assert state["last_terminated_reason"] == ""
+    # S3 schema fields preserved
+    assert state["enabled"] is True
+    assert state["max_iterations"] == 10
+    assert state["tier_ceiling"] == 1
 
 
 def test_state_file_carries_iteration_across_calls(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working)
     _write_directive(working)
     _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
     _run_subprocess(tmp_path, now="2026-06-13T11:00:00Z")
-    state = yaml.safe_load((working / ".continuous-mode-state.yaml").read_text())
-    assert state["iteration"] == 2
+    state = yaml.safe_load((working / ".continuous-mode.yaml").read_text())
+    assert state["current_iteration"] == 2
 
 
-# ─── AC#3: refuse-to-inject on cap or expiry ────────────────────────────────
+# ─── S2 AC#3: refuse-to-inject on cap or expiry ────────────────────────────
 
 def test_loop_terminated_when_iteration_exceeds_cap(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=2)
     _write_directive(working, max_iterations=2)
     out1, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
     out2, _ = _run_subprocess(tmp_path, now="2026-06-13T10:30:00Z")
@@ -171,25 +226,27 @@ def test_loop_terminated_when_iteration_exceeds_cap(tmp_path):
 
 def test_loop_terminated_when_expires_at_passed(tmp_path):
     working = _file_layout(tmp_path)
-    # Expiry in the past
+    _write_cmode(working)
     _write_directive(working, expires_at="2026-06-12T00:00:00Z")
     stdout, rc = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
     assert rc == 0
     assert "LOOP TERMINATED" in stdout
-    assert "expires_at 2026-06-12T00:00:00Z passed" in stdout
+    assert "2026-06-12T00:00:00Z passed" in stdout
 
 
 def test_loop_terminated_state_records_reason(tmp_path):
     working = _file_layout(tmp_path)
-    _write_directive(working, max_iterations=0)  # cap=0 → first call is over
+    _write_cmode(working, max_iterations=0)
+    _write_directive(working, max_iterations=0)
     _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
-    state = yaml.safe_load((working / ".continuous-mode-state.yaml").read_text())
-    assert state["iteration"] == 1
+    state = yaml.safe_load((working / ".continuous-mode.yaml").read_text())
+    assert state["current_iteration"] == 1
     assert "exceeds max_iterations 0" in state["last_terminated_reason"]
 
 
 def test_no_cap_no_expiry_runs_forever(tmp_path):
     working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=None, expires_after_seconds=None)
     _write_directive(working, max_iterations=None, expires_at=None)
     for i in range(1, 11):
         out, _ = _run_subprocess(tmp_path, now=f"2026-06-13T{i:02d}:00:00Z")
@@ -197,12 +254,80 @@ def test_no_cap_no_expiry_runs_forever(tmp_path):
         assert f"iteration {i}/∞" in out
 
 
-# ─── Programmatic API tests (faster, exercise evaluate() directly) ──────────
+# ─── S3 AC#3: --source compact resets current_iteration ────────────────────
+
+def test_source_compact_resets_iteration_counter(tmp_path):
+    working = _file_layout(tmp_path)
+    _write_cmode(working, current_iteration=4, max_iterations=5)
+    _write_directive(working, max_iterations=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z", source="compact")
+    # 4 → reset to 0 → +1 = 1
+    assert "iteration 1/5" in stdout
+    state = yaml.safe_load((working / ".continuous-mode.yaml").read_text())
+    assert state["current_iteration"] == 1
+    assert state["last_source"] == "compact"
+
+
+def test_source_resume_advances_iteration_counter(tmp_path):
+    working = _file_layout(tmp_path)
+    _write_cmode(working, current_iteration=3, max_iterations=5)
+    _write_directive(working, max_iterations=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z", source="resume")
+    # 3 → +1 = 4 (no reset)
+    assert "iteration 4/5" in stdout
+
+
+def test_source_default_is_resume(tmp_path):
+    working = _file_layout(tmp_path)
+    _write_cmode(working, current_iteration=3, max_iterations=5)
+    _write_directive(working, max_iterations=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")  # no --source
+    assert "iteration 4/5" in stdout
+
+
+# ─── S3 AC#5: config-fallback expires_after_seconds + cap precedence ───────
+
+def test_config_expires_after_seconds_triggers_termination(tmp_path):
+    """When the directive has no explicit expires_at, the config's
+    expires_after_seconds + the directive's filed_at compute an effective
+    expiry. A clock past that expiry → LOOP TERMINATED."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, expires_after_seconds=3600)  # 1 hour cap
+    _write_directive(working, expires_at=None, filed_at="2026-06-13T09:00:00Z")
+    # 2 hours after filed_at → past expiry
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T11:00:00Z")
+    assert "LOOP TERMINATED" in stdout
+    assert "2026-06-13T10:00:00Z passed" in stdout  # filed_at + 3600s
+
+
+def test_directive_max_iterations_overrides_config(tmp_path):
+    working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=10)
+    _write_directive(working, max_iterations=2)  # tighter override
+    out1, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    out2, _ = _run_subprocess(tmp_path, now="2026-06-13T10:30:00Z")
+    out3, _ = _run_subprocess(tmp_path, now="2026-06-13T11:00:00Z")
+    assert "iteration 1/2" in out1
+    assert "iteration 2/2" in out2
+    assert "LOOP TERMINATED" in out3
+
+
+# ─── Programmatic API tests ────────────────────────────────────────────────
+
+def test_evaluate_returns_empty_section_when_disabled():
+    mod = _load_helper()
+    now = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
+    _, section = mod.evaluate(
+        {"directive": "do X"}, {"enabled": False}, now
+    )
+    assert section == ""
+
 
 def test_evaluate_returns_empty_section_when_directive_missing():
     mod = _load_helper()
-    state, section = mod.evaluate(
-        {"filed_by": "self"}, {}, datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
+    _, section = mod.evaluate(
+        {"filed_by": "self"}, {"enabled": True}, now
     )
     assert section == ""
 
@@ -211,9 +336,11 @@ def test_evaluate_advances_iteration():
     mod = _load_helper()
     now = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
     state, section = mod.evaluate(
-        {"directive": "do X", "max_iterations": 5}, {"iteration": 3}, now
+        {"directive": "do X", "max_iterations": 5},
+        {"enabled": True, "current_iteration": 3},
+        now,
     )
-    assert state["iteration"] == 4
+    assert state["current_iteration"] == 4
     assert "iteration 4/5" in section
 
 
@@ -221,11 +348,43 @@ def test_evaluate_handles_malformed_iteration_state():
     mod = _load_helper()
     now = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
     state, section = mod.evaluate(
-        {"directive": "do X"}, {"iteration": "not-a-number"}, now
+        {"directive": "do X"},
+        {"enabled": True, "current_iteration": "not-a-number"},
+        now,
     )
-    # Falls back to 0, then increments to 1
-    assert state["iteration"] == 1
+    assert state["current_iteration"] == 1
     assert "iteration 1/" in section
+
+
+def test_evaluate_source_compact_clears_then_increments():
+    mod = _load_helper()
+    now = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
+    state, section = mod.evaluate(
+        {"directive": "do X"},
+        {"enabled": True, "current_iteration": 7, "max_iterations": 10},
+        now,
+        source="compact",
+    )
+    assert state["current_iteration"] == 1
+    assert "iteration 1/10" in section
+    assert state["last_source"] == "compact"
+
+
+def test_evaluate_config_defaults_seeded_on_empty_state():
+    """When state_data is empty, evaluate fills in CONFIG_DEFAULTS — including
+    enabled: False (so an unseeded session never accidentally goes live)."""
+    mod = _load_helper()
+    now = datetime(2026, 6, 13, 10, 0, tzinfo=timezone.utc)
+    state, section = mod.evaluate(
+        {"directive": "do X"}, {}, now
+    )
+    # enabled defaults False → no section
+    assert section == ""
+    # But the new_state still carries the defaults
+    assert state["enabled"] is False
+    assert state["max_iterations"] == 10
+    assert state["tier_ceiling"] == 1
+    assert state["expires_after_seconds"] == 86400
 
 
 def test_parse_iso8601_accepts_z_suffix():
@@ -236,30 +395,26 @@ def test_parse_iso8601_accepts_z_suffix():
     assert dt.year == 2026
 
 
+def test_parse_iso8601_accepts_datetime_passthrough():
+    mod = _load_helper()
+    dt = datetime(2026, 6, 14, 9, 0, tzinfo=timezone.utc)
+    assert mod.parse_iso8601(dt) is dt
+
+
 def test_format_iso8601_normalises_datetime_to_z_suffix():
-    """YAML auto-coerces unquoted ISO timestamps to datetime; display must
-    normalise back to Z-suffix form so operator-facing output stays consistent
-    regardless of how the directive file was written."""
     mod = _load_helper()
     dt = datetime(2026, 6, 14, 9, 0, tzinfo=timezone.utc)
     assert mod.format_iso8601(dt) == "2026-06-14T09:00:00Z"
-    # Naive datetime: assumed UTC
     naive = datetime(2026, 6, 14, 9, 0)
     assert mod.format_iso8601(naive) == "2026-06-14T09:00:00Z"
-    # Pass-through for string
     assert mod.format_iso8601("2026-06-14T09:00:00Z") == "2026-06-14T09:00:00Z"
-    # None → "unset"
     assert mod.format_iso8601(None) == "unset"
-    # Empty → "unset"
     assert mod.format_iso8601("") == "unset"
 
 
 def test_loop_terminated_message_normalises_datetime_expiry(tmp_path):
-    """When .next-directive.yaml has an unquoted ISO expires_at, YAML coerces
-    it to datetime — but the LOOP TERMINATED message must still render the
-    Z-suffix form, not Python's '2026-06-14 09:00:00+00:00' repr."""
     working = _file_layout(tmp_path)
-    # Unquoted form — yaml coerces to datetime
+    _write_cmode(working)
     payload = """directive: do X
 filed_by: operator
 filed_at: 2026-06-13T09:15:00Z
@@ -278,3 +433,34 @@ def test_parse_iso8601_returns_none_on_garbage():
     assert mod.parse_iso8601("not-a-date") is None
     assert mod.parse_iso8601("") is None
     assert mod.parse_iso8601(None) is None
+
+
+# ─── Legacy state migration ─────────────────────────────────────────────────
+
+def test_legacy_state_file_migrates_to_unified(tmp_path):
+    """When pre-S3 `.continuous-mode-state.yaml` exists and unified file is
+    absent, the legacy iteration counter migrates into the new file. Legacy
+    file is removed after the migration."""
+    working = _file_layout(tmp_path)
+    # Pre-S3 file
+    legacy = working / ".continuous-mode-state.yaml"
+    legacy.write_text(yaml.safe_dump({
+        "iteration": 3,
+        "last_resumed_at": "2026-06-13T08:00:00Z",
+        "last_directive_seen": "old-directive",
+        "last_terminated_reason": "",
+    }))
+    # No directive → migration runs but no injection
+    stdout, rc = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert rc == 0
+    assert stdout == ""
+    # Unified file exists with migrated iteration
+    unified = working / ".continuous-mode.yaml"
+    assert unified.is_file()
+    state = yaml.safe_load(unified.read_text())
+    assert state["current_iteration"] == 3
+    assert state["last_resumed_at"] == "2026-06-13T08:00:00Z"
+    # Migration keeps enabled=False until operator opts in
+    assert state["enabled"] is False
+    # Legacy file removed
+    assert not legacy.is_file()

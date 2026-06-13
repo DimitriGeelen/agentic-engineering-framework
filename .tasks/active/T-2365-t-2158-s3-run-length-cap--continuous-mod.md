@@ -2,12 +2,14 @@
 id: T-2365
 name: "T-2158 S3: run-length cap + .continuous-mode.yaml config"
 description: >
-  Slice S3 of T-2158. New config file .context/working/.continuous-mode.yaml {enabled, max_iterations (default 10), tier_ceiling (default 1), expires_after_seconds, current_iteration}. Reset on operator manual /compact. Surfaces in fw resume status.
+  Slice S3 of T-2158. New config file .context/working/.continuous-mode.yaml {enabled,
+  max_iterations (default 10), tier_ceiling (default 1), expires_after_seconds, current_iteration}.
+  Reset on operator manual /compact. Surfaces in fw resume status.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:continuous-run, t-2158-slice]
 components: []
 related_tasks: [T-2158]
@@ -22,8 +24,8 @@ related_tasks: [T-2158]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T08:45:31Z
-last_update: 2026-06-13T08:45:31Z
-date_finished: null
+last_update: 2026-06-13T09:34:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-13T09:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-13T09:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2365: T-2158 S3: run-length cap + .continuous-mode.yaml config
@@ -45,11 +76,11 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.context/working/.continuous-mode.yaml` config file with schema `{enabled, max_iterations, tier_ceiling, expires_after_seconds, current_iteration}` — `fw config get/set` extended to read it
-- [ ] Default-disabled: file absent OR `enabled: false` means no continuous behavior (backward compat with all current sessions)
-- [ ] Manual operator `/compact` resets `current_iteration` to 0
-- [ ] `fw resume status` surfaces continuous-mode state (enabled, iteration X/Y, tier_ceiling, expires_at)
-- [ ] Defaults are conservative: `max_iterations=10`, `tier_ceiling=1`, `expires_after_seconds=86400` (24h)
+- [x] `.context/working/.continuous-mode.yaml` config file with schema `{enabled, max_iterations, tier_ceiling, expires_after_seconds, current_iteration}` — `fw config get/set` extended to read it
+- [x] Default-disabled: file absent OR `enabled: false` means no continuous behavior (backward compat with all current sessions)
+- [x] Manual operator `/compact` resets `current_iteration` to 0
+- [x] `fw resume status` surfaces continuous-mode state (enabled, iteration X/Y, tier_ceiling, expires_at)
+- [x] Defaults are conservative: `max_iterations=10`, `tier_ceiling=1`, `expires_after_seconds=86400` (24h)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +146,16 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# AC#1-3+#5 + S2 regression: 33 unit tests covering schema, config-routing, disable-default,
+# source=compact reset, expires_after_seconds fallback, legacy state migration
+python3 -m pytest tests/unit/test_inject_next_directive.py -q
+
+# AC#4: fw resume status surfaces Continuous Mode block (live state present + enabled)
+out=$(bin/fw resume status 2>&1); echo "$out" | grep -q "Continuous Mode" && echo "$out" | grep -q "iteration"
+
+# Reviewer static-scan (L-387 SIGPIPE-safe: capture once, grep the capture)
+rev=$(bin/fw reviewer T-2365 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$rev" | grep -q "Overall:.*FAIL"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -132,6 +173,33 @@ date_finished: null
 -->
 
 ## Evolution
+
+### 2026-06-13 — Unified config+state file (was: two files in S2)
+- **What changed:** Originally planned to keep `.continuous-mode-state.yaml`
+  (runtime, from S2) separate from a new `.continuous-mode.yaml` (config).
+  S3 AC#1's schema mixes config (`enabled`, `max_iterations`, `tier_ceiling`,
+  `expires_after_seconds`) and runtime (`current_iteration`) into one file,
+  so the helper now reads/writes a single unified file. Added a one-shot
+  migration of any pre-S3 state file into the new schema (legacy file is
+  removed after the migration write).
+- **Plan impact:** S2's `.continuous-mode-state.yaml` is now an internal
+  legacy concern, surfaced only at first resume. T-2364 tests rewritten to
+  the unified schema; counter renamed `iteration` → `current_iteration`.
+- **Triggered:** No new tasks. T-2366 (S4 discard manifest) + T-2367
+  (S5 post-resume Tier-0 re-check) remain unchanged in scope.
+
+### 2026-06-13 — `--source` matcher routing via stdin parse
+- **What changed:** AC#3 needs to distinguish "manual /compact" from
+  "auto-restart via claude -c". Claude Code's SessionStart hook input
+  carries the matcher in the `source` JSON field on stdin. `post-compact-
+  resume.sh` now reads stdin once, extracts `source`, and threads it to
+  `inject-next-directive.py --source compact|resume`. Reset of
+  `current_iteration` happens BEFORE the post-resume increment, so a fresh
+  manual compact begins at iteration 1, not 0.
+- **Plan impact:** Helper API gained `--source` arg; CLI default is
+  `resume` so prior callers (including S2's first-fire) remain valid.
+- **Triggered:** None; T-2367 (S5) will read the same `--source` to gate
+  blast-radius re-check at compact-time vs resume-time.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -182,3 +250,16 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2365-t-2158-s3-run-length-cap--continuous-mod.md
 - **Context:** Initial task creation
+
+### 2026-06-13T09:34:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-eaed1e98
+- **Timestamp:** 2026-06-13T09:43:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

@@ -1,33 +1,50 @@
 #!/usr/bin/env python3
-"""T-2364 (T-2158 S2) — next-directive injector for post-compact resume.
+"""T-2364/T-2365 (T-2158 S2+S3) — next-directive injector for post-compact resume.
 
 Reads `.context/working/.next-directive.yaml` (filed by operator or by a
 prior auto-handover) and emits a "## Next Directive" section to stdout for
-inclusion in the SessionStart `additionalContext` JSON. Also maintains the
-per-resume iteration counter at `.context/working/.continuous-mode-state.yaml`.
+inclusion in the SessionStart `additionalContext` JSON. Maintains the
+per-resume iteration counter in `.context/working/.continuous-mode.yaml`
+(unified config + runtime state — schema documented in T-2365 S3).
 
-Refuse-to-inject path: when iteration > max_iterations OR expires_at passed,
-the directive section is replaced with a "LOOP TERMINATED" notice.
-
-Exit code is always 0 — silent degradation if the file is missing or
-malformed (post-compact-resume.sh treats empty stdout as no-op, matching the
-rest of the hook's degrade-to-no-op posture).
+Behavior:
+  - Continuous-mode is OFF by default (.continuous-mode.yaml has
+    `enabled: false`). When OFF, this helper returns empty (no-op) even if a
+    directive file is present — backward compat with all sessions pre-S3.
+  - When ON, the directive is surfaced, the iteration counter advances, and
+    the LOOP TERMINATED notice replaces the directive when caps are hit
+    (iteration > max_iterations, or expires_at passed, or expires_after_seconds
+    elapsed since the directive was filed).
+  - `--source compact` resets `current_iteration` to 0 BEFORE evaluating —
+    manual operator /compact starts a fresh loop. `--source resume` (or
+    omitted) advances the counter as normal.
+  - Exit code is always 0; degrades silently to empty stdout when any input
+    is missing or malformed (matches the rest of the resume hook's posture).
 
 Usage:
-    inject-next-directive.py --project-root /path/to/project
+    inject-next-directive.py --project-root /path/to/project [--source compact|resume] [--now ISO8601]
 
 Tests: tests/unit/test_inject_next_directive.py
 """
 
 import argparse
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 try:
     import yaml
 except ImportError:
     sys.exit(0)
+
+
+CONFIG_DEFAULTS = {
+    "enabled": False,
+    "max_iterations": 10,
+    "tier_ceiling": 1,
+    "expires_after_seconds": 86400,
+    "current_iteration": 0,
+}
 
 
 def format_iso8601(value):
@@ -48,6 +65,8 @@ def parse_iso8601(value):
     """Parse an ISO-8601 timestamp; return None on failure."""
     if value is None:
         return None
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
     s = str(value).strip()
     if not s:
         return None
@@ -75,44 +94,69 @@ def load_yaml(path):
 
 
 def write_state(path, state):
-    """Write the continuous-mode state file. Silent on failure."""
+    """Write the continuous-mode unified file. Silent on failure."""
     try:
+        path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w") as f:
             yaml.safe_dump(state, f, default_flow_style=False, sort_keys=False)
     except Exception:
         pass
 
 
-def evaluate(directive_data, state_data, now_utc):
+def _coerce_int(value, fallback):
+    if value is None:
+        return fallback
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return fallback
+
+
+def evaluate(directive_data, state_data, now_utc, source="resume"):
     """Compute the next state + the section to emit.
 
+    state_data is the unified `.continuous-mode.yaml` dict (config + runtime
+    state in one file, per T-2365 S3 schema).
+
     Returns (new_state, section_text). section_text is "" if no directive
-    is present (caller treats as no-op).
+    is present OR continuous-mode is disabled (caller treats as no-op).
     """
+    new_state = dict(CONFIG_DEFAULTS)
+    new_state.update(state_data)
+
+    if not new_state.get("enabled", False):
+        return new_state, ""
+
     directive = directive_data.get("directive")
     if not isinstance(directive, str) or not directive.strip():
-        return state_data, ""
+        return new_state, ""
     directive = directive.strip()
 
-    old_iter_raw = state_data.get("iteration", 0)
-    try:
-        old_iter = int(old_iter_raw or 0)
-    except (ValueError, TypeError):
-        old_iter = 0
+    # T-2365 AC#3: `--source compact` resets the iteration counter to 0
+    # BEFORE the post-resume increment, so a fresh manual /compact begins
+    # a fresh loop. `--source resume` (default) advances as usual.
+    if source == "compact":
+        new_state["current_iteration"] = 0
+
+    old_iter = _coerce_int(new_state.get("current_iteration", 0), 0)
     new_iter = old_iter + 1
 
-    max_iter_raw = directive_data.get("max_iterations")
-    max_iter = None
-    if max_iter_raw is not None:
-        try:
-            max_iter = int(max_iter_raw)
-        except (ValueError, TypeError):
-            max_iter = None
+    # Per-directive `max_iterations` overrides config when present.
+    directive_max = directive_data.get("max_iterations")
+    config_max = new_state.get("max_iterations")
+    max_iter = _coerce_int(directive_max, _coerce_int(config_max, None))
 
+    # Per-directive expires_at takes precedence over config-derived expiry.
     expires_at = directive_data.get("expires_at")
     expires_dt = parse_iso8601(expires_at)
+    if expires_dt is None:
+        secs = _coerce_int(new_state.get("expires_after_seconds"), None)
+        filed_at = parse_iso8601(directive_data.get("filed_at"))
+        if secs is not None and filed_at is not None:
+            expires_dt = filed_at + timedelta(seconds=secs)
+            expires_at = expires_dt  # display this computed value
 
-    tier_ceiling = directive_data.get("tier_ceiling")
+    tier_ceiling = directive_data.get("tier_ceiling", new_state.get("tier_ceiling"))
     filed_by = directive_data.get("filed_by", "unknown")
     filed_at = directive_data.get("filed_at", "unknown")
 
@@ -120,18 +164,21 @@ def evaluate(directive_data, state_data, now_utc):
     if max_iter is not None and new_iter > max_iter:
         terminated_reason = f"iteration {new_iter} exceeds max_iterations {max_iter}"
     elif expires_dt is not None and now_utc > expires_dt:
-        terminated_reason = f"expires_at {format_iso8601(expires_at)} passed (now {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')})"
+        terminated_reason = (
+            f"expires_at {format_iso8601(expires_at)} passed "
+            f"(now {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')})"
+        )
 
     now_iso = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-    new_state = dict(state_data)
-    new_state["iteration"] = new_iter
+    new_state["current_iteration"] = new_iter
     new_state["last_resumed_at"] = now_iso
     new_state["last_directive_seen"] = directive[:200]
     new_state["last_terminated_reason"] = terminated_reason or ""
+    new_state["last_source"] = source
 
     if terminated_reason:
         section = (
-            "## Next Directive — LOOP TERMINATED (T-2364)\n"
+            "## Next Directive — LOOP TERMINATED (T-2364/T-2365)\n"
             "\n"
             f"The continuous-mode directive cap was reached: **{terminated_reason}**.\n"
             "\n"
@@ -140,9 +187,9 @@ def evaluate(directive_data, state_data, now_utc):
             f"- Expires at: {format_iso8601(expires_at)}\n"
             "\n"
             "The pre-filed directive has NOT been surfaced for auto-pickup.\n"
-            "Operator continuation required: review `.context/working/.continuous-mode-state.yaml`\n"
-            "and either reset the iteration counter, extend `expires_at`, or remove the\n"
-            "directive file at `.context/working/.next-directive.yaml`.\n"
+            "Operator continuation required: edit `.context/working/.continuous-mode.yaml`\n"
+            "(reset `current_iteration` to 0, set `enabled: false`, or extend caps) or\n"
+            "remove `.context/working/.next-directive.yaml` to drop the directive.\n"
         )
     else:
         max_label = str(max_iter) if max_iter is not None else "∞"
@@ -154,15 +201,46 @@ def evaluate(directive_data, state_data, now_utc):
             "\n"
             f"- Filed by: {filed_by} at {format_iso8601(filed_at)}\n"
             f"- Expires at: {format_iso8601(expires_at)}\n"
-            "- State: `.context/working/.continuous-mode-state.yaml`\n"
-            "- Origin: T-2363 (S1 substrate) → T-2364 (S2 injection).\n"
+            f"- Source: SessionStart `{source}`\n"
+            "- State: `.context/working/.continuous-mode.yaml`\n"
+            "- Origin: T-2363 (S1) → T-2364 (S2) → T-2365 (S3).\n"
         )
     return new_state, section
+
+
+def _migrate_legacy_state(project_root, target_path):
+    """If the pre-S3 `.continuous-mode-state.yaml` exists but the unified
+    `.continuous-mode.yaml` doesn't, fold the legacy iteration into the new
+    file so an in-flight loop survives the schema bump. One-shot — the legacy
+    file is removed after the migration writes."""
+    legacy = project_root / ".context" / "working" / ".continuous-mode-state.yaml"
+    if not legacy.is_file() or target_path.is_file():
+        return
+    legacy_data = load_yaml(legacy)
+    if not legacy_data:
+        return
+    unified = dict(CONFIG_DEFAULTS)
+    unified["current_iteration"] = _coerce_int(legacy_data.get("iteration"), 0)
+    for k in ("last_resumed_at", "last_directive_seen", "last_terminated_reason"):
+        if legacy_data.get(k) is not None:
+            unified[k] = legacy_data[k]
+    unified["enabled"] = False  # default OFF — operator opts in via `fw config set`
+    write_state(target_path, unified)
+    try:
+        legacy.unlink()
+    except Exception:
+        pass
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project-root", required=True, help="absolute path to PROJECT_ROOT")
+    parser.add_argument(
+        "--source",
+        default="resume",
+        choices=["resume", "compact", "startup"],
+        help="SessionStart matcher: 'compact' resets the counter, 'resume' advances",
+    )
     parser.add_argument(
         "--now",
         default=None,
@@ -171,8 +249,10 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     project_root = Path(args.project_root)
+    state_file = project_root / ".context" / "working" / ".continuous-mode.yaml"
     directive_file = project_root / ".context" / "working" / ".next-directive.yaml"
-    state_file = project_root / ".context" / "working" / ".continuous-mode-state.yaml"
+
+    _migrate_legacy_state(project_root, state_file)
 
     if not directive_file.is_file():
         return 0
@@ -190,7 +270,7 @@ def main(argv=None):
     else:
         now_utc = datetime.now(timezone.utc)
 
-    new_state, section = evaluate(directive_data, state_data, now_utc)
+    new_state, section = evaluate(directive_data, state_data, now_utc, source=args.source)
     if not section:
         return 0
 
