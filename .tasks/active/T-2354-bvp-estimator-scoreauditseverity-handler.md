@@ -4,10 +4,10 @@ name: "BVP estimator score_audit_severity handler + audit_severity frontmatter (
 description: >
   Slice 2 of T-2352. Add score_audit_severity handler to BVP estimator (FAIL=1.0, WARN=0.75) mirroring T-2329 F-AUTONOMY pattern. Add audit_severity:fail|warn frontmatter field. Validates that audit-finding tasks rank above routine backlog.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-2352, T-2353, T-2329]
@@ -22,7 +22,7 @@ related_tasks: [T-2352, T-2353, T-2329]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:24:41Z
-last_update: 2026-06-12T12:24:41Z
+last_update: 2026-06-13T11:18:48Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,14 +40,30 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice 2 of T-2352 (audit→bugfix arc). Add a `score_audit_severity` handler to the
+BVP estimator that reads an `audit_severity: fail|warn` frontmatter field and scores
+audit-finding tasks high (FAIL → top band, WARN → next), mirroring the dedicated-handler
+pattern of `score_f_autonomy` (T-2329). Goal: audit-finding tasks rank above routine
+backlog on `fw bvp`.
+
+**BLOCKED — dependency not yet in place (2026-06-13):** `audit_severity` exists nowhere
+in the codebase (`grep -rn audit_severity policy/ agents/` → 0 hits). The prerequisite is
+T-2353 (S1: audit.sh post-emit hook that *emits* tasks carrying the `audit_severity`
+frontmatter) plus a driver definition in `policy/value-drivers.yaml`. A handler scoring a
+field nothing produces is dead code. **Deferred until T-2353 lands the field + driver.**
+The "FAIL=1.0/WARN=0.75" in the filing also needs reconciling with the estimator's 0–5
+integer handler scale (handlers return `tuple[int, list[str]]`, not 0–1 floats) — resolve
+when S1 fixes the driver's scale.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator's 0–5 scale, mirroring `score_f_autonomy` structure
+- [ ] Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml`
+- [ ] `audit_severity: fail|warn` documented as a recognised frontmatter field (CLAUDE.md task-system section or value-drivers.yaml driver entry)
+- [ ] Unit tests cover fail→high score, warn→mid score, absent→0/no-signal
+- [ ] Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task on `fw bvp`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,3 +196,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2354-bvp-estimator-scoreauditseverity-handler.md
 - **Context:** Initial task creation
+
+### 2026-06-13T11:15:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
