@@ -30,8 +30,10 @@ def strip_ansi(text):
 
 def find_transcript():
     project_root = os.environ.get('PROJECT_ROOT') or os.getcwd()
-    # Matches Claude Code's encoding: /Users/x/y → -Users-x-y (leading slash → leading dash)
-    dir_name = project_root.replace('/', '-')
+    # Matches Claude Code's encoding: every non-alnum char → '-' (T-2380).
+    # The old slash-only replace broke in worktree paths (contain '.'):
+    # /opt/x/.claude/worktrees/y → must encode '.claude' as '-claude', not '.claude'.
+    dir_name = re.sub(r'[^A-Za-z0-9]', '-', project_root)
     search_dir = os.path.expanduser(f'~/.claude/projects/{dir_name}')
 
     if not os.path.isdir(search_dir):

@@ -30,13 +30,13 @@ TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 mkdir -p "$HANDOVER_DIR" 2>/dev/null
 
-# Derive the JSONL transcript dir the same way lib/costs.sh does (T-801):
-#   ~/.claude/projects/-<PROJECT_ROOT with '/' → '-'>
+# Derive the JSONL transcript dir name the way Claude Code encodes it (T-2380):
+#   ~/.claude/projects/<PROJECT_ROOT with every non-alnum → '-'>
+# The old slash-only sanitizer diverged in any worktree path
+# (contains '.') from Claude Code's full non-alnum encoding. Use the canonical
+# helper (lib/paths.sh, sourced in the header).
 _jsonl_dir() {
-    local name
-    name=$(echo "${PROJECT_ROOT:-$(pwd)}" | tr '/' '-')
-    name="${name#-}"
-    echo "$HOME/.claude/projects/-${name}"
+    echo "$HOME/.claude/projects/$(fw_claude_project_dir_name "${PROJECT_ROOT:-$(pwd)}")"
 }
 # FW_DISCARD_JSONL_DIR is a test seam: point at a fixture dir of *.jsonl to
 # exercise the transcript-parse branch deterministically (see tests).
