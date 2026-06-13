@@ -990,3 +990,12 @@ overrides:
   expires_at: '2026-09-11T14:12:25Z'
   added_by: root
   added_at: '2026-06-13T14:12:25Z'
+- id: OV-0cbc85a8
+  task_id: T-2373
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 3
+  reason: "FP: 'shows' in Expected describes what the human OBSERVES in a live launcher\
+    \ restart (irreversible-action E2E), not a mechanical grep \u2014 genuine [REVIEW]"
+  expires_at: '2026-09-11T14:51:14Z'
+  added_by: root
+  added_at: '2026-06-13T14:51:14Z'

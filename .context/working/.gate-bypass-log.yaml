@@ -3827,3 +3827,64 @@ T-2353/T-2354/T-2355: file T-2352 GO bu'
   caller: 'check-active-task focus-drift'
   target: 'T-2360'
   command: 'bin/fw vendor self 2>&1 | tail -2 && FW_SWITCH_FOCUS=1 git add .agentic-framework/ 2>&1 && FW_SWITCH_FOCUS=1 git commit -m "T-2360: refresh vendored estimator.py" 2>&1 | tail -2 && git push 2>&1 | tai'
+- timestamp: '2026-06-13T11:05:23Z'
+  task: 'T-2367'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2366'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2366-t-2158-s4-discard-manifest-enhancement-t.md .context/episodic/T'
+- timestamp: '2026-06-13T11:15:48Z'
+  task: 'T-2354'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2367'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md .context/episodic/T'
+- timestamp: '2026-06-13T11:17:22Z'
+  task: 'T-2354'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2367'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+bin/fw context focus T-2323 2>&1 | tail -2
+echo "=== T-2354 exact filename ===" && ls .tasks/active/T-2354*
+echo '
+- timestamp: '2026-06-13T11:17:54Z'
+  task: 'T-2323'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2367'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+echo "=== T-2354 file ===" && ls .tasks/active/T-2354*
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2367-t-2158-s'
+- timestamp: '2026-06-13T11:21:58Z'
+  task: 'T-2354'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2367'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md .context/episodic/T'
+- timestamp: '2026-06-13T13:02:24Z'
+  task: 'T-2370'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2369'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+git add .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+FW_SWITCH_FOCUS=1 git commit -q -m "T-23'
+- timestamp: '2026-06-13T13:52:56Z'
+  task: 'T-2354'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2371'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2371-*.md .context/arcs/parallel-execution-aef.yaml docs/reports/T-2'
+- timestamp: '2026-06-13T14:14:20Z'
+  task: 'T-2354'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2183'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+FW_SWITCH_FOCUS=1 git add .tasks/active/T-2183-*.md .context/working/reviewer-overrides.yaml 2>/dev/null
+FW_SWITC'

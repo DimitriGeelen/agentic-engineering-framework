@@ -17383,3 +17383,714 @@ scan_id: R-1b619a22
 task_id: T-2348
 payload:
   task_file: .tasks/active/T-2348-slice-c1--claudemd-arc-action-handoffs--.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T10:55:37Z'
+scan_id: R-fc9c96bb
+task_id: T-2366
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T10:55:37Z'
+scan_id: R-fc9c96bb
+task_id: T-2366
+payload:
+  task_file: .tasks/active/T-2366-t-2158-s4-discard-manifest-enhancement-t.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T11:04:11Z'
+scan_id: R-b2b79122
+task_id: T-2366
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T11:04:11Z'
+scan_id: R-b2b79122
+task_id: T-2366
+payload:
+  task_file: .tasks/active/T-2366-t-2158-s4-discard-manifest-enhancement-t.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T11:12:12Z'
+scan_id: R-ff43bb1e
+task_id: T-2367
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T11:12:12Z'
+scan_id: R-ff43bb1e
+task_id: T-2367
+payload:
+  task_file: .tasks/active/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T11:12:22Z'
+scan_id: R-5522b76c
+task_id: T-2367
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T11:12:22Z'
+scan_id: R-5522b76c
+task_id: T-2367
+payload:
+  task_file: .tasks/active/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T11:12:36Z'
+scan_id: R-7ebfc48a
+task_id: T-2367
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T11:12:36Z'
+scan_id: R-7ebfc48a
+task_id: T-2367
+payload:
+  task_file: .tasks/active/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md
+---
+kind: override_applied
+timestamp: '2026-06-13T11:12:36Z'
+scan_id: R-7ebfc48a
+task_id: T-2367
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-13T11:13:18Z'
+scan_id: R-5841b031
+task_id: T-2367
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T11:13:18Z'
+scan_id: R-5841b031
+task_id: T-2367
+payload:
+  task_file: .tasks/active/T-2367-t-2158-s5-post-resume-tier-0--blast-radi.md
+---
+kind: override_applied
+timestamp: '2026-06-13T11:13:18Z'
+scan_id: R-5841b031
+task_id: T-2367
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:48:35Z'
+scan_id: R-ffc55138
+task_id: T-2368
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:48:35Z'
+scan_id: R-ffc55138
+task_id: T-2368
+payload:
+  task_file: .tasks/active/T-2368-arc-012-end-to-end-continuous-loop-integ.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:48:50Z'
+scan_id: R-b258d262
+task_id: T-2368
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:48:50Z'
+scan_id: R-b258d262
+task_id: T-2368
+payload:
+  task_file: .tasks/active/T-2368-arc-012-end-to-end-continuous-loop-integ.md
+---
+kind: override_applied
+timestamp: '2026-06-13T12:48:50Z'
+scan_id: R-b258d262
+task_id: T-2368
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:49:41Z'
+scan_id: R-885daa16
+task_id: T-2368
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:49:41Z'
+scan_id: R-885daa16
+task_id: T-2368
+payload:
+  task_file: .tasks/active/T-2368-arc-012-end-to-end-continuous-loop-integ.md
+---
+kind: override_applied
+timestamp: '2026-06-13T12:49:41Z'
+scan_id: R-885daa16
+task_id: T-2368
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:49:42Z'
+scan_id: R-4aa4001d
+task_id: T-2368
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:49:42Z'
+scan_id: R-4aa4001d
+task_id: T-2368
+payload:
+  task_file: .tasks/active/T-2368-arc-012-end-to-end-continuous-loop-integ.md
+---
+kind: override_applied
+timestamp: '2026-06-13T12:49:42Z'
+scan_id: R-4aa4001d
+task_id: T-2368
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:56:21Z'
+scan_id: R-b33dac84
+task_id: T-2369
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:56:21Z'
+scan_id: R-b33dac84
+task_id: T-2369
+payload:
+  task_file: .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:56:27Z'
+scan_id: R-82cdce02
+task_id: T-2369
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:56:27Z'
+scan_id: R-82cdce02
+task_id: T-2369
+payload:
+  task_file: .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:56:31Z'
+scan_id: R-85e9015d
+task_id: T-2369
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:56:31Z'
+scan_id: R-85e9015d
+task_id: T-2369
+payload:
+  task_file: .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:57:45Z'
+scan_id: R-b97ec802
+task_id: T-2369
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:57:45Z'
+scan_id: R-b97ec802
+task_id: T-2369
+payload:
+  task_file: .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:58:05Z'
+scan_id: R-70335ebb
+task_id: T-2369
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:58:05Z'
+scan_id: R-70335ebb
+task_id: T-2369
+payload:
+  task_file: .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:58:50Z'
+scan_id: R-79fa398e
+task_id: T-2369
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:58:50Z'
+scan_id: R-79fa398e
+task_id: T-2369
+payload:
+  task_file: .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T12:58:51Z'
+scan_id: R-49e71215
+task_id: T-2369
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T12:58:51Z'
+scan_id: R-49e71215
+task_id: T-2369
+payload:
+  task_file: .tasks/active/T-2369-arc-012-continuous-mode-live-fire-runboo.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T13:05:12Z'
+scan_id: R-16b89cc6
+task_id: T-2370
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T13:05:12Z'
+scan_id: R-16b89cc6
+task_id: T-2370
+payload:
+  task_file: .tasks/active/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T13:05:37Z'
+scan_id: R-bc19bfc7
+task_id: T-2370
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T13:05:37Z'
+scan_id: R-bc19bfc7
+task_id: T-2370
+payload:
+  task_file: .tasks/active/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T13:05:37Z'
+scan_id: R-b4dd571f
+task_id: T-2370
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T13:05:37Z'
+scan_id: R-b4dd571f
+task_id: T-2370
+payload:
+  task_file: .tasks/active/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T13:51:32Z'
+scan_id: R-e6a85148
+task_id: T-2371
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T13:51:32Z'
+scan_id: R-e6a85148
+task_id: T-2371
+payload:
+  task_file: .tasks/active/T-2371-arc-011-spike-1-wire-evidence-demo-concu.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T13:51:50Z'
+scan_id: R-a669d100
+task_id: T-2371
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T13:51:50Z'
+scan_id: R-a669d100
+task_id: T-2371
+payload:
+  task_file: .tasks/active/T-2371-arc-011-spike-1-wire-evidence-demo-concu.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T13:51:51Z'
+scan_id: R-44ad22e2
+task_id: T-2371
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T13:51:51Z'
+scan_id: R-44ad22e2
+task_id: T-2371
+payload:
+  task_file: .tasks/active/T-2371-arc-011-spike-1-wire-evidence-demo-concu.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:12:00Z'
+scan_id: R-6aa3c323
+task_id: T-2183
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:12:00Z'
+scan_id: R-6aa3c323
+task_id: T-2183
+payload:
+  task_file: .tasks/active/T-2183-t-2181-slice-2-chat-bare-path-stop-hook-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:12:25Z'
+scan_id: R-4a790c05
+task_id: T-2183
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:12:25Z'
+scan_id: R-4a790c05
+task_id: T-2183
+payload:
+  task_file: .tasks/active/T-2183-t-2181-slice-2-chat-bare-path-stop-hook-.md
+---
+kind: override_applied
+timestamp: '2026-06-13T14:12:25Z'
+scan_id: R-4a790c05
+task_id: T-2183
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-06-13T14:12:25Z'
+scan_id: R-4a790c05
+task_id: T-2183
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 1
+  ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:12:52Z'
+scan_id: R-d3b6784c
+task_id: T-2183
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:12:52Z'
+scan_id: R-d3b6784c
+task_id: T-2183
+payload:
+  task_file: .tasks/active/T-2183-t-2181-slice-2-chat-bare-path-stop-hook-.md
+---
+kind: override_applied
+timestamp: '2026-06-13T14:12:52Z'
+scan_id: R-d3b6784c
+task_id: T-2183
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-06-13T14:12:52Z'
+scan_id: R-d3b6784c
+task_id: T-2183
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 1
+  ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:12:53Z'
+scan_id: R-63ba6d9f
+task_id: T-2183
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 2
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:12:53Z'
+scan_id: R-63ba6d9f
+task_id: T-2183
+payload:
+  task_file: .tasks/active/T-2183-t-2181-slice-2-chat-bare-path-stop-hook-.md
+---
+kind: override_applied
+timestamp: '2026-06-13T14:12:53Z'
+scan_id: R-63ba6d9f
+task_id: T-2183
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: override_applied
+timestamp: '2026-06-13T14:12:53Z'
+scan_id: R-63ba6d9f
+task_id: T-2183
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 1
+  ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:29:58Z'
+scan_id: R-23b0b993
+task_id: T-2372
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:29:58Z'
+scan_id: R-23b0b993
+task_id: T-2372
+payload:
+  task_file: .tasks/active/T-2372-arc-012-continuous-mode-budget-restart-n.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:30:27Z'
+scan_id: R-614d6e30
+task_id: T-2372
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:30:27Z'
+scan_id: R-614d6e30
+task_id: T-2372
+payload:
+  task_file: .tasks/active/T-2372-arc-012-continuous-mode-budget-restart-n.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:30:29Z'
+scan_id: R-5a70be04
+task_id: T-2372
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:30:29Z'
+scan_id: R-5a70be04
+task_id: T-2372
+payload:
+  task_file: .tasks/active/T-2372-arc-012-continuous-mode-budget-restart-n.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:50:55Z'
+scan_id: R-dcb09853
+task_id: T-2373
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:50:55Z'
+scan_id: R-dcb09853
+task_id: T-2373
+payload:
+  task_file: .tasks/active/T-2373-arc-012-add-budget-critical-terminator-t.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:51:20Z'
+scan_id: R-1ace5d88
+task_id: T-2373
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:51:20Z'
+scan_id: R-1ace5d88
+task_id: T-2373
+payload:
+  task_file: .tasks/active/T-2373-arc-012-add-budget-critical-terminator-t.md
+---
+kind: override_applied
+timestamp: '2026-06-13T14:51:20Z'
+scan_id: R-1ace5d88
+task_id: T-2373
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 3
+  ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:53:21Z'
+scan_id: R-31000675
+task_id: T-2373
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:53:21Z'
+scan_id: R-31000675
+task_id: T-2373
+payload:
+  task_file: .tasks/active/T-2373-arc-012-add-budget-critical-terminator-t.md
+---
+kind: override_applied
+timestamp: '2026-06-13T14:53:21Z'
+scan_id: R-31000675
+task_id: T-2373
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 3
+  ac_subhead: Human

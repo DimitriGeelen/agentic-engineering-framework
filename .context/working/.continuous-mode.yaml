@@ -3,9 +3,9 @@ max_iterations: 10
 tier_ceiling: 1
 expires_after_seconds: 86400
 current_iteration: 1
-last_resumed_at: '2026-06-13T09:42:16Z'
-last_directive_seen: 'continue T-2364 (S2 of arc-012 continuous-run): extend agents/context/post-compact-resume.sh
-  to read FW_NEXT_DIRECTIVE (or .context/working/.next-directive.yaml) and inject
-  as additionalContext under '
+last_resumed_at: '2026-06-13T14:39:54Z'
+last_directive_seen: "Continue arc-012 continuous-run. T-2362 (S0), T-2363 (S1), T-2364\
+  \ (S2),\nT-2365 (S3) all SHIPPED. Remaining slices:\n  - T-2367 (S5): post-resume\
+  \ Tier-0 + blast-radius re-check before\n    continuing. Th"
 last_terminated_reason: ''
 last_source: compact
