@@ -18094,3 +18094,111 @@ payload:
   pattern_id: human-ac-mechanical-signal
   ac_index: 3
   ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:55:10Z'
+scan_id: R-eea23dab
+task_id: T-2373
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:55:10Z'
+scan_id: R-eea23dab
+task_id: T-2373
+payload:
+  task_file: .tasks/active/T-2373-arc-012-add-budget-critical-terminator-t.md
+---
+kind: override_applied
+timestamp: '2026-06-13T14:55:10Z'
+scan_id: R-eea23dab
+task_id: T-2373
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 3
+  ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-06-13T14:55:11Z'
+scan_id: R-0a444fcd
+task_id: T-2373
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T14:55:11Z'
+scan_id: R-0a444fcd
+task_id: T-2373
+payload:
+  task_file: .tasks/active/T-2373-arc-012-add-budget-critical-terminator-t.md
+---
+kind: override_applied
+timestamp: '2026-06-13T14:55:11Z'
+scan_id: R-0a444fcd
+task_id: T-2373
+payload:
+  pattern_id: human-ac-mechanical-signal
+  ac_index: 3
+  ac_subhead: Human
+---
+kind: scan_emitted
+timestamp: '2026-06-13T15:08:20Z'
+scan_id: R-a3bb667d
+task_id: T-2374
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T15:08:20Z'
+scan_id: R-a3bb667d
+task_id: T-2374
+payload:
+  task_file: .tasks/active/T-2374-precompact-handover-leaves-dangling-late.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T15:09:59Z'
+scan_id: R-55d6f971
+task_id: T-2374
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T15:09:59Z'
+scan_id: R-55d6f971
+task_id: T-2374
+payload:
+  task_file: .tasks/active/T-2374-precompact-handover-leaves-dangling-late.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T15:10:00Z'
+scan_id: R-2ca83c0c
+task_id: T-2374
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T15:10:00Z'
+scan_id: R-2ca83c0c
+task_id: T-2374
+payload:
+  task_file: .tasks/active/T-2374-precompact-handover-leaves-dangling-late.md

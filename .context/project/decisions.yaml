@@ -2039,3 +2039,10 @@ decisions:
     date: 2026-06-11
     task: T-2341
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-294
+    decision: "A background *terminator watcher* the wrapper launches alongside claude. While"
+    scope: project
+    date: 2026-06-13
+    task: T-2372
+    rationale: "Auto-captured from task file on completion"

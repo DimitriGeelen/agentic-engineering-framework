@@ -4,9 +4,9 @@ name: "arc-012: add budget-critical terminator to claude-fw so auto-restart fire
 description: >
   arc-012: add budget-critical terminator to claude-fw so auto-restart fires
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [arc:continuous-run, fix]
 arc_id: continuous-run
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T14:42:12Z
-last_update: 2026-06-13T14:42:12Z
-date_finished: null
+last_update: 2026-06-13T14:54:01Z
+date_finished: 2026-06-13T14:54:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -286,8 +286,8 @@ file in the system (T-954 irreversible-action class).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-31000675
-- **Timestamp:** 2026-06-13T14:53:21Z
+- **Scan ID:** R-0a444fcd
+- **Timestamp:** 2026-06-13T14:55:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -295,3 +295,6 @@ file in the system (T-954 irreversible-action class).
 
 - **Suppressed:** 1 (by override)
   - human-ac-mechanical-signal @ AC#3 (Human)
+
+### 2026-06-13T14:54:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

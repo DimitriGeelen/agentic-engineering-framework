@@ -3888,3 +3888,9 @@ FW_SWITCH_FOCUS=1 git add .tasks/completed/T-2371-*.md .context/arcs/parallel-ex
   command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
 FW_SWITCH_FOCUS=1 git add .tasks/active/T-2183-*.md .context/working/reviewer-overrides.yaml 2>/dev/null
 FW_SWITC'
+- timestamp: '2026-06-13T14:58:45Z'
+  task: 'T-2374'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2373'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5; FW_SWITCH_FOCUS=1 git add .tasks/active/T-2373-arc-012-add-budget-critical-terminator-t.md .context/working/revi'
