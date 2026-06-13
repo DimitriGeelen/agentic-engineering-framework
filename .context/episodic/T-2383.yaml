@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2383: CTL-030 FAIL: completed tasks store horizon=now + missing episodics + horizon-clear prevention
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T22:58:59Z
+# ============================================================================
+
+task_id: T-2383
+task_name: "CTL-030 FAIL: completed tasks store horizon=now + missing episodics + horizon-clear prevention"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T22:48:18Z
+completed: 2026-06-13T22:58:43Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`.tasks/completed/T-2364*.md` and `T-2365*.md` no longer store `horizon: now` (set to `horizon: null`); `fw audit` CTL-030 count for them = 0'
+  - 'Episodic summaries exist for T-2364, T-2365, T-2351 (generated via `fw context generate-episodic`)'
+  - 'Confirm the completion-time prevention **already exists** (update-task.sh:1791, T-2163/T-2300 — nulls horizon on work-completed outside the move-conditional) and is **already tested** (`update_task_horizon_null_on_close.bats`, `test_update_task_horizon_null_reclose.bats`); **no new code needed** — adding any would be redundant'
+  - 'RCA corrected: the FAIL came from the OBS-072 **git-mv bypass** (file moved to completed/ without `fw task update`, so line 1791 never ran), which T-2370 partially fixed (status field) while explicitly deferring the sibling horizon drift — not from a missing normalization'
+  - 'Existing horizon/CTL-030 test suites still green; reviewer PASS (R-ddb59c42)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, governance, completion-hygiene]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2383-ctl-030-fail-completed-tasks-store-horiz.md
+generated_by: context-agent-hybrid

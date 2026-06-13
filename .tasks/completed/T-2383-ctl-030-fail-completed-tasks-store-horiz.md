@@ -4,10 +4,10 @@ name: "CTL-030 FAIL: completed tasks store horizon=now + missing episodics + hor
 description: >
   Two arc-012 completed tasks (T-2364/T-2365) store horizon: now triggering CTL-030 FAIL; 3 completed tasks (T-2364/T-2365/T-2351) lack episodics. Root cause: the OBS-072 git-mv bypass (files moved to completed/ without fw task update, so update-task.sh's existing horizon-null normalization never ran); T-2370 fixed status but deferred horizon. Fix the data; prevention already exists (line 1791 + tests).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [audit, governance, completion-hygiene]
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T22:48:18Z
-last_update: 2026-06-13T22:48:18Z
-date_finished: null
+last_update: 2026-06-13T22:58:43Z
+date_finished: 2026-06-13T22:58:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -227,9 +227,12 @@ code is warranted (would duplicate line 1791 + its tests).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ddb59c42
-- **Timestamp:** 2026-06-13T22:58:08Z
+- **Scan ID:** R-be66c30c
+- **Timestamp:** 2026-06-13T22:58:52Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-13T22:58:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
