@@ -6,16 +6,16 @@ description: >
   Inception: continuous-run arc — agent-driven compact→resume loop with bounded-autonomy
   ceiling
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [priority, arc-003, orchestrator, autonomy, continuous-run]
-components: []
+components: [agents/termlink/bvp-estimator/estimator.py, tests/unit/test_bvp_estimator.py]
 related_tasks: []
 created: 2026-06-01T09:39:33Z
-last_update: 2026-06-13T08:36:56Z
-date_finished:
+last_update: 2026-06-13T08:43:48Z
+date_finished: 2026-06-13T08:43:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 bvp_scores_proposed:
@@ -264,17 +264,11 @@ Spike walk S1-S6 completed 2026-06-13 (read-only, ~30 min wall-clock with parall
 
 ## Decision
 
-**Decision**: DEFER
+**Decision**: GO
 
-**Rationale**: Recommendation: DEFER
+**Rationale**: Spike walk S1-S6 completed 2026-06-13 (read-only, ~30 min wall-clock with parallel dispatch). All six assumptions A1-A6 hold: T-111 substrate INTACT (S1 — proof-of-life this morning's compact at 2026-06-13T09:50:39Z); cleanest self-trigger surface is `agents/context/checkpoint.sh:176` — a single JSON-field extension to a payload that already writes successfully (S2); bounded-autonomy primitives `agents/context/check-tier0.sh` + `bin/fw fabric blast-radius` confirmed invocable from hook context (S3); sovereignty narrowing acceptable — Tier 0 stays gated, only compaction gate surrendered (S3); scoped-driver set reduces 3→1-firm-plus-1-conditional with F-AUTONOMY at global covering rejected leg (S4); continuous-run is SIBLING of orchestrator-rethink, not child (S5); F-AUTONOMY tandem activation structurally required — carved `retire_when` text in `policy/value-drivers.yaml` *names this arc by name* (S4 + S5). Full evidence walk in `docs/reports/T-2158-continuous-run.md` §Spike Findings.
 
-Rationale:
-
-Human-filed arc inception draft. Closes the compact→resume loop so a long-running agent self-compacts and self-resumes at context-budget boundaries, bounded by tier/blast-radius ceiling, run-length cap, and a discard manifest for review. Sits under T-1643 orchestrator-substrate territory. Genuine evidence gap (T-2144): need to walk existing primitives (agents/resume/, fw handover, budget-gate.sh, criterion 28+55), critique the three proposed scoped drivers (Loop closure / Bounded-safety integrity / Discard fidelity) against F-AUTONOMY (T-2157), validate the F7 Sovereignty tension framing, and scope the boundary with T-1643. Research artifact will host the proposed arc YAML verbatim plus the evidence walk.
-
-Evidence:
-
-**Date**: 2026-06-05T21:12:15Z
+**Date**: 2026-06-13T08:43:48Z
 
 ## Updates
 
@@ -318,3 +312,21 @@ Evidence:
 ### 2026-06-13T08:36:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-06-13T08:43:48Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Spike walk S1-S6 completed 2026-06-13 (read-only, ~30 min wall-clock with parallel dispatch). All six assumptions A1-A6 hold: T-111 substrate INTACT (S1 — proof-of-life this morning's compact at 2026-06-13T09:50:39Z); cleanest self-trigger surface is `agents/context/checkpoint.sh:176` — a single JSON-field extension to a payload that already writes successfully (S2); bounded-autonomy primitives `agents/context/check-tier0.sh` + `bin/fw fabric blast-radius` confirmed invocable from hook context (S3); sovereignty narrowing acceptable — Tier 0 stays gated, only compaction gate surrendered (S3); scoped-driver set reduces 3→1-firm-plus-1-conditional with F-AUTONOMY at global covering rejected leg (S4); continuous-run is SIBLING of orchestrator-rethink, not child (S5); F-AUTONOMY tandem activation structurally required — carved `retire_when` text in `policy/value-drivers.yaml` *names this arc by name* (S4 + S5). Full evidence walk in `docs/reports/T-2158-continuous-run.md` §Spike Findings.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0867d94b
+- **Timestamp:** 2026-06-13T08:43:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-13T08:43:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
