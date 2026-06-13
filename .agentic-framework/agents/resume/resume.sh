@@ -145,6 +145,43 @@ cmd_status() {
     fi
     echo ""
 
+    # T-2365 (T-2158 S3): Continuous-mode status surface. Surfaces enabled,
+    # iteration X/Y, tier_ceiling, last_resumed_at, expires_at, terminated
+    # reason when present. Silent when the config file is absent (continuous-
+    # mode never seeded — backward-compat).
+    local cmode_file="$PROJECT_ROOT/.context/working/.continuous-mode.yaml"
+    if [ -f "$cmode_file" ]; then
+        local cmode_summary
+        cmode_summary=$(python3 - "$cmode_file" <<'PYCM' 2>/dev/null
+import sys, yaml
+try:
+    with open(sys.argv[1]) as f:
+        d = yaml.safe_load(f) or {}
+except Exception:
+    sys.exit(0)
+enabled = bool(d.get("enabled", False))
+cur = d.get("current_iteration", 0)
+mx = d.get("max_iterations", "unset")
+tc = d.get("tier_ceiling", "unset")
+last = d.get("last_resumed_at", "never")
+term = d.get("last_terminated_reason", "") or ""
+src = d.get("last_source", "n/a")
+if enabled:
+    print(f"  Enabled: yes  | iteration {cur}/{mx}  | tier_ceiling {tc}")
+    print(f"  Last resumed: {last}  | source: {src}")
+    if term:
+        print(f"  Terminated: {term}")
+else:
+    print(f"  Enabled: no   | (current_iteration {cur}, max_iterations {mx})")
+PYCM
+)
+        if [ -n "$cmode_summary" ]; then
+            echo -e "${BOLD}Continuous Mode (T-2158):${NC}"
+            echo "$cmode_summary"
+            echo ""
+        fi
+    fi
+
     # Active tasks (T-373: separate agent-actionable from human-owned)
     IFS='|' read -r task_count task_list human_count human_list <<< "$(get_active_tasks)"
     local actionable=$((task_count - human_count))
