@@ -966,6 +966,17 @@ if [ "${ORPHAN_COUNT:-0}" -gt 0 ]; then
 fi
 
 # Step 3: Update LATEST.md (symlink so edits to session file auto-reflect)
+# T-2374: only repoint LATEST after confirming the body file was actually written
+# and is non-empty. Updating the symlink unconditionally (the old behavior) left
+# LATEST dangling whenever generation failed/partial — a silent break that
+# degrades /resume and SessionStart:compact reinjection (Directive-2). On failure,
+# leave the previous (valid) LATEST untouched and exit non-zero so callers (e.g.
+# pre-compact.sh) can detect it.
+if [ ! -s "$HANDOVER_FILE" ]; then
+    echo -e "${RED:-}ERROR: handover body not written or empty: $HANDOVER_FILE${NC:-}" >&2
+    echo "  LATEST.md left untouched (still points to the last valid handover)." >&2
+    exit 1
+fi
 ln -sf "$(basename "$HANDOVER_FILE")" "$HANDOVER_DIR/LATEST.md"
 
 echo ""
