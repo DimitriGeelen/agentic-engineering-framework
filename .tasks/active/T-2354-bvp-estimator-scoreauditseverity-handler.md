@@ -22,7 +22,7 @@ related_tasks: [T-2352, T-2353, T-2329]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:24:41Z
-last_update: 2026-06-13T11:18:48Z
+last_update: 2026-06-13T11:23:48Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -198,5 +198,13 @@ when S1 fixes the driver's scale.
 - **Context:** Initial task creation
 
 ### 2026-06-13T11:15:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-06-13T11:22:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → next
+
+### 2026-06-13T11:23:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
