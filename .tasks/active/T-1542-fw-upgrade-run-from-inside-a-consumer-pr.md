@@ -19,7 +19,7 @@ components: []
 related_tasks: []
 arc_id: project-shape-resilience
 created: 2026-04-27T13:19:34Z
-last_update: '2026-06-11T22:23:24Z'
+last_update: 2026-06-13T16:49:07Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
