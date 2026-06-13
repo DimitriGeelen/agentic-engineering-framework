@@ -1,19 +1,16 @@
 ---
-id: T-2364
-name: "T-2158 S2: SessionStart resume reads directive + iteration counter"
+id: T-2383
+name: "CTL-030 FAIL: completed tasks store horizon=now + missing episodics + horizon-clear prevention"
 description: >
-  Slice S2 of T-2158. Extend agents/context/post-compact-resume.sh to read .next-directive.yaml
-  and inject directive as additionalContext under a new section. Increment iteration
-  counter (.continuous-mode-state.yaml) on each resume; refuse to inject directive
-  if iteration cap reached or expires_at passed.
+  Two arc-012 completed tasks (T-2364/T-2365) store horizon: now triggering CTL-030 FAIL; 3 completed tasks (T-2364/T-2365/T-2351) lack episodics. Root cause: the OBS-072 git-mv bypass (files moved to completed/ without fw task update, so update-task.sh's existing horizon-null normalization never ran); T-2370 fixed status but deferred horizon. Fix the data; prevention already exists (line 1791 + tests).
 
-status: work-completed
+status: started-work
 workflow_type: build
 owner: agent
-horizon: null
-tags: [arc:continuous-run, t-2158-slice]
+horizon: now
+tags: [audit, governance, completion-hygiene]
 components: []
-related_tasks: [T-2158]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -24,9 +21,9 @@ related_tasks: [T-2158]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-13T08:45:26Z
-last_update: 2026-06-13T09:15:15Z
-date_finished: 2026-06-13T09:15:15Z
+created: 2026-06-13T22:48:18Z
+last_update: 2026-06-13T22:48:18Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -37,50 +34,28 @@ date_finished: 2026-06-13T09:15:15Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-06-13T09:00:04Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-06-13T09:00:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2364: T-2158 S2: SessionStart resume reads directive + iteration counter
+# T-2383: CTL-030 FAIL: completed tasks store horizon=now + missing episodics + horizon-clear prevention
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Remediation R1 from `.context/working/audit-remediation-plan-2026-06-14.md`. The full
+audit (`bin/fw audit`, exit 2) emitted CTL-030 FAILs for two completed arc-012 tasks
+(T-2364/T-2365) that store `horizon: now` in `.tasks/completed/` (CTL-030, T-2160,
+expects null/absent there), plus episodic-gap WARNs for T-2364/T-2365/T-2351. This task
+fixes the data (horizon + episodics). Investigation found the completion-time prevention
+**already exists** (update-task.sh:1791, T-2163/T-2300) — the FAIL came from the OBS-072
+git-mv bypass, not a missing normalization (see ## RCA). No new prevention code is warranted.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `agents/context/post-compact-resume.sh` reads `.context/working/.next-directive.yaml` and emits it as a new section in `additionalContext` JSON output
-- [x] Iteration counter (`.context/working/.continuous-mode-state.yaml`) increments on each post-compact resume; visible in resume output
-- [x] Refuse-to-inject path: when iteration > max_iterations OR expires_at passed, directive section is replaced with a "loop terminated" notice
-- [x] No regression: manual `/resume` (matcher: "resume") and manual `/compact` (matcher: "compact") still produce valid JSON `hookSpecificOutput.additionalContext`
+- [x] `.tasks/completed/T-2364*.md` and `T-2365*.md` no longer store `horizon: now` (set to `horizon: null`); `fw audit` CTL-030 count for them = 0
+- [x] Episodic summaries exist for T-2364, T-2365, T-2351 (generated via `fw context generate-episodic`)
+- [x] Confirm the completion-time prevention **already exists** (update-task.sh:1791, T-2163/T-2300 — nulls horizon on work-completed outside the move-conditional) and is **already tested** (`update_task_horizon_null_on_close.bats`, `test_update_task_horizon_null_reclose.bats`); **no new code needed** — adding any would be redundant
+- [x] RCA corrected: the FAIL came from the OBS-072 **git-mv bypass** (file moved to completed/ without `fw task update`, so line 1791 never ran), which T-2370 partially fixed (status field) while explicitly deferring the sibling horizon drift — not from a missing normalization
+- [x] Existing horizon/CTL-030 test suites still green; reviewer PASS (R-ddb59c42)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,51 +120,60 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-# AC#1+#2+#3: helper + tests (21 cases, all 4 ACs covered)
-python3 -m pytest tests/unit/test_inject_next_directive.py -q
-
-# AC#4: live-fire post-compact-resume.sh and verify JSON validity + section present
-out=$(bash agents/context/post-compact-resume.sh 2>/dev/null); echo "$out" | python3 -c "import json,sys; d=json.load(sys.stdin); ac=d['hookSpecificOutput']['additionalContext']; assert '## Next Directive' in ac, 'directive section missing'; print('JSON valid, directive section present')"
-
-# Reviewer static-scan (L-387 SIGPIPE-safe: capture once, grep the capture)
-rev=$(bin/fw reviewer T-2364 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$rev" | grep -q "Overall:.*FAIL"
+#
+# --- R1 verification ---
+# Data fix: completed T-2364/T-2365 must not store `horizon: now`.
+! grep -Eq '^horizon:[[:space:]]*now' .tasks/completed/T-2364-t-2158-s2-sessionstart-resume-reads-dire.md
+! grep -Eq '^horizon:[[:space:]]*now' .tasks/completed/T-2365-t-2158-s3-run-length-cap--continuous-mod.md
+# Episodics exist for the three gap tasks.
+test -f .context/episodic/T-2364.yaml
+test -f .context/episodic/T-2365.yaml
+test -f .context/episodic/T-2351.yaml
+# Prevention already exists (T-2163/T-2300) at update-task.sh — confirm the write-path line is present.
+grep -q 'horizon: null' agents/task-create/update-task.sh
+# Existing prevention tests still green (no new code added — these cover line 1791).
+# (Exit code is the gate signal; output left visible so the gate surfaces failures.)
+bats tests/unit/update_task_horizon_null_on_close.bats
+bats tests/unit/test_update_task_horizon_null_reclose.bats
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Two completed arc-012 tasks (T-2364/T-2365) store `horizon: now` in
+`.tasks/completed/`. The CTL-030 detector (T-2160) derives the location-state ('past')
+from `_location` and expects the stored `horizon` field to be null/absent for completed
+tasks → CTL-030 FAIL. Three completed tasks (T-2364/T-2365/T-2351) also lack episodic
+summaries.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause (CORRECTED — the plan's original RCA was wrong):** the completion-time
+normalization is **not** missing. `update-task.sh:1791` (T-2163, with the T-2300 leg-gap
+fix lifting it *outside* the move-conditional) already runs
+`_sed_i "s/^horizon:.*/horizon: null/"` on every `--status work-completed`, and it is covered
+by `tests/unit/update_task_horizon_null_on_close.bats` (4 tests) +
+`tests/unit/test_update_task_horizon_null_reclose.bats`.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+The real cause is the **OBS-072 git-mv bypass**: T-2364 (S2) and T-2365 (S3) were moved to
+`.tasks/completed/` via raw `git mv` in their ship commits (ee76ec7c5 / 606ce7c2b) **without**
+`fw task update --status work-completed`. Because update-task.sh was never invoked, *none* of
+its completion-time normalization ran — status stayed drifted, horizon stayed `now`, and no
+episodic was generated. T-2370 later fixed OBS-072 but only the **status** field (edited
+`status:` directly in the completed file) and explicitly left the sibling horizon drift "as a
+separate concern" (T-2370 RCA, line 146). CTL-030 then correctly flagged the leftover
+`horizon: now`. Missing episodics are the same bypass: episodic-gen lives in update-task.sh's
+completion path, which the git-mv skipped.
+
+**Why structurally allowed:** a raw `git mv` of a task file into `completed/` cannot be
+intercepted by update-task.sh (the script isn't called). arc-009 deliberately chose
+*detection* (CTL-030 audit rail) + an idempotent `bin/migrate-horizon-null-completed.sh` as
+the prevention model for exactly this bypass class, rather than trying to gate git itself.
+
+**Prevention:** already in place and working — CTL-030 (T-2162) *detected* this drift (that's
+how it surfaced in the audit), the write-path normalization (T-2163/T-2300) handles every
+non-bypass close, and the episodic-gap check in handover flagged the missing summaries. The
+durable lesson is that **partial fixes of a multi-field drift leave siblings behind**: T-2370
+fixed status but not horizon/episodics. This task closes those two remaining siblings; no new
+code is warranted (would duplicate line 1791 + its tests).
 
 ## Evolution
-
-### 2026-06-13 — Helper-extraction + cosmetic ISO-Z normalisation
-- **What changed:** Originally planned inline python-in-bash-heredoc within
-  `post-compact-resume.sh`. Extracted to a standalone helper
-  `agents/context/inject-next-directive.py` because (a) it's non-trivial
-  logic with branches that deserve unit tests directly, (b) bash heredoc
-  python-in-double-quoted-string is brittle to escape, (c) matches the
-  pattern of existing `agents/context/check-*.py` helpers. Bash side becomes
-  a 6-line call site that degrades silently when the helper is absent.
-- **Plan impact:** No scope change; cleaner separation of concerns. Tests
-  exercise both the programmatic API (`evaluate()`) and the subprocess
-  contract (full CLI invocation). Two extra tests added (datetime-coercion
-  display normalisation) after a live-fire run surfaced
-  `2026-06-14 09:00:00+00:00` (PyYAML auto-coerce of unquoted ISO) leaking
-  through to operator-facing output.
-- **Triggered:** No new sub-tasks. State file shape locked at
-  `{iteration, last_resumed_at, last_directive_seen, last_terminated_reason}`
-  — T-2365 (S3) will extend with run-length cap fields.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -236,19 +220,15 @@ rev=$(bin/fw reviewer T-2364 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONC
 
 ## Updates
 
-### 2026-06-13T08:45:26Z — task-created [task-create-agent]
+### 2026-06-13T22:48:18Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2364-t-2158-s2-sessionstart-resume-reads-dire.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2383-ctl-030-fail-completed-tasks-store-horiz.md
 - **Context:** Initial task creation
-
-### 2026-06-13T09:15:15Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7453f671
-- **Timestamp:** 2026-06-13T09:32:29Z
+- **Scan ID:** R-ddb59c42
+- **Timestamp:** 2026-06-13T22:58:08Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no

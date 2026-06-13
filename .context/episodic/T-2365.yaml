@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2365: T-2158 S3: run-length cap + .continuous-mode.yaml config
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T22:53:31Z
+# ============================================================================
+
+task_id: T-2365
+task_name: "T-2158 S3: run-length cap + .continuous-mode.yaml config"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T08:45:31Z
+completed: 2026-06-13T09:34:12Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`.context/working/.continuous-mode.yaml` config file with schema `{enabled, max_iterations, tier_ceiling, expires_after_seconds, current_iteration}` — `fw config get/set` extended to read it'
+  - 'Default-disabled: file absent OR `enabled: false` means no continuous behavior (backward compat with all current sessions)'
+  - 'Manual operator `/compact` resets `current_iteration` to 0'
+  - '`fw resume status` surfaces continuous-mode state (enabled, iteration X/Y, tier_ceiling, expires_at)'
+  - 'Defaults are conservative: `max_iterations=10`, `tier_ceiling=1`, `expires_after_seconds=86400` (24h)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 48 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, t-2158-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 48
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2365-t-2158-s3-run-length-cap--continuous-mod.md
+generated_by: context-agent-hybrid

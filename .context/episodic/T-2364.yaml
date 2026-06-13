@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2364: T-2158 S2: SessionStart resume reads directive + iteration counter
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T22:53:31Z
+# ============================================================================
+
+task_id: T-2364
+task_name: "T-2158 S2: SessionStart resume reads directive + iteration counter"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T08:45:26Z
+completed: 2026-06-13T09:15:15Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/context/post-compact-resume.sh` reads `.context/working/.next-directive.yaml` and emits it as a new section in `additionalContext` JSON output'
+  - 'Iteration counter (`.context/working/.continuous-mode-state.yaml`) increments on each post-compact resume; visible in resume output'
+  - 'Refuse-to-inject path: when iteration > max_iterations OR expires_at passed, directive section is replaced with a "loop terminated" notice'
+  - 'No regression: manual `/resume` (matcher: "resume") and manual `/compact` (matcher: "compact") still produce valid JSON `hookSpecificOutput.additionalContext`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, t-2158-slice]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 29
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2364-t-2158-s2-sessionstart-resume-reads-dire.md
+generated_by: context-agent-hybrid
