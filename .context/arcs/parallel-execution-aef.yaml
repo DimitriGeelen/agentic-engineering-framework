@@ -7,13 +7,26 @@ description: "Multi-agent concurrent execution over disjoint write-sets, coordin
   \ (TermLink repo authoritative). Scoping inception: T-2303."
 status: in-progress
 anchor_task: T-2303
-headline_mechanic: "two agents on disjoint-write-set tasks run concurrently against shared substrate,\
-  \ integrate results through the hub's serialized integration queue, and the operator\
-  \ observes both wire-evidence of parallelism (two dispatch IDs in flight at once\
-  \ in dispatches.jsonl) and the absence of governance-plane corruption (no .tasks/\
-  \ or .context/audits/ merge conflicts) \u2014 wire-evidence-X to be sharpened by\
-  \ T-2303 Spike 1"
-demo_evidence: null
+headline_mechanic: |
+  two agents on disjoint-write-set tasks run concurrently against shared substrate,
+  integrate results through the hub's serialized integration queue, and the operator
+  observes both wire-evidence of parallelism (two dispatch IDs in flight at once in
+  dispatches.jsonl) and the absence of governance-plane corruption (no .tasks/ or
+  .context/audits/ merge conflicts).
+  SHARPENED (T-2371, Spike 1 -- wire-evidence-X resolved): the concrete falsifiable
+  scenario is agents/dispatch/single-host-parallel-demo.sh (T-2341). Two disjoint
+  fixtures -- T-DEMO-A (writes docs/reports/_demo/A.md) and T-DEMO-B (writes .../B.md) --
+  proven disjoint by `fw write-set check` (exit 0; the same check returns `overlap` on
+  a shared-glob control pair, so it discriminates rather than rubber-stamps). The demo
+  asserts four falsifiable predicates, each with a defined failing input:
+  (1) overlap window -- both dispatch rows carry outcome="" at the same started_at in
+      dispatches.jsonl; serialized workers -> exit 1;
+  (2) governance plane clean -- no merge-conflict markers under .tasks/; a seeded
+      marker -> exit 2;
+  (3) outputs A.md + B.md exist -> else exit 4;
+  (4) wall-clock concurrent (~1s) < serial (~2s).
+  Captured evidence: docs/reports/T-2371-arc-011-wire-evidence-demo.md.
+demo_evidence: "agents/dispatch/single-host-parallel-demo.sh (T-2341, exit 0) + docs/reports/T-2371-arc-011-wire-evidence-demo.md (captured run, T-2371)"
 created: 2026-06-10T08:35:44Z
 closed_at: null
 decision: null
