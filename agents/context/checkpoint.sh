@@ -57,11 +57,22 @@ increment_counter() {
     echo "$count"
 }
 
-# Find current session JSONL transcript — scoped to THIS project.
-# Uses PROJECT_ROOT to derive the Claude Code project directory name,
-# matching the pattern in budget-gate.sh. Without project scoping,
-# find_transcript picks up transcripts from other projects (T-791).
+# Find current session JSONL transcript.
+# T-2377: prefer the authoritative transcript_path that Claude Code passes to
+# hooks on stdin (first arg here). Reconstructing the dir from PROJECT_ROOT is
+# WRONG in git worktrees / background jobs — Claude Code keys the transcript dir
+# on the session's LAUNCH cwd (the main repo), not the worktree's PROJECT_ROOT,
+# so the gauge searched an empty/stale sibling dir and went blind (the loop never
+# armed). Sibling hooks (subagent-stop.sh, chat-bare-path-scan.sh, session-end.sh)
+# already consume stdin transcript_path; this brings the gauge into line.
+# Reconstruction (T-2375 encoding fix + T-791 project scoping) remains the
+# fallback for manual `status` invocation where no stdin path is available.
 find_transcript() {
+    local explicit="${1:-}"
+    if [ -n "$explicit" ] && [ -f "$explicit" ]; then
+        echo "$explicit"
+        return 0
+    fi
     local project_dir_name
     # T-2375: match Claude Code's dir encoding (every non-alnum → '-', incl. '.'),
     # otherwise dotted paths (git worktrees) resolve to a non-existent dir.
@@ -262,12 +273,24 @@ warn_by_calls() {
 
 case "${1:-}" in
     post-tool)
+        # T-2377: capture the hook stdin JSON so we can use the authoritative
+        # transcript_path. Correct in worktrees / bg jobs where PROJECT_ROOT-based
+        # reconstruction points at the wrong (launch-cwd) project dir. FW_TRANSCRIPT_PATH
+        # is an explicit override for tests / manual runs.
+        HOOK_INPUT=$(cat 2>/dev/null || true)
+        HOOK_TRANSCRIPT=$(printf '%s' "$HOOK_INPUT" | python3 -c "
+import sys, json
+try: print(json.load(sys.stdin).get('transcript_path') or '')
+except Exception: print('')
+" 2>/dev/null) || HOOK_TRANSCRIPT=""
+        HOOK_TRANSCRIPT="${HOOK_TRANSCRIPT:-${FW_TRANSCRIPT_PATH:-}}"
+
         count=$(increment_counter)
 
         # Only check tokens every N calls (23ms per check is fine, but no need every call)
         if [ $((count % TOKEN_CHECK_INTERVAL)) -eq 0 ] || [ "$count" -eq 1 ]; then
             have_tokens=false
-            transcript=$(find_transcript 2>/dev/null) || true
+            transcript=$(find_transcript "$HOOK_TRANSCRIPT" 2>/dev/null) || true
             if [ -n "${transcript:-}" ]; then
                 tokens=$(get_context_tokens "$transcript") || true
                 if [ "${tokens:-0}" -gt 0 ]; then
@@ -414,7 +437,9 @@ case "${1:-}" in
     status)
         ensure_counter
         echo "Tool calls since last commit: $(tr -d '[:space:]' < "$COUNTER_FILE")"
-        transcript=$(find_transcript 2>/dev/null) || true
+        # T-2377: honor an explicit transcript path (FW_TRANSCRIPT_PATH) for manual
+        # runs; falls back to reconstruction when unset.
+        transcript=$(find_transcript "${FW_TRANSCRIPT_PATH:-}" 2>/dev/null) || true
         if [ -n "${transcript:-}" ]; then
             tokens=$(get_context_tokens "$transcript") || true
             if [ "${tokens:-0}" -gt 0 ]; then
