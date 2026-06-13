@@ -4,12 +4,12 @@ name: "T-2158 S4: discard manifest enhancement to fw handover --emergency"
 description: >
   Slice S4 of T-2158. Extend agents/handover/handover.sh --emergency to enumerate category-level discards (counts of tool-results compressed, turns summarised, files dropped from working set) into .context/handovers/SESSION.discard-manifest.yaml. Category-level fidelity sufficient (S6 Q4 — model self-compacts so token-level diff impossible). The Discard fidelity scoped driver rewards work here.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, t-2158-slice, discard-fidelity]
-components: []
+components: [agents/context/inject-next-directive.py, agents/context/post-compact-resume.sh, agents/handover/discard-manifest.sh, agents/handover/handover.sh, agents/resume/resume.sh, lib/config-file.sh, tests/unit/test_inject_next_directive.py]
 related_tasks: [T-2158]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: [T-2158]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T08:45:37Z
-last_update: 2026-06-13T10:42:48Z
-date_finished: null
+last_update: 2026-06-13T11:00:27Z
+date_finished: 2026-06-13T11:00:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -226,9 +226,12 @@ bats tests/unit/handover.bats >/dev/null 2>&1 && echo "handover regression PASS"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-fc9c96bb
-- **Timestamp:** 2026-06-13T10:55:37Z
+- **Scan ID:** R-b2b79122
+- **Timestamp:** 2026-06-13T11:04:11Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-13T11:00:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
