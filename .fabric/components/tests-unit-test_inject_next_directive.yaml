@@ -1,0 +1,20 @@
+id: tests/unit/test_inject_next_directive.py
+name: test_inject_next_directive
+type: script
+subsystem: unknown
+location: tests/unit/test_inject_next_directive.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-06-13
+created_by: unknown

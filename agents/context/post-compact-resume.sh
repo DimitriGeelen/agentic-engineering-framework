@@ -250,6 +250,23 @@ ${HOOK_PROBE_DETAIL}
     fi
 fi
 
+# T-2364 (T-2158 S2): Inject next-directive when .next-directive.yaml is present.
+# Increments the iteration counter at .context/working/.continuous-mode-state.yaml
+# and refuses to inject (replaces with "LOOP TERMINATED" notice) when iteration
+# exceeds max_iterations OR expires_at has passed. Helper exits 0 always; empty
+# stdout means "no directive present" — degrades to no-op like the rest of this
+# hook. Sibling of T-2363 substrate (checkpoint.sh writes directive into restart
+# signal; this hook surfaces it in additionalContext on resume).
+INJECTOR="$FRAMEWORK_ROOT/agents/context/inject-next-directive.py"
+if [ -f "$INJECTOR" ]; then
+    DIRECTIVE_SECTION=$(python3 "$INJECTOR" --project-root "$PROJECT_ROOT" 2>/dev/null || echo "")
+    if [ -n "$DIRECTIVE_SECTION" ]; then
+        CONTEXT="${CONTEXT}
+
+${DIRECTIVE_SECTION}"
+    fi
+fi
+
 CONTEXT="${CONTEXT}
 
 ## Post-Compact Budget Note (T-1728)
