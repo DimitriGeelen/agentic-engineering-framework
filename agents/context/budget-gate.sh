@@ -169,16 +169,32 @@ if [ "$FORCE_RECHECK" -ne 1 ] && [ $((GATE_COUNT % RECHECK_INTERVAL)) -ne 1 ] &&
     exit 0
 fi
 
-# Find transcript — scoped to THIS project's Claude Code directory
-# Claude Code encodes project paths by replacing every non-alnum char with '-'
-# (e.g. /opt/foo → -opt-foo; /opt/x/.claude/worktrees/y → -opt-x--claude-worktrees-y).
-# T-2375: use the shared helper so dotted paths (worktrees) resolve correctly —
-# `${PROJECT_ROOT//\//-}` left '.' intact and missed the transcript in worktrees.
-PROJECT_DIR_NAME=$(fw_claude_project_dir_name "$PROJECT_ROOT")
-PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
-TRANSCRIPT=""
-if [ -d "$PROJECT_JSONL_DIR" ]; then
-    TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -1)
+# Find transcript.
+# T-2377: prefer the authoritative transcript_path Claude Code passes on stdin
+# ($INPUT, captured above). Reconstructing from PROJECT_ROOT is WRONG in git
+# worktrees / background jobs — Claude Code keys the transcript dir on the
+# session's LAUNCH cwd (the main repo), not the worktree's PROJECT_ROOT, so the
+# gate searched an empty/stale sibling dir and never saw the live token count
+# (the loop never armed). Reconstruction (T-2375 encoding + T-791 scoping) is the
+# fallback when stdin carries no usable path (e.g. manual invocation).
+TRANSCRIPT=$(printf '%s' "$INPUT" | python3 -c "
+import sys, json, os
+try:
+    p = json.load(sys.stdin).get('transcript_path') or ''
+except Exception:
+    p = ''
+print(p if (p and os.path.isfile(p)) else '')
+" 2>/dev/null) || TRANSCRIPT=""
+
+if [ -z "${TRANSCRIPT:-}" ]; then
+    # Fallback: reconstruct from PROJECT_ROOT (no stdin transcript_path available).
+    # Claude Code encodes project paths by replacing every non-alnum char with '-'
+    # (e.g. /opt/foo → -opt-foo; /opt/x/.claude/worktrees/y → -opt-x--claude-worktrees-y).
+    PROJECT_DIR_NAME=$(fw_claude_project_dir_name "$PROJECT_ROOT")
+    PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
+    if [ -d "$PROJECT_JSONL_DIR" ]; then
+        TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -1)
+    fi
 fi
 
 if [ -z "${TRANSCRIPT:-}" ]; then
