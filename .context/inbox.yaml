@@ -634,3 +634,10 @@ observations:
   status: resolved
   promoted_to: T-2376
   resolution: "Root-caused + fixed in T-2376 (partial-complete). Confirmed: SessionStart matchers in settings.json are ONLY 'compact'+'resume'; 'claude -c' auto-restart emits source 'startup' → no matcher → post-compact-resume never fires → loop restarts but doesn't advance. The hook+injector already accept 'startup'; only the matcher was missing. Fix: (1) lib/init.sh generator adds startup matcher (fw init/upgrade wire it); (2) bin/claude-fw writes one-shot .auto-restart-pending sentinel before 'claude -c'; (3) post-compact-resume proceeds on startup ONLY with the sentinel (loop continuation, consumes it) — cold starts stay no-op. bats continuous_loop_auto_restart_advance.bats 5/5. 2 Human ACs remain: settings.json wiring (B-005, via fw hook-enable) + live claude -c E2E confirming source=startup."
+- id: OBS-075
+  text: "arc-012 live-fire precondition: continuous-run loop coordination files (.restart-requested, .tool-counter, .budget-status) are REPO-GLOBAL, not per-session. A live-fire that actually fires the loop is only safe when NO other claude-fw wrappers are running on the same repo — else the global signal SIGTERMs/restarts their claude children. Add a 'quiet repo' precondition to docs/runbooks/arc-012-continuous-mode-live-fire.md (alongside the interactive-not-bg-job rule). Discovered in T-2381 controlled live-fire (5+ operator claude-fw wrappers were live; escalation aborted to avoid disrupting them)."
+  captured: 2026-06-13T22:12:43Z
+  context_task: T-2381
+  tags: []
+  status: pending
+  promoted_to: null
