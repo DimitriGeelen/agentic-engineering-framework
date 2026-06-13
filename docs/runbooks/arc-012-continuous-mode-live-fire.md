@@ -27,9 +27,25 @@ Arc: `arc-012` (`continuous-run`). Anchor: `T-2158`. Slices: S0–S5.
    ```
    cd /opt/999-Agentic-Engineering-Framework && command -v claude-fw && echo OK
    ```
-3. **Clean-ish git state.** The auto-handover commits and pushes. Run from a
+3. **Run in an INTERACTIVE terminal — NOT a background job.** A background-job
+   harness manages its own compaction (the transcript accrues multiple
+   `compact_boundary` markers and can end on one, so the gauge legitimately reads
+   ~0), and its process tree is not the plain `claude-fw → claude` lifecycle the
+   restart watchdog expects. The live-fire must be an interactive `claude-fw`
+   session you launched yourself in a normal terminal.
+4. **Deployed-fix prerequisites (these make the lowered-window trigger actually
+   fire).** The live-fire silently no-ops without them:
+   - **T-2377** — the budget gauge reads the hook's stdin `transcript_path`. Before
+     this fix the gauge was blind in any session whose cwd ≠ launch cwd (every git
+     worktree, every background job), so critical was never detected. Deployed to
+     master (`6c43bd5f0`).
+   - **T-2376** — the `startup` SessionStart matcher is wired in `.claude/settings.json`.
+     The auto-restart's `claude -c` emits source `startup` (not `resume`); without the
+     matcher the loop restarts but never re-injects the directive / advances the counter.
+     Verify: `grep -q '"matcher": "startup"' .claude/settings.json && echo OK`.
+5. **Clean-ish git state.** The auto-handover commits and pushes. Run from a
    branch you're happy to receive handover commits on.
-4. **Know the safety rails** (from the auto-restart design, T-179):
+6. **Know the safety rails** (from the auto-restart design, T-179):
    - Restart signal has a **5-minute TTL** (stale signals are ignored).
    - Max **5 consecutive** auto-restarts, then the wrapper stops.
    - **3-second cancel window** before each restart (Ctrl-C to abort).
@@ -101,6 +117,31 @@ EOF
 ```
 cd /opt/999-Agentic-Engineering-Framework && FW_CONTEXT_WINDOW=20000 claude-fw
 ```
+
+### 3a. Verify the gauge can see tokens (do this FIRST, before relying on the loop)
+
+This is the single most common silent-failure point (the T-2377 class). Inside the
+session, after a couple of interactions, confirm the gauge is reading real tokens —
+**not** `unavailable`:
+
+```
+cd /opt/999-Agentic-Engineering-Framework && bin/fw hook checkpoint status
+```
+
+Expected: `Context tokens: NNNNN (~XX% of context window)` with a **nonzero, climbing**
+number. Cross-check the hook-written cache (authoritative — the real PreToolUse gate
+writes it from the stdin transcript_path, correct even in edge cases):
+
+```
+cd /opt/999-Agentic-Engineering-Framework && cat .context/working/.budget-status
+```
+
+Expected: `"tokens"` is a nonzero number trending up toward your `FW_CONTEXT_WINDOW`.
+
+- **If it says `unavailable` / stays `0`:** the gauge isn't reading the transcript.
+  Most likely you're in a worktree or background job (see Prerequisite 3), or the
+  T-2377 fix isn't deployed in this checkout (see Prerequisite 4). **Stop and fix
+  before continuing** — otherwise critical will never fire and the loop will never arm.
 
 ### 4. Work a short session until critical fires
 
@@ -230,8 +271,10 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw config set CONTEXT_WINDOW 30
 
 | Symptom | Likely cause | Check |
 |---------|--------------|-------|
-| Critical never fires | window too high, or transcript not found | `cat .context/working/.budget-status`; lower `FW_CONTEXT_WINDOW` |
+| Critical never fires (gauge says `unavailable` / tokens 0) | gauge can't find the transcript — worktree/bg-job (cwd ≠ launch cwd), or T-2377 fix not deployed | run step 3a; confirm interactive-not-bg-job (Prereq 3) and T-2377 deployed (Prereq 4); the gauge must read the hook's stdin `transcript_path` |
+| Critical never fires (gauge reads real tokens but no banner) | window too high for the work done | lower `FW_CONTEXT_WINDOW`; do more interactions to climb past 95% |
 | No auto-restart | launched via `claude`, not `claude-fw` | confirm the wrapper; check `.context/working/.restart-requested` was written |
+| Restarts but directive/counter never advances | `startup` SessionStart matcher missing (T-2376) | `grep '"matcher": "startup"' .claude/settings.json` (Prereq 4) |
 | Directive not surfaced | continuous-mode off, or no directive file | `enabled: true` in `.continuous-mode.yaml`; `.next-directive.yaml` present |
 | Counter not advancing | ceiling breach freezing it (expected) | check `last_terminated_reason` for "tier ceiling" |
 | Loop stops after a few cycles | `max_iterations` cap reached (expected) | LOOP TERMINATED notice; raise cap or reset counter |
@@ -240,7 +283,17 @@ cd /opt/999-Agentic-Engineering-Framework && bin/fw config set CONTEXT_WINDOW 30
 
 ## See also
 
-- `tests/integration/continuous_loop.bats` — automated resume→inject coverage (T-2368)
+**Per-link automated coverage** (everything except the live `claude -c` restart this
+runbook covers — all four links of the loop are unit/integration tested):
+
+- `tests/integration/budget_gauge_stdin_transcript.bats` — link #1: gauge reads stdin `transcript_path` (T-2377)
+- `tests/integration/continuous_loop_critical_signal.bats` — link #2: critical → `.restart-requested` + directive fold (T-2378)
+- `tests/integration/claude_fw_restart_terminator.bats` — link #3: terminator fires on the signal (T-2373)
+- `tests/integration/continuous_loop_auto_restart_advance.bats` — link #4: restart → `startup` → advance (T-2376)
+- `tests/integration/continuous_loop.bats` — resume→inject coverage (T-2368)
+
+**Source:**
+
 - `agents/context/checkpoint.sh` — critical trigger + restart signal + directive fold (T-2363 S1)
 - `agents/context/post-compact-resume.sh` — resume-side directive inject (T-2364/T-2365 S2/S3)
 - `agents/context/inject-next-directive.py` — iteration counter, caps, tier-ceiling (T-2367 S5)
