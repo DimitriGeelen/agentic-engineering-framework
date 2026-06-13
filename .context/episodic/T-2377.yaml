@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2377: budget gauge blind in worktree sessions — use hook stdin transcript_path not reconstructed project dir
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T19:28:36Z
+# ============================================================================
+
+task_id: T-2377
+task_name: "budget gauge blind in worktree sessions — use hook stdin transcript_path not reconstructed project dir"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T19:08:37Z
+completed: 2026-06-13T19:28:27Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-13T21:17:22+02:00
+last_commit: 2026-06-13T21:17:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)
+
+# Key outcomes
+outcomes:
+  - '`budget-gate.sh` uses `transcript_path` from the hook stdin JSON when present and the file exists, before falling back to PROJECT_ROOT reconstruction'
+  - '`checkpoint.sh` `find_transcript()` accepts an explicit transcript path (from stdin/env) and prefers it over reconstruction; existing `find_transcript` callers and manual `checkpoint.sh status` still work via fallback'
+  - 'Fallback path is preserved byte-for-byte when no stdin transcript_path is available (no regression for non-worktree sessions / manual invocation)'
+  - 'New regression test proves: given a stdin payload with `transcript_path` pointing at a fresh transcript in an UNRELATED project dir, the gauge reads that file''s tokens (not the PROJECT_ROOT-derived dir)'
+  - 'Existing budget/transcript tests still pass (`transcript_dir_name_sanitization.bats`, any budget-gate/checkpoint bats)'
+  - '`bin/fw reviewer T-2377` returns Overall PASS (no new anti-patterns)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)'
+    source: git-mined
+  - description: 'budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - '.tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md'
+  - 'tests/integration/budget_gauge_stdin_transcript.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-13T21:17:22"
+    action: "T-2377: budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)"
+  - time: "2026-06-13T21:17:22"
+    action: "T-2377: budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19
+  commits: 2
+  files_changed: 4
+  lines_added: 796
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+generated_by: context-agent-hybrid
