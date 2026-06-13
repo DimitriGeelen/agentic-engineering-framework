@@ -3924,3 +3924,11 @@ bin/fw context add-learning "When reconstructing Claude Codes projects dir name 
   command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
 git add -A .tasks/ .context/working/ .context/project/ .context/episodic/ 2>&1
 FW_SWITCH_FOCUS=1 git commit -q -m'
+- timestamp: '2026-06-13T16:50:27Z'
+  task: 'T-1542'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2376'
+  command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
+python3 -c "import yaml; yaml.safe_load(open(.context/inbox.yaml)); print(inbox.yaml valid)"
+git add .context'
