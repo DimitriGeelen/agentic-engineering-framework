@@ -615,5 +615,6 @@ observations:
   captured: 2026-06-13T11:25:49Z
   context_task: T-2364
   tags: []
-  status: pending
-  promoted_to: null
+  status: resolved
+  promoted_to: T-2370
+  resolution: "Fixed in T-2370 — set status: work-completed + date_finished on both T-2364 and T-2365 in .tasks/completed/ to match their directory. Full-class scan of completed/ arc-012 tasks is clean (no residual started-work). The detector follow-on (completed/-dir + non-completed-status, mentioned in the OBS text) is NOT done here — left as a separate concern if the class recurs."

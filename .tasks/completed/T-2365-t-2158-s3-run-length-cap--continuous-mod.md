@@ -6,7 +6,7 @@ description: >
   max_iterations (default 10), tier_ceiling (default 1), expires_after_seconds, current_iteration}.
   Reset on operator manual /compact. Surfaces in fw resume status.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -25,7 +25,7 @@ related_tasks: [T-2158]
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T08:45:31Z
 last_update: 2026-06-13T09:34:12Z
-date_finished:
+date_finished: 2026-06-13T09:34:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
