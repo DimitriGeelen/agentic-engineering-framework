@@ -4,9 +4,9 @@ name: "arc-012 continuous-mode live-fire runbook — operator end-to-end test vi
 description: >
   arc-012 continuous-mode live-fire runbook — operator end-to-end test via claude-fw with lowered FW_CONTEXT_WINDOW
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -23,8 +23,8 @@ arc_id: continuous-run
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T12:51:52Z
-last_update: 2026-06-13T12:51:52Z
-date_finished: null
+last_update: 2026-06-13T12:58:49Z
+date_finished: 2026-06-13T12:58:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -143,6 +143,25 @@ for s in "Prerequisites" "trigger works" "Step-by-step" "Expected observations" 
 command -v claude-fw >/dev/null && grep -q "CONTEXT_WINDOW" agents/context/checkpoint.sh
 bin/fw reviewer T-2369 > /tmp/.t2369-rev 2>&1; grep -qE "Overall:.*(PASS|CONCERN)" /tmp/.t2369-rev && ! grep -q "Overall:.*FAIL" /tmp/.t2369-rev
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The runbook is complete, accurate, and operator-ready. Every
+referenced verb/flag is verified to exist (L-477), all six required sections are
+present, and the mechanism it relies on (`FW_CONTEXT_WINDOW` → `TOKEN_CRITICAL =
+window × 95%`) is confirmed in `checkpoint.sh:31`. Running it is the single
+remaining step to a true end-to-end test of continuous mode — and the same run
+produces the `--demo` artefact that `fw arc close continuous-run` requires
+(G-062). There is no agent-side work left; this is a hand-off, not a deferral.
+
+**Evidence:**
+- `docs/runbooks/arc-012-continuous-mode-live-fire.md` — full runbook (commit `c8d18f936`).
+- All 5 Agent ACs ticked; Verification 4/4 PASS at completion gate.
+- Reviewer PASS, 0 findings (after fixing a real L-387 SIGPIPE risk in the section-check, not just suppressing it).
+- Automated coverage already in place: `tests/integration/continuous_loop.bats` (6/6, T-2368) + `tests/unit/test_inject_next_directive.py` (40/40).
+- The live `claude-fw` restart is the only un-automatable junction; the runbook makes it a minutes-long operator action.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -228,9 +247,12 @@ bin/fw reviewer T-2369 > /tmp/.t2369-rev 2>&1; grep -qE "Overall:.*(PASS|CONCERN
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b97ec802
-- **Timestamp:** 2026-06-13T12:57:45Z
+- **Scan ID:** R-49e71215
+- **Timestamp:** 2026-06-13T12:58:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-13T12:58:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
