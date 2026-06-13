@@ -1699,5 +1699,125 @@ def test_theme_portability_latent_without_arc(tmp_path):
     assert "theme-portability" not in result["scores"]
 
 
+# ---------------------------------------------------------------------------
+# T-2361 — score_feedback_loop_completeness (arc-005) +
+# score_estimator_fidelity (arc-006). Final batch this session.
+# ---------------------------------------------------------------------------
+
+
+def test_feedback_loop_no_signal_zero():
+    s, _ = estimator.score_feedback_loop_completeness(FM_BUILD, "Refactor.", [])
+    assert s == 0
+
+
+def test_feedback_loop_incidental_one():
+    body = "Mentions handover round-trip work upcoming."
+    s, _ = estimator.score_feedback_loop_completeness(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_feedback_loop_single_fix_two():
+    body = "Fills the handover section Suggested First Action with non-template content."
+    s, _ = estimator.score_feedback_loop_completeness(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_feedback_loop_component_three():
+    body = "Added unit test for handover Suggested First Action assertion in tests/unit/test_handover.py."
+    s, _ = estimator.score_feedback_loop_completeness(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_feedback_loop_framework_four():
+    body = "PreCompact handover always emits; completion-percentage audit at framework level fires on incomplete sections."
+    s, _ = estimator.score_feedback_loop_completeness(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_feedback_loop_new_class_five():
+    body = "New round-trip-fidelity primitive class: automated handover-completeness audit ships as a substrate."
+    s, _ = estimator.score_feedback_loop_completeness(FM_BUILD, body, [])
+    assert s == 5
+
+
+def test_estimator_fidelity_no_signal_zero():
+    s, _ = estimator.score_estimator_fidelity(FM_BUILD, "Refactor.", [])
+    assert s == 0
+
+
+def test_estimator_fidelity_incidental_one():
+    body = "Notes estimator fidelity work as background."
+    s, _ = estimator.score_estimator_fidelity(FM_BUILD, body, [])
+    assert s == 1
+
+
+def test_estimator_fidelity_single_tweak_two():
+    body = "Single rubric tweak: widen keyword pattern adjustment on the estimator fidelity gate."
+    s, _ = estimator.score_estimator_fidelity(FM_BUILD, body, [])
+    assert s == 2
+
+
+def test_estimator_fidelity_component_three():
+    body = "New dedicated handler score_d_disjoint added with per-level test coverage (6-level rubric); estimator refinement."
+    s, _ = estimator.score_estimator_fidelity(FM_BUILD, body, [])
+    assert s == 3
+
+
+def test_estimator_fidelity_framework_four():
+    body = "Proposed-vs-confirmed delta audit ships at framework level; v2-delta audit gate fires on score divergence."
+    s, _ = estimator.score_estimator_fidelity(FM_BUILD, body, [])
+    assert s == 4
+
+
+def test_estimator_fidelity_new_class_five():
+    body = "New estimator-fidelity primitive class: v2-delta auto-needs-split mechanism makes drift structurally surfaced."
+    s, _ = estimator.score_estimator_fidelity(FM_BUILD, body, [])
+    assert s == 5
+
+
+# Dispatch via arc-scope
+
+def test_feedback_loop_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-inception-review-loop", [
+        {"name": "feedback-loop-completeness", "weight": 5},
+    ])
+    body = "PreCompact handover always emits; completion-percentage audit at framework level fires on incomplete sections."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-inception-review-loop"})
+    result = estimator.estimate_task(task, {})
+    assert "feedback-loop-completeness" in result["scores"]
+    assert result["scores"]["feedback-loop-completeness"] == 4
+
+
+def test_estimator_fidelity_dispatches_via_arc_scope(tmp_path, monkeypatch):
+    arcs_dir = tmp_path / "arcs"
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs_dir)
+    _write_arc_yaml(arcs_dir, "test-value-prio-2", [
+        {"name": "estimator-fidelity", "weight": 3, "approved_at": "2026-05-21T12:42:38Z"},
+    ])
+    body = "Proposed-vs-confirmed delta audit gate at framework level ships."
+    task = _make_task(tmp_path, body, fm_extra={"arc_id": "test-value-prio-2"})
+    result = estimator.estimate_task(task, {})
+    assert "estimator-fidelity" in result["scores"]
+    assert result["scores"]["estimator-fidelity"] == 4
+
+
+# Latency
+
+def test_feedback_loop_latent_without_arc(tmp_path):
+    body = "PreCompact handover always emits."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "feedback-loop-completeness" not in result["scores"]
+
+
+def test_estimator_fidelity_latent_without_arc(tmp_path):
+    body = "Proposed-vs-confirmed delta audit ships."
+    task = _make_task(tmp_path, body)
+    result = estimator.estimate_task(task, {})
+    assert "estimator-fidelity" not in result["scores"]
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

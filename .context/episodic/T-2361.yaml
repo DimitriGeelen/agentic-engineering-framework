@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2361: BVP estimator dedicated handlers final batch — arc-005 feedback-loop-completeness
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T00:03:15Z
+# ============================================================================
+
+task_id: T-2361
+task_name: "BVP estimator dedicated handlers final batch — arc-005 feedback-loop-completeness"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T23:58:25Z
+completed: 2026-06-13T00:03:07Z
+duration_days: 1
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`score_feedback_loop_completeness(fm, body, tags) -> tuple[int, list[str]]` added with full 6-level rubric: L5 new round-trip-fidelity primitive class (e.g. automated handover-completeness audit), L4 framework-level handover/session capture gate (e.g. PreCompact handover always emits, completion-percentage audit), L3 component-level handover content-quality test (e.g. handover Suggested First Action filled / Next Step populated test), L2 single handover-section fix with rationale, L1 incidental handover/feedback mention, L0 no signal'
+  - '`score_estimator_fidelity(fm, body, tags) -> tuple[int, list[str]]` added with full 6-level rubric: L5 new estimator-fidelity primitive class (e.g. v2-delta auto-needs-split mechanism, structural drift detection), L4 framework-level estimator-fidelity audit (e.g. proposed-vs-confirmed delta audit gate at framework level), L3 component-level fidelity test or rubric refinement (e.g. new score_* handler + dedicated tests, this session''s T-2356/T-2359/T-2360 pattern), L2 single rubric tweak with rationale, L1 incidental estimator/fidelity mention, L0 no signal'
+  - 'Both handlers registered in the `handlers` dict with canonical name-form keys: `"feedback-loop-completeness"`, `"estimator-fidelity"`'
+  - 'Each handler''s docstring references T-2361 + the originating arc YAML rationale + states the LATENT-until-X invariant (or "already active for arc-006" for estimator-fidelity)'
+  - 'Test coverage: 6 per-level tests × 2 handlers = 12 + 2 dispatch + 2 non-registration = ≥ 16 new tests. All PASS, existing test suite green'
+  - 'bvp_estimator file ≥ 189 tests (was 173), wider BVP regression ≥ 271 (was 255)'
+  - 'Reviewer PASS on T-2361'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, estimator, arc-005, arc-006, latent, final-batch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2361-bvp-estimator-dedicated-handlers-final-b.md
+generated_by: context-agent-hybrid
