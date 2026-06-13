@@ -82,7 +82,8 @@ termlink_cleanup() {
 }
 
 # Cleanup on script exit
-trap 'termlink_cleanup' EXIT
+TERMINATOR_PID=""
+trap 'termlink_cleanup; { [ -n "${TERMINATOR_PID:-}" ] && kill "$TERMINATOR_PID" 2>/dev/null; }; true' EXIT
 
 # Signal file location (relative to git root)
 find_signal_file() {
@@ -108,6 +109,48 @@ is_signal_fresh() {
     fi
 }
 
+# T-2373: budget-critical terminator (plain mode).
+# The restart chain (checkpoint.sh writes .restart-requested at critical) only
+# restarts AFTER claude exits — but in plain mode `command claude` runs in the
+# foreground and nothing ends it, so the restart never fires (T-2372 bug).
+# This watcher runs in the background alongside claude; on a FRESH signal written
+# during the current run, it SIGTERMs (then SIGKILLs after a grace) the wrapper's
+# claude child so the existing restart-on-exit branch executes.
+# Fail-safe: if it can't find a child to kill, it no-ops — it never spurious-kills.
+# Args: $1=wrapper PID, $2=signal file path, $3=this run's start epoch.
+_terminator_watch() {
+    set +e
+    local wrapper_pid="$1" sigfile="$2" run_start="$3"
+    local self="$BASHPID"
+    local poll="${FW_TERMINATOR_POLL:-5}"
+    local grace="${FW_TERMINATOR_GRACE:-5}"
+    local mt now pids p
+    while true; do
+        sleep "$poll"
+        # Wrapper gone → stop watching.
+        kill -0 "$wrapper_pid" 2>/dev/null || return 0
+        [ -f "$sigfile" ] || continue
+        mt=$(stat -c %Y "$sigfile" 2>/dev/null || echo 0)
+        now=$(date +%s)
+        # Edge case a: only act on a signal written DURING this run (mtime >= run
+        # start), so a leftover signal cannot instantly re-kill a resumed session.
+        [ "$mt" -ge "$run_start" ] || continue
+        # Align freshness window with is_signal_fresh (<5min).
+        [ $((now - mt)) -lt 300 ] || continue
+        # The wrapper's only direct children during a run are `claude` and this
+        # watcher — so its direct children minus self == claude. No comm filter
+        # (would miss claude when its comm is node/truncated).
+        pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" || true)
+        [ -n "$pids" ] || continue
+        echo "" >&2
+        echo "claude-fw: budget-critical signal detected — ending claude to trigger auto-restart." >&2
+        for p in $pids; do kill -TERM "$p" 2>/dev/null || true; done
+        sleep "$grace"
+        for p in $pids; do kill -KILL "$p" 2>/dev/null || true; done
+        return 0
+    done
+}
+
 # Set higher bash timeout for long framework operations (audit, fabric, embeddings)
 # Default is 120s which is too short. T-501/T-435.
 export BASH_DEFAULT_TIMEOUT_MS="${BASH_DEFAULT_TIMEOUT_MS:-300000}"
@@ -120,6 +163,9 @@ MAX_RESTARTS=5  # Safety valve — don't loop forever
 termlink_start
 
 while true; do
+    # T-2373: record when this run started so the terminator only acts on a
+    # signal written DURING the run (edge case a — not a leftover/stale signal).
+    run_start_epoch=$(date +%s)
     # Run claude with user's arguments
     set +e
     if [ "$TERMLINK_ENABLED" = "1" ] && [ -n "$TERMLINK_SESSION" ]; then
@@ -129,6 +175,22 @@ while true; do
         # We check if claude process is still running inside the session
         while true; do
             sleep 5
+            # T-2373: budget-critical terminator (TermLink mode). If a fresh
+            # signal appears while claude is still running, end the PTY claude
+            # session so the restart-on-exit branch below fires.
+            if [ "${FW_NO_TERMINATOR:-0}" != "1" ]; then
+                _tl_sig=$(find_signal_file 2>/dev/null || true)
+                if [ -n "$_tl_sig" ] && [ -f "$_tl_sig" ]; then
+                    _tl_mt=$(stat -c %Y "$_tl_sig" 2>/dev/null || echo 0)
+                    if [ "$_tl_mt" -ge "$run_start_epoch" ] && [ $(( $(date +%s) - _tl_mt )) -lt 300 ]; then
+                        echo "claude-fw: budget-critical signal detected — ending TermLink claude session to trigger auto-restart."
+                        termlink pty inject "$TERMLINK_SESSION" "/exit" --enter >/dev/null 2>&1 || true
+                        sleep 2
+                        exit_code=0
+                        break
+                    fi
+                fi
+            fi
             # Check if the session is still alive and claude is running
             if ! termlink ping "$TERMLINK_SESSION" >/dev/null 2>&1; then
                 exit_code=1
@@ -143,8 +205,25 @@ while true; do
             fi
         done
     else
+        # T-2373: launch the budget-critical terminator alongside foreground
+        # claude. It SIGTERMs claude on a fresh signal so the restart-on-exit
+        # branch below can fire. Opt out with FW_NO_TERMINATOR=1.
+        TERMINATOR_PID=""
+        if [ "${FW_NO_TERMINATOR:-0}" != "1" ]; then
+            _term_sig=$(find_signal_file 2>/dev/null || true)
+            if [ -n "$_term_sig" ]; then
+                _terminator_watch "$$" "$_term_sig" "$run_start_epoch" &
+                TERMINATOR_PID=$!
+            fi
+        fi
         command claude "${CLAUDE_ARGS[@]}"
         exit_code=$?
+        # Stop the watcher (no-op if it already fired/returned).
+        if [ -n "${TERMINATOR_PID:-}" ]; then
+            kill "$TERMINATOR_PID" 2>/dev/null || true
+            wait "$TERMINATOR_PID" 2>/dev/null || true
+            TERMINATOR_PID=""
+        fi
     fi
     set -e
 
