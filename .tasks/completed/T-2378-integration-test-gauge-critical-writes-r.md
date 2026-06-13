@@ -201,8 +201,8 @@ out=$(bin/fw reviewer T-2378 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3a2cc00c
-- **Timestamp:** 2026-06-13T19:48:49Z
+- **Scan ID:** R-f591644f
+- **Timestamp:** 2026-06-13T22:32:01Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -210,6 +210,5 @@ out=$(bin/fw reviewer T-2378 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#1 (Agent)
-
 ### 2026-06-13T19:48:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

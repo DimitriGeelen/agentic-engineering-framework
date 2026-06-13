@@ -18778,3 +18778,120 @@ scan_id: R-0f10a636
 task_id: T-2380
 payload:
   task_file: .tasks/active/T-2380-fw-costs--2-surfaces-blind-in-worktrees-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T22:12:58Z'
+scan_id: R-c1137192
+task_id: T-2381
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T22:12:58Z'
+scan_id: R-c1137192
+task_id: T-2381
+payload:
+  task_file: .tasks/active/T-2381-arc-012-controlled-live-fire--drive-one-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T22:24:21Z'
+scan_id: R-ce3ab387
+task_id: T-2382
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T22:24:21Z'
+scan_id: R-ce3ab387
+task_id: T-2382
+payload:
+  task_file: .tasks/active/T-2382-arc-012-runbook-add-quiet-repo-precondit.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T22:25:21Z'
+scan_id: R-55607eaf
+task_id: T-2382
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T22:25:21Z'
+scan_id: R-55607eaf
+task_id: T-2382
+payload:
+  task_file: .tasks/active/T-2382-arc-012-runbook-add-quiet-repo-precondit.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T22:32:01Z'
+scan_id: R-f591644f
+task_id: T-2378
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T22:32:01Z'
+scan_id: R-f591644f
+task_id: T-2378
+payload:
+  task_file: .tasks/completed/T-2378-integration-test-gauge-critical-writes-r.md
+---
+kind: override_applied
+timestamp: '2026-06-13T22:32:01Z'
+scan_id: R-f591644f
+task_id: T-2378
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T22:32:09Z'
+scan_id: R-790646d8
+task_id: T-2365
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T22:32:09Z'
+scan_id: R-790646d8
+task_id: T-2365
+payload:
+  task_file: .tasks/completed/T-2365-t-2158-s3-run-length-cap--continuous-mod.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T22:32:10Z'
+scan_id: R-e8f7d5e0
+task_id: T-2370
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T22:32:10Z'
+scan_id: R-e8f7d5e0
+task_id: T-2370
+payload:
+  task_file: .tasks/completed/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md

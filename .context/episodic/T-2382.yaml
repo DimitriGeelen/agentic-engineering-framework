@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2382: arc-012 runbook: add quiet-repo precondition (OBS-075 — repo-global signal collision across claude-fw sessions)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T22:25:26Z
+# ============================================================================
+
+task_id: T-2382
+task_name: "arc-012 runbook: add quiet-repo precondition (OBS-075 — repo-global signal collision across claude-fw sessions)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T22:22:29Z
+completed: 2026-06-13T22:25:21Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Runbook Prerequisites section gains a precondition stating the loop''s coordination files are repo-global and a live-fire is only safe when no other `claude-fw` wrappers run on the same repo'
+  - 'The precondition includes a copy-pasteable verification command (`ps` for other `claude-fw` processes) with the expected "only your own" outcome'
+  - 'The precondition cites OBS-075 / T-2381 as origin'
+  - 'Runbook still parses as the same doc (no broken section structure; `## Prerequisites` and `## Troubleshooting` headers intact)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2382-arc-012-runbook-add-quiet-repo-precondit.md
+generated_by: context-agent-hybrid

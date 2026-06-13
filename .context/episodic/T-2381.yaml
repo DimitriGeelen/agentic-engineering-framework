@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2381: arc-012 controlled live-fire — drive one budget-critical restart cycle via TermLink (evidence for T-2376 live E2E)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T22:13:03Z
+# ============================================================================
+
+task_id: T-2381
+task_name: "arc-012 controlled live-fire — drive one budget-critical restart cycle via TermLink (evidence for T-2376 live E2E)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T22:03:59Z
+completed: 2026-06-13T22:12:57Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'A real `claude-fw` session runs in the main repo under a tiny `FW_CONTEXT_WINDOW` and at least one real claude turn occurs (transcript/PTY output captured)'
+  - 'Loop link evidence captured for as many of the 4 links as fire: #1 gauge reads critical, #2 `.restart-requested` written, #3 terminator ends the claude session, #4 restart advances `current_iteration`'
+  - 'Outcome documented (which links fired, which did not, and why) in the task body; session cleaned up (`termlink clean`), no runaway claude processes left'
+  - 'No unintended mutations to main-repo source (only expected loop side effects: handover commits to local master, not pushed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2381-arc-012-controlled-live-fire--drive-one-.md
+generated_by: context-agent-hybrid

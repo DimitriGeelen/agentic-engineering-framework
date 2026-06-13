@@ -1,9 +1,9 @@
-# Audit Results - 2026-06-13-2228
-timestamp: 2026-06-13T20:28:41Z
+# Audit Results - 2026-06-13-2358
+timestamp: 2026-06-13T21:58:21Z
 sections: "structure"
 summary:
   pass: 20
-  warn: 3
+  warn: 2
   fail: 2
 findings:
   - level: PASS
@@ -41,16 +41,13 @@ findings:
     check: "No stale-slice-references (L-417)"
   - level: PASS
     check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
-  - level: WARN
-    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
-    mitigation: "Run: fw fabric drift"
   - level: PASS
-    check: "Fabric: 840 registered, 0 unregistered"
+    check: "Fabric: 841 registered, 0 unregistered"
   - level: WARN
-    check: "Fabric: 102/831 cards have no edges"
+    check: "Fabric: 103/832 cards have no edges"
     mitigation: "Run: fw fabric enrich"
   - level: PASS
-    check: "Fabric drift: All watched source files registered (840 cards)"
+    check: "Fabric drift: All watched source files registered (841 cards)"
   - level: FAIL
     check: "Cron drift: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.context/cron-registry.yaml is ahead of /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.context/cron/agentic-audit.crontab (registry edited but not generated)"
     mitigation: "Run: fw cron generate"

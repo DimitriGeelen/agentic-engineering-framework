@@ -257,8 +257,8 @@ rev=$(bin/fw reviewer T-2365 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-852b32a0
-- **Timestamp:** 2026-06-13T18:37:11Z
+- **Scan ID:** R-790646d8
+- **Timestamp:** 2026-06-13T22:32:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
