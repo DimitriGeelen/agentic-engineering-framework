@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2379: refresh arc-012 live-fire runbook: T-2377 gauge fix + interactive-not-bgjob caveat + verify-gauge precheck
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T20:13:25Z
+# ============================================================================
+
+task_id: T-2379
+task_name: "refresh arc-012 live-fire runbook: T-2377 gauge fix + interactive-not-bgjob caveat + verify-gauge precheck"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T20:06:49Z
+completed: 2026-06-13T20:13:19Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Runbook Prerequisites name the deployed fixes the live-fire now depends on: T-2377 (gauge reads stdin transcript_path), T-2376 (`startup` SessionStart matcher wired)'
+  - 'Runbook adds an explicit **interactive-not-background-job** warning (bg-job harness self-compaction confounds the gauge + restart)'
+  - 'Runbook adds a **verify-gauge pre-check step** the operator runs before launching, that confirms the gauge reports real tokens (not "unavailable") — catching the T-2377 class up-front'
+  - 'The "Critical never fires" troubleshooting row points at the gauge/transcript-path check (T-2377), not just "lower the window"'
+  - '"See also" lists the four per-link tests: `budget_gauge_stdin_transcript.bats`, `continuous_loop_critical_signal.bats`, `claude_fw_restart_terminator.bats`, `continuous_loop_auto_restart_advance.bats`'
+  - 'The verify-gauge pre-check command actually works when run (exits 0 / prints a token line on a healthy gauge)'
+  - '`bin/fw reviewer T-2379` returns Overall PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+generated_by: context-agent-hybrid
