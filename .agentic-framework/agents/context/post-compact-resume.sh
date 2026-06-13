@@ -15,6 +15,38 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 LATEST="$PROJECT_ROOT/.context/handovers/LATEST.md"
 FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
 
+# T-2376: capture the SessionStart matcher (source) up-front so we can branch
+# before doing any work. Claude Code passes the hook input JSON on stdin once;
+# read it here so later subshells re-use SAVED_STDIN rather than re-reading a
+# now-empty stdin. SOURCE_TAG ∈ {startup, resume, compact} (default resume).
+SAVED_STDIN=$(cat 2>/dev/null || echo "")
+SOURCE_TAG=$(python3 -c "
+import json, sys
+try:
+    d = json.loads(sys.stdin.read() or '{}')
+    src = d.get('source') or d.get('matcher') or 'resume'
+    print(src if src in ('startup', 'resume', 'compact') else 'resume')
+except Exception:
+    print('resume')
+" <<< "$SAVED_STDIN" 2>/dev/null || echo "resume")
+
+# T-2376: this hook now also fires on SessionStart source "startup" (added so the
+# budget-critical auto-restart path — claude-fw → `claude -c`, which emits
+# "startup" — advances the continuous loop the way manual /compact does). But a
+# *genuine* cold `claude` start ALSO emits "startup", and this hook never fired
+# on cold starts before T-2376. To preserve that behavior, only proceed on
+# "startup" when claude-fw left the `.auto-restart-pending` sentinel (i.e. this
+# startup is a loop auto-restart continuation); otherwise no-op. compact/resume
+# are unaffected.
+RESTART_SENTINEL="$PROJECT_ROOT/.context/working/.auto-restart-pending"
+if [ "$SOURCE_TAG" = "startup" ]; then
+    if [ -f "$RESTART_SENTINEL" ]; then
+        rm -f "$RESTART_SENTINEL" 2>/dev/null   # one-shot: consume the marker
+    else
+        exit 0                                   # cold start — preserve pre-T-2376 no-op
+    fi
+fi
+
 # T-712/T-713: Clear ALL session-scoped volatile state on session recovery.
 # These files are counters, caches, and flags that are valid only within a
 # single session. Carrying them across compact/resume causes stale-state bugs:
@@ -258,23 +290,10 @@ fi
 # rest of this hook. Sibling of T-2363 substrate (checkpoint.sh writes directive
 # into restart signal; this hook surfaces it in additionalContext on resume).
 #
-# T-2365 AC#3: read stdin to extract the SessionStart matcher (`source` field
-# in the hook input JSON). Manual `/compact` resets the iteration counter to 0
-# before the post-resume increment, so a fresh manual compact begins a fresh
-# loop. The hook input arrives on stdin once — capture early so later subshells
-# can re-read it. SAVED_STDIN holds the raw JSON; SOURCE_TAG is the extracted
-# matcher (defaults to "resume" when the field is absent).
-SAVED_STDIN=$(cat 2>/dev/null || echo "")
-SOURCE_TAG=$(python3 -c "
-import json, sys
-try:
-    d = json.loads(sys.stdin.read() or '{}')
-    src = d.get('source') or d.get('matcher') or 'resume'
-    print(src if src in ('startup', 'resume', 'compact') else 'resume')
-except Exception:
-    print('resume')
-" <<< "$SAVED_STDIN" 2>/dev/null || echo "resume")
-
+# T-2365 AC#3 / T-2376: SOURCE_TAG was extracted at the top of this hook from the
+# SessionStart input JSON. Manual `/compact` (source=compact) resets the iteration
+# counter to 0 before the post-resume increment, so a fresh manual compact begins a
+# fresh loop; `resume` and auto-restart `startup` advance it.
 INJECTOR="$FRAMEWORK_ROOT/agents/context/inject-next-directive.py"
 if [ -f "$INJECTOR" ]; then
     DIRECTIVE_SECTION=$(python3 "$INJECTOR" --project-root "$PROJECT_ROOT" --source "$SOURCE_TAG" 2>/dev/null || echo "")

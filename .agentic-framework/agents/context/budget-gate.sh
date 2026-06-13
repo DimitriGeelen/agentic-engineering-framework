@@ -170,8 +170,11 @@ if [ "$FORCE_RECHECK" -ne 1 ] && [ $((GATE_COUNT % RECHECK_INTERVAL)) -ne 1 ] &&
 fi
 
 # Find transcript — scoped to THIS project's Claude Code directory
-# Claude Code encodes project paths: /opt/foo → -opt-foo in ~/.claude/projects/
-PROJECT_DIR_NAME="${PROJECT_ROOT//\//-}"
+# Claude Code encodes project paths by replacing every non-alnum char with '-'
+# (e.g. /opt/foo → -opt-foo; /opt/x/.claude/worktrees/y → -opt-x--claude-worktrees-y).
+# T-2375: use the shared helper so dotted paths (worktrees) resolve correctly —
+# `${PROJECT_ROOT//\//-}` left '.' intact and missed the transcript in worktrees.
+PROJECT_DIR_NAME=$(fw_claude_project_dir_name "$PROJECT_ROOT")
 PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
 TRANSCRIPT=""
 if [ -d "$PROJECT_JSONL_DIR" ]; then

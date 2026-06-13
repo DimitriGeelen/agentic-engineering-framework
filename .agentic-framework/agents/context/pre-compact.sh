@@ -67,14 +67,24 @@ if echo "$LAST_COMMIT_MSG" | grep -qE "(handover|Handover)" 2>/dev/null; then
     fi
 fi
 
+# T-2374: capture handover.sh exit status + stderr. The old `2>/dev/null` swallowed
+# failures, and the log line below claimed "Handover generated" unconditionally —
+# so a failed handover (e.g. one that left LATEST.md dangling) was reported as
+# success (Directive-2: no silent failures).
+_ho_stderr="$PROJECT_ROOT/.context/working/.pre-compact.handover.stderr"
 if [ "$SKIP_COMMIT" = "true" ]; then
-    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --no-commit 2>/dev/null
+    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --no-commit 2>"$_ho_stderr"
 else
-    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>/dev/null
+    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>"$_ho_stderr"
 fi
+_ho_rc=$?
 
-# Log the event
-echo "[pre-compact] [manual] Handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROJECT_ROOT/.context/working/.compact-log" 2>/dev/null
+# Log the event honestly (T-2374: success vs failure, not unconditional "generated")
+if [ "$_ho_rc" -eq 0 ]; then
+    echo "[pre-compact] [manual] Handover generated at $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$PROJECT_ROOT/.context/working/.compact-log" 2>/dev/null
+else
+    echo "[pre-compact] [manual] Handover FAILED (rc=$_ho_rc) at $(date -u +%Y-%m-%dT%H:%M:%SZ) — see $_ho_stderr" >> "$PROJECT_ROOT/.context/working/.compact-log" 2>/dev/null
+fi
 
 # Reset budget gate for THIS project so fresh session doesn't inherit critical lock (T-145)
 echo "0" > "$PROJECT_ROOT/.context/working/.budget-gate-counter" 2>/dev/null

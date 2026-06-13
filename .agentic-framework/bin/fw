@@ -919,6 +919,20 @@ do_doctor() {
         echo -e "         Run: git config --global user.email 'you@example.com' && git config --global user.name 'Your Name'"
     fi
 
+    # Check 5c: Handover LATEST.md integrity (T-2374)
+    # A dangling LATEST.md symlink means /resume and SessionStart:compact silently
+    # read nothing — the continuous-run loop and post-compact recovery degrade with
+    # no error. Catch it here (prevention is distinct from the handover.sh guard).
+    local latest_link="$PROJECT_ROOT/.context/handovers/LATEST.md"
+    if [ -L "$latest_link" ] || [ -e "$latest_link" ]; then
+        if [ -e "$latest_link" ] && [ -s "$latest_link" ]; then
+            echo -e "  ${GREEN}OK${NC}  Handover LATEST.md resolves to $(readlink "$latest_link" 2>/dev/null || echo 'a file')"
+        else
+            _doctor_warn_host "Handover LATEST.md is dangling (target missing): $(readlink "$latest_link" 2>/dev/null || echo '?')"
+            echo -e "         Repoint to the newest real handover or regenerate: fw handover --commit"
+        fi
+    fi
+
     # Check 6: Claude Code hooks — validate paths resolve (G-021 path isolation)
     local settings_file="$PROJECT_ROOT/.claude/settings.json"
     if [ -f "$settings_file" ]; then
