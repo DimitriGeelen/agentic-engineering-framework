@@ -18274,3 +18274,507 @@ scan_id: R-311c0a0c
 task_id: T-2376
 payload:
   task_file: .tasks/active/T-2376-continuous-loop-auto-restart-does-not-ad.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T18:37:02Z'
+scan_id: R-3fe674ee
+task_id: T-2370
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T18:37:02Z'
+scan_id: R-3fe674ee
+task_id: T-2370
+payload:
+  task_file: .tasks/completed/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T18:37:11Z'
+scan_id: R-852b32a0
+task_id: T-2365
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T18:37:11Z'
+scan_id: R-852b32a0
+task_id: T-2365
+payload:
+  task_file: .tasks/completed/T-2365-t-2158-s3-run-length-cap--continuous-mod.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:15:25Z'
+scan_id: R-bf8697fc
+task_id: T-2377
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:15:25Z'
+scan_id: R-bf8697fc
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:15:35Z'
+scan_id: R-afd985da
+task_id: T-2377
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:15:35Z'
+scan_id: R-afd985da
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:15:40Z'
+scan_id: R-a6d13ab2
+task_id: T-2377
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:15:40Z'
+scan_id: R-a6d13ab2
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:15:44Z'
+scan_id: R-446af9ca
+task_id: T-2377
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:15:44Z'
+scan_id: R-446af9ca
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:16:28Z'
+scan_id: R-f2101ac0
+task_id: T-2377
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:16:28Z'
+scan_id: R-f2101ac0
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:16:59Z'
+scan_id: R-203b6864
+task_id: T-2377
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:16:59Z'
+scan_id: R-203b6864
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:17:40Z'
+scan_id: R-f0fe3bf0
+task_id: T-2377
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:17:40Z'
+scan_id: R-f0fe3bf0
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:17:40Z'
+scan_id: R-708fec53
+task_id: T-2377
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:17:40Z'
+scan_id: R-708fec53
+task_id: T-2377
+payload:
+  task_file: .tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:47:38Z'
+scan_id: R-4a55ba26
+task_id: T-2378
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:47:38Z'
+scan_id: R-4a55ba26
+task_id: T-2378
+payload:
+  task_file: .tasks/active/T-2378-integration-test-gauge-critical-writes-r.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:47:47Z'
+scan_id: R-616f2398
+task_id: T-2378
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:47:47Z'
+scan_id: R-616f2398
+task_id: T-2378
+payload:
+  task_file: .tasks/active/T-2378-integration-test-gauge-critical-writes-r.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:48:03Z'
+scan_id: R-5a5666c6
+task_id: T-2378
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:48:03Z'
+scan_id: R-5a5666c6
+task_id: T-2378
+payload:
+  task_file: .tasks/active/T-2378-integration-test-gauge-critical-writes-r.md
+---
+kind: override_applied
+timestamp: '2026-06-13T19:48:03Z'
+scan_id: R-5a5666c6
+task_id: T-2378
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:48:13Z'
+scan_id: R-605eb57f
+task_id: T-2378
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:48:13Z'
+scan_id: R-605eb57f
+task_id: T-2378
+payload:
+  task_file: .tasks/active/T-2378-integration-test-gauge-critical-writes-r.md
+---
+kind: override_applied
+timestamp: '2026-06-13T19:48:13Z'
+scan_id: R-605eb57f
+task_id: T-2378
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:48:49Z'
+scan_id: R-9049acff
+task_id: T-2378
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:48:49Z'
+scan_id: R-9049acff
+task_id: T-2378
+payload:
+  task_file: .tasks/active/T-2378-integration-test-gauge-critical-writes-r.md
+---
+kind: override_applied
+timestamp: '2026-06-13T19:48:49Z'
+scan_id: R-9049acff
+task_id: T-2378
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T19:48:49Z'
+scan_id: R-3a2cc00c
+task_id: T-2378
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T19:48:49Z'
+scan_id: R-3a2cc00c
+task_id: T-2378
+payload:
+  task_file: .tasks/active/T-2378-integration-test-gauge-critical-writes-r.md
+---
+kind: override_applied
+timestamp: '2026-06-13T19:48:49Z'
+scan_id: R-3a2cc00c
+task_id: T-2378
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:10:11Z'
+scan_id: R-be857dd1
+task_id: T-2379
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:10:11Z'
+scan_id: R-be857dd1
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:10:20Z'
+scan_id: R-ee651a5a
+task_id: T-2379
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:10:20Z'
+scan_id: R-ee651a5a
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:10:56Z'
+scan_id: R-d39e5ddc
+task_id: T-2379
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:10:56Z'
+scan_id: R-d39e5ddc
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:11:19Z'
+scan_id: R-8f9241f9
+task_id: T-2379
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:11:19Z'
+scan_id: R-8f9241f9
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:12:11Z'
+scan_id: R-7bb412c8
+task_id: T-2379
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:12:11Z'
+scan_id: R-7bb412c8
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:12:53Z'
+scan_id: R-88f572cb
+task_id: T-2379
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:12:53Z'
+scan_id: R-88f572cb
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:13:19Z'
+scan_id: R-436088d8
+task_id: T-2379
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:13:19Z'
+scan_id: R-436088d8
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:13:20Z'
+scan_id: R-cf9a91c3
+task_id: T-2379
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:13:20Z'
+scan_id: R-cf9a91c3
+task_id: T-2379
+payload:
+  task_file: .tasks/active/T-2379-refresh-arc-012-live-fire-runbook-t-2377.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:44:07Z'
+scan_id: R-8cfc55c3
+task_id: T-2380
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:44:07Z'
+scan_id: R-8cfc55c3
+task_id: T-2380
+payload:
+  task_file: .tasks/active/T-2380-fw-costs--2-surfaces-blind-in-worktrees-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-13T20:45:06Z'
+scan_id: R-0f10a636
+task_id: T-2380
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-13T20:45:06Z'
+scan_id: R-0f10a636
+task_id: T-2380
+payload:
+  task_file: .tasks/active/T-2380-fw-costs--2-surfaces-blind-in-worktrees-.md

@@ -1,0 +1,63 @@
+# Audit Results - 2026-06-13-2228
+timestamp: 2026-06-13T20:28:41Z
+sections: "structure"
+summary:
+  pass: 20
+  warn: 3
+  fail: 2
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "No duplicate task IDs across active/ and completed/"
+  - level: PASS
+    check: "All 22 project YAML files parse correctly"
+  - level: PASS
+    check: "All 11 arc anchor_task references resolve to existing tasks"
+  - level: PASS
+    check: "All 10 in-progress arc(s) had task commits within 30 days"
+  - level: WARN
+    check: "free driver F-ORCH: retire_when condition appears met (T-1643 completed cleanly OR G-064 closed) — review whether to retire"
+    mitigation: "Review the driver; if truly retired, comment it out or move to candidates section. Silence with FW_RETIRE_WHEN_ADVISORY=0."
+  - level: INFO
+    check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F3: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F1: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
+  - level: PASS
+    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881)"
+  - level: PASS
+    check: "No stale-slice-references (L-417)"
+  - level: PASS
+    check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
+  - level: WARN
+    check: "Fabric: 1 orphaned card(s) (file deleted but card remains)"
+    mitigation: "Run: fw fabric drift"
+  - level: PASS
+    check: "Fabric: 840 registered, 0 unregistered"
+  - level: WARN
+    check: "Fabric: 102/831 cards have no edges"
+    mitigation: "Run: fw fabric enrich"
+  - level: PASS
+    check: "Fabric drift: All watched source files registered (840 cards)"
+  - level: FAIL
+    check: "Cron drift: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.context/cron-registry.yaml is ahead of /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.context/cron/agentic-audit.crontab (registry edited but not generated)"
+    mitigation: "Run: fw cron generate"
+  - level: FAIL
+    check: "Cron drift: generated but not installed at /etc/cron.d/agentic-audit-arc012-continuous-run-s4s5"
+    mitigation: "Run: fw cron install"
+  - level: PASS
+    check: "Hook threshold: no hooks failing over threshold"
+  - level: PASS
+    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"

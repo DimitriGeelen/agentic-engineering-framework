@@ -3679,3 +3679,10 @@ X'` returning empty group."
   date: 2026-06-13
   context: Added via context agent
   application: TBD
+- id: L-483
+  learning: "Claude Code transcript-dir reconstruction must use the canonical fw_claude_project_dir_name() (full non-alnum -> dash), never a slash-only sanitizer (tr slash dash / .replace). Slash-only is correct ONLY for dot-free paths (the main repo); it silently breaks in every git worktree (path contains .claude). T-2375 created the helper + migrated the budget gauge but never swept the corpus; fw costs, discard-manifest.sh, read-transcript.py kept old code and went blind in worktrees (silent-corpus, L-397). Also: after /resume the budget cache is deliberately seeded to {ok,0} by post-compact-resume.sh (T-1087) — trigger a fresh read instead of concluding budget is unmeasurable."
+  source: P-001
+  task: T-2380
+  date: 2026-06-13
+  context: Added via context agent
+  application: TBD
