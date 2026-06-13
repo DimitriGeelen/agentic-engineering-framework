@@ -4,10 +4,10 @@ name: "arc-012 continuous-mode live-fire readiness verification"
 description: >
   Verify the 4 loop links + settings.json startup-matcher wiring on worktree and master to answer how far we are from a live continuous-mode test.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:continuous-run, testing]
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T23:18:41Z
-last_update: 2026-06-13T23:18:41Z
-date_finished: null
+last_update: 2026-06-13T23:21:49Z
+date_finished: 2026-06-13T23:21:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -226,9 +226,12 @@ grep -q 'SOURCE_TAG' agents/context/post-compact-resume.sh
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-b832efbe
-- **Timestamp:** 2026-06-13T23:21:30Z
+- **Scan ID:** R-f7ca5726
+- **Timestamp:** 2026-06-13T23:21:49Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-13T23:21:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
