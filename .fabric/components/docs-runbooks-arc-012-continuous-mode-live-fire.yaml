@@ -1,0 +1,20 @@
+id: docs/runbooks/arc-012-continuous-mode-live-fire.md
+name: arc-012-continuous-mode-live-fire
+type: script
+subsystem: unknown
+location: docs/runbooks/arc-012-continuous-mode-live-fire.md
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-06-13
+created_by: unknown
