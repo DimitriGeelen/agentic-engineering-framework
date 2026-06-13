@@ -1977,6 +1977,227 @@ def score_theme_portability(fm: dict, body: str, tags: list[str]) -> tuple[int, 
     return 0, ev + ["→0 (no theme-portability signal)"]
 
 
+def score_feedback_loop_completeness(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """feedback-loop-completeness — arc-005 (inception-review-loop) scoped driver.
+
+    T-2361. Anchored to .context/arcs/inception-review-loop.yaml proposed_scoped_drivers.
+    Rewards work that closes the chat-to-file gap — operator intent surviving
+    the agent-handoff round-trip and landing back in the next session.
+    Distinct from D2 (Reliability) which covers framework-internal observability;
+    this driver scores the OUTSIDE-the-framework gap (chat substrate → file
+    substrate → next session).
+
+    Handler stays LATENT until operator approves the arc-scoped driver via
+    Watchtower.
+
+    Rubric:
+      0: No round-trip signal.
+      1: Incidental handover/feedback mention.
+      2: Single handover section fix (e.g. Suggested First Action no longer empty).
+      3: Component-level handover content-quality test (e.g. handover-completeness
+         assertion, Next Step population test).
+      4: Framework-level handover/session-capture gate (e.g. PreCompact handover
+         always emits, completion-percentage audit at framework level).
+      5: New round-trip-fidelity primitive class (automated handover-completeness
+         audit, new mechanism making round-trip-lossy handovers structurally
+         impossible).
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    roundtrip_comps = _has_any(comps, [
+        r"agents/handover", r"agents/session-capture",
+        r"\.context/handovers", r"PreCompact",
+        r"web/blueprints/handovers",
+    ])
+    roundtrip_body = _has_any(body, [
+        r"\bhandover (file|document|generation|round[- ]?trip)",
+        r"\bsession capture\b", r"\bSession Start Protocol\b",
+        r"chat[- ]to[- ]file gap",
+        r"operator intent.{0,30}(round[- ]?trip|hand(off|over)|next session)",
+        r"feedback[- ]loop (completeness|gap)",
+        r"PreCompact hook", r"PreCompact handover",
+        r"\b(handover|session) (completeness|fidelity)\b",
+        r"Suggested First Action", r"Suggested Action",
+        r"round[- ]?trip[- ]fidelity",
+    ])
+    if not (roundtrip_comps or roundtrip_body):
+        return 0, ev + ["→0 (no round-trip signal)"]
+
+    # ---- Level 5 — new round-trip-fidelity primitive class --------------
+    new_class = _has_any(body, [
+        r"new round[- ]?trip[- ]fidelity (primitive|class|substrate|mechanism)",
+        r"automated handover[- ]completeness (audit|substrate)",
+        r"new (handover|session) (capture|completeness) (primitive|class|mechanism)",
+        r"round[- ]?trip[- ]lossy.{0,40}structurally impossible",
+        r"new mechanism.{0,40}(chat[- ]to[- ]file|round[- ]?trip|handover)",
+    ])
+    if new_class:
+        ev.append("body:feedback-loop-new-class")
+        return 5, ev + ["→5 (new round-trip-fidelity primitive class)"]
+
+    # ---- Level 4 — framework-level handover gate ------------------------
+    framework_gate = _has_any(body, [
+        r"PreCompact (hook|handover).{0,40}(always emits|always fires|guaranteed)",
+        r"(completion[- ]percentage|completeness) audit.{0,30}(framework|handover|session)",
+        r"audit (FAIL|WARN).{0,40}(handover|session capture|completeness)",
+        r"framework[- ]level (handover|session capture)",
+        r"PreToolUse hook.{0,40}(handover|session capture)",
+    ])
+    if framework_gate:
+        ev.append("body:framework-feedback-loop-gate")
+        return 4, ev + ["→4 (framework-level handover/session gate)"]
+
+    # ---- Level 3 — component-level handover quality test ----------------
+    component = _has_any(body, [
+        r"(unit|regression|integration|playwright) test.{0,40}(handover|session capture|Suggested)",
+        r"handover[- ]completeness (assertion|test)",
+        r"\bNext Step (population|assertion|fill)",
+        r"Suggested (First )?Action (assertion|fill|population)",
+    ])
+    component_touch = _has_any(comps, [
+        r"agents/handover", r"agents/session-capture", r"\.context/handovers",
+        r"tests/.*handover",
+    ])
+    if component or component_touch:
+        if component:
+            ev.append("body:feedback-loop-component")
+        if component_touch:
+            ev.append("components:handover-code")
+        return 3, ev + ["→3 (component-level handover content-quality)"]
+
+    # ---- Level 2 — single handover section fix --------------------------
+    single_fix = _has_any(body, [
+        r"(fixes?|fills?|populates?) (the |a )?(handover (section|template)|Suggested First Action|Suggested Action|Next Step)",
+        r"narrow .{0,20}(handover|session capture)",
+        r"single (handover|session) (section )?fix",
+    ])
+    if single_fix:
+        ev.append("body:feedback-loop-single-fix")
+        return 2, ev + ["→2 (single handover section fix)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if roundtrip_body or roundtrip_comps:
+        ev.append("body/components:feedback-loop-incidental")
+        return 1, ev + ["→1 (incidental handover/feedback mention)"]
+
+    return 0, ev + ["→0 (no round-trip signal)"]
+
+
+def score_estimator_fidelity(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """estimator-fidelity — arc-006 (value-prioritisation) scoped driver.
+
+    T-2361. Anchored to .context/arcs/value-prioritisation.yaml `scoped_drivers`
+    (APPROVED 2026-05-21, weight 3). Rewards work that improves agreement between
+    BVP estimator-proposed scores and human-confirmed scores. Distinct from D2
+    (Reliability): D2 cares "estimator runs without crashing and writes audit
+    rows"; this driver cares "the numbers it produces would not embarrass a
+    human reviewer". The v2-delta semantic (M3, ≥2 driver-delta between
+    proposed and confirmed signals needs-split) is fidelity made operational.
+
+    Unlike T-2356 / T-2359 / T-2360 handlers, arc-006 estimator-fidelity is
+    ALREADY APPROVED — so this handler activates for arc-006 member tasks
+    immediately on landing (T-2358 helper + T-2357 dispatch wiring already
+    route arc-006 tasks through here). Pre-T-2361, arc-006 tasks scoring against
+    this driver fell through to `score_free_driver` keyword fallback (0-2
+    keyword-match scoring). Post-T-2361, the rubric-anchored 0-5 scoring fires.
+
+    Rubric:
+      0: No estimator-fidelity signal.
+      1: Incidental estimator/fidelity mention.
+      2: Single rubric tweak with rationale (one keyword pattern adjustment).
+      3: Component-level fidelity test or rubric refinement (e.g. a new
+         dedicated handler shipping with per-level tests — this session's
+         T-2356/T-2359/T-2360/T-2361 pattern).
+      4: Framework-level estimator-fidelity audit (proposed-vs-confirmed
+         delta audit gate at framework level, structural needs-split signal).
+      5: New estimator-fidelity primitive class (v2-delta auto-needs-split
+         mechanism, structural drift detection, new mechanism making
+         confirmed-vs-proposed divergence structurally surfaced).
+    """
+    ev: list[str] = []
+    comps = _components_text(fm)
+
+    fidelity_comps = _has_any(comps, [
+        r"agents/termlink/bvp-estimator", r"bvp[- ]estimator",
+        r"tests/.*bvp_estimator", r"tests/.*bvp",
+        r"lib/bvp",
+    ])
+    fidelity_body = _has_any(body, [
+        r"\bestimator[- ]fidelity\b", r"\bestimator (rubric|score|fidelity|agreement)\b",
+        r"v2[- ]delta", r"proposed[- ]vs[- ]confirmed",
+        r"\bneeds[- ]split\b", r"\bneeds[- ]split signal\b",
+        r"\bbvp[- ]estimator\b", r"score_[a-z_]+",
+        r"\bdedicated handler\b", r"per[- ]level (test|rubric)",
+        r"BVP heuristic estimator", r"would not embarrass",
+        r"confirmed[- ]vs[- ]proposed",
+    ])
+    if not (fidelity_comps or fidelity_body):
+        return 0, ev + ["→0 (no estimator-fidelity signal)"]
+
+    # ---- Level 5 — new estimator-fidelity primitive class ---------------
+    new_class = _has_any(body, [
+        r"new estimator[- ]fidelity (primitive|class|substrate|mechanism)",
+        r"v2[- ]delta auto[- ]needs[- ]split (mechanism|primitive)",
+        r"structural (needs[- ]split|drift detection)",
+        r"structurally surfaced.{0,40}(confirmed|proposed|delta)",
+        r"new mechanism.{0,40}(confirmed[- ]vs[- ]proposed|fidelity)",
+    ])
+    if new_class:
+        ev.append("body:estimator-fidelity-new-class")
+        return 5, ev + ["→5 (new estimator-fidelity primitive class)"]
+
+    # ---- Level 4 — framework-level fidelity audit ------------------------
+    framework_audit = _has_any(body, [
+        r"(proposed[- ]vs[- ]confirmed|confirmed[- ]vs[- ]proposed) delta audit",
+        r"audit (FAIL|WARN).{0,40}(estimator|fidelity|delta)",
+        r"framework[- ]level (estimator|fidelity)",
+        r"structural needs[- ]split signal",
+        r"v2[- ]delta (audit|gate)",
+    ])
+    if framework_audit:
+        ev.append("body:framework-estimator-fidelity-audit")
+        return 4, ev + ["→4 (framework-level estimator-fidelity audit)"]
+
+    # ---- Level 3 — component-level rubric refinement / dedicated handler ----
+    component = _has_any(body, [
+        r"new dedicated (handler|scorer)",
+        r"per[- ]level test (× ?\d|coverage|suite)",
+        r"score_[a-z_]+ (added|implemented)",
+        r"(unit|regression) test.{0,40}(estimator|rubric|fidelity)",
+        r"(rubric|estimator) refinement",
+        r"6[- ]level rubric",
+    ])
+    component_touch = _has_any(comps, [
+        r"agents/termlink/bvp-estimator",
+        r"tests/.*bvp_estimator",
+    ])
+    if component or component_touch:
+        if component:
+            ev.append("body:estimator-fidelity-component")
+        if component_touch:
+            ev.append("components:bvp-estimator-code")
+        return 3, ev + ["→3 (component-level rubric refinement / dedicated handler)"]
+
+    # ---- Level 2 — single rubric tweak ----------------------------------
+    single_tweak = _has_any(body, [
+        r"single rubric tweak",
+        r"one[- ]off (rubric|estimator) (tweak|adjustment)",
+        r"narrow .{0,20}(estimator|rubric|fidelity)",
+        r"keyword pattern (adjustment|tweak)",
+    ])
+    if single_tweak:
+        ev.append("body:estimator-fidelity-single-tweak")
+        return 2, ev + ["→2 (single rubric tweak)"]
+
+    # ---- Level 1 — incidental --------------------------------------------
+    if fidelity_body or fidelity_comps:
+        ev.append("body/components:estimator-fidelity-incidental")
+        return 1, ev + ["→1 (incidental estimator/fidelity mention)"]
+
+    return 0, ev + ["→0 (no estimator-fidelity signal)"]
+
+
 def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """Heuristic fallback for free drivers without a dedicated scorer — keyword-
     on-driver-id only.
@@ -2091,6 +2312,12 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         "aesthetic-cohesion": score_aesthetic_cohesion,
         "render-fidelity": score_render_fidelity,
         "theme-portability": score_theme_portability,
+        # T-2361 — arc-005 (inception-review-loop) feedback-loop-completeness:
+        # LATENT until operator approves. arc-006 (value-prioritisation)
+        # estimator-fidelity: ALREADY APPROVED 2026-05-21 — this handler swaps
+        # the score_free_driver keyword fallback for rubric-anchored scoring.
+        "feedback-loop-completeness": score_feedback_loop_completeness,
+        "estimator-fidelity": score_estimator_fidelity,
     }
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).
