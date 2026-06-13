@@ -45,10 +45,10 @@ T-2381's controlled live-fire discovered (OBS-075) that the continuous-run loop'
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Runbook Prerequisites section gains a precondition stating the loop's coordination files are repo-global and a live-fire is only safe when no other `claude-fw` wrappers run on the same repo
-- [ ] The precondition includes a copy-pasteable verification command (`ps` for other `claude-fw` processes) with the expected "only your own" outcome
-- [ ] The precondition cites OBS-075 / T-2381 as origin
-- [ ] Runbook still parses as the same doc (no broken section structure; `## Prerequisites` and `## Troubleshooting` headers intact)
+- [x] Runbook Prerequisites section gains a precondition stating the loop's coordination files are repo-global and a live-fire is only safe when no other `claude-fw` wrappers run on the same repo
+- [x] The precondition includes a copy-pasteable verification command (`ps` for other `claude-fw` processes) with the expected "only your own" outcome
+- [x] The precondition cites OBS-075 / T-2381 as origin
+- [x] Runbook still parses as the same doc (no broken section structure; `## Prerequisites` and `## Troubleshooting` headers intact)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
