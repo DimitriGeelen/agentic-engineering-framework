@@ -21,6 +21,11 @@ if [ -z "${GREEN:-}" ]; then
     source "${FRAMEWORK_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}/lib/colors.sh"
 fi
 
+# Source paths helper (fw_claude_project_dir_name) if not already loaded (T-2380)
+if ! declare -F fw_claude_project_dir_name >/dev/null 2>&1; then
+    source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/paths.sh"
+fi
+
 costs_help() {
     echo -e "${BOLD}fw costs${NC} — Token usage tracking"
     echo ""
@@ -35,12 +40,12 @@ costs_help() {
     echo "Cost model: Subscription — tokens consumed (not dollars)"
 }
 
-# Find the JSONL directory for this project
+# Find the JSONL directory for this project (T-2380)
+# Use the canonical encoder (full non-alnum → '-'), matching Claude Code. The old
+# slash-only sanitizer diverged in any worktree path (contains '.')
+# → looked in a directory that does not exist → "No JSONL directory found".
 _costs_jsonl_dir() {
-    local project_dir_name
-    project_dir_name=$(echo "${PROJECT_ROOT:-$(pwd)}" | tr '/' '-')
-    project_dir_name="${project_dir_name#-}"
-    echo "$HOME/.claude/projects/-${project_dir_name}"
+    echo "$HOME/.claude/projects/$(fw_claude_project_dir_name "${PROJECT_ROOT:-$(pwd)}")"
 }
 
 # Main token parsing — Python for streaming performance on large files
