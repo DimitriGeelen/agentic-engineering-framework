@@ -610,3 +610,10 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-072
+  text: "arc-012 S2/S3 status-vs-directory drift (L-460 class): T-2364 + T-2365 sit in .tasks/completed/ but carry status: started-work in frontmatter. They are genuinely shipped (commits exist, handover confirms) but the close gate's status flip never ran — likely git-mv'd to completed/ without 'fw task update --status work-completed'. Makes arc-012 show 2 slices as started-work, would muddy arc closure. Fix: correct status field to work-completed (1-line each). Investigate whether CTL-028/029 detector should catch completed/-dir + non-completed-status. Found during T-2366/T-2367 arc-012 build."
+  captured: 2026-06-13T11:25:49Z
+  context_task: T-2364
+  tags: []
+  status: pending
+  promoted_to: null
