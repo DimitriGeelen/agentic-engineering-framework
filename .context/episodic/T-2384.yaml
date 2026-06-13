@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2384: Orchestrator scan script lost executable bit (audit WARN)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-13T23:05:36Z
+# ============================================================================
+
+task_id: T-2384
+task_name: "Orchestrator scan script lost executable bit (audit WARN)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-13T22:59:25Z
+completed: 2026-06-13T23:05:29Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'The spurious "not executable" WARN is cleared — fixed at root by relaxing the audit precondition (audit.sh:4501) from `[ ! -x ]` to `[ ! -f ]` to match its own `bash "$ORCH_SCRIPT"` invocation; the orchestrator scan now runs. (No `chmod +x` — that papers over the check/invocation mismatch, re-triggers on the next mode-strip, and would make this one script inconsistent with 30+ non-+x sibling agent scripts.)'
+  - 'Swept the other audit `-x` checks for the same bug class: CTL-011 (pre-push, git invokes directly) + CTL-019 (claude-fw, run as a command — already `-rwxrwxr-x`) genuinely need +x and check correctly; CTL-002/CTL-005 (tier0/watchdog) are not in the audit FAIL set, so their scripts are +x. The orchestrator check was the only `-x`-vs-`bash` mismatch.'
+  - '`bash -n agents/audit/audit.sh` passes; `bin/fw audit --section orchestrator` no longer emits the executable WARN (scan executes)'
+  - 'RCA filled; reviewer PASS (R-4290a596)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2384-orchestrator-scan-script-lost-executable.md
+generated_by: context-agent-hybrid

@@ -4,12 +4,12 @@ name: "Orchestrator scan script lost executable bit (audit WARN)"
 description: >
   Audit WARNs "orchestrator-mcp-scan.sh not executable" but the script is invoked via bash (no +x needed). Root cause = check/invocation mismatch (audit's -x precondition vs bash invocation). Fix = relax precondition to -f, not chmod.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [audit, governance]
-components: []
+components: [C-004]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T22:59:25Z
-last_update: 2026-06-13T22:59:25Z
-date_finished: null
+last_update: 2026-06-13T23:05:29Z
+date_finished: 2026-06-13T23:05:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -208,9 +208,12 @@ learning so the next `-x`-on-a-`bash`-invoked-script audit idiom is caught at au
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4290a596
-- **Timestamp:** 2026-06-13T23:04:44Z
+- **Scan ID:** R-10451043
+- **Timestamp:** 2026-06-13T23:05:31Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-13T23:05:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
