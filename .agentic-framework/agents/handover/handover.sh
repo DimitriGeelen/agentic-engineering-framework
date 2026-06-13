@@ -5,7 +5,9 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 FRAMEWORK_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 source "$FRAMEWORK_ROOT/lib/paths.sh"
-HANDOVER_DIR="$CONTEXT_DIR/handovers"
+# HANDOVER_DIR is overridable via env for hermetic testing (T-2366); in
+# production it is unset, so the default below is used unchanged.
+HANDOVER_DIR="${HANDOVER_DIR:-$CONTEXT_DIR/handovers}"
 
 # T-1461: Resolve Watchtower URL once for inline link rendering.
 # Falls back to the literal port file or 3000 if `fw watchtower url` fails — the
@@ -392,6 +394,24 @@ if [ -f "$FRAMEWORK_ROOT/agents/context/session-metrics.sh" ]; then
     fi
 fi
 
+# Step 1.10: Discard manifest (T-2366, arc-012 S4)
+# Write a category-level record of what compaction sheds (tool-results, model
+# turns, working-set files) alongside the handover, so the operator can review
+# post-hoc what the self-compacting model discarded. The continuous-run loop
+# (pre-compact.sh / checkpoint.sh → handover.sh, unified under D-028) and the
+# deprecated `--emergency` alias both route through this normal path. Best-effort:
+# the helper never fails the handover (graceful degradation to a placeholder).
+DISCARD_MANIFEST_LINE=""
+if [ -x "$FRAMEWORK_ROOT/agents/handover/discard-manifest.sh" ]; then
+    if SESSION_ID="$SESSION_ID" HANDOVER_DIR="$HANDOVER_DIR" PROJECT_ROOT="$PROJECT_ROOT" \
+        CONTEXT_DIR="$CONTEXT_DIR" "$FRAMEWORK_ROOT/agents/handover/discard-manifest.sh" \
+        "$SESSION_ID" >/dev/null 2>&1; then
+        DISCARD_MANIFEST_LINE="**Discard Manifest:** \`$SESSION_ID.discard-manifest.yaml\` (category-level compaction discards — T-2366)
+
+"
+    fi
+fi
+
 # Step 2: Create handover template
 echo -e "${YELLOW}Creating handover document...${NC}"
 
@@ -446,7 +466,7 @@ session_narrative: ""
 
 # Session Handover: $SESSION_ID
 
-${RECOVERED_BANNER}## Where We Are
+${DISCARD_MANIFEST_LINE}${RECOVERED_BANNER}## Where We Are
 
 $(python3 -c "
 import subprocess, re, collections
@@ -946,6 +966,17 @@ if [ "${ORPHAN_COUNT:-0}" -gt 0 ]; then
 fi
 
 # Step 3: Update LATEST.md (symlink so edits to session file auto-reflect)
+# T-2374: only repoint LATEST after confirming the body file was actually written
+# and is non-empty. Updating the symlink unconditionally (the old behavior) left
+# LATEST dangling whenever generation failed/partial — a silent break that
+# degrades /resume and SessionStart:compact reinjection (Directive-2). On failure,
+# leave the previous (valid) LATEST untouched and exit non-zero so callers (e.g.
+# pre-compact.sh) can detect it.
+if [ ! -s "$HANDOVER_FILE" ]; then
+    echo -e "${RED:-}ERROR: handover body not written or empty: $HANDOVER_FILE${NC:-}" >&2
+    echo "  LATEST.md left untouched (still points to the last valid handover)." >&2
+    exit 1
+fi
 ln -sf "$(basename "$HANDOVER_FILE")" "$HANDOVER_DIR/LATEST.md"
 
 echo ""

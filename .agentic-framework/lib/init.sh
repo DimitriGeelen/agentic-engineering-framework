@@ -641,6 +641,15 @@ generate_claude_code_config() {
             "command": "$fw_prefix hook post-compact-resume"
           }
         ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook post-compact-resume"
+          }
+        ]
       }
     ],
     "PreToolUse": [

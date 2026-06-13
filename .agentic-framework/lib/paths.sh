@@ -74,6 +74,21 @@ CONTEXT_DIR="${CONTEXT_DIR:-$PROJECT_ROOT/.context}"
 _FW_PATHS_DERIVED_BY="$PROJECT_ROOT"
 export _FW_PATHS_DERIVED_BY
 
+# T-2375: Claude Code transcript project-dir-name sanitizer.
+# Claude Code encodes a session's cwd into ~/.claude/projects/<name> by replacing
+# EVERY non-alphanumeric character with '-' (so both '/' and '.' become '-').
+# The budget detector previously reconstructed this with `${path//\//-}`, which
+# replaces only '/' and leaves '.' intact — so in any path containing a dot
+# (notably git worktrees under `.claude/worktrees/`, the framework's own
+# isolation model) the computed name (`-…-.claude-worktrees-…`) did NOT match
+# Claude Code's actual dir (`-…--claude-worktrees-…`). find_transcript() then
+# looked in a non-existent dir → "no transcript" → the token budget gauge was
+# BLIND in every worktree session. This helper matches Claude Code's encoding.
+# Usage: name=$(fw_claude_project_dir_name "/abs/path")
+fw_claude_project_dir_name() {
+    printf '%s' "$1" | tr -c 'a-zA-Z0-9' '-'
+}
+
 # Context-aware fw command path (T-1102/T-1143)
 # Returns the right form for copy-pasteable commands shown to users:
 #   - Framework repo: bin/fw

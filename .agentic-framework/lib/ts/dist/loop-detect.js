@@ -1,6 +1,6 @@
 "use strict";
 
-// lib/ts/src/loop-detect.ts
+// .agentic-framework/lib/ts/src/loop-detect.ts
 var import_node_crypto = require("node:crypto");
 var import_node_fs = require("node:fs");
 var import_node_path = require("node:path");

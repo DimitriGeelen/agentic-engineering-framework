@@ -63,8 +63,9 @@ increment_counter() {
 # find_transcript picks up transcripts from other projects (T-791).
 find_transcript() {
     local project_dir_name
-    project_dir_name="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
-    project_dir_name="${project_dir_name//\//-}"
+    # T-2375: match Claude Code's dir encoding (every non-alnum → '-', incl. '.'),
+    # otherwise dotted paths (git worktrees) resolve to a non-existent dir.
+    project_dir_name=$(fw_claude_project_dir_name "${PROJECT_ROOT:-$FRAMEWORK_ROOT}")
     local project_jsonl_dir="$HOME/.claude/projects/${project_dir_name}"
     if [ -d "$project_jsonl_dir" ]; then
         local transcript

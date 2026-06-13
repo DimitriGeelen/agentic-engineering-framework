@@ -28,9 +28,14 @@ Tests: tests/unit/test_inject_next_directive.py
 """
 
 import argparse
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+# T-2367 (S5): first task reference in a directive, used to resolve the
+# "planned next action" when the directive has no explicit `next_task:` field.
+TASK_REF_RE = re.compile(r"\bT-(\d+)\b")
 
 try:
     import yaml
@@ -93,6 +98,68 @@ def load_yaml(path):
         return {}
 
 
+def read_frontmatter(path):
+    """Extract the YAML frontmatter block (between the first two `---` lines)
+    of a task Markdown file. Returns {} on any failure."""
+    try:
+        text = path.read_text()
+    except Exception:
+        return {}
+    if not text.startswith("---"):
+        return {}
+    parts = text.split("\n---", 1)
+    if len(parts) < 2:
+        return {}
+    body = parts[0]
+    body = body[3:] if body.startswith("---") else body
+    try:
+        data = yaml.safe_load(body) or {}
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def find_task_reference(text):
+    """First `T-NNNN` reference in free text, or None."""
+    m = TASK_REF_RE.search(text or "")
+    return f"T-{m.group(1)}" if m else None
+
+
+def resolve_task_blast_radius(project_root, task_id):
+    """Pre-execution blast-radius of a planned task = its BVP F8
+    `cost_estimate.blast_radius` (T-2367 / arc-012 S5).
+
+    `fw fabric blast-radius` (named in the original filing) measures a *committed*
+    git ref's downstream impact — it cannot score a not-yet-started task, so the
+    bounded-autonomy ceiling reads the estimator's pre-computed blast-radius
+    instead. See the task's Evolution log.
+
+    Priority: confirmed `cost_estimate.blast_radius` → latest
+    `cost_estimate_proposed[].cost_estimate.blast_radius`. Returns int or None.
+    """
+    if not task_id:
+        return None
+    for sub in ("active", "completed"):
+        d = project_root / ".tasks" / sub
+        if not d.is_dir():
+            continue
+        for f in sorted(d.glob(f"{task_id}-*.md")):
+            fm = read_frontmatter(f)
+            ce = fm.get("cost_estimate")
+            if isinstance(ce, dict) and ce.get("blast_radius") is not None:
+                v = _coerce_int(ce.get("blast_radius"), None)
+                if v is not None:
+                    return v
+            cep = fm.get("cost_estimate_proposed")
+            if isinstance(cep, list) and cep:
+                last = cep[-1]
+                if isinstance(last, dict) and isinstance(last.get("cost_estimate"), dict):
+                    v = _coerce_int(last["cost_estimate"].get("blast_radius"), None)
+                    if v is not None:
+                        return v
+    return None
+
+
 def write_state(path, state):
     """Write the continuous-mode unified file. Silent on failure."""
     try:
@@ -112,11 +179,18 @@ def _coerce_int(value, fallback):
         return fallback
 
 
-def evaluate(directive_data, state_data, now_utc, source="resume"):
+def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=None):
     """Compute the next state + the section to emit.
 
     state_data is the unified `.continuous-mode.yaml` dict (config + runtime
     state in one file, per T-2365 S3 schema).
+
+    blast_lookup (T-2367 / S5): optional callable taking a task id and returning
+    that task's blast-radius (int) or None. When provided and a tier_ceiling is
+    set, the planned next task's blast-radius is compared against the ceiling;
+    a breach freezes the iteration counter and replaces the directive with an
+    operator-continuation notice (the bounded-autonomy ceiling). When None
+    (continuous-mode loop without a resolver), no ceiling check fires.
 
     Returns (new_state, section_text). section_text is "" if no directive
     is present OR continuous-mode is disabled (caller treats as no-op).
@@ -157,6 +231,7 @@ def evaluate(directive_data, state_data, now_utc, source="resume"):
             expires_at = expires_dt  # display this computed value
 
     tier_ceiling = directive_data.get("tier_ceiling", new_state.get("tier_ceiling"))
+    tier_ceiling_int = _coerce_int(tier_ceiling, None)
     filed_by = directive_data.get("filed_by", "unknown")
     filed_at = directive_data.get("filed_at", "unknown")
 
@@ -169,12 +244,54 @@ def evaluate(directive_data, state_data, now_utc, source="resume"):
             f"(now {now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')})"
         )
 
+    # T-2367 (S5): bounded-autonomy ceiling. Evaluated only when the loop has
+    # not already terminated on caps, a tier_ceiling is set, and a blast-radius
+    # resolver is available. The "planned next action" is the directive's
+    # explicit `next_task:` field, else the first T-NNNN reference in the prose.
+    # A breach FREEZES the iteration counter (operator resumes the same
+    # iteration after sign-off) rather than advancing it.
+    ceiling_breach = None  # (task_ref, blast_radius, ceiling) when breached
+    if terminated_reason is None and tier_ceiling_int is not None and blast_lookup is not None:
+        task_ref = directive_data.get("next_task") or find_task_reference(directive)
+        if task_ref:
+            blast_radius = blast_lookup(task_ref)
+            if blast_radius is not None and blast_radius > tier_ceiling_int:
+                ceiling_breach = (task_ref, blast_radius, tier_ceiling_int)
+
     now_iso = now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-    new_state["current_iteration"] = new_iter
+    # Freeze the counter on a ceiling breach; advance otherwise.
+    new_state["current_iteration"] = old_iter if ceiling_breach else new_iter
     new_state["last_resumed_at"] = now_iso
     new_state["last_directive_seen"] = directive[:200]
-    new_state["last_terminated_reason"] = terminated_reason or ""
+    if ceiling_breach:
+        _ref, _br, _ceil = ceiling_breach
+        new_state["last_terminated_reason"] = (
+            f"tier ceiling exceeded: {_ref} blast-radius {_br} > tier_ceiling {_ceil}"
+        )
+    else:
+        new_state["last_terminated_reason"] = terminated_reason or ""
     new_state["last_source"] = source
+
+    if ceiling_breach:
+        _ref, _br, _ceil = ceiling_breach
+        section = (
+            "## Next Directive — TIER CEILING EXCEEDED (T-2367)\n"
+            "\n"
+            f"Operator continuation required: the planned next action **{_ref}** has "
+            f"blast-radius **{_br}**, which exceeds the configured `tier_ceiling` "
+            f"**{_ceil}**.\n"
+            "\n"
+            f"- Iteration counter: {old_iter} (frozen — not advanced)\n"
+            f"- Planned next action: {_ref}\n"
+            f"- Blast-radius (BVP cost_estimate): {_br}\n"
+            f"- Tier ceiling: {_ceil}\n"
+            "\n"
+            "The pre-filed directive has NOT been surfaced for auto-pickup. To "
+            "proceed, the operator must either raise `tier_ceiling` in "
+            "`.context/working/.continuous-mode.yaml`, narrow the planned task's "
+            "scope, or run the next action manually under direct supervision.\n"
+        )
+        return new_state, section
 
     if terminated_reason:
         section = (
@@ -270,7 +387,12 @@ def main(argv=None):
     else:
         now_utc = datetime.now(timezone.utc)
 
-    new_state, section = evaluate(directive_data, state_data, now_utc, source=args.source)
+    # T-2367 (S5): resolve the planned task's blast-radius from its BVP
+    # cost_estimate frontmatter (see resolve_task_blast_radius docstring).
+    blast_lookup = lambda task_id: resolve_task_blast_radius(project_root, task_id)
+    new_state, section = evaluate(
+        directive_data, state_data, now_utc, source=args.source, blast_lookup=blast_lookup
+    )
     if not section:
         return 0
 
