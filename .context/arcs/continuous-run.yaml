@@ -1,74 +1,37 @@
 id: arc-012
 slug: continuous-run
 name: "Continuous-run: agent-driven compact-resume loop with bounded-autonomy ceiling"
-description: "Closes the compact-resume loop so a long-running agent self-compacts and self-resumes\
-  \ at context-budget boundaries, bounded by tier/blast-radius ceiling, run-length\
-  \ cap, and discard manifest. Sibling of orchestrator-rethink."
+description: "Closes the compact-resume loop so a long-running agent self-compacts
+  and self-resumes at context-budget boundaries, bounded by tier/blast-radius ceiling,
+  run-length cap, and discard manifest. Sibling of orchestrator-rethink."
 status: in-progress
 anchor_task: T-2158
-headline_mechanic: "agent crosses the context-budget threshold without operator relay -> checkpoint.sh\
-  \ fires self-trigger -> handover + resume via claude-fw -> operator observes multi-cycle\
-  \ continuous session whose iteration counter, directive, and bounded tier-ceiling\
-  \ are visible in fw resume status"
-demo_evidence: null
+headline_mechanic: "agent crosses the context-budget threshold without operator relay
+  -> checkpoint.sh fires self-trigger -> handover + resume via claude-fw -> operator
+  observes multi-cycle continuous session whose iteration counter, directive, and
+  bounded tier-ceiling are visible in fw resume status"
+demo_evidence:
 created: 2026-06-13T08:49:13Z
-closed_at: null
-decision: null
+closed_at:
+decision:
 # T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
 # docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
 bvp_scores: {}
-scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
-proposed_scoped_drivers:     # Per T-2158 §S4 spike critique: 1 firm + 1 conditional + 1 reject.
+scoped_drivers:              # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
   - name: Discard fidelity
-    rationale: |
-      R1: rewards lossless-where-possible and reviewable-where-lossy compaction
-      over aggressive context shedding. Distinct from D1-D4 (D4 = no provider
-      lock-in; this is no operator-review lock-in) and distinct from F-AUTONOMY
-      (autonomy-enabling work vs. quality of a specific audit artefact).
-      R2: weight 4 — secondary to the loop's existence (S4 firm verdict).
     weight: 4
-    source: agent
-    ts: 2026-06-13T08:49:13Z
+    approved_at: '2026-06-13T09:11:18Z'
+    rationale: "R1: rewards lossless-where-possible and reviewable-where-lossy compactionover
+      aggressive context shedding. Distinct from D1-D4 (D4 = no providerlock-in; this
+      is no operator-review lock-in) and distinct from F-AUTONOMY(autonomy-enabling
+      work vs. quality of a specific audit artefact).R2: weight 4 — secondary to the
+      loop's existence (S4 firm verdict)."
   - name: Loop closure (conditional)
-    rationale: |
-      R1: rewards closing the compact->resume->run loop vs leaving one half open.
-      Adjacent to F-AUTONOMY L3 ("closes a feedback loop so signal reaches ACTION
-      without human relay") — if F-AUTONOMY captures this dimension at global
-      scope, this scoped driver becomes redundant.
-      R2: weight 3 — propose only if operator wants the arc-scoped axis in addition.
-      Likely to be withdrawn after F-AUTONOMY activation settles.
     weight: 3
-    source: agent
-    ts: 2026-06-13T08:49:13Z
-
-# ---------------------------------------------------------------------------
-# Arc context (recovered from T-2158 human-filed draft — fields lib/arc.sh
-# template does not carry, preserved here as comment block per T-2158 §S5
-# spike finding "recover dropped fields via anchor body").
-# Source of truth: docs/reports/T-2158-continuous-run.md §Proposed Arc YAML.
-# ---------------------------------------------------------------------------
-# constraints:
-#   - Bounded by tier/blast-radius: continuous operation permitted only below a
-#     configured ceiling. HARD STOP at Tier 0 / irreversible / high-blast-radius
-#     actions -- these still require a human gate (F7 Sovereignty).
-#   - A run-length / iteration cap as a second backstop, so a misbehaving loop
-#     cannot run indefinitely even within the tier ceiling.
-#   - Self-compaction must record WHAT was dropped (a discard manifest), so an
-#     operator can review post-hoc even though they did not review in-line.
-#     This preserves a portable (D4) audit trail of lossy decisions.
-#   - Respect the 90% context-budget gate as the natural trigger point AND the
-#     safety boundary -- the loop fires at threshold, it does not disable the gate.
-#
-# non_goals:
-#   - Removing or weakening any Tier 0 / consequential-action human gate.
-#   - Truly unbounded autonomous operation (no ceiling, no cap).
-#   - Introducing a new scoring/value-driver mechanic (that lives in value-drivers.yaml).
-#
-# relation_to_existing_primitives:
-#   resume: agents/resume/ already derives state from .context/ on resume.
-#   handover: fw handover is the manual version of the compaction half to automate.
-#   budget_gate: budget-gate hook is the trigger + safety boundary.
-#   orchestrator: SIBLING of arc-003 orchestrator-rethink (different mechanism axes).
-#   t111_hooks: PreCompact + SessionStart:compact hooks (2026-02-17) are the
-#     intact substrate; T-2158 extends them with self-trigger + bounded ceiling.
-#   auto_promote: shares Sovereignty caveat (both are bounded-autonomy).
+    approved_at: '2026-06-13T09:11:25Z'
+    rationale: 'R1: rewards closing the compact->resume->run loop vs leaving one half
+      open.Adjacent to F-AUTONOMY L3 ("closes a feedback loop so signal reaches ACTIONwithout
+      human relay") — if F-AUTONOMY captures this dimension at globalscope, this scoped
+      driver becomes redundant.R2: weight 3 — propose only if operator wants the arc-scoped
+      axis in addition.Likely to be withdrawn after F-AUTONOMY activation settles.'
+proposed_scoped_drivers: []  # Per T-2158 §S4 spike critique: 1 firm + 1 conditional + 1 reject.

@@ -1,0 +1,15 @@
+# T-2363 S1 substrate first-fire — operator-issued directive for next session.
+# Read by checkpoint.sh at next budget-critical → folds into .restart-requested
+# JSON → claude-fw exports as FW_NEXT_DIRECTIVE. Today this is informational
+# (T-2364 S2 not yet shipped); the resumed session can still grep for the env
+# var or read this file directly.
+
+directive: "continue T-2364 (S2 of arc-012 continuous-run): extend agents/context/post-compact-resume.sh to read FW_NEXT_DIRECTIVE (or .context/working/.next-directive.yaml) and inject as additionalContext under a new 'Next Directive' section. Add iteration counter at .context/working/.continuous-mode-state.yaml. Refuse-to-inject path: if iteration > max_iterations OR expires_at passed, replace directive section with 'loop terminated' notice. Real ACs already in T-2364 task file. After S2 ships, also pick up: file follow-on issue if discovered. Then continue to T-2365 (S3 run-length cap + .continuous-mode.yaml config). T-2362 S0 + T-2363 S1 already shipped this session (commits e88113973 + 2a3ff6f04). arc-012 scoped drivers approved: Discard fidelity w=4 + Loop closure w=3."
+filed_by: operator
+filed_at: 2026-06-13T09:15:00Z
+
+# Continuous-mode bounding (informational — T-2365 wires actual enforcement):
+expires_at: 2026-06-14T09:00:00Z
+iteration: 0
+max_iterations: 5
+tier_ceiling: 1
