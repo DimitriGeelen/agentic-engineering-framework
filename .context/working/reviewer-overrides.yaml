@@ -961,3 +961,13 @@ overrides:
   expires_at: '2026-09-11T11:12:36Z'
   added_by: root
   added_at: '2026-06-13T11:12:36Z'
+- id: OV-f7666e93
+  task_id: T-2368
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: AC#1 names post-compact-resume.sh as the script the bats suite DRIVES (it's
+    the system under test); verification 'bats tests/integration/continuous_loop.bats'
+    exercises it end-to-end. Heuristic path-match FP, no missing verification.
+  expires_at: '2026-09-11T12:48:50Z'
+  added_by: root
+  added_at: '2026-06-13T12:48:50Z'
