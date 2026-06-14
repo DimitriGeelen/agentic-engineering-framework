@@ -187,14 +187,17 @@ print(p if (p and os.path.isfile(p)) else '')
 " 2>/dev/null) || TRANSCRIPT=""
 
 if [ -z "${TRANSCRIPT:-}" ]; then
-    # Fallback: reconstruct from PROJECT_ROOT (no stdin transcript_path available).
+    # Fallback: reconstruct (no stdin transcript_path available).
     # Claude Code encodes project paths by replacing every non-alnum char with '-'
     # (e.g. /opt/foo → -opt-foo; /opt/x/.claude/worktrees/y → -opt-x--claude-worktrees-y).
-    PROJECT_DIR_NAME=$(fw_claude_project_dir_name "$PROJECT_ROOT")
-    PROJECT_JSONL_DIR="$HOME/.claude/projects/${PROJECT_DIR_NAME}"
-    if [ -d "$PROJECT_JSONL_DIR" ]; then
-        TRANSCRIPT=$(find "$PROJECT_JSONL_DIR" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -1)
-    fi
+    # T-2392: search ALL candidate project dirs — the PROJECT_ROOT-keyed dir AND
+    # the primary-worktree (main-repo) dir Claude Code launched from — and pick the
+    # GLOBALLY-newest transcript. PROJECT_ROOT alone is blind in worktree sessions.
+    TRANSCRIPT=$(
+        while IFS= read -r d; do
+            find "$d" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null
+        done < <(fw_claude_project_dirs) | xargs -r -0 ls -t 2>/dev/null | head -1
+    )
 fi
 
 if [ -z "${TRANSCRIPT:-}" ]; then

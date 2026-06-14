@@ -153,8 +153,33 @@ resolve_framework() {
     return 1
 }
 
+# T-2391: An inherited PROJECT_ROOT must be validated, not trusted verbatim.
+# A long-lived parent (the tmux-server daemon, PID 6177) can carry a stale
+# PROJECT_ROOT=$HOME (/root) in its env; every spawned session inherits it, the
+# `-z` guard below short-circuits, and the poison is used as-is — blinding the
+# budget gauge and leaving the T-2390 CLAUDE_PROJECT_DIR block (further down) as
+# dead code (origin: T-2389/T-2390 live-fire, /proc/6177/environ proof).
+# Staleness is deliberately NARROW to preserve the "env wins" contract operators
+# rely on for explicit cross-dir targeting (test_project_root_discovery.py::
+# test_resolve_project_root_env_wins_unconditionally): a real inherited root
+# (marker present, != $HOME) is kept. Only the daemon-poison signature (= $HOME),
+# a non-directory, or a markerless dir is treated as stale → re-resolved below.
+_project_root_is_stale() {
+    local pr="${1:-}"
+    [ -n "$pr" ] || return 1            # empty → handled by the -z branch, not "stale"
+    [ -d "$pr" ] || return 0            # vanished/garbage dir → stale
+    if [ -n "${HOME:-}" ]; then         # = $HOME → the canonical daemon-poison signature
+        local canon_pr canon_home
+        canon_pr="$(cd "$pr" 2>/dev/null && pwd -P)" || return 0
+        canon_home="$(cd "$HOME" 2>/dev/null && pwd -P)" || canon_home="$HOME"
+        [ "$canon_pr" = "$canon_home" ] && return 0
+    fi
+    [ -f "$pr/.framework.yaml" ] || [ -d "$pr/.tasks" ] || return 0   # no marker → stale
+    return 1                            # real project root, not $HOME → keep (env wins)
+}
+
 # Resolve PROJECT_ROOT
-if [ -z "${PROJECT_ROOT:-}" ]; then
+if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; then
     # T-2390: prefer CLAUDE_PROJECT_DIR when set + valid. Claude Code exports it
     # for hook commands as the session's project root, independent of the hook's
     # invocation cwd. Without this, find_project_root() walks up from $PWD — and
@@ -3327,6 +3352,66 @@ EOF
             *)
                 echo "ERROR: unknown write-set subcommand: $ws_subcmd" >&2
                 echo "Run 'fw write-set --help' for usage." >&2
+                exit 64
+                ;;
+        esac
+        ;;
+    integrate)
+        # T-2399 (arc parallel-exec, T-2397 L2 slice 1, G2): serialized-integration
+        # preflight. Read-only — classifies how a worktree branch would integrate
+        # onto master (FF-ready / auto-resolvable governance files / needs-human).
+        # Verbs: check [target] — preflight current branch against target (default master)
+        #        classify <path>... — show the un-partitionable class for paths
+        # Exit codes (check): 0 ff-ready|clean, 1 auto-resolvable, 2 needs-human,
+        #                     3 not-on-a-branch, 4 usage/git-error
+        int_subcmd="${1:-}"
+        shift || true
+        case "$int_subcmd" in
+            check)
+                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/integrate.py" check "$@"
+                ;;
+            classify)
+                if [ $# -lt 1 ]; then
+                    echo "usage: fw integrate classify <path>..." >&2
+                    exit 64
+                fi
+                exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/integrate.py" classify "$@"
+                ;;
+            ""|--help|-h|help)
+                cat <<'EOF'
+fw integrate check [target]        (default target: master)
+fw integrate classify <path>...
+
+Layer-2 serialized-integration PREFLIGHT (read-only). Reports how the current
+worktree branch would integrate onto the target: whether master fast-forwards
+cleanly, whether divergence touches only governance/generated files that L2
+resolves mechanically, or whether real code conflicts need a human.
+
+Encodes the un-partitionable-file taxonomy from T-2397 §3.2 (the framework's
+Cargo.lock set: counters, metrics-history, feedback-stream, reviewer-overrides,
+LATEST audit yamls, episodics, task .md) — files that must be regenerated/unioned
+at the join, never git-merged.
+
+check exit codes:
+  0  ff-ready or clean    — master is an ancestor (FF works), or no both-sided files
+  1  auto-resolvable      — both-sided files are all governance/generated classes
+  2  needs-human          — real code/docs changed on both sides (may conflict)
+  3  not-on-a-branch      — HEAD is master/main; nothing to integrate
+  4  usage / git error
+
+Examples:
+  fw integrate check                 # preflight this branch vs master
+  fw integrate classify .context/working/feedback-stream.yaml lib/foo.sh
+
+Part of the T-2394 structural-remediation (G2). Sibling: fw write-set check (G4,
+arc-011), the master-merge-only guard (G1, T-2396). The mutating verb
+(fw integrate run) is a later slice; this preflight is its read-only foundation.
+EOF
+                exit 0
+                ;;
+            *)
+                echo "ERROR: unknown integrate subcommand: $int_subcmd" >&2
+                echo "Run 'fw integrate --help' for usage." >&2
                 exit 64
                 ;;
         esac

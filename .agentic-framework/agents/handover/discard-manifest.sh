@@ -30,13 +30,25 @@ TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 mkdir -p "$HANDOVER_DIR" 2>/dev/null
 
-# Derive the JSONL transcript dir name the way Claude Code encodes it (T-2380):
-#   ~/.claude/projects/<PROJECT_ROOT with every non-alnum → '-'>
-# The old slash-only sanitizer diverged in any worktree path
-# (contains '.') from Claude Code's full non-alnum encoding. Use the canonical
-# helper (lib/paths.sh, sourced in the header).
+# Derive the JSONL transcript dir (T-2380 encoding + T-2400 worktree resolution):
+# Claude Code keys the projects dir on the session's LAUNCH cwd — in a worktree
+# that is the MAIN repo, not PROJECT_ROOT. So search ALL candidate dirs
+# (PROJECT_ROOT-keyed AND the primary-worktree/main-repo dir, via the shared
+# fw_claude_project_dirs resolver) and return the dir holding the globally-newest
+# transcript. Falls back to the PROJECT_ROOT-keyed dir name when none is found
+# (keeps the downstream "no transcript" branch working).
 _jsonl_dir() {
-    echo "$HOME/.claude/projects/$(fw_claude_project_dir_name "${PROJECT_ROOT:-$(pwd)}")"
+    local newest
+    newest=$(
+        while IFS= read -r d; do
+            find "$d" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null
+        done < <(fw_claude_project_dirs) | xargs -r -0 ls -t 2>/dev/null | head -1
+    )
+    if [ -n "$newest" ]; then
+        dirname "$newest"
+    else
+        echo "$HOME/.claude/projects/$(fw_claude_project_dir_name "${PROJECT_ROOT:-$(pwd)}")"
+    fi
 }
 # FW_DISCARD_JSONL_DIR is a test seam: point at a fixture dir of *.jsonl to
 # exercise the transcript-parse branch deterministically (see tests).

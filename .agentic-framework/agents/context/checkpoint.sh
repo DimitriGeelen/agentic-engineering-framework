@@ -73,17 +73,20 @@ find_transcript() {
         echo "$explicit"
         return 0
     fi
-    local project_dir_name
-    # T-2375: match Claude Code's dir encoding (every non-alnum → '-', incl. '.'),
-    # otherwise dotted paths (git worktrees) resolve to a non-existent dir.
-    project_dir_name=$(fw_claude_project_dir_name "${PROJECT_ROOT:-$FRAMEWORK_ROOT}")
-    local project_jsonl_dir="$HOME/.claude/projects/${project_dir_name}"
-    if [ -d "$project_jsonl_dir" ]; then
-        local transcript
-        transcript=$(find "$project_jsonl_dir" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -1)
-        if [ -n "$transcript" ]; then
-            echo "$transcript"
-        fi
+    # T-2375: match Claude Code's dir encoding (every non-alnum → '-', incl. '.').
+    # T-2392: search ALL candidate project dirs — the PROJECT_ROOT-keyed dir AND
+    # the primary-worktree (main-repo) dir Claude Code actually launched from —
+    # then pick the GLOBALLY-newest transcript across them. Reconstructing from
+    # PROJECT_ROOT alone is blind in worktree sessions (the live transcript lives
+    # in the main-repo-keyed dir).
+    local transcript
+    transcript=$(
+        while IFS= read -r d; do
+            find "$d" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null
+        done < <(fw_claude_project_dirs) | xargs -r -0 ls -t 2>/dev/null | head -1
+    )
+    if [ -n "$transcript" ]; then
+        echo "$transcript"
     fi
 }
 

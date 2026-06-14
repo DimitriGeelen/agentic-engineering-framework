@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import argparse
+import subprocess
 from datetime import datetime
 
 
@@ -28,31 +29,74 @@ def strip_ansi(text):
 
 # ── Transcript location ───────────────────────────────────────────────────────
 
-def find_transcript():
-    project_root = os.environ.get('PROJECT_ROOT') or os.getcwd()
+def _encode_dir_name(path):
     # Matches Claude Code's encoding: every non-alnum char → '-' (T-2380).
     # The old slash-only replace broke in worktree paths (contain '.'):
     # /opt/x/.claude/worktrees/y → must encode '.claude' as '-claude', not '.claude'.
-    dir_name = re.sub(r'[^A-Za-z0-9]', '-', project_root)
-    search_dir = os.path.expanduser(f'~/.claude/projects/{dir_name}')
+    return re.sub(r'[^A-Za-z0-9]', '-', path)
 
-    if not os.path.isdir(search_dir):
-        print(f'Warning: transcript directory not found: {search_dir}', file=sys.stderr)
+
+def _candidate_project_dirs(project_root):
+    """Mirror of lib/paths.sh fw_claude_project_dirs (T-2400).
+
+    Claude Code keys the transcript projects dir on the session's LAUNCH cwd. In
+    a git worktree that is the MAIN repo, not PROJECT_ROOT (the worktree). So we
+    emit BOTH the PROJECT_ROOT-keyed dir AND the primary-worktree (main-repo)
+    keyed dir (via `git rev-parse --git-common-dir` → parent). Existing dirs only,
+    de-duplicated.
+    """
+    base = os.path.expanduser('~/.claude/projects')
+    roots = [project_root]
+    try:
+        common = subprocess.run(
+            ['git', '-C', project_root, 'rev-parse', '--git-common-dir'],
+            capture_output=True, text=True, timeout=5,
+        )
+        if common.returncode == 0 and common.stdout.strip():
+            cdir = common.stdout.strip()
+            if not os.path.isabs(cdir):
+                cdir = os.path.join(project_root, cdir)
+            main_root = os.path.realpath(os.path.dirname(cdir))
+            if main_root:
+                roots.append(main_root)
+    except Exception:
+        pass
+
+    seen, dirs = set(), []
+    for r in roots:
+        if not r:
+            continue
+        d = os.path.join(base, _encode_dir_name(r))
+        if d in seen:
+            continue
+        seen.add(d)
+        if os.path.isdir(d):
+            dirs.append(d)
+    return dirs
+
+
+def find_transcript():
+    project_root = os.environ.get('PROJECT_ROOT') or os.getcwd()
+    search_dirs = _candidate_project_dirs(project_root)
+
+    if not search_dirs:
+        want = os.path.join(os.path.expanduser('~/.claude/projects'),
+                            _encode_dir_name(project_root))
+        print(f'Warning: transcript directory not found: {want}', file=sys.stderr)
         return None
 
-    candidates = [
-        f for f in os.listdir(search_dir)
-        if f.endswith('.jsonl') and not f.startswith('agent-')
-    ]
+    # Globally-newest non-agent transcript across all candidate dirs.
+    candidates = []
+    for d in search_dirs:
+        for f in os.listdir(d):
+            if f.endswith('.jsonl') and not f.startswith('agent-'):
+                candidates.append(os.path.join(d, f))
     if not candidates:
         print('Warning: no session JSONL found', file=sys.stderr)
         return None
 
-    candidates.sort(
-        key=lambda f: os.path.getmtime(os.path.join(search_dir, f)),
-        reverse=True
-    )
-    return os.path.join(search_dir, candidates[0])
+    candidates.sort(key=os.path.getmtime, reverse=True)
+    return candidates[0]
 
 
 # ── Format canary ─────────────────────────────────────────────────────────────
