@@ -47,11 +47,11 @@ Autonomous continuous mode (arc-012) has never armed end-to-end in a real sessio
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `budget-gate.sh` writes `.context/working/.restart-requested` on the critical-BLOCK path (the `exit 2` branch, currently `budget-gate.sh:288-307`) — decoupled from the PostToolUse/handover path
-- [ ] The signal write is idempotent (budget-gate runs on every call) and does NOT fire on the `allowed` path (`:289-291`) — so a restart cannot be triggered mid-wrap-up (mid-commit/handover)
-- [ ] Normal operation is unbroken: `ok`/`warn`/`urgent` levels behave exactly as before; the gate still blocks correctly at critical; `bash -n agents/context/budget-gate.sh` clean
-- [ ] The restart-signal JSON shape matches what `checkpoint.sh:210-212` emits (timestamp, session_id, reason, tokens, optional `directive` fold from `.next-directive.yaml`) so `claude-fw` + `post-compact-resume` consume it identically
-- [ ] Integration test drives a REAL critical state → asserts `.restart-requested` is written by budget-gate when the agent is blocked and makes no allowed call
+- [x] `budget-gate.sh` writes `.context/working/.restart-requested` on the critical-BLOCK path (the `exit 2` branch) — decoupled from the PostToolUse/handover path. **Evidence:** `_write_restart_signal` at `budget-gate.sh:53`, called at `:200` (fast path) + `:363` (slow path), both AFTER the `allowed`-class exit-0 check. bats tests 17-18 assert the file appears on block (Write + Bash).
+- [x] The signal write is idempotent (budget-gate runs on every call) and does NOT fire on the `allowed` path — so a restart cannot be triggered mid-wrap-up (mid-commit/handover). **Evidence:** call sites sit after `if [ "$CMD_CLASS" = "allowed" ]; then exit 0; fi` (`:182`/`:345`); bats tests 19-21 assert NO signal on Read / git-commit / wrap-up-Write at critical; overwrite-cat is idempotent.
+- [x] Normal operation is unbroken: `ok`/`warn`/`urgent` levels behave exactly as before; the gate still blocks correctly at critical; `bash -n agents/context/budget-gate.sh` clean. **Evidence:** `bash -n` clean; bats tests 1-3 (ok/warn/urgent) + 4,12 (critical still blocks) + 22-23 (ok/urgent write no signal) all PASS.
+- [x] The restart-signal JSON shape matches what `checkpoint.sh:210-212` emits (timestamp, session_id, reason, tokens, optional `directive` fold from `.next-directive.yaml`) so `claude-fw` + `post-compact-resume` consume it identically. **Evidence:** helper emits the same field set + T-2363 directive fold; bats tests 24 (keys/session_id/tokens), 25 (directive present), 26 (directive absent) PASS.
+- [x] Integration test drives a REAL critical state → asserts `.restart-requested` is written by budget-gate when the agent is blocked and makes no allowed call. **Evidence:** `tests/integration/budget_gate.bats` 26/26 PASS (10 new T-2403 tests), reviewer R-097ad1f4 PASS.
 
 ### Human
 - [ ] [REVIEW] Observable live E2E: a real `claude-fw` session driven to critical (via TermLink, watched from outside) writes `.restart-requested` → terminator SIGTERMs claude → `claude -c` relaunches → `## Next Directive (iteration 2/5)` re-injects → `.continuous-mode.yaml current_iteration` ticks 1→2.
@@ -122,6 +122,10 @@ Autonomous continuous mode (arc-012) has never armed end-to-end in a real sessio
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/context/budget-gate.sh
+bats tests/integration/budget_gate.bats
+out=$(bin/fw reviewer T-2403 2>&1); echo "$out" | grep -q "Overall:.*PASS"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -181,6 +185,17 @@ The restart signal `.context/working/.restart-requested` — the trigger the `cl
 - **Rejected — leave it in checkpoint.sh + rely on agent wrap-up behavior:** that's the current fragile state; behavioral, not structural; it's what's been failing.
 - **Caution — `budget-gate.sh` is the single highest-blast file** (gates every tool call). The signal-write must be wrapped so it can NEVER cause the gate to error/exit non-deterministically (e.g. `{ … ; } 2>/dev/null || true`); a bug here blocks ALL tools. Pin with the E2E test before close — do not ship unit-tested-only (that's how every prior round failed).
 
+## Recommendation
+
+- **Recommendation:** GO (merge to master, then run the live-fire Human AC)
+- **Rationale:** This is the confirmed root-cause fix for "autonomous continuous mode never arms" — the restart signal is now emitted by the PreToolUse hook that reliably fires at critical, decoupled from the blocked PostToolUse/handover path that dead-locked link 1. All five Agent ACs pass with cited evidence; the highest-blast-radius caution (budget-gate gates every tool) is addressed (failure-wrapped helper, syntax-clean, normal ok/warn/urgent paths proven unbroken). Per the RCA, the one thing every prior round skipped — a test driving the real critical→signal behavior — now exists and passes.
+- **Evidence:**
+  - `agents/context/budget-gate.sh:53` `_write_restart_signal`, called at `:200` + `:363` (both after the allowed-class exit-0), wrapped `{ … } 2>/dev/null || true`.
+  - `tests/integration/budget_gate.bats` — **26/26 PASS** (10 new T-2403 tests: signal on block path, none on allowed/ok/urgent, JSON shape + directive-fold parity with `checkpoint.sh:210-212`).
+  - `bash -n` clean; reviewer **R-097ad1f4 PASS** (needs_human=no).
+  - Commit `3e62fbc50` (worktree branch `worktree-arc012-continuous-run-s4s5`).
+- **Remaining (Human AC):** the observable live-fire E2E (critical → terminator restart → `current_iteration` 1→2) — this is the arc-012 G-062 headline demo and is operator-side by nature (needs a real `claude-fw` session, fix merged to master first).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -197,3 +212,12 @@ The restart signal `.context/working/.restart-requested` — the trigger the `cl
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2403-autonomous-continuous-mode-never-arms-re.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-097ad1f4
+- **Timestamp:** 2026-06-14T21:57:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
