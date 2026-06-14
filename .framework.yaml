@@ -1,0 +1,15 @@
+# Framework repository persistent config.
+#
+# The framework repo normally runs on FW_* env vars + hardcoded defaults (it is
+# the framework, not an `fw init`'d consumer — bin/fw self-detects it via
+# FRAMEWORK.md + agents/ before any .framework.yaml read, so this file does NOT
+# affect framework-path resolution). This file holds the few settings that must
+# persist across sessions for THIS repo and are NOT vendored to consumers.
+#
+# PROTECT_MASTER (T-2396, inception T-2394 G1): arm the master-as-merge-only
+# pre-commit guard (agents/git/lib/master-guard.sh). Key is UPPERCASE — that is
+# the fw_config file convention (callers pass uppercase, fw_config greps the key
+# verbatim; a lowercase key here would never be read → guard silently OFF).
+# Consumers stay off by default (no PROTECT_MASTER in their .framework.yaml = 0).
+# Inert until the guard is also deployed via `fw git install-hooks`.
+PROTECT_MASTER: 1

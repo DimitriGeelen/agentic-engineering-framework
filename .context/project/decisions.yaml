@@ -2046,3 +2046,17 @@ decisions:
     date: 2026-06-13
     task: T-2372
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-295
+    decision: "Create `.framework.yaml` at the framework root with `PROTECT_MASTER: 1` (UPPERCASE key)."
+    scope: project
+    date: 2026-06-14
+    task: T-2396
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-296
+    decision: "Store `PROTECT_MASTER:` (uppercase) in `.framework.yaml`; Verification greps `^PROTECT_MASTER:` (uppercase)."
+    scope: project
+    date: 2026-06-14
+    task: T-2396
+    rationale: "Auto-captured from task file on completion"

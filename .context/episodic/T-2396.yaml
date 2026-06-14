@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2396: Master-as-merge-only pre-commit guard (T-2394 G1 first slice)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T14:46:14Z
+# ============================================================================
+
+task_id: T-2396
+task_name: "Master-as-merge-only pre-commit guard (T-2394 G1 first slice)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T14:14:16Z
+completed: 2026-06-14T14:46:07Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/git/lib/master-guard.sh` exists (scanner-pattern), `bash -n` clean; CLI exits 1 (block) for a direct authored commit on master/main when enabled, exits 0 (allow) for merge (MERGE_HEAD), rebase, feature branch, protection-off, or bypass'
+  - 'Pre-commit hook in `agents/git/lib/hooks.sh` calls the guard (bash-invoke, `-f` gate per T-2061) before the secret scan; commit-msg + pre-commit VERSION markers bumped (PL-078)'
+  - 'Opt-in via config `PROTECT_MASTER` (default 0 — consumer-safe); `FW_PROTECT_MASTER=1` env override works; both bypasses real end-to-end: `FW_ALLOW_MASTER_COMMIT=1` (Tier-2 WARN) and `git commit --no-verify` (Tier-0)'
+  - 'Block message names BOTH bypass mechanisms + points at the branch→review→merge flow (L-399/T-1890 parity)'
+  - 'Bats test `tests/unit/master_guard.bats` green: block-direct / allow-merge / allow-rebase / allow-feature-branch / off-by-default / env-bypass (≥6 cases, real git temp repos) — 12 cases incl. file-arming + case-sensitivity regression'
+  - '`PROTECT_MASTER: 1` set in this repo''s `.framework.yaml` (turns the guard on here; consumers stay off)'
+  - 'Reviewer PASS (`bin/fw reviewer T-2396` → Overall: PASS, override OV-2870450a for mock-only-integration FP)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-14 — Arming the guard in the framework repo (which had no .framework.yaml)'
+    chose: 'Create `.framework.yaml` at the framework root with `PROTECT_MASTER: 1` (UPPERCASE key).'
+    rationale: 'The framework repo is not an `fw init`''d consumer — it ran on env-vars + defaults and had no config file. The guard reads persistence via `fw_config "PROTECT_MASTER"` (it must apply to *every* commit, so an env var won''t do — the deployed hook runs in git''s env, not ours). `bin/fw` self-detects the framework via `FRAMEWORK.md + agents/` (bin/fw:88) before any `.framework.yaml` read, and the file carries no `framework_path:`, so it does not disturb path resolution. `test_project_root_discovery.py` explicitly tolerates a marker at FRAMEWORK_ROOT (asserts `result == FRAMEWORK_ROOT`, never an ancestor) — re-run green (7 passed).'
+    alternatives_rejected: ['(a) `fw init` the framework repo — that treats the framework as a consumer of itself, wrong model; (b) special-case the guard to default-ON inside the framework repo — breaks the consumer-safe default-off contract and is fragile.']
+  - decision: '2026-06-14 — fw_config key case is UPPERCASE (latent silent-OFF bug caught)'
+    chose: 'Store `PROTECT_MASTER:` (uppercase) in `.framework.yaml`; Verification greps `^PROTECT_MASTER:` (uppercase).'
+    rationale: '`fw_config "KEY"` greps `^KEY:` case-sensitively and `_config_set` writes the key verbatim; the live convention (PORT, etc.) is uppercase. A lowercase `protect_master:` would never be read → guard silently OFF, while a lowercase Verification grep would still *pass* (matching the lowercase file) — proxy diverged from reality (T-1828 class). Caught by checking `fw config get PROTECT_MASTER` returned empty before trusting it.'
+    alternatives_rejected: ['lowercase key + lowercase grep (the original WIP-note assumption) — passes the AC but ships a dead guard. Pinned against regression by `master_guard.bats` cases 8 (uppercase read → BLOCK) + 9 (lowercase NOT read → OFF).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [git-hygiene, governance, pre-commit-hook, parallel-agents]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 31
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2396-master-as-merge-only-pre-commit-guard-t-.md
+generated_by: context-agent-hybrid
