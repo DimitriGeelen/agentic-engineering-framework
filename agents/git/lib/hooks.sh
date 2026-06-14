@@ -55,7 +55,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.9
+# VERSION=1.10
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -268,10 +268,10 @@ HOOK_EOF
     # scanning to agents/git/lib/secret-scan.sh and fails the commit on hit.
     cat > "$pre_commit_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-commit hook - Secret Scan (T-1844)
+# pre-commit hook - Master-merge-only guard (T-2396) + Secret Scan (T-1844)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.0
+# VERSION=1.1
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -284,6 +284,17 @@ fi
 [ ! -f "$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh" ] \
     && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/secret-scan.sh" ] \
     && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
+
+# T-2396 (inception T-2394 G1): Master-as-merge-only guard. Runs FIRST so a
+# direct authored commit on a protected branch is refused before any scan work.
+# Default-off (config PROTECT_MASTER) → consumer-safe; opt-in per project.
+# Allows merges/rebases/fast-forwards/feature-branches. Bypass: FW_ALLOW_MASTER_COMMIT=1
+# (Tier-2) or git commit --no-verify (Tier-0). See agents/git/lib/master-guard.sh.
+# T-2061: bash-invoke + gate on -f (exec bit irrelevant for vendored copies).
+MASTER_GUARD="$FRAMEWORK_ROOT/agents/git/lib/master-guard.sh"
+if [ -f "$MASTER_GUARD" ]; then
+    PROJECT_ROOT="$PROJECT_ROOT" bash "$MASTER_GUARD" check || exit 1
+fi
 
 SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
 # T-2061: gate on -f not -x. We invoke via `bash "$SCANNER"` below, so the
