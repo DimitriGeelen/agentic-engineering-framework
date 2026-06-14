@@ -57,15 +57,15 @@ the divergence.
 - **IW-1: Are the 6 master-only commits (T-2376..T-2379) duplicate content of commits already on the branch, or a genuine content fork?**
   confidence: 3
   disposition: answered
-  rationale: patch-id over 6 master-only vs 42 branch commits → 5 UNIQ / 1 DUP; master has genuine content (self-vendor/episodic/runbook), so union (merge) required not discard. Assumption A1 falsified. (artifact §IW-1)
+  rationale: patch-id over 6 master-only vs 42 branch commits → 5 UNIQ / 1 DUP; master has genuine content (self-vendor/episodic/runbook), so union (merge) required not discard. Assumption A1 falsified. (docs/reports/T-2393-consolidation-options.md §IW-1)
 - **IW-2: Which consolidation operation reconciles the divergence with zero commit loss AND zero mutation of the master working tree under the 2 live sessions?**
   confidence: 3
   disposition: answered
-  rationale: `git merge-tree` simulation → 7 conflicts, all doc/episodic/task-completion (add/add), zero core-code. Selected: `git merge master` IN this worktree → branch becomes superset → operator FF master conflict-free when sessions quiesced. (artifact §IW-2 matrix)
+  rationale: `git merge-tree` simulation → 7 conflicts, all doc/episodic/task-completion (add/add), zero core-code. Selected: `git merge master` IN this worktree → branch becomes superset → operator FF master conflict-free when sessions quiesced. (docs/reports/T-2393-consolidation-options.md §IW-2 matrix)
 - **IW-3: Are the 3 push-blocking audit FAILs genuinely spurious (worktree artifacts), such that bypassing them for THIS consolidation is safe?**
   confidence: 3
   disposition: answered
-  rationale: 2 spurious (cron target keyed to worktree name; registry/generated drift worktree-local — both clear on master line) + 1 trivial (self-vendor bin/fw = 19-line T-2390 block, cleared by one `fw vendor`). None are product defects. (artifact §IW-3)
+  rationale: 2 spurious (cron target keyed to worktree name; registry/generated drift worktree-local — both clear on master line) + 1 trivial (self-vendor bin/fw = 19-line T-2390 block, cleared by one `fw vendor`). None are product defects. (docs/reports/T-2393-consolidation-options.md §IW-3)
 
 ## Exploration Plan
 
@@ -171,3 +171,12 @@ touching or quiescing the 2 live master-checkout sessions (operator-owned).
 
 ### 2026-06-14T13:31:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-af943b48
+- **Timestamp:** 2026-06-14T13:42:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

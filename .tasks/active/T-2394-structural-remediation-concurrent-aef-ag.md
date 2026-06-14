@@ -68,19 +68,19 @@ non-compliance — this must be structural, not a convention).
 - **IW-1: What is the minimal structural guard that enforces "master is merge-only" without breaking legitimate FF/merge/cherry-pick advances?**
   confidence: 3
   disposition: answered
-  rationale: extend existing pre-commit hook (agents/git/git.sh installs pre-commit already); block authored commit on master/main when no MERGE_HEAD; FF creates no commit (silent allow), merge has MERGE_HEAD (allow), Tier-2 bypass for deploy. (artifact §IW-1 table)
+  rationale: extend existing pre-commit hook (agents/git/git.sh installs pre-commit already); block authored commit on master/main when no MERGE_HEAD; FF creates no commit (silent allow), merge has MERGE_HEAD (allow), Tier-2 bypass for deploy. (docs/reports/T-2394-parallel-agent-substrate.md §IW-1 table)
 - **IW-2: Is the dominant parallel-operation friction master contention (G1), task double-grab (G3), or shared-state merge conflicts (G4)?**
   confidence: 3
   disposition: answered
-  rationale: G4 by frequency (T-2393 = 7/7 shared-state conflicts) but G4 is arc-011's headline mechanic; G1 by severity (zero current protection, operator-alarming) → B owns G1+G2, routes G4 to arc-011. (artifact §IW-2)
+  rationale: G4 by frequency (T-2393 = 7/7 shared-state conflicts) but G4 is arc-011's headline mechanic; G1 by severity (zero current protection, operator-alarming) → B owns G1+G2, routes G4 to arc-011. (docs/reports/T-2394-parallel-agent-substrate.md §IW-2)
 - **IW-3: Do framework/TermLink primitives already exist for a cross-worktree task-claim/lease (G3), or must one be built from scratch?**
   confidence: 3
   disposition: answered
-  rationale: no fw claim/lease verb exists; TermLink kv set/get/watch + channel claim/transfer are the substrate → G3 is build-from-scratch, sequenced as a captured follow-on behind arc-011 write-set discipline. (artifact §IW-3)
+  rationale: no fw claim/lease verb exists; TermLink kv set/get/watch + channel claim/transfer are the substrate → G3 is build-from-scratch, sequenced as a captured follow-on behind arc-011 write-set discipline. (docs/reports/T-2394-parallel-agent-substrate.md §IW-3)
 - **IW-4: How does B compose with arc-011 (parallel-execution-aef) so the two don't overlap or contradict?**
   confidence: 3
   disposition: answered
-  rationale: arc-011 = parallel dispatch over disjoint write-sets (owns G4 + partial G3, mechanic "no .tasks/.context merge conflicts", fw write-set check exists); B = shared-repo substrate G1+G2 that arc-011 sits on. Dependency-sibling, no overlap. (artifact §IW-4)
+  rationale: arc-011 = parallel dispatch over disjoint write-sets (owns G4 + partial G3, mechanic "no .tasks/.context merge conflicts", fw write-set check exists); B = shared-repo substrate G1+G2 that arc-011 sits on. Dependency-sibling, no overlap. (docs/reports/T-2394-parallel-agent-substrate.md §IW-4)
 
 ## Exploration Plan
 
@@ -188,3 +188,12 @@ executing the Layer-1 hook (post-GO build work, separate task); the current-inst
 
 ### 2026-06-14T13:37:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f900b099
+- **Timestamp:** 2026-06-14T13:42:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
