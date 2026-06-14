@@ -2,18 +2,24 @@
 id: T-2393
 name: "Resolve divergent worktree/master state cleanly without loss"
 description: >
-  Tactical inception: the arc-012 worktree branch is 42 commits ahead of master while master is 6 commits ahead (T-2376..T-2379 deployed directly via cherry-pick), with 2 live sessions on the master checkout and a push blocked by spurious worktree-only audit failures. Explore consolidation options (merge / rebase-onto-master / cherry-pick reconcile / push-branch-then-server-merge) that reconcile the duplicate cherry-picked content WITHOUT losing any of the 42 commits, and that do not mutate the master working tree under the live sessions. Produce one recommended path.
+  Tactical inception: the arc-012 worktree branch is 42 commits ahead of master while
+  master is 6 commits ahead (T-2376..T-2379 deployed directly via cherry-pick), with
+  2 live sessions on the master checkout and a push blocked by spurious worktree-only
+  audit failures. Explore consolidation options (merge / rebase-onto-master / cherry-pick
+  reconcile / push-branch-then-server-merge) that reconcile the duplicate cherry-picked
+  content WITHOUT losing any of the 42 commits, and that do not mutate the master
+  working tree under the live sessions. Produce one recommended path.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [git-hygiene, worktree, parallel-agents, inception]
 components: []
 related_tasks: []
 created: 2026-06-14T13:30:43Z
-last_update: 2026-06-14T13:31:36Z
-date_finished: null
+last_update: 2026-06-14T15:00:06Z
+date_finished: 2026-06-14T15:00:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +28,34 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-06-14T15:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
+      (no-signal); F3=2 (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-14T15:00:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2393: Resolve divergent worktree/master state cleanly without loss
@@ -106,7 +140,7 @@ touching or quiescing the 2 live master-checkout sessions (operator-owned).
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -162,12 +196,19 @@ touching or quiescing the 2 live master-checkout sessions (operator-owned).
 
 ## Decision
 
-**GO** — operator decision in chat, 2026-06-14 ("Go on A"). Authorises Option 1 (merge master into this
-branch in the worktree → operator fast-forwards master when the live sessions are quiesced). Execution moved
-to build task [[T-2395]] per inception discipline (no building under the inception ID). Formal Watchtower
-`fw inception decide` deferred — no worktree Watchtower; the GO is the operator's explicit chat authorisation.
+**Decision**: GO
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Rationale**: Recommendation: GO — Option 1 (merge master into THIS branch, here in the worktree; then operator fast-forwards master when the 2 live sessions are quiesced)
+
+Rationale: Exploration complete (`docs/reports/T-2393-consolidation-options.md`). All three IWs answered with confidence 3. A bounded, proven, reversible path exists that satisfies all constraints — zero commit loss (union merge, not discard), no mutation of the master working tree under the live sessions (merge happens in the isolated worktree; master advances later by conflict-free FF), and a clean conflict surface (`git merge-tree` simulated exactly 7 conflicts, all doc/episodic/task-completion add/add, zero core-code). The push-blocking audit FAILs are 2 worktree artifacts + 1 trivial `fw vendor` — no product defects. A server-side PR merge is the zero-mutation fallback if the sessions cannot be quiesced.
+
+Evidence:
+- patch-id: 5/6 master-only commits are unique content → merge (union) is the correct reconciliation, not FF or discard.
+- `git merge-tree --write-tree`: 7 conflicts, all in `.tasks/completed/T-2377..2379`, `.context/episodic/T-2377..2378`, `reviewer-overrides.yaml`, runbook, vendored discard-manifest — every one a "same task closed on both lines" artifact.
+- audit FAIL triage: cron target keyed to worktree name (spurious), registry/generated worktree-local (spurious), self-vendor `bin/fw` = 19-line T-2390 block (one `fw vendor`).
+- Execution is post-GO build work (a follow-on task or operator-run), NOT performed under this inception ID.
+
+**Date**: 2026-06-14T15:00:06Z
 
 ## Updates
 
@@ -179,9 +220,25 @@ to build task [[T-2395]] per inception discipline (no building under the incepti
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-af943b48
-- **Timestamp:** 2026-06-14T13:42:41Z
+- **Scan ID:** R-6fd2520d
+- **Timestamp:** 2026-06-14T15:00:06Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+### 2026-06-14T15:00:06Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — Option 1 (merge master into THIS branch, here in the worktree; then operator fast-forwards master when the 2 live sessions are quiesced)
+
+Rationale: Exploration complete (`docs/reports/T-2393-consolidation-options.md`). All three IWs answered with confidence 3. A bounded, proven, reversible path exists that satisfies all constraints — zero commit loss (union merge, not discard), no mutation of the master working tree under the live sessions (merge happens in the isolated worktree; master advances later by conflict-free FF), and a clean conflict surface (`git merge-tree` simulated exactly 7 conflicts, all doc/episodic/task-completion add/add, zero core-code). The push-blocking audit FAILs are 2 worktree artifacts + 1 trivial `fw vendor` — no product defects. A server-side PR merge is the zero-mutation fallback if the sessions cannot be quiesced.
+
+Evidence:
+- patch-id: 5/6 master-only commits are unique content → merge (union) is the correct reconciliation, not FF or discard.
+- `git merge-tree --write-tree`: 7 conflicts, all in `.tasks/completed/T-2377..2379`, `.context/episodic/T-2377..2378`, `reviewer-overrides.yaml`, runbook, vendored discard-manifest — every one a "same task closed on both lines" artifact.
+- audit FAIL triage: cron target keyed to worktree name (spurious), registry/generated worktree-local (spurious), self-vendor `bin/fw` = 19-line T-2390 block (one `fw vendor`).
+- Execution is post-GO build work (a follow-on task or operator-run), NOT performed under this inception ID.
+
+### 2026-06-14T15:00:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
