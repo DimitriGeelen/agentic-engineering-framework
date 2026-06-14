@@ -162,6 +162,11 @@ touching or quiescing the 2 live master-checkout sessions (operator-owned).
 
 ## Decision
 
+**GO** — operator decision in chat, 2026-06-14 ("Go on A"). Authorises Option 1 (merge master into this
+branch in the worktree → operator fast-forwards master when the live sessions are quiesced). Execution moved
+to build task [[T-2395]] per inception discipline (no building under the inception ID). Formal Watchtower
+`fw inception decide` deferred — no worktree Watchtower; the GO is the operator's explicit chat authorisation.
+
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
