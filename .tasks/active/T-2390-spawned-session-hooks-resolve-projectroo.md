@@ -47,6 +47,15 @@ armed. Evidence: `docs/reports/T-2389-livefire-evidence.md`.
 
 ## Findings (2026-06-14, mechanism identified)
 
+> **⚠️ SUPERSEDED by ## Re-drive 2 (session 2, same day).** The hypothesis below
+> ("find_project_root walks $PWD to /root; fix = prefer CLAUDE_PROJECT_DIR") was
+> DISPROVEN by the live re-drive. The real mechanism is a stale `PROJECT_ROOT=/root`
+> *inherited from the tmux-server daemon env* — bin/fw never re-resolves it (it only
+> resolves when PROJECT_ROOT is empty), and CLAUDE_PROJECT_DIR is not set at all in the
+> spawned session. Read ## Re-drive 2 for the evidence-backed root cause. Per
+> feedback_remediation_plans_are_hypotheses: the named fix was the first hypothesis to
+> disprove — and it was wrong.
+
 - **NOT universal.** My own normally-launched session's gauge resolves correctly
   (`.budget-status` updated to real tokens). Only the headless tmux-spawned session
   mis-resolved. arc-012's loop is not fundamentally broken.
@@ -67,10 +76,10 @@ armed. Evidence: `docs/reports/T-2389-livefire-evidence.md`.
 
 ### Agent
 - [x] Classify universal-vs-launch-artifact + resolution mechanism — DONE: NOT universal (own session resolves fine); mechanism = `find_project_root()` walks `$PWD`, ignores `CLAUDE_PROJECT_DIR`. See ## Findings + ## RCA.
-- [x] Identify + ship the fix — DONE + unit-proven: `bin/fw` now prefers `CLAUDE_PROJECT_DIR` (validity-gated) over the `$PWD` walk; `tests/unit/t2390_project_root_claude_dir.bats` 3/3 (t1 fix works, t2 reproduces bug, t3 safe fallthrough). Commit on branch.
-- [ ] Live re-drive confirmation — **HANDED OFF** (blocked by parent session budget critical, not by the fix). Re-drive worktree is pre-configured + ready (see ## Re-drive ready-state); a fresh session spawns + drives in a few steps.
+- [x] Identify + ship a fix — shipped (`bin/fw` prefers `CLAUDE_PROJECT_DIR`, 3/3 bats) BUT **the re-drive proved it INEFFECTIVE for the live bug** — see ## Re-drive 2. The real Bug A is `bin/fw` accepting an *inherited* (poisoned) `PROJECT_ROOT` verbatim; the shipped fix is gated on `[ -z PROJECT_ROOT ]` and never runs. A correct fix is still owed (follow-up).
+- [x] Live re-drive confirmation — **DONE 2026-06-14 (session 2): NO-GO.** Drove a real `claude-fw` live-fire via TermLink twice. Loop never armed (972738 tokens / 107 checkpoints / current_iteration=0). Surfaced corrected Bug A + a new Bug B. Full evidence in ## Re-drive 2.
 - [x] N/A (not universal — no escalation needed)
-- [ ] RCA filled (done below); reviewer PASS (pending — run `fw reviewer T-2390` next session)
+- [ ] RCA filled (corrected in ## Re-drive 2); reviewer PASS (pending — run `fw reviewer T-2390` next session)
 
 ## Re-drive ready-state (for the next session — fix is shipped, just needs driving)
 
@@ -95,6 +104,69 @@ Next session (with budget headroom), drive it:
    advances. budget-gate matches **Write|Edit|Bash NOT Read** — burn must include Bash.
 4. Teardown: `tmux kill-session`, `git worktree remove ../arc012-livefire-demo --force`, revert the
    `~/.claude.json` entry, `git branch -D livefire-demo-2390` (Tier-0).
+
+## Re-drive 2 (2026-06-14, session 2) — evidence-backed corrected root cause
+
+Drove the live-fire via TermLink/tmux **twice** in the pre-configured `arc012-livefire-demo`
+worktree. **Outcome: NO-GO both times — the loop never armed** (final: 972738 tokens at a 20000
+window = 4863%, 107 checkpoint runs, `current_iteration=0`, `.restart-requested` never written).
+
+Two distinct bugs were isolated with `/proc` + parent-chain + manual-hook-invocation evidence:
+
+### Bug A — poisoned PROJECT_ROOT inherited from the tmux-server daemon (corrected)
+- `/proc/<inner-claude>/environ` showed `PROJECT_ROOT=/root` (not from a `$PWD` walk). Walking the
+  parent chain: **the tmux server daemon (PID 6177, child of init) carries `PROJECT_ROOT=/root` in
+  its environment**, and every `termlink spawn --backend tmux` session inherits it. My own
+  normally-launched session has `PROJECT_ROOT=<empty>` (control) — which is why my gauge and the
+  operator's interactive runs work.
+- `bin/fw` resolves PROJECT_ROOT **only inside `if [ -z "${PROJECT_ROOT:-}" ]`**, so it accepts the
+  inherited `/root` verbatim without validating it matches the project. `find_project_root()` never
+  runs.
+- The shipped T-2390 fix (prefer `CLAUDE_PROJECT_DIR`) is **ineffective**: (a) it lives inside the
+  `[ -z ]` guard that a pre-set `/root` skips, and (b) `CLAUDE_PROJECT_DIR` is **not set at all** in
+  the spawned session (`/proc` environ confirmed absent). `FW_CONTEXT_WINDOW=20000` *did* propagate
+  via `--env` (so the window was never the issue).
+- **Real fix owed:** `bin/fw` must validate an *inherited* PROJECT_ROOT and re-resolve when it is
+  stale/wrong (doesn't match `$PWD`'s project). Design caveat: the validity test is non-trivial —
+  `/root` may carry a stray `.tasks`, and the framework repo itself has **no `.framework.yaml`**, so
+  neither "has .tasks" nor "has .framework.yaml" alone is a sufficient validity criterion. Needs a
+  "PWD is under PROJECT_ROOT (or shares its git-toplevel)" check. High blast-radius (every fw
+  invocation) → careful design + tests, likely operator-aware. **Harness workaround proven:**
+  `termlink spawn --env "PROJECT_ROOT=<worktree>"` overrides the poison and makes the gauge resolve
+  to the worktree.
+
+### Bug B — gauge logic is correct, but the live in-session hook reads 0 tokens (residual, open)
+After forcing `PROJECT_ROOT=<worktree>` (Bug A bypassed), the gauge resolves to the worktree:
+`.tool-counter`, `.budget-status` now write there; checkpoint ran **107×**. **Yet the loop still did
+not fire** — `warn_by_tokens` critical branch never reached, `.prev-token-reading` never written →
+the in-hook `get_context_tokens` returns **0** on every check.
+- **The gauge logic itself is PROVEN CORRECT.** Manually invoking the *real* hook
+  (`PROJECT_ROOT=<worktree> bin/fw hook checkpoint post-tool`) with the live transcript:
+  - good stdin `transcript_path` → `tokens=972318`, `.prev-token-reading` written;
+  - **empty** stdin + `PROJECT_ROOT=<worktree>` → reconstruction resolves the right transcript →
+    `tokens=972318`;
+  - empty stdin + **empty** PROJECT_ROOT → fails (0). (`interval=5`, `py=/usr/bin/python3`,
+    `ctxdir=<worktree>/.context` all correct.)
+- Main checkout is at the same HEAD (`4679b9a42`), **no local mods** to checkpoint.sh, and its
+  committed copy has both T-2375 (`fw_claude_project_dir_name`) and T-2377 (stdin `transcript_path`).
+  So the live hook runs *identical* code to the manual test, with `PROJECT_ROOT=<worktree>`.
+- **Therefore Bug B = the `transcript_path` CC passes to the live PostToolUse hook is valid-but-wrong
+  (points to a file yielding 0 tokens), bypassing the working reconstruction fallback via
+  `find_transcript`'s explicit-path branch (line 72: `[ -n "$explicit" ] && [ -f "$explicit" ]`).**
+  Pinning the exact stdin value needs in-place instrumentation of the *running* (main-checkout)
+  checkpoint.sh — blocked from this worktree by T-559. Next step: instrument `<worktree>/bin/fw`'s
+  hook dispatcher to `tee` stdin before delegating (it's in the allowlist), re-spawn, read the log.
+- Architectural note: in a worktree, the hook's **`FRAMEWORK_ROOT`=main checkout** while
+  **`PROJECT_ROOT`=worktree** (bin/fw `resolve_framework` vs inherited PROJECT_ROOT). Runs main's
+  code against the worktree's data — fine in principle, noted for completeness.
+
+### Bottom line for arc-012
+The loop has **never fired end-to-end.** It is NOT "one operator run away." Two real bugs gate it
+(Bug A poisoned-PROJECT_ROOT, Bug B live-hook transcript_path), both invisible to the four per-link
+unit tests (which stub the transcript and run fw from the correct cwd). The operator's canonical
+interactive run on the **main checkout** may still fire (clean env, empty PROJECT_ROOT, CC passes
+its own transcript_path) — that remains the most likely demo path and is worth a direct attempt
+before investing in the Bug B fix.
 
 ## RCA
 
