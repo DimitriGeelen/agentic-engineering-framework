@@ -115,19 +115,41 @@ date_finished: null
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**CORRECTED 2026-06-14 (the original "valid-but-wrong transcript_path" RCA was WRONG; this is data-proven from a normal session — no tmux spawn needed).**
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Symptom:** In-hook `get_context_tokens` returns 0 in worktree sessions despite a
+correct PROJECT_ROOT → budget gauge blind → continuous loop never arms. NB the bug
+is NOT tmux-spawn-specific: it hits *every* worktree session (proven in the live
+background session 77ac04c8 this turn — `.budget-status` frozen at 136K while the
+session was actually at ~302K).
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Root cause:** Claude Code keys the transcript projects dir on the **launch cwd
+(the main repo)**, not on PROJECT_ROOT (the worktree). This session's live
+transcript is at `~/.claude/projects/-opt-999-Agentic-Engineering-Framework/77ac04c8….jsonl`
+(38MB, live), but `find_transcript` (checkpoint.sh:70) reconstructs the dir from
+PROJECT_ROOT=worktree → `…--claude-worktrees-arc012-continuous-run-s4s5/`, which
+holds only STALE transcripts. `ls -t | head -1` picks the newest *stale* one
+(88f3e240 @ 00:04); all its entries pre-date `.session-start-ts` (14:24:56) so the
+T-1088 filter zeroes them → tokens=0. The hook stdin transcript_path is EMPTY
+(`.gauge-debug.log`: `hooktr=[]`), so T-2377's "prefer stdin path" fix has nothing
+to prefer and falls to this broken reconstruction.
+
+**Why structurally allowed:** reconstruction assumed the projects dir is a pure
+function of PROJECT_ROOT. T-2375 fixed the *encoding*, T-2377 added the stdin
+*preference* — but neither covered the case "stdin path absent AND CC keyed the dir
+on a cwd ≠ PROJECT_ROOT" (the worktree-launched-from-main case). Same
+worktree-coordination class as T-2391 (PROJECT_ROOT poison) and OBS-077 (cron).
+
+**Prevention / FIX (proven, ready to build):** `find_transcript` (in BOTH
+checkpoint.sh and budget-gate.sh — both reconstruct) must consider **both** the
+PROJECT_ROOT-keyed dir AND the **primary-worktree (main-repo)-keyed** dir
+(`git rev-parse --git-common-dir` → parent → `fw_claude_project_dir_name`), then
+pick the **globally newest** transcript across the candidate dirs. Live-proof the
+target: `get_context_tokens` on the main-keyed 77ac04c8 under the current
+session-start-ts = **301867 tokens** (752/1692 entries kept). bats: synthetic
+worktree-keyed(stale) + main-keyed(live) dirs → picks live. Live-prove with
+`checkpoint.sh status` reading this session's real ~302K. Consider extracting the
+shared resolver into `lib/paths.sh` (DRY across the two hooks).
 
 ## Evolution
 
