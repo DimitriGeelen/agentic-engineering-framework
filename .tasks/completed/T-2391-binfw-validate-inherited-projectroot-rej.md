@@ -4,12 +4,12 @@ name: "bin/fw: validate inherited PROJECT_ROOT; reject stale /root from tmux-ser
 description: >
   Bug A from T-2390 re-drive 2. The tmux-server daemon (PID 6177, child of init) carries a stale PROJECT_ROOT=/root in its env; every 'termlink spawn --backend tmux' session inherits it. bin/fw resolves PROJECT_ROOT only when empty (if [ -z ]), so it uses the poison verbatim and find_project_root never runs. This blinds budget-gate/checkpoint in spawned sessions (arc-012 loop never arms). The T-2390 CLAUDE_PROJECT_DIR-preference fix is dead code (inside the [ -z ] guard; CLAUDE_PROJECT_DIR also unset). Fix: validate an inherited PROJECT_ROOT and re-resolve when stale (PWD not under it / equals $HOME). High blast-radius (every fw invocation) -> needs careful design + bats. Validity criterion is non-trivial: framework repo has no .framework.yaml; /root may have stray .tasks. See T-2390 ## Re-drive 2 Bug A. Cheaper sibling mitigation: restart tmux server with clean env.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tests/unit/t2391_project_root_inherited_stale.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T10:01:16Z
-last_update: 2026-06-14T15:38:25Z
-date_finished: null
+last_update: 2026-06-14T15:45:43Z
+date_finished: 2026-06-14T15:45:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -197,9 +197,12 @@ captured for the "resolve-when-empty conflates unset with valid" class.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f56e68d3
-- **Timestamp:** 2026-06-14T15:44:24Z
+- **Scan ID:** R-2c65f34b
+- **Timestamp:** 2026-06-14T15:45:45Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-14T15:45:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

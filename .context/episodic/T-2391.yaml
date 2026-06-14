@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2391: bin/fw: validate inherited PROJECT_ROOT; reject stale /root from tmux-server env
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T15:45:50Z
+# ============================================================================
+
+task_id: T-2391
+task_name: "bin/fw: validate inherited PROJECT_ROOT; reject stale /root from tmux-server env"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T10:01:16Z
+completed: 2026-06-14T15:45:43Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_project_root_is_stale()` helper added to `bin/fw`: returns stale (exit 0) when a non-empty inherited `PROJECT_ROOT` equals canonical `$HOME`, is not a directory, or carries no `.framework.yaml`/`.tasks` marker; returns not-stale (exit 1) otherwise'
+  - 'Resolution guard changed from `[ -z PROJECT_ROOT ]` to `[ -z PROJECT_ROOT ] || _project_root_is_stale "$PROJECT_ROOT"` so a stale inherited value routes through the existing `CLAUDE_PROJECT_DIR`→`find_project_root` resolution'
+  - 'Poison fixed: `PROJECT_ROOT=$HOME` (with a stray `.tasks` marker) re-resolves to the cwd''s real project, not `$HOME` (bats t1; live-proven from worktree with `PROJECT_ROOT=/root`)'
+  - '`CLAUDE_PROJECT_DIR` preference is now reachable for the inherited-poison case (no longer dead code): stale `PROJECT_ROOT` + valid `CLAUDE_PROJECT_DIR` resolves to `CLAUDE_PROJECT_DIR` (bats t2)'
+  - 'No regression — env still wins for legitimate overrides: an inherited `PROJECT_ROOT` pointing at a real project (marker present, ≠ `$HOME`) is KEPT even from an unrelated cwd (bats t3 cross-dir + t4 same-dir)'
+  - 'Markerless and non-existent inherited dirs re-resolve (bats t5, t6)'
+  - '`bash -n bin/fw` clean (L-408); existing `t2390_project_root_claude_dir.bats` (3/3) and `test_project_root_discovery.py` (7/7) stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 344 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 344
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2391-binfw-validate-inherited-projectroot-rej.md
+generated_by: context-agent-hybrid
