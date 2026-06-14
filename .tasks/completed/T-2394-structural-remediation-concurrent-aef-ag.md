@@ -4,17 +4,17 @@ name: "Structural remediation: concurrent AEF agents on a shared backlog and mas
 description: >
   Structural inception. The divergence/contention surfaced in inception A is a symptom of a class: worktree isolation was introduced to let multiple AEF agents work the same task-list/backlog (or multiple projects using AEF) in parallel, but nothing structurally governs (a) who may write to master, (b) how parallel branches reconcile, (c) task/backlog ownership so two agents don't grab the same task, (d) merge-queue/locking. Explore the structural model: master-as-merge-only enforcement (pre-commit guard), branch-per-agent + merge queue, task-claim/lease protocol on the shared backlog, and how this composes with arc-011 parallel-execution (disjoint write-sets, fw write-set check). Produce a recommended structural direction + the first concrete slice.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [parallel-agents, governance, concurrency, inception]
 arc_id: parallel-execution-aef
 components: []
 related_tasks: [T-2393]
 created: 2026-06-14T13:31:06Z
-last_update: 2026-06-14T13:37:21Z
-date_finished: null
+last_update: 2026-06-14T14:59:55Z
+date_finished: 2026-06-14T14:59:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -122,7 +122,7 @@ executing the Layer-1 hook (post-GO build work, separate task); the current-inst
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -179,13 +179,20 @@ executing the Layer-1 hook (post-GO build work, separate task); the current-inst
 
 ## Decision
 
-**GO — first slice** — operator decision in chat, 2026-06-14 ("GO on B's first slice"). Authorises Layer 1:
-the master-as-merge-only pre-commit guard (G1). Execution moved to build task [[T-2396]] per inception
-discipline (no building under the inception ID). Layers 2 (G2 reconciliation helper) and 4 (G3 task-claim
-lease) remain captured follow-ons; Layer 3 (G4) stays with arc-011. Formal Watchtower `fw inception decide`
-deferred — no worktree Watchtower; the GO is the operator's explicit chat authorisation.
+**Decision**: GO
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Rationale**: Recommendation: GO — layered structural direction; first slice = master-as-merge-only pre-commit guard (G1)
+
+Rationale: Exploration complete (`docs/reports/T-2394-parallel-agent-substrate.md`); all 4 IWs answered at confidence 3. The operator's invariant ("none other than this should write to master") is currently enforced by nothing; the highest-severity gap G1 has a bounded, feasible fix on an existing hook surface (the framework already installs a pre-commit hook), is testable and reversible, and aligns with L-405 (make it structural, not advisory). Lower-severity gaps are either already owned (G4 = arc-011's headline mechanic — no duplication) or sequenced as captured follow-ons (G2 reconciliation helper, G3 task-claim lease over TermLink kv). GO authorises a small, safe first slice without over-committing the whole concurrency model.
+
+Evidence:
+- IW-1: `fw git install-hooks` already installs pre-commit (agents/git/git.sh); intent is distinguishable (FF → no commit; merge → MERGE_HEAD present; direct commit → blocked).
+- IW-2: T-2393's conflict set was 7/7 shared-state (G4 = frequent) but G4 ∈ arc-011; G1 = rare/catastrophic with zero current protection → B's unique target.
+- IW-3: no `fw` claim/lease verb; TermLink `kv`+`channel claim` are the substrate (G3 = build-from-scratch, deferred).
+- IW-4: arc-011 owns parallel dispatch + disjoint write-sets (mechanic "no .tasks/.context merge conflicts", `fw write-set check` exists); B owns the substrate G1+G2 underneath. No overlap.
+- Layer-1 build is post-GO work (separate task), NOT performed under this inception ID.
+
+**Date**: 2026-06-14T14:59:55Z
 
 ## Updates
 
@@ -197,9 +204,26 @@ deferred — no worktree Watchtower; the GO is the operator's explicit chat auth
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f900b099
-- **Timestamp:** 2026-06-14T13:42:41Z
+- **Scan ID:** R-15ac1a80
+- **Timestamp:** 2026-06-14T14:59:56Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+### 2026-06-14T14:59:55Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — layered structural direction; first slice = master-as-merge-only pre-commit guard (G1)
+
+Rationale: Exploration complete (`docs/reports/T-2394-parallel-agent-substrate.md`); all 4 IWs answered at confidence 3. The operator's invariant ("none other than this should write to master") is currently enforced by nothing; the highest-severity gap G1 has a bounded, feasible fix on an existing hook surface (the framework already installs a pre-commit hook), is testable and reversible, and aligns with L-405 (make it structural, not advisory). Lower-severity gaps are either already owned (G4 = arc-011's headline mechanic — no duplication) or sequenced as captured follow-ons (G2 reconciliation helper, G3 task-claim lease over TermLink kv). GO authorises a small, safe first slice without over-committing the whole concurrency model.
+
+Evidence:
+- IW-1: `fw git install-hooks` already installs pre-commit (agents/git/git.sh); intent is distinguishable (FF → no commit; merge → MERGE_HEAD present; direct commit → blocked).
+- IW-2: T-2393's conflict set was 7/7 shared-state (G4 = frequent) but G4 ∈ arc-011; G1 = rare/catastrophic with zero current protection → B's unique target.
+- IW-3: no `fw` claim/lease verb; TermLink `kv`+`channel claim` are the substrate (G3 = build-from-scratch, deferred).
+- IW-4: arc-011 owns parallel dispatch + disjoint write-sets (mechanic "no .tasks/.context merge conflicts", `fw write-set check` exists); B owns the substrate G1+G2 underneath. No overlap.
+- Layer-1 build is post-GO work (separate task), NOT performed under this inception ID.
+
+### 2026-06-14T14:59:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
