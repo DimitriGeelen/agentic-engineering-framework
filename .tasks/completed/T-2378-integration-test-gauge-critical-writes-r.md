@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-13T19:45:01Z
-last_update: 2026-06-13T19:48:47Z
-date_finished: 2026-06-13T19:48:47Z
+last_update: 2026-06-13T19:51:01Z
+date_finished: 2026-06-13T19:51:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -201,8 +201,8 @@ out=$(bin/fw reviewer T-2378 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f591644f
-- **Timestamp:** 2026-06-13T22:32:01Z
+- **Scan ID:** R-dff4e773
+- **Timestamp:** 2026-06-13T19:51:03Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -210,5 +210,6 @@ out=$(bin/fw reviewer T-2378 2>&1); echo "$out" | grep -qE "Overall:.*(PASS|CONC
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#1 (Agent)
-### 2026-06-13T19:48:47Z — status-update [task-update-agent]
+
+### 2026-06-13T19:51:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

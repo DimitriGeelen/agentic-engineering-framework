@@ -4,8 +4,8 @@ overrides:
   task_id: T-1583
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "FP: AC#1 says 'imports extract_reviewer_verdict' and the diff DOES modify\
-    \ web/blueprints/review.py \u2014 reviewer regex narrow heuristic miss"
+  reason: 'FP: AC#1 says ''imports extract_reviewer_verdict'' and the diff DOES modify
+    web/blueprints/review.py — reviewer regex narrow heuristic miss'
   expires_at: '2026-07-27T14:04:45Z'
   added_by: root
   added_at: '2026-04-28T14:04:45Z'
@@ -13,8 +13,8 @@ overrides:
   task_id: T-1583
   pattern_id: AC-verify-mismatch
   ac_index: 2
-  reason: "FP: AC#2 says 'review.html adds .reviewer-verdict-block' and the diff DOES\
-    \ modify web/templates/review.html \u2014 same narrow-heuristic class as AC#1"
+  reason: 'FP: AC#2 says ''review.html adds .reviewer-verdict-block'' and the diff
+    DOES modify web/templates/review.html — same narrow-heuristic class as AC#1'
   expires_at: '2026-07-27T14:04:46Z'
   added_by: root
   added_at: '2026-04-28T14:04:46Z'
@@ -22,9 +22,9 @@ overrides:
   task_id: T-1484
   pattern_id: AC-verify-mismatch
   ac_index: 6
-  reason: "AC #6 references YYYY-MM-DD-pass-b.yaml as date placeholder pattern. Verification\
-    \ asserts ls .context/audits/reviewer/*-pass-b.yaml exists. Heuristic treats date\
-    \ placeholder as literal \u2014 false positive."
+  reason: 'AC #6 references YYYY-MM-DD-pass-b.yaml as date placeholder pattern. Verification
+    asserts ls .context/audits/reviewer/*-pass-b.yaml exists. Heuristic treats date
+    placeholder as literal — false positive.'
   expires_at: '2027-04-28T20:18:53Z'
   added_by: root
   added_at: '2026-04-28T20:18:53Z'
@@ -32,9 +32,9 @@ overrides:
   task_id: T-1485
   pattern_id: AC-verify-mismatch
   ac_index: 5
-  reason: "AC #5 references YYYY-MM-DD-pass-a.yaml as date placeholder pattern. Verification\
-    \ asserts ls .context/audits/reviewer/*-pass-a.yaml exists. Heuristic treats date\
-    \ placeholder as literal \u2014 false positive."
+  reason: 'AC #5 references YYYY-MM-DD-pass-a.yaml as date placeholder pattern. Verification
+    asserts ls .context/audits/reviewer/*-pass-a.yaml exists. Heuristic treats date
+    placeholder as literal — false positive.'
   expires_at: '2027-04-28T20:18:53Z'
   added_by: root
   added_at: '2026-04-28T20:18:53Z'
@@ -42,9 +42,9 @@ overrides:
   task_id: T-1818
   pattern_id: AC-verify-mismatch
   ac_index: 3
-  reason: "Path in AC text is verified by tests/unit/test_peer_subscribe.py (test_subscribe_loop_continuation_past_miss\
-    \ writes prompts YAML, asserts resolution). Reviewer heuristic flags any path-mention\
-    \ without inline command \u2014 FP for tests-cover-it case."
+  reason: Path in AC text is verified by tests/unit/test_peer_subscribe.py (test_subscribe_loop_continuation_past_miss
+    writes prompts YAML, asserts resolution). Reviewer heuristic flags any path-mention
+    without inline command — FP for tests-cover-it case.
   expires_at: '2026-08-11T22:24:14Z'
   added_by: root
   added_at: '2026-05-13T22:24:14Z'
@@ -82,9 +82,8 @@ overrides:
   task_id: T-1116
   pattern_id: human-ac-mechanical-signal
   ac_index: 1
-  reason: "Historical (T-1878 era) \u2014 work-completed, not worth reopening; T-1896\
-    \ detector fired retro on 1783-task Pass-B sweep. Pattern noted for L-400; no\
-    \ action needed."
+  reason: Historical (T-1878 era) — work-completed, not worth reopening; T-1896 detector
+    fired retro on 1783-task Pass-B sweep. Pattern noted for L-400; no action needed.
   expires_at: '2027-05-18T08:37:45Z'
   added_by: root
   added_at: '2026-05-18T08:37:45Z'
@@ -92,9 +91,8 @@ overrides:
   task_id: T-1372
   pattern_id: human-ac-mechanical-signal
   ac_index: 1
-  reason: "Historical (T-1878 era) \u2014 work-completed, not worth reopening; T-1896\
-    \ detector fired retro on 1783-task Pass-B sweep. Pattern noted for L-400; no\
-    \ action needed."
+  reason: Historical (T-1878 era) — work-completed, not worth reopening; T-1896 detector
+    fired retro on 1783-task Pass-B sweep. Pattern noted for L-400; no action needed.
   expires_at: '2027-05-18T08:37:47Z'
   added_by: root
   added_at: '2026-05-18T08:37:47Z'
@@ -102,10 +100,9 @@ overrides:
   task_id: T-1214
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:52Z'
   added_by: root
   added_at: '2026-05-18T10:13:52Z'
@@ -113,10 +110,9 @@ overrides:
   task_id: T-1295
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:52Z'
   added_by: root
   added_at: '2026-05-18T10:13:52Z'
@@ -124,10 +120,9 @@ overrides:
   task_id: T-1453
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:52Z'
   added_by: root
   added_at: '2026-05-18T10:13:52Z'
@@ -135,10 +130,9 @@ overrides:
   task_id: T-1485
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:52Z'
   added_by: root
   added_at: '2026-05-18T10:13:52Z'
@@ -146,10 +140,9 @@ overrides:
   task_id: T-405
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:52Z'
   added_by: root
   added_at: '2026-05-18T10:13:52Z'
@@ -157,10 +150,9 @@ overrides:
   task_id: T-407
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:53Z'
   added_by: root
   added_at: '2026-05-18T10:13:53Z'
@@ -168,10 +160,9 @@ overrides:
   task_id: T-418
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:53Z'
   added_by: root
   added_at: '2026-05-18T10:13:53Z'
@@ -179,10 +170,9 @@ overrides:
   task_id: T-430
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:53Z'
   added_by: root
   added_at: '2026-05-18T10:13:53Z'
@@ -190,10 +180,9 @@ overrides:
   task_id: T-849
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "T-1897 corpus regression: historical completed task with conformance-dialect\
-    \ [REVIEW] AC \u2014 frozen in history per D-Immutability; no re-class. Newly\
-    \ visible after T-1897 widened the regex; same class as T-1116/T-1372 silenced\
-    \ earlier."
+  reason: 'T-1897 corpus regression: historical completed task with conformance-dialect
+    [REVIEW] AC — frozen in history per D-Immutability; no re-class. Newly visible
+    after T-1897 widened the regex; same class as T-1116/T-1372 silenced earlier.'
   expires_at: '2027-05-18T10:13:53Z'
   added_by: root
   added_at: '2026-05-18T10:13:53Z'
@@ -201,11 +190,10 @@ overrides:
   task_id: T-1773
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "Integration smoke \u2014 Expected describes running-system observation\
-    \ (stdout, jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than\
-    \ actually running the dispatch; needs live infra (pi/litellm/TermLink). Filed\
-    \ for future follow-up as a separate integration-test Verification path. Origin:\
-    \ T-1897."
+  reason: 'Integration smoke — Expected describes running-system observation (stdout,
+    jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than actually
+    running the dispatch; needs live infra (pi/litellm/TermLink). Filed for future
+    follow-up as a separate integration-test Verification path. Origin: T-1897.'
   expires_at: '2026-08-16T10:14:30Z'
   added_by: root
   added_at: '2026-05-18T10:14:30Z'
@@ -213,11 +201,10 @@ overrides:
   task_id: T-1774
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "Integration smoke \u2014 Expected describes running-system observation\
-    \ (stdout, jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than\
-    \ actually running the dispatch; needs live infra (pi/litellm/TermLink). Filed\
-    \ for future follow-up as a separate integration-test Verification path. Origin:\
-    \ T-1897."
+  reason: 'Integration smoke — Expected describes running-system observation (stdout,
+    jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than actually
+    running the dispatch; needs live infra (pi/litellm/TermLink). Filed for future
+    follow-up as a separate integration-test Verification path. Origin: T-1897.'
   expires_at: '2026-08-16T10:14:30Z'
   added_by: root
   added_at: '2026-05-18T10:14:30Z'
@@ -225,11 +212,10 @@ overrides:
   task_id: T-1775
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "Integration smoke \u2014 Expected describes running-system observation\
-    \ (stdout, jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than\
-    \ actually running the dispatch; needs live infra (pi/litellm/TermLink). Filed\
-    \ for future follow-up as a separate integration-test Verification path. Origin:\
-    \ T-1897."
+  reason: 'Integration smoke — Expected describes running-system observation (stdout,
+    jsonl, outcome). Reviewer static-scan PASS is a weaker substitute than actually
+    running the dispatch; needs live infra (pi/litellm/TermLink). Filed for future
+    follow-up as a separate integration-test Verification path. Origin: T-1897.'
   expires_at: '2026-08-16T10:14:30Z'
   added_by: root
   added_at: '2026-05-18T10:14:30Z'
@@ -237,9 +223,9 @@ overrides:
   task_id: T-1805
   pattern_id: human-ac-mechanical-signal
   ac_index: null
-  reason: "ADR-vs-implementation conformance \u2014 'Names match ADR-0004 intent'\
-    \ needs doc-vs-code judgment to assess 'no surprising additions'. Static reviewer-PASS\
-    \ doesn't read intent. Filed for future follow-up. Origin: T-1897."
+  reason: 'ADR-vs-implementation conformance — ''Names match ADR-0004 intent'' needs
+    doc-vs-code judgment to assess ''no surprising additions''. Static reviewer-PASS
+    doesn''t read intent. Filed for future follow-up. Origin: T-1897.'
   expires_at: '2026-08-16T10:14:30Z'
   added_by: root
   added_at: '2026-05-18T10:14:30Z'
@@ -276,12 +262,11 @@ overrides:
   task_id: T-2139
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "T-2139 ships real integration: tests/unit/review_link_blocking_gate.bats\
-    \ covers emit_review end-to-end (gate \u2192 block \u2192 bypass \u2192 Tier-2\
-    \ log) and is in ## Verification. The four grep-against-evidence-file commands\
-    \ (AC8-AC11) also exercise real captured artifacts under docs/reports/T-2139-evidence/.\
-    \ The heuristic mis-classifies these as 'unit-test only' because pytest is listed\
-    \ first."
+  reason: 'T-2139 ships real integration: tests/unit/review_link_blocking_gate.bats
+    covers emit_review end-to-end (gate → block → bypass → Tier-2 log) and is in ##
+    Verification. The four grep-against-evidence-file commands (AC8-AC11) also exercise
+    real captured artifacts under docs/reports/T-2139-evidence/. The heuristic mis-classifies
+    these as ''unit-test only'' because pytest is listed first.'
   expires_at: '2027-05-31T15:36:37Z'
   added_by: root
   added_at: '2026-05-31T15:36:37Z'
@@ -289,12 +274,12 @@ overrides:
   task_id: T-1897
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "FP: T-1897's deliverable IS the detector (lib/reviewer/static_scan.py +\
-    \ policy/anti-patterns.yaml). The 'integration' is static analysis of task corpora\
-    \ \u2014 verified by python+bats unit tests against synthetic fixtures and a real\
-    \ corpus regression run (see AC text). No external system exists to integration-test\
-    \ against. The mock-only-integration heuristic mis-categorises detector-development\
-    \ tasks where the unit-test IS the integration test."
+  reason: 'FP: T-1897''s deliverable IS the detector (lib/reviewer/static_scan.py
+    + policy/anti-patterns.yaml). The ''integration'' is static analysis of task corpora
+    — verified by python+bats unit tests against synthetic fixtures and a real corpus
+    regression run (see AC text). No external system exists to integration-test against.
+    The mock-only-integration heuristic mis-categorises detector-development tasks
+    where the unit-test IS the integration test.'
   expires_at: '2026-08-31T15:22:16Z'
   added_by: root
   added_at: '2026-06-02T15:22:16Z'
@@ -302,13 +287,13 @@ overrides:
   task_id: T-2072
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "FP: T-2072 ships 'fw pickup promote-deferred' verb in lib/pickup.sh. AC\
-    \ (d) covers an integration scenario explicitly via 'fw pickup process auto-fires\
-    \ promote then processes promoted envelope in the same tick' \u2014 the bats test\
-    \ invokes the real fw pickup CLI in subshell, not a mock. The unit/ directory\
-    \ location is convention, not coverage type. No external system (HTTP API, DB,\
-    \ network) exists to integration-test against \u2014 the pickup pipeline IS the\
-    \ SUT and bats exercises it end-to-end via the CLI."
+  reason: 'FP: T-2072 ships ''fw pickup promote-deferred'' verb in lib/pickup.sh.
+    AC (d) covers an integration scenario explicitly via ''fw pickup process auto-fires
+    promote then processes promoted envelope in the same tick'' — the bats test invokes
+    the real fw pickup CLI in subshell, not a mock. The unit/ directory location is
+    convention, not coverage type. No external system (HTTP API, DB, network) exists
+    to integration-test against — the pickup pipeline IS the SUT and bats exercises
+    it end-to-end via the CLI.'
   expires_at: '2026-08-31T15:22:27Z'
   added_by: root
   added_at: '2026-06-02T15:22:27Z'
@@ -316,13 +301,13 @@ overrides:
   task_id: T-123
   pattern_id: tautology
   ac_index: null
-  reason: "Intentional retroactive tautology: T-123's deliverable was an end-to-end\
-    \ lifecycle shakedown on a throwaway project that was TORN DOWN post-verification\
-    \ (see ## Verification comment: 'Project torn down \u2014 verification commands\
-    \ ran during shakedown, not applicable post-teardown'). The 7 ACs were verified\
-    \ live during the shakedown; the post-teardown Verification block is necessarily\
-    \ a no-op because the artifacts no longer exist. 'echo shakedown complete' is\
-    \ the agent's placeholder, not a missed assertion."
+  reason: 'Intentional retroactive tautology: T-123''s deliverable was an end-to-end
+    lifecycle shakedown on a throwaway project that was TORN DOWN post-verification
+    (see ## Verification comment: ''Project torn down — verification commands ran
+    during shakedown, not applicable post-teardown''). The 7 ACs were verified live
+    during the shakedown; the post-teardown Verification block is necessarily a no-op
+    because the artifacts no longer exist. ''echo shakedown complete'' is the agent''s
+    placeholder, not a missed assertion.'
   expires_at: '2026-08-31T17:08:03Z'
   added_by: root
   added_at: '2026-06-02T17:08:03Z'
@@ -344,15 +329,15 @@ overrides:
   task_id: T-876
   pattern_id: tautology
   ac_index: null
-  reason: "Intentional retroactive tautology: T-876 upgraded 11 consumer projects\
-    \ from v1.4.546 to v1.4.553. The original verification (zero version-mismatch\
-    \ warnings) became stale almost immediately \u2014 by 2026-04-05 the framework\
-    \ had moved to v1.4.576, and a v1.4.553-specific check would now fail. The ##\
-    \ Verification comment explicitly documents: 'Original verification obsolete \u2014\
-    \ T-881 superseded (upgraded to v1.4.559)'. 'true' is the agent's placeholder\
-    \ once the version-target check became meaningless. The work shipped; the verification's\
-    \ expiration is documented in-place. Future similar version-bump tasks should\
-    \ be auto-flagged for re-verification, not retroactively edited."
+  reason: 'Intentional retroactive tautology: T-876 upgraded 11 consumer projects
+    from v1.4.546 to v1.4.553. The original verification (zero version-mismatch warnings)
+    became stale almost immediately — by 2026-04-05 the framework had moved to v1.4.576,
+    and a v1.4.553-specific check would now fail. The ## Verification comment explicitly
+    documents: ''Original verification obsolete — T-881 superseded (upgraded to v1.4.559)''.
+    ''true'' is the agent''s placeholder once the version-target check became meaningless.
+    The work shipped; the verification''s expiration is documented in-place. Future
+    similar version-bump tasks should be auto-flagged for re-verification, not retroactively
+    edited.'
   expires_at: '2026-08-31T17:08:26Z'
   added_by: root
   added_at: '2026-06-02T17:08:26Z'
@@ -360,17 +345,17 @@ overrides:
   task_id: T-1594
   pattern_id: skip-as-pass
   ac_index: null
-  reason: "FP: 'bin/fw mirror sync --dry-run --quiet' is the canonical safe-smoke\
-    \ pattern for commands with side effects. The non-dry-run form 'bin/fw mirror\
-    \ sync' would actually push to remote \u2014 the --dry-run flag exists precisely\
-    \ to verify the command parses and reaches the dry-run code path without firing\
-    \ the side effect. --quiet suppresses informational output for cleaner CI logs.\
-    \ This is exactly the 'commands with side effects' class T-2174 named (AC body:\
-    \ 'the genuine safe smoke pattern'). T-2177's detector tightening (quoted-context\
-    \ + same-line-assertion) preserves this as FAIL because the line has no output\
-    \ assertion; that preservation is correct in general but the deliberate-side-effect-avoidance\
-    \ is the rationale here. The mirror sync work shipped end-to-end; the verification\
-    \ gate's job here is to confirm the CLI surface exists."
+  reason: 'FP: ''bin/fw mirror sync --dry-run --quiet'' is the canonical safe-smoke
+    pattern for commands with side effects. The non-dry-run form ''bin/fw mirror sync''
+    would actually push to remote — the --dry-run flag exists precisely to verify
+    the command parses and reaches the dry-run code path without firing the side effect.
+    --quiet suppresses informational output for cleaner CI logs. This is exactly the
+    ''commands with side effects'' class T-2174 named (AC body: ''the genuine safe
+    smoke pattern''). T-2177''s detector tightening (quoted-context + same-line-assertion)
+    preserves this as FAIL because the line has no output assertion; that preservation
+    is correct in general but the deliberate-side-effect-avoidance is the rationale
+    here. The mirror sync work shipped end-to-end; the verification gate''s job here
+    is to confirm the CLI surface exists.'
   expires_at: '2026-08-31T17:28:37Z'
   added_by: root
   added_at: '2026-06-02T17:28:37Z'
@@ -378,10 +363,10 @@ overrides:
   task_id: T-774
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "soft-warn-tool FP: shellcheck is advisory (style/lint), not a gate \u2014\
-    \ failures must not block work-completed when other verification lines (bash -n\
-    \ + bats tests in same block) are the actual correctness gates. The || true is\
-    \ the deliberate semantics for soft-warn tools, not error-hiding. Cluster: soft-warn-tool."
+  reason: 'soft-warn-tool FP: shellcheck is advisory (style/lint), not a gate — failures
+    must not block work-completed when other verification lines (bash -n + bats tests
+    in same block) are the actual correctness gates. The || true is the deliberate
+    semantics for soft-warn tools, not error-hiding. Cluster: soft-warn-tool.'
   expires_at: '2026-08-31T18:56:48Z'
   added_by: root
   added_at: '2026-06-02T18:56:48Z'
@@ -389,11 +374,10 @@ overrides:
   task_id: T-1356
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "soft-warn-doctor FP: bin/fw doctor emits WARN on benign drift (mirror lag,\
-    \ optional toolchain not installed, etc) that should NOT block work-completed.\
-    \ The || true on a defensive doctor-call is the deliberate soft-warn semantics\
-    \ \u2014 the actual AC gates live elsewhere (build/lint/test commands). Cluster:\
-    \ soft-warn-doctor."
+  reason: 'soft-warn-doctor FP: bin/fw doctor emits WARN on benign drift (mirror lag,
+    optional toolchain not installed, etc) that should NOT block work-completed. The
+    || true on a defensive doctor-call is the deliberate soft-warn semantics — the
+    actual AC gates live elsewhere (build/lint/test commands). Cluster: soft-warn-doctor.'
   expires_at: '2026-08-31T18:57:01Z'
   added_by: root
   added_at: '2026-06-02T18:57:01Z'
@@ -411,10 +395,10 @@ overrides:
   task_id: T-1378
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "non-bash-content FP: bash -n on lib/templates/claude-project.md treats\
-    \ a markdown TEMPLATE as bash (it isn't \u2014 it's documentation content possibly\
-    \ containing prose that resembles shell). The || true prevents bash -n's syntax-error\
-    \ exit on non-bash file from blocking the gate. Cluster: non-bash-content / template-shape-check."
+  reason: 'non-bash-content FP: bash -n on lib/templates/claude-project.md treats
+    a markdown TEMPLATE as bash (it isn''t — it''s documentation content possibly
+    containing prose that resembles shell). The || true prevents bash -n''s syntax-error
+    exit on non-bash file from blocking the gate. Cluster: non-bash-content / template-shape-check.'
   expires_at: '2026-08-31T18:57:18Z'
   added_by: root
   added_at: '2026-06-02T18:57:18Z'
@@ -436,9 +420,9 @@ overrides:
   task_id: T-1360
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "soft-warn-doctor FP: bin/fw doctor >/dev/null 2>&1 || true is the soft-warn\
-    \ semantics \u2014 doctor emits WARN on benign drift that should not block work-completed.\
-    \ Other verification lines carry the real gates. Cluster: soft-warn-doctor."
+  reason: 'soft-warn-doctor FP: bin/fw doctor >/dev/null 2>&1 || true is the soft-warn
+    semantics — doctor emits WARN on benign drift that should not block work-completed.
+    Other verification lines carry the real gates. Cluster: soft-warn-doctor.'
   expires_at: '2026-08-31T18:57:35Z'
   added_by: root
   added_at: '2026-06-02T18:57:35Z'
@@ -446,12 +430,12 @@ overrides:
   task_id: T-1360
   pattern_id: AC-verify-mismatch
   ac_index: null
-  reason: "historical-AC FP: completed task whose AC text mentions hook-crashes.log\
-    \ as the audit surface for the fix (rate-limiting hook misses). Verification block\
-    \ did not explicitly grep the log file \u2014 the AC was the human-readable contract\
-    \ describing the change; the actual hook-crash logging behavior was the deliverable.\
-    \ Retroactive re-wording on a months-old completed task adds no value. Cluster:\
-    \ historical-completed-task."
+  reason: 'historical-AC FP: completed task whose AC text mentions hook-crashes.log
+    as the audit surface for the fix (rate-limiting hook misses). Verification block
+    did not explicitly grep the log file — the AC was the human-readable contract
+    describing the change; the actual hook-crash logging behavior was the deliverable.
+    Retroactive re-wording on a months-old completed task adds no value. Cluster:
+    historical-completed-task.'
   expires_at: '2026-08-31T18:57:36Z'
   added_by: root
   added_at: '2026-06-02T18:57:36Z'
@@ -459,11 +443,11 @@ overrides:
   task_id: T-1694
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "soft-warn-doctor FP: conditional doctor probe (test -d X && doctor ...\
-    \ || true) \u2014 the && gates the doctor call to only fire if the workflows dir\
-    \ exists, and the || true prevents doctor's soft-WARN exit from blocking the gate.\
-    \ The intent is presence-of-feature, not strict-pass-on-doctor. Cluster: soft-warn-doctor\
-    \ / conditional-probe."
+  reason: 'soft-warn-doctor FP: conditional doctor probe (test -d X && doctor ...
+    || true) — the && gates the doctor call to only fire if the workflows dir exists,
+    and the || true prevents doctor''s soft-WARN exit from blocking the gate. The
+    intent is presence-of-feature, not strict-pass-on-doctor. Cluster: soft-warn-doctor
+    / conditional-probe.'
   expires_at: '2026-08-31T18:57:36Z'
   added_by: root
   added_at: '2026-06-02T18:57:36Z'
@@ -471,11 +455,11 @@ overrides:
   task_id: T-1694
   pattern_id: l387-sigpipe-risk
   ac_index: null
-  reason: "same line as the swallowed-errors finding above () \u2014 the || true at\
-    \ end-of-line catches both the SIGPIPE-141 exit and the genuine grep-no-match\
-    \ exit equally. The L-387 risk is structurally neutralised by the || true, AND\
-    \ the doctor-probe intent makes match-or-no-match equally acceptable. Cluster:\
-    \ soft-warn-doctor / l387-neutralised-by-trailing-or-true."
+  reason: 'same line as the swallowed-errors finding above () — the || true at end-of-line
+    catches both the SIGPIPE-141 exit and the genuine grep-no-match exit equally.
+    The L-387 risk is structurally neutralised by the || true, AND the doctor-probe
+    intent makes match-or-no-match equally acceptable. Cluster: soft-warn-doctor /
+    l387-neutralised-by-trailing-or-true.'
   expires_at: '2026-08-31T18:57:36Z'
   added_by: root
   added_at: '2026-06-02T18:57:36Z'
@@ -483,12 +467,12 @@ overrides:
   task_id: T-229
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "stderr-swallow-block-test FP: 2>/dev/null is used to suppress hook STDERR\
-    \ while the line ENDS with 'test $? -eq 2' \u2014 that test IS the deliberate\
-    \ assertion (Tier-0 hook MUST exit with code 2 to indicate blocking). The hook's\
-    \ stderr is its prose message to the agent; suppressing it for the test does not\
-    \ swallow the assertion. The exit-code test is the gate, not a hidden failure.\
-    \ Cluster: stderr-swallow-block-test / hook-block-assertion."
+  reason: 'stderr-swallow-block-test FP: 2>/dev/null is used to suppress hook STDERR
+    while the line ENDS with ''test $? -eq 2'' — that test IS the deliberate assertion
+    (Tier-0 hook MUST exit with code 2 to indicate blocking). The hook''s stderr is
+    its prose message to the agent; suppressing it for the test does not swallow the
+    assertion. The exit-code test is the gate, not a hidden failure. Cluster: stderr-swallow-block-test
+    / hook-block-assertion.'
   expires_at: '2026-08-31T18:57:51Z'
   added_by: root
   added_at: '2026-06-02T18:57:51Z'
@@ -496,13 +480,13 @@ overrides:
   task_id: T-229
   pattern_id: AC-verify-mismatch
   ac_index: null
-  reason: "historical-AC FP: AC #2 cites .claude/settings.json as the protected surface\
-    \ for the B-005 block contract. Verification block uses the more direct test of\
-    \ the hook script invocation (echoing a tool_input + asserting exit 2) \u2014\
-    \ this IS the structural test of the AC, expressed as a behavioral assertion rather\
-    \ than a file-exists check on settings.json. Mismatch is between AC prose vocabulary\
-    \ and verification command shape, not a real gap. Cluster: historical-completed-task\
-    \ / behavioral-vs-structural-verification."
+  reason: 'historical-AC FP: AC #2 cites .claude/settings.json as the protected surface
+    for the B-005 block contract. Verification block uses the more direct test of
+    the hook script invocation (echoing a tool_input + asserting exit 2) — this IS
+    the structural test of the AC, expressed as a behavioral assertion rather than
+    a file-exists check on settings.json. Mismatch is between AC prose vocabulary
+    and verification command shape, not a real gap. Cluster: historical-completed-task
+    / behavioral-vs-structural-verification.'
   expires_at: '2026-08-31T18:57:52Z'
   added_by: root
   added_at: '2026-06-02T18:57:52Z'
@@ -510,13 +494,13 @@ overrides:
   task_id: T-303
   pattern_id: skip-as-pass
   ac_index: null
-  reason: "dry-run-as-pass FP: fw preflight --check-only is the literal subject of\
-    \ the AC \u2014 preflight in check-only mode is the deliverable being verified.\
-    \ The AC explicitly tests that running preflight in check-only mode (no-op execution\
-    \ mode) returns success when no real action is taken. This is the inverse of a\
-    \ normal skip-as-pass FP (where --dry-run masks no real assertion happens) \u2014\
-    \ here the dry-run mode itself IS the AC's subject of verification. Cluster: dry-run-as-assertion-subject\
-    \ / preflight-mode-test."
+  reason: 'dry-run-as-pass FP: fw preflight --check-only is the literal subject of
+    the AC — preflight in check-only mode is the deliverable being verified. The AC
+    explicitly tests that running preflight in check-only mode (no-op execution mode)
+    returns success when no real action is taken. This is the inverse of a normal
+    skip-as-pass FP (where --dry-run masks no real assertion happens) — here the dry-run
+    mode itself IS the AC''s subject of verification. Cluster: dry-run-as-assertion-subject
+    / preflight-mode-test.'
   expires_at: '2026-08-31T18:58:01Z'
   added_by: root
   added_at: '2026-06-02T18:58:01Z'
@@ -524,13 +508,13 @@ overrides:
   task_id: T-341
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "assert-absent FP: T-341 verification combines two absence-assertions for\
-    \ content review \u2014 (1) python generator-exit pattern asserting 'no Post Body\
-    \ line found in any deep-dive 01-07' and (2) grep -rL listing files-without-pattern.\
-    \ The redirect+|| true on both lines reflects the assert-absent idiom \u2014 exit\
-    \ 0 when the assertion holds (no matches found), gracefully when the file glob\
-    \ expands to nothing. The actual content-quality gate lives in the Human ACs (rubber-stamp\
-    \ tone review). Cluster: assert-absent / content-review-historical."
+  reason: 'assert-absent FP: T-341 verification combines two absence-assertions for
+    content review — (1) python generator-exit pattern asserting ''no Post Body line
+    found in any deep-dive 01-07'' and (2) grep -rL listing files-without-pattern.
+    The redirect+|| true on both lines reflects the assert-absent idiom — exit 0 when
+    the assertion holds (no matches found), gracefully when the file glob expands
+    to nothing. The actual content-quality gate lives in the Human ACs (rubber-stamp
+    tone review). Cluster: assert-absent / content-review-historical.'
   expires_at: '2026-08-31T18:58:15Z'
   added_by: root
   added_at: '2026-06-02T18:58:15Z'
@@ -549,12 +533,12 @@ overrides:
   task_id: T-454
   pattern_id: l387-sigpipe-risk
   ac_index: null
-  reason: "intent-preserved-l387 FP: two double-pipe patterns \u2014 '...config |\
-    \ grep -c \"Repo:\" | grep -q \"[1-9]\"' (count-then-match-ge-1) and '...report\
-    \ --dry-run | grep -q \"DRY RUN\"'. The SIGPIPE risk is real in shape, but if\
-    \ SIGPIPE-141 fires it means the upstream wrote AT LEAST as much as grep needed\
-    \ \u2014 i.e. the match succeeded. The L-387 risk is structurally a false-negative\
-    \ on success, never a false-positive. Cluster: intent-preserved-l387 / sigpipe-on-success-only."
+  reason: 'intent-preserved-l387 FP: two double-pipe patterns — ''...config | grep
+    -c "Repo:" | grep -q "[1-9]"'' (count-then-match-ge-1) and ''...report --dry-run
+    | grep -q "DRY RUN"''. The SIGPIPE risk is real in shape, but if SIGPIPE-141 fires
+    it means the upstream wrote AT LEAST as much as grep needed — i.e. the match succeeded.
+    The L-387 risk is structurally a false-negative on success, never a false-positive.
+    Cluster: intent-preserved-l387 / sigpipe-on-success-only.'
   expires_at: '2026-08-31T18:58:15Z'
   added_by: root
   added_at: '2026-06-02T18:58:15Z'
@@ -562,13 +546,13 @@ overrides:
   task_id: T-415
   pattern_id: swallowed-errors
   ac_index: null
-  reason: "intent-preserved-l387 FP: 'fw task update T-411 --status started-work 2>&1\
-    \ | grep -q sovereignty\\|human || true' \u2014 the AC asserts a sovereignty/human\
-    \ prose appears in the gate's STDERR when the agent attempts started-work on a\
-    \ human-owned task. The || true is paired with the grep-q pattern: SIGPIPE-141\
-    \ or grep-no-match both exit non-zero, and the || true forgives both. The intent\
-    \ (prose-in-stderr after a structural block) holds whether or not the pipe wedges.\
-    \ Cluster: intent-preserved-l387 / sigpipe-neutralised-by-or-true."
+  reason: 'intent-preserved-l387 FP: ''fw task update T-411 --status started-work
+    2>&1 | grep -q sovereignty\|human || true'' — the AC asserts a sovereignty/human
+    prose appears in the gate''s STDERR when the agent attempts started-work on a
+    human-owned task. The || true is paired with the grep-q pattern: SIGPIPE-141 or
+    grep-no-match both exit non-zero, and the || true forgives both. The intent (prose-in-stderr
+    after a structural block) holds whether or not the pipe wedges. Cluster: intent-preserved-l387
+    / sigpipe-neutralised-by-or-true.'
   expires_at: '2026-08-31T18:58:26Z'
   added_by: root
   added_at: '2026-06-02T18:58:26Z'
@@ -576,9 +560,9 @@ overrides:
   task_id: T-415
   pattern_id: l387-sigpipe-risk
   ac_index: null
-  reason: "same line as the swallowed-errors finding above \u2014 both detectors fire\
-    \ on the same shape (cmd | grep -q PAT || true). The L-387 risk is structurally\
-    \ neutralised by the trailing || true. Cluster: intent-preserved-l387 / shared-line-finding."
+  reason: 'same line as the swallowed-errors finding above — both detectors fire on
+    the same shape (cmd | grep -q PAT || true). The L-387 risk is structurally neutralised
+    by the trailing || true. Cluster: intent-preserved-l387 / shared-line-finding.'
   expires_at: '2026-08-31T18:58:26Z'
   added_by: root
   added_at: '2026-06-02T18:58:26Z'
@@ -586,9 +570,9 @@ overrides:
   task_id: T-2193
   pattern_id: skip-as-pass
   ac_index: null
-  reason: "T-2174 cached-verdict blind spot: --dry-run + assertion pattern over-matched.\
-    \ Verification re-runs migration in dry-run AFTER apply to assert idempotency\
-    \ \u2014 correct migration-verification shape. T-2177 detector tightening filed."
+  reason: 'T-2174 cached-verdict blind spot: --dry-run + assertion pattern over-matched.
+    Verification re-runs migration in dry-run AFTER apply to assert idempotency —
+    correct migration-verification shape. T-2177 detector tightening filed.'
   expires_at: '2026-08-31T23:05:18Z'
   added_by: root
   added_at: '2026-06-02T23:05:18Z'
@@ -596,11 +580,11 @@ overrides:
   task_id: T-2207
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "False positive: tests/unit/create_task_inception_recommendation_gate.bats\
-    \ spawns real agents/task-create/create-task.sh end-to-end, inspects real file\
-    \ contents, verifies real bypass-log entries. No mocking \u2014 detector is heuristic\
-    \ and over-matches on AC wording 'covers: X passes' which it reads as mock surface.\
-    \ Same FP class as T-2174 cluster (skip-as-pass, swallowed-errors)."
+  reason: 'False positive: tests/unit/create_task_inception_recommendation_gate.bats
+    spawns real agents/task-create/create-task.sh end-to-end, inspects real file contents,
+    verifies real bypass-log entries. No mocking — detector is heuristic and over-matches
+    on AC wording ''covers: X passes'' which it reads as mock surface. Same FP class
+    as T-2174 cluster (skip-as-pass, swallowed-errors).'
   expires_at: '2026-09-03T09:35:53Z'
   added_by: root
   added_at: '2026-06-05T09:35:53Z'
@@ -608,12 +592,12 @@ overrides:
   task_id: T-2266
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "T-2266 bats test (t2266_self_vendor_agents.bats) sources real lib/upgrade.sh\
-    \ and exercises real _self_vendor_agents helper in tests t3/t4/t6/t7 (synthetic\
-    \ FRAMEWORK_ROOT to isolate side-effects). Detector heuristic flags any 'bats'\
-    \ command as mock-only \u2014 this is the canonical FP for self-vendor bats suites\
-    \ (same as T-2095/T-2241/T-2263/T-2264 which got Overall PASS by chance of detector\
-    \ ordering). Override scoped to T-2266 only."
+  reason: T-2266 bats test (t2266_self_vendor_agents.bats) sources real lib/upgrade.sh
+    and exercises real _self_vendor_agents helper in tests t3/t4/t6/t7 (synthetic
+    FRAMEWORK_ROOT to isolate side-effects). Detector heuristic flags any 'bats' command
+    as mock-only — this is the canonical FP for self-vendor bats suites (same as T-2095/T-2241/T-2263/T-2264
+    which got Overall PASS by chance of detector ordering). Override scoped to T-2266
+    only.
   expires_at: '2026-09-06T18:28:59Z'
   added_by: root
   added_at: '2026-06-08T18:28:59Z'
@@ -621,11 +605,11 @@ overrides:
   task_id: T-2267
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "T-2267 bats test (t2267_self_vendor_web.bats) sources real lib/upgrade.sh\
-    \ and exercises real _self_vendor_web helper in tests t3/t4/t6/t7 (synthetic FRAMEWORK_ROOT\
-    \ to isolate side-effects). Detector heuristic flags any 'bats' command as mock-only\
-    \ \u2014 canonical FP for self-vendor bats suites (same class as T-2266 OV-3fc5133e,\
-    \ T-2095/T-2241/T-2263/T-2264). Override scoped to T-2267 only."
+  reason: T-2267 bats test (t2267_self_vendor_web.bats) sources real lib/upgrade.sh
+    and exercises real _self_vendor_web helper in tests t3/t4/t6/t7 (synthetic FRAMEWORK_ROOT
+    to isolate side-effects). Detector heuristic flags any 'bats' command as mock-only
+    — canonical FP for self-vendor bats suites (same class as T-2266 OV-3fc5133e,
+    T-2095/T-2241/T-2263/T-2264). Override scoped to T-2267 only.
   expires_at: '2026-09-06T19:04:39Z'
   added_by: root
   added_at: '2026-06-08T19:04:39Z'
@@ -633,12 +617,12 @@ overrides:
   task_id: T-2265
   pattern_id: AC-verify-mismatch
   ac_index: 2
-  reason: "AC text cites tool-set.yaml path as part of the WHY rationale, not a verifiable\
-    \ assertion. Structural check is via bats t1 (manifest.py emit reads tool-set.yaml\
-    \ \u2014 fails if missing) + Verification block step #1 (bin/fw mcp emit-manifest\
-    \ exercises the same load_tool_set path). Sibling FP class to mock-only-integration\
-    \ overrides in T-2266/T-2267 + T-2095/T-2241/T-2263/T-2264 \u2014 heuristic over-matches\
-    \ on path-in-AC-text without parsing whether the test side already covers it."
+  reason: 'AC text cites tool-set.yaml path as part of the WHY rationale, not a verifiable
+    assertion. Structural check is via bats t1 (manifest.py emit reads tool-set.yaml
+    — fails if missing) + Verification block step #1 (bin/fw mcp emit-manifest exercises
+    the same load_tool_set path). Sibling FP class to mock-only-integration overrides
+    in T-2266/T-2267 + T-2095/T-2241/T-2263/T-2264 — heuristic over-matches on path-in-AC-text
+    without parsing whether the test side already covers it.'
   expires_at: '2026-09-06T20:05:56Z'
   added_by: root
   added_at: '2026-06-08T20:05:56Z'
@@ -646,9 +630,9 @@ overrides:
   task_id: T-2272
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "FP class: bats test is real integration against bin/fw, file contents,\
-    \ JSON shape \u2014 not mock-only. Heuristic triggers on 'bats' substring near\
-    \ AC vs Verification."
+  reason: 'FP class: bats test is real integration against bin/fw, file contents,
+    JSON shape — not mock-only. Heuristic triggers on ''bats'' substring near AC vs
+    Verification.'
   expires_at: '2026-09-06T22:20:25Z'
   added_by: root
   added_at: '2026-06-08T22:20:25Z'
@@ -656,10 +640,10 @@ overrides:
   task_id: T-2274
   pattern_id: AC-verify-mismatch
   ac_index: 6
-  reason: "AC text references install.sh and lib/init.sh as the sources verified during\
-    \ research (dossier \xA71E); the close-time Verification block correctly checks\
-    \ the post-merge README.md state, not the source files. Same FP class as OV-822b8648\
-    \ (T-2265) and the canonical mock-only-integration override."
+  reason: AC text references install.sh and lib/init.sh as the sources verified during
+    research (dossier §1E); the close-time Verification block correctly checks the
+    post-merge README.md state, not the source files. Same FP class as OV-822b8648
+    (T-2265) and the canonical mock-only-integration override.
   expires_at: '2026-09-07T07:52:13Z'
   added_by: root
   added_at: '2026-06-09T07:52:13Z'
@@ -667,12 +651,12 @@ overrides:
   task_id: T-2268
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "FP: AC#1 verification is an actual edit to .mcp.json + grep-in-file check.\
-    \ AC text references the framework_mcp_server.py path, but the path is in the\
-    \ AC's English description ('pointing at agents/mcp/framework_mcp_server.py'),\
-    \ not a Verification command literal \u2014 Verification at line 67 uses 'grep\
-    \ -q framework_mcp_server.py .mcp.json' which is the correct grep target. Heuristic\
-    \ mis-fires on inline-quoted paths in AC body."
+  reason: 'FP: AC#1 verification is an actual edit to .mcp.json + grep-in-file check.
+    AC text references the framework_mcp_server.py path, but the path is in the AC''s
+    English description (''pointing at agents/mcp/framework_mcp_server.py''), not
+    a Verification command literal — Verification at line 67 uses ''grep -q framework_mcp_server.py
+    .mcp.json'' which is the correct grep target. Heuristic mis-fires on inline-quoted
+    paths in AC body.'
   expires_at: '2027-06-09T09:38:07Z'
   added_by: root
   added_at: '2026-06-09T09:38:07Z'
@@ -722,8 +706,8 @@ overrides:
   task_id: T-2289
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "FP: AC body references lib/paths.sh as the implementation path \u2014 same\
-    \ class as T-2284/T-2285/T-2288"
+  reason: 'FP: AC body references lib/paths.sh as the implementation path — same class
+    as T-2284/T-2285/T-2288'
   expires_at: '2026-09-07T15:05:25Z'
   added_by: root
   added_at: '2026-06-09T15:05:25Z'
@@ -731,8 +715,8 @@ overrides:
   task_id: T-2289
   pattern_id: AC-verify-mismatch
   ac_index: 2
-  reason: "FP: AC body references lib/paths.sh as the implementation path \u2014 same\
-    \ class as T-2284/T-2285/T-2288"
+  reason: 'FP: AC body references lib/paths.sh as the implementation path — same class
+    as T-2284/T-2285/T-2288'
   expires_at: '2026-09-07T15:05:25Z'
   added_by: root
   added_at: '2026-06-09T15:05:25Z'
@@ -740,8 +724,8 @@ overrides:
   task_id: T-2289
   pattern_id: AC-verify-mismatch
   ac_index: 6
-  reason: "FP: AC body references tests/unit/t2289_paths_env_leak.bats as the new\
-    \ test path \u2014 same class as T-2284/T-2285/T-2288"
+  reason: 'FP: AC body references tests/unit/t2289_paths_env_leak.bats as the new
+    test path — same class as T-2284/T-2285/T-2288'
   expires_at: '2026-09-07T15:05:25Z'
   added_by: root
   added_at: '2026-06-09T15:05:25Z'
@@ -749,8 +733,8 @@ overrides:
   task_id: T-2291
   pattern_id: AC-verify-mismatch
   ac_index: 2
-  reason: "FP: AC#2 quotes the path policy/capability-overlay/tool-set.yaml as the\
-    \ trigger string for the new CLAUDE.md rule \u2014 same FP class as T-2284/T-2285/T-2288/T-2289/T-2290"
+  reason: 'FP: AC#2 quotes the path policy/capability-overlay/tool-set.yaml as the
+    trigger string for the new CLAUDE.md rule — same FP class as T-2284/T-2285/T-2288/T-2289/T-2290'
   expires_at: '2026-09-07T16:54:23Z'
   added_by: root
   added_at: '2026-06-09T16:54:23Z'
@@ -758,11 +742,10 @@ overrides:
   task_id: T-2292
   pattern_id: l387-sigpipe-risk
   ac_index: null
-  reason: "FP: Verification lines 48-49 use the canonical L-387 capture-first single-pipe\
-    \ pattern (rev=$(cmd); echo \"$rev\" | grep -q PAT) recommended by memory feedback_reviewer_markdown_regex.md.\
-    \ Detector heuristic flags the negation form '! echo $rev | grep ...' but the\
-    \ capture has already cut the SIGPIPE risk \u2014 the echo is a small in-memory\
-    \ string."
+  reason: 'FP: Verification lines 48-49 use the canonical L-387 capture-first single-pipe
+    pattern (rev=$(cmd); echo "$rev" | grep -q PAT) recommended by memory feedback_reviewer_markdown_regex.md.
+    Detector heuristic flags the negation form ''! echo $rev | grep ...'' but the
+    capture has already cut the SIGPIPE risk — the echo is a small in-memory string.'
   expires_at: '2026-09-07T19:00:45Z'
   added_by: root
   added_at: '2026-06-09T19:00:45Z'
@@ -789,11 +772,11 @@ overrides:
   task_id: T-2294
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "FP: same class as OV-9b1912ad/OV-3c8b2ee8/OV-3fc5133e. Pre-push hooks cannot\
-    \ be tested via a real git push without spawning an actual remote; the bats test\
-    \ uses a stub fw + temp-repo pattern (sibling to t2240_pre_push_self_vendor_gate.bats\
-    \ \u2014 the canonical pre-push test shape). Test exercises hook end-to-end with\
-    \ real bash + real .git/hooks/pre-push."
+  reason: 'FP: same class as OV-9b1912ad/OV-3c8b2ee8/OV-3fc5133e. Pre-push hooks cannot
+    be tested via a real git push without spawning an actual remote; the bats test
+    uses a stub fw + temp-repo pattern (sibling to t2240_pre_push_self_vendor_gate.bats
+    — the canonical pre-push test shape). Test exercises hook end-to-end with real
+    bash + real .git/hooks/pre-push.'
   expires_at: '2026-09-07T19:26:31Z'
   added_by: root
   added_at: '2026-06-09T19:26:31Z'
@@ -801,12 +784,12 @@ overrides:
   task_id: T-2296
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "T-2296 bats stubs bin/fw mcp check exit codes to drive the audit block's\
-    \ 3 branches (clean/drift/absent) \u2014 canonical pattern for testing exit-code-driven\
-    \ branches without running full audit. Sibling FP class to T-2294 OV-77577c62\
-    \ (pre-push gate stubs fw mcp check the same way). Real-world validation comes\
-    \ from the t2293 verb test (the verb's own exit codes are pinned by integration\
-    \ test) plus the live audit run verification step."
+  reason: T-2296 bats stubs bin/fw mcp check exit codes to drive the audit block's
+    3 branches (clean/drift/absent) — canonical pattern for testing exit-code-driven
+    branches without running full audit. Sibling FP class to T-2294 OV-77577c62 (pre-push
+    gate stubs fw mcp check the same way). Real-world validation comes from the t2293
+    verb test (the verb's own exit codes are pinned by integration test) plus the
+    live audit run verification step.
   expires_at: '2026-09-07T20:02:55Z'
   added_by: root
   added_at: '2026-06-09T20:02:55Z'
@@ -824,10 +807,10 @@ overrides:
   task_id: T-2309
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "AC text mentions web/app.py:forbidden as the legitimate target of the fix;\
-    \ the Verification block runs pytest against tests/integration/test_csrf_error_template.py\
-    \ which exercises the handler. Detector cannot trace pytest\u2192web/app.py coverage.\
-    \ Sibling of OV-822b8648 (T-2265 AC-verify-mismatch FP class)."
+  reason: AC text mentions web/app.py:forbidden as the legitimate target of the fix;
+    the Verification block runs pytest against tests/integration/test_csrf_error_template.py
+    which exercises the handler. Detector cannot trace pytest→web/app.py coverage.
+    Sibling of OV-822b8648 (T-2265 AC-verify-mismatch FP class).
   expires_at: '2026-09-08T11:30:30Z'
   added_by: root
   added_at: '2026-06-10T11:30:30Z'
@@ -835,10 +818,9 @@ overrides:
   task_id: T-2325
   pattern_id: cross-project-blast
   ac_index: null
-  reason: "Heuristic FP \u2014 task body discusses arc-011's cross-repo binding situation\
-    \ (AEF\u2194TermLink substrate); no actual cross-project change made. Pure docs\
-    \ artifact in this repo only. Sibling FP class to other doc-discusses-cross-repo\
-    \ cases."
+  reason: Heuristic FP — task body discusses arc-011's cross-repo binding situation
+    (AEF↔TermLink substrate); no actual cross-project change made. Pure docs artifact
+    in this repo only. Sibling FP class to other doc-discusses-cross-repo cases.
   expires_at: '2026-09-09T06:44:48Z'
   added_by: root
   added_at: '2026-06-11T06:44:48Z'
@@ -846,11 +828,11 @@ overrides:
   task_id: T-2326
   pattern_id: AC-verify-mismatch
   ac_index: 5
-  reason: "Heuristic FP \u2014 parser parsed 'exit/dispatches.jsonl' from AC #5 parenthetical\
-    \ metadata as a file path needing file-exists verification. The AC is satisfied\
-    \ by substring grep predicates in the Verification block (Exit|headline_mechanic|dispatches.jsonl)\
-    \ which match 32 times in the artifact. No file at 'exit/dispatches.jsonl' is\
-    \ referenced; the slash is incidental punctuation."
+  reason: 'Heuristic FP — parser parsed ''exit/dispatches.jsonl'' from AC #5 parenthetical
+    metadata as a file path needing file-exists verification. The AC is satisfied
+    by substring grep predicates in the Verification block (Exit|headline_mechanic|dispatches.jsonl)
+    which match 32 times in the artifact. No file at ''exit/dispatches.jsonl'' is
+    referenced; the slash is incidental punctuation.'
   expires_at: '2026-09-09T07:03:50Z'
   added_by: root
   added_at: '2026-06-11T07:03:50Z'
@@ -868,9 +850,9 @@ overrides:
   task_id: T-2340
   pattern_id: AC-verify-mismatch
   ac_index: 2
-  reason: "AC#2 describes what pre_flight_check REUSES (lib/write_set.py + .context/dispatches.jsonl),\
-    \ not what it promises to verify \u2014 narrow path-grep heuristic FP. Sibling\
-    \ to T-2265 OV-822b8648."
+  reason: AC#2 describes what pre_flight_check REUSES (lib/write_set.py + .context/dispatches.jsonl),
+    not what it promises to verify — narrow path-grep heuristic FP. Sibling to T-2265
+    OV-822b8648.
   expires_at: '2026-09-09T18:34:45Z'
   added_by: root
   added_at: '2026-06-11T18:34:45Z'
@@ -878,9 +860,9 @@ overrides:
   task_id: T-2341
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "AC#1 describes WHERE workers WRITE TO (sandbox .context/dispatches.jsonl),\
-    \ not what the AC promises to verify \u2014 narrow path-grep FP. Sibling to T-2340\
-    \ OV-7d4daafb, T-2265 OV-822b8648."
+  reason: AC#1 describes WHERE workers WRITE TO (sandbox .context/dispatches.jsonl),
+    not what the AC promises to verify — narrow path-grep FP. Sibling to T-2340 OV-7d4daafb,
+    T-2265 OV-822b8648.
   expires_at: '2026-09-09T18:44:25Z'
   added_by: root
   added_at: '2026-06-11T18:44:25Z'
@@ -888,9 +870,9 @@ overrides:
   task_id: T-2341
   pattern_id: AC-verify-mismatch
   ac_index: 3
-  reason: "AC#3 describes the sandbox-isolation invariant (demo does NOT touch real\
-    \ .context/dispatches.jsonl), not what the AC promises to verify \u2014 narrow\
-    \ path-grep FP. Sibling class."
+  reason: AC#3 describes the sandbox-isolation invariant (demo does NOT touch real
+    .context/dispatches.jsonl), not what the AC promises to verify — narrow path-grep
+    FP. Sibling class.
   expires_at: '2026-09-09T18:44:25Z'
   added_by: root
   added_at: '2026-06-11T18:44:25Z'
@@ -898,9 +880,9 @@ overrides:
   task_id: T-2342
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "AC#1 describes what the .py FILE is extended with (a handler), not what\
-    \ the AC verifies \u2014 path appears as the implementation target, not the verification\
-    \ target. Narrow path-grep FP. Sibling to T-2341 OV-60e71634."
+  reason: AC#1 describes what the .py FILE is extended with (a handler), not what
+    the AC verifies — path appears as the implementation target, not the verification
+    target. Narrow path-grep FP. Sibling to T-2341 OV-60e71634.
   expires_at: '2026-09-09T18:57:14Z'
   added_by: root
   added_at: '2026-06-11T18:57:14Z'
@@ -908,9 +890,9 @@ overrides:
   task_id: T-2342
   pattern_id: AC-verify-mismatch
   ac_index: 2
-  reason: "AC#2 describes what the .html template renders, not what the AC verifies\
-    \ \u2014 path appears as the implementation target, not the verification target.\
-    \ Narrow path-grep FP. Sibling class."
+  reason: AC#2 describes what the .html template renders, not what the AC verifies
+    — path appears as the implementation target, not the verification target. Narrow
+    path-grep FP. Sibling class.
   expires_at: '2026-09-09T18:57:14Z'
   added_by: root
   added_at: '2026-06-11T18:57:14Z'
@@ -918,9 +900,9 @@ overrides:
   task_id: T-2343
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "AC#1 describes WHERE the helper is defined (path = the .py file extended),\
-    \ not what the AC promises to verify \u2014 narrow path-grep FP. Sibling to T-2342\
-    \ OV-d1fb047e + T-2341 OV-60e71634."
+  reason: AC#1 describes WHERE the helper is defined (path = the .py file extended),
+    not what the AC promises to verify — narrow path-grep FP. Sibling to T-2342 OV-d1fb047e
+    + T-2341 OV-60e71634.
   expires_at: '2026-09-09T19:15:58Z'
   added_by: root
   added_at: '2026-06-11T19:15:58Z'
@@ -939,14 +921,13 @@ overrides:
   task_id: T-2170
   pattern_id: AC-verify-mismatch
   ac_index: null
-  reason: "Path-citing prose FP class (sibling to OV-cad6c610 on T-2171). AC text\
-    \ contains policy/value-drivers.yaml, web/blueprints/bvp.py, tmp/bvp.html paths\
-    \ inline as evidence citations \u2014 reviewer heuristic treats prose-path-mention\
-    \ as verify-mismatch. AC#1 paths cite Slice 1 evidence (live render verification).\
-    \ AC#2 cites _driver_rubrics() source. AC#4 cites smoke test convention from AC\
-    \ text itself. AC#6 cites template-iteration source. None are real verify-mismatches\
-    \ \u2014 verification is the rendered HTML markup, captured inline as Slice 1\
-    \ evidence."
+  reason: Path-citing prose FP class (sibling to OV-cad6c610 on T-2171). AC text contains
+    policy/value-drivers.yaml, web/blueprints/bvp.py, tmp/bvp.html paths inline as
+    evidence citations — reviewer heuristic treats prose-path-mention as verify-mismatch.
+    AC#1 paths cite Slice 1 evidence (live render verification). AC#2 cites _driver_rubrics()
+    source. AC#4 cites smoke test convention from AC text itself. AC#6 cites template-iteration
+    source. None are real verify-mismatches — verification is the rendered HTML markup,
+    captured inline as Slice 1 evidence.
   expires_at: '2026-09-10T07:01:21Z'
   added_by: root
   added_at: '2026-06-12T07:01:21Z'
@@ -954,10 +935,10 @@ overrides:
   task_id: T-2367
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "FP: tests/unit/test_inject_next_directive.py spawns the REAL inject-next-directive.py\
-    \ via subprocess against real temp-dir YAML+task fixtures (_run_subprocess) \u2014\
-    \ genuine end-to-end integration, not mocks. Canonical mock-only-integration heuristic\
-    \ FP class."
+  reason: 'FP: tests/unit/test_inject_next_directive.py spawns the REAL inject-next-directive.py
+    via subprocess against real temp-dir YAML+task fixtures (_run_subprocess) — genuine
+    end-to-end integration, not mocks. Canonical mock-only-integration heuristic FP
+    class.'
   expires_at: '2026-09-11T11:12:36Z'
   added_by: root
   added_at: '2026-06-13T11:12:36Z'
@@ -975,8 +956,8 @@ overrides:
   task_id: T-2183
   pattern_id: human-ac-mechanical-signal
   ac_index: 1
-  reason: "mechanical steps but B-005 human-review-gated (enforcement config); cannot\
-    \ be an Agent AC \u2014 agent Edit on settings.json is blocked"
+  reason: mechanical steps but B-005 human-review-gated (enforcement config); cannot
+    be an Agent AC — agent Edit on settings.json is blocked
   expires_at: '2026-09-11T14:12:25Z'
   added_by: root
   added_at: '2026-06-13T14:12:25Z'
@@ -984,9 +965,8 @@ overrides:
   task_id: T-2183
   pattern_id: mock-only-integration
   ac_index: null
-  reason: "bats suites (chat_bare_path_regex/e2e + consumer-fresh sim) are real integration\
-    \ against the actual scripts, not mocks \u2014 canonical FP class (sibling to\
-    \ T-2240/T-2266)"
+  reason: bats suites (chat_bare_path_regex/e2e + consumer-fresh sim) are real integration
+    against the actual scripts, not mocks — canonical FP class (sibling to T-2240/T-2266)
   expires_at: '2026-09-11T14:12:25Z'
   added_by: root
   added_at: '2026-06-13T14:12:25Z'
@@ -994,8 +974,8 @@ overrides:
   task_id: T-2373
   pattern_id: human-ac-mechanical-signal
   ac_index: 3
-  reason: "FP: 'shows' in Expected describes what the human OBSERVES in a live launcher\
-    \ restart (irreversible-action E2E), not a mechanical grep \u2014 genuine [REVIEW]"
+  reason: 'FP: ''shows'' in Expected describes what the human OBSERVES in a live launcher
+    restart (irreversible-action E2E), not a mechanical grep — genuine [REVIEW]'
   expires_at: '2026-09-11T14:51:14Z'
   added_by: root
   added_at: '2026-06-13T14:51:14Z'
@@ -1003,8 +983,17 @@ overrides:
   task_id: T-2378
   pattern_id: AC-verify-mismatch
   ac_index: 1
-  reason: "test task: AC#1 names the file-under-test (checkpoint.sh) which the test\
-    \ drives, not a file this task edits \u2014 no source change expected"
+  reason: 'test task: AC#1 names the file-under-test (checkpoint.sh) which the test
+    drives, not a file this task edits — no source change expected'
   expires_at: '2026-09-11T19:48:03Z'
   added_by: root
   added_at: '2026-06-13T19:48:03Z'
+- id: OV-c6fa785b
+  task_id: T-2378
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: 'test task: AC#1 names the file-under-test (checkpoint.sh), not a file this
+    task edits'
+  expires_at: '2026-09-11T19:51:01Z'
+  added_by: root
+  added_at: '2026-06-13T19:51:01Z'

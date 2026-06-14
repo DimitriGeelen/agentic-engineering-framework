@@ -29,6 +29,15 @@
             "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook post-compact-resume"
           }
         ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook post-compact-resume"
+          }
+        ]
       }
     ],
     "PreToolUse": [

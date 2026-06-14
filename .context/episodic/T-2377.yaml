@@ -3,7 +3,7 @@
 # ============================================================================
 # STATUS: AUTO-GENERATED
 # Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
-# Generated: 2026-06-13T19:17:45Z
+# Generated: 2026-06-13T19:28:36Z
 # ============================================================================
 
 task_id: T-2377
@@ -13,13 +13,15 @@ enrichment_status: complete  # AC checked + decisions recorded
 
 # Timeline
 created: 2026-06-13T19:08:37Z
-completed: 2026-06-13T19:17:37Z
+completed: 2026-06-13T19:28:27Z
 duration_days: 0
 updates_count: 1
+first_commit: 2026-06-13T21:17:22+02:00
+last_commit: 2026-06-13T21:17:22+02:00
 
 # Summary (auto-generated from git commit messages)
 summary: |
-  >
+  budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)
 
 # Key outcomes
 outcomes:
@@ -32,7 +34,10 @@ outcomes:
 
 # Challenges (auto-detected from git: commits with fix/revert/bug/error)
 challenges:
-  # No challenges detected in commit messages
+  - description: 'budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)'
+    source: git-mined
+  - description: 'budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)'
+    source: git-mined
 
 # Decisions (from task file Decisions section)
 decisions:
@@ -43,15 +48,21 @@ decisions:
 
 # Artifacts (auto-mined from git --name-only)
 artifacts:
-  # No artifacts found in git
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - '.tasks/active/T-2377-budget-gauge-blind-in-worktree-sessions-.md'
+  - 'tests/integration/budget_gauge_stdin_transcript.bats'
 
 # Timeline (auto-mined from git log)
 git_timeline:
-  # No git timeline available
+  - time: "2026-06-13T21:17:22"
+    action: "T-2377: budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)"
+  - time: "2026-06-13T21:17:22"
+    action: "T-2377: budget gauge reads hook stdin transcript_path (fixes worktree/bg-job blindness)"
 
 # What worked well (requires judgment — [TODO] if enrichment_status is pending)
 successes:
-  # Completed successfully in 0 commit(s), 9 min
+  # Completed successfully in 2 commit(s), 19 min
 
 # Related tasks
 related_tasks:
@@ -64,12 +75,12 @@ tags: []
 
 # Passive metrics (derived automatically — do not edit)
 metrics:
-  wall_clock_minutes: 9
-  commits: 0
-  files_changed: 0
-  lines_added: 0
-  lines_removed: 0
+  wall_clock_minutes: 19
+  commits: 2
+  files_changed: 4
+  lines_added: 796
+  lines_removed: 32
 
 # Metadata
-source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2377-budget-gauge-blind-in-worktree-sessions-.md
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2377-budget-gauge-blind-in-worktree-sessions-.md
 generated_by: context-agent-hybrid
