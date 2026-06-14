@@ -4,10 +4,10 @@ name: "Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gau
 description: >
   T-2389 live-fire surfaced: when a claude-fw session spawned via TermLink/tmux runs its hooks, fw resolves PROJECT_ROOT to /root (check-project-boundary banner 'Project root: /root'), blinding budget-gate/checkpoint so .restart-requested is never written and the continuous-mode loop never arms. HYPOTHESIS to investigate (feedback_remediation_plans_are_hypotheses): universal (affects main-checkout sessions too) OR spawn-launch artifact (bash -lc cd+exec did not propagate CLAUDE_PROJECT_DIR)? Same class as T-2377 but via hook-cwd not transcript_path. Evidence: docs/reports/T-2389-livefire-evidence.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:continuous-run, bug, gauge, hooks]
 components: []
 related_tasks: [T-2389, T-2377]
@@ -22,7 +22,7 @@ related_tasks: [T-2389, T-2377]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T07:16:26Z
-last_update: 2026-06-14T07:16:26Z
+last_update: 2026-06-14T07:34:10Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,14 +40,36 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2389 live-fire finding: a TermLink/tmux-spawned `claude-fw` session (CC 2.1.177)
+ran its hooks with `PROJECT_ROOT` resolved to `/root` (check-project-boundary banner
+"Project root: /root") → budget-gate/checkpoint blind → continuous-mode loop never
+armed. Evidence: `docs/reports/T-2389-livefire-evidence.md`.
+
+## Findings (2026-06-14, mechanism identified)
+
+- **NOT universal.** My own normally-launched session's gauge resolves correctly
+  (`.budget-status` updated to real tokens). Only the headless tmux-spawned session
+  mis-resolved. arc-012's loop is not fundamentally broken.
+- **Mechanism:** `bin/fw:find_project_root()` (line 67) walks up from `$PWD`
+  looking for `.framework.yaml`/`.tasks`. The boundary hook
+  (`agents/context/check-project-boundary.sh:146`) then reads `PROJECT_ROOT` from
+  the env fw set. When the spawned session's hooks ran with an effective cwd that
+  resolved to `/root`, every fw-backed hook in the chain inherited the wrong root.
+- **fw consults `CLAUDE_PROJECT_DIR` nowhere** (grep of bin/fw lib/ agents/ = 0
+  hits) — yet Claude Code sets it specifically so hooks know the project dir
+  independent of cwd. **Candidate fix:** make `find_project_root()` prefer
+  `$CLAUDE_PROJECT_DIR` (when it points at a dir containing `.framework.yaml`/`.tasks`)
+  before the `$PWD` walk-up. Same spirit as T-2377 (use what Claude Code hands the
+  hook, don't reconstruct). To confirm: verify CC actually sets `CLAUDE_PROJECT_DIR`
+  to the session's project (not `/root`) for a spawned session before relying on it.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Classify universal-vs-launch-artifact: determine how the fw hook chain resolves PROJECT_ROOT (CLAUDE_PROJECT_DIR? cwd git-toplevel? HOME fallback?) and which path yields `/root` for the spawned session vs the correct root for a normal session
+- [ ] If launch-artifact: identify the propagation fix (e.g. pass `CLAUDE_PROJECT_DIR=<worktree>` in the spawn env, or harden fw's resolution to fall back to cwd git-toplevel before HOME) and confirm it makes a re-driven live-fire's gauge read real tokens
+- [ ] If universal: escalate — this is a gauge-blinding bug more severe than T-2377; file the fix with a regression test
+- [ ] RCA filled; reviewer PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,3 +202,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2390-spawned-session-hooks-resolve-projectroo.md
 - **Context:** Initial task creation
+
+### 2026-06-14T07:34:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
