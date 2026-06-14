@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2393: Resolve divergent worktree/master state cleanly without loss
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T15:00:12Z
+# ============================================================================
+
+task_id: T-2393
+task_name: "Resolve divergent worktree/master state cleanly without loss"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T13:30:43Z
+completed: 2026-06-14T15:00:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-14T15:36:54+02:00
+last_commit: 2026-06-14T15:36:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception A complete — consolidation-options artifact + GO Option 1 (merge-into-branch here → FF master when quiesced)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated — divergence quantified (42 ahead / 6 behind), constraints C-a/b/c fixed'
+  - 'Assumptions tested — A1 falsified (patch-id), A2 confirmed (FAIL triage), A3 confirmed (operation matrix)'
+  - 'Recommendation written with rationale — GO Option 1, evidence-cited, artifact at docs/reports/T-2393-consolidation-options.md'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2393-consolidation-options.md'
+  - '.tasks/active/T-2393-resolve-divergent-worktreemaster-state-c.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-14T15:36:54"
+    action: "T-2393: inception A complete — consolidation-options artifact + GO Option 1 (merge-into-branch here → FF master when quiesced)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 89 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [git-hygiene, worktree, parallel-agents, inception]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 89
+  commits: 1
+  files_changed: 2
+  lines_added: 287
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2393-resolve-divergent-worktreemaster-state-c.md
+generated_by: context-agent-hybrid
