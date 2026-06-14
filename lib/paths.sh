@@ -89,6 +89,51 @@ fw_claude_project_dir_name() {
     printf '%s' "$1" | tr -c 'a-zA-Z0-9' '-'
 }
 
+# Emit the candidate Claude Code transcript *project dirs* for the current
+# session, one per line (existing dirs only, de-duplicated). Callers must pick
+# the globally-newest *.jsonl across them.
+#
+# T-2392: Claude Code keys the transcript projects dir on the session's LAUNCH
+# cwd. In a git worktree (the framework's own isolation model) that launch cwd is
+# the MAIN repo, not PROJECT_ROOT (the worktree). So reconstructing the dir from
+# PROJECT_ROOT alone searched a stale/empty sibling and the budget gauge went
+# blind → the continuous loop never armed. We therefore emit BOTH:
+#   1. the PROJECT_ROOT-keyed dir, and
+#   2. the primary-worktree (main-repo) keyed dir — found via
+#      `git rev-parse --git-common-dir` (→ <main>/.git) → its parent.
+# In a non-worktree session the two collapse to one (deduped). Graceful when the
+# root is not a git repo (only candidate 1 is emitted).
+# Usage: while IFS= read -r d; do ...; done < <(fw_claude_project_dirs)
+fw_claude_project_dirs() {
+    local base="${HOME}/.claude/projects"
+    local root="${PROJECT_ROOT:-${FRAMEWORK_ROOT:-$PWD}}"
+    local -a roots=("$root")
+
+    # Primary worktree (main repo): git-common-dir is <main>/.git; its parent is
+    # the main-repo root that Claude Code was launched from.
+    local common_dir main_root
+    common_dir=$(git -C "$root" rev-parse --git-common-dir 2>/dev/null) || common_dir=""
+    if [ -n "$common_dir" ]; then
+        # Absolute-ize a relative common-dir (the main-repo case returns ".git").
+        case "$common_dir" in
+            /*) ;;
+            *) common_dir="$root/$common_dir" ;;
+        esac
+        main_root=$(cd "$common_dir/.." 2>/dev/null && pwd -P) || main_root=""
+        [ -n "$main_root" ] && roots+=("$main_root")
+    fi
+
+    local seen="" r name dir
+    for r in "${roots[@]}"; do
+        [ -n "$r" ] || continue
+        name=$(fw_claude_project_dir_name "$r")
+        dir="$base/$name"
+        case "$seen" in *"|$dir|"*) continue ;; esac
+        seen="$seen|$dir|"
+        [ -d "$dir" ] && printf '%s\n' "$dir"
+    done
+}
+
 # Context-aware fw command path (T-1102/T-1143)
 # Returns the right form for copy-pasteable commands shown to users:
 #   - Framework repo: bin/fw

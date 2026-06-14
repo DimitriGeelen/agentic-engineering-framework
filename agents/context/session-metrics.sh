@@ -30,18 +30,21 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 
 OUTPUT_FILE="$CONTEXT_DIR/working/.session-metrics.yaml"
 
-# Reuse find_transcript from checkpoint.sh
+# Reuse the shared resolver (lib/paths.sh).
+# T-2375: match Claude Code's dir encoding (every non-alnum → '-', incl. '.') —
+# this site was previously on the pre-T-2375 slash-only sanitizer (missed by the
+# T-2380 corpus sweep), so it was blind to dotted paths. T-2392: search ALL
+# candidate project dirs (PROJECT_ROOT-keyed AND the primary-worktree/main-repo
+# dir CC launched from) and pick the globally-newest transcript.
 find_transcript() {
-    local project_dir_name
-    project_dir_name="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
-    project_dir_name="${project_dir_name//\//-}"
-    local project_jsonl_dir="$HOME/.claude/projects/${project_dir_name}"
-    if [ -d "$project_jsonl_dir" ]; then
-        local transcript
-        transcript=$(find "$project_jsonl_dir" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -1)
-        if [ -n "$transcript" ]; then
-            echo "$transcript"
-        fi
+    local transcript
+    transcript=$(
+        while IFS= read -r d; do
+            find "$d" -maxdepth 1 -name "*.jsonl" -type f ! -name "agent-*" -print0 2>/dev/null
+        done < <(fw_claude_project_dirs) | xargs -r -0 ls -t 2>/dev/null | head -1
+    )
+    if [ -n "$transcript" ]; then
+        echo "$transcript"
     fi
 }
 

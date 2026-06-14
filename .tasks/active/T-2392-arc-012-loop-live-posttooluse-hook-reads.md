@@ -4,10 +4,10 @@ name: "arc-012 loop: live PostToolUse hook reads 0 tokens despite correct PROJEC
 description: >
   Bug B from T-2390 re-drive 2. After forcing PROJECT_ROOT=worktree (Bug A bypassed) the gauge resolves correctly (.tool-counter/.budget-status write to worktree, checkpoint ran 107x) but the loop STILL did not fire: in-hook get_context_tokens returns 0 every check. Gauge logic PROVEN correct (manual hook invocation with same PROJECT_ROOT = 972318 tokens, both stdin and reconstruction paths). Main checkout same HEAD, no local mods, has T-2375+T-2377. So CC passes a valid-but-wrong transcript_path to the live PostToolUse hook, bypassing reconstruction via find_transcript's explicit-path branch (line 72). NOT yet fixable blind. FIRST STEP: instrumented re-drive -- tee the live hook stdin (instrument <worktree>/bin/fw hook dispatcher, which is T-559-allowlisted) and read the captured transcript_path. arc012-livefire-demo worktree is left pre-configured for this. See T-2390 ## Re-drive 2 Bug B.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T10:01:22Z
-last_update: 2026-06-14T10:01:22Z
+last_update: 2026-06-14T17:19:07Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,45 +40,42 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Bug B from the arc-012 continuous-loop live-fire. The budget gauge is blind in
+every git-worktree session because Claude Code keys the transcript projects dir
+on the **launch cwd (main repo)**, not on `PROJECT_ROOT` (the worktree), so
+`find_transcript`/budget-gate reconstruct the wrong dir and read 0 tokens →
+critical never fires → the loop never arms. Full data-proven RCA below.
+
+Fix: both reconstruction sites must search **both** candidate dirs (the
+PROJECT_ROOT-keyed one AND the primary-worktree/main-repo-keyed one) and pick the
+globally-newest transcript. Shared resolver `fw_claude_project_dirs` in
+`lib/paths.sh` (DRY across the two hooks). Reconstruction is the *fallback* path —
+the T-2377 stdin `transcript_path` preference stays first.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw_claude_project_dirs()` added to `lib/paths.sh`: emits the candidate
+      Claude Code transcript project dirs — the `PROJECT_ROOT`-keyed dir AND the
+      primary-worktree (main-repo, via `git rev-parse --git-common-dir` → parent)
+      keyed dir — de-duplicated, existing dirs only. Graceful when not a git repo.
+- [x] `agents/context/checkpoint.sh` `find_transcript()` reconstruction searches
+      all `fw_claude_project_dirs` candidates and returns the globally-newest
+      `*.jsonl` (stdin explicit-path branch unchanged, tried first).
+- [x] `agents/context/budget-gate.sh` fallback searches all
+      `fw_claude_project_dirs` candidates and picks the globally-newest transcript
+      (stdin transcript_path preference unchanged, tried first).
+- [x] `agents/context/session-metrics.sh` (third reconstruction copy) migrated to
+      the shared resolver — also clears its stale pre-T-2375 slash-only sanitizer
+      (missed by the T-2380 corpus sweep).
+- [x] bats pins the worktree-blindness fix: synthetic worktree-keyed (stale) +
+      main-repo-keyed (live/newest) dirs → resolver picks the live one; and the
+      non-worktree (main-repo) case → single candidate dir, no regression.
+- [x] `bash -n` clean on both hooks + `lib/paths.sh` (L-408).
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+<!-- No Human ACs — every criterion is agent-verifiable (resolver behaviour +
+     bats + bash -n). Live-fire of the full continuous loop in a real worktree
+     session is tracked separately (it depends on this fix landing on master). -->
 
 ## Verification
 
@@ -112,6 +109,12 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bash -n lib/paths.sh
+bash -n agents/context/checkpoint.sh
+bash -n agents/context/budget-gate.sh
+bash -n agents/context/session-metrics.sh
+bats tests/unit/t2392_worktree_transcript_resolution.bats
 
 ## RCA
 
@@ -202,3 +205,7 @@ shared resolver into `lib/paths.sh` (DRY across the two hooks).
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2392-arc-012-loop-live-posttooluse-hook-reads.md
 - **Context:** Initial task creation
+
+### 2026-06-14T17:19:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
