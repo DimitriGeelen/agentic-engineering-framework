@@ -155,7 +155,24 @@ resolve_framework() {
 
 # Resolve PROJECT_ROOT
 if [ -z "${PROJECT_ROOT:-}" ]; then
-    PROJECT_ROOT=$(find_project_root) || true
+    # T-2390: prefer CLAUDE_PROJECT_DIR when set + valid. Claude Code exports it
+    # for hook commands as the session's project root, independent of the hook's
+    # invocation cwd. Without this, find_project_root() walks up from $PWD — and
+    # Claude Code may run hooks with cwd=$HOME (/root), so the walk either fails
+    # or latches onto a stray /root/.tasks, mis-resolving PROJECT_ROOT. That
+    # blinds the budget gauge and fires spurious project-boundary blocks (origin:
+    # T-2389 live-fire: a spawned session resolved "/root" and the continuous-mode
+    # loop never armed). Same spirit as T-2377 — trust what Claude Code hands the
+    # hook rather than reconstructing. Validity-gated (.framework.yaml or .tasks)
+    # so a stale/garbage value falls through to the $PWD walk + git-toplevel
+    # fallback; only kicks in inside a CC hook context, so non-hook fw calls are
+    # unaffected (CLAUDE_PROJECT_DIR unset → identical to pre-T-2390 behavior).
+    if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && \
+       { [ -f "$CLAUDE_PROJECT_DIR/.framework.yaml" ] || [ -d "$CLAUDE_PROJECT_DIR/.tasks" ]; }; then
+        PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+    else
+        PROJECT_ROOT=$(find_project_root) || true
+    fi
 fi
 
 # T-1346-B2: Detect which framework copy resolved (vendored, framework-repo, global).
