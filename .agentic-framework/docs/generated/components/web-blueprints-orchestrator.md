@@ -6,15 +6,16 @@
 
 ## What It Does
 
-## Dependencies (3)
+## Dependencies (4)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
 | [shared](/docs/generated/web-shared) | calls | Shared helpers for all web blueprints — path resolution, navigation groups, ambient status strip, render_page (htmx/full page rendering) |
 | [orchestrator](/docs/generated/web-templates-orchestrator) | renders | TODO: describe what this component does |
 | [termlink](/docs/generated/agents-termlink-termlink) | calls | TermLink integration wrapper: spawn, exec, dispatch, cleanup, status. Adds task-tagging and budget checks around the termlink binary. |
+| [orchestrator_parallel](/docs/generated/web-templates-orchestrator_parallel) | renders | TODO: describe what this component does |
 
-## Used By (5)
+## Used By (7)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -23,6 +24,8 @@
 | [test_termlink_list_contract](/docs/generated/tests-unit-test_termlink_list_contract) | called_by | TODO: describe what this component does |
 | [test_orchestrator_workflow_coverage](/docs/generated/tests-unit-test_orchestrator_workflow_coverage) | called_by | TODO: describe what this component does |
 | [test_orchestrator_workflow_coverage](/docs/generated/tests-unit-test_orchestrator_workflow_coverage) | registered_by | TODO: describe what this component does |
+| [test_orchestrator_parallel_view](/docs/generated/tests-unit-test_orchestrator_parallel_view) | called_by | TODO: describe what this component does |
+| [test_orchestrator_parallel_view](/docs/generated/tests-unit-test_orchestrator_parallel_view) | registered_by | TODO: describe what this component does |
 
 ---
 *Auto-generated from Component Fabric. Card: `web-blueprints-orchestrator.yaml`*
