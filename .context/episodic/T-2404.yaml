@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2404: inject-next-directive: append /resume + /start-work imperative (arc-012 self-driving gap)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T22:41:41Z
+# ============================================================================
+
+task_id: T-2404
+task_name: "inject-next-directive: append /resume + /start-work imperative (arc-012 self-driving gap)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T22:36:03Z
+completed: 2026-06-14T22:41:31Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-15T00:41:12+02:00
+last_commit: 2026-06-15T00:41:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inject-next-directive bootstrap imperative (arc-012 self-driving gap)
+
+# Key outcomes
+outcomes:
+  - 'Normal-path `## Next Directive` section emitted by `evaluate()` contains a `### Bootstrap` subsection with the literal token `/resume` and a `bin/fw work-on` reference.'
+  - 'When the directive references a T-NNNN (via `next_task:` field or first prose `T-\d+` match), the bootstrap line names that specific task id verbatim.'
+  - 'When the directive has no T-NNNN reference, the bootstrap line gives generic guidance (mentions `bin/fw work-on` + `fw task create`) without claiming a specific task id.'
+  - 'The LOOP TERMINATED section does NOT contain the `### Bootstrap` subsection (operator-required state).'
+  - 'The TIER CEILING EXCEEDED section does NOT contain the `### Bootstrap` subsection (operator-required state).'
+  - 'All existing tests in `tests/unit/test_inject_next_directive.py` remain green; new tests cover each of the four bootstrap-emission cases above.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/context/inject-next-directive.py'
+  - '.context/handovers/S-2026-0614-1724.md'
+  - '.context/handovers/S-2026-0614-1908.md'
+  - '.context/handovers/S-2026-0614-2004.md'
+  - '.context/handovers/S-2026-0614-2009.md'
+  - '.context/handovers/S-2026-0614-2333.md'
+  - '.tasks/active/T-2404-inject-next-directive-append-resume--sta.md'
+  - 'tests/unit/test_inject_next_directive.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-15T00:41:12"
+    action: "T-2404: inject-next-directive bootstrap imperative (arc-012 self-driving gap)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 8
+  lines_added: 5502
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2404-inject-next-directive-append-resume--sta.md
+generated_by: context-agent-hybrid
