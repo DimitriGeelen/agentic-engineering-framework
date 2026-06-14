@@ -48,12 +48,12 @@ Build execution of GO on inception [[T-2393]] (operator GO in chat, 2026-06-14).
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `git merge master` completed on the branch with all 7 expected conflicts resolved (no remaining conflict markers in tracked files)
-- [ ] Conflicts resolved per plan: completed-task `.md` + episodic take master's canonical close; `reviewer-overrides.yaml` is the union; vendored `discard-manifest.sh` source-synced
-- [ ] `bin/fw vendor` run → no self-vendor drift on `bin/fw` (`diff bin/fw .agentic-framework/bin/fw` empty)
-- [ ] After the merge, `master` is a strict ancestor of the branch (`git merge-base --is-ancestor master HEAD` exits 0) → master FF is now conflict-free
-- [ ] No commits lost: `git rev-list --count master..HEAD` accounts for all 42 prior branch commits plus the merge
-- [ ] Merge committed referencing T-2395
+- [x] `git merge master` completed on the branch with all 7 expected conflicts resolved (no remaining conflict markers — `git diff --check` clean; merge commit `03b9b0aaf`)
+- [x] Conflicts resolved per plan: episodics + T-2377/T-2378 took master (enriched/canonical); **T-2379 kept ours** (master had an OBS-072-class status drift: completed/ but `started-work`); `reviewer-overrides.yaml` unioned by id (90+90→91); vendored `discard-manifest.sh` source-synced
+- [x] `bin/fw vendor` run → no self-vendor drift on `bin/fw` (`diff -q bin/fw .agentic-framework/bin/fw` empty; commit `26ad6c323`)
+- [x] After the merge, `master` is a strict ancestor of the branch (`git merge-base --is-ancestor master HEAD` exits 0) → master FF is now conflict-free
+- [x] No commits lost: `git rev-list --count master..HEAD` = 47 (42 original + merge + 4 consolidation commits)
+- [x] Merge committed (`03b9b0aaf`); bracketing consolidation commits `998c9ce1c`/`26ad6c323` reference T-2395 (merge commit itself carries the standard merge message)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
