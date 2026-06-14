@@ -235,6 +235,11 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
     filed_by = directive_data.get("filed_by", "unknown")
     filed_at = directive_data.get("filed_at", "unknown")
 
+    # T-2404: resolve the planned-next-action task ref once, used by both the
+    # ceiling check (below) and the bootstrap imperative (in the normal-path
+    # section). Explicit `next_task:` field wins over the first prose T-NNNN.
+    task_ref = directive_data.get("next_task") or find_task_reference(directive)
+
     terminated_reason = None
     if max_iter is not None and new_iter > max_iter:
         terminated_reason = f"iteration {new_iter} exceeds max_iterations {max_iter}"
@@ -252,7 +257,6 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
     # iteration after sign-off) rather than advancing it.
     ceiling_breach = None  # (task_ref, blast_radius, ceiling) when breached
     if terminated_reason is None and tier_ceiling_int is not None and blast_lookup is not None:
-        task_ref = directive_data.get("next_task") or find_task_reference(directive)
         if task_ref:
             blast_radius = blast_lookup(task_ref)
             if blast_radius is not None and blast_radius > tier_ceiling_int:
@@ -311,6 +315,25 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
     else:
         max_label = str(max_iter) if max_iter is not None else "∞"
         tier_label = str(tier_ceiling) if tier_ceiling is not None else "unset"
+        # T-2404: bootstrap imperative — the substrate delivers the directive
+        # into additionalContext but nothing fires /resume or /start-work
+        # afterwards (skills require explicit invocation, not hook events).
+        # Without this line the loop arms but stalls waiting for human input.
+        # Suppressed on TERMINATED/CEILING paths (operator-required states).
+        if task_ref:
+            bootstrap = (
+                f"Invoke `/resume` to surface project state, then "
+                f"`bin/fw work-on {task_ref}` to set focus before any edit. "
+                f"The task gate (G-020) refuses Write/Edit without an active task."
+            )
+        else:
+            bootstrap = (
+                "Invoke `/resume` to surface project state, then pick a "
+                "continuation from the directive above and run "
+                "`bin/fw work-on T-NNNN` (or `bin/fw task create` for a new task) "
+                "to set focus before any edit. The task gate (G-020) refuses "
+                "Write/Edit without an active task."
+            )
         section = (
             f"## Next Directive (iteration {new_iter}/{max_label}, tier_ceiling {tier_label})\n"
             "\n"
@@ -320,7 +343,11 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
             f"- Expires at: {format_iso8601(expires_at)}\n"
             f"- Source: SessionStart `{source}`\n"
             "- State: `.context/working/.continuous-mode.yaml`\n"
-            "- Origin: T-2363 (S1) → T-2364 (S2) → T-2365 (S3).\n"
+            "- Origin: T-2363 (S1) → T-2364 (S2) → T-2365 (S3) → T-2404.\n"
+            "\n"
+            "### Bootstrap (T-2404)\n"
+            "\n"
+            f"{bootstrap}\n"
         )
     return new_state, section
 

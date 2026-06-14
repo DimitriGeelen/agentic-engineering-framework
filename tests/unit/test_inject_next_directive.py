@@ -578,3 +578,76 @@ def test_no_task_reference_proceeds(tmp_path):
     stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
     assert "TIER CEILING EXCEEDED" not in stdout
     assert "## Next Directive (iteration 2/" in stdout
+
+
+# ─── T-2404: /resume + /start-work bootstrap imperative ──────────────────────
+
+def test_bootstrap_subsection_present_in_normal_path(tmp_path):
+    """T-2404 AC#1: normal-path section contains a ### Bootstrap subsection
+    with the literal `/resume` and a `bin/fw work-on` reference."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=5)
+    _write_directive(working, directive="continue T-1234", max_iterations=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "### Bootstrap (T-2404)" in stdout
+    assert "/resume" in stdout
+    assert "bin/fw work-on" in stdout
+
+
+def test_bootstrap_names_prose_task_ref(tmp_path):
+    """T-2404 AC#2: when directive prose contains a T-NNNN, the bootstrap
+    imperative names that specific task id verbatim."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=5)
+    _write_directive(working, directive="ship T-7777 — the next loop slice",
+                     max_iterations=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "bin/fw work-on T-7777" in stdout
+
+
+def test_bootstrap_names_explicit_next_task_field(tmp_path):
+    """T-2404 AC#2: when `next_task:` is set, it wins over any prose T-NNNN."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=5)
+    _write_directive(working, directive="various T-1111 and T-2222 mentioned",
+                     next_task="T-9999", max_iterations=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "bin/fw work-on T-9999" in stdout
+    assert "bin/fw work-on T-1111" not in stdout
+    assert "bin/fw work-on T-2222" not in stdout
+
+
+def test_bootstrap_generic_guidance_when_no_task_ref(tmp_path):
+    """T-2404 AC#3: directive without T-NNNN gets generic guidance
+    (mentions `bin/fw work-on` AND `fw task create`)."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=5)
+    _write_directive(working, directive="refactor the widget styles", max_iterations=5)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "### Bootstrap (T-2404)" in stdout
+    assert "bin/fw work-on T-NNNN" in stdout
+    assert "fw task create" in stdout
+
+
+def test_bootstrap_absent_on_loop_terminated(tmp_path):
+    """T-2404 AC#4: LOOP TERMINATED section does NOT include the bootstrap
+    subsection — that path is explicitly operator-required."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, max_iterations=2, current_iteration=2)
+    _write_directive(working, directive="continue T-1234", max_iterations=2)
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "LOOP TERMINATED" in stdout
+    assert "### Bootstrap (T-2404)" not in stdout
+
+
+def test_bootstrap_absent_on_tier_ceiling_exceeded(tmp_path):
+    """T-2404 AC#5: TIER CEILING EXCEEDED section does NOT include the
+    bootstrap subsection — operator-required."""
+    working = _file_layout(tmp_path)
+    _write_cmode(working, tier_ceiling=1, current_iteration=1)
+    _write_directive(working, directive="continue T-9007", next_task="T-9007",
+                     max_iterations=10)
+    _write_task(tmp_path, "T-9007", blast_radius=5)  # 5 > tier_ceiling 1
+    stdout, _ = _run_subprocess(tmp_path, now="2026-06-13T10:00:00Z")
+    assert "TIER CEILING EXCEEDED" in stdout
+    assert "### Bootstrap (T-2404)" not in stdout
