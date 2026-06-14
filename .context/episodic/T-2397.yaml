@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2397: Spec Layer 2: serialized master integration queue (T-2394 G2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T14:57:02Z
+# ============================================================================
+
+task_id: T-2397
+task_name: "Spec Layer 2: serialized master integration queue (T-2394 G2)"
+workflow_type: design
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T14:53:58Z
+completed: 2026-06-14T14:56:56Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Spec doc `docs/reports/T-2397-layer2-integration-queue-spec.md` exists, covering: what L1 (T-2396) does NOT solve, scope fence (G2 only — not L3/L4), the integration verb + 9-step algorithm, the un-partitionable file taxonomy, the single-writer lock, evidence from tonight''s manual consolidation, cautions (OBS-076 + focus-drift), MVP-vs-full, open questions, and build-task acceptance'
+  - 'Per-file-class merge strategy table (§3.2) grounded in the ACTUAL files that blocked tonight''s FF (≥7 classes, each with a non-`git-merge` strategy: regenerate / append-union / id-union / field-merge / take-existing)'
+  - 'Each open question (Q1–Q4) carries an explicit recommendation (not a blank fork)'
+  - 'Reviewer PASS (`bin/fw reviewer T-2397` → Overall: PASS)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2397-spec-layer-2-serialized-master-integrati.md
+generated_by: context-agent-hybrid

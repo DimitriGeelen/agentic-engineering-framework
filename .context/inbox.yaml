@@ -641,3 +641,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-076
+  text: "_self_vendor_libs (lib/upgrade.sh) find does not prune node_modules/__pycache__ — reports phantom pre-push drift ('would sync N file(s) to .agentic-framework/lib/') for untracked lib/ts/node_modules/**/*.md (argparse/esbuild/typescript READMEs etc). Blocks ALL master pushes whenever npm install has populated lib/ts/node_modules (true on main, false on fresh worktrees → silent until you push from main). Verified 2026-06-14: gate said 11, find lib -path '*/node_modules/*' -name '*.md'|wc -l = 11, diff -rq lib .agentic-framework/lib byte-identical. Fix: add -not -path '*/node_modules/*' -not -path '*/__pycache__/*' -not -path '*/.git/*' to the find in _self_vendor_libs AND check siblings _self_vendor_agents/_self_vendor_web (recurse **/*.{sh,py} — same gap likely). Workaround used: FW_SKIP_SELF_VENDOR_CHECK=1 git push (Tier-2). One bug=one task; needs bats + sibling sweep."
+  captured: 2026-06-14T14:53:19Z
+  context_task: null
+  tags: []
+  status: pending
+  promoted_to: null
