@@ -1,39 +1,49 @@
-# Continuous-run directive — updated 2026-06-13 after T-2364+T-2365 shipped.
-# Next session reads this via:
-#   1. agents/context/inject-next-directive.py (T-2364 substrate, when enabled in
-#      .context/working/.continuous-mode.yaml — currently enabled: true)
-#   2. agents/context/checkpoint.sh fold-into-restart-signal (T-2363) on next auto-handover
-#   3. claude-fw FW_NEXT_DIRECTIVE export (T-2363) on next auto-restart
-# Iteration counter at .context/working/.continuous-mode.yaml: current_iteration=1.
+# Continuous-run directive — refreshed 2026-06-14 (T-2401) for the arc-012 live-fire.
+#
+# WHY REFRESHED: the prior directive pointed at S4/S5 build slices that are now
+# SHIPPED. arc-012 build scope is CLOSED (S0–S3 + S5 shipped; S4 deferred,
+# horizon: later). A live-fire against the stale directive would have re-injected
+# marching orders describing already-done work. This text reflects reality.
+#
+# Read by:
+#   1. agents/context/inject-next-directive.py (continuous-mode enabled: true)
+#   2. agents/context/checkpoint.sh fold-into-restart-signal on next auto-handover
+#   3. claude-fw FW_NEXT_DIRECTIVE export on next auto-restart
+#
+# DEMO NOTE: this directive body deliberately contains NO T-NNNN reference, so the
+# bounded-autonomy ceiling check (inject-next-directive.py:254-259) is skipped and
+# the iteration counter ADVANCES cleanly (1 -> 2) on auto-restart — exactly the
+# behaviour the live-fire is meant to witness. A real autonomous continuation would
+# instead set `next_task: T-NNNN` whose blast_radius <= tier_ceiling, so the ceiling
+# governs the loop. Iteration counter: .context/working/.continuous-mode.yaml
+# (current_iteration=1; advances to 2 on the next --source resume/startup restart).
 
 directive: |
-  Continue arc-012 continuous-run. T-2362 (S0), T-2363 (S1), T-2364 (S2),
-  T-2365 (S3) all SHIPPED. Remaining slices:
-    - T-2367 (S5): post-resume Tier-0 + blast-radius re-check before
-      continuing. This is the bounded-autonomy CEILING — without it the
-      tier_ceiling field is informational only. ACs at .tasks/active/T-2367-*.
-      Helper at agents/context/inject-next-directive.py needs:
-        - Parse the directive text for a T-NNNN reference (the "planned
-          next action").
-        - Look up that task's blast_radius (cost_estimate.blast_radius or
-          fw fabric blast-radius shortcut).
-        - When blast_radius > tier_ceiling (from .continuous-mode.yaml),
-          replace the directive section with "Tier ceiling exceeded —
-          operator continuation required" and freeze the iteration counter.
-    - T-2366 (S4): discard manifest enhancement to fw handover --emergency
-      (lower priority; horizon: later).
-  Continuous-mode is enabled with max_iterations=10, current_iteration=1.
-  Per-directive max_iterations=5 in THIS file overrides the config cap when
-  set. The substrate has been live-fired twice in this session
-  (source=resume and source=compact) — see iteration 1/5 and last_source
-  fields in .continuous-mode.yaml. After S5 ships, T-2158's GO scope is
-  effectively closed (S0-S3 + S5 = minimum-viable continuous loop with
-  safety ceiling; S4 is a horizon: later enhancement).
+  arc-012 continuous-run is BUILD-COMPLETE. The minimum-viable self-driving loop
+  has shipped and is live on master: the budget gauge (stdin transcript + worktree
+  dir resolution), budget-critical -> auto-handover -> .restart-requested, the
+  claude-fw terminator restart, and resume-side directive re-injection with the
+  bounded-autonomy ceiling. S0 through S3 plus S5 shipped; S4 (discard-manifest
+  --emergency enhancement) is deferred, horizon: later.
 
-filed_by: agent-T-2365-handover
-filed_at: 2026-06-13T09:46:00Z
+  This auto-restart IS the live-fire demonstration of the loop itself. If you are
+  reading this as a re-injected "## Next Directive (iteration N/5)" block after a
+  budget-critical restart, the loop WORKED — that is the arc-012 G-062 headline
+  mechanic firing for the first time end-to-end. Capture this screen; it is the
+  arc-close --demo artifact.
+
+  No pending build slice remains in arc-012. The lowest-blast HV/LC follow-ups
+  available for a real autonomous continuation (all blast 0-1, deliberately not
+  referenced by task id here so they do not trip the ceiling): the runbook
+  citation follow-up (cite the worktree-gauge fix in the live-fire runbook
+  "tokens 0" troubleshooting row), the costs.sh union-leg sweep, and the cron
+  generate worktree-awareness fix. Operator decides whether to continue into those
+  or to close arc-012 via Watchtower (/arcs).
+
+filed_by: agent-T-2401
+filed_at: 2026-06-14T18:20:00Z
 
 # Continuous-mode bounding (overrides .continuous-mode.yaml when set):
-expires_at: 2026-06-15T00:00:00Z
+expires_at: 2026-06-17T00:00:00Z
 max_iterations: 5
 tier_ceiling: 1
