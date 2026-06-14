@@ -4,12 +4,12 @@ name: "arc-012 loop: live PostToolUse hook reads 0 tokens despite correct PROJEC
 description: >
   Bug B from T-2390 re-drive 2. After forcing PROJECT_ROOT=worktree (Bug A bypassed) the gauge resolves correctly (.tool-counter/.budget-status write to worktree, checkpoint ran 107x) but the loop STILL did not fire: in-hook get_context_tokens returns 0 every check. Gauge logic PROVEN correct (manual hook invocation with same PROJECT_ROOT = 972318 tokens, both stdin and reconstruction paths). Main checkout same HEAD, no local mods, has T-2375+T-2377. So CC passes a valid-but-wrong transcript_path to the live PostToolUse hook, bypassing reconstruction via find_transcript's explicit-path branch (line 72). NOT yet fixable blind. FIRST STEP: instrumented re-drive -- tee the live hook stdin (instrument <worktree>/bin/fw hook dispatcher, which is T-559-allowlisted) and read the captured transcript_path. arc012-livefire-demo worktree is left pre-configured for this. See T-2390 ## Re-drive 2 Bug B.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-007, C-008, agents/context/session-metrics.sh, bin/fw, lib/paths.sh, tests/unit/t2391_project_root_inherited_stale.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T10:01:22Z
-last_update: 2026-06-14T17:19:07Z
-date_finished: null
+last_update: 2026-06-14T17:28:13Z
+date_finished: 2026-06-14T17:28:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -209,3 +209,15 @@ shared resolver into `lib/paths.sh` (DRY across the two hooks).
 ### 2026-06-14T17:19:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-686fd6f1
+- **Timestamp:** 2026-06-14T17:28:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-14T17:28:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

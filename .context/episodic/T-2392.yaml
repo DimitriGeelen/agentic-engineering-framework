@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2392: arc-012 loop: live PostToolUse hook reads 0 tokens despite correct PROJECT_ROOT (transcript_path mismatch)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T17:28:19Z
+# ============================================================================
+
+task_id: T-2392
+task_name: "arc-012 loop: live PostToolUse hook reads 0 tokens despite correct PROJECT_ROOT (transcript_path mismatch)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T10:01:22Z
+completed: 2026-06-14T17:28:13Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw_claude_project_dirs()` added to `lib/paths.sh`: emits the candidate'
+  - '`agents/context/checkpoint.sh` `find_transcript()` reconstruction searches'
+  - '`agents/context/budget-gate.sh` fallback searches all'
+  - '`agents/context/session-metrics.sh` (third reconstruction copy) migrated to'
+  - 'bats pins the worktree-blindness fix: synthetic worktree-keyed (stale) +'
+  - '`bash -n` clean on both hooks + `lib/paths.sh` (L-408).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 446 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 446
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2392-arc-012-loop-live-posttooluse-hook-reads.md
+generated_by: context-agent-hybrid
