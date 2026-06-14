@@ -4,12 +4,12 @@ name: "Master-as-merge-only pre-commit guard (T-2394 G1 first slice)"
 description: >
   Build Layer-1 of inception T-2394 (operator GO in chat 2026-06-14): a master-as-merge-only pre-commit guard. New agents/git/lib/master-guard.sh (scanner-pattern, like secret-scan.sh) called from the pre-commit hook in agents/git/lib/hooks.sh. Refuses a direct authored commit when HEAD is on master/main, while allowing merge commits (MERGE_HEAD), fast-forwards (no commit fires the hook), and rebases. Opt-in via config PROTECT_MASTER (default 0 = consumer-safe; set to 1 in this repo). Bypass: FW_ALLOW_MASTER_COMMIT=1 (Tier-2) or git commit --no-verify (Tier-0). Cherry-pick onto master blocked by default per T-2394 Decisions. Bump commit-msg + pre-commit VERSION markers (PL-078). Bats test: block-direct / allow-merge / allow-rebase / allow-feature-branch / off-by-default / env-bypass. Makes the operator invariant structural not advisory (L-405).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [git-hygiene, governance, pre-commit-hook, parallel-agents]
-components: []
+components: [agents/git/lib/hooks.sh, agents/git/lib/master-guard.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T14:14:16Z
-last_update: 2026-06-14T14:14:48Z
-date_finished: null
+last_update: 2026-06-14T14:46:07Z
+date_finished: 2026-06-14T14:46:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,13 +58,13 @@ Layer-1 build of inception [[T-2394]] (operator GO in chat 2026-06-14). Plan: `d
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `agents/git/lib/master-guard.sh` exists (scanner-pattern), `bash -n` clean; CLI exits 1 (block) for a direct authored commit on master/main when enabled, exits 0 (allow) for merge (MERGE_HEAD), rebase, feature branch, protection-off, or bypass
-- [ ] Pre-commit hook in `agents/git/lib/hooks.sh` calls the guard (bash-invoke, `-f` gate per T-2061) before the secret scan; commit-msg + pre-commit VERSION markers bumped (PL-078)
-- [ ] Opt-in via config `PROTECT_MASTER` (default 0 — consumer-safe); `FW_PROTECT_MASTER=1` env override works; both bypasses real end-to-end: `FW_ALLOW_MASTER_COMMIT=1` (Tier-2 WARN) and `git commit --no-verify` (Tier-0)
-- [ ] Block message names BOTH bypass mechanisms + points at the branch→review→merge flow (L-399/T-1890 parity)
-- [ ] Bats test `tests/unit/master_guard.bats` green: block-direct / allow-merge / allow-rebase / allow-feature-branch / off-by-default / env-bypass (≥6 cases, real git temp repos)
-- [ ] `PROTECT_MASTER: 1` set in this repo's `.framework.yaml` (turns the guard on here; consumers stay off)
-- [ ] Reviewer PASS (`bin/fw reviewer T-2396` → Overall: PASS)
+- [x] `agents/git/lib/master-guard.sh` exists (scanner-pattern), `bash -n` clean; CLI exits 1 (block) for a direct authored commit on master/main when enabled, exits 0 (allow) for merge (MERGE_HEAD), rebase, feature branch, protection-off, or bypass
+- [x] Pre-commit hook in `agents/git/lib/hooks.sh` calls the guard (bash-invoke, `-f` gate per T-2061) before the secret scan; commit-msg + pre-commit VERSION markers bumped (PL-078)
+- [x] Opt-in via config `PROTECT_MASTER` (default 0 — consumer-safe); `FW_PROTECT_MASTER=1` env override works; both bypasses real end-to-end: `FW_ALLOW_MASTER_COMMIT=1` (Tier-2 WARN) and `git commit --no-verify` (Tier-0)
+- [x] Block message names BOTH bypass mechanisms + points at the branch→review→merge flow (L-399/T-1890 parity)
+- [x] Bats test `tests/unit/master_guard.bats` green: block-direct / allow-merge / allow-rebase / allow-feature-branch / off-by-default / env-bypass (≥6 cases, real git temp repos) — 12 cases incl. file-arming + case-sensitivity regression
+- [x] `PROTECT_MASTER: 1` set in this repo's `.framework.yaml` (turns the guard on here; consumers stay off)
+- [x] Reviewer PASS (`bin/fw reviewer T-2396` → Overall: PASS, override OV-2870450a for mock-only-integration FP)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -100,7 +100,7 @@ Layer-1 build of inception [[T-2394]] (operator GO in chat 2026-06-14). Plan: `d
 ## Verification
 bash -n agents/git/lib/master-guard.sh
 bats tests/unit/master_guard.bats
-grep -q '^protect_master:' .framework.yaml
+grep -q '^PROTECT_MASTER:' .framework.yaml
 out=$(bin/fw reviewer T-2396 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -176,14 +176,15 @@ out=$(bin/fw reviewer T-2396 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-14 — Arming the guard in the framework repo (which had no .framework.yaml)
+- **Chose:** Create `.framework.yaml` at the framework root with `PROTECT_MASTER: 1` (UPPERCASE key).
+- **Why:** The framework repo is not an `fw init`'d consumer — it ran on env-vars + defaults and had no config file. The guard reads persistence via `fw_config "PROTECT_MASTER"` (it must apply to *every* commit, so an env var won't do — the deployed hook runs in git's env, not ours). `bin/fw` self-detects the framework via `FRAMEWORK.md + agents/` (bin/fw:88) before any `.framework.yaml` read, and the file carries no `framework_path:`, so it does not disturb path resolution. `test_project_root_discovery.py` explicitly tolerates a marker at FRAMEWORK_ROOT (asserts `result == FRAMEWORK_ROOT`, never an ancestor) — re-run green (7 passed).
+- **Rejected:** (a) `fw init` the framework repo — that treats the framework as a consumer of itself, wrong model; (b) special-case the guard to default-ON inside the framework repo — breaks the consumer-safe default-off contract and is fragile.
+
+### 2026-06-14 — fw_config key case is UPPERCASE (latent silent-OFF bug caught)
+- **Chose:** Store `PROTECT_MASTER:` (uppercase) in `.framework.yaml`; Verification greps `^PROTECT_MASTER:` (uppercase).
+- **Why:** `fw_config "KEY"` greps `^KEY:` case-sensitively and `_config_set` writes the key verbatim; the live convention (PORT, etc.) is uppercase. A lowercase `protect_master:` would never be read → guard silently OFF, while a lowercase Verification grep would still *pass* (matching the lowercase file) — proxy diverged from reality (T-1828 class). Caught by checking `fw config get PROTECT_MASTER` returned empty before trusting it.
+- **Rejected:** lowercase key + lowercase grep (the original WIP-note assumption) — passes the AC but ships a dead guard. Pinned against regression by `master_guard.bats` cases 8 (uppercase read → BLOCK) + 9 (lowercase NOT read → OFF).
 
 ## Decision
 
@@ -204,3 +205,18 @@ out=$(bin/fw reviewer T-2396 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 ### 2026-06-14T14:14:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3f5e0c7a
+- **Timestamp:** 2026-06-14T14:46:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
+
+### 2026-06-14T14:46:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

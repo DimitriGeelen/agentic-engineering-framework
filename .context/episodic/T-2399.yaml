@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2399: fw integrate check — read-only divergence + un-partitionable conflict-class preflight (T-2397 L2 slice 1, G2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T15:58:52Z
+# ============================================================================
+
+task_id: T-2399
+task_name: "fw integrate check — read-only divergence + un-partitionable conflict-class preflight (T-2397 L2 slice 1, G2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T15:53:22Z
+completed: 2026-06-14T15:58:44Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/integrate.py` implements `classify_path()` mapping a repo-relative path to one of the T-2397 §3.2 classes: `regenerate` (counters, LATEST audit yamls), `append-union` (metrics-history, feedback-stream), `id-union` (reviewer-overrides), `take-existing` (episodics), `field-merge` (task `.md`), or `git-merge` (default — real code/docs, needs-human)'
+  - '`fw integrate check [target]` reports branch/target/merge-base/ahead-behind and a verdict; read-only (no mutation, no master-working-tree touch)'
+  - 'Exit codes: 0 ff-ready|clean-merge, 1 auto-resolvable (all both-sided files are governance classes), 2 needs-human (real code both-sided), 3 not-on-a-branch (HEAD=master/main), 4 usage/git-error'
+  - '`fw integrate classify <path>...` emits `path<TAB>class<TAB>auto|needs-human<TAB>strategy`'
+  - '`fw integrate --help` documents verbs, taxonomy, and exit codes; routed in `bin/fw` mirroring `fw write-set` (G4 sibling)'
+  - 'bats `t2399_integrate_check.bats` drives REAL diverged git repos for every exit path (ff-ready, clean-merge, auto-resolvable, needs-human, mixed→human-wins, not-on-branch, custom-target) + classify unit checks — 8/8'
+  - '`bash -n bin/fw` clean (L-408); live smoke from this worktree returns FF-READY (master is ancestor)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2399-fw-integrate-check--read-only-divergence.md
+generated_by: context-agent-hybrid
