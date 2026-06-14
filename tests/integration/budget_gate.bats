@@ -165,3 +165,109 @@ run_gate() {
     [[ "$output" == *"BLOCKED"* ]]
     [[ "$output" == *"source files"* ]]
 }
+
+# --- T-2403: restart signal on the critical-BLOCK path ---
+# The restart signal (.restart-requested) is what the claude-fw terminator
+# watches for to fire the autonomous-continuous-mode loop. Previously it was
+# written ONLY by checkpoint.sh (PostToolUse) on handover-success — a path shut
+# off at critical (blocked tools never reach PostToolUse), so the loop never
+# armed. These tests pin that budget-gate now writes it on the block path,
+# decoupled from PostToolUse/handover, and ONLY on the block path.
+
+SIGNAL_PATH() { echo "$PROJECT_ROOT/.context/working/.restart-requested"; }
+
+@test "T-2403: critical block writes .restart-requested signal (fast path)" {
+    write_status "critical" 175000
+    run_gate "Write" "\"file_path\": \"/some/project/src/main.py\""
+    [ "$status" -eq 2 ]
+    [ -f "$(SIGNAL_PATH)" ]
+}
+
+@test "T-2403: critical block writes signal for blocked Bash too" {
+    write_status "critical" 175000
+    run_gate "Bash" "\"command\": \"python3 build.py\""
+    [ "$status" -eq 2 ]
+    [ -f "$(SIGNAL_PATH)" ]
+}
+
+@test "T-2403: critical ALLOWED path (Read) does NOT write signal" {
+    write_status "critical" 175000
+    run_gate "Read"
+    [ "$status" -eq 0 ]
+    [ ! -f "$(SIGNAL_PATH)" ]
+}
+
+@test "T-2403: critical ALLOWED path (git commit) does NOT write signal" {
+    write_status "critical" 175000
+    run_gate "Bash" "\"command\": \"git commit -m 'T-001: wrap up'\""
+    [ "$status" -eq 0 ]
+    [ ! -f "$(SIGNAL_PATH)" ]
+}
+
+@test "T-2403: critical wrap-up Write (.context/) does NOT write signal" {
+    write_status "critical" 175000
+    run_gate "Write" "\"file_path\": \"/project/.context/handovers/session.md\""
+    [ "$status" -eq 0 ]
+    [ ! -f "$(SIGNAL_PATH)" ]
+}
+
+@test "T-2403: ok level does NOT write signal" {
+    write_status "ok" 50000
+    run_gate "Write" "\"file_path\": \"/src/main.py\""
+    [ "$status" -eq 0 ]
+    [ ! -f "$(SIGNAL_PATH)" ]
+}
+
+@test "T-2403: urgent level does NOT write signal" {
+    write_status "urgent" 155000
+    run_gate "Write" "\"file_path\": \"/src/main.py\""
+    [ "$status" -eq 0 ]
+    [ ! -f "$(SIGNAL_PATH)" ]
+}
+
+@test "T-2403: signal is valid JSON with required keys (parity with checkpoint.sh:210-212)" {
+    write_status "critical" 175000
+    printf 'session_id: S-TEST-2403\n' > "$PROJECT_ROOT/.context/working/session.yaml"
+    run_gate "Write" "\"file_path\": \"/src/main.py\""
+    [ "$status" -eq 2 ]
+    run python3 -c "
+import json
+d = json.load(open('$(SIGNAL_PATH)'))
+assert all(k in d for k in ('timestamp','session_id','reason','tokens')), d
+assert d['session_id'] == 'S-TEST-2403', d
+assert d['tokens'] == 175000, d
+print('ok')
+"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"ok"* ]]
+}
+
+@test "T-2403: signal folds .next-directive.yaml directive (T-2363 parity)" {
+    write_status "critical" 175000
+    printf 'directive: |\n  marching orders for the next iteration\n' > "$PROJECT_ROOT/.context/working/.next-directive.yaml"
+    run_gate "Write" "\"file_path\": \"/src/main.py\""
+    [ "$status" -eq 2 ]
+    run python3 -c "
+import json
+d = json.load(open('$(SIGNAL_PATH)'))
+assert 'directive' in d, d
+assert d['directive'].strip() == 'marching orders for the next iteration', d
+print('ok')
+"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"ok"* ]]
+}
+
+@test "T-2403: absent .next-directive.yaml → signal valid, no directive key" {
+    write_status "critical" 175000
+    run_gate "Write" "\"file_path\": \"/src/main.py\""
+    [ "$status" -eq 2 ]
+    run python3 -c "
+import json
+d = json.load(open('$(SIGNAL_PATH)'))
+assert 'directive' not in d, d
+print('ok')
+"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"ok"* ]]
+}

@@ -16,6 +16,7 @@
 #   - Slow path: read JSONL transcript — ~30ms (every 5th call)
 #
 # Part of: Agentic Engineering Framework (P-009: Context Budget Enforcement)
+# (T-2403: writes .restart-requested on the critical-block path — see _write_restart_signal)
 
 set -uo pipefail
 
@@ -26,6 +27,60 @@ source "$FRAMEWORK_ROOT/lib/config.sh"
 fw_hook_crash_trap "budget-gate"
 STATUS_FILE="$CONTEXT_DIR/working/.budget-status"
 GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
+
+# T-2403: write the restart signal on the critical-BLOCK path so autonomous
+# continuous mode actually arms. Previously the signal was written ONLY by
+# checkpoint.sh (PostToolUse) inside its handover-success block — a path that is
+# shut off at critical: general tools are blocked here (exit 2) → their
+# PostToolUse never fires → checkpoint never writes the signal → the terminator
+# waits forever → the loop dead-locks at link 1 and the iteration never advances.
+# budget-gate is the PreToolUse hook that RELIABLY fires at critical (it is the
+# thing detecting + blocking), so emitting the signal here decouples it from the
+# blocked PostToolUse/handover path. Handover stays best-effort (claude -c
+# preserves the conversation; post-compact-resume re-injects the directive), so a
+# missing handover degrades context quality but does NOT break the loop.
+#
+# JSON shape matches checkpoint.sh:210-212 (timestamp, session_id, reason,
+# tokens, optional directive fold from .next-directive.yaml) so claude-fw and
+# post-compact-resume consume it identically. The whole body is wrapped so it can
+# NEVER break the gate — this hook gates EVERY tool call, and a non-zero/partial
+# failure here would block all tools. Called only on the BLOCK path (after the
+# `allowed` check), never on the allowed path, so a restart can't fire while the
+# agent is still wrapping up (mid-commit / mid-handover). Idempotent: budget-gate
+# runs on every call, so the write may repeat while at critical — each repeat
+# just refreshes the timestamp of an already-valid signal (the terminator acts on
+# first detection, so churn is harmless).
+_write_restart_signal() {
+    local tokens="${1:-0}"
+    {
+        local restart_signal="$CONTEXT_DIR/working/.restart-requested"
+        local session_id=""
+        if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
+            session_id=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
+        fi
+        # T-2363 directive fold (parity with checkpoint.sh): include the
+        # .next-directive.yaml `directive:` value so the resumed session can pick
+        # it up. Absent file → JSON shape unchanged (backward-compat).
+        local _directive_file="$CONTEXT_DIR/working/.next-directive.yaml"
+        local _directive_json=""
+        if [ -f "$_directive_file" ]; then
+            _directive_json=$(python3 -c "
+import yaml, json
+try:
+    with open('$_directive_file') as f:
+        d = yaml.safe_load(f) or {}
+    v = d.get('directive')
+    if isinstance(v, str) and v.strip():
+        print(',\"directive\":' + json.dumps(v.strip()))
+except Exception:
+    pass
+" 2>/dev/null) || _directive_json=""
+        fi
+        cat > "$restart_signal" << SIGNAL_EOF
+{"timestamp":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session_id":"${session_id:-unknown}","reason":"critical_budget_gate_block","tokens":${tokens:-0}${_directive_json}}
+SIGNAL_EOF
+    } 2>/dev/null || true
+}
 
 # Context window size — conservative default, override via FW_CONTEXT_WINDOW.
 # Opus 4.6 supports 1M but 300K is a safe default for quality + cost control.
@@ -142,6 +197,7 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
+            _write_restart_signal "$STATUS_TOKENS"   # T-2403: arm autonomous restart
             exit 2
             ;;
     esac
@@ -304,6 +360,7 @@ case "$LEVEL" in
         echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
+        _write_restart_signal "$TOKENS"   # T-2403: arm autonomous restart
         exit 2
         ;;
 esac
