@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2398: Fix OBS-076: _self_vendor_* find must prune node_modules/__pycache__ (phantom pre-push drift)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-14T15:16:46Z
+# ============================================================================
+
+task_id: T-2398
+task_name: "Fix OBS-076: _self_vendor_* find must prune node_modules/__pycache__ (phantom pre-push drift)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T15:11:45Z
+completed: 2026-06-14T15:16:40Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_self_vendor_libs`, `_self_vendor_agents`, `_self_vendor_web` (lib/upgrade.sh) prune `node_modules` / `__pycache__` / `.git` in their `find` (the three find-based helpers; templates/policy/shim copy fixed paths and need no prune)'
+  - 'Regression test `tests/unit/t2398_self_vendor_prune.bats` green: node_modules/__pycache__ pruned for all three helpers + positive controls (real drift still detected, no over-pruning)'
+  - 'Live proof: the fixed code scanning the real main tree (lib/ts/node_modules populated) reports zero phantom drift (was "would sync 11")'
+  - '`bash -n lib/upgrade.sh` clean'
+  - 'Reviewer PASS (`bin/fw reviewer T-2398` → Overall: PASS)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/completed/T-2398-fix-obs-076-selfvendor-find-must-prune-n.md
+generated_by: context-agent-hybrid

@@ -169,7 +169,7 @@ _self_vendor_libs() {
             fi
             _sv_updated=$((_sv_updated + 1))
         fi
-    done < <(find "$FRAMEWORK_ROOT/lib" -type f \( -name "*.sh" -o -name "*.md" \) 2>/dev/null)
+    done < <(find "$FRAMEWORK_ROOT/lib" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.md" \) -print 2>/dev/null)
     if [ "$_sv_updated" -gt 0 ]; then
         # T-2239: dry-run reports what WOULD happen; real-run reports what DID.
         # Same prefix, distinct verb — preserves the count semantic for both modes
@@ -398,7 +398,7 @@ _self_vendor_agents() {
             fi
             _sva_updated=$((_sva_updated + 1))
         fi
-    done < <(find "$FRAMEWORK_ROOT/agents" -type f \( -name "*.sh" -o -name "*.py" -o -name "*.md" \) 2>/dev/null)
+    done < <(find "$FRAMEWORK_ROOT/agents" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.py" -o -name "*.md" \) -print 2>/dev/null)
     if [ "$_sva_updated" -gt 0 ]; then
         if [ "$dry_run" = true ]; then
             echo -e "  ${GREEN}Self-vendor:${NC} would sync $_sva_updated agents/ file(s) to .agentic-framework/agents/"
@@ -460,7 +460,7 @@ _self_vendor_web() {
             fi
             _svw_updated=$((_svw_updated + 1))
         fi
-    done < <(find "$FRAMEWORK_ROOT/web" -type f \( -name "*.sh" -o -name "*.py" \) 2>/dev/null)
+    done < <(find "$FRAMEWORK_ROOT/web" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.py" \) -print 2>/dev/null)
     if [ "$_svw_updated" -gt 0 ]; then
         if [ "$dry_run" = true ]; then
             echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svw_updated web/ file(s) to .agentic-framework/web/"
