@@ -66,10 +66,56 @@ armed. Evidence: `docs/reports/T-2389-livefire-evidence.md`.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Classify universal-vs-launch-artifact: determine how the fw hook chain resolves PROJECT_ROOT (CLAUDE_PROJECT_DIR? cwd git-toplevel? HOME fallback?) and which path yields `/root` for the spawned session vs the correct root for a normal session
-- [ ] If launch-artifact: identify the propagation fix (e.g. pass `CLAUDE_PROJECT_DIR=<worktree>` in the spawn env, or harden fw's resolution to fall back to cwd git-toplevel before HOME) and confirm it makes a re-driven live-fire's gauge read real tokens
-- [ ] If universal: escalate — this is a gauge-blinding bug more severe than T-2377; file the fix with a regression test
-- [ ] RCA filled; reviewer PASS
+- [x] Classify universal-vs-launch-artifact + resolution mechanism — DONE: NOT universal (own session resolves fine); mechanism = `find_project_root()` walks `$PWD`, ignores `CLAUDE_PROJECT_DIR`. See ## Findings + ## RCA.
+- [x] Identify + ship the fix — DONE + unit-proven: `bin/fw` now prefers `CLAUDE_PROJECT_DIR` (validity-gated) over the `$PWD` walk; `tests/unit/t2390_project_root_claude_dir.bats` 3/3 (t1 fix works, t2 reproduces bug, t3 safe fallthrough). Commit on branch.
+- [ ] Live re-drive confirmation — **HANDED OFF** (blocked by parent session budget critical, not by the fix). Re-drive worktree is pre-configured + ready (see ## Re-drive ready-state); a fresh session spawns + drives in a few steps.
+- [x] N/A (not universal — no escalation needed)
+- [ ] RCA filled (done below); reviewer PASS (pending — run `fw reviewer T-2390` next session)
+
+## Re-drive ready-state (for the next session — fix is shipped, just needs driving)
+
+The worktree `/opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-livefire-demo`
+(branch `livefire-demo-2390`, off master) is **pre-configured** so the loop will fire with the
+fix active:
+- `startup` matcher present (off master, T-2376).
+- Its `bin/fw` is the **fixed** one (CLAUDE_PROJECT_DIR preference) — verified.
+- Its `.claude/settings.json` hooks **self-reference** that fixed `bin/fw` (sed-rewritten from the
+  hard-coded main path), so the hook chain runs the fix.
+- continuous-mode (`max_iterations:3, current_iteration:0`) + `.next-directive.yaml` seeded.
+- Trust + MCP-disable seeded in `~/.claude.json` for the worktree path.
+
+Next session (with budget headroom), drive it:
+1. `termlink spawn --name lf --backend tmux --env FW_CONTEXT_WINDOW=20000 --env "P=<prompt>" --wait -- bash -lc 'cd <worktree> && exec claude-fw "$P" --permission-mode acceptEdits'`
+2. `tmux send-keys -t tl-lf Escape` (dismiss the CC 2.1.177 MCP dialog).
+3. **PROBE FIRST:** send a prompt making claude run one **Bash** call writing to a *worktree-internal*
+   path (e.g. `echo probe >> .context/working/probe.log`). Then check the worktree's
+   `.context/working/.budget-status` got written (→ hooks resolve to the worktree, fix works) and
+   that no `check-project-boundary` "Project root: /root" block appears. If confirmed, drive the
+   burn (Reads to climb + a Bash at high tokens) → critical → `.restart-requested` → iteration
+   advances. budget-gate matches **Write|Edit|Bash NOT Read** — burn must include Bash.
+4. Teardown: `tmux kill-session`, `git worktree remove ../arc012-livefire-demo --force`, revert the
+   `~/.claude.json` entry, `git branch -D livefire-demo-2390` (Tier-0).
+
+## RCA
+
+**Symptom:** arc-012 continuous-mode loop never armed in the T-2389 TermLink-driven live-fire;
+`check-project-boundary` blocked a livefire Bash with banner "Project root: /root".
+
+**Root cause:** `bin/fw:find_project_root()` resolves PROJECT_ROOT by walking up from `$PWD`.
+Claude Code runs hook commands with cwd = `$HOME` (/root) for the spawned session, so the walk
+mis-resolved (latched a stray `/root/.tasks` or fell back wrong). Every fw-backed hook in the
+chain inherited the wrong root → budget-gate/checkpoint read/wrote the wrong CONTEXT_DIR → gauge
+blind → no `.restart-requested`.
+
+**Why structurally allowed:** fw consulted `CLAUDE_PROJECT_DIR` **nowhere** — the env var Claude
+Code provides to hooks precisely so they resolve the project independent of invocation cwd. The
+four per-link integration tests stub the transcript and run fw from the correct cwd, so none
+exercised a real session whose hooks resolve their own root. Same blindness class as T-2377
+(reconstruct-instead-of-trust) but via hook-cwd rather than transcript-path.
+
+**Prevention:** (fix) `bin/fw` prefers `CLAUDE_PROJECT_DIR` (validity-gated) before the `$PWD`
+walk; (test) `tests/unit/t2390_project_root_claude_dir.bats` pins fix + bug-repro + safe
+fallthrough.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
