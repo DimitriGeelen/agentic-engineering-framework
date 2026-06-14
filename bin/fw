@@ -153,8 +153,33 @@ resolve_framework() {
     return 1
 }
 
+# T-2391: An inherited PROJECT_ROOT must be validated, not trusted verbatim.
+# A long-lived parent (the tmux-server daemon, PID 6177) can carry a stale
+# PROJECT_ROOT=$HOME (/root) in its env; every spawned session inherits it, the
+# `-z` guard below short-circuits, and the poison is used as-is — blinding the
+# budget gauge and leaving the T-2390 CLAUDE_PROJECT_DIR block (further down) as
+# dead code (origin: T-2389/T-2390 live-fire, /proc/6177/environ proof).
+# Staleness is deliberately NARROW to preserve the "env wins" contract operators
+# rely on for explicit cross-dir targeting (test_project_root_discovery.py::
+# test_resolve_project_root_env_wins_unconditionally): a real inherited root
+# (marker present, != $HOME) is kept. Only the daemon-poison signature (= $HOME),
+# a non-directory, or a markerless dir is treated as stale → re-resolved below.
+_project_root_is_stale() {
+    local pr="${1:-}"
+    [ -n "$pr" ] || return 1            # empty → handled by the -z branch, not "stale"
+    [ -d "$pr" ] || return 0            # vanished/garbage dir → stale
+    if [ -n "${HOME:-}" ]; then         # = $HOME → the canonical daemon-poison signature
+        local canon_pr canon_home
+        canon_pr="$(cd "$pr" 2>/dev/null && pwd -P)" || return 0
+        canon_home="$(cd "$HOME" 2>/dev/null && pwd -P)" || canon_home="$HOME"
+        [ "$canon_pr" = "$canon_home" ] && return 0
+    fi
+    [ -f "$pr/.framework.yaml" ] || [ -d "$pr/.tasks" ] || return 0   # no marker → stale
+    return 1                            # real project root, not $HOME → keep (env wins)
+}
+
 # Resolve PROJECT_ROOT
-if [ -z "${PROJECT_ROOT:-}" ]; then
+if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; then
     # T-2390: prefer CLAUDE_PROJECT_DIR when set + valid. Claude Code exports it
     # for hook commands as the session's project root, independent of the hook's
     # invocation cwd. Without this, find_project_root() walks up from $PWD — and

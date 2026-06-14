@@ -3686,3 +3686,10 @@ X'` returning empty group."
   date: 2026-06-13
   context: Added via context agent
   application: TBD
+- id: L-484
+  learning: "bin/fw 'resolve PROJECT_ROOT only when empty' conflated UNSET with VALID — a non-empty inherited value (tmux-daemon poison PROJECT_ROOT=$HOME) was trusted verbatim, making the T-2390 CLAUDE_PROJECT_DIR fix dead code. Validate inherited resolver inputs, don't just compute-when-empty. Fix: _project_root_is_stale (=$HOME / not-a-dir / no-marker) re-routes through the resolver while keeping 'env wins' for legitimate overrides."
+  source: P-001
+  task: T-2391
+  date: 2026-06-14
+  context: Added via context agent
+  application: TBD

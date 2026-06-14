@@ -4,10 +4,10 @@ name: "bin/fw: validate inherited PROJECT_ROOT; reject stale /root from tmux-ser
 description: >
   Bug A from T-2390 re-drive 2. The tmux-server daemon (PID 6177, child of init) carries a stale PROJECT_ROOT=/root in its env; every 'termlink spawn --backend tmux' session inherits it. bin/fw resolves PROJECT_ROOT only when empty (if [ -z ]), so it uses the poison verbatim and find_project_root never runs. This blinds budget-gate/checkpoint in spawned sessions (arc-012 loop never arms). The T-2390 CLAUDE_PROJECT_DIR-preference fix is dead code (inside the [ -z ] guard; CLAUDE_PROJECT_DIR also unset). Fix: validate an inherited PROJECT_ROOT and re-resolve when stale (PWD not under it / equals $HOME). High blast-radius (every fw invocation) -> needs careful design + bats. Validity criterion is non-trivial: framework repo has no .framework.yaml; /root may have stray .tasks. See T-2390 ## Re-drive 2 Bug A. Cheaper sibling mitigation: restart tmux server with clean env.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T10:01:16Z
-last_update: 2026-06-14T10:01:16Z
+last_update: 2026-06-14T15:38:25Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,47 +40,47 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Bug A from T-2390 re-drive 2. `bin/fw` resolves `PROJECT_ROOT` only when empty
+(`if [ -z "${PROJECT_ROOT:-}" ]`, bin/fw:157). A long-lived parent — the tmux-server
+daemon (PID 6177) — carries a stale `PROJECT_ROOT=/root` (= `$HOME`) in its env;
+every `termlink spawn --backend tmux` session inherits it, so the `-z` guard is
+false and the poison is used verbatim. `find_project_root()` never runs and the
+T-2390 `CLAUDE_PROJECT_DIR`-preference block (bin/fw:170) is dead code in that
+path. Net effect: budget-gate/checkpoint hooks in spawned sessions resolve `/root`,
+the gauge is blind, and the arc-012 continuous loop never arms.
+
+Fix: validate an inherited `PROJECT_ROOT` and re-resolve when **stale** —
+narrowly, to avoid breaking the documented "env wins" contract operators rely on
+for explicit cross-dir targeting (`test_project_root_discovery.py::test_resolve_project_root_env_wins_unconditionally`).
+Staleness signature: `=$HOME` (the daemon-poison case) OR not a directory OR no
+project marker (`.framework.yaml`/`.tasks`). A legitimate inherited value (real
+project, marker present, ≠ `$HOME`) is kept untouched — env still wins.
+
+Scope note: **necessary but not sufficient** to live-fire continuous mode —
+Bug B (T-2392, in-hook token gauge reads 0 via a wrong `transcript_path`) is a
+separate blocker that needs an instrumented live run.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_project_root_is_stale()` helper added to `bin/fw`: returns stale (exit 0) when a non-empty inherited `PROJECT_ROOT` equals canonical `$HOME`, is not a directory, or carries no `.framework.yaml`/`.tasks` marker; returns not-stale (exit 1) otherwise
+- [x] Resolution guard changed from `[ -z PROJECT_ROOT ]` to `[ -z PROJECT_ROOT ] || _project_root_is_stale "$PROJECT_ROOT"` so a stale inherited value routes through the existing `CLAUDE_PROJECT_DIR`→`find_project_root` resolution
+- [x] Poison fixed: `PROJECT_ROOT=$HOME` (with a stray `.tasks` marker) re-resolves to the cwd's real project, not `$HOME` (bats t1; live-proven from worktree with `PROJECT_ROOT=/root`)
+- [x] `CLAUDE_PROJECT_DIR` preference is now reachable for the inherited-poison case (no longer dead code): stale `PROJECT_ROOT` + valid `CLAUDE_PROJECT_DIR` resolves to `CLAUDE_PROJECT_DIR` (bats t2)
+- [x] No regression — env still wins for legitimate overrides: an inherited `PROJECT_ROOT` pointing at a real project (marker present, ≠ `$HOME`) is KEPT even from an unrelated cwd (bats t3 cross-dir + t4 same-dir)
+- [x] Markerless and non-existent inherited dirs re-resolve (bats t5, t6)
+- [x] `bash -n bin/fw` clean (L-408); existing `t2390_project_root_claude_dir.bats` (3/3) and `test_project_root_discovery.py` (7/7) stay green
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+_(none — all criteria are agent-verifiable: deterministic bash resolution + bats.)_
 
 ## Verification
+
+bash -n bin/fw
+bats tests/unit/t2391_project_root_inherited_stale.bats
+bats tests/unit/t2390_project_root_claude_dir.bats
+python3 -m pytest tests/unit/test_project_root_discovery.py -q
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -115,19 +115,29 @@ date_finished: null
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Spawned (`termlink spawn --backend tmux`) sessions resolve
+`PROJECT_ROOT=/root`; budget-gate/checkpoint hooks write to / read from the wrong
+project, the token gauge is blind, and the arc-012 continuous loop never arms
+(T-2389/T-2390 live-fires, 3× NO-GO).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `bin/fw` only *computes* `PROJECT_ROOT` when the inherited env var
+is empty (`if [ -z "${PROJECT_ROOT:-}" ]`). It never *validates* a non-empty
+inherited value. The tmux-server daemon (PID 6177, child of init) carries
+`PROJECT_ROOT=/root` (= `$HOME`) — proven via `/proc/6177/environ` — which every
+spawned session inherits, so the guard short-circuits and the poison is used
+verbatim. The T-2390 `CLAUDE_PROJECT_DIR`-preference fix lives *inside* the same
+`[ -z ]` guard, so it is dead code whenever a (poisoned) value is inherited.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** "resolve when empty" silently conflated *unset* with
+*valid*. There was no notion of a stale-but-non-empty inherited root, and nothing
+distinguished the daemon-poison signature (`=$HOME`) from a legitimate operator
+override. T-2390 added the better resolver but gated it on the wrong condition.
+
+**Prevention:** `_project_root_is_stale()` makes the staleness criterion explicit
+and testable; `t2391_project_root_inherited_stale.bats` pins both the fix (poison
+re-resolves) AND the non-regression boundary (legitimate cross-dir override still
+wins) so the next change to this block can't silently re-trust the env. Learning
+captured for the "resolve-when-empty conflates unset with valid" class.
 
 ## Evolution
 
@@ -180,3 +190,16 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2391-binfw-validate-inherited-projectroot-rej.md
 - **Context:** Initial task creation
+
+### 2026-06-14T15:38:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f56e68d3
+- **Timestamp:** 2026-06-14T15:44:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
