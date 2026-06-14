@@ -179,6 +179,12 @@ executing the Layer-1 hook (post-GO build work, separate task); the current-inst
 
 ## Decision
 
+**GO — first slice** — operator decision in chat, 2026-06-14 ("GO on B's first slice"). Authorises Layer 1:
+the master-as-merge-only pre-commit guard (G1). Execution moved to build task [[T-2396]] per inception
+discipline (no building under the inception ID). Layers 2 (G2 reconciliation helper) and 4 (G3 task-claim
+lease) remain captured follow-ons; Layer 3 (G4) stays with arc-011. Formal Watchtower `fw inception decide`
+deferred — no worktree Watchtower; the GO is the operator's explicit chat authorisation.
+
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
