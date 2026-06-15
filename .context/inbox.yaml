@@ -648,3 +648,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-077
+  text: "add"
+  captured: 2026-06-15T17:59:35Z
+  context_task: T-1700
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-078
+  text: "add"
+  captured: 2026-06-15T18:06:48Z
+  context_task: T-1700
+  tags: []
+  status: pending
+  promoted_to: null
