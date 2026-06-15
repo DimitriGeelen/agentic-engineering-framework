@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2414: claude-fw -n project flag — stamp project name into CC picker (implements T-2413
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-15T22:31:52Z
+# ============================================================================
+
+task_id: T-2414
+task_name: "claude-fw -n project flag — stamp project name into CC picker (implements T-2413"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-15T22:25:16Z
+completed: 2026-06-15T22:31:21Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-16T00:29:40+02:00
+last_commit: 2026-06-16T00:29:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw stamps -n <project> into CC picker
+
+# Key outcomes
+outcomes:
+  - '`bin/claude-fw` passes `-n <project>` to `claude` when no `-n`/`--name` flag is in argv (default to `basename` of git toplevel or `$PWD`).'
+  - 'User-provided `--name`/`-n` flag wins: `bin/claude-fw --name "custom"` does NOT add a second `-n`.'
+  - '`FW_PROJECT_NAME=AEF bin/claude-fw` passes `-n AEF` (env-var override).'
+  - '`FW_NO_PICKER_NAME=1 bin/claude-fw` does NOT add any `-n` flag (opt-out).'
+  - 'bats integration test in `tests/integration/claude_fw_picker_name.bats` covers all 4 cases above against a stub `claude` on PATH (5/5 PASS, +1 CONTROL for `-n` short-form).'
+  - '`bash -n bin/claude-fw` passes (L-408).'
+  - 'Reviewer PASS: R-d5dcb02a (Overall: PASS, Needs Human: no, Findings: none)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/claude-fw'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0615-2341.md'
+  - '.tasks/active/T-2413-investigate-cc-picker-description-influe.md'
+  - '.tasks/active/T-2414-claude-fw--n-project-flag--stamp-project.md'
+  - 'tests/integration/claude_fw_picker_name.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T00:29:40"
+    action: "T-2414: claude-fw stamps -n <project> into CC picker"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 6
+  lines_added: 1576
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2414-claude-fw--n-project-flag--stamp-project.md
+generated_by: context-agent-hybrid
