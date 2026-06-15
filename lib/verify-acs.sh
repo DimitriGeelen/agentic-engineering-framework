@@ -15,12 +15,26 @@ do_verify_acs() {
     local filter_task=""
     local auto_check=false
     local execute=false
+    local arc_filter=""  # T-2407: --arc <id> filter (sibling of T-2405 review-queue --arc)
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --verbose|-v) verbose=true; shift ;;
             --auto-check) auto_check=true; shift ;;
             --execute) auto_check=true; execute=true; shift ;;
+            --arc)
+                shift
+                arc_filter="${1:-}"
+                if [ -z "$arc_filter" ]; then
+                    echo -e "${RED}ERROR: --arc requires an argument (arc-NNN or slug)${NC}" >&2
+                    return 1
+                fi
+                shift
+                ;;
+            --arc=*)
+                arc_filter="${1#--arc=}"
+                shift
+                ;;
             --help|-h)
                 echo -e "${BOLD}fw verify-acs${NC} — Automated Human AC evidence collection"
                 echo ""
@@ -33,6 +47,11 @@ do_verify_acs() {
                 echo "  -v, --verbose     Show detailed evidence for each check"
                 echo "  --auto-check      Report which RUBBER-STAMP ACs can be auto-checked"
                 echo "  --execute         Actually check passing RUBBER-STAMP ACs in task files"
+                echo "  --arc <id>        Filter to tasks tagged with <id>"
+                echo "                    Accepts arc-NNN form (arc-003) or slug form"
+                echo "                    (orchestrator-rethink). Matches frontmatter arc_id:"
+                echo "                    AND legacy tags: [arc:<slug>, ...] (T-1849)."
+                echo "                    Unknown id → error + exit 1."
                 echo "  T-XXX             Verify specific task only"
                 echo "  -h, --help        Show this help"
                 echo ""
@@ -42,6 +61,7 @@ do_verify_acs() {
                 echo ""
                 echo "Origin: T-823 (Automated Human AC verification inception)"
                 echo "        T-840 (Auto-check RUBBER-STAMP ACs)"
+                echo "        T-2407 (--arc filter for arc-scoped review burst)"
                 return 0
                 ;;
             T-*) filter_task="$1"; shift ;;
@@ -67,7 +87,7 @@ do_verify_acs() {
     echo ""
 
     # Find all tasks with unchecked Human ACs
-    python3 - "$PROJECT_ROOT" "$filter_task" "$wt_port" "$wt_running" "$verbose" "$auto_check" "$execute" << 'PYVERIFY'
+    PROJECT_ROOT="$PROJECT_ROOT" FW_VERIFY_ACS_ARC="$arc_filter" python3 - "$PROJECT_ROOT" "$filter_task" "$wt_port" "$wt_running" "$verbose" "$auto_check" "$execute" << 'PYVERIFY'
 import os, re, sys, subprocess, json
 
 project_root = sys.argv[1]
@@ -181,6 +201,58 @@ if not os.path.isdir(active_dir):
     print(f"{RED}No active tasks directory{NC}")
     sys.exit(1)
 
+# T-2407: --arc <id> filter. Resolve user input to canonical (arc-NNN, slug)
+# pair by reading .context/arcs/*.yaml. Sibling of T-2405 review-queue --arc.
+arc_filter_raw = os.environ.get("FW_VERIFY_ACS_ARC", "").strip()
+arc_filter_canonical = None  # (arc_id, slug) tuple when set
+if arc_filter_raw:
+    arcs_dir = os.path.join(project_root, ".context", "arcs")
+    if not os.path.isdir(arcs_dir):
+        print(f"ERROR: --arc {arc_filter_raw}: no .context/arcs/ directory", file=sys.stderr)
+        sys.exit(1)
+    matched_id = None
+    matched_slug = None
+    for arc_yaml in sorted(os.listdir(arcs_dir)):
+        if not arc_yaml.endswith(".yaml"):
+            continue
+        ap = os.path.join(arcs_dir, arc_yaml)
+        try:
+            with open(ap) as fh:
+                content = fh.read()
+        except OSError:
+            continue
+        id_m = re.search(r"^id:\s*(\S+)", content, re.MULTILINE)
+        slug_m = re.search(r"^slug:\s*(\S+)", content, re.MULTILINE)
+        if not id_m:
+            continue
+        a_id = id_m.group(1).strip()
+        a_slug = slug_m.group(1).strip() if slug_m else arc_yaml[:-5]
+        if arc_filter_raw == a_id or arc_filter_raw == a_slug:
+            matched_id = a_id
+            matched_slug = a_slug
+            break
+    if matched_id is None:
+        print(f"ERROR: --arc {arc_filter_raw}: no matching arc in .context/arcs/", file=sys.stderr)
+        print("Run 'fw arc list' to see available arcs.", file=sys.stderr)
+        sys.exit(1)
+    arc_filter_canonical = (matched_id, matched_slug)
+
+def _task_matches_arc(fm_text, canonical):
+    """T-2407: True iff task's arc_id frontmatter OR legacy arc:<slug> tag
+    matches the canonical (arc_id, slug) pair. Accepts either form on either
+    side. Mirrors T-2405's review-queue arc-matcher."""
+    if canonical is None:
+        return True
+    a_id, a_slug = canonical
+    aid_m = re.search(r"^arc_id:\s*(\S+)", fm_text, re.MULTILINE)
+    if aid_m:
+        v = aid_m.group(1).strip().strip("'\"")
+        if v == a_id or v == a_slug:
+            return True
+    if re.search(rf"\barc:({re.escape(a_id)}|{re.escape(a_slug)})\b", fm_text):
+        return True
+    return False
+
 for fn in sorted(os.listdir(active_dir)):
     if not fn.endswith('.md'):
         continue
@@ -206,6 +278,13 @@ for fn in sorted(os.listdir(active_dir)):
         continue
     if status != 'work-completed' and not filter_task:
         continue
+
+    # T-2407: arc filter — extract raw frontmatter text for the regex matcher.
+    if arc_filter_canonical is not None:
+        fm_m = re.match(r'^---\s*\n(.*?)\n---', text, re.DOTALL)
+        fm_text_for_arc = fm_m.group(1) if fm_m else ""
+        if not _task_matches_arc(fm_text_for_arc, arc_filter_canonical):
+            continue
 
     # Extract Human ACs
     ac_match = re.search(r'^## Acceptance Criteria\s*\n(.*?)(?=\n## |\Z)', text, re.MULTILINE | re.DOTALL)
