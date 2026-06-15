@@ -155,12 +155,56 @@ _terminator_watch() {
 # Default is 120s which is too short. T-501/T-435.
 export BASH_DEFAULT_TIMEOUT_MS="${BASH_DEFAULT_TIMEOUT_MS:-300000}"
 
+# T-2411: one-shot startup overview so the operator sees which project context the
+# session is about to enter. Emitted before `command claude` takes the screen and
+# NOT re-emitted on auto-restart iterations (the resumed session already knows where
+# it is). Failures non-fatal — every lookup degrades to "(none)" / "(unknown)".
+# Opt out: FW_NO_STARTUP_BANNER=1.
+_print_startup_banner() {
+    [ "${FW_NO_STARTUP_BANNER:-0}" = "1" ] && return 0
+    local git_root project branch focus arc focus_file arc_file
+    git_root=$(git rev-parse --show-toplevel 2>/dev/null) || git_root=""
+    if [ -n "$git_root" ]; then
+        project="${FW_PROJECT_NAME:-$(basename "$git_root")}"
+        branch=$(git -C "$git_root" branch --show-current 2>/dev/null) || branch=""
+        focus_file="$git_root/.context/working/focus.yaml"
+        arc_file="$git_root/.context/working/arc-focus.yaml"
+    else
+        project="${FW_PROJECT_NAME:-(unknown)}"
+        branch=""
+        focus_file=""
+        arc_file=""
+    fi
+    [ -z "$branch" ] && branch="(detached)"
+    focus=""
+    if [ -n "$focus_file" ] && [ -f "$focus_file" ]; then
+        focus=$(grep -E '^current_task:' "$focus_file" 2>/dev/null | head -1 | sed -E 's/^current_task:[[:space:]]*//; s/[[:space:]]*$//') || focus=""
+    fi
+    [ -z "$focus" ] || [ "$focus" = "null" ] && focus="(none)"
+    arc=""
+    if [ -n "$arc_file" ] && [ -f "$arc_file" ]; then
+        arc=$(grep -E '^current_arc:' "$arc_file" 2>/dev/null | head -1 | sed -E 's/^current_arc:[[:space:]]*//; s/[[:space:]]*$//') || arc=""
+    fi
+    [ -z "$arc" ] || [ "$arc" = "null" ] && arc="(none)"
+    echo ""
+    echo "  ╭─ claude-fw ──────────────────────────────────────────────"
+    echo "  │ project : ${project}"
+    echo "  │ branch  : ${branch}"
+    echo "  │ focus   : ${focus}"
+    echo "  │ arc     : ${arc}"
+    echo "  ╰──────────────────────────────────────────────────────────"
+    echo ""
+}
+
 # Main loop
 restart_count=0
 MAX_RESTARTS=5  # Safety valve — don't loop forever
 
 # Start TermLink session if requested (before main loop)
 termlink_start
+
+# T-2411: one-shot startup overview (before main loop — not re-emitted on restart).
+_print_startup_banner
 
 while true; do
     # T-2373: record when this run started so the terminator only acts on a
