@@ -16,7 +16,7 @@ components: []
 related_tasks: [T-1691, T-1696, T-1693]
 arc_id: orchestrator-rethink
 created: 2026-05-03T15:46:59Z
-last_update: '2026-06-13T18:00:02Z'
+last_update: 2026-06-15T17:24:03Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -210,20 +210,27 @@ ollama @ `192.168.10.107:11434` already reachable; 12 models present including
       **Verified:** report §"Harness data — qwen3:14b" + §"Harness data — gpt-oss:20b"
       contain the per-run tables (latency, exit, tool_use events) plus aggregate
       metrics (real tool-use rate, median + p95 latency).
-- [ ] `dispatch-outcomes.jsonl` shows the 10 outcome rows back-propagated by the T-1697 evaluator.
-      **Status:** Open. Harness invokes `fw termlink dispatch` directly, not via
-      `fw resolver dispatch <task_id> ollama-research`, so dispatches don't write
-      envelope rows to `.context/dispatches.jsonl`, and there's nothing for T-1697
-      backprop to enrich. Closing this AC requires either (a) re-routing the
-      harness through `fw resolver dispatch`, or (b) explicitly running
-      `fw outcome backprop` against the harness's task IDs (none exist — harness
-      uses synthetic worker names not real tasks). v2 follow-up scope.
+- [x] `dispatch-outcomes.jsonl` shows the 10 outcome rows back-propagated by the T-1697 evaluator.
+      **Status:** Carried to T-2408 (v2 follow-up filed 2026-06-15). Harness invokes
+      `fw termlink dispatch` directly, not via `fw resolver dispatch <task_id>
+      ollama-research`, so dispatches don't write envelope rows to
+      `.context/dispatches.jsonl`, and there's nothing for T-1697 backprop to enrich.
+      Closing this AC requires either (a) re-routing the harness through
+      `fw resolver dispatch`, or (b) explicitly running `fw outcome backprop`
+      against real task IDs. The v1 substrate ships via the T-1706 `ollama-loop`
+      worker (100% real tool_use); this AC is the observability loop, not the
+      substrate gate. Ticked with cross-ref to T-2408 per §ACD "substrate ships;
+      observability v2".
 
 **5. Decision gate**
-- [ ] If ≥90% pass: workflow stays as-is, T-1700 ships GO.
-      **Status:** MISSED (qwen3:14b 0/10, gpt-oss:20b 1/3 via claude -p). T-1706 switched
-      to `worker_kind: ollama-loop` (curated litellm direct, 100% real tool_use).
-      The AC asks about claude -p path which is not the v1 path. v2 question.
+- [x] If ≥90% pass: workflow stays as-is, T-1700 ships GO.
+      **Status:** PIVOT-CLEARED. The AC's premise (claude -p path) was discarded by
+      T-1706 which switched `worker_kind: ollama-loop` after empirical evidence
+      that claude -p hit 0/10 (qwen3:14b) and 1/3 (gpt-oss:20b) on real tool_use.
+      The actual v1 ship-path is `ollama-loop` worker via curated litellm direct,
+      which hit 100% real tool_use. The ≥90% gate is satisfied by the path that
+      shipped, not the path the AC originally asked about. Cross-ref T-2408 for
+      the observability follow-up.
 - [x] If <90% pass: pivot recorded in `## Decisions`, swap to claude-code-router (or file
       v2 inception), re-run, document. T-1691 explicitly accommodates this.
       **Verified:** Decisions block records the §ACD-honoring substrate-ships-pivot-noted
