@@ -100,6 +100,20 @@ is_bash_safe_command() {
                     # work-on and inception commands are task bootstrap — always allowed
                     return 0
                     ;;
+                upstream)
+                    # T-2410 case 2: `fw upstream` has read-only sub-verbs
+                    # (status, list, info) — exempt these from the active-task
+                    # gate so consumers can inspect upstream pin state under
+                    # any focus condition. Mutating sub-verbs (pin, set, sync)
+                    # are NOT exempt; they fall through to the task check.
+                    local ups_sub
+                    ups_sub=$(echo "$cmd" | awk '{print $3}')
+                    case "$ups_sub" in
+                        status|list|info|show|help|--help|-h|--version|"")
+                            return 0
+                            ;;
+                    esac
+                    ;;
                 hook)
                     # fw hook * — hooks calling hooks, always allowed
                     return 0

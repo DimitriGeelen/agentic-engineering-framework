@@ -2,9 +2,10 @@
 id: T-2410
 name: "check-active-task hook: false positives block legitimate fw commands"
 description: >
-  Bug report: check-active-task PreToolUse hook produces false positives blocking legitimate fw commands when focus is on a completed task.
+  Bug report: check-active-task PreToolUse hook produces false positives blocking
+  legitimate fw commands when focus is on a completed task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -22,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-15T19:55:42Z
-last_update: 2026-06-15T19:55:42Z
-date_finished: null
+last_update: '2026-06-15T21:15:04Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +35,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-15T21:12:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-06-15T21:15:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 4
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=4 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2410: check-active-task hook: false positives block legitimate fw commands
@@ -53,8 +83,12 @@ Reported from field install /mame/project. A GitHub-mirror issue (#19) was filed
 ## Acceptance Criteria
 
 ### Agent
-- [ ] check-active-task matches task IDs only in target-arg positions, not in free-text args (regression test for the --rationale case).
-- [ ] read-only fw subcommands (upstream status/--help, list) are exempt from the completed-focus block (regression test).
+- [x] check-active-task matches task IDs only in target-arg positions, not in free-text args (regression test for the --rationale case) — `tests/unit/check_active_task_fp_fix.bats:CONTROL case1`. Note: the existing T-1730 focus-drift regex anchors are already scoped (`fw task update T-NNNN`, `fw context add-* --task T-NNNN`, `git commit … T-NNNN:`); the reported `fw inception start --rationale "T-065 …"` doesn't actually trip them — pinned as regression guard.
+- [x] read-only fw subcommands (upstream status/--help, list) are exempt from the completed-focus block (regression test) — two layers:
+      (a) universal `--help`/`--version` early exit in `agents/context/check-active-task.sh` after the fw-hook fast-path, and
+      (b) `upstream status|list|info|show|help` added to fw safe-sub-list in `agents/context/lib/safe-commands.sh`. Mutating sub-verbs (e.g. `upstream pin`) still block under work-completed focus — pinned by `CONTROL: fw upstream pin … still blocks`.
+- [x] `bash -n` passes on both edited files (L-408)
+- [x] 7/7 new bats PASS; 35/35 existing hook bats PASS (no regression).
 
 ## Verification
 
@@ -89,7 +123,66 @@ Reported from field install /mame/project. A GitHub-mirror issue (#19) was filed
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n agents/context/check-active-task.sh
+bash -n agents/context/lib/safe-commands.sh
+bats tests/unit/check_active_task_fp_fix.bats
+bats tests/unit/check_active_task_memory_exempt.bats
+bats tests/unit/check_active_task_switch_focus.bats
+bats tests/integration/check_active_task.bats
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Two narrow, targeted fixes. (a) Universal `--help`/`--version`
+exemption — read-only by convention in every CLI tool; eliminates an entire
+class of false positives where help reads were blocked under work-completed
+focus. (b) `upstream` added to fw safe-sub-list for read-only sub-verbs
+(`status|list|info|show|help`) — mutating sub-verbs (`pin`/`set`/`sync`) still
+hit the gate. Conservative: doesn't widen the safe-list further than necessary.
+Pinned by 7/7 new bats with CONTROL cases proving the exemptions don't leak
+(mutating `fw upstream pin` still blocks).
+
+Case 1 (task-ID in --rationale) doesn't reproduce on current code — the T-1730
+regex anchors are already scope-correct. Test is a regression guard.
+
+**Evidence:**
+- `agents/context/check-active-task.sh:69-79` — universal `--help`/`--version` exemption
+- `agents/context/lib/safe-commands.sh:100-114` — upstream sub-verb gate
+- 7/7 new bats PASS (incl. 3 CONTROL cases)
+- 35/35 existing hook bats PASS (no regression)
+- `bash -n` exit 0 on both files
+
 ## RCA
+
+**Symptom:** Operator-reported in field install (`/mame/project`):
+1. `fw upstream --help` and `fw upstream status` blocked under work-completed
+   focus with "Cannot modify files under a completed task" — pure read needs
+   shouldn't require a started task.
+2. `fw inception start --rationale "T-065 was the proof of concept"` reportedly
+   blocked as "modifying T-065" — though under current code this does NOT
+   actually reproduce (regex anchors are scope-correct).
+
+**Root cause:**
+1. `is_bash_safe_command` in `lib/safe-commands.sh` exempts `doctor|metrics|
+   audit|version|resume|help|status|fabric|gaps|promote` and a few sub-verb
+   helpers but had no entry for `upstream` — so any `fw upstream <anything>`
+   fell through to the work-completed-focus block.
+2. No universal `--help`/`--version` short-circuit. Any new fw verb not in
+   the safe-list would block its `--help` form by default — repeat of the
+   same class.
+
+**Why structurally allowed:** the safe-list is verb-by-verb enumeration; new
+verbs (`upstream` added without updating the list) silently fall into the
+"unsafe" bucket. The hook's correct behavior on read-only intent was coupled
+to manual list maintenance.
+
+**Prevention:** the `--help`/`--version` exemption breaks the coupling for
+help-reads regardless of which verb. The verb-list remains enumeration but
+adding any new fw verb no longer leaks at the help affordance. bats CONTROL
+cases pin that mutating sub-verbs (`upstream pin`) still gate properly.
+
+## RCA-old
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -156,3 +249,15 @@ Reported from field install /mame/project. A GitHub-mirror issue (#19) was filed
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2410-check-active-task-hook-false-positives-b.md
 - **Context:** Initial task creation
+
+### 2026-06-15T21:12:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e3674cb9
+- **Timestamp:** 2026-06-15T21:16:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

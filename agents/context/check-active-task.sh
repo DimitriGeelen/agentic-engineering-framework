@@ -64,6 +64,17 @@ except:
             ;;
     esac
 
+    # T-2410 case 2: universal --help / --version exemption.
+    # Any command with --help or --version is read-only by convention (the flag
+    # short-circuits all real work in every fw subcommand and 99% of other
+    # tools). Without this, `fw upstream --help` blocked at the work-completed
+    # focus gate purely because `upstream` is not in the safe-list — but the
+    # user just wanted to read help. Matches at any position so `cd … && fw
+    # upstream --help` is also exempt.
+    if [[ "$BASH_CMD" =~ (^|[[:space:]])(--help|--version)([[:space:]]|$) ]]; then
+        exit 0
+    fi
+
     # Source safe-command allowlist
     source "$SCRIPT_DIR/lib/safe-commands.sh" 2>/dev/null || true
 
