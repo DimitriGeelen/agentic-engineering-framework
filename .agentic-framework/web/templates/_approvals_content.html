@@ -296,6 +296,16 @@
 <div class="section-header">
     <h3>Human Acceptance Criteria</h3>
     <small>{{ ac_count }} across {{ ac_task_count }} task{{ 's' if ac_task_count != 1 }} — rubber-stamp + review checks</small>
+    {# T-2406: explicit expand-all affordance — operator opts into full list for arc-walk burst. #}
+    {% if pending_acs|length > 10 %}
+    <small style="margin-left:auto;">
+        {% if expand_overflow %}
+        <a href="/approvals">Collapse overflow ↑</a>
+        {% else %}
+        <a href="/approvals?expand=verifications">Expand all {{ ac_task_count }} ↓</a>
+        {% endif %}
+    </small>
+    {% endif %}
 </div>
 
 <!-- Batch completion button (T-846) — only for tasks with ALL ACs checked -->
@@ -426,8 +436,15 @@ function filterACs(filter) {
 {% set _ac_cap = 10 %}
 {% for t in pending_acs %}
 {% if loop.index == _ac_cap + 1 %}
-<details class="ac-overflow" style="margin:0.75rem 0;">
-<summary style="cursor:pointer; font-weight:600; padding:0.5rem 0.6rem; color:var(--wt-accent); border:1px dashed var(--pico-muted-border-color); border-radius:6px;">Show {{ pending_acs|length - _ac_cap }} more verification{{ 's' if (pending_acs|length - _ac_cap) != 1 }} — lower priority, all still actionable</summary>
+{# T-2406: open by default when ?expand=verifications was passed. Summary promoted from
+   thin dashed border (footnote-class) to button-styled CTA so the overflow reads as a
+   clickable affordance, not a section divider. Operator framing was "rows don't render";
+   the rows DID render but the disclosure was sub-perceptual. #}
+<details class="ac-overflow" style="margin:0.75rem 0;" {% if expand_overflow %}open{% endif %}>
+<summary style="cursor:pointer; font-weight:700; padding:0.65rem 1rem; color:#fff; background:var(--wt-accent, var(--pico-primary)); border:none; border-radius:6px; font-size:0.9rem; box-shadow:0 1px 3px rgba(0,0,0,0.12);">
+  {% if expand_overflow %}▾{% else %}▸{% endif %}
+  {{ pending_acs|length - _ac_cap }} more verification{{ 's' if (pending_acs|length - _ac_cap) != 1 }} — lower priority, all still actionable
+</summary>
 {% endif %}
 <div class="approval-card human-ac-group" data-priority="{{ t.sort_priority }}" data-stale="{{ 'true' if t.is_stale else 'false' }}" data-verdict="{{ t.verdict|default('?') }}" data-state="{{ t.state|default('?') }}">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">

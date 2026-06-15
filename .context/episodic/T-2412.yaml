@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2412: OBS-077: _self_vendor_web skips HTML/CSS/JS templates — find filter is .sh/.py-only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-15T21:04:30Z
+# ============================================================================
+
+task_id: T-2412
+task_name: "OBS-077: _self_vendor_web skips HTML/CSS/JS templates — find filter is .sh/.py-only"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-15T21:00:40Z
+completed: 2026-06-15T21:04:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-15T23:04:15+02:00
+last_commit: 2026-06-15T23:04:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-077 — _self_vendor_web syncs full render surface (HTML/CSS/JS)
+
+# Key outcomes
+outcomes:
+  - 'Find filter in `lib/upgrade.sh:_self_vendor_web` extended to include'
+  - '`bash -n lib/upgrade.sh` exits 0 (L-408)'
+  - 'bats test at `tests/unit/self_vendor_web_html.bats` (4/4 PASS, negative'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-2412-obs-077-selfvendorweb-skips-htmlcssjs-te.md'
+  - '.tasks/completed/T-2411-claude-fw-startup-banner-show-project--b.md'
+  - 'tests/unit/self_vendor_web_html.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-15T23:04:15"
+    action: "T-2412: OBS-077 — _self_vendor_web syncs full render surface (HTML/CSS/JS)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 4
+  lines_added: 333
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2412-obs-077-selfvendorweb-skips-htmlcssjs-te.md
+generated_by: context-agent-hybrid

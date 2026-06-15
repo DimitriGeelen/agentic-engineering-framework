@@ -460,7 +460,7 @@ _self_vendor_web() {
             fi
             _svw_updated=$((_svw_updated + 1))
         fi
-    done < <(find "$FRAMEWORK_ROOT/web" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.py" \) -print 2>/dev/null)
+    done < <(find "$FRAMEWORK_ROOT/web" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.py" -o -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.svg" -o -name "*.j2" -o -name "*.jinja2" \) -print 2>/dev/null)
     if [ "$_svw_updated" -gt 0 ]; then
         if [ "$dry_run" = true ]; then
             echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svw_updated web/ file(s) to .agentic-framework/web/"

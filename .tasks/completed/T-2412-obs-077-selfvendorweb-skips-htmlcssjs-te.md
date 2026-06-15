@@ -4,7 +4,7 @@ name: "OBS-077: _self_vendor_web skips HTML/CSS/JS templates — find filter is 
 description: >
   OBS-077: _self_vendor_web skips HTML/CSS/JS templates — find filter is .sh/.py-only
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
