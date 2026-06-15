@@ -1027,3 +1027,14 @@ overrides:
   expires_at: '2026-09-12T14:44:05Z'
   added_by: root
   added_at: '2026-06-14T14:44:05Z'
+- id: OV-ce6ae3c5
+  task_id: T-2406
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "Tests use monkeypatch on 4 sibling section-loaders but drive REAL Flask\
+    \ test_client through REAL _build_approvals_context + REAL template; six assertions\
+    \ pin the rendered DOM. Heuristic FP \u2014 sibling class to T-2325/L-478 doc-discusses-cross-repo\
+    \ FP."
+  expires_at: '2026-09-13T16:49:52Z'
+  added_by: root
+  added_at: '2026-06-15T16:49:52Z'
