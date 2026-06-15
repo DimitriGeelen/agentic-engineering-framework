@@ -445,8 +445,15 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
     return out
 
 
-def _build_approvals_context():
-    """Build template context for approvals page."""
+def _build_approvals_context(expand_overflow: bool = False):
+    """Build template context for approvals page.
+
+    T-2406: expand_overflow controls whether the Verifications overflow
+    <details class="ac-overflow"> renders open. Default closed preserves the
+    T-2103 page-height cap (T-2038 unbounded-list class prevention); operator
+    opts in via ?expand=verifications when their workflow needs the full list
+    (e.g. arc-003 closure burst walking all partial-completes).
+    """
     pending_tier0 = _load_pending_approvals()
     resolved_tier0 = _load_resolved_approvals()
     pending_go = _load_pending_go_decisions()
@@ -488,12 +495,18 @@ def _build_approvals_context():
         active_count=tier0_count,
         ready_count=ready_count,
         deferred_count=deferred_count,
+        expand_overflow=expand_overflow,
     )
+
+
+def _read_expand_overflow():
+    """T-2406: parse ?expand=verifications query param."""
+    return (request.args.get("expand", "").strip().lower() == "verifications")
 
 
 @bp.route("/approvals")
 def approvals():
-    ctx = _build_approvals_context()
+    ctx = _build_approvals_context(expand_overflow=_read_expand_overflow())
     return render_page("approvals.html", page_title="Approvals", **ctx)
 
 
@@ -502,7 +515,7 @@ def approvals_content():
     """htmx polling fragment — returns approvals content without page wrapper (T-669)."""
     from flask import render_template
 
-    ctx = _build_approvals_context()
+    ctx = _build_approvals_context(expand_overflow=_read_expand_overflow())
     return render_template("_approvals_content.html", **ctx)
 
 
