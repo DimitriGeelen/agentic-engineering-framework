@@ -38,6 +38,38 @@ for arg in "$@"; do
     esac
 done
 
+# T-2414: stamp project name into the CC session picker via `claude -n <name>`.
+# CC's `claude agents` picker has no project column (verified `claude agents --help`),
+# so the per-session display name is the only surface where project visibility lives.
+# Defaults to the basename of the project's git root (or $PWD). Operator overrides:
+#   FW_PROJECT_NAME=<alias>     — short alias regardless of project basename
+#   FW_NO_PICKER_NAME=1         — opt out (no -n added; CC auto-summary takes over)
+#   claude-fw -n <custom>       — explicit flag wins (we never add a second one)
+# Tradeoff: `--name` REPLACES CC's auto-summary; the right-column detail still
+# carries semantic content, and T-2411's post-attach banner shows focus/arc.
+_args_have_picker_name() {
+    local a
+    for a in "${CLAUDE_ARGS[@]+"${CLAUDE_ARGS[@]}"}"; do
+        case "$a" in
+            -n|--name|--name=*)
+                return 0
+                ;;
+        esac
+    done
+    return 1
+}
+
+if [ "${FW_NO_PICKER_NAME:-0}" != "1" ] && ! _args_have_picker_name; then
+    _picker_name="${FW_PROJECT_NAME:-}"
+    if [ -z "$_picker_name" ]; then
+        _picker_root=$(git rev-parse --show-toplevel 2>/dev/null) || _picker_root="$PWD"
+        _picker_name=$(basename "$_picker_root")
+    fi
+    if [ -n "$_picker_name" ]; then
+        CLAUDE_ARGS=("-n" "$_picker_name" "${CLAUDE_ARGS[@]+"${CLAUDE_ARGS[@]}"}")
+    fi
+fi
+
 # TermLink session management
 TERMLINK_SESSION=""
 
