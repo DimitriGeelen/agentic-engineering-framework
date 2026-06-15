@@ -6,12 +6,12 @@ description: >
   fix /approvals Verifications section render — header count shows 184 but task rows
   missing
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-15T16:40:33Z
-last_update: '2026-06-15T16:45:07Z'
-date_finished:
+last_update: 2026-06-15T16:55:40Z
+date_finished: 2026-06-15T16:55:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -122,6 +122,17 @@ silent regression.
   - Reviewer returns **PASS** after FP override `OV-ce6ae3c5` (mock-only-integration, 90d TTL). Tests use monkeypatch on 4 sibling section-loaders but drive the real Flask test_client through the real `_build_approvals_context` + real template; six assertions pin the rendered DOM. Heuristic FP, sibling class to L-478.
 
 ### Human
+
+- [ ] [REVIEW] Verifications overflow CTA is discoverable and operator can walk the full list
+  **Steps:**
+  1. Open http://192.168.10.107:3000/approvals in a browser. Scroll past the stat bar and any Decisions / Arc Closure / Paused sections until you reach the "Human Acceptance Criteria" header.
+  2. Confirm the top 10 verification cards render. Below them, locate the overflow CTA — should read as a solid colored button "▸ 168 more verifications — lower priority, all still actionable" (not a thin dashed line, not a footnote).
+  3. In the section header right side, find the "Expand all 178 ↓" link. Click it.
+  4. URL becomes /approvals?expand=verifications and all 178 cards render in a single scroll. Locate the "Collapse overflow ↑" link in the header and click — URL returns to /approvals and overflow re-collapses.
+  5. (Optional) Use Ctrl+F to find an arc-003 task ID (any of T-1701/T-1702/T-1707/T-1718/T-1773 etc.) in the expanded list to verify the walk works for the arc-003 closure burst.
+  **Expected:** The CTA reads as a clickable button (not a divider). Expand all opens the full list cleanly. Collapse returns to default. The page is usable for the arc-003 closure walk.
+  **If not:** Note which step broke (button styling missed, link wrong, layout broken, scroll behavior bad) — re-open with a follow-up task targeting that specific defect.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -164,10 +175,12 @@ silent regression.
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 
 python3 -m pytest tests/unit/test_approvals_expand_overflow.py -q
-# Live end-to-end check against the running Watchtower (drives real loaders, real template, real DOM)
-WURL=$(cat .context/working/watchtower.url); out=$(curl -sf "$WURL/approvals"); echo "$out" | grep -q "Expand all" && echo "$out" | grep -q "background:var(--wt-accent"
-out_e=$(curl -sf "$WURL/approvals?expand=verifications"); echo "$out_e" | grep -q '<details class="ac-overflow" style="margin:0.75rem 0;" open>' && echo "$out_e" | grep -q "Collapse overflow"
-rev=$(bin/fw reviewer T-2406 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$rev" | grep -q "Overall:.*FAIL"
+# Live end-to-end check against the running Watchtower (drives real loaders, real template, real DOM).
+# L-387 SIGPIPE-safe: write to /tmp file, grep the file (no piped chain to grep -q).
+# Each line runs in its own subshell so WURL is re-derived inline.
+WURL=$(cat .context/working/watchtower.url); curl -sf "$WURL/approvals" > /tmp/.t2406-default.html && grep -q "Expand all" /tmp/.t2406-default.html && grep -q "background:var(--wt-accent" /tmp/.t2406-default.html
+WURL=$(cat .context/working/watchtower.url); curl -sf "$WURL/approvals?expand=verifications" > /tmp/.t2406-expanded.html && grep -q '<details class="ac-overflow" style="margin:0.75rem 0;" open>' /tmp/.t2406-expanded.html && grep -q "Collapse overflow" /tmp/.t2406-expanded.html
+bin/fw reviewer T-2406 > /tmp/.t2406-rev.txt 2>&1 && grep -qE "Overall:.*(PASS|CONCERN)" /tmp/.t2406-rev.txt && ! grep -q "Overall:.*FAIL" /tmp/.t2406-rev.txt
 #
 # Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
 # `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
@@ -252,6 +265,30 @@ rev=$(bin/fw reviewer T-2406 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONC
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 5 Agent ACs ticked with cited evidence (file paths + line
+numbers); verification gate 4/4 PASS (pytest 6/6 + 3 live curl/grep against the
+running Watchtower); reviewer returns PASS after FP override OV-ce6ae3c5
+(mock-only-integration heuristic, sibling class to L-478, 90d TTL). The fix is
+surgical: 21 lines added to `_approvals_content.html` + 14 lines added to
+`approvals.py`; preserves T-2103 page-height cap by keeping overflow closed
+by default and surfacing an `?expand=verifications` opt-in for the operator's
+arc-003 closure-burst workflow. Single [REVIEW] Human AC pins the visual
+discoverability check (button-styled CTA vs the pre-fix dashed-border footnote)
+because P-013 render-surface gate correctly insists eyes must see UI changes.
+
+**Evidence:**
+- `web/blueprints/approvals.py:448-516` — `expand_overflow` flag + `?expand=verifications` query-param read
+- `web/templates/_approvals_content.html:299-308` — Expand-all / Collapse link in section header
+- `web/templates/_approvals_content.html:437-447` — promoted summary (solid wt-accent button) + conditional `open` on the `<details>`
+- `tests/unit/test_approvals_expand_overflow.py` — 6/6 PASS (Flask test_client + real template)
+- Live render verified via curl: 178 cards default (overflow closed), same 178 with overflow open at `?expand=verifications`
+- Reviewer: **Overall: PASS** (scan R-… post-OV-ce6ae3c5)
+- Master FF-merge complete (`a2925bee9` on master, branch `t-2406-approvals-overflow-affordance` consumed)
+
 ## Updates
 
 ### 2026-06-15T16:40:33Z — task-created [task-create-agent]
@@ -261,8 +298,8 @@ rev=$(bin/fw reviewer T-2406 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONC
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8a278a88
-- **Timestamp:** 2026-06-15T16:49:56Z
+- **Scan ID:** R-9cb82a2c
+- **Timestamp:** 2026-06-15T16:55:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -270,3 +307,6 @@ rev=$(bin/fw reviewer T-2406 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONC
 
 - **Suppressed:** 1 (by override)
   - mock-only-integration @ AC vs Verification cross-check
+
+### 2026-06-15T16:55:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
