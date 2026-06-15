@@ -1,0 +1,127 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1700: v1 build: install + integrate litellm proxy for ollama-backed dispatch
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-15T19:40:33Z
+# ============================================================================
+
+task_id: T-1700
+task_name: "v1 build: install + integrate litellm proxy for ollama-backed dispatch"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-03T15:46:59Z
+completed: 2026-06-15T19:35:28Z
+duration_days: 43
+updates_count: 2
+first_commit: 2026-05-03T20:33:37+02:00
+last_commit: 2026-06-15T21:37:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  litellm proxy + ollama-research workflow + smoke validation. --env plumbing + harness + honest empirical RCA. capture L-346 (exit=0 ≠ tool-use) + arc tag T-1700/T-1702. ship AC group 2 — fw doctor litellm-proxy + ollama checks. ship AC group 6 — workflow env: isolation regression pin. tick AC4.1 + AC4.2 (harness path drift correction). record human approval — SHIP-WITH-CAVEAT + manual one-liner. prep close — tick remaining ACs, file v2 spin-outs. session handover S-2026-0615-2007 + push. replace flaky doctor verification grep with exit-code check (OBS-078 prevention)
+
+# Key outcomes
+outcomes:
+  - '`litellm[proxy]` installed (`pipx list | grep litellm` → `litellm 1.83.14`).'
+  - '`.context/litellm-config.yaml` exists with at least one model mapping'
+  - 'systemd unit `deploy/litellm-proxy.service` (or fw companion) starts proxy on `:4000`'
+  - '`fw doctor` adds two checks (mirror T-1694 conditional pi check pattern):'
+  - 'Both checks SKIP cleanly (not WARN/FAIL) when the optional dep isn''t installed.'
+  - '`.context/project/workflows/ollama-research.yaml` exists with:'
+  - '`bin/fw resolver workflows` lists `ollama-research.yaml` with concrete worker/model fields'
+  - '`tools/t1700-ollama-harness.sh` runs N dispatches via'
+  - 'Results captured in `docs/reports/T-1700-litellm-build.md` with raw numbers.'
+  - '`dispatch-outcomes.jsonl` shows the 10 outcome rows back-propagated by the T-1697 evaluator.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-05-03 — Install via pipx (not system pip)'
+  - decision: '2026-05-03 — `--env KEY=VAL` flag on `fw termlink dispatch` (T-1700 plumbing)'
+  - decision: '2026-05-03 — `exit=0` is not a tool-use signal (RCA)'
+  - decision: '2026-05-03 — Defer empirical pass to v2; ship substrate'
+  - decision: '2026-05-04 — AC group 2 (`fw doctor` extensions) shipped'
+    chose: 'Add `litellm-proxy reachable` + `ollama reachable` checks to `do_doctor`,'
+    rationale: 'Recommendation already tagged AC group 2 as "small, can ship now". Mirroring'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/docs/reports/T-1700-harness-results.md'
+  - '.agentic-framework/docs/reports/T-1700-litellm-build.md'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/termlink.sh'
+  - 'bin/fw'
+  - '.context/arcs/orchestrator-rethink.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0615-2007.md'
+  - '.context/litellm-config.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/workflows/ollama-research.yaml'
+  - 'docs/reports/T-1700-harness-results.md'
+  - 'docs/reports/T-1700-litellm-build.md'
+  - '.fabric/components/tools-t1700-ollama-harness.yaml'
+  - '.tasks/active/T-1700-v1-build-install--integrate-litellm-prox.md'
+  - '.tasks/active/T-1702-boundary-hook-extend-to-outside-path-arg.md'
+  - '.tasks/active/T-2408-t-1700-v2--backprop-dispatch-outcomes-vi.md'
+  - '.tasks/active/T-2409-t-1820-v2--investigate-why-user-facing-c.md'
+  - '.tasks/completed/T-1709-permanent-disposable-aef-review-instance.md'
+  - '.tasks/completed/T-1711-register-acd-concern-g-066-t-1442t-1443-.md'
+  - 'tests/unit/test_doctor_litellm_ollama.bats'
+  - 'tests/unit/test_workflow_env_isolation.bats'
+  - 'tools/t1700-ollama-harness.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-03T20:33:37"
+    action: "T-1700: litellm proxy + ollama-research workflow + smoke validation"
+  - time: "2026-05-03T21:01:12"
+    action: "T-1700: --env plumbing + harness + honest empirical RCA"
+  - time: "2026-05-03T21:02:09"
+    action: "T-1700: capture L-346 (exit=0 ≠ tool-use) + arc tag T-1700/T-1702"
+  - time: "2026-05-04T08:27:01"
+    action: "T-1700: ship AC group 2 — fw doctor litellm-proxy + ollama checks"
+  - time: "2026-05-04T08:28:57"
+    action: "T-1700: ship AC group 6 — workflow env: isolation regression pin"
+  - time: "2026-05-04T08:37:07"
+    action: "T-1700: tick AC4.1 + AC4.2 (harness path drift correction)"
+  - time: "2026-05-04T09:45:56"
+    action: "T-1700: record human approval — SHIP-WITH-CAVEAT + manual one-liner"
+  - time: "2026-06-15T19:53:45"
+    action: "T-1700: prep close — tick remaining ACs, file v2 spin-outs"
+  - time: "2026-06-15T20:10:43"
+    action: "T-1700: session handover S-2026-0615-2007 + push"
+  - time: "2026-06-15T21:37:15"
+    action: "T-1700: replace flaky doctor verification grep with exit-code check (OBS-078 prevention)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 12 commit(s), 62148 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [proxy, litellm, ollama]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 62148
+  commits: 12
+  files_changed: 25
+  lines_added: 3101
+  lines_removed: 210
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1700-v1-build-install--integrate-litellm-prox.md
+generated_by: context-agent-hybrid
