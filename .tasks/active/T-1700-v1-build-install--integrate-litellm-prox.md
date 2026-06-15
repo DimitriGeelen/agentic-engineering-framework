@@ -286,8 +286,10 @@ test -f .context/project/workflows/ollama-research.yaml && python3 -c "import ya
 bin/fw resolver workflows | grep -q "ollama-research"
 # Ollama still reachable (sanity) — assert response shape, not just exit
 curl -sf http://192.168.10.107:11434/api/tags | grep -q '"models"'
-# fw doctor still passes (no new failures)
-bin/fw doctor 2>&1 | grep -E "^\s*FAIL" | wc -l | grep -q "^0$"
+# fw doctor still passes (no new failures) — use exit code (0=pass, 2=fail per bin/fw:2140)
+# NOT a grep on color-coded "FAIL" lines; that pattern was OBS-078-flaky under concurrent
+# doctor invocations where smoke_test pages time out and emit transient FAIL rows.
+bin/fw doctor > /dev/null 2>&1
 # Build report exists
 test -f docs/reports/T-1700-litellm-build.md
 # Doctor litellm + ollama checks present + tested
