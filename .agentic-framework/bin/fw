@@ -5032,26 +5032,53 @@ print('0')
     review-queue)
         # T-1536: terminal mirror of Watchtower /approvals "Awaiting Human ACs"
         # Lists active tasks with unchecked Human ACs, prefixed by agent verdict.
-        rq_arg="${1:-}"
-        if [ "$rq_arg" = "--help" ] || [ "$rq_arg" = "-h" ] || [ "$rq_arg" = "help" ]; then
-            echo -e "${BOLD}fw review-queue${NC} — list tasks awaiting human review (T-1536)"
-            echo ""
-            echo "Shows two sections matching Watchtower /approvals:"
-            echo "  DECISIONS — pending inception GO/NO-GO/DEFER decisions (T-1571)"
-            echo "  VERDICT   — active tasks with unchecked Human ACs"
-            echo ""
-            echo "Each row is prefixed by the agent's recommendation verdict (GO/DEFER/"
-            echo "NO-GO/?). Companion to Watchtower /approvals."
-            echo ""
-            echo "Sort: GO first (rubber-stamp), then DEFER, then NO-GO, then unknown."
-            echo "Within each verdict: oldest first (stale > fresh)."
-            echo ""
-            echo "Usage:"
-            echo "  fw review-queue           Show queue"
-            echo "  fw review-queue --help    This message"
-            exit 0
-        fi
-        PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PYREVQ'
+        # T-2405: --arc <id> filters to tasks tagged with that arc.
+        rq_arc_filter=""
+        while [ $# -gt 0 ]; do
+            case "$1" in
+                --help|-h|help)
+                    echo -e "${BOLD}fw review-queue${NC} — list tasks awaiting human review (T-1536)"
+                    echo ""
+                    echo "Shows two sections matching Watchtower /approvals:"
+                    echo "  DECISIONS — pending inception GO/NO-GO/DEFER decisions (T-1571)"
+                    echo "  VERDICT   — active tasks with unchecked Human ACs"
+                    echo ""
+                    echo "Each row is prefixed by the agent's recommendation verdict (GO/DEFER/"
+                    echo "NO-GO/?). Companion to Watchtower /approvals."
+                    echo ""
+                    echo "Sort: GO first (rubber-stamp), then DEFER, then NO-GO, then unknown."
+                    echo "Within each verdict: oldest first (stale > fresh)."
+                    echo ""
+                    echo "Usage:"
+                    echo "  fw review-queue                  Show queue (corpus-wide)"
+                    echo "  fw review-queue --arc <id>       Filter to tasks tagged with <id>"
+                    echo "                                   Accepts arc-NNN form (arc-003)"
+                    echo "                                   or slug form (orchestrator-rethink)."
+                    echo "                                   Matches frontmatter arc_id: AND"
+                    echo "                                   legacy tags: [arc:<slug>, ...] (T-1849)."
+                    echo "                                   Unknown id → error + exit 1."
+                    echo "  fw review-queue --help           This message"
+                    exit 0
+                    ;;
+                --arc)
+                    shift
+                    rq_arc_filter="${1:-}"
+                    if [ -z "$rq_arc_filter" ]; then
+                        echo "ERROR: --arc requires an argument (arc-NNN or slug)" >&2
+                        exit 1
+                    fi
+                    ;;
+                --arc=*)
+                    rq_arc_filter="${1#--arc=}"
+                    ;;
+                *)
+                    echo "ERROR: unknown argument '$1'. Use --help for usage." >&2
+                    exit 1
+                    ;;
+            esac
+            shift
+        done
+        PROJECT_ROOT="$PROJECT_ROOT" FW_REVQ_ARC="$rq_arc_filter" python3 - <<'PYREVQ'
 import os, re, sys, time
 from pathlib import Path
 from datetime import datetime
@@ -5098,6 +5125,56 @@ if not ACTIVE.is_dir():
     print("No .tasks/active directory.", file=sys.stderr)
     sys.exit(0)
 
+# T-2405: --arc <id> filter. Resolve user input to canonical (arc-NNN, slug)
+# pair by reading .context/arcs/*.yaml. Accepts either form.
+arc_filter_raw = os.environ.get("FW_REVQ_ARC", "").strip()
+arc_filter_canonical = None  # (arc_id, slug) tuple when set
+if arc_filter_raw:
+    ARCS_DIR = ROOT / ".context" / "arcs"
+    if not ARCS_DIR.is_dir():
+        print(f"ERROR: --arc {arc_filter_raw}: no .context/arcs/ directory", file=sys.stderr)
+        sys.exit(1)
+    matched_id = None
+    matched_slug = None
+    for arc_yaml in sorted(ARCS_DIR.glob("*.yaml")):
+        try:
+            content = arc_yaml.read_text(errors="replace")
+        except Exception:
+            continue
+        id_m = re.search(r"^id:\s*(\S+)", content, re.MULTILINE)
+        slug_m = re.search(r"^slug:\s*(\S+)", content, re.MULTILINE)
+        if not id_m:
+            continue
+        a_id = id_m.group(1).strip()
+        a_slug = slug_m.group(1).strip() if slug_m else arc_yaml.stem
+        if arc_filter_raw == a_id or arc_filter_raw == a_slug:
+            matched_id = a_id
+            matched_slug = a_slug
+            break
+    if matched_id is None:
+        print(f"ERROR: --arc {arc_filter_raw}: no matching arc in .context/arcs/", file=sys.stderr)
+        print("Run 'fw arc list' to see available arcs.", file=sys.stderr)
+        sys.exit(1)
+    arc_filter_canonical = (matched_id, matched_slug)
+
+def _task_matches_arc(fm_text, body_text, canonical):
+    """T-2405: True iff task's arc_id frontmatter OR legacy arc:<slug> tag
+    matches the canonical (arc_id, slug) pair. Accepts either form on either
+    side (frontmatter or tag)."""
+    if canonical is None:
+        return True
+    a_id, a_slug = canonical
+    # Frontmatter arc_id: line — accepts either form
+    aid_m = re.search(r"^arc_id:\s*(\S+)", fm_text, re.MULTILINE)
+    if aid_m:
+        v = aid_m.group(1).strip().strip("'\"")
+        if v == a_id or v == a_slug:
+            return True
+    # Legacy: tags: [arc:<slug>, ...] (T-1849 back-compat).
+    if re.search(rf"\barc:({re.escape(a_id)}|{re.escape(a_slug)})\b", fm_text):
+        return True
+    return False
+
 now = time.time()
 rows = []
 decision_rows = []
@@ -5117,6 +5194,10 @@ for f in sorted(ACTIVE.glob("*.md")):
     tid_v = tid_m.group(1).strip() if tid_m else ""
     tname_m = re.search(r'^name:\s*"?(.+?)"?\s*$', fm_text, re.MULTILINE)
     name = tname_m.group(1).strip() if tname_m else ""
+
+    # T-2405: --arc filter — applied to BOTH decision + verdict passes.
+    if not _task_matches_arc(fm_text, text, arc_filter_canonical):
+        continue
 
     # T-1571 / F5: DECISIONS pass — pending inception decisions
     if workflow_type == "inception" and not DECISION_RE.search(text):
