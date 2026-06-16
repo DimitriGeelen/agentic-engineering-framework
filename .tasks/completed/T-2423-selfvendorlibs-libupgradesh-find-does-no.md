@@ -14,10 +14,10 @@ name: "_self_vendor_libs (lib/upgrade.sh) find does not prune node_modules/__pyc
 description: >
   Promoted from observation OBS-076
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -32,8 +32,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-16T14:49:20Z
-last_update: 2026-06-16T14:50:22Z
-date_finished:
+last_update: 2026-06-16T14:52:46Z
+date_finished: 2026-06-16T14:52:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -244,8 +244,8 @@ test $(grep -c "node_modules" lib/upgrade.sh) -ge 3
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-18a6062c
-- **Timestamp:** 2026-06-16T14:52:23Z
+- **Scan ID:** R-afb0ec24
+- **Timestamp:** 2026-06-16T14:52:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -253,3 +253,6 @@ test $(grep -c "node_modules" lib/upgrade.sh) -ge 3
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#4 (Agent)
+
+### 2026-06-16T14:52:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
