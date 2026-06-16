@@ -40,27 +40,43 @@ costs_help() {
     echo "Cost model: Subscription — tokens consumed (not dollars)"
 }
 
-# Find the JSONL directory for this project (T-2380)
-# Use the canonical encoder (full non-alnum → '-'), matching Claude Code. The old
-# slash-only sanitizer diverged in any worktree path (contains '.')
-# → looked in a directory that does not exist → "No JSONL directory found".
+# Find the JSONL directory/directories for this project.
+#
+# T-2380: use the canonical encoder (full non-alnum → '-'), matching Claude Code.
+# The old slash-only sanitizer diverged in any worktree path (contains '.').
+#
+# T-2425: emit ALL candidate dirs via `fw_claude_project_dirs` (T-2392 union),
+# one per line, existing dirs only. Claude Code keys the projects dir on launch
+# cwd, not PROJECT_ROOT — so in a worktree session the JSONLs may live under the
+# main-repo dir, not the worktree dir. The gauge sites (checkpoint.sh:86,
+# budget-gate.sh:255, session-metrics.sh:44) already walk the union and pick
+# the globally-newest *.jsonl; `fw costs` was the remaining single-dir consumer.
+# Callers should iterate the lines and union the JSONL set.
 _costs_jsonl_dir() {
-    echo "$HOME/.claude/projects/$(fw_claude_project_dir_name "${PROJECT_ROOT:-$(pwd)}")"
+    fw_claude_project_dirs
 }
 
-# Main token parsing — Python for streaming performance on large files
+# Main token parsing — Python for streaming performance on large files.
+#
+# T-2425: first positional arg may be a newline-separated LIST of candidate
+# projects dirs (from `fw_claude_project_dirs`), not a single dir. The Python
+# loop globs *.jsonl across each existing dir and unions the result (dedup by
+# basename — same session id appearing in two dirs is the same transcript).
 _costs_parse_all() {
-    local jsonl_dir="$1"
+    local jsonl_dirs="$1"
     local mode="${2:-summary}"       # summary | sessions | session-detail
     local session_id="${3:-}"        # for session-detail mode
 
-    python3 - "$jsonl_dir" "$mode" "$session_id" << 'PYEOF'
+    python3 - "$jsonl_dirs" "$mode" "$session_id" << 'PYEOF'
 import sys, json, os, glob
 from datetime import datetime
 
-jsonl_dir = sys.argv[1]
+jsonl_dirs_raw = sys.argv[1]
 mode = sys.argv[2]
 session_id = sys.argv[3] if len(sys.argv) > 3 else ""
+
+# T-2425: split newline-separated dir list, keep existing dirs only
+jsonl_dirs = [d for d in jsonl_dirs_raw.splitlines() if d and os.path.isdir(d)]
 
 def fmt_tokens(n):
     """Format token count: 1234 → 1.2K, 1234567 → 1.2M, 1234567890 → 1.2B"""
@@ -130,13 +146,21 @@ def parse_session(filepath):
                       + stats['cache_create'] + stats['output_tokens'])
     return stats
 
-# Find JSONL files
-if not os.path.isdir(jsonl_dir):
-    print(f"ERROR: No JSONL directory found at {jsonl_dir}", file=sys.stderr)
+# T-2425: union JSONL discovery across all candidate dirs
+if not jsonl_dirs:
+    print(f"ERROR: No JSONL directory found (candidates: {jsonl_dirs_raw!r})", file=sys.stderr)
     sys.exit(1)
 
-pattern = os.path.join(jsonl_dir, '*.jsonl')
-files = sorted(glob.glob(pattern), key=os.path.getmtime)
+# Glob each dir, dedupe by basename (same session id in two dirs → one transcript;
+# the newer mtime wins when sorted).
+_files_by_basename = {}
+for _d in jsonl_dirs:
+    for _f in glob.glob(os.path.join(_d, '*.jsonl')):
+        _bn = os.path.basename(_f)
+        _existing = _files_by_basename.get(_bn)
+        if _existing is None or os.path.getmtime(_f) > os.path.getmtime(_existing):
+            _files_by_basename[_bn] = _f
+files = sorted(_files_by_basename.values(), key=os.path.getmtime)
 
 # Filter out agent transcripts
 files = [f for f in files if not os.path.basename(f).startswith('agent-')]
