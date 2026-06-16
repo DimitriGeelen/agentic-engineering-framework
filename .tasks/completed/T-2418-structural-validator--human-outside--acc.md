@@ -1,19 +1,25 @@
 ---
 id: T-2418
-name: "Structural validator: `### Human` outside `## Acceptance Criteria` silently miscounts"
+name: "Structural validator: `### Human` outside `## Acceptance Criteria` silently
+  miscounts"
 description: >
-  AC parser regex (update-task.sh:88) closes section at next `## ` heading, so `### Human` placed after a sibling `## ` block is invisible. Symptom: Human ACs: 0/0 on Watchtower, partial-complete branch never fires, task moves to completed/. T-2417 just hit it. Class has existed since T-193 (years). Scope: enforce at write-time hook, close-time lint, or both — and pick override semantics consistent with T-1890 producer/consumer parity rule.
+  AC parser regex (update-task.sh:88) closes section at next `## ` heading, so `###
+  Human` placed after a sibling `## ` block is invisible. Symptom: Human ACs: 0/0
+  on Watchtower, partial-complete branch never fires, task moves to completed/. T-2417
+  just hit it. Class has existed since T-193 (years). Scope: enforce at write-time
+  hook, close-time lint, or both — and pick override semantics consistent with T-1890
+  producer/consumer parity rule.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-16T11:15:03Z
-last_update: 2026-06-16T11:15:03Z
-date_finished: null
+last_update: 2026-06-16T11:20:35Z
+date_finished: 2026-06-16T11:20:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +28,24 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-06-16T11:20:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
+      (no-signal); F3=2 (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2418: Structural validator: `### Human` outside `## Acceptance Criteria` silently miscounts
@@ -72,15 +96,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -129,9 +153,40 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Structural silent-failure with multi-year exposure. T-2417 close cascade is the proof case — Human AC invisible to parser, partial-complete logic skipped, task went to completed/ when it should have stayed in active/ with owner: human. Sibling structural class to T-2204 (inception recommendation gate). GO because antifragility directive: convert silent failure into loud refusal at the earliest enforcement point.
+
+**Date**: 2026-06-16T11:20:34Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-16T11:20:34Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Structural silent-failure with multi-year exposure. T-2417 close cascade is the proof case — Human AC invisible to parser, partial-complete logic skipped, task went to completed/ when it should have stayed in active/ with owner: human. Sibling structural class to T-2204 (inception recommendation gate). GO because antifragility directive: convert silent failure into loud refusal at the earliest enforcement point.
+
+### 2026-06-16T11:20:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4d9c9cb3
+- **Timestamp:** 2026-06-16T11:20:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-16T11:20:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
