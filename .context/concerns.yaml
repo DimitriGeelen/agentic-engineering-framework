@@ -6,8 +6,10 @@
   severity: low
   surface: lib/review.sh:emit_review
   detected_in: T-2421 smoke against T-2420
-  symptom: "Watchtower shows '0/0 checked' for partial-complete tasks whose name/description contains the literal string '### Human'. T-2420 hit this (its title literally references the heading)."
-  root_cause: "Bash while-loop AC counter (lib/review.sh:122-136) matches '### Human' anywhere in the file, including frontmatter `name:`/`description:` fields. The counter enters human-mode prematurely, exits at the first `## ` heading (e.g. `## Context`), and never reaches the real `### Human` AC."
-  prevention: "Anchor the counter on `## Acceptance Criteria` first (enter only after that heading is seen), then within the AC block look for `### Human`. Mirror update-task.sh's sed range semantics."
+  symptom: "CLI `fw task review T-XXX` emit_review counter false-entered human-mode on tasks whose `name:`/`description:` frontmatter contained literal `### Human` string, causing the partial-complete Recommendation gate to mis-fire (could either falsely-block or silently allow depending on AC layout). NOT a Watchtower bug — web/blueprints/tasks.py:_parse_acceptance_criteria was always correctly anchored on `## Acceptance Criteria`; the symptom was the CLI counter only."
+  root_cause: "Bash while-loop AC counter (lib/review.sh:122-136 pre-T-2422) matched `### Human` anywhere in the file via `grep -q '### Human'` — no `^` anchor, no `in_ac` precondition. Frontmatter line `name: \"PreToolUse hook: detect ### Human outside ## Acceptance Criteria\"` flipped `in_human=true` on line 3, then broke at the very next `^## ` heading (`## Context`). Loop exited before reaching the real AC block, so `human_total=0`. Counter diverged from update-task.sh's `sed -n '/^## Acceptance Criteria/,/^## /p'` discipline."
+  prevention: "T-2422: anchored counter on `^## Acceptance Criteria` first (in_ac state); only matches `^### Human` start-of-line within the AC block; bats `tests/unit/emit_review_ac_counter.bats` (6/6) pins the class — title containing `### Human` must not flip the counter; prose containing `### Human` must not flip the counter."
   blast_radius: scoped
   observed: 2026-06-16
+  fixed_in: T-2422
+  fixed_date: 2026-06-16

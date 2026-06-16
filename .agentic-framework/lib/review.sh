@@ -119,19 +119,48 @@ emit_review() {
     fi
 
     # Count Human ACs
-    local human_total=0 human_checked=0 in_human=false
+    #
+    # T-2422 (OBS-079): anchor the counter on `^## Acceptance Criteria` first,
+    # then look for `^### Human` start-of-line WITHIN that AC block. The prior
+    # form (`grep -q '### Human'`) matched the literal substring anywhere in
+    # the file — including the frontmatter `name:`/`description:` fields. Tasks
+    # whose title contains the literal string `### Human` (T-2420's name:
+    # "PreToolUse hook: detect ### Human outside ## Acceptance Criteria") flipped
+    # `in_human=true` while still on frontmatter line 3, then broke at the very
+    # next `## ` heading (`## Context`), so the counter never reached the real
+    # AC block and Watchtower rendered `Human ACs: 0/0`. Mirror update-task.sh's
+    # `sed -n '/^## Acceptance Criteria/,/^## /p'` anchoring discipline.
+    local human_total=0 human_checked=0 in_ac=false in_human=false
     while IFS= read -r line; do
-        if echo "$line" | grep -q '### Human'; then
-            in_human=true; continue
-        fi
-        if $in_human && echo "$line" | grep -qE '^### |^## '; then
-            break
-        fi
-        if $in_human && echo "$line" | grep -qE '^\- \[[ xX]\]'; then
-            human_total=$((human_total + 1))
-            if echo "$line" | grep -qE '^\- \[[xX]\]'; then
-                human_checked=$((human_checked + 1))
-            fi
+        case "$line" in
+            "## Acceptance Criteria"*)
+                in_ac=true
+                in_human=false
+                continue
+                ;;
+            "## "*)
+                # Any other `## ` heading closes the AC block.
+                if $in_ac; then break; fi
+                ;;
+            "### Human"*)
+                if $in_ac; then in_human=true; continue; fi
+                ;;
+            "### "*)
+                # Any other `### ` heading inside the AC block exits human-mode
+                # (e.g. another sub-section after Human, defensive — current
+                # template has Agent then Human).
+                if $in_human; then in_human=false; fi
+                ;;
+        esac
+        if $in_human; then
+            case "$line" in
+                "- [ ]"*|"- [x]"*|"- [X]"*)
+                    human_total=$((human_total + 1))
+                    case "$line" in
+                        "- [x]"*|"- [X]"*) human_checked=$((human_checked + 1)) ;;
+                    esac
+                    ;;
+            esac
         fi
     done < "$task_file"
 
