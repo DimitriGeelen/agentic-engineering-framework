@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2422: fix OBS-079 emit_review human-AC counter false-enters on title containing ###
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-16T14:45:13Z
+# ============================================================================
+
+task_id: T-2422
+task_name: "fix OBS-079 emit_review human-AC counter false-enters on title containing ###"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-16T14:39:49Z
+completed: 2026-06-16T14:45:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-16T16:44:52+02:00
+last_commit: 2026-06-16T16:44:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  emit_review AC counter anchored on ## Acceptance Criteria + ### Human (OBS-079)
+
+# Key outcomes
+outcomes:
+  - '`lib/review.sh` AC counter only enters human-mode after `^## Acceptance Criteria` AND a `^### Human` heading appears within that AC block'
+  - '`### Human` substring elsewhere (frontmatter `name:`/`description:`, body prose) does NOT flip the counter'
+  - 'Existing T-2421 bats suite (`tests/unit/recommendation_gate_build_partial.bats`) still passes 10/10 (no regression of T-2419 GO build-leg gate)'
+  - 'New bats fixture `tests/unit/emit_review_ac_counter.bats` pins the OBS-079 class: a task with `### Human` in its `name:` field renders `human_total > 0` only when there''s a real Human AC, `0` otherwise (6/6 PASS)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-16 — bash case patterns vs regex grep'
+    chose: 'Bash `case` patterns (`"## "*`, `"### Human"*`, `"- [ ]"*`) on `$line` for the heading and checkbox detection.'
+    rationale: 'Faster (no fork to grep per line), no SIGPIPE risk under `set -eo pipefail` (L-387), exact prefix match semantics that mirror what the regex `^### Human` was trying to express. Bash glob `*` after `"### Human"` is what handles trailing whitespace or descriptive text on the heading line.'
+    alternatives_rejected: ['Keeping grep with `^` anchors — would still fork per line; the original bug was unanchored grep, not "grep without `^`" — both anchored grep and `case` patterns fix it. `case` is the cheaper of the two.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/review.sh'
+  - '.context/concerns.yaml'
+  - 'lib/review.sh'
+  - '.tasks/active/T-2422-fix-obs-079-emitreview-human-ac-counter-.md'
+  - 'tests/unit/emit_review_ac_counter.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T16:44:52"
+    action: "T-2422: emit_review AC counter anchored on ## Acceptance Criteria + ### Human (OBS-079)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 5
+  lines_added: 559
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2422-fix-obs-079-emitreview-human-ac-counter-.md
+generated_by: context-agent-hybrid
