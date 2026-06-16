@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2426: Fabric hygiene — drift + enrich sweep (T-2420 wrapper card + 31 cards enriched)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-16T16:27:09Z
+# ============================================================================
+
+task_id: T-2426
+task_name: "Fabric hygiene — drift + enrich sweep (T-2420 wrapper card + 31 cards enriched)"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-16T16:25:39Z
+completed: 2026-06-16T16:26:59Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-16T18:26:56+02:00
+last_commit: 2026-06-16T18:26:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fabric hygiene — drift + enrich sweep
+
+# Key outcomes
+outcomes:
+  - '`agents/context/check-task-ac-structure.sh` registered in fabric (card `id:` and `location:` point at `.sh`, sibling parity)'
+  - '`fw fabric drift` reports 0 unregistered components'
+  - '`fw fabric enrich` applied — 31 cards enriched with 74 edges (37 forward + 37 reverse)'
+  - 'Audit fabric WARN (115/844 cards no edges) cleared'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/agents-context-check-task-ac-structure.yaml'
+  - '.fabric/components/agents-context-inject-next-directive.yaml'
+  - '.fabric/components/agents-context-post-compact-resume.yaml'
+  - '.fabric/components/agents-git-lib-hooks.yaml'
+  - '.fabric/components/agents-git-lib-master-guard.yaml'
+  - '.fabric/components/agents-handover-discard-manifest.yaml'
+  - '.fabric/components/agents-handover-handover.yaml'
+  - '.fabric/components/agents-sessions-claude-code-list.yaml'
+  - '.fabric/components/agents-sessions-render.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/capture-reader.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-colors.yaml'
+  - '.fabric/components/lib-config.yaml'
+  - '.fabric/components/lib-costs.yaml'
+  - '.fabric/components/lib-integrate.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-review.yaml'
+  - '.fabric/components/lib-write_set.yaml'
+  - '.fabric/components/tests-integration-continuous_loop.yaml'
+  - '.fabric/components/tests-unit-check_task_ac_structure.yaml'
+  - '.fabric/components/tests-unit-recommendation_gate_build_partial.yaml'
+  - '.fabric/components/tests-unit-sessions_claude_code_adapter.yaml'
+  - '.fabric/components/tests-unit-sessions_render.yaml'
+  - '.fabric/components/tests-unit-t2380_transcript_dir_encoding.yaml'
+  - '.fabric/components/tests-unit-t2391_project_root_inherited_stale.yaml'
+  - '.fabric/components/tests-unit-t2399_integrate_check.yaml'
+  - '.fabric/components/tests-unit-test_bvp_estimator.yaml'
+  - '.fabric/components/tests-unit-test_inject_next_directive.yaml'
+  - '.tasks/active/T-2426-fabric-hygiene--drift--enrich-sweep-t-24.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T18:26:56"
+    action: "T-2426: fabric hygiene — drift + enrich sweep"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 32
+  lines_added: 416
+  lines_removed: 196
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2426-fabric-hygiene--drift--enrich-sweep-t-24.md
+generated_by: context-agent-hybrid
