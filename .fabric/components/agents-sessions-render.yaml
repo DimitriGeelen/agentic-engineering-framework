@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: agents/sessions/render.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/sessions_render.bats
+  type: called_by
+- target: tests/unit/sessions_render.bats
+  type: tests_by
 last_verified: 2026-06-16
 created_by: unknown
+last_enriched: '2026-06-16'

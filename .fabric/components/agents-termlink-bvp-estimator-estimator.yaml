@@ -5,7 +5,13 @@ subsystem: unknown
 location: agents/termlink/bvp-estimator/estimator.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: lib/arc.sh
+  type: calls
+- target: lib/write_set.py
+  type: calls
+- target: bin/fw
+  type: calls
 depended_by:
 - target: lib/bvp.sh
   type: called_by
@@ -13,4 +19,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-06-03'
+last_enriched: '2026-06-16'

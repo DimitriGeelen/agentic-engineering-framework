@@ -3,22 +3,24 @@ name: JSONL Transcript Reader
 type: script
 subsystem: capture
 location: agents/capture/read-transcript.py
-purpose: 'Extracts human/agent conversation turns from the current Claude Code session''s
-  JSONL transcript. Used by the /capture skill to save volatile conversation content
-  to disk before it is lost.
+purpose: 'Extracts human/agent conversation turns from the current Claude Code session''s JSONL transcript. Used by the /capture
+  skill to save volatile conversation content to disk before it is lost.
 
   '
 interfaces:
 - CLI: python3 read-transcript.py [--dry-run|--last-n N|--all]
-- stdout: JSON {session_file, total_turns, captured_turns, topic_start_index, capture_mode,
-    turns[]}
+- stdout: JSON {session_file, total_turns, captured_turns, topic_start_index, capture_mode, turns[]}
 - stderr: warnings (format canary failures, missing transcript)
 depends_on:
 - target: .claude/commands/capture.md
   type: invoked-by
+- target: lib/paths.sh
+  type: calls
 depended_by:
 - target: .claude/commands/capture.md
   type: called-by
+- target: tests/unit/t2380_transcript_dir_encoding.bats
+  type: tests_by
 tags:
 - capture
 - jsonl
@@ -27,3 +29,4 @@ tags:
 - antifragility
 created: 2026-03-11
 task: T-108
+last_enriched: '2026-06-16'

@@ -8,7 +8,11 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: agents/termlink/bvp-estimator/estimator.py
   type: calls
+- target: lib/write_set.py
+  type: calls
+- target: lib/arc.sh
+  type: calls
 depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-06-03'
+last_enriched: '2026-06-16'

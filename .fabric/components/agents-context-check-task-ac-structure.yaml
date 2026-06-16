@@ -1,20 +1,20 @@
-id: agents/context/check-task-ac-structure.py
+id: agents/context/check-task-ac-structure.sh
 name: check-task-ac-structure
 type: script
 subsystem: context-fabric
-location: agents/context/check-task-ac-structure.py
-tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+location: agents/context/check-task-ac-structure.sh
+tags:
+- hook
+- pre-tool-use
+- task-validation
+purpose: 'PreToolUse hook entry point — validates that ### Human subsection sits inside ## Acceptance Criteria block (T-2420).
+  Bash wrapper execs check-task-ac-structure.py with the same argv (sibling parity with check-arc-id.sh / check-heredoc-cmd-sub.sh).'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: tests/unit/check_task_ac_structure.bats
+  type: called_by
+- target: tests/unit/check_task_ac_structure.bats
+  type: tests_by
 last_verified: 2026-06-16
-created_by: unknown
+created_by: T-2420
+last_enriched: '2026-06-16'

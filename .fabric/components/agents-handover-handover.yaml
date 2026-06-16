@@ -24,9 +24,11 @@ depends_on:
   type: calls
 - target: lib/arc_membership.sh
   type: calls
+- target: agents/handover/discard-manifest.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-06-16'
 depended_by:
 - target: agents/context/pre-compact.sh
   type: called_by

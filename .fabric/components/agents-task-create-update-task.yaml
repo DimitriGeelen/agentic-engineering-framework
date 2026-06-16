@@ -36,7 +36,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-10'
+last_enriched: '2026-06-16'
 depended_by:
 - target: C-004
   type: called_by
@@ -95,6 +95,10 @@ depended_by:
 - target: tests/unit/test_update_task_horizon_null_reclose.bats
   type: called_by
 - target: tests/unit/test_update_task_horizon_null_reclose.bats
+  type: tests_by
+- target: tests/unit/recommendation_gate_build_partial.bats
+  type: called_by
+- target: tests/unit/recommendation_gate_build_partial.bats
   type: tests_by
 docs:
 - path: docs/articles/deep-dives/06-authority-model.md
