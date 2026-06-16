@@ -1,36 +1,28 @@
-#!/usr/bin/env bash
-# T-2417: Claude Code session adapter for `fw sessions`.
-#
-# Reads `claude agents --json` and emits canonical JSONL on stdout per the
-# contract in agents/sessions/SCHEMA.md. The renderer (agents/sessions/render.py)
-# consumes the JSONL and prints the grouped tree.
-#
-# Exit codes (per SCHEMA.md):
-#   0  ok (JSONL emitted; zero lines is valid)
-#   2  `claude` not on PATH
-#   3  `claude agents --json` returned malformed JSON
-#
-# This file is CC-specific by design. All other consumers (renderer, dispatcher)
-# stay agent-neutral per Constitutional Directive 4 (Portability).
+#!/usr/bin/env python3
+"""Claude Code session adapter for `fw sessions` (T-2417).
 
-set -euo pipefail
+Reads `claude agents --all --json` and emits canonical JSONL on stdout per the
+contract in agents/sessions/SCHEMA.md. The renderer (agents/sessions/render.py)
+consumes the JSONL and prints the grouped tree.
 
-if ! command -v claude >/dev/null 2>&1; then
-    echo "claude-code adapter: \`claude\` not on PATH" >&2
-    exit 2
-fi
+Exit codes (per SCHEMA.md):
+  0  ok (JSONL emitted; zero lines is valid)
+  2  `claude` not on PATH OR `claude agents --all --json` failed
+  3  `claude agents --all --json` returned malformed JSON
 
-raw=$(claude agents --all --json 2>/dev/null) || {
-    echo "claude-code adapter: \`claude agents --all --json\` failed" >&2
-    exit 2
-}
+This file is CC-specific by design. The renderer + dispatcher stay agent-neutral
+per Constitutional Directive 4 (Portability).
 
-# Pipe to python3 for JSON->JSONL transform with project/state mapping.
-# Using python3 because jq alone can't easily compute basename + git-toplevel
-# checks reliably across all session cwds.
-echo "$raw" | python3 - "$@" <<'PYEOF'
+Empirical CC JSON shape (observed 2026-06-16, n=25 live sample):
+  - kind=background sessions → `state` ∈ {blocked, done, failed}, `id` present
+  - kind=interactive sessions → `status` ∈ {busy, idle}, `pid` present
+  - All sessions: cwd, kind, startedAt, sessionId, name
+"""
+# Named .sh for adapter-protocol convention (consistent with other agent dirs);
+# shebang routes to python3. Bash never executes a line here.
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -38,13 +30,22 @@ import time
 NOW = int(time.time())
 
 # Map CC's native state strings to canonical state values.
-# CC states observed: blocked, working, done, busy. Empty/missing → completed.
+#
+# CC emits two distinct fields by session kind:
+#   - kind=background sessions → `state` ∈ {blocked, done, failed}
+#   - kind=interactive sessions → `status` ∈ {busy, idle}
+# The adapter reads `state` first, falls back to `status`, then "".
 STATE_MAP = {
+    # background `state` values
     "blocked": "needs-input",
     "needs_input": "needs-input",
-    "working": "working",
-    "busy": "working",
     "done": "completed",
+    "failed": "completed",
+    # interactive `status` values
+    "busy": "working",
+    "idle": "completed",
+    # generic aliases
+    "working": "working",
     "completed": "completed",
     "": "completed",
 }
@@ -53,8 +54,8 @@ STATE_MAP = {
 def project_for(cwd):
     """Return basename(git_toplevel) if cwd is inside a repo; else '(loose)'.
 
-    Loose-cwd cases (per T-2416 IW-4): cwd is $HOME, $HOME/file, /tmp, /var/tmp,
-    or any path not inside a git repo.
+    Loose-cwd cases (per T-2416 IW-4): cwd is $HOME, /tmp, /var/tmp, or any
+    path not inside a git repo.
     """
     if not cwd or not isinstance(cwd, str):
         return "(loose)"
@@ -62,8 +63,6 @@ def project_for(cwd):
     home = os.path.expanduser("~")
     if cwd in (home, "/tmp", "/var/tmp", "/", "/root"):
         return "(loose)"
-    # Try `git -C <cwd> rev-parse --show-toplevel`. If it fails or path doesn't
-    # exist, it's loose.
     try:
         if not os.path.isdir(cwd):
             return "(loose)"
@@ -84,7 +83,7 @@ def project_for(cwd):
 
 
 def age_seconds_for(session):
-    """Compute age_seconds from CC's startedAt (millis) or updatedAt.
+    """Compute age_seconds from CC's startedAt / updatedAt (millis).
 
     Prefer updatedAt if present (last activity); fall back to startedAt.
     """
@@ -97,34 +96,69 @@ def age_seconds_for(session):
     return 0
 
 
-try:
-    data = json.loads(sys.stdin.read())
-except json.JSONDecodeError as e:
-    print(f"claude-code adapter: malformed JSON from `claude agents`: {e}", file=sys.stderr)
-    sys.exit(3)
+def main():
+    if not shutil.which("claude"):
+        print("claude-code adapter: `claude` not on PATH", file=sys.stderr)
+        return 2
 
-if not isinstance(data, list):
-    print(f"claude-code adapter: expected JSON array, got {type(data).__name__}", file=sys.stderr)
-    sys.exit(3)
+    try:
+        result = subprocess.run(
+            ["claude", "agents", "--all", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (subprocess.TimeoutExpired, OSError) as e:
+        print(f"claude-code adapter: `claude agents --all --json` failed: {e}", file=sys.stderr)
+        return 2
 
-for s in data:
-    if not isinstance(s, dict):
-        continue
-    cwd = s.get("cwd", "") or ""
-    state_raw = (s.get("state") or "").lower()
-    out = {
-        "provider": "claude-code",
-        "project": project_for(cwd),
-        "name": s.get("name", "") or "",
-        "state": STATE_MAP.get(state_raw, "completed"),
-        "age_seconds": age_seconds_for(s),
-        "session_id": s.get("sessionId", "") or "",
-    }
-    # Optional fields
-    if cwd:
-        out["cwd"] = cwd
-    # CC has no first-class "description" field on agents --json output;
-    # the right-column text in the picker comes from internal state.json
-    # which is not exposed here. Leave description unset for v1.
-    sys.stdout.write(json.dumps(out, separators=(",", ":")) + "\n")
-PYEOF
+    if result.returncode != 0:
+        print(
+            f"claude-code adapter: `claude agents --all --json` exit {result.returncode}",
+            file=sys.stderr,
+        )
+        return 2
+
+    try:
+        data = json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        print(f"claude-code adapter: malformed JSON from `claude agents`: {e}", file=sys.stderr)
+        return 3
+
+    if not isinstance(data, list):
+        print(
+            f"claude-code adapter: expected JSON array, got {type(data).__name__}",
+            file=sys.stderr,
+        )
+        return 3
+
+    for s in data:
+        if not isinstance(s, dict):
+            continue
+        cwd = s.get("cwd", "") or ""
+        # Read state from native field by kind:
+        #   background: `state` (blocked|done|failed)
+        #   interactive: `status` (busy|idle)
+        state_raw = (s.get("state") or s.get("status") or "").lower()
+        desc_hint = ""
+        if state_raw == "failed":
+            desc_hint = "failed"
+        out = {
+            "provider": "claude-code",
+            "project": project_for(cwd),
+            "name": s.get("name", "") or "",
+            "state": STATE_MAP.get(state_raw, "completed"),
+            "age_seconds": age_seconds_for(s),
+            "session_id": s.get("sessionId", "") or "",
+        }
+        if cwd:
+            out["cwd"] = cwd
+        if desc_hint:
+            out["description"] = desc_hint
+        sys.stdout.write(json.dumps(out, separators=(",", ":")) + "\n")
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

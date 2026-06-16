@@ -113,13 +113,15 @@ def main():
                 name = s.get("name") or "(unnamed)"
                 desc = s.get("description") or ""
                 age = fmt_age(s.get("age_seconds", 0))
-                # Two-column body: name (left, truncated to ~40) | desc (middle, truncated to ~60) | age (right)
+                # Layout: name (left, truncated to ~40) | desc (middle, truncated to ~40) | age (right)
+                # When no description, drop the description column entirely
+                # instead of padding empty space — keeps the visual tight.
                 name_col = name if len(name) <= 40 else name[:37] + "..."
-                desc_col = desc if len(desc) <= 60 else desc[:57] + "..."
-                if desc_col:
-                    out_lines.append(f"    {glyph} {name_col:<40}  {desc_col:<60}  {age:>5}")
+                if desc:
+                    desc_col = desc if len(desc) <= 40 else desc[:37] + "..."
+                    out_lines.append(f"    {glyph} {name_col:<40}  {desc_col:<40}  {age:>5}")
                 else:
-                    out_lines.append(f"    {glyph} {name_col:<40}  {' ' * 60}  {age:>5}")
+                    out_lines.append(f"    {glyph} {name_col:<40}  {age:>5}")
         out_lines.append("")  # blank line between projects
 
     # Trim trailing blank
