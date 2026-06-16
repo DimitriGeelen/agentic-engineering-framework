@@ -646,8 +646,8 @@ observations:
   captured: 2026-06-14T14:53:19Z
   context_task: null
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-077
   text: "add"
   captured: 2026-06-15T17:59:35Z
