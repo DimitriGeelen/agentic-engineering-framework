@@ -669,6 +669,7 @@ show_help() {
     echo -e "  ${GREEN}build${NC}                Compile TypeScript sources (lib/ts/src → lib/ts/dist)"
     echo -e "  ${GREEN}harvest${NC} [dir]        Harvest learnings from project to framework"
     echo -e "  ${GREEN}termlink${NC} <cmd>       TermLink integration (check|spawn|exec|status|cleanup|dispatch)"
+    echo -e "  ${GREEN}sessions${NC} [--provider <name>]  List AI-agent sessions grouped by project (T-2417)"
     echo -e "  ${GREEN}onboarding${NC} <cmd>     Onboarding gate (status|skip|reset)"
     echo ""
     echo -e "${BOLD}Discovery:${NC}"
@@ -5577,6 +5578,60 @@ PYREVQ
         ;;
     termlink)
         exec "$AGENTS_DIR/termlink/termlink.sh" "$@"
+        ;;
+    sessions)
+        # T-2417: portable per-project session listing.
+        # Dispatch to provider adapter (autodetect: claude → cursor → aider → cline,
+        # or FW_AGENT_PROVIDER override) and pipe canonical JSONL to the
+        # agent-neutral renderer.
+        case "${1:-}" in
+            -h|--help)
+                echo "Usage: fw sessions [--provider <name>]"
+                echo ""
+                echo "List AI-agent sessions grouped by project, then by state."
+                echo ""
+                echo "Adapter resolution:"
+                echo "  1. --provider <name> flag"
+                echo "  2. FW_AGENT_PROVIDER env var"
+                echo "  3. Autodetect: claude-code → cursor → aider → cline"
+                echo ""
+                echo "Adapters live under agents/sessions/<provider>/list.sh and"
+                echo "emit canonical JSONL per agents/sessions/SCHEMA.md."
+                exit 0
+                ;;
+            --provider)
+                _sess_provider="${2:-}"
+                shift 2 || true
+                ;;
+            *)
+                _sess_provider="${FW_AGENT_PROVIDER:-}"
+                ;;
+        esac
+        if [ -z "$_sess_provider" ]; then
+            # Autodetect chain: probe the binary; first hit wins.
+            if command -v claude >/dev/null 2>&1; then
+                _sess_provider="claude-code"
+            elif command -v cursor >/dev/null 2>&1; then
+                _sess_provider="cursor"
+            elif command -v aider >/dev/null 2>&1; then
+                _sess_provider="aider"
+            elif command -v cline >/dev/null 2>&1; then
+                _sess_provider="cline"
+            fi
+        fi
+        if [ -z "$_sess_provider" ]; then
+            echo "fw sessions: no AI-agent provider detected on PATH (tried: claude, cursor, aider, cline)" >&2
+            echo "             set FW_AGENT_PROVIDER=<name> or --provider <name> to override" >&2
+            exit 2
+        fi
+        _sess_adapter="$AGENTS_DIR/sessions/$_sess_provider/list.sh"
+        if [ ! -x "$_sess_adapter" ]; then
+            echo "fw sessions: adapter not found or not executable: $_sess_adapter" >&2
+            echo "             provider=$_sess_provider — add an adapter at agents/sessions/$_sess_provider/list.sh per agents/sessions/SCHEMA.md" >&2
+            exit 2
+        fi
+        "$_sess_adapter" | python3 "$AGENTS_DIR/sessions/render.py"
+        exit $?
         ;;
     onboarding)
         ONBOARDING_MARKER="$PROJECT_ROOT/.context/working/.onboarding-complete"
