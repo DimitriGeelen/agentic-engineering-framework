@@ -1038,3 +1038,12 @@ overrides:
   expires_at: '2026-09-13T16:49:52Z'
   added_by: root
   added_at: '2026-06-15T16:49:52Z'
+- id: OV-7d6af210
+  task_id: T-2417
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: CC adapter test stubs `claude` (external binary unavailable in CI). Live-fire
+    is captured as Human AC. Same FP class as T-1730 / T-1811
+  expires_at: '2026-09-14T10:07:29Z'
+  added_by: root
+  added_at: '2026-06-16T10:07:29Z'

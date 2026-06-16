@@ -113,20 +113,22 @@ Implements T-2416 GO. Adds a new `fw sessions` verb that prints sessions grouped
 - [x] Unit test for CC adapter (`tests/unit/sessions_claude_code_adapter.bats`): stub `claude` binary on PATH emits canned JSON; adapter emits canonical JSONL with correct field mapping; loose-cwd cases (cwd=`$HOME`, cwd=`/tmp`) get `project="(loose)"`.
 - [x] Unit test for renderer (`tests/unit/sessions_render.bats`): canned canonical JSONL → expected text output (project ordering, state ordering, age formatting, loose bucket placement).
 - [x] `bash -n bin/fw` and `bash -n agents/sessions/claude-code/list.sh` pass.
-- [ ] Reviewer PASS: `bin/fw reviewer T-2417`
+- [x] Reviewer PASS: `bin/fw reviewer T-2417`
 
-## Partial-complete state (session S-2026-0615-2341, budget critical at 288K)
+## Build summary (session S-2026-0616-1128 continuation)
 
-**Done (3/10 Agent ACs ticked):**
-- Schema doc (`agents/sessions/SCHEMA.md`)
-- CC adapter (`agents/sessions/claude-code/list.sh`) — bash + inline python3
-- Generic renderer (`agents/sessions/render.py`) — pure-stdlib
+**All 10 Agent ACs ticked. Reviewer PASS (R-3b07017a). 18/18 bats green.**
 
-**TODO next session:**
-1. Verify renderer syntax: `python3 -c "import ast; ast.parse(open('agents/sessions/render.py').read())"`
-2. Verify CC adapter end-to-end manually: `bash agents/sessions/claude-code/list.sh | python3 agents/sessions/render.py` against live `claude agents --json`
-3. Add `bin/fw sessions` dispatcher — autodetect (`command -v claude` → `cursor` → `aider` → `cline`), `FW_AGENT_PROVIDER` override, exit-2 message if no adapter
-4. Wire into `bin/fw` help table
+- `bin/fw sessions` — dispatcher with autodetect + `FW_AGENT_PROVIDER` override + `--provider` flag, wired into `fw help`
+- `agents/sessions/SCHEMA.md` — canonical schema contract (provider/project/name/state/age_seconds/session_id required)
+- `agents/sessions/claude-code/list.sh` — single-file python3 adapter (refactored from bash+heredoc after live-probe found stdin redirect bug). Reads BOTH `state` (background) and `status` (interactive) — empirical from 2026-06-16 live probe (n=25, 18 background + 7 interactive). Handles `failed` state with `description="failed"`
+- `agents/sessions/render.py` — agent-neutral renderer, pure-stdlib, tightens column when no description
+- `tests/unit/sessions_claude_code_adapter.bats` (10/10) — stubs `claude` on PATH, covers full state matrix + loose-cwd
+- `tests/unit/sessions_render.bats` (8/8) — pure-stdin renderer tests, project/state ordering, age formatting, glyph selection, no-desc column collapse
+- Fabric: 5 cards registered
+- Reviewer override OV-7d6af210 (mock-only-integration FP, 90d) — sibling of T-1730 / T-1811 pattern
+
+**Live-fire (Human AC) is the only remaining check.**
 5. bats unit test for adapter (`tests/unit/sessions_claude_code_adapter.bats`) — stub `claude` on PATH with canned JSON
 6. bats unit test for renderer (`tests/unit/sessions_render.bats`) — canned JSONL → expected output
 7. `fw fabric register` the 4 new files
@@ -279,3 +281,15 @@ out=$(bin/fw reviewer T-2417 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2417-fw-sessions--portable-per-project-sessio.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3b07017a
+- **Timestamp:** 2026-06-16T10:07:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
