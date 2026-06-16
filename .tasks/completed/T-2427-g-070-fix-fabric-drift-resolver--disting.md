@@ -4,12 +4,12 @@ name: "G-070 fix: fabric drift resolver — distinguish data-artifact deps from 
 description: >
   G-070 fix: fabric drift resolver — distinguish data-artifact deps from real drift (target exists on disk → silent; missing → stale)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/fabric/lib/drift.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-16T16:30:53Z
-last_update: 2026-06-16T16:30:53Z
-date_finished: null
+last_update: 2026-06-16T16:36:45Z
+date_finished: 2026-06-16T16:36:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -121,19 +121,13 @@ bats tests/unit/fabric_drift_data_artifact.bats
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw fabric drift` reported 20 stale edges every invocation; same 20 edges showed up in `fw audit` output. All 14 of the targets were legitimate runtime artifacts that exist on disk (`.context/handovers/LATEST.md` symlink, `.tasks/active/` dir, `.context/bus/blobs/` dir, etc.); the other 6 were `type: writes` edges declaring lazy-create intent. Real drift (a card pointing at a deleted source) was indistinguishable in the noise.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** The Python block in `agents/fabric/lib/drift.sh:65-115` (T-1674's single-pass optimisation) checked only one signal: "is `target` present in `known`?" where `known` was the set of all registered `id|name|location` values. If a target wasn't a registered card, it emitted `unresolved` regardless of whether the target was a real on-disk artifact, a write-target the script creates lazily, or a system binary. The resolver had no model of "data-artifact dependency" — every non-card target was treated as broken-pointer drift.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The fabric format documents `depends_on.type` (calls|reads|writes|triggers|renders) but the drift resolver never read `type` — it only matched `target`. The semantic distinction between "I read from this file" (must exist) and "I write to this file" (created on first run) was in the data model but not the validator. The 20 false-positive lines accumulated silently from 2026-05-28 (G-070 filed) until 2026-06-16 — 19 days of audit noise drowning any real drift signal.
+
+**Prevention:** (1) Resolver now branches on `_resolves_on_disk(target, root)` — relative paths joined with `PROJECT_ROOT`, absolute paths checked verbatim, bare names checked in `$PATH`. (2) Resolver now reads `dep.type` and skips `WRITE_TYPES = {writes, writes_data, writes_runtime}` (write-targets are intent, not drift). (3) Regression test `tests/unit/fabric_drift_data_artifact.bats` pins all four cases (A: existing dir silent, B: existing file silent, C: missing reads STALE, D: missing writes silent, E: system binary silent, F: missing bare name STALE) — any regression that re-broadens "no card → stale" will fail one of these.
 
 ## Evolution
 
@@ -189,9 +183,12 @@ bats tests/unit/fabric_drift_data_artifact.bats
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-073ab679
-- **Timestamp:** 2026-06-16T16:35:43Z
+- **Scan ID:** R-c8dae3bc
+- **Timestamp:** 2026-06-16T16:36:51Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-16T16:36:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
