@@ -3693,3 +3693,10 @@ X'` returning empty group."
   date: 2026-06-14
   context: Added via context agent
   application: TBD
+- id: L-485
+  learning: "G-070 type pattern: fabric drift resolver was checking only 'is target a registered card?' — should have read dep.type and on-disk existence. Class: validator one-axis blindness. When a data model documents type semantics (calls|reads|writes), the validator must consume them — else the validator becomes single-axis (target-only match) and emits noise. The validator was 19 days behind the data model semantics."
+  source: P-001
+  task: T-2427
+  date: 2026-06-16
+  context: Added via context agent
+  application: TBD
