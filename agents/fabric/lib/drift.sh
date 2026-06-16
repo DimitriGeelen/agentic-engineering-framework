@@ -67,12 +67,16 @@ do_drift() {
     # 508 cards). Stdout = unresolved lines for the operator. The count comes
     # back via a final ##STALE_COUNT=N## sentinel which we strip before
     # printing. Output lines preserved byte-for-byte vs the prior impl.
+    # T-2427/G-070: target-exists-on-disk → silent (data-artifact dep), only
+    # missing-on-disk → stale. Also treats system binaries (no /, no ., found
+    # in $PATH) as resolved. Distinguishes real drift from runtime-data noise.
     echo -e "${CYAN}Stale edges:${NC}"
     local _stale_raw _stale_count=0
-    _stale_raw=$(python3 - "$COMPONENTS_DIR" <<'PYEOF' 2>/dev/null
-import glob, sys, yaml
+    _stale_raw=$(python3 - "$COMPONENTS_DIR" "$PROJECT_ROOT" <<'PYEOF' 2>/dev/null
+import glob, os, shutil, sys, yaml
 
 components_dir = sys.argv[1]
+project_root = sys.argv[2]
 SKIP = {'fw-cli', 'cron-audit', 'transcript',
         'check-active-task', 'check-tier0', 'error-watchdog'}
 
@@ -91,12 +95,48 @@ for cp in sorted(glob.glob(f"{components_dir}/*.yaml")):
     known.add(cd.get('name', ''))
     known.add(cd.get('location', ''))
 
+def _resolves_on_disk(target, root):
+    """T-2427/G-070: True if target points at a real on-disk artifact.
+
+    Data-artifact dependencies (logs, ledgers, runtime files, dirs that
+    receive output) legitimately have no fabric card but reflect real
+    runtime relationships. Only missing-from-disk targets are real drift.
+    """
+    if not target:
+        return False
+    # Absolute path → check verbatim
+    if target.startswith('/'):
+        return os.path.exists(target)
+    # Relative path with slash → join against PROJECT_ROOT
+    if '/' in target:
+        return os.path.exists(os.path.join(root, target))
+    # Bare name with no slash + no extension → check $PATH (system binary)
+    # e.g. `gh`, `jq`, `dotnet`. Bare names WITH extension also try project-relative first.
+    if '.' not in target and shutil.which(target):
+        return True
+    # Bare name (with or without extension) → also check project-relative
+    return os.path.exists(os.path.join(root, target))
+
+# T-2427/G-070: edge types whose semantics make a missing target NOT drift.
+# `writes*` declares the script creates the target lazily on first invocation;
+# the absence-from-disk is expected pre-bootstrap state, not real drift.
+WRITE_TYPES = {'writes', 'writes_data', 'writes_runtime'}
+
 count = 0
 for cd in cards:
     name = cd.get('name', '')
     for dep in cd.get('depends_on', []) or []:
-        target = (dep or {}).get('target', '') if isinstance(dep, dict) else ''
+        if not isinstance(dep, dict):
+            continue
+        target = dep.get('target', '')
+        edge_type = dep.get('type', '')
         if not target or target in known or target.startswith('all ') or target in SKIP:
+            continue
+        # T-2427/G-070: skip if target resolves to a real on-disk artifact
+        if _resolves_on_disk(target, project_root):
+            continue
+        # T-2427/G-070: skip write-targets — script creates them, missing is expected
+        if edge_type in WRITE_TYPES:
             continue
         print(f"  ! {name} → {target} (unresolved)")
         count += 1

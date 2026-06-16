@@ -2250,7 +2250,20 @@ concerns:
     3. Regression test: card with `depends_on: .tasks/active/` (real dir,
        no card) → silent in `fw fabric drift`. Card with
        `depends_on: nonexistent/path.sh` → stale WARN.
-  status: watching
+  status: resolved
   created: 2026-05-28
-  last_reviewed: 2026-05-28
+  last_reviewed: 2026-06-16
   related_task: T-1062
+  fixed_in: T-2427
+  fixed_date: 2026-06-16
+  resolution: |
+    `agents/fabric/lib/drift.sh` resolver now distinguishes three cases for
+    targets without a fabric card:
+      (a) target resolves on disk (file/dir/symlink) → silent (data-artifact)
+      (b) edge type ∈ {writes, writes_data, writes_runtime} → silent (lazy-create)
+      (c) bare name (no slash, no extension) resolving in $PATH → silent (system binary)
+      (d) target missing on disk AND edge type ∉ writes* → STALE (real drift)
+    Live verification: `fw fabric drift` went 20 → 0 stale edges on this project
+    (14 dropped as data-artifact deps, 6 dropped as writes-targets). Real future
+    drift (a card pointing at a deleted source) now surfaces unambiguously.
+    Regression test: tests/unit/fabric_drift_data_artifact.bats (6/6 PASS).
