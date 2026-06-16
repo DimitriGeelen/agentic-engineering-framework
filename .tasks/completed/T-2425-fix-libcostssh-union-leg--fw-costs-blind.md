@@ -4,12 +4,12 @@ name: "fix lib/costs.sh union-leg — fw costs blind in worktree (T-2392/T-2400 
 description: >
   fix lib/costs.sh union-leg — fw costs blind in worktree (T-2392/T-2400 finish)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/costs.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-16T15:24:13Z
-last_update: 2026-06-16T15:24:13Z
-date_finished: null
+last_update: 2026-06-16T15:29:26Z
+date_finished: 2026-06-16T15:29:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -208,9 +208,12 @@ out=$(bin/fw costs 2>&1); echo "$out" | grep -q "Token Usage Summary"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9fe3d059
-- **Timestamp:** 2026-06-16T15:29:00Z
+- **Scan ID:** R-0f5e8b6a
+- **Timestamp:** 2026-06-16T15:29:41Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-16T15:29:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

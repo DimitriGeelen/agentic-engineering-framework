@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2425: fix lib/costs.sh union-leg — fw costs blind in worktree (T-2392/T-2400 finish)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-16T15:29:46Z
+# ============================================================================
+
+task_id: T-2425
+task_name: "fix lib/costs.sh union-leg — fw costs blind in worktree (T-2392/T-2400 finish)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-16T15:24:13Z
+completed: 2026-06-16T15:29:26Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-16T17:29:19+02:00
+last_commit: 2026-06-16T17:29:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lib/costs.sh union-leg — worktree-aware JSONL discovery (T-2392/T-2400 finish)
+
+# Key outcomes
+outcomes:
+  - '`lib/costs.sh` enumerates JSONLs across ALL dirs emitted by `fw_claude_project_dirs` (worktree-aware union, matching the T-2392 pattern at checkpoint.sh:86 / budget-gate.sh:255 / session-metrics.sh:44)'
+  - 'Live: `fw costs sessions` in this worktree shows 46 sessions / total turns from BOTH worktree + main-repo projects-dirs (was potentially blind pre-fix)'
+  - '`fw costs` summary continues to work (live smoke at HEAD: shows 63.5B total, 46 sessions, 359K turns — no regression)'
+  - 'bats coverage pins the union pattern: `tests/unit/costs_union_leg.bats` 5/5 PASS (union, single-dir backward compat, no-dirs error, dedup-by-basename, _costs_jsonl_dir delegation)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/costs.sh'
+  - 'lib/costs.sh'
+  - '.tasks/active/T-2425-fix-libcostssh-union-leg--fw-costs-blind.md'
+  - 'tests/unit/costs_union_leg.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T17:29:19"
+    action: "T-2425: lib/costs.sh union-leg — worktree-aware JSONL discovery (T-2392/T-2400 finish)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 4
+  lines_added: 417
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2425-fix-libcostssh-union-leg--fw-costs-blind.md
+generated_by: context-agent-hybrid
