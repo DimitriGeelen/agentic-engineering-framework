@@ -1,19 +1,29 @@
 ---
 id: T-2419
-name: "Recommendation gate for partial-complete BUILD tasks (sibling of T-2204 inception leg)"
+name: "Recommendation gate for partial-complete BUILD tasks (sibling of T-2204 inception
+  leg)"
 description: >
-  T-2204 ships a Recommendation-completeness gate for workflow_type: inception at filing time (refuses files without --recommendation + --rationale). No parallel gate exists for workflow_type: build at close time. When a build task transitions to work-completed with unticked Human ACs (partial-complete), there is no structural refusal if the task lacks a `## Recommendation` block — Watchtower /review/<id> then renders 'NO-REC' and the operator opens an empty handoff. T-2417 hit this. Scope: where to gate (update-task.sh close-time check, fw task review emit-time check, or both), unified bypass env-var (FW_ALLOW_EMPTY_RECOMMENDATION=1 per T-1890 producer/consumer parity), which non-inception workflow_types are in scope (build, refactor, test, decommission?).
+  T-2204 ships a Recommendation-completeness gate for workflow_type: inception at
+  filing time (refuses files without --recommendation + --rationale). No parallel
+  gate exists for workflow_type: build at close time. When a build task transitions
+  to work-completed with unticked Human ACs (partial-complete), there is no structural
+  refusal if the task lacks a `## Recommendation` block — Watchtower /review/<id>
+  then renders 'NO-REC' and the operator opens an empty handoff. T-2417 hit this.
+  Scope: where to gate (update-task.sh close-time check, fw task review emit-time
+  check, or both), unified bypass env-var (FW_ALLOW_EMPTY_RECOMMENDATION=1 per T-1890
+  producer/consumer parity), which non-inception workflow_types are in scope (build,
+  refactor, test, decommission?).
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-16T11:15:21Z
-last_update: 2026-06-16T11:15:21Z
-date_finished: null
+last_update: 2026-06-16T11:20:50Z
+date_finished: 2026-06-16T11:20:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +32,24 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-06-16T11:20:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
+      (no-signal); F3=2 (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2419: Recommendation gate for partial-complete BUILD tasks (sibling of T-2204 inception leg)
@@ -72,15 +100,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -129,9 +157,40 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Sibling structural class to T-2204 inception recommendation gate. T-2417 just hit the gap — operator opened /review/T-2417 to a 'NO-REC: task isn't ready for review' page despite all 10 Agent ACs ticked + reviewer PASS. Structural prevention: refuse the close at the same earliest-gate principle T-2204 already proved. GO with confidence: pattern is established, target class is identified, scope is well-bounded (~5 file edits).
+
+**Date**: 2026-06-16T11:20:50Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-16T11:20:50Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Sibling structural class to T-2204 inception recommendation gate. T-2417 just hit the gap — operator opened /review/T-2417 to a 'NO-REC: task isn't ready for review' page despite all 10 Agent ACs ticked + reviewer PASS. Structural prevention: refuse the close at the same earliest-gate principle T-2204 already proved. GO with confidence: pattern is established, target class is identified, scope is well-bounded (~5 file edits).
+
+### 2026-06-16T11:20:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d28e0fdb
+- **Timestamp:** 2026-06-16T11:20:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-16T11:20:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
