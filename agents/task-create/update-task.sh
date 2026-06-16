@@ -273,6 +273,13 @@ PYREC
                 log_gate_bypass "--skip-recommendation" "check_recommendation_for_review"
                 return 0
             fi
+            # T-2421 (T-2419 GO, sibling of T-2204): unified env-var bypass
+            # FW_ALLOW_EMPTY_RECOMMENDATION=1 per T-1890 producer/consumer parity.
+            if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ]; then
+                echo -e "${YELLOW}WARNING: Recommendation $rec_state (FW_ALLOW_EMPTY_RECOMMENDATION=1 bypass)${NC}"
+                log_gate_bypass "FW_ALLOW_EMPTY_RECOMMENDATION" "check_recommendation_for_review"
+                return 0
+            fi
             echo -e "${RED}ERROR: Cannot complete — task needs human review but ## Recommendation is $rec_state.${NC}" >&2
             echo "" >&2
             echo "T-679 (CLAUDE.md): never present a blank decision to the human." >&2
@@ -285,7 +292,9 @@ PYREC
             echo "" >&2
             echo "Options:" >&2
             echo "  1. Add the Recommendation block, then retry" >&2
-            echo "  2. Use --skip-recommendation to bypass (logged)" >&2
+            echo "  2. Bypass via flag (logged Tier 2): --skip-recommendation" >&2
+            echo "  3. Bypass via env var (logged Tier 2, T-1890 parity):" >&2
+            echo "       FW_ALLOW_EMPTY_RECOMMENDATION=1 fw task update T-XXX --status work-completed" >&2
             exit 1
             ;;
     esac

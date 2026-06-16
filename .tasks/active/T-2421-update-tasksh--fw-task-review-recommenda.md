@@ -1,10 +1,16 @@
 ---
 id: T-2421
-name: "update-task.sh + fw task review: Recommendation gate for partial-complete build tasks (T-2419 GO)"
+name: "update-task.sh + fw task review: Recommendation gate for partial-complete build
+  tasks (T-2419 GO)"
 description: >
-  Implement T-2419 GO. (a) Extend update-task.sh check_acceptance_criteria: when workflow_type ∈ {build,refactor,test,decommission} AND PARTIAL_COMPLETE=true AND `## Recommendation` block is empty/missing, refuse work-completed transition. (b) Extend fw task review (emit_review): refuse URL emit when same condition holds. Unified bypass FW_ALLOW_EMPTY_RECOMMENDATION=1 (already used by T-2204 inception leg). Override flag --skip-recommendation for direct invocations.
+  Implement T-2419 GO. (a) Extend update-task.sh check_acceptance_criteria: when workflow_type
+  ∈ {build,refactor,test,decommission} AND PARTIAL_COMPLETE=true AND `## Recommendation`
+  block is empty/missing, refuse work-completed transition. (b) Extend fw task review
+  (emit_review): refuse URL emit when same condition holds. Unified bypass FW_ALLOW_EMPTY_RECOMMENDATION=1
+  (already used by T-2204 inception leg). Override flag --skip-recommendation for
+  direct invocations.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-16T12:01:35Z
-last_update: 2026-06-16T12:01:35Z
-date_finished: null
+last_update: 2026-06-16T12:38:03Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +40,25 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-06-16T12:38:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2421: update-task.sh + fw task review: Recommendation gate for partial-complete build tasks (T-2419 GO)
@@ -45,40 +70,25 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/review.sh:emit_review` refuses URL emission for partial-complete BUILD-class tasks (workflow_type ∈ {build, refactor, test, decommission}) when `## Recommendation` is missing or empty.
+- [x] Same gate honours `FW_ALLOW_EMPTY_RECOMMENDATION=1` env-var bypass with Tier-2 log entry via `_log_empty_recommendation_bypass`.
+- [x] Inception gate (existing) is untouched — workflow_type=inception still routes through `audit_inception_recommendation`.
+- [x] `update-task.sh:check_recommendation_for_review` honours `FW_ALLOW_EMPTY_RECOMMENDATION=1` env-var in addition to the existing `--skip-recommendation` flag (logs same Tier-2 entry).
+- [x] Block message names BOTH bypass mechanisms (flag + env var) per T-1890 producer/consumer parity.
+- [x] bats test suite `tests/unit/recommendation_gate_build_partial.bats` covers: build partial-complete with empty Rec blocks; substantive Rec passes; fully-complete build passes; no-Human build passes; FW_ALLOW_EMPTY_RECOMMENDATION=1 bypass logs Tier-2; refactor workflow also gated; inception gate still fires (no regression); update-task.sh env-var bypass; block message contains both mechanisms. 10/10 tests pass.
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+## Recommendation
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+**Recommendation:** GO
 
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
+**Rationale:** Closes the missing leg of T-679 governance at emit-time. The inception leg (T-2206) has shipped and stabilized since 2026-04; this build-leg mirror is a small extension of the same gate (refactor a condition + add a workflow_type whitelist). Update-task.sh env-var bypass adds T-1890 producer/consumer parity. No new dependencies, no new files (just an additional test suite), no migration concerns. Regression risk is bounded: 10/10 build-leg tests pass AND inception gate (existing t7 + sibling suites) untouched. Surfaced one pre-existing orthogonal bug (OBS-079) which is documented but out of scope.
 
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+**Evidence:**
+- Code: lib/review.sh:147-186 (unified gate handling both inception and partial-complete build); agents/task-create/update-task.sh:270-302 (env-var bypass + dual-mechanism block message)
+- Tests: tests/unit/recommendation_gate_build_partial.bats — 10/10 pass (covers all branches incl. inception regression check, env-var bypass, dual block-message mechanisms)
+- Sibling tests: tests/unit/recommendation_gate_needs_human.bats — 8/8 still pass (no regression on T-1572 needs-human signal class)
+- Smoke: live `fw task review T-2420` emits the canonical partial-complete URL (counter bug OBS-079 affects display only, not gate)
+- OBS-079 filed: pre-existing emit_review counter bug surfaced by T-2420's literal `### Human` in title
 
 ## Verification
 
@@ -112,6 +122,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/review.sh
+bash -n agents/task-create/update-task.sh
+out=$(bats tests/unit/recommendation_gate_build_partial.bats 2>&1); echo "$out" | grep -q "^ok 10 "
+out=$(bats tests/unit/recommendation_gate_needs_human.bats 2>&1); echo "$out" | grep -q "^ok 8 "
 
 ## RCA
 
@@ -180,3 +194,15 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2421-update-tasksh--fw-task-review-recommenda.md
 - **Context:** Initial task creation
+
+### 2026-06-16T12:38:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d66e7f17
+- **Timestamp:** 2026-06-16T12:42:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

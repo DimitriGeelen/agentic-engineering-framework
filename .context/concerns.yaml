@@ -1,0 +1,13 @@
+
+# T-2421 sibling observation — emit_review human-AC counter false-enters when
+# task title/description contains literal "### Human" string.
+- id: OBS-079
+  type: bug
+  severity: low
+  surface: lib/review.sh:emit_review
+  detected_in: T-2421 smoke against T-2420
+  symptom: "Watchtower shows '0/0 checked' for partial-complete tasks whose name/description contains the literal string '### Human'. T-2420 hit this (its title literally references the heading)."
+  root_cause: "Bash while-loop AC counter (lib/review.sh:122-136) matches '### Human' anywhere in the file, including frontmatter `name:`/`description:` fields. The counter enters human-mode prematurely, exits at the first `## ` heading (e.g. `## Context`), and never reaches the real `### Human` AC."
+  prevention: "Anchor the counter on `## Acceptance Criteria` first (enter only after that heading is seen), then within the AC block look for `### Human`. Mirror update-task.sh's sed range semantics."
+  blast_radius: scoped
+  observed: 2026-06-16
