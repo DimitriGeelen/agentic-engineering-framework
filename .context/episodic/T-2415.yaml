@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2415: claude-fw auto-restart strips -n picker name (T-2414 regression)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-16T06:54:35Z
+# ============================================================================
+
+task_id: T-2415
+task_name: "claude-fw auto-restart strips -n picker name (T-2414 regression)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-16T06:43:04Z
+completed: 2026-06-16T06:54:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-06-16T08:52:55+02:00
+last_commit: 2026-06-16T08:52:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  revert T-2414 — -n flag in claude-fw was bypassing the CC picker
+
+# Key outcomes
+outcomes:
+  - 'Remove the T-2414 `-n <project>` injection block from `bin/claude-fw` (the `_args_have_picker_name` function + the env-guarded auto-prepend).'
+  - 'Verify post-revert: bare `claude-fw` from `/opt/999-Agentic-Engineering-Framework` renders the multi-session picker. Live tmux capture shows `Needs input` (10 sessions) / `Working` (***workshop***) / `Completed` (7) with names + descriptions + ages, plus the T-2411 startup banner above.'
+  - 'Remove `tests/integration/claude_fw_picker_name.bats` (it tested the reverted behavior).'
+  - '`bash -n bin/claude-fw` passes (`syntax OK`).'
+  - 'Self-vendor sync: `bin/fw vendor` synced `.agentic-framework/bin/claude-fw` cleanly.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'revert T-2414 — -n flag in claude-fw was bypassing the CC picker'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-2415-claude-fw-auto-restart-strips--n-picker-.md'
+  - 'tests/integration/claude_fw_picker_name.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T08:52:55"
+    action: "T-2415: revert T-2414 — -n flag in claude-fw was bypassing the CC picker"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 4
+  lines_added: 282
+  lines_removed: 129
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2415-claude-fw-auto-restart-strips--n-picker-.md
+generated_by: context-agent-hybrid
