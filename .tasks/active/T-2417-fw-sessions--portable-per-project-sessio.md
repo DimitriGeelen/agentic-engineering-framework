@@ -4,12 +4,12 @@ name: "fw sessions — portable per-project session view (implements T-2416 GO)"
 description: >
   fw sessions — portable per-project session view (implements T-2416 GO)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/sessions/claude-code/list.sh, agents/sessions/render.py, agents/sessions/SCHEMA.md, bin/fw, tests/unit/sessions_claude_code_adapter.bats, tests/unit/sessions_render.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-16T09:20:14Z
-last_update: '2026-06-16T09:30:05Z'
-date_finished:
+last_update: 2026-06-16T10:25:46Z
+date_finished: 2026-06-16T10:23:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -112,73 +112,48 @@ Implements T-2416 GO. Adds a new `fw sessions` verb that prints sessions grouped
 - [x] `bin/fw sessions` end-to-end: autodetect → adapter → renderer → grouped tree printed.
 - [x] Unit test for CC adapter (`tests/unit/sessions_claude_code_adapter.bats`): stub `claude` binary on PATH emits canned JSON; adapter emits canonical JSONL with correct field mapping; loose-cwd cases (cwd=`$HOME`, cwd=`/tmp`) get `project="(loose)"`.
 - [x] Unit test for renderer (`tests/unit/sessions_render.bats`): canned canonical JSONL → expected text output (project ordering, state ordering, age formatting, loose bucket placement).
-- [x] `bash -n bin/fw` and `bash -n agents/sessions/claude-code/list.sh` pass.
+- [x] `bash -n bin/fw` and `python3 ast.parse` on adapter + renderer pass.
 - [x] Reviewer PASS: `bin/fw reviewer T-2417`
+
+### Human
+- [ ] [REVIEW] Live-fire on this host's session set matches expectation
+  **Steps:**
+  1. Run `bin/fw sessions` from `/opt/999-Agentic-Engineering-Framework` (on branch `t2417-fw-sessions` — not yet FF'd to master)
+  2. Compare output to the playback shape — projects as `// <name>` headers, nested state sub-sections (`Needs input` → `Working` → `Completed`), ages as `2d`/`1h`/`11m`
+  **Expected:** Reads at a glance "which sessions are in which project, what state are they in". Project grouping is the affordance the global CC picker doesn't give you. (Note: `(loose)` bucket only appears when sessions have non-repo cwds — empty in today's session set is correct, not a bug.)
+  **If not:** Note which projects render wrong, which states are off, which sessions land in the wrong bucket — file follow-up before close.
 
 ## Build summary (session S-2026-0616-1128 continuation)
 
 **All 10 Agent ACs ticked. Reviewer PASS (R-3b07017a). 18/18 bats green.**
 
 - `bin/fw sessions` — dispatcher with autodetect + `FW_AGENT_PROVIDER` override + `--provider` flag, wired into `fw help`
-- `agents/sessions/SCHEMA.md` — canonical schema contract (provider/project/name/state/age_seconds/session_id required)
-- `agents/sessions/claude-code/list.sh` — single-file python3 adapter (refactored from bash+heredoc after live-probe found stdin redirect bug). Reads BOTH `state` (background) and `status` (interactive) — empirical from 2026-06-16 live probe (n=25, 18 background + 7 interactive). Handles `failed` state with `description="failed"`
-- `agents/sessions/render.py` — agent-neutral renderer, pure-stdlib, tightens column when no description
-- `tests/unit/sessions_claude_code_adapter.bats` (10/10) — stubs `claude` on PATH, covers full state matrix + loose-cwd
-- `tests/unit/sessions_render.bats` (8/8) — pure-stdin renderer tests, project/state ordering, age formatting, glyph selection, no-desc column collapse
+- `agents/sessions/SCHEMA.md` — canonical schema contract
+- `agents/sessions/claude-code/list.sh` — single-file python3 adapter (shebang routes; `.sh` extension is convention only). Reads BOTH `state` (background) and `status` (interactive) per 2026-06-16 live probe. Handles `failed` with `description="failed"`
+- `agents/sessions/render.py` — agent-neutral renderer, pure-stdlib
+- `tests/unit/sessions_claude_code_adapter.bats` (10/10) + `tests/unit/sessions_render.bats` (8/8)
 - Fabric: 5 cards registered
-- Reviewer override OV-7d6af210 (mock-only-integration FP, 90d) — sibling of T-1730 / T-1811 pattern
+- Reviewer override OV-7d6af210 (mock-only-integration FP, 90d) — sibling of T-1730 / T-1811
 
-**Live-fire (Human AC) is the only remaining check.**
-5. bats unit test for adapter (`tests/unit/sessions_claude_code_adapter.bats`) — stub `claude` on PATH with canned JSON
-6. bats unit test for renderer (`tests/unit/sessions_render.bats`) — canned JSONL → expected output
-7. `fw fabric register` the 4 new files
-8. Reviewer PASS
-9. Live-fire with operator on this host's session set (Human AC)
-10. Branch + commit + FF + push + close
+## Recommendation
 
-### Human
-- [ ] [REVIEW] Live-fire on this host's session set matches expectation
-  **Steps:**
-  1. Run `bin/fw sessions` from `/opt/999-Agentic-Engineering-Framework`
-  2. Compare output to the playback shape — projects as `// <name>` headers, nested state sub-sections, ages as `2d`/`1h`/`11m`, `(loose)` bucket for `$HOME`/`/tmp` sessions
-  **Expected:** Reads at a glance "which sessions are in which project, what state are they in". Project grouping is the affordance the global CC picker doesn't give you.
-  **If not:** Note which projects render wrong, which states are off, which sessions land in the wrong bucket — file follow-up before close.
+**Recommendation:** GO
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+**Rationale:** Build is complete and verified live on this host. The verb you asked for (`fw sessions` showing per-project grouping with state subsections) exists end-to-end, matches the layout we played back together before I built it, and was driven against your actual 25-session corpus, not stubs. Reviewer PASS independently confirms no anti-pattern findings.
 
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+**Evidence:**
+- 10/10 Agent ACs `[x]` in `### Agent` block above (the framework's structural check)
+- Reviewer PASS: scan ID **R-3b07017a** (override OV-7d6af210 suppresses one `mock-only-integration` heuristic FP — CC binary unavailable in CI; this is the same FP class as T-1730 / T-1811)
+- 18/18 bats green: `tests/unit/sessions_claude_code_adapter.bats` (10) + `tests/unit/sessions_render.bats` (8)
+- Live run against this host's `claude agents --all --json` (n=25 sessions): produces 10 project headers — `002-Claude-Partner-Network`, `025-WokrshopDesigner`, `050-email-archive`, `100-Video-riper-and-translation-app`, `999-Agentic-Engineering-Framework`, `arc012-livefire-demo`, `dimitri-mint-dev`, `fan-dashboard`, `project`, `termlink`. No `(loose)` today because every session's cwd is in a git repo.
+- Branch `t2417-fw-sessions` pushed to origin at commit `32b20d9e2`. FF-to-master deliberately deferred to your live-fire pass.
+- Portability honored (Constitutional Directive 4): zero CC-specific strings in `bin/fw sessions` or `agents/sessions/render.py`; adapter contract documented at `agents/sessions/SCHEMA.md`; new providers add `agents/sessions/<name>/list.sh` only.
 
 ## Verification
 
 bash -n bin/fw
-bash -n agents/sessions/claude-code/list.sh
+python3 -c "import ast; ast.parse(open('agents/sessions/claude-code/list.sh').read())"
+python3 -c "import ast; ast.parse(open('agents/sessions/render.py').read())"
 bats tests/unit/sessions_claude_code_adapter.bats
 bats tests/unit/sessions_render.bats
 out=$(bin/fw reviewer T-2417 2>&1); echo "$out" | grep -q "Overall:.*PASS"
@@ -284,8 +259,8 @@ out=$(bin/fw reviewer T-2417 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-3b07017a
-- **Timestamp:** 2026-06-16T10:07:32Z
+- **Scan ID:** R-f07dd669
+- **Timestamp:** 2026-06-16T10:23:09Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -293,3 +268,6 @@ out=$(bin/fw reviewer T-2417 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 - **Suppressed:** 1 (by override)
   - mock-only-integration @ AC vs Verification cross-check
+
+### 2026-06-16T10:23:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
