@@ -142,9 +142,29 @@ emit_review() {
     # so the operator never sees a /inception/<id> link pointing at a blank
     # Recommendation card.
     #
+    # T-2421 (T-2419 GO): extend the same gate to partial-complete BUILD-class
+    # tasks (workflow_type ∈ {build, refactor, test, decommission} with
+    # human_total > 0 AND human_checked < human_total). T-2417 surfaced the
+    # gap: 10/10 Agent ACs ticked, reviewer PASS, but operator opened
+    # /review/T-2417 to "NO-REC" because no Recommendation block was written.
+    #
     # Bypass: FW_ALLOW_EMPTY_RECOMMENDATION=1 (env var, T-1890 producer/consumer
     # parity — same env var name as T-2205's Write/Edit hook). Tier-2 logged.
+    local _rec_gate_class=""
+    local _rec_review_path=""
     if [ "$workflow_type" = "inception" ]; then
+        _rec_gate_class="Inception"
+        _rec_review_path="/inception/${task_id}"
+    elif [ "$human_total" -gt 0 ] && [ "$human_checked" -lt "$human_total" ]; then
+        case "$workflow_type" in
+            build|refactor|test|decommission)
+                _rec_gate_class="Partial-complete ${workflow_type} task"
+                _rec_review_path="/review/${task_id}"
+                ;;
+        esac
+    fi
+
+    if [ -n "$_rec_gate_class" ]; then
         if ! declare -F audit_inception_recommendation >/dev/null 2>&1; then
             source "${FRAMEWORK_ROOT:-.}/lib/task-audit.sh" 2>/dev/null || true
         fi
@@ -154,20 +174,21 @@ emit_review() {
                     # Bypass: log Tier-2, emit NOTE, continue.
                     _log_empty_recommendation_bypass "$task_id" "emit_review" "$task_file"
                     echo "" >&2
-                    echo -e "  ${YELLOW}NOTE: Inception ${task_id} has empty ## Recommendation —${NC}" >&2
+                    echo -e "  ${YELLOW}NOTE: ${_rec_gate_class} ${task_id} has empty ## Recommendation —${NC}" >&2
                     echo -e "  ${YELLOW}emission allowed via FW_ALLOW_EMPTY_RECOMMENDATION=1 (logged).${NC}" >&2
                     echo "" >&2
                 else
                     echo "" >&2
                     echo -e "  ${RED}══════════════════════════════════════════${NC}" >&2
-                    echo -e "  ${RED}BLOCKED: Inception ${task_id} has empty ## Recommendation${NC}" >&2
+                    echo -e "  ${RED}BLOCKED: ${_rec_gate_class} ${task_id} has empty ## Recommendation${NC}" >&2
                     echo -e "  ${RED}══════════════════════════════════════════${NC}" >&2
                     echo "" >&2
                     echo -e "  Handoff URL refuses emission — operator would see a blank" >&2
-                    echo -e "  decision form on /inception/${task_id}." >&2
+                    echo -e "  Recommendation card on ${_rec_review_path}." >&2
                     echo "" >&2
                     echo -e "  Origin: T-679 (governance rule), T-1715/T-1716 (filing-time" >&2
-                    echo -e "  gate on fw inception start), T-2204/T-2205/T-2206 (this gate)." >&2
+                    echo -e "  gate on fw inception start), T-2204/T-2205/T-2206 (inception" >&2
+                    echo -e "  consumer gate), T-2419/T-2421 (partial-complete build leg)." >&2
                     echo "" >&2
                     echo -e "  To proceed, choose ONE:" >&2
                     echo "" >&2
