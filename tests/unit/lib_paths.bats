@@ -104,3 +104,35 @@ teardown() {
     source "$ORIG_FRAMEWORK_ROOT/lib/paths.sh"
     [ "$PROJECT_ROOT" != "$TEST_TEMP_DIR/not-a-consumer" ]
 }
+
+# ── fw_is_linked_worktree (T-2435 / OBS-077) ────────────────────────────────
+@test "fw_is_linked_worktree: main checkout is NOT a linked worktree" {
+    export FRAMEWORK_ROOT="$ORIG_FRAMEWORK_ROOT"
+    source "$ORIG_FRAMEWORK_ROOT/lib/paths.sh"
+    local repo="$TEST_TEMP_DIR/main"
+    mkdir -p "$repo"; git -C "$repo" init -q
+    git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
+    git -C "$repo" commit -q --allow-empty -m init
+    run fw_is_linked_worktree "$repo"
+    [ "$status" -ne 0 ]   # exit non-zero → not a linked worktree
+}
+
+@test "fw_is_linked_worktree: linked worktree IS detected" {
+    export FRAMEWORK_ROOT="$ORIG_FRAMEWORK_ROOT"
+    source "$ORIG_FRAMEWORK_ROOT/lib/paths.sh"
+    local repo="$TEST_TEMP_DIR/main2" wt="$TEST_TEMP_DIR/wt2"
+    mkdir -p "$repo"; git -C "$repo" init -q
+    git -C "$repo" config user.email t@t; git -C "$repo" config user.name t
+    git -C "$repo" commit -q --allow-empty -m init
+    git -C "$repo" worktree add -q "$wt" -b wt-branch
+    run fw_is_linked_worktree "$wt"
+    [ "$status" -eq 0 ]   # exit zero → is a linked worktree
+}
+
+@test "fw_is_linked_worktree: non-git dir is NOT a worktree" {
+    export FRAMEWORK_ROOT="$ORIG_FRAMEWORK_ROOT"
+    source "$ORIG_FRAMEWORK_ROOT/lib/paths.sh"
+    local nd="$TEST_TEMP_DIR/plain"; mkdir -p "$nd"
+    run fw_is_linked_worktree "$nd"
+    [ "$status" -ne 0 ]
+}

@@ -134,6 +134,24 @@ fw_claude_project_dirs() {
     done
 }
 
+# fw_is_linked_worktree [dir] — exit 0 if DIR (default PROJECT_ROOT/$PWD) is a *linked*
+# git worktree (created via `git worktree add`), exit 1 if it's the main checkout or not a
+# git repo. Discriminator: a linked worktree's git-dir (<main>/.git/worktrees/<name>)
+# differs from its git-common-dir (<main>/.git); in the main checkout the two collapse to
+# the same path. Used to suppress HOST-level drift checks (cron install state, self-vendor
+# host snapshot) that are owned by the main checkout and false-FAIL in a transient worktree.
+# Origin: T-2435 (OBS-077) — the pre-push audit false-FAILed on every worktree push.
+fw_is_linked_worktree() {
+    local dir="${1:-${PROJECT_ROOT:-$PWD}}"
+    local gd gcd
+    gd=$(git -C "$dir" rev-parse --git-dir 2>/dev/null) || return 1
+    gcd=$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null) || return 1
+    # Absolute-ize relative forms (the main checkout returns ".git" for both → equal).
+    case "$gd" in /*) ;; *) gd="$dir/$gd" ;; esac
+    case "$gcd" in /*) ;; *) gcd="$dir/$gcd" ;; esac
+    [ "$gd" != "$gcd" ]
+}
+
 # Context-aware fw command path (T-1102/T-1143)
 # Returns the right form for copy-pasteable commands shown to users:
 #   - Framework repo: bin/fw

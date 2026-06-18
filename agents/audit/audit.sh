@@ -1445,7 +1445,14 @@ fi
 # task closed work-completed while drift made the new job a no-op for
 # 3 days). G-064 closure path.
 _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-if [ -f "$_cron_registry" ]; then
+if [ -f "$_cron_registry" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+    # T-2435 (OBS-077): cron is a HOST-level concern installed once from the canonical
+    # main checkout. A linked worktree derives a worktree-named target that is never
+    # generated/installed (and must not be), so every cron drift check below is a pure
+    # worktree artifact, not content drift. Skip with INFO (counts as PASS; never blocks
+    # a worktree push). The real registry→generated→deployed chain is gated on main.
+    info "Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+elif [ -f "$_cron_registry" ]; then
     _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
     _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')

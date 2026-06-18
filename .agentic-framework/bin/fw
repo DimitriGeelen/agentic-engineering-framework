@@ -1334,6 +1334,23 @@ else:
         echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
     fi
 
+    # Check: proxy-policy emitted-but-not-installed drift (T-2432, arc-013)
+    # Sibling of the MCP manifest + cron registry→generated drift classes. Compares the
+    # in-repo SOURCE policy against the DEPLOYED copy by CONTENT (sha256, never mtime).
+    local _pp_src="$PROJECT_ROOT/policy/proxy-policy.yaml"
+    if [ -f "$_pp_src" ]; then
+        local _pp_state
+        _pp_state=$(PYTHONPATH="$PROJECT_ROOT" python3 -c "import lib.govd_policy as p; print(p.drift_status('$_pp_src')['state'])" 2>/dev/null || echo "err")
+        case "$_pp_state" in
+            ok)            echo -e "  ${GREEN}OK${NC}  proxy-policy deployed copy matches source" ;;
+            drift)         echo -e "  ${YELLOW}WARN${NC}  proxy-policy.yaml edited but not installed"
+                           echo -e "         Run: sudo fw policy install   (Lock-1 Part 1, root)"
+                           warnings=$((warnings + 1)) ;;
+            not_installed) echo -e "  ${CYAN}SKIP${NC}  proxy-policy not installed (install is human/root — fw policy emit)" ;;
+            *)             echo -e "  ${CYAN}SKIP${NC}  proxy-policy drift check unavailable" ;;
+        esac
+    fi
+
     # Check: Watchtower discovery triple (T-1292 / T-1284 B4)
     local _wt_pid_f="$PROJECT_ROOT/.context/working/watchtower.pid"
     local _wt_url_f="$PROJECT_ROOT/.context/working/watchtower.url"
@@ -2139,6 +2156,48 @@ except Exception as e:
         echo -e "${RED}$issues failure(s), $warnings warning(s)$_scope_breakdown${NC}"
         exit 2
     fi
+}
+
+# --- Proxy-policy emit / install / drift (T-2432, arc-013) ---
+# emit (agent-safe) + status (drift) run anywhere; install is human/root (Lock-1 Part 1)
+# and REFUSES under the agent. Sibling of `fw mcp emit-manifest` (emit/deploy split).
+do_policy() {
+    local action="${1:-}"; shift || true
+    local _src="${AEF_PROXY_POLICY:-$PROJECT_ROOT/policy/proxy-policy.yaml}"
+    case "$action" in
+        emit)
+            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" emit --source "$_src" "$@"
+            ;;
+        status)
+            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" status --source "$_src" "$@"
+            ;;
+        install)
+            # Lock-1 Part 1 boundary: the agent must NOT deploy its own governance policy.
+            if [ "${CLAUDECODE:-}" = "1" ]; then
+                echo -e "${RED}ERROR: 'fw policy install' is Lock-1 Part 1 (human/root) — the agent must not install its own governance policy.${NC}" >&2
+                echo "  The agent emits the spec; the human/root deploys it RO. Run:" >&2
+                echo "    fw policy emit        # review the install spec (agent-safe)" >&2
+                echo "    sudo fw policy install   # human/root only" >&2
+                return 3
+            fi
+            if [ "$(id -u)" != "0" ]; then
+                echo -e "${RED}ERROR: 'fw policy install' must run as root (it deploys the policy RO to the agent uid).${NC}" >&2
+                echo "  Run: sudo fw policy install" >&2
+                return 3
+            fi
+            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" install --source "$_src" "$@"
+            ;;
+        ""|-h|--help|help)
+            echo "Usage: fw policy {emit|status|install}"
+            echo "  emit      Print the install spec (agent-safe — runs nothing)"
+            echo "  status    Drift: deployed copy vs in-repo source (sha256)"
+            echo "  install   Deploy policy RO — human/root only (Lock-1 Part 1)"
+            ;;
+        *)
+            echo "Unknown: fw policy $action (try: emit|status|install)" >&2
+            return 2
+            ;;
+    esac
 }
 
 # --- Task Subcommand Routing ---
@@ -6494,6 +6553,9 @@ PYSEARCH
         ;;
     doctor)
         do_doctor "$@"
+        ;;
+    policy)
+        do_policy "$@"
         ;;
     verify-acs)
         source "$FW_LIB_DIR/verify-acs.sh"

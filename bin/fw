@@ -1875,7 +1875,19 @@ else:
     # installed /etc/cron.d/ file are out of sync — the root cause of
     # T-1112 (pickup-process missing for 5 consumer projects).
     local cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-    if [ -f "$cron_registry" ]; then
+    # T-2435 (OBS-077): cron is host-level (installed once from the canonical main
+    # checkout). In a linked worktree the derived target is worktree-named and never
+    # installed, so the drift checks below are pure worktree artifacts. Detect a linked
+    # worktree inline (bin/fw does not source lib/paths.sh) — git-dir != git-common-dir.
+    local _fw_gd _fw_gcd _fw_is_wt=0
+    _fw_gd=$(git -C "$PROJECT_ROOT" rev-parse --git-dir 2>/dev/null || echo .git)
+    _fw_gcd=$(git -C "$PROJECT_ROOT" rev-parse --git-common-dir 2>/dev/null || echo .git)
+    case "$_fw_gd"  in /*) ;; *) _fw_gd="$PROJECT_ROOT/$_fw_gd" ;; esac
+    case "$_fw_gcd" in /*) ;; *) _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;; esac
+    [ "$_fw_gd" != "$_fw_gcd" ] && _fw_is_wt=1
+    if [ -f "$cron_registry" ] && [ "$_fw_is_wt" = "1" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+    elif [ -f "$cron_registry" ]; then
         local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
         local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
         local cron_slug
