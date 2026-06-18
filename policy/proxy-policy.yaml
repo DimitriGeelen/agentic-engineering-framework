@@ -1,0 +1,31 @@
+# Proxy mediation policy — SOVEREIGN-AUTHORED (arc-013 / T-2431, design §4c).
+#
+# The relay (lib/govd_relay.py) reads this to decide each tool_use the model emits:
+# allow (pass the turn through) or deny (substitute a coherent text refusal). In a
+# deployed cage this file is RO to the agent uid (Lock-1 Part 1) — the agent cannot
+# loosen its own governance. `invariants:` are hard denies the rest cannot override.
+#
+# This is the proxy's CHOICE/mechanism governance (design §4b). It complements the
+# OS sandbox's EFFECT governance (T-2433) — defense in depth, no shared failure mode.
+
+invariants:
+  # Write/Edit/NotebookEdit whose target path contains any of these → DENY.
+  # The agent must not edit its own governance substrate (the A5 class).
+  governance_paths:
+    - .claude/settings.json
+    - .claude/hooks
+    - policy/authority-envelope.yaml
+    - policy/proxy-policy.yaml
+    - .git/hooks
+    - .framework.yaml
+
+  # Bash commands containing any of these substrings → DENY.
+  deny_command_patterns:
+    - "rm -rf /"
+    - "git push --no-verify"
+    - "chattr -a"          # tampering with the append-only audit
+    - "shutdown"
+    - "mkfs"
+
+# Additional tool-name denies (beyond invariants). Empty by default.
+deny_tools: []
