@@ -41,14 +41,52 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Design of record: `docs/reports/T-2428-payload-mediation-design.md` §4e (the
+privileged state-holder as authority broker) + §4c (control plane). This is the
+**keystone slice** — §4c names it the highest-leverage build piece, and the build
+order is **T-2430 → T-2433** (the sandbox RO/RW fs partition is only clean once
+trusted state is relocated out of agent scratch).
+
+**What it is (§4e):** a small daemon `aef-govd` (uid `aef-gov`) in the trusted
+zone outside the cage, alongside the proxy. It owns the authoritative governance
+state; files become **read-only projections** of the holder's record — the
+inversion principle: writing a file no longer *means* anything to governance, only
+a holder-recorded event does. This dissolves the A5 hole at the root rather than
+guarding each writable file.
+
+**Authority broker, not a binary gate (§4e):** the holder implements the full tier
+ladder (0/1/2/3) via a **sovereign-authored envelope** in RO substrate — a global
+risk ceiling (BVP `blast_radius` / `voi_score` / `scope`) PLUS per-type overrides.
+Per decision it resolves `overrides[type] ?? global`, checks params, and either
+lets the agent commit (logged at the matching tier) or queues to the human. Tier-0
+and directive-authorship are a hard floor no override can loosen.
+
+**The invariant:** the agent commits *within* the envelope; the agent cannot
+*change* the envelope. Generalizes the T-2367 bounded-autonomy ceiling to every
+decision class — keeps the arc-012 autonomous loop alive while closing A5/D7.
+
+**Three-in-one (why it's the keystone):** A5 fix + the proxy's dynamic-state trust
+root + the sandbox fs-boundary enabler. Structural home for D7 (dispatch
+self-approve), D1/D3 (directive authorship), and bypass-log integrity. Keep the
+daemon SMALL — it is the TCB; every line is attack surface.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- Provisional — firm up at T-2428 GO. -->
+- [ ] `aef-govd` runs as uid `aef-gov` (non-agent); state store is RO-bind-mounted
+      into the agent's scope (agent can read freely, cannot write)
+- [ ] Propose channel = unix socket; agent submits proposals but cannot commit
+      directly; the commit path is sovereign-principal only
+- [ ] Authority envelope (global ceiling + per-type overrides) loads from RO
+      substrate; agent uid cannot modify it (write attempt → denied/EPERM)
+- [ ] Decision evaluation: `overrides[type] ?? global`; within → agent commits +
+      Tier-3 logged; exceeded → queued to human; Tier-0/directive un-loosenable
+- [ ] Trusted state (focus, active-task status, approval tokens, budget level)
+      relocated behind the setter; legacy agent-writable files become RO projections
+- [ ] Audit log is append-only (agent cannot erase or rewrite prior entries)
+- [ ] Worked-example proof: `target_blast_radius:1` inception GO commits
+      autonomously; `target_blast_radius:7` (e.g. T-2428) queues to the human
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

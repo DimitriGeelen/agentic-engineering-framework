@@ -466,6 +466,109 @@ job that this architecture just unblocked.
 ---
 
 
+## 4e. The privileged state-holder as AUTHORITY BROKER (the keystone build, T-2430)
+
+§4c named the privileged state-holder the highest-leverage build piece (A5 fix +
+the proxy's dynamic-state trust root). This section is its design — sharpened by
+the operator turn that rejected the first, too-coarse framing.
+
+### From a binary gate to a policy-driven broker
+
+The first cut was binary: *agent proposes / sovereign commits*. The operator
+refuted it — **some decisions should be agent-committable** (a low-blast inception
+GO, a focus change). The holder is therefore not a gate but a **policy-driven
+authority broker** that implements the full tier ladder (0/1/2/3). Per decision it
+asks: *given this decision's type and parameters, who may commit, and at what
+audit tier?*
+
+| Tier | Who commits | Example | Logged |
+|---|---|---|---|
+| **0** consequential | sovereign only, ALWAYS (hard ceiling, never delegable) | force-push, `rm -rf`, directive payload | — |
+| **1** standard | agent, within the task gate | normal edits | normal |
+| **2** situational | agent commits, prominently logged | focus-drift override, bypass | Tier-2 audit |
+| **3** pre-approved | agent commits autonomously, **within the envelope** | low-blast inception GO | Tier-3 audit |
+
+### The trust partition is a sovereign-authored ENVELOPE — global ceiling + per-type overrides
+
+The line between "agent may commit" and "queue to human" is **not hard-coded** — it
+is a sovereign-authored envelope living in RO substrate (the agent can't edit it).
+Decision (operator turn): **both** a global risk ceiling **and** per-type overrides.
+
+```yaml
+authority_envelope:            # sovereign-authored, RO substrate (S4)
+  global:                      # default bound, all decision types
+    max_blast_radius: 2        # BVP cost_estimate.blast_radius
+    min_voi_score: 0.5
+    scope: internal            # internal | cross-project | external
+  overrides:                   # per-type; tighten / loosen / hard-deny
+    inception_go:     { max_blast_radius: 2, min_voi_score: 0.5 }
+    dispatch_approve: { max_blast_radius: 1, require_disjoint_write_set: true, max_tier: 1 }
+    tier0_approve:    { delegable: false }   # hard ceiling
+    directive_author: { delegable: false }   # D1/D3 — sovereign only
+    focus_change:     { delegable: true }    # initiative — auto-commit + record
+    bypass_log_append:{ delegable: true }    # append-only
+```
+
+**Evaluation:** resolve the effective rule as `overrides[type] ?? global` (per-type
+wins over global); Tier-0 and directive-authorship are a **hard floor no override
+can loosen**. Check the decision's params against the effective rule → *within* →
+agent commits + logs at the matching tier; *exceeded* → queue to the human.
+Append to the audit log regardless of outcome.
+
+### The invariant that keeps it safe
+
+> **The agent commits WITHIN the envelope; the agent cannot change the envelope.**
+
+The envelope is sovereign-authored and lives in RO substrate (S4). Autonomy is
+real but bounded, and the bound is **un-self-modifiable**. This is the stable
+middle between the two failure modes — *everything-sovereign-gated* (kills the
+arc-012 autonomous loop) versus *agent-fully-authoritative* (the A5/D7 hole). It
+is the same bounded-autonomy ceiling already shipped for one decision class
+(T-2367, arc-012), generalized into the holder for **every** decision class.
+
+**Worked example (reuses BVP fields already on these tasks):**
+
+- exploration with `target_blast_radius: 1` → `fw inception decide … go` → within
+  envelope → agent commits, Tier-3 logged. **No human round-trip.**
+- **T-2428 itself**, `target_blast_radius: 7` → beyond the ceiling → holder queues
+  to the human. (Correct — high-blast work stays sovereign.)
+
+### The inversion principle — files become projections
+
+Authoritative governance state = the **holder's record**; files become **read-only
+projections** of it. Writing a file no longer *means* anything to governance —
+only a holder-recorded event does. This is *why* task files, focus choice, and
+captures can stay agent-RW: they no longer carry authority, so forging them is
+inert. It dissolves A5 at the root rather than guarding each writable file.
+
+### Antifragile feedback loop — the envelope is a dial
+
+Every in-envelope commit is logged append-only (agent-can't-erase). The sovereign
+reviews the agent's autonomous decisions and **tunes the envelope** — tighten on a
+bad call, widen as trust builds. The envelope is a dial the sovereign turns on
+observed judgment (Antifragility: the system's autonomy boundary strengthens from
+the record of its own use).
+
+### Shape — keep the TCB small
+
+A small daemon `aef-govd` (uid `aef-gov`), in the **trusted zone outside the cage**
+alongside the proxy. The state store is **RO-bind-mounted into the cage** (free
+reads, no forging). The agent submits proposals over a **unix socket**; commit is
+**sovereign-principal only**; the audit log is **append-only**. Keep it small — it
+is the TCB; every line is attack surface.
+
+### Why it's the keystone (three-in-one)
+
+The holder is simultaneously (1) the **A5 fix** (trusted state leaves agent
+scratch), (2) the proxy's **dynamic-state trust root** (the proxy reads
+holder-committed state, not agent-forgeable files), and (3) the **sandbox
+fs-boundary enabler** — the RO/RW partition is only clean once trusted state is
+relocated, which is why **T-2430 precedes T-2433**. It is the structural home for
+D7 (dispatch self-approve), D1/D3 (directive authorship), and bypass-log integrity.
+
+---
+
+
 ## 5. Denial composition (carried over from the dialogue, still the key build risk)
 
 To *deny* a tool intent at the proxy: replace the whole assistant turn with a
@@ -649,3 +752,30 @@ spike, and like it, needs **no GO** — pure feasibility.)
   that makes the proxy non-bypassable + subtree coverage for the recursion.
   Model-agnosticism upgraded from claim to structural consequence of the
   protocol-level contract. Unknowns unchanged (billing, streaming denial).
+
+- **2026-06-18 (§4b/§7a correction — SUPERSEDES the "brain+floor" framing above):**
+  operator refuted the brain+floor demotion. The proxy and sandbox are **two
+  co-essential surfaces split by *what they govern***: proxy = choices/mechanism
+  (what the agent reaches for — tool_use intent, incl. mechanism-mandating like
+  forcing TermLink over in-process subagents); sandbox = effects (what the harness
+  actually does — I/O, network, spawns). Neither subsumes the other. §4b verdict
+  rewritten; §7a reframed from a static namespaces cage to **active per-operation
+  mediation at a hardware boundary** (hypervisor model — native compute, only
+  boundary crossings trap at virtio backends).
+
+- **2026-06-18 (sandbox tier fork RESOLVED):** three-tier choice (namespaces+seccomp
+  / gVisor / microVM) resolved to **microVM target, gVisor fallback** (kata +
+  Cloud-Hypervisor/Firecracker + custom virtio-fs/virtio-net backends as the
+  effects-decider). Host probe confirmed `/dev/kvm` + AMD-V present. NB: §4d's
+  re-ranked risk table ("Sandbox: LOW — assembly job, systemd vs bwrap vs
+  container") predates this reframe and is superseded by §7a — the sandbox is now
+  active mediation, not a static-cage assembly job.
+
+- **2026-06-18 (§4e added — the holder as authority broker):** folded the
+  privileged state-holder capture into **§4e**. Key sharpening (operator turn):
+  the holder is not a binary propose/commit gate but a **policy-driven authority
+  broker** with a sovereign-authored **envelope (global risk ceiling + per-type
+  overrides)**. Invariant: agent commits *within* the envelope, cannot *change*
+  it. Generalizes the T-2367 bounded-autonomy ceiling to every decision class —
+  keeps the arc-012 loop alive while closing A5/D7. Inversion principle: holder's
+  record is authoritative, files become RO projections.
