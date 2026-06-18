@@ -4,13 +4,13 @@ name: "payload-mediation: proxy policy emit/install + drift audit class"
 description: >
   fw policy emit (agent-safe) / sudo fw policy install (human/root boundary). Static invariants from existing gates; emitted-but-not-installed drift audit class (reuse cron/MCP emit-install pattern). Gated on T-2428 GO.
 
-status: started-work
+status: work-completed
 arc_id: payload-mediation
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/govd_policy.py, tests/unit/test_govd_policy.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-18T07:18:38Z
-last_update: 2026-06-18T12:50:00Z
-date_finished: null
+last_update: 2026-06-18T15:01:24Z
+date_finished: 2026-06-18T15:01:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -203,9 +203,12 @@ out=$(CLAUDECODE=1 bin/fw policy install 2>&1); echo "$out" | grep -q "Lock-1 Pa
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-615bc042
-- **Timestamp:** 2026-06-18T14:43:11Z
+- **Scan ID:** R-a5f4bc82
+- **Timestamp:** 2026-06-18T15:01:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-18T15:01:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

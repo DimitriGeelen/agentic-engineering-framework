@@ -19102,3 +19102,75 @@ scan_id: R-615bc042
 task_id: T-2432
 payload:
   task_file: .tasks/active/T-2432-payload-mediation-proxy-policy-emitinsta.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T15:01:12Z'
+scan_id: R-eb096985
+task_id: T-2431
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T15:01:12Z'
+scan_id: R-eb096985
+task_id: T-2431
+payload:
+  task_file: .tasks/active/T-2431-payload-mediation-thin-owned-payload-med.md
+---
+kind: override_applied
+timestamp: '2026-06-18T15:01:12Z'
+scan_id: R-eb096985
+task_id: T-2431
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-18T15:01:26Z'
+scan_id: R-a5f4bc82
+task_id: T-2432
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T15:01:26Z'
+scan_id: R-a5f4bc82
+task_id: T-2432
+payload:
+  task_file: .tasks/active/T-2432-payload-mediation-proxy-policy-emitinsta.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T15:03:05Z'
+scan_id: R-3bf0527c
+task_id: T-2430
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T15:03:05Z'
+scan_id: R-3bf0527c
+task_id: T-2430
+payload:
+  task_file: .tasks/active/T-2430-payload-mediation-privileged-state-holde.md
+---
+kind: override_applied
+timestamp: '2026-06-18T15:03:05Z'
+scan_id: R-3bf0527c
+task_id: T-2430
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null

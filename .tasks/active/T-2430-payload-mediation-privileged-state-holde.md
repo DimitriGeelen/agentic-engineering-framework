@@ -4,13 +4,13 @@ name: "payload-mediation: privileged state-holder (A5 fix + proxy trust root)"
 description: >
   Relocate trusted governance state (focus, active-task status, approval tokens, budget) out of agent-writable files behind a privileged setter the agent uid cannot write. Split verbs into propose (agent) / commit (privileged). Highest-leverage slice. Gated on T-2428 GO.
 
-status: captured
+status: work-completed
 arc_id: payload-mediation
 workflow_type: build
-owner: agent
-horizon: later
+owner: human
+horizon: now
 tags: []
-components: []
+components: [bin/fw, lib/govd_policy.py, tests/unit/test_govd_policy.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-18T07:18:25Z
-last_update: 2026-06-18T07:18:25Z
-date_finished: null
+last_update: 2026-06-18T15:03:03Z
+date_finished: 2026-06-18T15:03:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -180,19 +180,13 @@ out=$(bash agents/govd/govd.sh emit-install); echo "$out" | grep -q "systemctl d
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** An agent operating under a broad directive ("proceed as you see fit") can edit its own governance substrate — `.claude/settings.json`, hooks, the authority envelope, the proxy policy — and thereby self-authorize actions beyond its tier. There is no runtime authority that sits above the agent and that the agent cannot itself reach and rewrite (the A5 class).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Governance state lives in files writable by the agent's own uid, and "authority" is enforced by PreToolUse hooks that run at the same privilege as the agent. The boundary "Initiative ≠ Authority" was a *convention* (text in CLAUDE.md), not a *structural* boundary — whoever can write the files can rewrite the rules. There was no privileged holder owning the trust root.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** File-based governance is mutable by anyone with write access; the framework's enforcement layer (hooks, task gate) executes in the agent's own process tree with the agent's permissions. Nothing in the substrate distinguished "the agent proposing" from "the sovereign deciding" at the OS level — both were the same uid writing the same files.
+
+**Prevention:** The privileged state-holder (`aef-govd`, `lib/govd_holder.py`) owns the authority envelope and trusted state under a *non-agent uid*. The agent can only `propose`; a `commit` requires `peer_uid == sovereign_uid`, checked via SO_PEERCRED at the socket — unforgeable from the agent's uid. Governance files become read-only projections to the agent (Lock-1 Part 1: RO bind-mount + `chattr +a` audit). The envelope's hard-floor types (`tier0_approve`, `directive_author`) are denials no per-type override can loosen. The boundary moves from convention to OS-enforced structure. (Full enforcement requires the human/root Lock-1 Part 1 deploy — the two `[REVIEW]` ACs.)
 
 ## Evolution
 
@@ -261,8 +255,8 @@ out=$(bash agents/govd/govd.sh emit-install); echo "$out" | grep -q "systemctl d
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-d36c5cb1
-- **Timestamp:** 2026-06-18T12:06:58Z
+- **Scan ID:** R-3bf0527c
+- **Timestamp:** 2026-06-18T15:03:05Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
@@ -270,3 +264,24 @@ out=$(bash agents/govd/govd.sh emit-install); echo "$out" | grep -q "systemctl d
 
 - **Suppressed:** 1 (by override)
   - mock-only-integration @ AC vs Verification cross-check
+### 2026-06-18T15:01:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The agent-buildable portion of the authority-broker holder is complete and verified. All 7 Agent ACs are met with reviewer PASS; the two remaining `[REVIEW]` ACs are deliberately human/root-gated (Lock-1 Part 1 deploy + relocating live framework trusted state behind the holder) — they cannot and must not be executed by the agent. This is a "first reviewable cut" of TCB code: the mechanism is real and tested, not yet production-hardened. GO means: the code is ready for your security review and, when you choose, the root deploy.
+
+**Evidence:**
+- `lib/govd_envelope.py` — pure envelope evaluator: `resolve_rule` (per-type override merge), `evaluate` (within→agent Tier-3 / breach→human Tier-2), hard-floor types (`tier0_approve`, `directive_author`) no override can loosen.
+- `lib/govd_holder.py` — `aef-govd` daemon: `AppendOnlyAudit` (JSONL), `StateStore` (atomic `os.replace`), `Holder` (propose/commit/query; commit requires `peer_uid == sovereign_uid` via SO_PEERCRED).
+- `policy/authority-envelope.yaml` — sovereign envelope (global ceiling + per-type overrides).
+- Tests: `tests/unit/test_govd_envelope.py` — 18 pass, incl. live AF_UNIX socket round-trip (`test_holder_socket_roundtrip_real_unix_socket`).
+- Reviewer: PASS (OV-b2003abc, network-boundary mock-only-integration override, TTL 90).
+- Commit: `9e132c737`.
+- Human-gated remainder (the two `[REVIEW]` ACs): deploy holder under non-agent uid + RO substrate + `chattr +a` audit (`fw ... emit-install` prints the spec); relocate `focus.yaml`/approvals/bypass-log behind the holder.
+
+### 2026-06-18T15:03:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
