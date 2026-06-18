@@ -158,13 +158,13 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
   Code at a local observe-only relay via `ANTHROPIC_BASE_URL`; confirm (a)
   requests actually arrive at the relay and (b) billing stays on the
   subscription (OAuth bearer forwarded unchanged), NOT metered API.
-- [ ] De-risk spike #2 — **payload visibility**: the relay logs each `tool_use`
+- [x] De-risk spike #2 — **payload visibility**: the relay logs each `tool_use`
   block (name + input) and `usage.{input,output}_tokens` from the live stream —
   proving the tool-call intent + real budget are capturable at the wire.
-- [ ] De-risk spike #3 — **coherent denial**: demonstrate a single rewritten
+- [x] De-risk spike #3 — **coherent denial**: demonstrate a single rewritten
   response (deny one `tool_use`, substitute text turn) that the harness accepts
   without breaking the conversation.
-- [ ] Findings written to `docs/reports/T-2428-payload-mediation-spike.md`
+- [x] Findings written to `docs/reports/T-2428-payload-mediation-spike.md`
   (deferred from this file due to budget-gate; do in a fresh session).
 
 ### Human
