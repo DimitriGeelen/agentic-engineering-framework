@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2435: cron audit+doctor checks worktree-aware (OBS-077)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-18T23:00:08Z
+# ============================================================================
+
+task_id: T-2435
+task_name: "cron audit+doctor checks worktree-aware (OBS-077)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-18T20:01:51Z
+completed: 2026-06-18T22:58:20Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/paths.sh` adds `fw_is_linked_worktree [dir]` — exit 0 in a linked worktree (git-dir != git-common-dir), exit 1 in the main checkout or a non-git dir'
+  - '`agents/audit/audit.sh` cron drift block skips with `info()` (counts as PASS, never FAIL) when in a linked worktree'
+  - '`bin/fw doctor` cron block skips with SKIP in a linked worktree (inline check — bin/fw does not source lib/paths.sh)'
+  - 'Unit tests: `tests/unit/lib_paths.bats` covers main / linked-worktree / non-git (3 new, 11 total green)'
+  - '`bash -n` clean on all three edited files; live audit in this worktree shows `[INFO] Cron drift checks skipped` (the 2 cron FAILs gone)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 176 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 176
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2435-cron-auditdoctor-checks-worktree-aware-o.md
+generated_by: context-agent-hybrid
