@@ -2,6 +2,10 @@
 
 **Task:** T-2428 (inception) · **Status:** exploration · **Owner:** agent (advisory)
 **Recommendation so far:** DEFER pending a 3-part de-risk relay spike.
+**Arc:** arc-013 (`payload-mediation`) — this file is the arc's **design-of-record**
+(`design_status: draft` until T-2428 GO; flips to **final/locked** on GO).
+**Build slices:** T-2429 (spike, gate) · T-2430 state-holder · T-2431 relay ·
+T-2432 policy emit/install · T-2433 sandbox emit/install · T-2434 Lock-1 demo.
 
 This is the C-001 research artifact: the persistent thinking trail for the
 governance-by-payload-mediation inception. Updated incrementally as the

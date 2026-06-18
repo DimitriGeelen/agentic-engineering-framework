@@ -9,6 +9,7 @@ description: >
   Emerged from the arc-012 continuous-mode live-fire (loop never fires under CC
   2.1 multi-session) + the Lock-1 autonomy-integrity discovery.
 status: started-work
+arc_id: payload-mediation
 workflow_type: inception
 owner: agent
 horizon: now
