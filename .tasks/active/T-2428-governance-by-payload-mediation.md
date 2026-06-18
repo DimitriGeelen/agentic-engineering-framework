@@ -180,25 +180,33 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
 # (no compileable artifacts yet — spike code lands under its own build task post-GO)
 
 ## Recommendation
-- **Recommendation:** DEFER
-- **Rationale:** The architecture is directionally strong and unifies four threads
-  (loop-firing, Lock-1 autonomy integrity, model-agnostic governance, portability)
-  into one mechanism: mediate the agent's payloads at a proxy it cannot bypass.
-  But a GO/NO-GO genuinely lacks evidence on two load-bearing unknowns: (1) does
-  Claude Code honor `ANTHROPIC_BASE_URL` in subscription/OAuth mode WITHOUT
-  shifting to metered API billing (the operator's explicit cost constraint), and
-  (2) is a streaming-coherent denial injectable at the response layer. These are
-  evidence gaps, not a confidence hedge — a cheap observe-only relay spike answers
-  both. DEFER until spike #1-#3 land.
+- **Recommendation:** GO
+- **Rationale:** The two load-bearing unknowns that justified the earlier DEFER
+  are now closed by live spikes #1-#3 (all PASS, wire-level — see
+  `docs/reports/T-2428-payload-mediation-spike.md`). The DEFER was an explicit
+  evidence gap ("DEFER until spike #1-#3 land"), not a confidence hedge; the gap is
+  filled. Confirmed on the real subscription/OAuth path: a transparent relay (1)
+  preserves subscription billing (OAuth Bearer forwarded unchanged, upstream 200,
+  NOT metered API), (2) sees every `tool_use` intent + real usage tokens BEFORE any
+  effect, and (3) can deny a tool call by substituting a coherent text turn the
+  harness accepts without breaking. The architecture is feasible; the remaining
+  work is BUILD (T-2430 holder, T-2431 relay, T-2432 policy plane, T-2433 sandbox,
+  T-2434 acceptance demo), not further research. Note: GO authorizes the build arc
+  (arc-013); the OS cage install (Lock-1 Part 1) remains human/root-run, never the
+  agent.
 - **Evidence:**
-  - Live-fire observation: `claude-fw` wraps the CC 2.1 picker; work runs in a
-    daemon-pool tree outside the wrapper (process PIDs in journey §2). The
-    process-layer approach is a dead end → motivates the request-layer approach.
-  - Existing LiteLLM proxy (T-1700/T-1691) is an API-key-terminating gateway for
-    ollama-loop workers only; logs no tokens; can't pass OAuth → NOT reusable
-    as-is, needs a thin new transparent relay (Explore agent verdict).
-  - Payload-layer enforcement is sound in principle (the harness executes only
-    what the response carries) — see denial-composition section.
+  - **Spike #1 (billing):** child `claude -p` through `ANTHROPIC_BASE_URL`→relay
+    returned PONG; relay observed `Bearer sk-ant-oat01…` (OAuth access token),
+    `oauth-2025-04-20` beta, upstream 200 streaming. Subscription billing intact.
+  - **Spike #2 (visibility):** relay captured `Bash {command:"echo SPIKE2OK"}` +
+    usage (2847 in / 96 out / 53072 cache-read) on the wire pre-effect.
+  - **Spike #3 (denial):** deny-relay dropped a `Bash` tool_use, substituted a
+    text turn (stop_reason end_turn); child rendered the governance message,
+    exit 0, no missing-tool_result, no hang.
+  - Existing LiteLLM proxy (T-1700/T-1691) is API-key-terminating → NOT reusable
+    as-is; spike #1 confirms a thin transparent relay is the right substrate.
+  - Process-layer approach is a dead end (`claude-fw` wraps the picker; work runs
+    in a daemon-pool tree outside the wrapper) → request-layer mediation is the fix.
 
 ## Decision
 <!-- fw inception decide T-2428 go|no-go|defer --rationale "..." (human, via Watchtower) -->
