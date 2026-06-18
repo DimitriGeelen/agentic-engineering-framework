@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2436: self-vendor drift sync + --check silent-mutation trap (OBS-076)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-18T22:43:59Z
+# ============================================================================
+
+task_id: T-2436
+task_name: "self-vendor drift sync + --check silent-mutation trap (OBS-076)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-18T22:29:00Z
+completed: 2026-06-18T22:43:49Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Real drift synced: `fw vendor self` propagated `lib/paths.sh` + `bin/fw` + `agents/audit/audit.sh` to `.agentic-framework/`; `fw vendor self --check` exits 0 (in sync)'
+  - '`bin/fw` `vendor self --check` is read-only (dry-run mode) and exits non-zero when any class is out of sync; `--dry-run` keeps its prior exit-0 semantics'
+  - 'Stale T-2247 audit recommendation corrected: libs-class FAIL recommends `fw vendor self` (now full-scope), not bare `fw vendor`; comment records the T-2436 correction'
+  - 'Tests: `tests/unit/t2436_vendor_self_check.bats` (5 tests — static routing + no-mutation + exit-code-agrees-with-dry-run + help) green; `tests/unit/t2247_*.bats` updated to corrected premise (3 green)'
+  - '`bash -n` clean on `bin/fw` + `agents/audit/audit.sh`; worktree `fw audit` shows zero FAIL (self-vendor PASS, cron INFO-skipped from T-2435)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2436-self-vendor-drift-sync----check-silent-m.md
+generated_by: context-agent-hybrid
