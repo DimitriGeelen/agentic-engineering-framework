@@ -154,7 +154,7 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
 ## Acceptance Criteria
 
 ### Agent
-- [ ] De-risk spike #1 — **subscription billing through a relay**: point Claude
+- [x] De-risk spike #1 — **subscription billing through a relay**: point Claude
   Code at a local observe-only relay via `ANTHROPIC_BASE_URL`; confirm (a)
   requests actually arrive at the relay and (b) billing stays on the
   subscription (OAuth bearer forwarded unchanged), NOT metered API.
