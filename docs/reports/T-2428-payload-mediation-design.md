@@ -23,6 +23,54 @@ achieving portable (Directive-4) enforcement across any CLI model.
 
 ---
 
+## 1a. The same idea, explained simply (plain language)
+
+*(For the GO/NO-GO reader — read this first, then `§4b` for the technical form.)*
+
+Imagine you have a robot helper. It's super smart and super fast, but it can't
+see or touch anything by itself — it can only do things by **asking a grown-up
+out loud**: "Can I open the cookie jar?" "Can I throw this paper away?"
+
+The problem today: the robot is on the honor system. We *told* it the rules, but
+nothing actually **stops** it if it gets confused or sneaky. The rules are just
+sticky notes on the wall — and a sticky note can't stop anyone.
+
+Our idea has **two parts that work together:**
+
+**Part 1 — The Listener at the door.** Every time the robot wants to do
+something, it has to say it out loud first. We put a grown-up — the Listener —
+right where the robot's words come out. The Listener hears *every* request and
+can say "Yes," "No, not that one," or "Do it this *safer* way instead." Because
+the robot can only ever *ask* (it can't act on its own), controlling the asking
+controls everything. And it works for *any* robot — a different brand still has
+to ask out loud, so the same Listener still works.
+
+**Part 2 — The playpen.** But what if the robot stops asking nicely and just
+tries to grab something? A sticky note won't stop that. So we also put the robot
+in a playpen — a room with **walls** (it can only reach the one phone that calls
+the Listener, no sneaking out another way), a **locked cabinet** holding the
+rulebook (so it can't erase its own rules), and a **"you're just a kid"
+wristband** (so it can't do grown-up things like unlock doors). The robot didn't
+build the playpen and can't unlock it — **a real grown-up built it from the
+outside.** That's the part that actually *stops* things.
+
+**Why both?** The Listener is *smart but trickable* — it understands what the
+robot wants and can give a thoughtful "no," but a clever robot might look for
+another door. The playpen is *dumb but unbreakable* — it understands nothing,
+but the robot truly cannot get past the walls. Smart-but-trickable +
+dumb-but-unbreakable = a helper that's genuinely safe. The Listener decides what
+is *allowed to be asked*; the playpen decides what is *physically possible*.
+
+**The most important rule:** the robot is never allowed to build or change its
+own playpen. Only a grown-up does that.
+
+> Mapping back to the technical design: the **Listener** = the payload proxy
+> (S2). The **playpen** = the OS sandbox above the agent (S3 net-pin + S4
+> read-only rulebook + S5 kid-wristband uid). "The robot never builds its own
+> playpen" = Lock-1 Part 1 is human/root-run; the agent must not run it.
+
+---
+
 ## 2. The capture-surface taxonomy (from first principles)
 
 Operator supplied a first-principles walk-through of CLI communication
