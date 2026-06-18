@@ -75,6 +75,54 @@ own playpen. Only a grown-up does that.
 
 ---
 
+## 1b. The whole thing, kid version (the design we converged on)
+
+*(Read after §1a. This is the full picture once the sandbox is treated as a
+control surface in its own right, not a wall.)*
+
+**Give the robot its own playhouse, and only let it touch the world through doors
+we built.**
+
+1. **The playhouse.** The robot thinks and plays inside as fast as it likes — we
+   *don't* watch every thought (silly and slow). But the playhouse has **no
+   windows and no secret exits**. The only way to do anything that touches the
+   real world — grab a thing, send a letter, make a call — is through **doors we
+   built**.
+2. **We stand at every door.** Each thing that tries to go through, we check:
+   allowed → it goes; not allowed → we stop it.
+3. **It still asks first — and must use the proper tools.** Before it picks up a
+   tool it asks the grown-up at the door (the Listener). And we make it use the
+   **family's labeled toolbox**, not its own messy shortcuts — even when a
+   shortcut "would've worked" — because the proper tools have the safety rules
+   built in.
+4. **No secret copies of itself.** The robot loves whispering to secret clones of
+   itself in its head (we can't see those). So: **no secret clones.** Helpers must
+   be *real* helpers in their *own* playhouses using the *same* doors — so we can
+   watch them too.
+5. **It didn't build any of this and can't change it.** A grown-up built the
+   playhouse, doors, and rulebook **from outside**; the robot can't repaint the
+   walls, pick the locks, or take off its "you're a kid" wristband.
+
+**Why this delivers the control objective.** There are only ever **two things the
+robot can do, and we control both**: *ask* (we hear every ask — the Listener /
+proxy) and *act through our doors* (we watch every door — the playhouse /
+sandbox). There is **no third way out**, and it holds because it's *real*, not a
+sticky note: can't dig a tunnel (walls are built-in, not a rule it can ignore),
+can't erase the rules (locked cabinet), can't pretend to be a grown-up (kid
+wristband), can't sneak helpers (they use the doors too). So control is **total
+and not trust-based**. Bonus: it works for **any robot** (the doors + grown-up are
+ours, not the robot's), and it's **fast** (we watch the doors, not the thinking).
+
+> Mapping: **doors we built + watch** = the VM/hypervisor boundary — the harness
+> runs at native speed inside; every externally-effecting operation funnels
+> through virtio device backends we own (§7a). **Ask the grown-up + proper
+> toolbox** = the proxy governing *choices/mechanism* (§4b). **No secret clones**
+> = forcing in-process sub-agents out into distinct, observable principals
+> (TermLink-style) so neither surface goes blind on attribution. **Can't touch the
+> locks** = uid demotion + RO substrate laid by root (Lock-1 Part 1).
+
+---
+
 ## 2. The capture-surface taxonomy (from first principles)
 
 Operator supplied a first-principles walk-through of CLI communication
@@ -215,43 +263,61 @@ Candidate surfaces, top of the stack to the kernel:
 | # | Surface | Sees / controls | Bypassable? | Portable? | Verdict |
 |---|---|---|---|---|---|
 | **S1** | In-harness hooks / permission system (`.claude/settings.json`, PreToolUse) | every tool intent; allow/deny/ask | **yes — declinable** (fires only if harness cooperates; config agent-writable) | **no** — CC-specific | where the framework lives today, and why it is *not enough*. Keep as convenience; never a boundary |
-| **S2** | **Payload proxy at the model-API protocol** (`ANTHROPIC_BASE_URL`) | whole wire — every tool *intent* (semantic, complete) + every request | yes **unless pinned by S3** | **HIGH** — protocol-bound, any model/harness | **the governance brain** — intent-level allow/deny/rewrite/route |
+| **S2** | **Payload proxy at the model-API protocol** (`ANTHROPIC_BASE_URL`) | whole wire — every tool *intent* (semantic, complete) + every request | yes **unless pinned by S3** | **HIGH** — protocol-bound, any model/harness | **the choice / mechanism surface** — governs *what the agent reaches for*; allow/deny/rewrite/route |
 | **S3** | OS network — netns + nftables egress allowlist (eBPF/DNS variants) | actual egress of harness **+ all children** (tools, MCP-HTTP, telemetry) | **very hard** (no other route out of the netns) | HIGH | **the pin + exfil containment** — forces the model path through S2 |
 | **S4** | OS filesystem — Landlock / mount-ns / RO bind-mounts / overlay | what the agent uid may read/write; make hooks, settings, directive files, `.git` **read-only** | very hard (kernel-enforced) | HIGH (Landlock mainline) | **the Lock-1 cage** — the un-declinable boundary the proxy can't give |
 | **S5** | OS process — uid demotion + cgroup/pid-ns (seccomp/eBPF execve) | what spawns; resource bounds; bounds wrapper/loop/hooks | hard | HIGH | **packaging + execution containment** for a non-cooperating harness |
 | **S6** | Userspace interposition — LD_PRELOAD / FUSE | syscalls in principle | **defeatable** (static binaries, direct syscalls) | medium | **reject as a boundary** — speed-bump class (same reason `chattr +i` was rejected) |
 
-### Recommendation: two surfaces, layered by trust
+### Recommendation: two CO-ESSENTIAL surfaces, split by *what they govern*
 
-Not one surface — two, and the bottom one is a **single spec, not three builds**:
+> **[CORRECTION 2026-06-18]** An earlier draft framed this as "proxy = governance
+> *brain*, sandbox = enforcement *floor*" — which wrongly subordinated the
+> sandbox to the proxy. Operator refuted it (see §4a-followup / Evolution log).
+> The corrected framing splits the two surfaces by **what they govern**, not by
+> trust-tier. Neither is primary; both are load-bearing.
 
-**① Payload proxy (S2)** — intent governance: semantic, complete-for-intents,
-model-agnostic. The brain. Governs *what the agent may ask*.
+**① Payload proxy (S2) — the CHOICE / mechanism surface.** Governs *what the
+agent reaches for*: which tool, which subsystem, which mechanism. Crucially,
+**mechanism-mandating lives here and only here** — forcing `TaskCreate`→`fw task
+create`, in-process-subagent→TermLink, etc. Those are decided in the `tool_use`
+*before any effect exists*; the effect boundary can never express "you used the
+wrong mechanism" because by then the choice already happened. Model-agnostic.
 
-**② An OS sandbox laid *above* the agent (S3+S4+S5 as one profile)** — the cage.
-The harness runs *inside* it as a demoted uid; the proxy runs *outside* it. One
-profile (`bwrap`/container/systemd unit, or namespaces + Landlock + nftables)
-delivers all three:
-- **net (S3):** the harness namespace has exactly one route out — to the proxy.
-  It physically cannot reach the model endpoint directly. *This pins ①.*
-- **fs (S4):** governance substrate is read-only to the agent uid. *Lock-1
-  boundary.*
-- **uid/proc (S5):** demoted uid + cgroup bounds wrapper, loop, hooks, tool
-  subprocesses. *Makes net+fs enforceable.*
+**② OS sandbox (S3+S4+S5) — the EFFECT surface.** Governs *what actually
+happens*: the real file writes, the real egress, the real spawns. The harness
+runs *inside* it as a demoted uid; the deciders run *outside* it. (Mechanism in
+§7a — realized as a VM/hypervisor boundary, not hand-picked syscall interception.)
 
-Governs *what the harness may touch*.
+**Why neither subsumes the other:** choices are decided *before* effects, and the
+effect boundary sees only anonymous bytes-to-a-path, not "which mechanism / which
+actor." A `TaskCreate` and an `fw task create` can have near-identical *effects*;
+the difference that matters is the *choice*, which only the proxy sees. So the
+proxy is **not** demoted to "make the sandbox non-bypassable" — it carries an
+entire governance axis the sandbox structurally cannot.
 
-**Two secondary payoffs** from running the proxy outside the cage with the real
+**③ The residual — distinct principals.** In-process sub-agents are the case both
+surfaces go partly blind on: the *choice* to spawn is on the wire (proxy can
+deny), but once running, the sub-agent's actions hit the effect boundary as
+**anonymous effects — attribution is lost**. So a third requirement: force
+sub-agents out into **distinct, observable principals** (TermLink-style separate
+processes), so they are attributable on both surfaces. The VM *helps* (it at
+least *sees* in-process sub-agent I/O, which today's PTY-based view cannot — that
+is G-015 / T-1061) but cannot restore attribution alone.
+
+**Two secondary payoffs** from running the deciders outside the cage with the real
 credentials: the harness never sees the API token (closes a credential-exfil
 hole), and the proxy is the natural place to terminate subscription/OAuth —
 exactly where unknown #1 must be answered.
 
 **Reject as primary boundaries:** S1 (declinable) and S6 (defeatable). S1 remains
-the everyday cooperating-harness convenience, but nothing load-bearing depends on
-it.
+the everyday cooperating-harness convenience; nothing load-bearing depends on it.
+(Note: FUSE appears in S6 as a *boundary* — rejected — but reappears in §7a as a
+*mediation* surface, a different and legitimate role.)
 
-**One-line answer:** *intent at the protocol (S2), effects at the kernel
-(S3+S4+S5), and nothing load-bearing in between (not S1, not S6).*
+**One-line answer:** *choices at the proxy (S2), effects at the sandbox boundary
+(S3+S4+S5, §7a), sub-agents forced into distinct principals, and nothing
+load-bearing in S1/S6.*
 
 ---
 
@@ -442,28 +508,66 @@ Findings append to this file (or a sibling `-spike.md`).
 
 ## 7a. Sandbox design deep-dive (arc-013 T-2433) — host-grounded
 
+> **[REFRAME 2026-06-18]** An earlier draft of this section picked
+> **systemd+namespaces as "primary"** and argued the sandbox is a *static cage*
+> whose job is to make the proxy non-bypassable. Two operator corrections
+> superseded that: (a) the sandbox is the **effect control surface in its own
+> right**, doing **active per-operation mediation** — not a passive wall; (b)
+> systemd+namespaces is the *weakest* containment tier. The hypervisor model is
+> the right one. This section now reflects that. *(Note: the sandbox mediates
+> **effects**; it does **not** capture **choices/mechanism** — that is the proxy,
+> §4b. The earlier "VM boundary = the complete mediation boundary" claim was
+> wrong: it is the complete **effect** boundary only.)*
+
 Host probe (2026-06-18, the actual deployment host): **agent runs as `root`
 (uid=0)** — confirms Lock-1 §0, this is the hole the cage closes. Kernel **6.8**
-(Landlock ≥5.13 ✓, **landlock active** in LSM list). **systemd 255** is pid 1.
-Tools present: `bwrap`, `unshare`, `nsenter`, `docker` (rootful; no podman),
-`nft`, `iptables`, `setpriv`. `unprivileged_userns_clone=1`.
+(Landlock ≥5.13 ✓, **landlock active**). **systemd 255** is pid 1. **`/dev/kvm`
+present, CPU `svm` (AMD-V)** → hardware virtualization is live. Tools present:
+`bwrap`, `unshare`, `nsenter`, `docker` (rootful; runc only), `nft`, `iptables`,
+`setpriv`. **Absent:** any VMM (`qemu`/`firecracker`/`cloud-hypervisor`), gVisor
+(`runsc`), kata. So the VM/microVM path is *available* (KVM) but needs a VMM
+installed — a tooling step, not an architecture gap.
 
-### Mechanism decision
+### The reframe: active per-operation mediation at a hardware boundary
 
-| Mechanism | Fit | Verdict |
-|---|---|---|
-| **systemd** (persistent unit for autonomous + `systemd-run --pty --pipe -p …` for interactive) | pid 1, v255, root installs, declarative/auditable/reboot-surviving, **one mechanism for both deployment profiles** | **primary** |
-| **Landlock** | active on 6.8; launcher applies ruleset before `exec` | **fs belt-and-suspenders** — RO substrate holds even if a systemd property is misset |
-| **nftables** | egress allowlist → proxy only | **the net-pin** — systemd `IPAddressAllow` is IP-coarse; nft gives real proxy-only routing |
-| bwrap | works (userns on), but per-launch, no reboot persistence; userns is what T-1660 tripped on | secondary / dev-only |
-| docker | rootful here, heavy, full env rebuild | rejected for v1 |
+The sandbox is the **effect surface**, doing **active per-operation mediation** —
+the off-wire twin of the proxy. A hypervisor is the cleanest realization, and not
+because it "traps everything": hardware virtualization runs guest **CPU + memory
+natively at full speed** and only takes control on **boundary crossings**
+(virtio I/O, hypercalls, nested-page-faults). That *is* the static-floor /
+live-mediation split — but the floor is hardware (faster, harder, no TOCTOU) and
+the mediated subset is the **device boundary**, which we own in host userspace.
 
-Cage = **systemd `User=` demotion + `ProtectSystem=strict` + RO/RW path set +
-Landlock fs ruleset + nftables egress→proxy**, laid by root. Linux-only — fine,
-because portability lives at the proxy (§4d); the cage is the deployment-host
+**The VMM's virtio backends ARE the effects decider** (twin of the proxy):
+virtio-fs/virtio-blk = every file op at the fs-protocol layer (FUSE-like, no
+TOCTOU); virtio-net = every non-model connection. Compute runs native; only
+externally-effecting ops cross the boundary — which is exactly the set we want to
+mediate. (Caveat from §4b: this covers **effects**; in-guest `execve` semantics
+and *mechanism choice* are not visible at the device boundary — those are the
+proxy's and the distinct-principals job.)
+
+### Mechanism decision — three tiers (host-grounded)
+
+| Tier | Mediation granularity | Compute cost | Boundary strength | On this host |
+|---|---|---|---|---|
+| Namespaces + seccomp + Landlock (the earlier, now-superseded pick) | hand-picked syscalls (seccomp-unotify) | low; slow if over-used | **weakest** (shared host kernel) | ready now |
+| **gVisor (`runsc`)** | **every syscall**, semantic (incl. `execve`) | moderate (~10–50% syscall-heavy) | strong (guest kernel in userspace) | needs install |
+| **microVM / VM** (Firecracker / QEMU / cloud-hypervisor) | I/O + net at virtio backends; native compute | low compute; heavier boot/setup | **strongest (hardware)** | KVM present, needs a VMM |
+
+**Open fork (the genuine decision):** **gVisor** (syscall-semantic mediation,
+lighter, sees `execve`) vs **microVM** (effect-boundary mediation, hardware-strong,
+native compute). Deciding question: does effects-policy need to reason about
+*syscalls* (→ gVisor) or is mediating *I/O + network* enough (→ VM)? Leaning VM,
+since I/O+net *is* the external-effect surface — but `execve`-visibility is the
+one thing it gives up, and exec/spawn governance may want it.
+
+`Landlock` (active on 6.8) + `nftables` remain useful as a **static floor inside
+whichever tier** (cheap kernel-enforced invariants: RO substrate, egress-deny),
+with the chosen tier supplying the **active** mediation on top. Linux-only is
+fine — portability lives at the proxy (§4d); the sandbox is the deployment-host
 layer.
 
-### Profile content
+### Profile content (tier-independent)
 
 - **uid (S5):** dedicated `aef-agent` non-root user. (Today root → this demotion
   *is* the boundary.)
@@ -488,10 +592,13 @@ layer.
 
 ### The deciding validation (build-check, not research)
 
-Does CC + TermLink + the wrapper run correctly under `User=aef-agent` + RO
-substrate + egress-pinned-to-proxy? T-1660's failure was *mid-session userns*; a
-clean uid at `exec` is a different move and should hold — but must be validated.
-A build check, not an approach-killing unknown.
+Does CC + TermLink + the wrapper run correctly inside the chosen tier (gVisor
+guest, or a microVM) with the substrate RO, egress pinned to the proxy, and the
+virtio/gofer backends mediating I/O+net? T-1660's failure was *mid-session
+userns*; launching the whole harness inside the tier from the start is a different
+move and should hold — but must be validated. A build check, not an
+approach-killing unknown. (This is the sandbox's equivalent of the T-2429 proxy
+spike, and like it, needs **no GO** — pure feasibility.)
 
 ---
 

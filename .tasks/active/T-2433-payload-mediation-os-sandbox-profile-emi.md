@@ -45,11 +45,15 @@ Design of record: `docs/reports/T-2428-payload-mediation-design.md` §7a (sandbo
 deep-dive, host-grounded). The cage = the S3+S4+S5 sandbox laid *above* the agent
 (the agent runs as `root` today — uid demotion *is* the boundary).
 
-**Mechanism (decided, host-grounded 2026-06-18):** systemd (v255, pid 1) primary
-— persistent unit for autonomous, `systemd-run --pty --pipe -p ...` for
-interactive. **Landlock** (active on 6.8) as fs belt-and-suspenders. **nftables**
-as the egress-pin (proxy-only). Linux-only acceptable (portability lives at the
-proxy). bwrap = dev-only secondary; docker (rootful) rejected for v1.
+**Mechanism (host-grounded 2026-06-18; OPEN tier fork):** the sandbox does
+*active per-operation mediation* at a hardware boundary (hypervisor model), NOT a
+static namespaces cage. `/dev/kvm` + AMD-V present. Three-tier choice (design doc
+§7a): namespaces+seccomp (weakest, superseded) / **gVisor** (every syscall,
+semantic) / **microVM** (I/O+net at virtio backends, native compute, strongest).
+Leaning microVM. Landlock + nftables remain a static floor inside whichever tier.
+Linux-only acceptable (portability lives at the proxy). The VMM's virtio backends
+are the effects-decider (twin of the proxy). NB: sandbox mediates EFFECTS only —
+mechanism/choice governance is the proxy (§4b).
 
 **Dependency: T-2430 (privileged state-holder) lands first** — the RO/RW fs
 partition is only clean once trusted state (focus/approvals/bypass log) is
@@ -62,8 +66,11 @@ relocated out of agent scratch. Build order: T-2430 -> T-2433.
 
 ### Agent
 <!-- Provisional — firm up at T-2428 GO. -->
-- [ ] `fw sandbox emit-profile` generates systemd unit + property set + Landlock
-      ruleset + nftables egress ruleset from the framework's governance-substrate path list
+- [ ] tier picked (gVisor vs microVM) + feasibility-validated: CC+TermLink+wrapper
+      run inside it (no-GO spike, sibling of T-2429)
+- [ ] `fw sandbox emit-profile` generates the chosen tier's profile (VMM/virtio or
+      runsc config) + Landlock static-floor ruleset + nftables egress ruleset from
+      the framework's governance-substrate path list
 - [ ] Profile marks RO (framework code, .claude+hooks, .git, policy/proxy config,
       trusted-state store) and RW (working tree, .tasks/, docs/, scratch .context/)
 - [ ] nftables ruleset permits egress only to the proxy address; default-deny
