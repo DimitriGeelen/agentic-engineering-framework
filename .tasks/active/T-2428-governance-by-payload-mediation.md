@@ -12,6 +12,8 @@ status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
+target_blast_radius: 7
+voi_score: 0.85
 tags: [governance, proxy, payload-mediation, portability, livefire, lock-1, autonomy]
 related_tasks: [T-2389]
 created: 2026-06-18T19:50:00Z
@@ -220,6 +222,19 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
 - **Operator → "payload is produced, a tool call is character payload"**: the
   crux. Reframed the proxy from observer to hard gate.
 - **Operator → "go to inception / document this"**: this file (C-001/C-002).
+- **Operator → [CLI-communication / capture-surface reference]** (commit limit
+  raised 2→15 to allow incremental capture): supplied first-principles taxonomy
+  of CLI comms + how tool calls map onto fork/exec/wait. Decisive result — **two
+  nested contracts**: outer (model⟷harness, structured `tool_use`/`tool_result`)
+  sees *every* tool intent semantically; inner (harness⟷kernel, argv/stdio/exit)
+  sees only the fork/exec *subset* as raw bytes. Folded into research artifact
+  `docs/reports/T-2428-payload-mediation-design.md` §2–§4. Net design shift: the
+  two planes go from co-equal to **brain + floor with precise division of
+  labour** — payload proxy = the only complete+semantic surface (governs tool
+  calls); OS funnel = egress-pin making the proxy non-bypassable + subtree
+  coverage for the harness-recursion case. Model-agnosticism upgraded from claim
+  to structural consequence (governance binds to the protocol). Unknowns
+  unchanged: subscription-billing-through-relay + streaming-coherent denial.
 
 ## Open follow-ups (not this inception)
 - arc-012 continuous-mode: re-scope around the picker/launch-model reality (the
