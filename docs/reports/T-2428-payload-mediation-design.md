@@ -440,6 +440,61 @@ Findings append to this file (or a sibling `-spike.md`).
 
 ---
 
+## 7a. Sandbox design deep-dive (arc-013 T-2433) — host-grounded
+
+Host probe (2026-06-18, the actual deployment host): **agent runs as `root`
+(uid=0)** — confirms Lock-1 §0, this is the hole the cage closes. Kernel **6.8**
+(Landlock ≥5.13 ✓, **landlock active** in LSM list). **systemd 255** is pid 1.
+Tools present: `bwrap`, `unshare`, `nsenter`, `docker` (rootful; no podman),
+`nft`, `iptables`, `setpriv`. `unprivileged_userns_clone=1`.
+
+### Mechanism decision
+
+| Mechanism | Fit | Verdict |
+|---|---|---|
+| **systemd** (persistent unit for autonomous + `systemd-run --pty --pipe -p …` for interactive) | pid 1, v255, root installs, declarative/auditable/reboot-surviving, **one mechanism for both deployment profiles** | **primary** |
+| **Landlock** | active on 6.8; launcher applies ruleset before `exec` | **fs belt-and-suspenders** — RO substrate holds even if a systemd property is misset |
+| **nftables** | egress allowlist → proxy only | **the net-pin** — systemd `IPAddressAllow` is IP-coarse; nft gives real proxy-only routing |
+| bwrap | works (userns on), but per-launch, no reboot persistence; userns is what T-1660 tripped on | secondary / dev-only |
+| docker | rootful here, heavy, full env rebuild | rejected for v1 |
+
+Cage = **systemd `User=` demotion + `ProtectSystem=strict` + RO/RW path set +
+Landlock fs ruleset + nftables egress→proxy**, laid by root. Linux-only — fine,
+because portability lives at the proxy (§4d); the cage is the deployment-host
+layer.
+
+### Profile content
+
+- **uid (S5):** dedicated `aef-agent` non-root user. (Today root → this demotion
+  *is* the boundary.)
+- **fs (S4) — RO to agent uid:** framework code (`bin/fw`, `lib/`, `agents/*`
+  hooks), `.claude/settings.json` + hooks, `.git/`, policy + sandbox-profile +
+  proxy config, the trusted-state store. **RW:** working tree, `.tasks/`,
+  `docs/`, scratch `.context/`.
+- **net (S3):** one route out — the proxy. No direct model endpoint, no
+  telemetry, no arbitrary egress.
+
+### Two findings that fall out
+
+1. **T-2430 must precede T-2433.** The fs boundary is not clean today because
+   `.context/working/` mixes agent scratch with governance-trusted state (focus,
+   approvals, bypass log). Only after the privileged state-holder (T-2430)
+   relocates the trusted subset does the RO/RW partition become tractable. Build
+   order: **state-holder → sandbox.**
+2. **The cage improves the loop terminator.** A cgroup kills the whole process
+   subtree reliably — strictly better than the sleep-sibling terminator (T-2373)
+   and the wrong-process-binding problem from the live-fire. The cage *helps*
+   arc-012.
+
+### The deciding validation (build-check, not research)
+
+Does CC + TermLink + the wrapper run correctly under `User=aef-agent` + RO
+substrate + egress-pinned-to-proxy? T-1660's failure was *mid-session userns*; a
+clean uid at `exec` is a different move and should hold — but must be validated.
+A build check, not an approach-killing unknown.
+
+---
+
 ## 8. Open follow-ups (not this inception)
 
 - arc-012 re-scope: the autonomous loop is a *consumer* of this architecture, not

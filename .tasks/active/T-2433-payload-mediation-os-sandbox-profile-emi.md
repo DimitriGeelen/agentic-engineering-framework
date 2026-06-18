@@ -41,14 +41,35 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Design of record: `docs/reports/T-2428-payload-mediation-design.md` §7a (sandbox
+deep-dive, host-grounded). The cage = the S3+S4+S5 sandbox laid *above* the agent
+(the agent runs as `root` today — uid demotion *is* the boundary).
+
+**Mechanism (decided, host-grounded 2026-06-18):** systemd (v255, pid 1) primary
+— persistent unit for autonomous, `systemd-run --pty --pipe -p ...` for
+interactive. **Landlock** (active on 6.8) as fs belt-and-suspenders. **nftables**
+as the egress-pin (proxy-only). Linux-only acceptable (portability lives at the
+proxy). bwrap = dev-only secondary; docker (rootful) rejected for v1.
+
+**Dependency: T-2430 (privileged state-holder) lands first** — the RO/RW fs
+partition is only clean once trusted state (focus/approvals/bypass log) is
+relocated out of agent scratch. Build order: T-2430 -> T-2433.
+
+**Emit/install split (§4c):** `fw sandbox emit-profile` (agent-safe) /
+`sudo fw sandbox install` (human/root only, Lock-1 Part 1). Gated on T-2428 GO.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- Provisional — firm up at T-2428 GO. -->
+- [ ] `fw sandbox emit-profile` generates systemd unit + property set + Landlock
+      ruleset + nftables egress ruleset from the framework's governance-substrate path list
+- [ ] Profile marks RO (framework code, .claude+hooks, .git, policy/proxy config,
+      trusted-state store) and RW (working tree, .tasks/, docs/, scratch .context/)
+- [ ] nftables ruleset permits egress only to the proxy address; default-deny
+- [ ] emitted-but-not-installed drift surfaces in `fw doctor` + audit (reuse cron/MCP class)
+- [ ] Validation: CC + TermLink + wrapper run under `User=aef-agent` + RO substrate
+      + egress-pin (T-1660 mid-session-userns failure does not recur at clean-uid-exec)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
