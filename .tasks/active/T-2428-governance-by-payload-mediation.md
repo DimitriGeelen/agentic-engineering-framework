@@ -8,18 +8,18 @@ description: >
   an OS funnel laid ABOVE the agent — as its portable enforcement architecture?
   Emerged from the arc-012 continuous-mode live-fire (loop never fires under CC
   2.1 multi-session) + the Lock-1 autonomy-integrity discovery.
-status: started-work
+status: work-completed
 arc_id: payload-mediation
 workflow_type: inception
-owner: agent
+owner: human
 horizon: now
 target_blast_radius: 7
 voi_score: 0.85
 tags: [governance, proxy, payload-mediation, portability, livefire, lock-1, autonomy]
 related_tasks: [T-2389]
 created: 2026-06-18T19:50:00Z
-last_update: 2026-06-18T19:50:00Z
-date_finished:
+last_update: 2026-06-18T11:31:47Z
+date_finished: 2026-06-18T11:31:47Z
 ---
 
 # T-2428: Governance by payload mediation — model-agnostic LLM gateway
@@ -209,7 +209,24 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
     in a daemon-pool tree outside the wrapper) → request-layer mediation is the fix.
 
 ## Decision
-<!-- fw inception decide T-2428 go|no-go|defer --rationale "..." (human, via Watchtower) -->
+
+**Decision**: GO
+
+**Rationale**: The two load-bearing unknowns that justified the earlier DEFER
+  are now closed by live spikes #1-#3 (all PASS, wire-level — see
+  `docs/reports/T-2428-payload-mediation-spike.md`). The DEFER was an explicit
+  evidence gap ("DEFER until spike #1-#3 land"), not a confidence hedge; the gap is
+  filled. Confirmed on the real subscription/OAuth path: a transparent relay (1)
+  preserves subscription billing (OAuth Bearer forwarded unchanged, upstream 200,
+  NOT metered API), (2) sees every `tool_use` intent + real usage tokens BEFORE any
+  effect, and (3) can deny a tool call by substituting a coherent text turn the
+  harness accepts without breaking. The architecture is feasible; the remaining
+  work is BUILD (T-2430 holder, T-2431 relay, T-2432 policy plane, T-2433 sandbox,
+  T-2434 acceptance demo), not further research. Note: GO authorizes the build arc
+  (arc-013); the OS cage install (Lock-1 Part 1) remains human/root-run, never the
+  agent.
+
+**Date**: 2026-06-18T11:31:47Z
 
 ## Dialogue Log
 
@@ -251,3 +268,33 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
 - Live-fire teardown owed: TermLink session `lf-t2389`, worktree
   `.claude/worktrees/livefire-t2389`, and the watcher process
   (`/root/.claude/jobs/f527f807/tmp/watch-loop.sh`) are still up.
+
+### 2026-06-18T11:31:47Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The two load-bearing unknowns that justified the earlier DEFER
+  are now closed by live spikes #1-#3 (all PASS, wire-level — see
+  `docs/reports/T-2428-payload-mediation-spike.md`). The DEFER was an explicit
+  evidence gap ("DEFER until spike #1-#3 land"), not a confidence hedge; the gap is
+  filled. Confirmed on the real subscription/OAuth path: a transparent relay (1)
+  preserves subscription billing (OAuth Bearer forwarded unchanged, upstream 200,
+  NOT metered API), (2) sees every `tool_use` intent + real usage tokens BEFORE any
+  effect, and (3) can deny a tool call by substituting a coherent text turn the
+  harness accepts without breaking. The architecture is feasible; the remaining
+  work is BUILD (T-2430 holder, T-2431 relay, T-2432 policy plane, T-2433 sandbox,
+  T-2434 acceptance demo), not further research. Note: GO authorizes the build arc
+  (arc-013); the OS cage install (Lock-1 Part 1) remains human/root-run, never the
+  agent.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bbed8086
+- **Timestamp:** 2026-06-18T11:31:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-18T11:31:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
