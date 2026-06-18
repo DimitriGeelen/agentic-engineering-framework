@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2437: worktree audit content-vs-environment keystone: guard cron-misload lint + codify principle (OBS-077)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-18T22:50:36Z
+# ============================================================================
+
+task_id: T-2437
+task_name: "worktree audit content-vs-environment keystone: guard cron-misload lint + codify principle (OBS-077)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-18T22:46:06Z
+completed: 2026-06-18T22:50:29Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` cron-misload lint block (line ~1509) is worktree-guarded with `fw_is_linked_worktree`, INFO-skips in a linked worktree (sibling of the T-2435 registry block)'
+  - 'The content-vs-environment classification keystone is documented in-source (the comment block at the guard) and as a learning (L-486)'
+  - 'Self-vendor (CONTENT) is verified to remain un-skipped — `check_self_vendor_drift()` contains zero worktree-skips, so real un-vendored drift still FAILs'
+  - 'Tests: `tests/unit/t2437_audit_cron_worktree_skip.bats` (4 — both cron legs guarded + self-vendor NOT guarded + keystone documented) green'
+  - '`bash -n` clean on `agents/audit/audit.sh`; vendored copy re-synced (`fw vendor self --check` exits 0); worktree `fw audit` still zero-FAIL'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2437-worktree-audit-content-vs-environment-ke.md
+generated_by: context-agent-hybrid
