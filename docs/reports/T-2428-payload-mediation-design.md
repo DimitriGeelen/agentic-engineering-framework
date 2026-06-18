@@ -102,6 +102,60 @@ concrete requirement on the funnel: descendant coverage, or the recursion leaks.
 
 ---
 
+## 4a. What the proxy CANNOT control — the harness black box (operator's question)
+
+The payload proxy sees the model⟷harness *wire*. Everything the harness does
+**off that wire** is invisible to it — and a great deal plays off-wire. The
+proxy is a **request/response gate, not an execution monitor.**
+
+| Harness behavior | On model wire? | Proxy controls? | OS-coupled surface that can |
+|---|---|---|---|
+| Model's tool-call **intent** | yes (response) | **yes** allow/deny/rewrite | — (pre-execution) |
+| What harness **sends** to model (sys prompt, context, memory, schemas) | yes (request) | **yes** inspect/rewrite/inject | — |
+| **Bash** tool *execution* | no (local fork/exec) | only gates intent | seccomp / eBPF execve · sandbox · cgroup |
+| **Edit/Write/Read** file I/O | no (in-process) | only gates intent | Landlock / fanotify / RO bind-mount / overlay |
+| **MCP-stdio** call | no (subprocess + pipe JSON-RPC) | gates intent | exec monitor; pipe internal |
+| **MCP-HTTP** call | no (harness→server) | gates intent | netns + nftables egress allowlist |
+| **Hooks** (Pre/PostToolUse, PreCompact, Stop) | no (shell subprocess) | **no** | exec monitor / sandbox |
+| **Wrapper / loop** (claude-fw, restart, signals) | no | **no** | process / cgroup / signal control |
+| **Telemetry / auto-update / crash report** | no (other endpoints) | **no** | netns egress allowlist |
+| **Auth** token refresh / storage | no (auth endpoint) | **no** | fs (token file) + egress |
+| **Harness internal control flow** — does it honor hook exit codes? execute *only* response-carried `tool_use`? report results truthfully? | no | **no** | **no — black box** |
+
+**The crux is the bottom row.** The harness's internal logic is a black box to
+*both* surfaces: not on the wire (proxy blind), just memory ops (no syscall for
+the OS layer to catch). We can govern the harness's **inputs** (proxy mediates
+the wire) and bound its **effects** (OS funnel bounds syscalls/egress) — but
+never its **internals**.
+
+### The trust model this forces
+
+- Every proxy guarantee **assumes an honest harness** — one that executes only
+  the mediated response and reports results truthfully.
+- That honesty is **unverifiable at either surface.**
+- Therefore the OS funnel is **not defense-in-depth — it is the only trust
+  anchor**, because it is the one layer that does *not* trust the harness: it
+  treats the harness as just another process and bounds what it can touch
+  regardless of intent.
+
+The clean division is by **trust assumption**, not by layer:
+
+> **Proxy = policy engine for a *cooperating* harness** (rich, semantic, common case).
+> **OS funnel = containment for a *non-cooperating* harness** (coarse, un-foolable, the boundary).
+
+### Direct consequence for Lock-1
+
+Framework hooks (`check-active-task`, focus-drift, inception gates) are
+**proxy-class governance** — they fire only because the harness *chooses* to run
+them. They cannot be the boundary for "the agent can't self-authorize": a
+replaced / compromised / misconfigured harness simply doesn't run them. The
+boundary must be the **OS cage** — the one control the harness can't decline to
+enforce. This is precisely why Lock-1 Part 1 is human/root-run and the agent
+must not run it; "research is not authorization, the agent never runs Part 1" is
+the operational expression of this row.
+
+---
+
 ## 5. Denial composition (carried over from the dialogue, still the key build risk)
 
 To *deny* a tool intent at the proxy: replace the whole assistant turn with a
