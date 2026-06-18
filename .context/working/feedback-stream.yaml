@@ -19084,3 +19084,21 @@ payload:
   pattern_id: mock-only-integration
   ac_index: null
   ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-18T14:43:11Z'
+scan_id: R-615bc042
+task_id: T-2432
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T14:43:11Z'
+scan_id: R-615bc042
+task_id: T-2432
+payload:
+  task_file: .tasks/active/T-2432-payload-mediation-proxy-policy-emitinsta.md

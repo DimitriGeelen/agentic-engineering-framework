@@ -4,11 +4,11 @@ name: "payload-mediation: proxy policy emit/install + drift audit class"
 description: >
   fw policy emit (agent-safe) / sudo fw policy install (human/root boundary). Static invariants from existing gates; emitted-but-not-installed drift audit class (reuse cron/MCP emit-install pattern). Gated on T-2428 GO.
 
-status: captured
+status: started-work
 arc_id: payload-mediation
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -23,7 +23,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-18T07:18:38Z
-last_update: 2026-06-18T07:18:38Z
+last_update: 2026-06-18T12:50:00Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,14 +41,23 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Build slice 3 (final agent-buildable) of arc-013 (payload-mediation). The emit/install
+split for the sovereign mediation policy plus its drift-audit class. `policy/proxy-policy.yaml`
+is authored in-repo (reviewable) but ENFORCED from a deployed copy that is read-only to the
+agent uid (Lock-1 Part 1). `fw policy emit` (agent-safe) prints the install spec; `sudo fw
+policy install` (human/root) deploys it; `fw policy status` + `fw doctor` surface the
+emitted-but-not-installed drift class — the exact sibling of the tool-set→manifest and cron
+registry→generated drift checks (CLAUDE.md §Verification Gate). Design: §4c (emit/install split).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/govd_policy.py`: `drift_status` compares in-repo SOURCE vs DEPLOYED copy by sha256 (CONTENT, never mtime — T-2290 lesson); states `ok`/`drift`/`not_installed`/`absent_source`
+- [x] `fw policy emit` is agent-safe — prints the install spec and runs nothing; `fw policy status` reports drift state
+- [x] `fw policy install` is human/root only — refuses under `$CLAUDECODE=1` (exit 3) AND refuses non-root (exit 3); the agent never deploys its own governance policy (Lock-1 Part 1)
+- [x] `fw doctor` surfaces the emitted-but-not-installed drift class: OK (match) / WARN (source edited, deploy stale) / SKIP (not installed) — sibling of the MCP manifest + cron registry→generated checks
+- [x] Unit tests pass (8) AND `bash -n bin/fw` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -82,6 +91,11 @@ date_finished: null
 -->
 
 ## Verification
+
+PYTHONPATH=. python3 -m pytest tests/unit/test_govd_policy.py -q
+bash -n bin/fw
+out=$(bin/fw policy emit 2>&1); echo "$out" | grep -q "EMIT ONLY"
+out=$(CLAUDECODE=1 bin/fw policy install 2>&1); echo "$out" | grep -q "Lock-1 Part 1"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -132,6 +146,11 @@ date_finished: null
 
 ## Evolution
 
+### 2026-06-18 — T-2432 build (policy emit/install + drift)
+- **What changed:** Reused the existing single-transition drift pattern (tool-set→manifest) verbatim. Decided to compare SOURCE vs the DEPLOYED COPY directly (sha256) rather than a separate sentinel file — nothing extra to keep in sync, and no agent-writable sentinel the agent could spoof to fake "no drift". `not_installed` is SKIP (never a failure) because install is human-gated and absent by design in dev.
+- **Plan impact:** `install_policy` is a straight RO copy (first cut). The real cage hardening (non-agent owner, RO bind-mount, chattr +a) stays in the EMIT spec as Lock-1 Part 1 — consistent with the relay (T-2431) and holder (T-2430) slices, which also emit-not-install.
+- **Triggered:** None. This closes arc-013's agent-buildable GO scope (T-2430 + T-2431 + T-2432). Remaining work (T-2433 microVM sandbox, T-2434 cage demo, the actual root installs, relocating framework state behind the holder) is human/root-gated.
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -181,3 +200,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2432-payload-mediation-proxy-policy-emitinsta.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-615bc042
+- **Timestamp:** 2026-06-18T14:43:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
