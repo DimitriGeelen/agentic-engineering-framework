@@ -1507,7 +1507,23 @@ fi
 # agentic-audit.crontab; this loop covers every other .context/cron/*.crontab
 # (release-mirror-canary, heartbeat, project-specific ad-hoc files, ...).
 _cron_lint_dir="$PROJECT_ROOT/.context/cron"
-if [ -d "$_cron_lint_dir" ]; then
+if [ -d "$_cron_lint_dir" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+    # T-2437 (OBS-077 keystone): sibling of the registry-block worktree-skip
+    # (T-2435). This lint reads /etc/cron.d/ for an install under the WORKTREE
+    # slug that never exists — cron is installed once from the main checkout
+    # under the MAIN slug — so every dormant-crontab FAIL here is a pure worktree
+    # artifact. Cron install state is HOST-ENVIRONMENT, not content, so it is
+    # owned by the main checkout and skipped in a linked worktree.
+    #
+    # The content-vs-environment classification (the keystone): a pre-push /
+    # audit check may FAIL in a linked worktree ONLY when it measures committed
+    # CONTENT drift (self-vendor T-2436, fabric, task YAML, secrets, hook
+    # threshold). Checks that measure HOST/working-copy ENVIRONMENT state
+    # (cron install at /etc/cron.d/, both legs here and at the registry block)
+    # are INFO-skipped — they are managed from main and their absence in a
+    # transient worktree is expected, not a regression. See L-486.
+    info "Cron-misload lint skipped — linked worktree (cron install is host-level, managed from the main checkout)"
+elif [ -d "$_cron_lint_dir" ]; then
     _cron_lint_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
     _cron_lint_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
     for _cf in "$_cron_lint_dir"/*.crontab; do

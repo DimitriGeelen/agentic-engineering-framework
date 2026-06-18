@@ -1,15 +1,15 @@
 ---
-id: T-2436
-name: "self-vendor drift sync + --check silent-mutation trap (OBS-076)"
+id: T-2437
+name: "worktree audit content-vs-environment keystone: guard cron-misload lint + codify principle (OBS-077)"
 description: >
-  self-vendor drift sync + --check silent-mutation trap (OBS-076)
+  worktree audit content-vs-environment keystone: guard cron-misload lint + codify principle (OBS-077)
 
-status: work-completed
+status: started-work
 workflow_type: build
 owner: agent
-horizon: null
+horizon: now
 tags: []
-components: [C-004, bin/fw]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-18T22:29:00Z
-last_update: 2026-06-18T22:43:49Z
-date_finished: 2026-06-18T22:43:49Z
+created: 2026-06-18T22:46:06Z
+last_update: 2026-06-18T22:46:06Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,25 +36,25 @@ date_finished: 2026-06-18T22:43:49Z
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2436: self-vendor drift sync + --check silent-mutation trap (OBS-076)
+# T-2437: worktree audit content-vs-environment keystone: guard cron-misload lint + codify principle (OBS-077)
 
 ## Context
 
-T-B of the worktree pre-push audit remediation (sibling of T-2435/T-A, OBS-077). The 3rd/last worktree-push-blocking audit FAIL was the T-2244 self-vendor drift check. Diagnosis split it into two real defects:
+T-C / keystone of the worktree pre-push audit remediation (after T-2435/T-A cron-registry and T-2436/T-B self-vendor). Generalizes the worktree-skip into an explicit **content-vs-environment classification** and closes the leg T-2435 missed.
 
-1. **Real drift** — my T-2435 source edits (`lib/paths.sh`, `bin/fw`, `agents/audit/audit.sh`) were never propagated to the vendored `.agentic-framework/` copy, so the audit correctly FAILed. Fix: `fw vendor self` + commit the vendored sync.
-2. **`--check` silent-mutation trap** — `fw vendor self --check` accepted `--check` but matched neither `--dry-run` nor a real flag, falling through to a REAL mutating sync that exited 0. A caller running `--check` to *verify* actually *mutated* the vendored tree and saw a misleading "clean". This is the OBS-076 "audit and `vendor self --check` disagree": `--check` made it clean (uncommitted) then reported clean. Fix: `--check` → read-only dry-run that exits non-zero on drift.
-3. **Stale audit recommendation** — the libs-class FAIL recommended full `fw vendor` on the (T-2247) premise that `fw vendor self` only syncs `lib/`. That premise went stale at T-2264/T-2266/T-2267 when `vendor self` was extended to bin+agents+web. Corrected to recommend `fw vendor self` (+ `--check` to verify).
+Diagnosis (during T-2436) refined the original framing: self-vendor is *content* (the vendored `.agentic-framework/` is committed) and correctly stays a FAIL — only *host-environment* state should be worktree-skipped. Surveying the audit's host-environment reads found a second, **unguarded** cron block: the T-1722 cron-misload lint (`agents/audit/audit.sh:1509`) reads `/etc/cron.d/` for an install under the *worktree* slug that never exists (cron is installed once from main under the MAIN slug). It is latent today (only `agentic-audit.crontab` present, which it skips) but false-FAILs the moment any other USER-field crontab lands in `.context/cron/` (release-mirror-canary, heartbeat, …).
+
+**The keystone:** an audit/pre-push check may FAIL in a linked worktree ONLY when it measures committed CONTENT drift; checks measuring HOST/working-copy ENVIRONMENT state (cron install) INFO-skip. Codified in-source + L-486.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Real drift synced: `fw vendor self` propagated `lib/paths.sh` + `bin/fw` + `agents/audit/audit.sh` to `.agentic-framework/`; `fw vendor self --check` exits 0 (in sync)
-- [x] `bin/fw` `vendor self --check` is read-only (dry-run mode) and exits non-zero when any class is out of sync; `--dry-run` keeps its prior exit-0 semantics
-- [x] Stale T-2247 audit recommendation corrected: libs-class FAIL recommends `fw vendor self` (now full-scope), not bare `fw vendor`; comment records the T-2436 correction
-- [x] Tests: `tests/unit/t2436_vendor_self_check.bats` (5 tests — static routing + no-mutation + exit-code-agrees-with-dry-run + help) green; `tests/unit/t2247_*.bats` updated to corrected premise (3 green)
-- [x] `bash -n` clean on `bin/fw` + `agents/audit/audit.sh`; worktree `fw audit` shows zero FAIL (self-vendor PASS, cron INFO-skipped from T-2435)
+- [x] `agents/audit/audit.sh` cron-misload lint block (line ~1509) is worktree-guarded with `fw_is_linked_worktree`, INFO-skips in a linked worktree (sibling of the T-2435 registry block)
+- [x] The content-vs-environment classification keystone is documented in-source (the comment block at the guard) and as a learning (L-486)
+- [x] Self-vendor (CONTENT) is verified to remain un-skipped — `check_self_vendor_drift()` contains zero worktree-skips, so real un-vendored drift still FAILs
+- [x] Tests: `tests/unit/t2437_audit_cron_worktree_skip.bats` (4 — both cron legs guarded + self-vendor NOT guarded + keystone documented) green
+- [x] `bash -n` clean on `agents/audit/audit.sh`; vendored copy re-synced (`fw vendor self --check` exits 0); worktree `fw audit` still zero-FAIL
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -89,13 +89,10 @@ T-B of the worktree pre-push audit remediation (sibling of T-2435/T-A, OBS-077).
 
 ## Verification
 
-bash -n bin/fw
 bash -n agents/audit/audit.sh
-bash -n lib/paths.sh
+bats tests/unit/t2437_audit_cron_worktree_skip.bats
 out=$(bin/fw vendor self --check 2>&1); echo "$out" | grep -q "in sync with source"
-grep -q "fw vendor self  (syncs all vendored .agentic-framework/ classes" agents/audit/audit.sh
-bats tests/unit/t2436_vendor_self_check.bats
-bats tests/unit/t2247_audit_self_vendor_mitigation.bats
+grep -q "content-vs-environment classification" agents/audit/audit.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -130,18 +127,15 @@ bats tests/unit/t2247_audit_self_vendor_mitigation.bats
 
 ## RCA
 
-**Symptom:** `git push` from a git worktree was blocked by an audit FAIL "Self-vendor drift: libs class". A prior session ran `fw vendor self --check` to verify, saw exit 0 ("clean"), yet the audit kept FAILing — "they disagree".
+**Symptom:** the pre-push audit false-FAILs on every push from a linked worktree (OBS-077). T-2435 fixed the cron-registry leg but the class was not closed — a sibling cron block remained unguarded.
 
-**Root cause (two joined defects):**
-1. The vendored `.agentic-framework/` copy genuinely lagged the source (`lib/paths.sh`/`bin/fw`/`agents/audit/audit.sh` edited in T-2435 but never re-vendored). The audit was *correct*.
-2. `fw vendor self --check` was not a verifier. The `vendor self` routing in `bin/fw` mapped only `--dry-run` to read-only mode; `--check` matched no case and fell through to `_vs_dry=false` → a **real mutating sync** that exited 0. So `--check` *made the tree clean* (uncommitted) and then reported "clean" — a self-fulfilling false negative. That is why it "disagreed" with the audit: the audit measured committed state; `--check` silently mutated the working tree and measured its own side effect.
+**Root cause:** the cron host-environment surface in `agents/audit/audit.sh` is *two* blocks — the registry→generated→deployed drift check (line ~1448) and the T-1722 cron-misload lint (line ~1509). Both read `/etc/cron.d/` under the project slug. T-2435 guarded only the first; the second still ran unconditionally, so any worktree carrying a non-`agentic-audit` USER-field crontab in `.context/cron/` would FAIL on a dormant-install that is expected (the install lives under the main slug, not the worktree slug).
 
-**Why structurally allowed:** a flag named `--check` carries a read-only contract by convention (cf. `black --check`, `gofmt -l`). The routing silently accepted unknown flags and defaulted to mutate-mode, so a verification verb became a mutation verb with no error. Compounding it, the audit's fix recommendation ("Run: fw vendor") and its explanatory comment encoded a scope premise ("`fw vendor self` only syncs lib/") that went stale three tasks earlier (T-2264/T-2266/T-2267 extended `vendor self` to bin+agents+web) — so even an operator following the audit verbatim would not converge on the canonical verb.
+**Why structurally allowed:** T-2435 fixed the *instance* (the registry block that was actively FAILing) without enumerating the *class* (every check that reads host-environment state). There was no classification rule distinguishing content checks (must FAIL in a worktree) from environment checks (must skip), so the second cron leg's miss was invisible — and latent, since the corpus happened to contain only the self-skipping `agentic-audit.crontab` that day.
 
 **Prevention:**
-- `tests/unit/t2436_vendor_self_check.bats` pins the read-only contract: `--check` never mutates the vendored tree (git-status before==after) and its exit code agrees with `--dry-run` drift state. A regression that re-introduces mutate-on-check fails t3/t4.
-- `tests/unit/t2247_*.bats` updated so the audit recommendation can't silently drift back to the stale "lib-only" premise.
-- The `--check` verifier itself is now the structural reconciliation point: audit FAIL ⇔ `fw vendor self --check` exit 1, with the FAIL recommending exactly that verify command. The sibling keystone (T-C) generalises content-vs-environment gating; self-vendor is *content* drift and correctly stays a FAIL (only cron, host-environment, was worktree-skipped in T-2435).
+- The keystone is now explicit: an audit/pre-push check FAILs in a linked worktree only for committed CONTENT drift; HOST-ENVIRONMENT checks INFO-skip. Recorded in-source (the guard comment) + L-486.
+- `tests/unit/t2437_audit_cron_worktree_skip.bats` pins the classification three ways: both cron legs are worktree-guarded (regression guard for T-2435 + the new fix), AND `check_self_vendor_drift` is NOT worktree-guarded (so content drift can never be silenced by mis-applying the skip). A future host-environment check added without a guard, or a content check that wrongly adds one, breaks a test.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -204,19 +198,16 @@ bats tests/unit/t2247_audit_self_vendor_mitigation.bats
 
 ## Updates
 
-### 2026-06-18T22:29:00Z — task-created [task-create-agent]
+### 2026-06-18T22:46:06Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2436-self-vendor-drift-sync----check-silent-m.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2437-worktree-audit-content-vs-environment-ke.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-58ebfa22
-- **Timestamp:** 2026-06-18T22:43:53Z
+- **Scan ID:** R-5ab0e2f7
+- **Timestamp:** 2026-06-18T22:49:24Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
-### 2026-06-18T22:43:49Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

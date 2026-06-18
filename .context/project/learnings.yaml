@@ -3700,3 +3700,10 @@ X'` returning empty group."
   date: 2026-06-16
   context: Added via context agent
   application: TBD
+- id: L-486
+  learning: "Worktree audit gates: classify each check as CONTENT vs HOST-ENVIRONMENT. Content drift (self-vendor, fabric, task YAML, secrets, hook threshold) must FAIL in a linked worktree — it is committed state and real drift would ship. Host-environment state (cron install at /etc/cron.d/, both the registry-sync and the misload-lint legs) must INFO-skip in a linked worktree (fw_is_linked_worktree) — cron is installed once from the main checkout under the MAIN slug; its absence under the worktree slug is expected, not a regression. Origin: OBS-077 — T-2435 skipped one cron leg, T-2437 found the sibling misload-lint leg unguarded (latent false-FAIL)."
+  source: P-001
+  task: T-2437
+  date: 2026-06-18
+  context: Added via context agent
+  application: TBD
