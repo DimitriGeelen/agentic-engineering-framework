@@ -50,7 +50,7 @@ deep-dive, host-grounded). The cage = the S3+S4+S5 sandbox laid *above* the agen
 static namespaces cage. `/dev/kvm` + AMD-V present. Three-tier choice (design doc
 §7a): namespaces+seccomp (weakest, superseded) / **gVisor** (every syscall,
 semantic) / **microVM** (I/O+net at virtio backends, native compute, strongest).
-Leaning microVM. Landlock + nftables remain a static floor inside whichever tier.
+DECIDED 2026-06-18: microVM target (kata + Cloud-Hypervisor/Firecracker + custom virtio-fs/virtio-net backends as the effects-decider); gVisor fallback. Landlock + nftables remain a static floor inside the tier.
 Linux-only acceptable (portability lives at the proxy). The VMM's virtio backends
 are the effects-decider (twin of the proxy). NB: sandbox mediates EFFECTS only —
 mechanism/choice governance is the proxy (§4b).
@@ -66,8 +66,8 @@ relocated out of agent scratch. Build order: T-2430 -> T-2433.
 
 ### Agent
 <!-- Provisional — firm up at T-2428 GO. -->
-- [ ] tier picked (gVisor vs microVM) + feasibility-validated: CC+TermLink+wrapper
-      run inside it (no-GO spike, sibling of T-2429)
+- [ ] microVM feasibility-validated: CC+TermLink+wrapper run inside a kata/microVM
+      with substrate RO + egress-pin (no-GO spike, sibling of T-2429); gVisor fallback if it fails
 - [ ] `fw sandbox emit-profile` generates the chosen tier's profile (VMM/virtio or
       runsc config) + Landlock static-floor ruleset + nftables egress ruleset from
       the framework's governance-substrate path list

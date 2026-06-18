@@ -554,12 +554,38 @@ proxy's and the distinct-principals job.)
 | **gVisor (`runsc`)** | **every syscall**, semantic (incl. `execve`) | moderate (~10–50% syscall-heavy) | strong (guest kernel in userspace) | needs install |
 | **microVM / VM** (Firecracker / QEMU / cloud-hypervisor) | I/O + net at virtio backends; native compute | low compute; heavier boot/setup | **strongest (hardware)** | KVM present, needs a VMM |
 
-**Open fork (the genuine decision):** **gVisor** (syscall-semantic mediation,
-lighter, sees `execve`) vs **microVM** (effect-boundary mediation, hardware-strong,
-native compute). Deciding question: does effects-policy need to reason about
-*syscalls* (→ gVisor) or is mediating *I/O + network* enough (→ VM)? Leaning VM,
-since I/O+net *is* the external-effect surface — but `execve`-visibility is the
-one thing it gives up, and exec/spawn governance may want it.
+**Fork RESOLVED (2026-06-18, operator-confirmed): microVM is the target; gVisor
+is the documented fallback.**
+
+Why microVM wins the axes that carry the most risk:
+- **Compatibility** — a real guest kernel means the full CC + Node + TermLink +
+  git + MCP stack just runs; gVisor's incomplete ABI is a real feasibility risk
+  for a complex, frequently-updating workload.
+- **Mediation-surface fit** — the **virtio device backends *are* the
+  effects-decider** by construction (virtio-fs daemon = file mediator, userspace
+  virtio-net backend = egress mediator). We own the backend without patching
+  internals. gVisor's Gofer/netstack are hookable but bespoke.
+- **Boundary strength** — hardware-enforced (strongest); escape = governance
+  bypass, so this matters.
+- **Steady-state perf** — native compute for a long-lived session; only virtio
+  I/O overhead.
+
+The one thing gVisor uniquely offers — a **first-class semantic `execve` event**
+— is a *forensic nicety, not a control necessity* here: the command **choice** is
+a Bash `tool_use` the **proxy** already sees and can deny (mechanism/choice rule,
+§4b), the spawned process's **effects** cross virtio-fs/virtio-net (mediated), and
+even the binary load is a virtio-fs **read** (observable, just not a clean
+event). **Flip condition (documented):** if "which binaries may run" must become a
+*first-class semantic policy axis* enforced on the actual spawn — independent of
+proxy command-parsing and virtio-fs read-traces — that earns gVisor's
+compatibility risk. Absent that requirement, microVM.
+
+**Target build path:** **kata-containers** wrapping **Cloud-Hypervisor** or
+**Firecracker** (OCI drop-in over a real VMM) + a **custom virtio-fs backend** as
+the file-effects mediator + a **userspace virtio-net backend** as the egress
+mediator (model traffic → the proxy; all else allow/deny). **Fallback:** `runsc`
+(gVisor) as a docker runtime — faster to stand up if microVM setup or virtio-fs
+perf proves painful.
 
 `Landlock` (active on 6.8) + `nftables` remain useful as a **static floor inside
 whichever tier** (cheap kernel-enforced invariants: RO substrate, egress-deny),
