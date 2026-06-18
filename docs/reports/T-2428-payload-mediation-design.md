@@ -251,6 +251,89 @@ it.
 
 ---
 
+## 4c. Shaping the two surfaces — the control plane
+
+How does the framework *drive* the proxy policy and the sandbox profile? One trap
+governs the whole design.
+
+### The trap: shape by *proposing*, never by *activating*
+
+If the agent can configure its own proxy policy or sandbox profile, the cage is
+theatre (self-authorization, one level up). The split follows the Authority Model:
+
+- **Authoring / proposing** (what the rules should be) → **Initiative** — agent +
+  framework may generate, suggest, diff.
+- **Activating / installing** (making rules live) → **Authority/Sovereignty** —
+  crosses the boundary the agent can't reach (root / outside the cage).
+
+This is the **emit/install pattern the framework already runs three times** (cron
+`registry→generate→install`, MCP `tool-set→emit-manifest`, vendor sync):
+
+```
+fw policy emit         / fw sandbox emit-profile     ← agent-runnable (produces a spec)
+sudo fw policy install / sudo fw sandbox install     ← human/root only (activates)  ← BOUNDARY
+```
+
+Generation is agent-safe (just text); installation is the Lock-1 Part-1 step. The
+daily audit gains a drift class for free: *emitted-but-not-installed*.
+
+### Proxy control plane — two inputs, different trust
+
+1. **Static policy** — the invariants (sovereign verbs, Tier-0 categories,
+   governance-substrate paths). Most of the existing gates re-expressed as a
+   policy the proxy evaluates — but now at a surface the agent **can't decline**
+   (vs. today's S1 hooks). Compiled at install, lives **RO inside the cage**,
+   changed only by the human.
+2. **Trusted dynamic state** — focus, active-task status, approval tokens, budget
+   level. **Sharp consequence:** today this lives in *agent-writable* files
+   (`focus.yaml`, approvals queue, bypass log) — literally the A5 hole. For the
+   proxy to trust them, this state must move **behind a privileged setter** the
+   agent uid can't write. The verbs split (agent keeps *initiative*, loses
+   *forge-the-committed-state*):
+
+   | Today (agent writes state) | Becomes |
+   |---|---|
+   | `fw context focus T-X` | agent `request-focus` → privileged setter commits |
+   | `fw inception decide` | $CLAUDECODE-blocked today; now *enforced* not just refused |
+   | `fw dispatch approve` | agent proposes; privileged path approves (closes D7) |
+   | `fw tier0 approve` | same |
+
+   Per-request loop: parse streaming response → extract `tool_use` → classify →
+   evaluate (static policy + trusted state) → **allow / deny-with-refusal /
+   rewrite-to-safer / route-elsewhere / pause-for-human** → log every intent
+   (richest observation surface we've had). To stay DRY, delegate *rich*
+   decisions to a framework oracle (`fw policy decide …`) while the proxy keeps a
+   small hard-coded deny-list for invariants even if the oracle is down.
+
+### Sandbox control plane — emit from known substrate
+
+The framework already knows which paths are governance-substrate, so it can emit
+the profile (RO list, RW list = working tree minus substrate, single allowed
+egress = the proxy address, demoted uid) → `fw sandbox emit-profile`. Root
+installs. Agent never runs install.
+
+### The unifying insight — one source, two surfaces
+
+Both planes compile from the **same governance model**. A rule like *"the agent
+may not modify hooks"* projects onto both: proxy denies a `Write` tool_use at a
+hook path (semantic, early, self-explaining); sandbox makes hook paths RO to the
+agent uid (un-declinable, late, absolute). Same rule, two surfaces, two trust
+assumptions — defense in depth with **no shared failure mode**.
+
+### Bootstrap / who-watches-the-watcher
+
+The **proxy runs outside the cage** (non-agent uid / sibling namespace), started
+by root, reading RO policy. The agent can reach it but can't kill, replace, or
+reconfigure it. The harness's role flips: from *enforcer* (today's declinable
+hooks) to *cooperating UX inside the cage* (fast friendly feedback, proposes
+work) — while proxy + sandbox are the *authoritative* layer it can't talk past.
+
+> **Highest-leverage build piece:** the privileged state-holder. It is the A5
+> fix and the proxy's dynamic-state trust root in one — without it, the proxy
+> reads agent-forgeable state and the whole edifice is back to honor-system.
+
+---
+
 
 ## 5. Denial composition (carried over from the dialogue, still the key build risk)
 
