@@ -4,10 +4,10 @@ name: "Governance by payload mediation \u2014 model-agnostic LLM gateway + OS ca
 description: "Implementation arc for T-2428. Two surfaces layered by trust: payload proxy (intent\
   \ governance, model-agnostic) + OS sandbox above the agent (net-pin + RO governance\
   \ substrate + uid demotion). Design of record: docs/reports/T-2428-payload-mediation-design.md"
-status: draft
+status: in-progress  # T-2428 GO recorded 2026-06-18 — build arc authorized
 anchor_task: T-2428
 design_doc: docs/reports/T-2428-payload-mediation-design.md
-design_status: draft  # becomes 'final' (locked design-of-record) on T-2428 GO
+design_status: final  # locked design-of-record on T-2428 GO (2026-06-18)
 headline_mechanic: "Operator prompts an agent to attempt a self-authorizing action (edit a governance\
   \ hook, self-approve a dispatch); the out-of-cage payload proxy denies the tool\
   \ call at the wire and the OS sandbox blocks the write; operator observes on Watchtower\

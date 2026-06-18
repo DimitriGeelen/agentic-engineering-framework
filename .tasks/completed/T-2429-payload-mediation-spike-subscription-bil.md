@@ -4,11 +4,11 @@ name: "payload-mediation spike: subscription billing survives a transparent rela
 description: >
   GATE for T-2428/arc-013. Stand up a transparent pass-through relay, point one CC subscription session at it via ANTHROPIC_BASE_URL, confirm the session still authenticates and is NOT metered as API. Unknown #1 - the thing that can kill the approach.
 
-status: captured
+status: work-completed
 arc_id: payload-mediation
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-18T07:18:08Z
-last_update: 2026-06-18T07:18:08Z
-date_finished: null
+last_update: 2026-06-18T11:41:46Z
+date_finished: 2026-06-18T11:41:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -41,14 +41,19 @@ date_finished: null
 
 ## Context
 
+**Reconciled (2026-06-18):** this gate spike ran under T-2428's inception ACs (spikes #1-#3). Findings: `docs/reports/T-2428-payload-mediation-spike.md`. Closed as done-under-T-2428 to avoid a duplicate open slice.
+
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+<!-- Executed under T-2428's inception de-risk ACs; this slice was a duplicate of spike #1.
+     Reconciled as done-under-T-2428 on the GO (2026-06-18). -->
+- [x] Transparent pass-through relay stood up; a CC subscription session pointed at
+      it via `ANTHROPIC_BASE_URL` — evidence: docs/reports/T-2428-payload-mediation-spike.md §Spike #1
+- [x] Confirmed billing stays on subscription (OAuth Bearer `sk-ant-oat01…` forwarded
+      unchanged, upstream 200), NOT metered API — spike #1 PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -181,3 +186,18 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2429-payload-mediation-spike-subscription-bil.md
 - **Context:** Initial task creation
+
+### 2026-06-18T11:41:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-561722bc
+- **Timestamp:** 2026-06-18T11:41:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-18T11:41:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
