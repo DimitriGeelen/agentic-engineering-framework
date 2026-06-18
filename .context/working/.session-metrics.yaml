@@ -1,2 +1,29 @@
-# No JSONL transcript found — session metrics unavailable
-session_metrics: unavailable
+# Session quality metrics (T-831, T-850)
+# Extracted from: f527f807-1bda-4b57-aa42-9023df3b5f46.jsonl
+# Turn offset: 388 (session starts at turn 388)
+
+# Cumulative (entire transcript)
+turns: 701
+tool_calls: 239
+commits: 22
+commits_per_turn: 0.0314
+first_commit_turn: 148
+failed_tool_calls: 25
+failed_tool_call_rate: 0.1046
+edit_bursts: 0
+productive_turns: 168
+research_turns: 24
+productive_turns_ratio: 0.2397
+edit_retry_files: 5
+
+# Per-session (since turn 388)
+session_turns: 313
+session_commits: 7
+session_commits_per_turn: 0.0224
+session_first_commit_turn: 38
+session_failed_tool_calls: 11
+session_failed_tool_call_rate: 0.0948
+session_edit_bursts: 0
+session_productive_turns: 95
+session_research_turns: 6
+session_productive_turns_ratio: 0.3035

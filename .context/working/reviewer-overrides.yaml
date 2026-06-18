@@ -1058,3 +1058,16 @@ overrides:
   expires_at: '2026-09-16T12:06:58Z'
   added_by: root
   added_at: '2026-06-18T12:06:58Z'
+- id: OV-f0b94969
+  task_id: T-2431
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: 'Relay HTTP/live-creds boundary cannot run in-CI without committing live
+    subscription credentials (forbidden). The mediation core is fully unit-tested
+    (14 tests: real SSE parse, synth round-trip, Policy invariants, Mediator allow/deny+audit);
+    the live E2E (allow forwarded+executed, deny blocked at the wire) was proven through
+    the relay on the real subscription path in T-2429 spikes #2/#3 and re-validated
+    this slice. Same network-boundary class as T-2430''s OV-b2003abc.'
+  expires_at: '2026-09-16T14:33:58Z'
+  added_by: root
+  added_at: '2026-06-18T14:33:58Z'

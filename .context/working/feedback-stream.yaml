@@ -18895,3 +18895,192 @@ scan_id: R-e8f7d5e0
 task_id: T-2370
 payload:
   task_file: .tasks/completed/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T11:31:47Z'
+scan_id: R-bbed8086
+task_id: T-2428
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T11:31:47Z'
+scan_id: R-bbed8086
+task_id: T-2428
+payload:
+  task_file: .tasks/active/T-2428-governance-by-payload-mediation.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T11:41:47Z'
+scan_id: R-561722bc
+task_id: T-2429
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T11:41:47Z'
+scan_id: R-561722bc
+task_id: T-2429
+payload:
+  task_file: .tasks/active/T-2429-payload-mediation-spike-subscription-bil.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T12:05:30Z'
+scan_id: R-e025c5dc
+task_id: T-2430
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T12:05:30Z'
+scan_id: R-e025c5dc
+task_id: T-2430
+payload:
+  task_file: .tasks/active/T-2430-payload-mediation-privileged-state-holde.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T12:06:37Z'
+scan_id: R-06008981
+task_id: T-2430
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T12:06:37Z'
+scan_id: R-06008981
+task_id: T-2430
+payload:
+  task_file: .tasks/active/T-2430-payload-mediation-privileged-state-holde.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T12:06:58Z'
+scan_id: R-d36c5cb1
+task_id: T-2430
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T12:06:58Z'
+scan_id: R-d36c5cb1
+task_id: T-2430
+payload:
+  task_file: .tasks/active/T-2430-payload-mediation-privileged-state-holde.md
+---
+kind: override_applied
+timestamp: '2026-06-18T12:06:58Z'
+scan_id: R-d36c5cb1
+task_id: T-2430
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-18T12:22:23Z'
+scan_id: R-d1b94711
+task_id: T-2431
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T12:22:23Z'
+scan_id: R-d1b94711
+task_id: T-2431
+payload:
+  task_file: .tasks/active/T-2431-payload-mediation-thin-owned-payload-med.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T14:33:14Z'
+scan_id: R-50350dab
+task_id: T-2431
+payload:
+  overall: FAIL
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T14:33:14Z'
+scan_id: R-50350dab
+task_id: T-2431
+payload:
+  task_file: .tasks/active/T-2431-payload-mediation-thin-owned-payload-med.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T14:33:58Z'
+scan_id: R-833b5489
+task_id: T-2431
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T14:33:58Z'
+scan_id: R-833b5489
+task_id: T-2431
+payload:
+  task_file: .tasks/active/T-2431-payload-mediation-thin-owned-payload-med.md
+---
+kind: override_applied
+timestamp: '2026-06-18T14:33:58Z'
+scan_id: R-833b5489
+task_id: T-2431
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null
+---
+kind: scan_emitted
+timestamp: '2026-06-18T14:34:40Z'
+scan_id: R-ea355dc7
+task_id: T-2431
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T14:34:40Z'
+scan_id: R-ea355dc7
+task_id: T-2431
+payload:
+  task_file: .tasks/active/T-2431-payload-mediation-thin-owned-payload-med.md
+---
+kind: override_applied
+timestamp: '2026-06-18T14:34:40Z'
+scan_id: R-ea355dc7
+task_id: T-2431
+payload:
+  pattern_id: mock-only-integration
+  ac_index: null
+  ac_subhead: null

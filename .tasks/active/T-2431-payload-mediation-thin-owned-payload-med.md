@@ -4,11 +4,11 @@ name: "payload-mediation: thin owned payload-mediation relay (proxy brain)"
 description: >
   Build the governance mediator: parse streaming tool_use blocks, evaluate policy, allow/deny/rewrite/route, compose streaming-coherent denial (unknown #2). Model-agnostic at the protocol. Gated on T-2428 GO + spike T-2429.
 
-status: captured
+status: started-work
 arc_id: payload-mediation
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -23,7 +23,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-18T07:18:31Z
-last_update: 2026-06-18T07:18:31Z
+last_update: 2026-06-18T12:40:00Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,14 +41,26 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Build slice 2 of arc-013 (payload-mediation). The governance mediation relay / proxy
+brain: sits at the agent's `ANTHROPIC_BASE_URL`, forwards to the upstream API with auth
+UNCHANGED (subscription billing preserved), inspects each `tool_use` the model emits, and
+— per the sovereign `policy/proxy-policy.yaml` — either passes the turn through (allow) or
+substitutes a coherent text refusal (deny). This governs the agent's CHOICES; the OS
+sandbox (T-2433) governs EFFECTS — two co-essential surfaces (design §4b). Productionizes
+the T-2429 spikes. Design: `docs/reports/T-2428-payload-mediation-design.md` §4b/§4c.
+First reviewable cut (TCB + live creds): mediation logic real + tested, not
+production-hardened (partial-turn rewrite deferred — a deny substitutes the WHOLE turn).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Relay parses streaming `tool_use` blocks (name + buffered input) and usage from a buffered SSE body (`parse_tool_uses`, `parse_usage`)
+- [x] Coherent denial: `synth_deny_turn` emits a valid text-only turn (stop_reason `end_turn`, no `tool_use` → no owed `tool_result`) carrying a `[GOVERNANCE]` refusal that round-trips back to zero tool_uses
+- [x] Sovereign `Policy` enforces invariants — edit of a governance path → deny; dangerous Bash pattern → deny; `deny_tools` → deny; else allow; fails toward deny on parse ambiguity; loads from `policy/proxy-policy.yaml`
+- [x] `Mediator.mediate` passes allow-turns through untouched and substitutes the whole turn on any deny, auditing every intent to an append-only JSONL
+- [x] `serve()` forwards upstream with auth UNCHANGED and forces identity encoding so the body is inspectable (productionizes spike #2); agent-safe `relay-serve`/`relay-emit` in `agents/govd/govd.sh` are emit-only (install is Lock-1 Part 1 — human/root)
+- [x] Unit tests pass (14) AND both allow + deny paths live-validated end-to-end through the relay on the real subscription path (T-2429 spike #2/#3 mechanism, productionized)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -82,6 +94,10 @@ date_finished: null
 -->
 
 ## Verification
+
+PYTHONPATH=. python3 -m pytest tests/unit/test_govd_relay.py -q
+out=$(bash agents/govd/govd.sh relay-emit 4000 2>&1); echo "$out" | grep -q "aef-relay"
+PYTHONPATH=. python3 -c "from lib.govd_relay import Policy; assert Policy.load('policy/proxy-policy.yaml').decide('Bash',{'command':'echo hi'})[0]=='allow'"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -132,6 +148,11 @@ date_finished: null
 
 ## Evolution
 
+### 2026-06-18 — T-2431 build (relay / proxy brain)
+- **What changed:** The T-2429 spikes proved the mechanism is sound (subscription OAuth Bearer survives a transparent relay; `tool_use` + usage are visible at the wire; a tool call can be denied by substituting a coherent text turn). Build productionized them. Load-bearing detail learned at the wire: the gzip caveat — an *inspecting* proxy MUST strip `accept-encoding` to force identity encoding, otherwise it parses compressed bytes as text (finds no tool_use) and/or returns gzipped bytes without the content-encoding header (child sees "malformed"). A pure passthrough can stream raw; the moment you inspect, identity is mandatory.
+- **Plan impact:** Partial-turn rewrite (allow-but-modify, route-to-different-model) deferred — a denied response substitutes the WHOLE turn. This is sufficient for the deny case (the only one arc-013's invariants need today) and is documented as a first-cut limitation in the module docstring. Rewrite/route is a later slice if the policy ever needs allow-with-edit.
+- **Triggered:** No new sub-tasks. T-2432 (policy emit + drift audit) is the next slice as planned — emits `policy/proxy-policy.yaml` install spec (agent-safe) + a drift-audit class for emitted-but-not-installed policy (reuses the cron/MCP drift pattern).
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -181,3 +202,15 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2431-payload-mediation-thin-owned-payload-med.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ea355dc7
+- **Timestamp:** 2026-06-18T14:34:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check
