@@ -1875,7 +1875,19 @@ else:
     # installed /etc/cron.d/ file are out of sync — the root cause of
     # T-1112 (pickup-process missing for 5 consumer projects).
     local cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-    if [ -f "$cron_registry" ]; then
+    # T-2435 (OBS-077): cron is host-level (installed once from the canonical main
+    # checkout). In a linked worktree the derived target is worktree-named and never
+    # installed, so the drift checks below are pure worktree artifacts. Detect a linked
+    # worktree inline (bin/fw does not source lib/paths.sh) — git-dir != git-common-dir.
+    local _fw_gd _fw_gcd _fw_is_wt=0
+    _fw_gd=$(git -C "$PROJECT_ROOT" rev-parse --git-dir 2>/dev/null || echo .git)
+    _fw_gcd=$(git -C "$PROJECT_ROOT" rev-parse --git-common-dir 2>/dev/null || echo .git)
+    case "$_fw_gd"  in /*) ;; *) _fw_gd="$PROJECT_ROOT/$_fw_gd" ;; esac
+    case "$_fw_gcd" in /*) ;; *) _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;; esac
+    [ "$_fw_gd" != "$_fw_gcd" ] && _fw_is_wt=1
+    if [ -f "$cron_registry" ] && [ "$_fw_is_wt" = "1" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+    elif [ -f "$cron_registry" ]; then
         local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
         local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
         local cron_slug
@@ -6442,7 +6454,12 @@ PYSEARCH
             if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
                 echo "fw vendor self - Refresh framework's vendored copies from FRAMEWORK_ROOT/"
                 echo ""
-                echo "Usage: fw vendor self [--dry-run]"
+                echo "Usage: fw vendor self [--dry-run | --check]"
+                echo ""
+                echo "  (no flag)   sync vendored copies from source (mutating)"
+                echo "  --dry-run   print what WOULD sync; never mutates; always exits 0"
+                echo "  --check     read-only drift verifier; never mutates; exits 1 if any"
+                echo "              class is out of sync (CI / pre-push form) — T-2436"
                 echo ""
                 echo "Refreshes vendored classes from \$FRAMEWORK_ROOT:"
                 echo "  - .agentic-framework/lib/                 ← lib/*.sh           (T-2095 V1-D)"
@@ -6461,21 +6478,50 @@ PYSEARCH
                 echo "only touches files that diff."
                 exit 0
             fi
+            # T-2436 (OBS-076): `--check` is a READ-ONLY drift verifier — it runs
+            # every helper in dry-run mode (never mutates) and EXITS NON-ZERO when
+            # any class is out of sync. This is the CI/pre-push-friendly form and
+            # the one that AGREES with audit's check_self_vendor_drift.
+            #
+            # Before T-2436 `--check` was silently accepted but matched neither
+            # `--dry-run` nor a real flag → it fell through to _vs_dry=false → a
+            # REAL mutating sync that exited 0. Callers running `vendor self --check`
+            # expecting verification actually mutated the vendored tree and saw a
+            # misleading "clean" (exit 0) — the drift was just made clean, never
+            # committed. That silent-mutation trap is the OBS-076 "they disagree".
+            # `--dry-run` keeps its prior semantics (prints "would sync", exit 0).
             _vs_dry=false
-            [ "${1:-}" = "--dry-run" ] && _vs_dry=true
-            _self_vendor_libs "$_vs_dry"
-            # T-2241: sibling — templates drift class. T-2240 pre-push gate
-            # greps for "would sync" across all four helpers' output with one regex.
-            _self_vendor_templates "$_vs_dry"
-            # T-2263: sibling — BVP-policy drift class (arc-006 Slice 2C).
-            _self_vendor_policy "$_vs_dry"
-            # T-2264: sibling — bin/fw shim drift class.
-            _self_vendor_shim "$_vs_dry"
-            # T-2266: sibling — agents/ drift class (5th class).
-            _self_vendor_agents "$_vs_dry"
-            # T-2267: sibling — web/ drift class (6th class).
-            _self_vendor_web "$_vs_dry"
-            exit $?
+            _vs_check=false
+            case "${1:-}" in
+                --dry-run) _vs_dry=true ;;
+                --check)   _vs_dry=true; _vs_check=true ;;
+            esac
+            # Run all six classes; capture combined output so --check can inspect
+            # it for the dry-run "would sync" marker without re-running.
+            _vs_out=$(
+                _self_vendor_libs "$_vs_dry"
+                # T-2241: templates drift class. T-2240 pre-push gate greps for
+                # "would sync" across all helpers' output with one regex.
+                _self_vendor_templates "$_vs_dry"
+                # T-2263: BVP-policy drift class (arc-006 Slice 2C).
+                _self_vendor_policy "$_vs_dry"
+                # T-2264: bin/fw shim drift class.
+                _self_vendor_shim "$_vs_dry"
+                # T-2266: agents/ drift class (5th class).
+                _self_vendor_agents "$_vs_dry"
+                # T-2267: web/ drift class (6th class).
+                _self_vendor_web "$_vs_dry"
+            )
+            [ -n "$_vs_out" ] && printf '%s\n' "$_vs_out"
+            if [ "$_vs_check" = true ]; then
+                if printf '%s' "$_vs_out" | grep -q "would sync"; then
+                    echo "Self-vendor: DRIFT — vendored .agentic-framework/ is out of sync. Run 'fw vendor self' to sync." >&2
+                    exit 1
+                fi
+                echo "Self-vendor: vendored .agentic-framework/ in sync with source."
+                exit 0
+            fi
+            exit 0
         fi
         do_vendor "$@"
         ;;

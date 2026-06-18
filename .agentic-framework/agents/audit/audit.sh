@@ -1445,7 +1445,14 @@ fi
 # task closed work-completed while drift made the new job a no-op for
 # 3 days). G-064 closure path.
 _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-if [ -f "$_cron_registry" ]; then
+if [ -f "$_cron_registry" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+    # T-2435 (OBS-077): cron is a HOST-level concern installed once from the canonical
+    # main checkout. A linked worktree derives a worktree-named target that is never
+    # generated/installed (and must not be), so every cron drift check below is a pure
+    # worktree artifact, not content drift. Skip with INFO (counts as PASS; never blocks
+    # a worktree push). The real registry→generated→deployed chain is gated on main.
+    info "Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+elif [ -f "$_cron_registry" ]; then
     _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
     _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
@@ -1664,12 +1671,16 @@ check_self_vendor_drift() {
     fi
 
     if [ "$_sv_libs" -gt 0 ]; then
-        # T-2247: 'fw vendor self' only syncs .agentic-framework/lib/ — libs class
-        # scans bin+lib+agents+web. Use full 'fw vendor' as the always-works
-        # superset; 'fw vendor self' would no-op for bin/agents/web drift.
+        # T-2436 (OBS-076): the T-2247 comment claimed `fw vendor self` only syncs
+        # .agentic-framework/lib/, so this recommended full `fw vendor`. That is
+        # STALE — since T-2264/T-2266/T-2267 `fw vendor self` runs all six helpers
+        # (libs+templates+policy+shim+agents+web) = bin+lib+agents+web, the exact
+        # scope this libs-class check scans. Recommend `fw vendor self` so the
+        # FAIL's fix command AGREES with the canonical sync verb (and with
+        # `fw vendor self --check`, the read-only verifier added in T-2436).
         fail "Self-vendor drift: libs class — $_sv_libs file(s) out of sync (T-2244)" \
              "First $([ $_sv_libs -gt 5 ] && echo 5 || echo $_sv_libs):$_sv_libs_list" \
-             "Run: fw vendor  (sync all vendored .agentic-framework/ classes with source)"
+             "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
     fi
     if [ "$_sv_tpl" -gt 0 ]; then
         # Templates class is correctly scoped to 'fw vendor self' — it syncs

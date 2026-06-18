@@ -1671,12 +1671,16 @@ check_self_vendor_drift() {
     fi
 
     if [ "$_sv_libs" -gt 0 ]; then
-        # T-2247: 'fw vendor self' only syncs .agentic-framework/lib/ — libs class
-        # scans bin+lib+agents+web. Use full 'fw vendor' as the always-works
-        # superset; 'fw vendor self' would no-op for bin/agents/web drift.
+        # T-2436 (OBS-076): the T-2247 comment claimed `fw vendor self` only syncs
+        # .agentic-framework/lib/, so this recommended full `fw vendor`. That is
+        # STALE — since T-2264/T-2266/T-2267 `fw vendor self` runs all six helpers
+        # (libs+templates+policy+shim+agents+web) = bin+lib+agents+web, the exact
+        # scope this libs-class check scans. Recommend `fw vendor self` so the
+        # FAIL's fix command AGREES with the canonical sync verb (and with
+        # `fw vendor self --check`, the read-only verifier added in T-2436).
         fail "Self-vendor drift: libs class — $_sv_libs file(s) out of sync (T-2244)" \
              "First $([ $_sv_libs -gt 5 ] && echo 5 || echo $_sv_libs):$_sv_libs_list" \
-             "Run: fw vendor  (sync all vendored .agentic-framework/ classes with source)"
+             "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
     fi
     if [ "$_sv_tpl" -gt 0 ]; then
         # Templates class is correctly scoped to 'fw vendor self' — it syncs
