@@ -334,6 +334,67 @@ work) — while proxy + sandbox are the *authoritative* layer it can't talk past
 
 ---
 
+## 4d. Building-block reality check (do we have the parts?)
+
+Operator's grounding question: do we have a good proxy (is LiteLLM ok), and a good
+harness sandbox? Repo-grounded answer.
+
+### Proxy — LiteLLM: ok as a component, not as the answer
+
+- **Already wired** — `lib/ollama_loop.py:6` points CC at LiteLLM via
+  `ANTHROPIC_BASE_URL=http://localhost:4000`, `ANTHROPIC_API_KEY=sk-litellm-local-dev`
+  (T-1700 build; T-1691 proxy comparison). So the base-URL redirect **provably
+  works with CC**, and LiteLLM **provably sits at point B today**.
+- **But wired for the wrong path** — it terminates with a *local dev API key* for
+  the ollama/metered route. LiteLLM is fundamentally a **key-terminating**
+  gateway → the *least* likely substrate to pass a subscription/OAuth session
+  through transparently. Unknown #1 is **not** softened by LiteLLM; LiteLLM is the
+  part most likely to break it.
+- **And the wrong job** — LiteLLM does routing / key-mgmt / logging / fallbacks /
+  cost-tracking. It does **not** parse `tool_use`, evaluate per-intent policy, or
+  compose a streaming denial. **The governance brain is our code regardless.**
+- **Verdict:** keep LiteLLM for multi-model routing + the metered/local path. The
+  governance mediator wants to be a **thin, fully-owned relay** (or LiteLLM's
+  Anthropic-passthrough mode *iff* the spike proves OAuth survives).
+
+### Sandbox — we have nothing, and the repo says *why* (and why it's now unblocked)
+
+No OS cage today; everything is S1 hooks (declinable). The framework **tried
+twice and parked it:**
+
+- **T-1482** disqualified `unshare --mount` *"at the constraint level: Linux-only
+  → loses macOS portability"* (Portability directive).
+- **T-1660** found `unshare(CLONE_NEWUSER)` *"interacts badly with Claude Code's
+  session model"* (per-session, mid-session unshare).
+
+**Our architecture dissolves both walls:**
+
+1. **Portability wall gone** — portability now lives at the **proxy** (protocol,
+   OS-agnostic), not the sandbox. The sandbox is the *deployment-environment* cage
+   (Linux servers / containers — where autonomous/headless agents actually run).
+   macOS dev box → proxy governance; Linux host → proxy + cage. T-1482 rejected
+   the sandbox for failing to be the *portable* layer; it no longer has to be.
+2. **CC-session wall likely gone** — we don't unshare mid-session. The launcher
+   applies the cage **before exec'ing the harness** (systemd-unit hardening /
+   rootless podman / `bwrap` at launch); the whole harness is born inside it.
+   T-1660's failure was per-session in-process unsharing — a different move.
+
+Assembled from mature parts: systemd `ReadOnlyPaths`/`PrivateNetwork`/`DynamicUser`/
+`IPAddressAllow`, bubblewrap, rootless podman, nftables egress. **Lower technical
+risk than the proxy.** (Read T-1482 + T-1660 in full before building.)
+
+### Re-ranked risk (answers "are we focusing on the right thing?")
+
+| Surface | Completeness today | Technical risk | Action |
+|---|---|---|---|
+| **Proxy** | partial (LiteLLM = plumbing, wrong path) | **HIGH** — subscription-OAuth transparency unproven, LiteLLM doesn't solve it | **de-risk FIRST** (spike #1 is the true gate) |
+| **Sandbox** | **zero** | **LOW** — mature parts; our architecture removes the two parked reasons | **build-decision**, not a research spike (systemd vs bwrap vs container) |
+
+The gate is the proxy's subscription-billing unknown. The sandbox is an assembly
+job that this architecture just unblocked.
+
+---
+
 
 ## 5. Denial composition (carried over from the dialogue, still the key build risk)
 
