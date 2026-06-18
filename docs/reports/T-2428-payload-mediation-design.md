@@ -156,6 +156,54 @@ the operational expression of this row.
 
 ---
 
+## 4b. The right control surface (ranked) — the pivot
+
+Candidate surfaces, top of the stack to the kernel:
+
+| # | Surface | Sees / controls | Bypassable? | Portable? | Verdict |
+|---|---|---|---|---|---|
+| **S1** | In-harness hooks / permission system (`.claude/settings.json`, PreToolUse) | every tool intent; allow/deny/ask | **yes — declinable** (fires only if harness cooperates; config agent-writable) | **no** — CC-specific | where the framework lives today, and why it is *not enough*. Keep as convenience; never a boundary |
+| **S2** | **Payload proxy at the model-API protocol** (`ANTHROPIC_BASE_URL`) | whole wire — every tool *intent* (semantic, complete) + every request | yes **unless pinned by S3** | **HIGH** — protocol-bound, any model/harness | **the governance brain** — intent-level allow/deny/rewrite/route |
+| **S3** | OS network — netns + nftables egress allowlist (eBPF/DNS variants) | actual egress of harness **+ all children** (tools, MCP-HTTP, telemetry) | **very hard** (no other route out of the netns) | HIGH | **the pin + exfil containment** — forces the model path through S2 |
+| **S4** | OS filesystem — Landlock / mount-ns / RO bind-mounts / overlay | what the agent uid may read/write; make hooks, settings, directive files, `.git` **read-only** | very hard (kernel-enforced) | HIGH (Landlock mainline) | **the Lock-1 cage** — the un-declinable boundary the proxy can't give |
+| **S5** | OS process — uid demotion + cgroup/pid-ns (seccomp/eBPF execve) | what spawns; resource bounds; bounds wrapper/loop/hooks | hard | HIGH | **packaging + execution containment** for a non-cooperating harness |
+| **S6** | Userspace interposition — LD_PRELOAD / FUSE | syscalls in principle | **defeatable** (static binaries, direct syscalls) | medium | **reject as a boundary** — speed-bump class (same reason `chattr +i` was rejected) |
+
+### Recommendation: two surfaces, layered by trust
+
+Not one surface — two, and the bottom one is a **single spec, not three builds**:
+
+**① Payload proxy (S2)** — intent governance: semantic, complete-for-intents,
+model-agnostic. The brain. Governs *what the agent may ask*.
+
+**② An OS sandbox laid *above* the agent (S3+S4+S5 as one profile)** — the cage.
+The harness runs *inside* it as a demoted uid; the proxy runs *outside* it. One
+profile (`bwrap`/container/systemd unit, or namespaces + Landlock + nftables)
+delivers all three:
+- **net (S3):** the harness namespace has exactly one route out — to the proxy.
+  It physically cannot reach the model endpoint directly. *This pins ①.*
+- **fs (S4):** governance substrate is read-only to the agent uid. *Lock-1
+  boundary.*
+- **uid/proc (S5):** demoted uid + cgroup bounds wrapper, loop, hooks, tool
+  subprocesses. *Makes net+fs enforceable.*
+
+Governs *what the harness may touch*.
+
+**Two secondary payoffs** from running the proxy outside the cage with the real
+credentials: the harness never sees the API token (closes a credential-exfil
+hole), and the proxy is the natural place to terminate subscription/OAuth —
+exactly where unknown #1 must be answered.
+
+**Reject as primary boundaries:** S1 (declinable) and S6 (defeatable). S1 remains
+the everyday cooperating-harness convenience, but nothing load-bearing depends on
+it.
+
+**One-line answer:** *intent at the protocol (S2), effects at the kernel
+(S3+S4+S5), and nothing load-bearing in between (not S1, not S6).*
+
+---
+
+
 ## 5. Denial composition (carried over from the dialogue, still the key build risk)
 
 To *deny* a tool intent at the proxy: replace the whole assistant turn with a
