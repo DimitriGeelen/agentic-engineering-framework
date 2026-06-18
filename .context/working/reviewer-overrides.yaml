@@ -1047,3 +1047,14 @@ overrides:
   expires_at: '2026-09-14T10:07:29Z'
   added_by: root
   added_at: '2026-06-16T10:07:29Z'
+- id: OV-b2003abc
+  task_id: T-2430
+  pattern_id: mock-only-integration
+  ac_index: null
+  reason: "Verification pytest run includes test_holder_socket_roundtrip_real_unix_socket\
+    \ \u2014 a real UnixStreamServer round-trip over a live AF_UNIX socket (not a\
+    \ mock); heuristic cannot see inside pytest. Install-time enforcement is Lock-1\
+    \ Part 1 (Human AC)."
+  expires_at: '2026-09-16T12:06:58Z'
+  added_by: root
+  added_at: '2026-06-18T12:06:58Z'

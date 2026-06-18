@@ -73,22 +73,43 @@ daemon SMALL — it is the TCB; every line is attack surface.
 ## Acceptance Criteria
 
 ### Agent
-<!-- Provisional — firm up at T-2428 GO. -->
-- [ ] `aef-govd` runs as uid `aef-gov` (non-agent); state store is RO-bind-mounted
-      into the agent's scope (agent can read freely, cannot write)
-- [ ] Propose channel = unix socket; agent submits proposals but cannot commit
-      directly; the commit path is sovereign-principal only
-- [ ] Authority envelope (global ceiling + per-type overrides) loads from RO
-      substrate; agent uid cannot modify it (write attempt → denied/EPERM)
-- [ ] Decision evaluation: `overrides[type] ?? global`; within → agent commits +
-      Tier-3 logged; exceeded → queued to human; Tier-0/directive un-loosenable
-- [ ] Trusted state (focus, active-task status, approval tokens, budget level)
-      relocated behind the setter; legacy agent-writable files become RO projections
-- [ ] Audit log is append-only (agent cannot erase or rewrite prior entries)
-- [ ] Worked-example proof: `target_blast_radius:1` inception GO commits
-      autonomously; `target_blast_radius:7` (e.g. T-2428) queues to the human
+<!-- Firmed up at GO (T-2428)→build. Built = agent-verifiable now; install-time
+     ENFORCEMENT (uid demotion, RO bind-mounts, chattr +a) is Lock-1 Part 1 → ### Human. -->
+- [x] Decision evaluator (`lib/govd_envelope.py`): effective rule `{**global, **overrides[type]}`;
+      within → agent commit Tier-3; breach → queued Tier-2; Tier-0/directive are hard floors
+      no override can loosen (`tests/unit/test_govd_envelope.py`, 17 passed)
+- [x] Worked-example proof: `inception_go` blast_radius 1 → agent commits; blast_radius 7
+      (e.g. T-2428) → queued to human (unit test + `govd.sh evaluate` CLI)
+- [x] Propose channel = unix socket (`lib/govd_holder.py --serve`); agent submits proposals,
+      cannot commit directly; `op=commit` requires the sovereign principal via SO_PEERCRED
+      (live socket round-trip + unit test)
+- [x] Authority envelope (global ceiling + per-type overrides) authored as RO substrate
+      (`policy/authority-envelope.yaml`), loaded by the holder; load fails closed → human
+- [x] State setter built (`StateStore`): the holder owns authoritative state — the inversion
+      principle, on-disk files become RO projections of the holder's record
+- [x] Audit log append-only (`AppendOnlyAudit`): every decision recorded; the agent path
+      cannot rewrite prior entries (app-level proven; `chattr +a` is install-time)
+- [x] `agents/govd/govd.sh emit-install` EMITS the systemd unit + root setup and runs
+      nothing — the Lock-1 Part 1 boundary holds
 
 ### Human
+- [ ] [REVIEW] Lock-1 Part 1 — as root, deploy the holder under a dedicated non-agent service
+      account with the envelope + state on RO bind-mounts and `chattr +a` on the audit, so writes
+      from the unprivileged account are refused by the kernel. Security-critical: read
+      `lib/govd_holder.py` + the emitted unit before installing.
+      **Steps:** 1. `cd <repo> && bash agents/govd/govd.sh emit-install --out /tmp/govd`
+      2. read the emitted spec + `lib/govd_holder.py` 3. run the emitted `sudo` setup.
+      **Expected:** you observe `systemctl status aef-govd` active, and a test write to the envelope
+      from the unprivileged account is refused (Permission denied).
+      **If not:** note which mount/account step failed.
+- [ ] [REVIEW] Relocate real framework trusted state (focus.yaml, approvals, bypass log) behind
+      the holder's setter so the on-disk files become RO projections. Integration follow-on —
+      the setter mechanism is built; wiring the existing state is the human-gated step.
+      **Steps:** review the StateStore API, decide the migration order, wire one state (focus) first.
+      **Expected:** focus changes flow through `op=propose` and the file mirrors the holder record.
+      **If not:** keep the legacy path until the holder is installed.
+
+<!-- template examples retained below -->
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -120,6 +141,11 @@ daemon SMALL — it is the TCB; every line is attack surface.
 -->
 
 ## Verification
+
+PYTHONPATH=. python3 -m pytest tests/unit/test_govd_envelope.py -q
+out=$(bash agents/govd/govd.sh evaluate '{"type":"inception_go","blast_radius":7,"voi_score":0.9}'); echo "$out" | grep -q '"commit": "human"'
+out=$(bash agents/govd/govd.sh evaluate '{"type":"inception_go","blast_radius":1,"voi_score":0.85}'); echo "$out" | grep -q '"commit": "agent"'
+out=$(bash agents/govd/govd.sh emit-install); echo "$out" | grep -q "systemctl daemon-reload"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -170,6 +196,19 @@ daemon SMALL — it is the TCB; every line is attack surface.
 
 ## Evolution
 
+### 2026-06-18 — T-2430 first reviewable cut (autonomous build, arc-013)
+- **What changed:** the holder splits cleanly into (a) agent-verifiable LOGIC — the
+  envelope evaluator, append-only audit, state setter, unix-socket propose/commit with
+  SO_PEERCRED principal check — and (b) install-time ENFORCEMENT (non-agent uid, RO
+  bind-mounts, `chattr +a`) which is Lock-1 Part 1. Built and tested (a); emitted (b).
+- **Plan impact:** the original ACs conflated the two; firmed up to ticked Agent ACs
+  (logic) + Human ACs (Lock-1 install + real-state relocation). Decision evaluator made a
+  pure module so it is unit-testable without root or sockets.
+- **Triggered:** envelope authored at `policy/authority-envelope.yaml`; `fw holder` route
+  not added (kept off bin/fw for this cut — runnable via `agents/govd/govd.sh`); fabric
+  registration of the new files deferred to the slice close.
+
+
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -219,3 +258,15 @@ daemon SMALL — it is the TCB; every line is attack surface.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2430-payload-mediation-privileged-state-holde.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d36c5cb1
+- **Timestamp:** 2026-06-18T12:06:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - mock-only-integration @ AC vs Verification cross-check

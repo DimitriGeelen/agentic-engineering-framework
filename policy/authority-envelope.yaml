@@ -1,0 +1,36 @@
+# Authority envelope — SOVEREIGN-AUTHORED. (arc-013 / T-2430, design doc §4e)
+#
+# This file is the trust partition between "the agent may commit autonomously" and
+# "queue to the human". It is the dial the sovereign turns on observed judgment
+# (design §4e, Antifragile feedback loop).
+#
+# INVARIANT: the agent commits WITHIN this envelope; the agent cannot CHANGE this
+# envelope. In a deployed cage this file lives in RO substrate (Lock-1 Part 1) —
+# the agent uid cannot write it. Editing it is a sovereign action.
+#
+# Evaluation (lib/govd_envelope.py): effective rule = {**global, **overrides[type]}
+# (per-type keys win). A decision commits autonomously iff every bound is satisfied;
+# any breach, or a non-delegable type, routes to the human. Tier-0 and directive
+# authorship are hard floors no override can loosen.
+
+global:                       # default bound, applied to every decision type
+  max_blast_radius: 2         # BVP cost_estimate.blast_radius (0-9)
+  min_voi_score: 0.5          # BVP value-of-information (0-1)
+  scope: internal             # internal < cross-project < external
+
+overrides:                    # per-type: tighten / loosen / hard-deny
+  inception_go:
+    max_blast_radius: 2
+    min_voi_score: 0.5
+  dispatch_approve:
+    max_blast_radius: 1
+    max_tier: 1
+    require_disjoint_write_set: true
+  focus_change:
+    delegable: true           # pure initiative — auto-commit + record
+  bypass_log_append:
+    delegable: true           # append-only, agent-safe
+  tier0_approve:
+    delegable: false          # HARD FLOOR — sovereign only, always
+  directive_author:
+    delegable: false          # HARD FLOOR — D1/D3 directive payloads, sovereign only
