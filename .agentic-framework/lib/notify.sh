@@ -20,6 +20,30 @@
 # Skills-manager alert dispatcher path
 _SKILLS_DISPATCHER="${SKILLS_DISPATCHER:-/opt/150-skills-manager/skills/alerts/alert_dispatcher.py}"
 
+# fw_notify_url — resolve the configured ntfy server base URL (T-2439)
+#
+# Portable, no host-local fallback: each installation points the framework at
+# its own ntfy instance via `fw config set NTFY_URL <url>` (or FW_NTFY_URL env,
+# or .framework.yaml). 4-tier resolution via fw_config. Echoes the URL, or
+# nothing when unset — in which case the dispatcher uses its own default.
+#
+# Origin: the framework runs the dispatcher LOCALLY on whichever host calls it,
+# and each host's dispatcher has its own default ntfy server. Inferring the
+# target from one host's config (or letting it silently fall back to a host's
+# local ntfy) shipped pushes to a decommissioned server. Making the target an
+# explicit framework config makes the chosen instance unambiguous and visible.
+fw_notify_url() {
+    if ! command -v fw_config >/dev/null 2>&1; then
+        if [ -n "${FRAMEWORK_ROOT:-}" ] && [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
+            # shellcheck disable=SC1091
+            . "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null || return 0
+        else
+            return 0
+        fi
+    fi
+    fw_config "NTFY_URL" "" 2>/dev/null
+}
+
 # fw_notify — send a push notification via skills-manager alert dispatcher
 #
 # Args:
@@ -76,10 +100,25 @@ fw_notify() {
     # Check dispatcher exists
     [ -f "$_SKILLS_DISPATCHER" ] || return 0
 
+    # T-2439: resolve the configured ntfy server and export it to the dispatcher
+    # so the framework publishes to the chosen instance — never a host-local
+    # fallback. Empty = dispatcher's own default (backward-compatible). The
+    # dispatcher reads os.environ.get("NTFY_URL"); we only prefix when non-empty.
+    local _ntfy_url
+    _ntfy_url=$(fw_notify_url)
+
     # Fire-and-forget — backgrounded, stderr suppressed
-    python3 "$_SKILLS_DISPATCHER" \
-        --trigger "$trigger" \
-        --title "$title" \
-        --message "${message:-$title}" \
-        2>/dev/null &
+    if [ -n "$_ntfy_url" ]; then
+        NTFY_URL="$_ntfy_url" python3 "$_SKILLS_DISPATCHER" \
+            --trigger "$trigger" \
+            --title "$title" \
+            --message "${message:-$title}" \
+            2>/dev/null &
+    else
+        python3 "$_SKILLS_DISPATCHER" \
+            --trigger "$trigger" \
+            --title "$title" \
+            --message "${message:-$title}" \
+            2>/dev/null &
+    fi
 }

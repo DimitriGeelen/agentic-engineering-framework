@@ -31,6 +31,7 @@ SETTINGS = [
     ("HANDOVER_DEDUP_COOLDOWN", "300", "Seconds between duplicate handover detection"),
     ("INCEPTION_COMMIT_LIMIT", "2", "Max exploration commits before inception decision gate"),
     ("CONSUMER_SCAN_DIRS", "/opt", "Colon-separated directories to scan for consumer projects"),
+    ("NTFY_URL", "", "ntfy server base URL for push notifications (empty = dispatcher default; each install sets its own instance, no host-local fallback; T-2439)"),
 ]
 
 

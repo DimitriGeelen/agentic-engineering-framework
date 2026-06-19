@@ -7140,6 +7140,16 @@ PYPREDICT
             fi
             echo -e "  Config:     $_notify_config"
             echo -e "  Dispatcher: $dispatcher ($dispatcher_ok)"
+            # T-2439: show the RESOLVED ntfy server so the target is visible
+            # before any push — a configured URL forces that instance; an unset
+            # one falls back to the dispatcher's own (possibly host-local) default.
+            local _ntfy_url=""
+            [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ] && { source "$FRAMEWORK_ROOT/lib/notify.sh"; _ntfy_url=$(fw_notify_url 2>/dev/null); }
+            if [ -n "$_ntfy_url" ]; then
+                echo -e "  Server:     ${BOLD}${_ntfy_url}${NC} ${GREEN}(configured: NTFY_URL)${NC}"
+            else
+                echo -e "  Server:     ${YELLOW}<dispatcher default>${NC} — set explicitly: ${CYAN}fw config set NTFY_URL <url>${NC}"
+            fi
             echo ""
             if [ "$enabled" != "true" ]; then
                 echo -e "  Run ${CYAN}fw notify enable${NC} to activate notifications"
@@ -7202,6 +7212,13 @@ YAMLEOF
             fi
 
             source "$FRAMEWORK_ROOT/lib/notify.sh"
+            # T-2439: name the target server up front — no silent host-local push
+            local _test_url; _test_url=$(fw_notify_url 2>/dev/null)
+            if [ -n "$_test_url" ]; then
+                echo -e "Target ntfy server: ${BOLD}${_test_url}${NC}"
+            else
+                echo -e "Target ntfy server: ${YELLOW}<dispatcher default>${NC} (set with: ${CYAN}fw config set NTFY_URL <url>${NC})"
+            fi
             echo -e "Sending test notification..."
             NTFY_ENABLED=true fw_notify \
                 "Framework Test" \

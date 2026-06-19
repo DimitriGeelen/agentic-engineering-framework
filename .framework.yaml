@@ -14,3 +14,4 @@
 # Inert until the guard is also deployed via `fw git install-hooks`.
 PROTECT_MASTER: 1
 INCEPTION_COMMIT_LIMIT: 15
+NTFY_URL: https://ntfy-ring20.docker.ring20.geelenandcompany.com
