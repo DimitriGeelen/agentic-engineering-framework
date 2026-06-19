@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2438: ntfy approval pushes carry class-correct Watchtower URL (one-tap review)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-19T12:35:33Z
+# ============================================================================
+
+task_id: T-2438
+task_name: "ntfy approval pushes carry class-correct Watchtower URL (one-tap review)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-19T10:14:38Z
+completed: 2026-06-19T12:35:26Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw_task_review_url` helper added in `lib/watchtower.sh`: returns `<base>/review/<id>` for build/refactor/test, `<base>/inception/<id>` for inception; returns non-zero + empty when the Watchtower base can''t be resolved'
+  - '`emit_review` refactored to call `fw_task_review_url` for its review_url (exact-string-preserving — falls back to the inline form when the helper can''t resolve a base; the pre-existing emit_review test reds are baseline-identical to HEAD, i.e. NOT a regression from this change — see Decisions)'
+  - '`fw_notify` accepts optional 5th arg `click_url` and appends it to the message body when non-empty; 4-arg calls unchanged (disabled-state still no-ops)'
+  - 'review-needed trigger (update-task.sh) passes the class-correct URL; a partial-complete close produces a push body containing `/review/<id>` (or `/inception/<id>`)'
+  - 'Tests: `tests/unit/t2438_notify_review_url.bats` (8/8) — helper routing (build→/review, inception→/inception, no-base→empty, empty-id, no-file→/review) + fw_notify body-append (with/without click_url, disabled no-op)'
+  - '`bash -n` clean on all edited files; `fw vendor self --check` exits 0 (vendored copies synced)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-19 — body-append, not a dispatcher Click: header'
+    chose: 'thread the URL into the ntfy message **body** (own line); ntfy renders body URLs tappable.'
+    rationale: 'dispatcher-agnostic and entirely framework-side. The dispatcher''s arg-handling lives across the 150-skills-manager project boundary (un-readable from this session by the boundary hook) — passing an unknown `--click` flag risks breaking the existing call.'
+    alternatives_rejected: ['ntfy `Click:`/`Actions:` header (whole-notification tap). That is the better UX but requires a dispatcher change → **homed to 150-skills-manager** (gap-homing) as a follow-up pending, NOT done here.']
+  - decision: '2026-06-19 — pre-existing emit_review test reds are not a regression'
+    chose: 'ship the `emit_review` refactor despite 5 reds in `tests/unit/lib_review.bats` (+2 in review_link_blocking_gate, +2 in update_task_yaml_components_emit).'
+    rationale: '`git stash` of the four edited files + re-run produced the **identical** `not ok` list on HEAD — these fail in the worktree/gate context regardless of my change (watchtower identity-handshake env condition). The refactor is exact-string-preserving (helper returns the same string emit_review built inline; inline fallback preserves the watchtower-down path).'
+    alternatives_rejected: ['chasing the pre-existing reds in this task — out of scope, separate environmental cause; would conflate two issues (one-bug-one-task).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 140 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 140
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2438-ntfy-approval-pushes-carry-class-correct.md
+generated_by: context-agent-hybrid
