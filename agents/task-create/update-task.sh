@@ -1742,9 +1742,14 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
         fi
 
         # T-709: Push notification — human review needed
+        # T-2438: carry the class-correct Watchtower deep-link so the push is
+        # one-tap-to-the-review-page. fw_task_review_url is in scope via review.sh
+        # (sourced above), which sources watchtower.sh. Empty when Watchtower is
+        # down → fw_notify falls back to a link-less body (prior behaviour).
         if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
             source "$FRAMEWORK_ROOT/lib/notify.sh"
-            fw_notify "Review Needed: $TASK_ID" "$TASK_NAME" "manual" "framework"
+            _review_url=$(fw_task_review_url "$TASK_ID" "$TASK_FILE" 2>/dev/null || true)
+            fw_notify "Review Needed: $TASK_ID" "$TASK_NAME" "manual" "framework" "$_review_url"
         fi
 
         # T-325: Check human AC quality — warn if Steps blocks are missing

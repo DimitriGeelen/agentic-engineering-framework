@@ -7,7 +7,7 @@
 #
 # Usage:
 #   source "$FRAMEWORK_ROOT/lib/notify.sh"
-#   fw_notify "title" "message" [trigger] [category]
+#   fw_notify "title" "message" [trigger] [category] [click_url]
 #
 # Configuration:
 #   NTFY_ENABLED — set to "true" to enable (default: disabled)
@@ -27,6 +27,12 @@ _SKILLS_DISPATCHER="${SKILLS_DISPATCHER:-/opt/150-skills-manager/skills/alerts/a
 #   $2 — message (required)
 #   $3 — trigger type (optional, default: "manual")
 #   $4 — category for topic routing (optional, default: "framework")
+#   $5 — click_url (optional, T-2438): class-correct Watchtower deep-link. When
+#        non-empty it is appended to the message body on its own line; ntfy
+#        renders body URLs as tappable, making the push one-tap-to-the-page.
+#        Body-append is dispatcher-agnostic — no unknown flag is passed to the
+#        dispatcher (its arg-handling lives across the 150-skills-manager project
+#        boundary; the header-based Click: upgrade is homed there separately).
 #
 # Triggers recognized by skills-manager:
 #   task_blocked    — Tier 0 approval needed (maps to CRITICAL)
@@ -52,9 +58,20 @@ fw_notify() {
     local trigger="${3:-manual}"
     # shellcheck disable=SC2034  # reserved for dispatcher expansion
     local category="${4:-framework}"
+    local click_url="${5:-}"
 
     # Require at least title
     [ -n "$title" ] || return 0
+
+    # T-2438: deep-link — append the class-correct Watchtower URL to the body so
+    # the push is one-tap-to-the-page. Non-empty only; 4-arg callers unaffected.
+    if [ -n "$click_url" ]; then
+        if [ -n "$message" ]; then
+            message="${message}"$'\n'"${click_url}"
+        else
+            message="$click_url"
+        fi
+    fi
 
     # Check dispatcher exists
     [ -f "$_SKILLS_DISPATCHER" ] || return 0

@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-19T10:14:38Z
-last_update: 2026-06-19T10:14:38Z
+last_update: 2026-06-19T12:29:16Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,12 +61,12 @@ Streamline human-gated approvals (Option B from the arc-013 approval-UX discussi
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw_task_review_url` helper added in `lib/watchtower.sh`: returns `<base>/review/<id>` for build/refactor/test, `<base>/inception/<id>` for inception; returns non-zero + empty when the Watchtower base can't be resolved
-- [ ] `emit_review` refactored to call `fw_task_review_url` for its review_url (exact-string-preserving; existing emit_review tests stay green)
-- [ ] `fw_notify` accepts optional 5th arg `click_url` and appends it to the message body when non-empty; 4-arg calls unchanged (disabled-state still no-ops)
-- [ ] review-needed trigger (update-task.sh) passes the class-correct URL; a partial-complete close produces a push body containing `/review/<id>` (or `/inception/<id>`)
-- [ ] Tests: `tests/unit/t2438_notify_review_url.bats` — helper routing (build→/review, inception→/inception, no-base→empty) + fw_notify body-append (with/without click_url, disabled no-op); existing review bats green
-- [ ] `bash -n` clean on all edited files; `fw vendor self --check` exits 0 (vendored copies synced)
+- [x] `fw_task_review_url` helper added in `lib/watchtower.sh`: returns `<base>/review/<id>` for build/refactor/test, `<base>/inception/<id>` for inception; returns non-zero + empty when the Watchtower base can't be resolved
+- [x] `emit_review` refactored to call `fw_task_review_url` for its review_url (exact-string-preserving — falls back to the inline form when the helper can't resolve a base; the pre-existing emit_review test reds are baseline-identical to HEAD, i.e. NOT a regression from this change — see Decisions)
+- [x] `fw_notify` accepts optional 5th arg `click_url` and appends it to the message body when non-empty; 4-arg calls unchanged (disabled-state still no-ops)
+- [x] review-needed trigger (update-task.sh) passes the class-correct URL; a partial-complete close produces a push body containing `/review/<id>` (or `/inception/<id>`)
+- [x] Tests: `tests/unit/t2438_notify_review_url.bats` (8/8) — helper routing (build→/review, inception→/inception, no-base→empty, empty-id, no-file→/review) + fw_notify body-append (with/without click_url, disabled no-op)
+- [x] `bash -n` clean on all edited files; `fw vendor self --check` exits 0 (vendored copies synced)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +131,12 @@ Streamline human-gated approvals (Option B from the arc-013 approval-UX discussi
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/watchtower.sh
+bash -n lib/review.sh
+bash -n lib/notify.sh
+bash -n agents/task-create/update-task.sh
+bats tests/unit/t2438_notify_review_url.bats
+bin/fw vendor self --check
 
 ## RCA
 
@@ -174,14 +180,15 @@ Streamline human-gated approvals (Option B from the arc-013 approval-UX discussi
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-19 — body-append, not a dispatcher Click: header
+- **Chose:** thread the URL into the ntfy message **body** (own line); ntfy renders body URLs tappable.
+- **Why:** dispatcher-agnostic and entirely framework-side. The dispatcher's arg-handling lives across the 150-skills-manager project boundary (un-readable from this session by the boundary hook) — passing an unknown `--click` flag risks breaking the existing call.
+- **Rejected:** ntfy `Click:`/`Actions:` header (whole-notification tap). That is the better UX but requires a dispatcher change → **homed to 150-skills-manager** (gap-homing) as a follow-up pending, NOT done here.
+
+### 2026-06-19 — pre-existing emit_review test reds are not a regression
+- **Chose:** ship the `emit_review` refactor despite 5 reds in `tests/unit/lib_review.bats` (+2 in review_link_blocking_gate, +2 in update_task_yaml_components_emit).
+- **Why:** `git stash` of the four edited files + re-run produced the **identical** `not ok` list on HEAD — these fail in the worktree/gate context regardless of my change (watchtower identity-handshake env condition). The refactor is exact-string-preserving (helper returns the same string emit_review built inline; inline fallback preserves the watchtower-down path).
+- **Rejected:** chasing the pre-existing reds in this task — out of scope, separate environmental cause; would conflate two issues (one-bug-one-task).
 
 ## Decision
 
@@ -199,3 +206,12 @@ Streamline human-gated approvals (Option B from the arc-013 approval-UX discussi
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2438-ntfy-approval-pushes-carry-class-correct.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a0f50d12
+- **Timestamp:** 2026-06-19T12:34:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

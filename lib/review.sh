@@ -105,16 +105,20 @@ emit_review() {
     # Determine Watchtower URL via shared helper (T-1154: single chokepoint)
     local base_url
     base_url=$(_watchtower_url "$task_id")
-    # Detect workflow type for URL routing (T-642)
+    # Detect workflow type for URL routing (T-642) — also drives the label below
     local workflow_type=""
     workflow_type=$(grep -m1 'workflow_type:' "$task_file" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
+    # T-2438: route the URL through the shared class-correct helper so emit_review
+    # and the notify deep-link (lib/notify.sh) can't diverge. Falls back to the
+    # inline form when the helper can't resolve a base — preserves prior behaviour.
     local review_url
+    review_url=$(fw_task_review_url "$task_id" "$task_file" 2>/dev/null) || review_url=""
     local review_label
     if [ "$workflow_type" = "inception" ]; then
-        review_url="${base_url}/inception/${task_id}"
+        [ -n "$review_url" ] || review_url="${base_url}/inception/${task_id}"
         review_label="Inception Review"
     else
-        review_url="${base_url}/review/${task_id}"
+        [ -n "$review_url" ] || review_url="${base_url}/review/${task_id}"
         review_label="Human AC Review"
     fi
 
