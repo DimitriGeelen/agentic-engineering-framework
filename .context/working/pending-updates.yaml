@@ -32,10 +32,13 @@ pending_updates:
   created: '2026-05-01T16:25:17Z'
   status: pending
   delivery_attempts:
-    - attempted: '2026-06-11T21:55:35Z'
-      method: termlink inject tl-chgzyrlq
-      outcome: 'failed — target session at bash prompt, not claude -p agent. Injected 608 bytes; bash returned ''syntax error near unexpected token (''. No agent processed message. Marked resolved in error; reverted same session.'
-      next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async — does not require target session to be in claude mode at delivery time).
+  - attempted: '2026-06-11T21:55:35Z'
+    method: termlink inject tl-chgzyrlq
+    outcome: failed — target session at bash prompt, not claude -p agent. Injected
+      608 bytes; bash returned 'syntax error near unexpected token ('. No agent processed
+      message. Marked resolved in error; reverted same session.
+    next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async
+      — does not require target session to be in claude mode at delivery time).
 - id: U-003
   command: 'cd /opt/termlink && $EDITOR crates/termlink-hub/src/registry.rs  # in
     spawn-tag validation: warn (or reject in strict mode) when tag prefix is not in
@@ -53,10 +56,13 @@ pending_updates:
   created: '2026-05-01T16:25:26Z'
   status: pending
   delivery_attempts:
-    - attempted: '2026-06-11T21:55:34Z'
-      method: termlink inject tl-chgzyrlq
-      outcome: 'failed — target session at bash prompt, not claude -p agent. Injected 556 bytes; bash returned ''syntax error near unexpected token (''. No agent processed message. Marked resolved in error; reverted same session.'
-      next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async — does not require target session to be in claude mode at delivery time).
+  - attempted: '2026-06-11T21:55:34Z'
+    method: termlink inject tl-chgzyrlq
+    outcome: failed — target session at bash prompt, not claude -p agent. Injected
+      556 bytes; bash returned 'syntax error near unexpected token ('. No agent processed
+      message. Marked resolved in error; reverted same session.
+    next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async
+      — does not require target session to be in claude mode at delivery time).
 - id: U-004
   command: 'cd /opt/termlink && # T-1642 GO accepted (Watchtower 19:08:45). Lift 13
     routing-policy constants from Rust source to runtime config. See full table in
@@ -76,10 +82,13 @@ pending_updates:
   created: '2026-05-01T17:19:35Z'
   status: pending
   delivery_attempts:
-    - attempted: '2026-06-11T21:55:34Z'
-      method: termlink inject tl-chgzyrlq
-      outcome: 'failed — target session at bash prompt, not claude -p agent. Injected 792 bytes; bash returned ''syntax error near unexpected token (''. No agent processed message. Marked resolved in error; reverted same session.'
-      next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async — does not require target session to be in claude mode at delivery time).
+  - attempted: '2026-06-11T21:55:34Z'
+    method: termlink inject tl-chgzyrlq
+    outcome: failed — target session at bash prompt, not claude -p agent. Injected
+      792 bytes; bash returned 'syntax error near unexpected token ('. No agent processed
+      message. Marked resolved in error; reverted same session.
+    next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async
+      — does not require target session to be in claude mode at delivery time).
 - id: U-005
   command: 'cd /opt/termlink && # When fw termlink dispatch worker reports back via
     governance frame 0x8 on /var/lib/termlink/sessions/<id>.sock.data, the hub''s
@@ -136,10 +145,13 @@ pending_updates:
   created: '2026-05-13T17:40:53Z'
   status: pending
   delivery_attempts:
-    - attempted: '2026-06-11T21:55:34Z'
-      method: termlink inject tl-chgzyrlq
-      outcome: 'failed — target session at bash prompt, not claude -p agent. Injected 446 bytes; bash returned ''syntax error near unexpected token (''. No agent processed message. Marked resolved in error; reverted same session.'
-      next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async — does not require target session to be in claude mode at delivery time).
+  - attempted: '2026-06-11T21:55:34Z'
+    method: termlink inject tl-chgzyrlq
+    outcome: failed — target session at bash prompt, not claude -p agent. Injected
+      446 bytes; bash returned 'syntax error near unexpected token ('. No agent processed
+      message. Marked resolved in error; reverted same session.
+    next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async
+      — does not require target session to be in claude mode at delivery time).
 - id: U-008
   command: 'termlink inject termlink-agent --enter ''AEF→TermLink: T-2303 arc-011
     parallel-execution scoping. Please review /opt/999-Agentic-Engineering-Framework/docs/proposals/T-2303-cross-repo-parallel-execution-coordination.md
@@ -156,7 +168,43 @@ pending_updates:
   created: '2026-06-10T19:42:48Z'
   status: pending
   delivery_attempts:
-    - attempted: '2026-06-11T21:55:34Z'
-      method: termlink inject tl-chgzyrlq
-      outcome: 'failed — target session at bash prompt, not claude -p agent. Injected 401 bytes; bash returned ''syntax error near unexpected token (''. No agent processed message. Marked resolved in error; reverted same session.'
-      next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async — does not require target session to be in claude mode at delivery time).
+  - attempted: '2026-06-11T21:55:34Z'
+    method: termlink inject tl-chgzyrlq
+    outcome: failed — target session at bash prompt, not claude -p agent. Injected
+      401 bytes; bash returned 'syntax error near unexpected token ('. No agent processed
+      message. Marked resolved in error; reverted same session.
+    next_action: Re-deliver via fw pickup send --host /opt/termlink (file-based, async
+      — does not require target session to be in claude mode at delivery time).
+- id: U-009
+  command: 'Edit /opt/150-skills-manager/skills/alerts/channels/ntfy.py NtfyChannel:
+    add ntfy Click:/Actions: header for whole-notification tap-through (framework
+    T-2438 already body-appends the class-correct Watchtower URL). Point notify at
+    ring20 ntfy server topic ring20-manager; .107 server decommissioned.'
+  reason: Cross project boundary — dispatcher in /opt/150-skills-manager (separate
+    governance); boundary hook blocks editing from the framework session.
+  task: T-2438
+  host: local
+  agent: agent
+  created: '2026-06-19T12:36:40Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null
+- id: U-010
+  command: '150-skills-manager alert_dispatcher/NtfyChannel: fix latin-1 encoding
+    crash on ntfy POST. Failure log (/opt/150-skills-manager/.context/alerts/ntfy-failures.log)
+    shows recurring "''latin-1'' codec can''t encode character ''\u2014''" — em-dash
+    and other non-latin-1 chars in title/message break the ntfy HTTP header encoding,
+    silently dropping the push. Framework messages use em-dashes heavily, so most
+    approval pushes fail. Fix: encode ntfy title/message headers as UTF-8 (RFC2047
+    / X-* header or body), or strip/transliterate non-latin-1. Server is already correct
+    (https://ntfy-ring20.docker.ring20.geelenandcompany.com, NTFY_URL unset, no .107
+    refs).'
+  reason: 'Cross project boundary — dispatcher in /opt/150-skills-manager; discovered
+    via remote exec while wiring T-2438 ntfy. Distinct from U-009 (Click: header).'
+  task: T-2438
+  host: local
+  agent: agent
+  created: '2026-06-19T13:38:59Z'
+  status: pending
+  resolved_date: null
+  resolution_note: null

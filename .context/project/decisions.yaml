@@ -2060,3 +2060,24 @@ decisions:
     date: 2026-06-14
     task: T-2396
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-297
+    decision: "thread the URL into the ntfy message **body** (own line); ntfy renders body URLs tappable."
+    scope: project
+    date: 2026-06-19
+    task: T-2438
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-298
+    decision: "ship the `emit_review` refactor despite 5 reds in `tests/unit/lib_review.bats` (+2 in review_link_blocking_gate, +2 in update_task_yaml_components_emit)."
+    scope: project
+    date: 2026-06-19
+    task: T-2438
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-299
+    decision: "ship a configurable server **URL** (`NTFY_URL`), exported to the dispatcher via env."
+    scope: project
+    date: 2026-06-19
+    task: T-2439
+    rationale: "Auto-captured from task file on completion"

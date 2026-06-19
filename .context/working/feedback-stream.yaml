@@ -19210,3 +19210,183 @@ scan_id: R-7baafa41
 task_id: T-2435
 payload:
   task_file: .tasks/active/T-2435-cron-auditdoctor-checks-worktree-aware-o.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T22:40:33Z'
+scan_id: R-fccb1c8c
+task_id: T-2436
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T22:40:33Z'
+scan_id: R-fccb1c8c
+task_id: T-2436
+payload:
+  task_file: .tasks/active/T-2436-self-vendor-drift-sync----check-silent-m.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T22:41:21Z'
+scan_id: R-74aaee10
+task_id: T-2436
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T22:41:21Z'
+scan_id: R-74aaee10
+task_id: T-2436
+payload:
+  task_file: .tasks/active/T-2436-self-vendor-drift-sync----check-silent-m.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T22:43:53Z'
+scan_id: R-58ebfa22
+task_id: T-2436
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T22:43:53Z'
+scan_id: R-58ebfa22
+task_id: T-2436
+payload:
+  task_file: .tasks/active/T-2436-self-vendor-drift-sync----check-silent-m.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T22:49:24Z'
+scan_id: R-5ab0e2f7
+task_id: T-2437
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T22:49:24Z'
+scan_id: R-5ab0e2f7
+task_id: T-2437
+payload:
+  task_file: .tasks/active/T-2437-worktree-audit-content-vs-environment-ke.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T22:50:31Z'
+scan_id: R-4d8cc183
+task_id: T-2437
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T22:50:31Z'
+scan_id: R-4d8cc183
+task_id: T-2437
+payload:
+  task_file: .tasks/active/T-2437-worktree-audit-content-vs-environment-ke.md
+---
+kind: scan_emitted
+timestamp: '2026-06-18T22:59:59Z'
+scan_id: R-51c552a0
+task_id: T-2435
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-18T22:59:59Z'
+scan_id: R-51c552a0
+task_id: T-2435
+payload:
+  task_file: .tasks/active/T-2435-cron-auditdoctor-checks-worktree-aware-o.md
+---
+kind: scan_emitted
+timestamp: '2026-06-19T12:34:48Z'
+scan_id: R-a0f50d12
+task_id: T-2438
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-19T12:34:48Z'
+scan_id: R-a0f50d12
+task_id: T-2438
+payload:
+  task_file: .tasks/active/T-2438-ntfy-approval-pushes-carry-class-correct.md
+---
+kind: scan_emitted
+timestamp: '2026-06-19T12:35:28Z'
+scan_id: R-4b3c45c6
+task_id: T-2438
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-19T12:35:28Z'
+scan_id: R-4b3c45c6
+task_id: T-2438
+payload:
+  task_file: .tasks/active/T-2438-ntfy-approval-pushes-carry-class-correct.md
+---
+kind: scan_emitted
+timestamp: '2026-06-19T20:56:22Z'
+scan_id: R-bfe588e2
+task_id: T-2439
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-19T20:56:22Z'
+scan_id: R-bfe588e2
+task_id: T-2439
+payload:
+  task_file: .tasks/active/T-2439-configurable-ntfy-server-url-via-fw-conf.md
+---
+kind: scan_emitted
+timestamp: '2026-06-19T20:57:34Z'
+scan_id: R-66a441b9
+task_id: T-2439
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-19T20:57:34Z'
+scan_id: R-66a441b9
+task_id: T-2439
+payload:
+  task_file: .tasks/active/T-2439-configurable-ntfy-server-url-via-fw-conf.md
