@@ -19390,3 +19390,21 @@ scan_id: R-66a441b9
 task_id: T-2439
 payload:
   task_file: .tasks/active/T-2439-configurable-ntfy-server-url-via-fw-conf.md
+---
+kind: scan_emitted
+timestamp: '2026-06-20T06:58:50Z'
+scan_id: R-0c3dbf4c
+task_id: T-2440
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-20T06:58:50Z'
+scan_id: R-0c3dbf4c
+task_id: T-2440
+payload:
+  task_file: .tasks/active/T-2440-register-5-unregistered-arc-013-govd-fab.md

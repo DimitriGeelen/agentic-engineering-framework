@@ -2081,3 +2081,17 @@ decisions:
     date: 2026-06-19
     task: T-2439
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-300
+    decision: "unassigned hygiene build task (no `arc_id`)."
+    scope: project
+    date: 2026-06-20
+    task: T-2440
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-301
+    decision: "file OBS-080 (lightweight observation, not a task/concern); do NOT fix in T-2440."
+    scope: project
+    date: 2026-06-20
+    task: T-2440
+    rationale: "Auto-captured from task file on completion"

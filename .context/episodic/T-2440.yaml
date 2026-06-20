@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2440: register 5 unregistered arc-013 govd fabric components (drift hygiene)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-20T06:58:55Z
+# ============================================================================
+
+task_id: T-2440
+task_name: "register 5 unregistered arc-013 govd fabric components (drift hygiene)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-20T06:51:40Z
+completed: 2026-06-20T06:58:45Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '5 govd components registered (4 new cards created; agents/git/lib/commit.sh already had a card)'
+  - '`govd.sh` card enriched — subsystem `framework-core` (was `unknown`), accurate purpose, 5 depends_on edges (3 calls to govd_*.py + 2 reads of policy files)'
+  - '`fw fabric drift` reports 0 unregistered / 0 orphaned / 0 stale'
+  - 'All new/edited fabric cards parse as valid YAML'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-20 — file under no arc, not arc-013'
+    chose: 'unassigned hygiene build task (no `arc_id`).'
+    rationale: 'registering fabric cards is framework topology hygiene; it advances no arc-013 deliverable. arc-013 is sovereign/human-gated (must not be advanced or closed by the agent). Entangling a hygiene commit with the arc would muddy its closure ledger.'
+    alternatives_rejected: ['`arc_id: arc-013` — would imply the commit is arc progress, which it is not.']
+  - decision: '2026-06-20 — intermittent drift false-positive → filed OBS-080'
+    chose: 'file OBS-080 (lightweight observation, not a task/concern); do NOT fix in T-2440.'
+    rationale: 'it''s a false-*positive* (over-reports; never hides real drift) so low-risk, and it self-clears on re-run. Likely an index-rebuild/scan race in `agents/fabric/lib/drift.sh`. Per "one bug = one task" it''s out of T-2440''s scope; OBS-080 carries the "promote to a real task if it recurs persistently or reds an audit" trigger.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2440-register-5-unregistered-arc-013-govd-fab.md
+generated_by: context-agent-hybrid

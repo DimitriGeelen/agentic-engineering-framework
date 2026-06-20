@@ -4,10 +4,10 @@ name: "register 5 unregistered arc-013 govd fabric components (drift hygiene)"
 description: >
   register 5 unregistered arc-013 govd fabric components (drift hygiene)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-20T06:51:40Z
-last_update: 2026-06-20T06:51:40Z
-date_finished: null
+last_update: 2026-06-20T06:58:45Z
+date_finished: 2026-06-20T06:58:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -193,3 +193,20 @@ test -f .fabric/components/lib-govd_relay.yaml -a -f .fabric/components/lib-govd
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2440-register-5-unregistered-arc-013-govd-fab.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0c3dbf4c
+- **Timestamp:** 2026-06-20T06:58:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — 5 govd components registered (4 new cards created; agents/git/lib/commit.sh already had a card)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/git/lib/commit.sh in: 5 govd components registered (4 new cards created; agents/git/lib/commit.sh already had a card)`
+
+### 2026-06-20T06:58:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
