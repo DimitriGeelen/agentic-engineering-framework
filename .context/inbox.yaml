@@ -662,3 +662,17 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-079
+  text: "add"
+  captured: 2026-06-20T06:56:56Z
+  context_task: T-2440
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-080
+  text: "fw fabric drift intermittently reports a spurious 'unregistered' component (false-positive) that clears on immediate re-run — observed 2x during T-2440: (1) lib/config-file.sh flagged once right after a batch of fw fabric register writes despite its card existing intact; (2) a verification run failed then passed 3/3 on re-run. Card correctly keyed (id+location match), no duplicate id, compaction audit reported 0 unregistered. Likely an index-rebuild/scan race in agents/fabric/lib/drift.sh. Low-risk (over-reports, never hides real drift) but flaky → can cause spurious audit fabric FAILs. File a real task if it recurs persistently or reds an audit."
+  captured: 2026-06-20T06:57:19Z
+  context_task: T-2440
+  tags: [bug]
+  status: pending
+  promoted_to: null

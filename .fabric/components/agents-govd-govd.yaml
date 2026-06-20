@@ -1,0 +1,29 @@
+id: agents/govd/govd.sh
+name: govd
+type: script
+subsystem: framework-core
+location: agents/govd/govd.sh
+tags: [arc-013, governance, payload-mediation]
+
+purpose: "Privileged state-holder agent (arc-013/T-2430). Agent-safe subcommands emit specs and evaluate who-commits decisions with no side effects (evaluate/propose/emit-install). The cage/daemon INSTALL (aef-gov uid, RO bind-mounts, systemd unit) is Lock-1 human/root — never run by the agent."
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  - target: lib/govd_envelope.py
+    type: calls
+  - target: lib/govd_holder.py
+    type: calls
+  - target: lib/govd_relay.py
+    type: calls
+  - target: policy/authority-envelope.yaml
+    type: reads
+  - target: policy/proxy-policy.yaml
+    type: reads
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-06-20
+created_by: T-2440
