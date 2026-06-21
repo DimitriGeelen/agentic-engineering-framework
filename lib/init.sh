@@ -301,7 +301,7 @@ LYAML
     # Skipped silently when --force re-runs: the destination existence check
     # handles re-init without trampling customisations.
     mkdir -p "$target_dir/policy"
-    #@init: yaml-2bv policy/value-drivers.yaml drivers
+    #@init: yaml-2bv policy/value-drivers.yaml protected_drivers
     # BVP value-drivers definitions (T-2229)
     if [ ! -f "$target_dir/policy/value-drivers.yaml" ]; then
         if [ -f "$FRAMEWORK_ROOT/policy/value-drivers.yaml" ]; then
