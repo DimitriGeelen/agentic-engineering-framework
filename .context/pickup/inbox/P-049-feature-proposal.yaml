@@ -1,0 +1,41 @@
+pickup_id: P-049
+version: 1
+type: feature-proposal
+source:
+  project: 505-Ring20-Site
+  task_id: T-2441
+  agent: claude-code
+  timestamp: '2026-06-21T06:50:03Z'
+payload:
+  summary: Onboarding usability/reliability improvements (6 findings + 4 prompt-vs-design
+    gaps)
+  detail: 'From the same /opt/505 dogfood:
+
+    F1 public github-master install ships fw v1.6.25 while dev HEAD is v1.6.66 (~40
+    versions stale); gate mirror push on release / support install.sh --tag pin.
+
+    F2 installer links shim then labels it ''legacy'' on first contact.
+
+    F3 fw --version reports ''vdev'' (bare+local) though install said v1.6.25 -> read
+    stamped VERSION.
+
+    F6 fw doctor ~72s/run; add ''fw doctor --quick'' (project-only) for the onboarding
+    loop.
+
+    F7 fresh consumer''s doctor is polluted with host + /opt/999 warnings; segment
+    [project] vs [host], project verdict first.
+
+    F8 bare fw resolves to global legacy shim, not .agentic-framework/bin/fw (T-1257
+    live); onboarding text should print project-local fw path.
+
+    Prompt-vs-design gaps: bare fw everywhere; no Session Start/End Protocol (context
+    init / handover); STEP-5 trusts curl-200 without identity check; STEP-2 pipes
+    unpinned master with no integrity check.
+
+    Full evidence: docs/reports/T-2441-aef-onboarding-dogfooding.md. Proposal, not
+    a build instruction (G-020).'
+  priority: medium
+  tags:
+  - onboarding
+  - dogfooding
+  - usability
