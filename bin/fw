@@ -14,7 +14,15 @@ set -euo pipefail
 # Version: derived from git tags (major.minor = human tag, patch = commits since tag)
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {
-    local fw_dir="${BASH_SOURCE[0]%/*}/.."
+    # T-2450/F3: resolve symlinks before deriving fw_dir. fw is invoked via the
+    # global ~/.local/bin/fw symlink; the unresolved BASH_SOURCE[0] makes fw_dir
+    # point at the SYMLINK's parent (~/.local — no .git, no VERSION), so both the
+    # git-describe and VERSION-file branches miss and it falls through to "dev"
+    # → `fw vdev`. Resolve to the real bin/fw (same readlink chain as FW_REAL_PATH
+    # below) so fw_dir is the actual framework dir, then use it for BOTH branches.
+    local _src="${BASH_SOURCE[0]}" _real
+    _real="$(readlink -f "$_src" 2>/dev/null || realpath "$_src" 2>/dev/null || echo "$_src")"
+    local fw_dir="${_real%/*}/.."
     local desc=""
     # G-049: only call `git describe` when $fw_dir has its own .git.
     # In vendored mode, $fw_dir/.git is absent and walking up would
@@ -35,8 +43,8 @@ _derive_version() {
         else
             echo "$desc"
         fi
-    elif [ -f "${BASH_SOURCE[0]%/*}/../VERSION" ]; then
-        cat "${BASH_SOURCE[0]%/*}/../VERSION"
+    elif [ -f "$fw_dir/VERSION" ]; then
+        cat "$fw_dir/VERSION"
     else
         echo "dev"
     fi
