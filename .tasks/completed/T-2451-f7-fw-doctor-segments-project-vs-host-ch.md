@@ -4,10 +4,10 @@ name: "F7: fw doctor segments [project] vs [host] checks — project-health-firs
 description: >
   F7: fw doctor segments [project] vs [host] checks — project-health-first + one-line project verdict (T-2441 dogfood)
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-21T11:59:19Z
-last_update: 2026-06-21T12:00:25Z
-date_finished: null
+last_update: 2026-06-21T13:03:17Z
+date_finished: 2026-06-21T13:03:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,11 +56,19 @@ existing doctor bats green.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] AC1 — `fw doctor` output visually segments project-owned findings from `[host]`-tagged findings,
-      with project health surfaced first.
-- [ ] AC2 — a one-line project verdict (e.g. "Project /opt/505: N ok / M warn / K fail") is emitted so a
-      fresh-consumer operator can read their project's health at a glance, independent of host noise.
-- [ ] AC3 — existing doctor tests stay green; a new assertion pins the verdict line + segmentation.
+- [x] AC1 — `fw doctor` output visually segments project-owned findings from `[host]`-tagged findings,
+      with project health surfaced first. **Done:** a project-health verdict block renders BEFORE the
+      total summary, followed by an explicit `↳ N host-level finding(s) excluded` line. Project-first
+      ordering pinned in source (test "project verdict precedes the overall summary").
+- [x] AC2 — a one-line project verdict is emitted so a fresh-consumer operator can read their project's
+      health at a glance, independent of host noise. **Done:** live `bin/fw doctor` rendered
+      `Project /opt/.../inception-gov-payload-mediation: 24 project warning(s), 0 failure(s)` (host noise
+      excluded; 24 project + 4 host = 28 total). `project_warnings = warnings − host_warnings`; failures
+      are all project-scope. See Decisions re: verdict format vs the literal "N ok / M warn / K fail".
+- [x] AC3 — existing doctor tests stay green; a new assertion pins the verdict line + segmentation.
+      **Done:** 6/6 existing source-level pins green + 4 new F7 pins green (verdict line, host-exclusion,
+      project-first ordering, project_warnings computation). Edit is purely additive before the unchanged
+      total summary; live run confirmed exit 0, `[host]` tags intact, total summary still last.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -126,6 +134,11 @@ existing doctor bats green.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n bin/fw
+out=$(bats -f "F7" tests/unit/test_doctor_scope_tags.bats 2>&1); echo "$out" | grep -qE "^ok 4 " && ! echo "$out" | grep -q "^not ok"
+grep -q 'project_warnings=$((warnings - host_warnings))' bin/fw
+grep -q "host-level finding(s) excluded" bin/fw
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -168,14 +181,24 @@ existing doctor bats green.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-21 — Verdict format: warn/fail counts + healthy marker, not literal "N ok / M warn / K fail"
+- **Chose:** `Project <root>: N project warning(s), K failure(s)` (or `healthy` when 0/0), plus a
+  `↳ M host-level finding(s) excluded` line. Counts derive from existing `warnings`/`host_warnings`/`issues`.
+- **Why:** the AC's "N ok / M warn / K fail" was illustrative ("e.g."). The actionable signal a fresh
+  consumer needs is "are there warnings/failures about MY project, ignoring host noise" — the OK count
+  adds no decision value. The healthy-marker form reads cleaner at a glance than a raw "24 ok".
+- **Rejected:** literal OK-counting — `do_doctor` does not track an OK counter; capturing one would mean
+  instrumenting 30+ inline `echo OK` sites, a high-blast change that violates the task's additive scope
+  note ("keep the change additive... rather than a risky full reorder"). Not worth it for a cosmetic count.
+
+### 2026-06-21 — Test at source level, not by running full `fw doctor`
+- **Chose:** four fast source-grep pins (verdict line, host-exclusion line, project_warnings computation,
+  project-first ordering) + a live `bin/fw doctor` capture recorded as the real-world proof.
+- **Why:** `fw doctor` takes ~150s/run and is network-coupled (mirror/reachability probes) — running it
+  in a unit test made the bats file exceed even a 400s timeout and is itself the F6 (T-2452) pain. Source
+  pins are deterministic, CI-safe, and pin exactly the verdict-line + segmentation AC3 asks for.
+- **Rejected:** behavioural bats that shell out to `fw doctor` (slow, flaky, network-dependent); a cached
+  single-run helper via `BATS_FILE_TMPDIR` (still timed out — cache unreliable in this bats version).
 
 ## Decision
 
@@ -197,3 +220,19 @@ existing doctor bats green.
 ### 2026-06-21T12:00:25Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
 - **Change:** horizon: now → next
+
+### 2026-06-21T12:38:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d02416d5
+- **Timestamp:** 2026-06-21T13:03:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-21T13:03:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
