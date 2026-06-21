@@ -19408,3 +19408,165 @@ scan_id: R-0c3dbf4c
 task_id: T-2440
 payload:
   task_file: .tasks/active/T-2440-register-5-unregistered-arc-013-govd-fab.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:03:28Z'
+scan_id: R-d3369874
+task_id: T-2443
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:03:28Z'
+scan_id: R-d3369874
+task_id: T-2443
+payload:
+  task_file: .tasks/active/T-2443-fix-greenfield-value-driversyaml-init-te.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:03:49Z'
+scan_id: R-ba91214d
+task_id: T-2444
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:03:49Z'
+scan_id: R-ba91214d
+task_id: T-2444
+payload:
+  task_file: .tasks/active/T-2444-fix-fw-init-inline-session-activation-fa.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:04:01Z'
+scan_id: R-32429e36
+task_id: T-2445
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:04:01Z'
+scan_id: R-32429e36
+task_id: T-2445
+payload:
+  task_file: .tasks/active/T-2445-f9--watchtower-health-verdict-trusts-for.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:34:18Z'
+scan_id: R-fada5be7
+task_id: T-2446
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:34:18Z'
+scan_id: R-fada5be7
+task_id: T-2446
+payload:
+  task_file: .tasks/active/T-2446-f10-residual--claudeprojectdir-trusted-w.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:35:15Z'
+scan_id: R-e938d3c2
+task_id: T-2446
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:35:15Z'
+scan_id: R-e938d3c2
+task_id: T-2446
+payload:
+  task_file: .tasks/active/T-2446-f10-residual--claudeprojectdir-trusted-w.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:44:52Z'
+scan_id: R-5967c191
+task_id: T-2447
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:44:52Z'
+scan_id: R-5967c191
+task_id: T-2447
+payload:
+  task_file: .tasks/active/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:45:18Z'
+scan_id: R-c4eeb10d
+task_id: T-2447
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:45:18Z'
+scan_id: R-c4eeb10d
+task_id: T-2447
+payload:
+  task_file: .tasks/active/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:46:03Z'
+scan_id: R-d894be9b
+task_id: T-2447
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:46:03Z'
+scan_id: R-d894be9b
+task_id: T-2447
+payload:
+  task_file: .tasks/active/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T10:49:14Z'
+scan_id: R-882e4fa8
+task_id: T-2447
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T10:49:14Z'
+scan_id: R-882e4fa8
+task_id: T-2447
+payload:
+  task_file: .tasks/active/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md
