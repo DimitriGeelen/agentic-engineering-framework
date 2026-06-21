@@ -54,6 +54,23 @@ isolated shim**, NOT bin/fw's resolver.
 `tests/unit/upgrade_fresh_machine_simulation.bats` MUST stay green and gain coverage for all 4 invocation
 modes (framework-repo-self, direct-vendored, global-from-consumer, global-from-non-project).
 
+**SCOPE REFRAME (T-2450 session discovery — read before building):** Candidate C is **largely already
+built.** `bin/fw-shim` (T-664) already walks CWD→project-local and exec's it — resolution order
+`bin/fw`+`FRAMEWORK.md` (framework repo) → `.agentic-framework/bin/fw` (consumer) — with a T-1278
+`realpath` self-loop guard. `install.sh link_fw()` (install.sh:233-257) installs fw-shim **when
+`$INSTALL_DIR/bin/fw-shim` is executable**, and only **falls back** to the legacy global symlink (the F2
+"legacy — upgrade for project-local routing" message, install.sh:246) when it is not. The dogfood F8
+symptom (bare `fw` → global symlink) was the **fallback path firing** — i.e. the stale v1.6.25 GitHub
+clone (F1) lacked a working fw-shim — NOT an absent mechanism. So this build's real scope is:
+1. **Ensure fw-shim always ships + is chosen** (diagnose why the fallback fired; the fix may be mostly
+   F1 — stale public install — plus making `link_fw` prefer fw-shim more robustly).
+2. **Harden fw-shim's recursion guard** — it has a `realpath` self-loop guard but NOT the T-2099
+   env-sentinel (`FW_REEXEC_GUARD=1`); add the env-sentinel for defence-in-depth on the exec.
+3. **Candidate E** (`fw doctor` skew-WARN) and **Candidate B** (install-prompt path text) unchanged.
+4. F2 (soften/forward-action the legacy message) is the **same fallback path** — fold or sibling.
+F1/F2/F8 are entangled through `link_fw`'s fw-shim-vs-fallback branch; scope them together here or split
+F1 out as the "stale public install" leg. Re-read `bin/fw-shim` + `install.sh:232-260` first.
+
 ## Acceptance Criteria
 
 ### Agent
