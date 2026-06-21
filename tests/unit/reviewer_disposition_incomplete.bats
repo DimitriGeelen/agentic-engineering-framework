@@ -138,6 +138,40 @@ _make_task() {
     [ "$output" = "[]" ]
 }
 
+@test "OBS-081: template-comment IW-1 example does not fire (HTML comment stripped)" {
+    # Reproduces the .tasks/templates/inception.md Open-Questions placeholder:
+    # an IW-1 example inside <!-- --> with a bare rationale. Before T-2449 the
+    # slicer parsed it as a real answered-without-citation entry (origin T-2447).
+    file=$(_make_task inception "<!-- Per-question shape:
+
+       - **IW-1: <question text>**
+         confidence: 0-3
+         disposition: answered | deferred | dissolved
+         rationale: <one-line evidence — file:line, decision id, dialogue ref>
+-->")
+    run python3 "$SCAN_RUNNER" "$file"
+    [ "$status" -eq 0 ]
+    [ "$output" = "[]" ]
+}
+
+@test "OBS-081: template comment + real valid entry → zero findings" {
+    # The T-2447 case: a real well-cited IW-1 alongside the leftover template
+    # comment. The comment's placeholder must not double-flag the real entry.
+    file=$(_make_task inception "<!--
+       - **IW-1: <question text>**
+         disposition: answered
+         rationale: <one-line evidence>
+-->
+
+- **IW-1: real question**
+  confidence: 2
+  disposition: answered
+  rationale: see docs/reports/T-2447-f8-shim-routing.md and bin/fw:117")
+    run python3 "$SCAN_RUNNER" "$file"
+    [ "$status" -eq 0 ]
+    [ "$output" = "[]" ]
+}
+
 @test "multiple IW-N with mixed health: one finding per malformed entry" {
     file=$(_make_task inception "- **IW-1: ok one**
   disposition: answered
