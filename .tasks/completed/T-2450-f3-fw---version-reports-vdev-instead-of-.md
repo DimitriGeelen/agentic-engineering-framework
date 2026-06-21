@@ -4,12 +4,12 @@ name: "F3: fw --version reports vdev instead of stamped VERSION on consumer inst
 description: >
   F3: fw --version reports vdev instead of stamped VERSION on consumer installs (T-2441 dogfood)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-21T11:48:45Z
-last_update: 2026-06-21T11:48:45Z
-date_finished: null
+last_update: 2026-06-21T11:54:12Z
+date_finished: 2026-06-21T11:54:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -177,9 +177,12 @@ diverge. (2) `tests/unit/fw_derive_version_symlink.bats` pins symlink invocation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-11ec284e
-- **Timestamp:** 2026-06-21T11:53:57Z
+- **Scan ID:** R-68b2ee2a
+- **Timestamp:** 2026-06-21T11:54:14Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-21T11:54:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
