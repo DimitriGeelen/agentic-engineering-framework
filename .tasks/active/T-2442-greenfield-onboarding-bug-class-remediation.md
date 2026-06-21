@@ -74,11 +74,31 @@ complete; only the routing-leg sequencing is open.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-2442 go|no-go|defer --rationale "..."
-     Operator decision (sovereignty). Surfaced via `fw task review T-2442` → /inception/T-2442. -->
+**Decision**: GO
+
+**Rationale**: All four are *reproduced* defects with captured wire-level evidence from the dogfood
+(not hypotheses), and three (F4/F5/F9) are tractable contained fixes. F4 in particular breaks every
+fresh project's own init validation and has an obvious fix + a cheap regression test. They share the
+greenfield-init / bare-fw-routing region, so batching the scope avoids four disconnected tasks. F10's
+shim-routing root has higher blast radius and may warrant its own design slice — that split is the one
+genuine open question, and it does not block starting F4. This is a GO, not a DEFER: the evidence is
+complete; only the routing-leg sequencing is open.
+
+**Date**: 2026-06-21T07:44:17Z
 
 ## Verification
 
 # Inception task — no build artifacts. Reachability of the cited evidence:
 test -f docs/reports/T-2441-aef-onboarding-dogfooding.md
 test -f .context/pickup/inbox/P-048-bug-report.yaml
+
+### 2026-06-21T07:44:17Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** All four are *reproduced* defects with captured wire-level evidence from the dogfood
+(not hypotheses), and three (F4/F5/F9) are tractable contained fixes. F4 in particular breaks every
+fresh project's own init validation and has an obvious fix + a cheap regression test. They share the
+greenfield-init / bare-fw-routing region, so batching the scope avoids four disconnected tasks. F10's
+shim-routing root has higher blast radius and may warrant its own design slice — that split is the one
+genuine open question, and it does not block starting F4. This is a GO, not a DEFER: the evidence is
+complete; only the routing-leg sequencing is open.
