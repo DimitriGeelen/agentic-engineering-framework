@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2455: fw vendor self _self_vendor_libs skips lib .py files — permanent audit self-vendor FAIL vendor self cannot clear
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-21T15:10:26Z
+# ============================================================================
+
+task_id: T-2455
+task_name: "fw vendor self _self_vendor_libs skips lib .py files — permanent audit self-vendor FAIL vendor self cannot clear"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-21T14:58:22Z
+completed: 2026-06-21T15:10:19Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_self_vendor_libs` find filter includes `*.py` — parity with the audit''s `*.sh + *.py + fw + *.md` libs-class scan set (the asymmetry was the bug); stale "`*.sh + *.md` parity" comment corrected'
+  - '`fw vendor self` now syncs all 40 `lib/**/*.py`: the 1 divergent reviewer scanner re-synced + 5 previously-missing lib modules created in vendored (the four govd fabric modules plus the integrate module — enumerated in the RCA below)'
+  - '`fw vendor self --check` reports in-sync AND audit-replication of `check_self_vendor_drift` shows 0 out-of-sync across bin/lib/agents/web (FAIL cleared, push unblocked)'
+  - 'Regression test `tests/unit/t2455_self_vendor_libs_py_filter.bats` (4/4): real-run `.py` sync, dry-run non-mutation, source-parity pin (helper filter ↔ audit filter both include `*.py`), clean-state silence'
+  - 'No regression: sibling `.md`/agents/web helper tests behaviourally unchanged; pre-existing worktree-environment FAILs (t2240 `.git`-is-a-file, t2244 t2, t2267 `_self_vendor_web` — a function untouched here) proven baseline-identical via `git stash` of the edit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 11
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2455-fw-vendor-self-selfvendorlibs-skips-lib-.md
+generated_by: context-agent-hybrid
