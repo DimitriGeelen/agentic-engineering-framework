@@ -148,14 +148,20 @@ _self_vendor_libs() {
     fi
     local _sv_updated=0
     local _sv_src _sv_rel _sv_dst _sv_dst_dir
-    # T-2307 (T-2304 follow-on): recursive + `*.sh + *.md` filter — parity with
-    # `_self_vendor_agents` (T-2266+T-2304). Replaces the prior non-recursive
-    # `lib/*.sh` glob which silently skipped 33 tracked `.md` siblings under
-    # lib/templates/ and lib/templates/skills/. Audit's libs-class drift scanner
-    # (agents/audit/audit.sh:1644) scans the same `*.sh + *.md` set, so coverage
-    # parity is mechanical. Recursive: lib/ has subdirectories (templates/,
-    # templates/skills/, ts/, etc.); helper mirrors the tree under
-    # .agentic-framework/lib/, creating missing subdirs at real-run only.
+    # T-2307 (T-2304 follow-on): recursive + `*.sh + *.py + *.md` filter — parity
+    # with `_self_vendor_agents` (T-2266+T-2304) and the audit's libs-class drift
+    # scanner. Replaces the prior non-recursive `lib/*.sh` glob which silently
+    # skipped 33 tracked `.md` siblings under lib/templates/ and
+    # lib/templates/skills/. T-2455 (OBS-085): added `*.py` — the audit
+    # (agents/audit/audit.sh check_self_vendor_drift) scans `*.sh + *.py + fw + *.md`,
+    # but this helper had only `*.sh + *.md`, so every `lib/**/*.py` (40 files incl.
+    # lib/reviewer/static_scan.py, the govd_*.py fabric, lib/integrate.py) was
+    # silently un-vendorable. When source `.py` drifted, the audit FAILed and
+    # `fw vendor self` could NOT clear it → all pushes blocked. The filter now
+    # matches the audit set exactly so coverage parity is mechanical. Recursive:
+    # lib/ has subdirectories (templates/, templates/skills/, reviewer/, ts/, etc.);
+    # helper mirrors the tree under .agentic-framework/lib/, creating missing
+    # subdirs at real-run only.
     while IFS= read -r _sv_src; do
         [ -f "$_sv_src" ] || continue
         _sv_rel="${_sv_src#$FRAMEWORK_ROOT/lib/}"
@@ -169,7 +175,7 @@ _self_vendor_libs() {
             fi
             _sv_updated=$((_sv_updated + 1))
         fi
-    done < <(find "$FRAMEWORK_ROOT/lib" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.md" \) -print 2>/dev/null)
+    done < <(find "$FRAMEWORK_ROOT/lib" \( -path '*/node_modules/*' -o -path '*/__pycache__/*' -o -path '*/.git/*' \) -prune -o -type f \( -name "*.sh" -o -name "*.py" -o -name "*.md" \) -print 2>/dev/null)
     if [ "$_sv_updated" -gt 0 ]; then
         # T-2239: dry-run reports what WOULD happen; real-run reports what DID.
         # Same prefix, distinct verb — preserves the count semantic for both modes
