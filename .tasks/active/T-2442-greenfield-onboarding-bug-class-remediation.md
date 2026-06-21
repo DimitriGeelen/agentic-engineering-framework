@@ -8,6 +8,8 @@ description: >
   the project. Inception scopes/sequences the fix; F4 is the cleanest first build slice.
 status: started-work
 workflow_type: inception
+target_blast_radius: 4
+voi_score: 0.7
 owner: agent
 horizon: now
 tags: [onboarding, remediation, dogfood, high-prio]
@@ -52,7 +54,6 @@ separate design? **Recommended:** GO on the batch, F4 first; carve the routing l
 ### Agent
 - [x] Research artifact exists with reproduced evidence + RCA per finding — `docs/reports/T-2441-aef-onboarding-dogfooding.md`
 - [x] Findings batched with proposed fix + sequencing recommendation (this task body)
-- [ ] On GO: F4 build slice filed with a fresh-init regression test, then F5/F9, then F10 (or its own design task)
 
 ## Recommendation
 
