@@ -681,7 +681,7 @@ observations:
   captured: 2026-06-21T10:49:29Z
   context_task: T-2447
   tags: []
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-082
   text: "add"
@@ -695,5 +695,5 @@ observations:
   captured: 2026-06-21T11:55:10Z
   context_task: null
   tags: [bug]
-  status: pending
+  status: dismissed
   promoted_to: null
