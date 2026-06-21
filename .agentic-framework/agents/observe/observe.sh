@@ -86,9 +86,22 @@ do_capture() {
         urgent_field="  urgent: true"
     fi
 
+    # T-2456 (OBS-084): escape $text for a YAML double-quoted scalar before
+    # writing. A raw backslash in the note body (e.g. a regex like '\d+') or an
+    # embedded double-quote would otherwise corrupt inbox.yaml: YAML double-quotes
+    # process backslash escapes, so an unescaped '\d' is an "unknown escape"
+    # ScannerError that crashes EVERY `fw note list/triage` (yaml.safe_load) — the
+    # whole inbox goes unreadable. Order matters: backslashes first, then quotes.
+    # Origin: OBS-081's '- **IW-(\d+):' (filed via `fw note`) broke the inbox for
+    # ~a day. Both readers stay happy — yaml.safe_load unescapes correctly, and the
+    # sed reader (do_resolve) still strips the surrounding quotes.
+    local text_yaml
+    text_yaml=${text//\\/\\\\}        # \  -> \\
+    text_yaml=${text_yaml//\"/\\\"}   # "  -> \"
+
     cat >> "$INBOX_FILE" << EOF
 - id: $id
-  text: "$text"
+  text: "$text_yaml"
   captured: $ts
   context_task: ${task:-null}
   tags: [${tags}]

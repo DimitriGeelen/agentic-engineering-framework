@@ -596,6 +596,37 @@ except yaml.YAMLError as e:
         fi
     done
 done
+# T-2456 (OBS-084): .context/inbox.yaml is a single top-level file (not under
+# .context/project or .context/arcs), so the per-dir loop above never validated
+# it. A note body with a backslash (e.g. a regex '\d+') written via `fw note`
+# corrupted it as a YAML double-quoted-scalar escape error — and it sat unreadable
+# for ~a day because no gate parsed it (`fw note list/triage` crashed, the audit
+# was blind). Validate it explicitly with the same logic + counters so the
+# pass-count message covers it and a future corruption FAILs the audit.
+inbox_yaml="$PROJECT_ROOT/.context/inbox.yaml"
+if [ -f "$inbox_yaml" ]; then
+    parse_err=$(python3 -c "
+import yaml, sys
+try:
+    with open('$inbox_yaml') as f:
+        data = yaml.safe_load(f)
+    if data is None:
+        print('empty-file'); sys.exit(1)
+    elif not isinstance(data, dict):
+        print('not-a-mapping'); sys.exit(1)
+except yaml.YAMLError as e:
+    print(str(e).split(chr(10))[0]); sys.exit(1)
+" 2>&1)
+    # shellcheck disable=SC2181 # $? needed: parse_err captures output, exit code checked separately
+    if [ $? -eq 0 ]; then
+        yaml_pass_count=$((yaml_pass_count + 1))
+    else
+        yaml_fail_count=$((yaml_fail_count + 1))
+        fail "YAML parse error: inbox.yaml" \
+             "$parse_err" \
+             "Fix .context/inbox.yaml — a note body with a backslash/quote corrupts it (T-2456); fw note now escapes new entries"
+    fi
+fi
 if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
     pass "All $yaml_pass_count project YAML files parse correctly"
 fi

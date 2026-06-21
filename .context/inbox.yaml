@@ -677,7 +677,7 @@ observations:
   status: pending
   promoted_to: null
 - id: OBS-081
-  text: "Reviewer FP: detect_disposition_completeness (lib/reviewer/static_scan.py:1562-1586) parses the Open-Questions TEMPLATE COMMENT example as a real IW-1 entry, because the template uses literal 'IW-1' (not IW-N) and the slicer does not strip <!-- --> HTML comments before matching '- **IW-(\d+):'. Result: disposition-incomplete CONCERN fires on the placeholder rationale of EVERY fresh inception that keeps the template comment. Fix: strip HTML comments in detect_disposition_completeness before entry-slicing (or change the template example to IW-N). Found in T-2447."
+  text: "Reviewer FP: detect_disposition_completeness (lib/reviewer/static_scan.py:1562-1586) parses the Open-Questions TEMPLATE COMMENT example as a real IW-1 entry, because the template uses literal 'IW-1' (not IW-N) and the slicer does not strip <!-- --> HTML comments before matching '- **IW-(\\d+):'. Result: disposition-incomplete CONCERN fires on the placeholder rationale of EVERY fresh inception that keeps the template comment. Fix: strip HTML comments in detect_disposition_completeness before entry-slicing (or change the template example to IW-N). Found in T-2447."
   captured: 2026-06-21T10:49:29Z
   context_task: T-2447
   tags: []

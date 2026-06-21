@@ -129,3 +129,47 @@ teardown() {
     [ "$n_root" -eq 2 ]
     [ "$n_nested" -eq 0 ]
 }
+
+# --- Backslash/quote escaping regression (T-2456 / OBS-084) ---
+# A note body with a backslash (e.g. a regex '\d+') or an embedded double-quote
+# used to be interpolated raw into a `text: "$text"` double-quoted YAML scalar,
+# producing an "unknown escape character" ScannerError that crashed EVERY
+# `fw note list/triage` (yaml.safe_load) and left the whole inbox unreadable.
+# Origin: OBS-081's '- **IW-(\d+):' broke the production inbox for ~a day.
+
+@test "note with a backslash (regex) keeps inbox parseable and round-trips (T-2456)" {
+    export PROJECT_ROOT="$TEST_DIR"
+    run "$OBSERVE" 'regex matches \d+ and a path C:\dir\x'
+    [ "$status" -eq 0 ]
+    # inbox must still parse (the bug: ScannerError 'unknown escape character')
+    run python3 -c "
+import yaml
+d = yaml.safe_load(open('$TEST_DIR/.context/inbox.yaml'))
+print(d['observations'][0]['text'])
+"
+    [ "$status" -eq 0 ]
+    # exact round-trip: the single backslashes survive unchanged
+    [ "$output" = 'regex matches \d+ and a path C:\dir\x' ]
+}
+
+@test "note with an embedded double-quote keeps inbox parseable and round-trips (T-2456)" {
+    export PROJECT_ROOT="$TEST_DIR"
+    run "$OBSERVE" 'he said "hello" then left'
+    [ "$status" -eq 0 ]
+    run python3 -c "
+import yaml
+d = yaml.safe_load(open('$TEST_DIR/.context/inbox.yaml'))
+print(d['observations'][0]['text'])
+"
+    [ "$status" -eq 0 ]
+    [ "$output" = 'he said "hello" then left' ]
+}
+
+@test "backslash note then a second note: both entries still parse (T-2456)" {
+    export PROJECT_ROOT="$TEST_DIR"
+    "$OBSERVE" 'first with \d+ regex' >/dev/null
+    "$OBSERVE" 'second plain note'    >/dev/null
+    run python3 -c "import yaml; d=yaml.safe_load(open('$TEST_DIR/.context/inbox.yaml')); print(len(d['observations']))"
+    [ "$status" -eq 0 ]
+    [ "$output" = "2" ]
+}
