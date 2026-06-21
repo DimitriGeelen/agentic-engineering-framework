@@ -1503,9 +1503,16 @@ else:
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
     source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
     local _doctor_wt_url _doctor_wt_port
-    _doctor_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:${FW_PORT:-3000}")
+    # F9 (T-2445): gate the smoke verdict on the identity-verified resolver. A bare
+    # `|| echo http://localhost:PORT` fallback re-points at a FOREIGN service holding
+    # the default port and curls its /health (any server answers 200) → false "healthy".
+    # _watchtower_url returns non-zero when no Watchtower of OURS is reachable (T-1803);
+    # honor that contract instead of guessing a URL.
+    if ! _doctor_wt_url=$(_watchtower_url 2>/dev/null); then
+        _doctor_wt_url=""
+    fi
     _doctor_wt_port=$(echo "$_doctor_wt_url" | grep -oP ':\K\d+$' || echo "${FW_PORT:-3000}")
-    if curl -sf "${_doctor_wt_url}/health" >/dev/null 2>&1; then
+    if [ -n "$_doctor_wt_url" ] && curl -sf "${_doctor_wt_url}/health" >/dev/null 2>&1; then
         local smoke_result
         smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
         local smoke_passed smoke_failed smoke_total
