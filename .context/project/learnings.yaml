@@ -3721,3 +3721,10 @@ X'` returning empty group."
   date: 2026-06-21
   context: Added via context agent
   application: TBD
+- id: L-489
+  learning: "When two surfaces in one script resolve the SAME path, they must share the resolution logic. bin/fw's _derive_version (version) and FW_REAL_PATH (path resolution) both locate the fw binary, but _derive_version used the unresolved BASH_SOURCE[0] while FW_REAL_PATH did readlink -f — so invocation via the global ~/.local/bin/fw symlink made version derivation read the symlink's parent dir (no .git/VERSION) → 'vdev' (T-2450/F3). Divergent path-resolution between sibling surfaces is invisible until a real symlink invocation surfaces it. Also: the T-2441 report's named remediation (read VERSION) was ALREADY implemented — disprove a plan's named fix by reading the code first."
+  source: P-001
+  task: T-2450
+  date: 2026-06-21
+  context: Added via context agent
+  application: TBD

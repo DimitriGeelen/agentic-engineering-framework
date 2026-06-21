@@ -19624,3 +19624,39 @@ scan_id: R-9446d702
 task_id: T-2449
 payload:
   task_file: .tasks/active/T-2449-obs-081-reviewer-disposition-detector-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T11:53:57Z'
+scan_id: R-11ec284e
+task_id: T-2450
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T11:53:57Z'
+scan_id: R-11ec284e
+task_id: T-2450
+payload:
+  task_file: .tasks/active/T-2450-f3-fw---version-reports-vdev-instead-of-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T11:54:14Z'
+scan_id: R-68b2ee2a
+task_id: T-2450
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T11:54:14Z'
+scan_id: R-68b2ee2a
+task_id: T-2450
+payload:
+  task_file: .tasks/active/T-2450-f3-fw---version-reports-vdev-instead-of-.md

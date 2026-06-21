@@ -683,3 +683,17 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-082
+  text: "add"
+  captured: 2026-06-21T11:54:52Z
+  context_task: null
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-083
+  text: "resolve_framework.bats tests 17/18/19 (framework-repo-self, direct-vendored, global-shim-in-vendored) FAIL in the worktree checkout — PROVEN pre-existing via git-stash baseline (NOT caused by T-2450/F3). They grep an exact end-anchored 'Framework: <path>' line; likely worktree-path canonicalization in the fixtures (readlink -f resolving the .claude/worktrees/ path differently than the asserted repo/consumer path). Triage: confirm whether it reproduces on a non-worktree master checkout, or is a worktree-only fixture artifact."
+  captured: 2026-06-21T11:55:10Z
+  context_task: null
+  tags: [bug]
+  status: pending
+  promoted_to: null
