@@ -2202,6 +2202,24 @@ except Exception as e:
         _scope_breakdown=" ($host_warnings host-level)"
     fi
     echo ""
+    # T-2451/F7: project-health verdict, surfaced FIRST. A fresh consumer (e.g.
+    # /opt/505) needs to read THEIR project's health at a glance, independent of
+    # host-level noise (mirror divergence, global-install size, ~/.local/bin
+    # shims) that is not about their project. project_warnings excludes the
+    # [host]-tagged findings counted via _doctor_warn_host; failures are all
+    # project-scope (no host FAIL category exists). The total summary below is
+    # unchanged.
+    local project_warnings=$((warnings - host_warnings))
+    local _proj_label="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    if [ "$issues" -eq 0 ] && [ "$project_warnings" -eq 0 ]; then
+        echo -e "${GREEN}Project ${_proj_label}: healthy${NC} — 0 project warning(s), 0 failure(s)"
+    else
+        echo -e "${BOLD}Project ${_proj_label}:${NC} ${project_warnings} project warning(s), ${issues} failure(s)"
+    fi
+    if [ "$host_warnings" -gt 0 ]; then
+        echo -e "  ${CYAN}↳ ${host_warnings} host-level finding(s) excluded${NC} (not about this project — handle from a session at that root)"
+    fi
+    echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
         echo -e "${GREEN}All checks passed${NC}"
     elif [ $issues -eq 0 ]; then

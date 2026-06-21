@@ -98,6 +98,45 @@ setup() {
     fi
 }
 
+# ── T-2451/F7: project-health verdict + project-first segmentation ──
+#
+# `fw doctor` is slow (~150s/run — the F6 complaint, T-2452) and network-coupled,
+# so F7 is pinned at the SOURCE level (fast, deterministic, CI-safe). The
+# rendered behaviour was verified live during T-2451 (real `bin/fw doctor`
+# output: "Project <root>: 24 project warning(s), 0 failure(s)" + the
+# "host-level finding(s) excluded" line, project verdict before the total
+# summary). Pinning the structure here guards it; the live run proved it.
+
+@test "F7: do_doctor computes project_warnings excluding host_warnings" {
+    # The verdict must subtract host-level noise so a fresh consumer reads only
+    # THEIR project's warnings. Pin the computation so a refactor can't silently
+    # fold host noise back into the project count.
+    run grep -E "project_warnings=\\\$\\(\\(warnings - host_warnings\\)\\)" "$FW_BIN"
+    [ "$status" -eq 0 ]
+}
+
+@test "F7: do_doctor emits a one-line project-health verdict" {
+    # The verdict line reports project-scope counts ("N project warning(s),
+    # K failure(s)") — distinct from the total summary's bare "warning(s)".
+    run grep -E "Project .*project warning\(s\), .*failure\(s\)" "$FW_BIN"
+    [ "$status" -eq 0 ]
+}
+
+@test "F7: do_doctor marks host findings as excluded from the project verdict" {
+    run grep -q "host-level finding(s) excluded" "$FW_BIN"
+    [ "$status" -eq 0 ]
+}
+
+@test "F7: project verdict precedes the overall summary in source (project-first)" {
+    # The verdict block must render BEFORE the total summary so a fresh-consumer
+    # operator reads project health first. Compare source line numbers.
+    vline=$(grep -nE "Project .*project warning\(s\), .*failure\(s\)" "$FW_BIN" | head -1 | cut -d: -f1)
+    sline=$(grep -nE "_scope_breakdown, no failures" "$FW_BIN" | head -1 | cut -d: -f1)
+    [ -n "$vline" ]
+    [ -n "$sline" ]
+    [ "$vline" -lt "$sline" ]
+}
+
 # ── Worker_kind validator pin (T-1706 follow-up — ollama-loop accepted) ──
 
 @test "workflow worker_kind validator accepts ollama-loop" {
