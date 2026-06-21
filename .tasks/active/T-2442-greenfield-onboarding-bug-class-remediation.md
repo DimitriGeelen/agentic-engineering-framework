@@ -92,6 +92,8 @@ complete; only the routing-leg sequencing is open.
 test -f docs/reports/T-2441-aef-onboarding-dogfooding.md
 test -f .context/pickup/inbox/P-048-bug-report.yaml
 
+## Updates
+
 ### 2026-06-21T07:44:17Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** GO
