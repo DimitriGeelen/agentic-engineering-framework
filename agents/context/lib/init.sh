@@ -105,7 +105,12 @@ EOF
         # Check if onboarding tasks exist
         local onboard_count=0
         if [ -d "$TASKS_DIR/active" ]; then
-            onboard_count=$(grep -rl "tags:.*onboarding" "$TASKS_DIR/active" 2>/dev/null | wc -l)
+            # L-387: under `set -euo pipefail`, a no-match grep exits 1 and pipefail
+            # propagates it, aborting `context init` with RC=1 *after* it has done all
+            # its work — the F5 greenfield bug (T-2444). Onboarding tasks don't exist
+            # yet when `fw init` activates the session, so grep finds nothing. Wrap the
+            # grep with `|| true` so the empty result counts as 0, not a fatal error.
+            onboard_count=$({ grep -rl "tags:.*onboarding" "$TASKS_DIR/active" 2>/dev/null || true; } | wc -l)
         fi
         if [ "$onboard_count" -gt 0 ]; then
             echo "Onboarding tasks are ready ($onboard_count tasks). Start with:"

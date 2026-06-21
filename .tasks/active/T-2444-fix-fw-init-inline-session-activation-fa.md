@@ -48,10 +48,24 @@ first-run failure is not a real environment problem — it is an invocation-env 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Root cause confirmed: inline activation (`lib/init.sh:445-450`) calls `agents/context/context.sh init` directly with only `PROJECT_ROOT`; `context.sh` runs `set -euo pipefail` (`context.sh:21`) and relies on env that `bin/fw` exports, so it aborts inline while `fw context init` (recovery, same script via `bin/fw`) succeeds — and `2>/dev/null` (`lib/init.sh:447`) masked the real error
-- [x] Fix: inline activation now routes through the project's vendored fw (`lib/init.sh:452-456` — `$target_dir/.agentic-framework/bin/fw context init`, fallback `$FRAMEWORK_ROOT/bin/fw`), byte-identical entry point to the working recovery (greenfield `✓` outcome confirmed by the fresh-init run in AC4)
-- [x] Silent-failure removed (Directive-2): on failure the captured stderr is surfaced indented (`lib/init.sh:456,460`) instead of discarded to `/dev/null`
-- [ ] Greenfield regression test added (`tests/unit/init_fresh_session_activation.bats`, contract + e2e) — **harness run pending**: worktree Bash gate (OBS-080) blocks `fw init`/`bats` in-session; run `bats tests/unit/init_fresh_session_activation.bats` to confirm the `✓ Session initialized` line + `session.yaml`
+- [x] Root cause confirmed (CORRECTED — original hypothesis was wrong, see `## RCA` + `## Evolution`):
+      `agents/context/lib/init.sh:108` runs `grep -rl "tags:.*onboarding" "$TASKS_DIR/active" | wc -l` inside
+      `context init`'s first-session welcome path. Under `set -euo pipefail`, when **no** onboarding tasks
+      exist yet (the greenfield case — they are created *after* activation), `grep` matches nothing → exits 1
+      → `pipefail` propagates → `set -e` aborts `context init` with RC=1 **after it has already done all its
+      work** (session.yaml/focus.yaml written, banner printed). The non-zero RC is what `lib/init.sh` reported
+      as "Session init failed". Proven live via TermLink: combined-output capture showed RC=1 with the full
+      success banner, aborting exactly at the welcome block's grep|wc line.
+- [x] Real fix: guard the grep with `|| true` so a no-match counts as 0, not a fatal pipefail
+      (`agents/context/lib/init.sh:108` → `$({ grep … || true; } | wc -l)`). L-387 pattern. Live-verified:
+      fresh `fw init` now prints `✓ Session initialized (governance active)`.
+- [x] Defense-in-depth (committed `102db4ff2`, retained): inline activation routes through the project's
+      vendored fw and **surfaces** stderr instead of `2>/dev/null` (`lib/init.sh:452-461`). This did NOT fix
+      the bug (the original RCA was wrong) but is good Directive-2 hygiene — and is exactly what made the real
+      error visible during this investigation.
+- [x] Greenfield regression test added (`tests/unit/init_fresh_session_activation.bats`, contract + e2e).
+      **Verified live via TermLink** (OBS-080 Bash gate bypassed): `bats tests/unit/init_fresh_session_activation.bats`
+      → 2/2 pass; fresh `fw init` reaches `✓ Session initialized` with `session.yaml` present.
 
 <!-- ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,11 +132,12 @@ first-run failure is not a real environment problem — it is an invocation-env 
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 # --- F5 verification (target state — pass after the fix) ---
-# Old silent direct-script call is gone:
+# REAL FIX: the onboarding grep is guarded against a pipefail no-match abort (L-387):
+grep -q 'onboarding".*|| true' agents/context/lib/init.sh
+# Defense-in-depth: old silent direct-script call is gone, activation routes through fw:
 ! grep -nE 'context\.sh" init 2>/dev/null' lib/init.sh
-# Inline activation routes through the fw 'context init' entry point:
 grep -q 'context init' lib/init.sh
-# Greenfield regression (run pending — worktree Bash gate blocks fw init/bats in-session):
+# Greenfield regression (verified live via TermLink, OBS-080 bypassed — 2/2 pass):
 bats tests/unit/init_fresh_session_activation.bats
 
 ## RCA
@@ -130,21 +145,36 @@ bats tests/unit/init_fresh_session_activation.bats
 **Symptom:** Every fresh `fw init` prints `⚠ Session init failed — run 'fw context init' manually`.
 The manual recovery succeeds, so a first run should not need it.
 
-**Root cause:** `lib/init.sh:445-450` activates governance by invoking `agents/context/context.sh init`
-**directly** with only `PROJECT_ROOT="$target_dir"` in the environment. `context.sh` runs under
-`set -euo pipefail` (`context.sh:21`) and relies on the environment `bin/fw` assembles (config sourced,
-`FW_*` / `FRAMEWORK_ROOT` exported). The bare invocation lacks it, so an unset variable (`set -u`) or a
-benign non-zero (`set -e`) aborts the script → non-zero exit → the `⚠` branch. The recovery
-`fw context init` routes the **same script** through `bin/fw`, which sets that env up, so it succeeds.
+**Root cause (CORRECTED — the original hypothesis below was wrong; see `## Evolution`):**
+`agents/context/lib/init.sh:108` — in `context init`'s first-session welcome path — runs
+`onboard_count=$(grep -rl "tags:.*onboarding" "$TASKS_DIR/active" 2>/dev/null | wc -l)`. `context.sh`
+runs under `set -euo pipefail`. During `fw init`, session activation happens **before** the onboarding
+tasks are copied in, so `grep` matches nothing and exits 1; `pipefail` makes the whole pipeline exit 1;
+`set -e` then aborts `context init` with RC=1 — *after* it has already written `session.yaml`,
+`focus.yaml`, the tool-counter, and printed the full success banner. That non-zero RC is the only thing
+wrong; `lib/init.sh` faithfully reported it as "Session init failed". The manual recovery succeeded only
+because by then onboarding tasks (or >1 commit) existed, so the first-session welcome block was skipped
+entirely and line 108 never ran.
 
-**Why structurally allowed:** init's own happy path was never exercised by a test
-(`upgrade_fresh_machine_simulation.bats` covers upgrade, not init's session-activation step), and the
-`2>/dev/null` on `lib/init.sh:447` discarded the real error — so even when hit, the failure was silent
-and undiagnosable. Two Directive-2 gaps compounding (no test + swallowed stderr).
+**(Original, wrong RCA — retained for the lesson):** "`context.sh` aborts because the bare invocation
+lacks the env `bin/fw` assembles." Disproven live: the vendored fw was reached, the env was present, and
+`context init` did all its work — it just exited 1 at the grep|wc line. Routing through the vendored fw
+(the committed `102db4ff2` change) did NOT fix it. Second time in this batch a plan's named fix was the
+first hypothesis to disprove (cf. F9/T-2445, `feedback_remediation_plans_are_hypotheses`).
 
-**Prevention:** route the inline activation through the same `bin/fw context init` entry point as the
-recovery (it can no longer diverge), surface captured stderr instead of `/dev/null`, and add a
-fresh-init regression asserting the `✓ Session initialized` line.
+**Why structurally allowed:** (1) init's session-activation happy path had no test
+(`upgrade_fresh_machine_simulation.bats` covers upgrade, not init), so the greenfield grep|wc abort shipped
+unseen; (2) the original `2>/dev/null` on the activation call discarded the real error, making it silent
+and undiagnosable; (3) the grep|wc-under-pipefail no-match trap is a known class (L-387) but lived in a
+rarely-exercised first-session-only branch. The bug was only catchable by running a *fresh* `fw init` and
+reading the actual exit code — which the in-worktree Bash gate (OBS-080) blocks, so it took a TermLink
+shell to surface.
+
+**Prevention:** (a) guard the grep with `|| true` so a no-match counts as 0 (the real fix, L-387);
+(b) the `tests/unit/init_fresh_session_activation.bats` e2e asserts a fresh `fw init` reaches
+`✓ Session initialized` — which now exercises exactly the greenfield branch that was broken;
+(c) defense-in-depth: surface activation stderr instead of swallowing it (committed), so a future
+regression here is visible, not silent.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -183,6 +213,20 @@ fresh-init regression asserting the `✓ Session initialized` line.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-06-21 — original fix shipped, then disproven by live test
+- **What changed:** The first fix (commit `102db4ff2`, routing inline activation through the vendored fw)
+  was shipped as "done" on a *static* RCA — never run against a real fresh `fw init`. When the operator
+  asked "can we test this using termlink", a TermLink shell (outside the OBS-080 Bash gate) ran the e2e
+  bats and it FAILED: `fw init` still printed "Session init failed". The real cause was a grep|wc pipefail
+  no-match abort in `context init`'s greenfield welcome path (`agents/context/lib/init.sh:108`), not the
+  activation wrapper.
+- **Plan impact:** The committed wrapper change does not fix the bug — it's retained as Directive-2
+  defense-in-depth (and is what made the real error visible). The actual fix is a one-line L-387 grep guard
+  in a *different* file (`agents/context/lib/init.sh`).
+- **Triggered:** RCA + ACs corrected in place; F5 re-verified live (2/2 bats). Lesson reinforced:
+  `feedback_verify_live_before_ship` (I claimed F5 shipped without a live run) +
+  `feedback_remediation_plans_are_hypotheses` (the plan's named fix was the first hypothesis to disprove).
 
 ## Decisions
 
