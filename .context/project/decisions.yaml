@@ -2095,3 +2095,10 @@ decisions:
     date: 2026-06-20
     task: T-2440
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-302
+    decision: "cwd wins only when `find_project_root` returns a **non-stale** root (marker present"
+    scope: project
+    date: 2026-06-21
+    task: T-2446
+    rationale: "Auto-captured from task file on completion"

@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2446: F10 residual — CLAUDE_PROJECT_DIR trusted without cwd-consistency check (daemon-inheritance leak)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-21T10:35:20Z
+# ============================================================================
+
+task_id: T-2446
+task_name: "F10 residual — CLAUDE_PROJECT_DIR trusted without cwd-consistency check (daemon-inheritance leak)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-21T10:09:27Z
+completed: 2026-06-21T10:35:12Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'AC1 — `bin/fw:195-200`: `CLAUDE_PROJECT_DIR` wins only when a cwd-ancestry `find_project_root` does'
+  - 'AC2 — Dual-case regression added: (a) CC-hook (cwd=$HOME-like, no ancestry marker) → CLAUDE_PROJECT_DIR'
+  - 'AC3 — `tests/unit/test_project_root_discovery.py` (and the env-wins-unconditionally PROJECT_ROOT test)'
+  - 'AC4 — Live-fire confirmation: a fresh `fw init` consumer, run with a stale `CLAUDE_PROJECT_DIR=/opt/999`,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-21 — discriminator: reuse `_project_root_is_stale`, not "any different root"'
+    chose: 'cwd wins only when `find_project_root` returns a **non-stale** root (marker present'
+    rationale: 'The task''s literal proposal ("if find_project_root finds a *different* root → cwd wins")'
+    alternatives_rejected: ['(a) "any different root → cwd wins" — regresses the `$HOME`-stray case above.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 25
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2446-f10-residual--claudeprojectdir-trusted-w.md
+generated_by: context-agent-hybrid
