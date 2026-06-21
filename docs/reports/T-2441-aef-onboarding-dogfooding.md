@@ -110,6 +110,16 @@ remediation proposals (delivered via `fw pickup` per governance). The new app's 
   specific bleed would not occur, but dogfooding-on-the-dev-host is a real onboarding context.
 - **Remediation:** `fw serve`/`fw watchtower` must resolve the project strictly from the cwd `.framework.yaml`
   ancestry, never a host-global default; add a fresh-consumer integration assertion.
+- **UPDATE (2026-06-21, T-2445 session — framing CORRECTED):** Reproduced live and **disproved the
+  "consumer mis-ID" framing.** A real operator terminal (no `CLAUDE_PROJECT_DIR`) resolves the consumer
+  correctly — a fresh `fw init` consumer's `watchtower status` prints "not running" (✓). The /opt/999 bleed
+  came from running inside the `aef-install-505` **TermLink shell**, which inherited
+  `CLAUDE_PROJECT_DIR=/opt/999` from the long-lived TermLink daemon. The real residual is narrower:
+  `bin/fw:195-197` (T-2390) trusts `CLAUDE_PROJECT_DIR` with no cwd-consistency check, so any subprocess of a
+  CC-spawned daemon (TermLink, cron) mis-resolves — the daemon-poison class T-2391 fixed for `PROJECT_ROOT`
+  but not for `CLAUDE_PROJECT_DIR`. Agent/automation-facing only; never bites real operators. Tracked +
+  proposed fix in **T-2446** (`horizon: next`, high-blast core resolver — focused live-fire session). Third
+  plan-hypothesis disproven this batch (cf. F5 RCA, F9 plan).
 
 ---
 
