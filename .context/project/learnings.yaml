@@ -3714,3 +3714,10 @@ X'` returning empty group."
   date: 2026-06-21
   context: Added via context agent
   application: TBD
+- id: L-488
+  learning: "Any reviewer/parser that reads a task body section containing an HTML-comment template MUST strip <!-- --> via _strip_html_comments before slicing (the AC parser established this in L-414). T-2449/OBS-081: the disposition detector (T-2191) read the Open-Questions section without stripping, so the inception template's IW-1 example was parsed as a real entry and false-flagged answered-without-citation. Sibling-parity gap — new section-parsers silently re-introduce the L-414 class until a real task carries the leftover template comment."
+  source: P-001
+  task: T-2449
+  date: 2026-06-21
+  context: Added via context agent
+  application: TBD

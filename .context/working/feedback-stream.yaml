@@ -19570,3 +19570,57 @@ scan_id: R-882e4fa8
 task_id: T-2447
 payload:
   task_file: .tasks/active/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T11:17:49Z'
+scan_id: R-76ea8d9f
+task_id: T-2447
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T11:17:49Z'
+scan_id: R-76ea8d9f
+task_id: T-2447
+payload:
+  task_file: .tasks/active/T-2447-f8--bare-fw-routes-to-global-legacy-shim.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T11:43:15Z'
+scan_id: R-3e5675f6
+task_id: T-2449
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T11:43:15Z'
+scan_id: R-3e5675f6
+task_id: T-2449
+payload:
+  task_file: .tasks/active/T-2449-obs-081-reviewer-disposition-detector-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T11:44:09Z'
+scan_id: R-9446d702
+task_id: T-2449
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T11:44:09Z'
+scan_id: R-9446d702
+task_id: T-2449
+payload:
+  task_file: .tasks/active/T-2449-obs-081-reviewer-disposition-detector-pa.md

@@ -4061,3 +4061,8 @@ FW_SWITCH_FOCUS=1 git commit -q -m "T-2391'
   target: 'T-2392'
   command: 'cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5
 git add .tasks/active/T-2391-binfw-validate-inherited-projectroot-rej.md .tasks/active/T-2392-arc-012-loop-live-p'
+- timestamp: '2026-06-21T11:17:49Z'
+  task: 'T-2447'
+  flag: '--skip-sovereignty'
+  caller: 'check_human_sovereignty'
+  reason: 'Inception decision: GO'
