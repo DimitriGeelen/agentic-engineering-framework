@@ -10,6 +10,15 @@
 
 load ../test_helper
 
+# T-2454/OBS-083: these tests exercise bin/fw's *filesystem* resolution (cwd +
+# fixture layout), so the fixture fw must NOT inherit the ambient resolver env.
+# test_helper.bash exports FRAMEWORK_ROOT (and a session may export PROJECT_ROOT
+# / CLAUDE_PROJECT_DIR); bin/fw honours all three as explicit overrides, which
+# pins every fixture to /opt/999 (Mode: global) and makes all 3 assertions fail.
+# Strip them on each invocation — NOT at the bats level (test_helper re-derives
+# and re-exports FRAMEWORK_ROOT, so an outer `env -u` is undone before the test).
+FW_HERMETIC="env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u CLAUDE_PROJECT_DIR"
+
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     # Real fw binary under test
@@ -55,7 +64,7 @@ make_consumer() {
     touch "$repo/.framework.yaml"  # empty — tests show_version tolerates no-version (T-1362)
 
     cd "$repo"
-    run "$repo/bin/fw" version
+    run $FW_HERMETIC "$repo/bin/fw" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -qE "Framework:[[:space:]]+$repo[[:space:]]*$"
 }
@@ -65,7 +74,7 @@ make_consumer() {
     make_consumer "$consumer" 1
 
     cd "$consumer"
-    run "$consumer/.agentic-framework/bin/fw" version
+    run $FW_HERMETIC "$consumer/.agentic-framework/bin/fw" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -qE "Framework:[[:space:]]+$consumer/.agentic-framework[[:space:]]*$"
 }
@@ -87,7 +96,7 @@ make_consumer() {
     cd "$consumer"
     # Invoke via the shim — readlink -f will resolve to $global/bin/fw.
     # Pre-fix: FRAMEWORK resolves to $global. Post-fix: resolves to $consumer/.agentic-framework.
-    run "$shim_dir/fw" version
+    run $FW_HERMETIC "$shim_dir/fw" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -qE "Framework:[[:space:]]+$consumer/.agentic-framework[[:space:]]*$"
     # Negative assertion: must NOT be the global
