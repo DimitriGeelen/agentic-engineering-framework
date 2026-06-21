@@ -4,10 +4,10 @@ name: "F10 residual — CLAUDE_PROJECT_DIR trusted without cwd-consistency check
 description: >
   F10 residual — CLAUDE_PROJECT_DIR trusted without cwd-consistency check (daemon-inheritance leak)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-21T10:09:27Z
-last_update: 2026-06-21T10:10:54Z
+last_update: 2026-06-21T10:28:38Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,16 +78,23 @@ cwd wins), live-fired via a TermLink shell (the channel that surfaced this).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] AC1 — `bin/fw:195-200`: `CLAUDE_PROJECT_DIR` wins only when a cwd-ancestry `find_project_root` does
+- [x] AC1 — `bin/fw:195-200`: `CLAUDE_PROJECT_DIR` wins only when a cwd-ancestry `find_project_root` does
       NOT find a different valid project root; otherwise cwd wins. T-2389/T-2390 hook case (cwd=$HOME, no
-      marker above) still resolves to `CLAUDE_PROJECT_DIR`.
-- [ ] AC2 — Dual-case regression added: (a) CC-hook (cwd=$HOME-like, no ancestry marker) → CLAUDE_PROJECT_DIR
+      marker above) still resolves to `CLAUDE_PROJECT_DIR`. **Done** — discriminator is the shared
+      `_project_root_is_stale` (T-2391's =$HOME/no-marker test), reused so both daemon-poison guards stay in
+      lockstep. cwd wins only when the cwd-root is a real, non-$HOME project differing from CLAUDE_PROJECT_DIR.
+- [x] AC2 — Dual-case regression added: (a) CC-hook (cwd=$HOME-like, no ancestry marker) → CLAUDE_PROJECT_DIR
       wins; (b) consumer-cwd with a *stale/foreign* CLAUDE_PROJECT_DIR → cwd consumer wins. Live-fired via
-      TermLink (OBS-080 bypass).
-- [ ] AC3 — `tests/unit/test_project_root_discovery.py` (and the env-wins-unconditionally PROJECT_ROOT test)
+      TermLink (OBS-080 bypass). **Done** — `tests/unit/t2446_project_root_cwd_consistency.bats` (4 tests:
+      (b) consumer-wins, (a) $HOME-stray-poison → CPD-wins, (a) no-marker → CPD-wins, env-PROJECT_ROOT-wins).
+      4/4 green; sibling t2390 (3/3, reconciled t1) + t2391 (6/6) all green = 13/13.
+- [x] AC3 — `tests/unit/test_project_root_discovery.py` (and the env-wins-unconditionally PROJECT_ROOT test)
       remain green — the change touches only the CLAUDE_PROJECT_DIR branch, not the PROJECT_ROOT env contract.
-- [ ] AC4 — Live-fire confirmation: a fresh `fw init` consumer, run with a stale `CLAUDE_PROJECT_DIR=/opt/999`,
-      reports its OWN watchtower state (not /opt/999's).
+      **Done** — unit 7/7 + web 4/4 green via TermLink. t2391 t3/t4 (env-wins-unconditionally) green.
+- [x] AC4 — Live-fire confirmation: a fresh `fw init` consumer, run with a stale `CLAUDE_PROJECT_DIR=/opt/999`,
+      reports its OWN watchtower state (not /opt/999's). **Done** — fresh `fw init` consumer at /tmp; /opt/999's
+      Watchtower running on :3005; from consumer cwd + stale `CLAUDE_PROJECT_DIR=/opt/999`, patched fw resolved
+      `Project: <consumer>` and "Watchtower is not running" (consumer's own state, NOT /opt/999's :3005).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -153,7 +160,42 @@ cwd wins), live-fired via a TermLink shell (the channel that surfaced this).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n bin/fw
+bats tests/unit/t2446_project_root_cwd_consistency.bats
+bats tests/unit/t2390_project_root_claude_dir.bats
+bats tests/unit/t2391_project_root_inherited_stale.bats
+python3 -m pytest tests/unit/test_project_root_discovery.py -q
+python3 -m pytest tests/web/test_project_root_discovery.py -q -p no:cacheprovider
+grep -q "T-2446: CLAUDE_PROJECT_DIR is trusted ONLY" bin/fw
+
 ## RCA
+
+**Symptom:** `fw` run from inside a consumer project resolves PROJECT_ROOT to a *different*
+project (`/opt/999`) when a long-lived Claude-Code-spawned daemon (TermLink, cron) has leaked
+`CLAUDE_PROJECT_DIR` into the descendant shell's environment. Observed in the T-2441 onboarding
+dogfood: a TermLink shell rooted in `/opt/505` reported `/opt/999`'s Watchtower (F10).
+
+**Root cause:** `bin/fw:195` (T-2390) trusted `CLAUDE_PROJECT_DIR` whenever it pointed at a dir
+with a `.framework.yaml`/`.tasks` marker, with **no cwd-consistency check**. T-2390's stated
+assumption — "only kicks in inside a CC hook context, so non-hook fw calls are unaffected
+(CLAUDE_PROJECT_DIR unset)" — is violated by daemon inheritance: a CC-spawned daemon exports
+`CLAUDE_PROJECT_DIR` to **every** descendant, so it is *not* unset for non-hook calls made from
+inside other projects. The CLAUDE_PROJECT_DIR branch was the exact mirror of the inherited-
+`PROJECT_ROOT` poison T-2391 had already fixed via `_project_root_is_stale` — but that
+discriminator was never applied to the CLAUDE_PROJECT_DIR branch.
+
+**Why structurally allowed:** T-2390 and T-2391 were authored as two separate live-fire fixes
+(budget-gauge blindness) and never reconciled into a single "daemon-inherited env var" contract.
+T-2391 guarded `PROJECT_ROOT`; T-2390 introduced the sibling `CLAUDE_PROJECT_DIR` precedence one
+commit earlier without the same guard. The gap is agent/automation-facing only (real operators
+have `CLAUDE_PROJECT_DIR` unset), so it never surfaced in operator use — only in TermLink/cron
+descendants, which is precisely where it bit this session's task-closes.
+
+**Prevention:** (1) the fix reuses `_project_root_is_stale` so the two guards now share one
+discriminator and cannot drift; (2) `tests/unit/t2446_project_root_cwd_consistency.bats` pins the
+dual-case contract (consumer-cwd wins / $HOME-poison + no-marker → CLAUDE_PROJECT_DIR wins);
+(3) the reconciled `t2390` t1 now makes the `$HOME` signature load-bearing, so a future change that
+re-broadens CLAUDE_PROJECT_DIR trust will fail t2446 rather than silently regress.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -195,6 +237,25 @@ cwd wins), live-fired via a TermLink shell (the channel that surfaced this).
 
 ## Decisions
 
+### 2026-06-21 — discriminator: reuse `_project_root_is_stale`, not "any different root"
+- **Chose:** cwd wins only when `find_project_root` returns a **non-stale** root (marker present
+  AND != `$HOME`) differing from `CLAUDE_PROJECT_DIR` — reusing T-2391's `_project_root_is_stale`.
+- **Why:** The task's literal proposal ("if find_project_root finds a *different* root → cwd wins")
+  is under-specified: it silently regresses T-2390's real production case — a stray `$HOME/.tasks`
+  (e.g. `/root/.tasks`) that the `$PWD` walk latches when hooks run with cwd=`$HOME`. Under the
+  literal rule that stray would be a "different root" and cwd would wrongly win, re-breaking the
+  budget-gauge blindness T-2390/T-2391 fixed. `_project_root_is_stale` already encodes exactly the
+  `=$HOME`/no-marker test, so reusing it keeps the two daemon-poison guards in lockstep and cannot
+  drift.
+- **Rejected:** (a) "any different root → cwd wins" — regresses the `$HOME`-stray case above.
+  (b) Discriminate on `.framework.yaml`-presence (consumer has it, stray `/root/.tasks` doesn't) —
+  fragile: the framework repo itself has `.tasks` but no `.framework.yaml`, so this would mis-handle
+  framework-repo cwds; `$HOME`-exclusion is the property that actually distinguishes poison from a
+  genuine project.
+- **Consequence:** `t2390` t1 had to be reconciled — its mktemp decoy was a non-`$HOME` stand-in for
+  the `$HOME`-poison case; the refined contract makes the `$HOME` signature load-bearing, so t1 now
+  pins `HOME=$DECOY`. Faithful to t1's original *intent* (production cwd=`$HOME`), not a green-washing.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -224,3 +285,16 @@ cwd wins), live-fired via a TermLink shell (the channel that surfaced this).
 ### 2026-06-21T10:10:54Z — status-update [task-update-agent]
 - **Change:** status: started-work → captured
 - **Change:** horizon: next → next
+
+### 2026-06-21T10:28:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fada5be7
+- **Timestamp:** 2026-06-21T10:34:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

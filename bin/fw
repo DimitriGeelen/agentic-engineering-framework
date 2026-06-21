@@ -194,7 +194,34 @@ if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; the
     # unaffected (CLAUDE_PROJECT_DIR unset → identical to pre-T-2390 behavior).
     if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && \
        { [ -f "$CLAUDE_PROJECT_DIR/.framework.yaml" ] || [ -d "$CLAUDE_PROJECT_DIR/.tasks" ]; }; then
-        PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+        # T-2446: CLAUDE_PROJECT_DIR is trusted ONLY when the cwd is not genuinely
+        # inside a *different* real project. A long-lived CC-spawned daemon (TermLink,
+        # cron) propagates CLAUDE_PROJECT_DIR to every descendant shell; running fw
+        # from inside another project then mis-resolves to the daemon's project
+        # (origin: F10 / T-2441 dogfood — a TermLink shell rooted in /opt/505 inherited
+        # CLAUDE_PROJECT_DIR=/opt/999 and resolved /opt/999's Watchtower). This is the
+        # same daemon-poison class T-2391 fixed for inherited PROJECT_ROOT; extend its
+        # discriminator to CLAUDE_PROJECT_DIR by consulting the cwd-ancestry walk first.
+        # If it finds a real project root (marker present, != $HOME — i.e. NOT stale)
+        # that differs from CLAUDE_PROJECT_DIR, the shell is genuinely inside another
+        # project → cwd wins. Otherwise (cwd=$HOME, a stray $HOME/.tasks, or no marker
+        # above — the canonical CC-hook case from T-2389/T-2390) → CLAUDE_PROJECT_DIR
+        # wins. _project_root_is_stale encodes the =$HOME / no-marker test, so reusing
+        # it keeps the two daemon-poison guards in lockstep.
+        _cwd_root=$(find_project_root) || _cwd_root=""
+        if [ -n "$_cwd_root" ] && ! _project_root_is_stale "$_cwd_root"; then
+            _cwd_canon=$(cd "$_cwd_root" 2>/dev/null && pwd -P) || _cwd_canon="$_cwd_root"
+            _cpd_canon=$(cd "$CLAUDE_PROJECT_DIR" 2>/dev/null && pwd -P) || _cpd_canon="$CLAUDE_PROJECT_DIR"
+            if [ "$_cwd_canon" != "$_cpd_canon" ]; then
+                PROJECT_ROOT="$_cwd_root"        # genuinely inside another project
+            else
+                PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+            fi
+            unset _cwd_canon _cpd_canon
+        else
+            PROJECT_ROOT="$CLAUDE_PROJECT_DIR"   # CC-hook / $HOME-poison case (T-2390)
+        fi
+        unset _cwd_root
     else
         PROJECT_ROOT=$(find_project_root) || true
     fi

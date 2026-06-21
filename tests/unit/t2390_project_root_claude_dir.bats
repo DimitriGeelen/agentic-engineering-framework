@@ -32,9 +32,15 @@ teardown() {
     rm -rf "$DECOY" "$REAL"
 }
 
-@test "t1: valid CLAUDE_PROJECT_DIR is preferred over the \$PWD walk" {
+@test "t1: valid CLAUDE_PROJECT_DIR is preferred when the \$PWD walk only finds a \$HOME-stray marker" {
+    # T-2446 refinement: DECOY models the canonical CC-hook poison — a stray
+    # $HOME/.tasks (e.g. /root/.tasks) that find_project_root would latch. Under the
+    # refined contract CLAUDE_PROJECT_DIR wins ONLY when the cwd-root is the
+    # $HOME-poison signature (_project_root_is_stale), so HOME is pinned to the decoy
+    # here. A cwd inside a *genuine* non-$HOME project is covered by t2446 (cwd wins) —
+    # that is the F10 daemon-inheritance fix, deliberately the inverse of this case.
     cd "$DECOY"
-    run env -u PROJECT_ROOT CLAUDE_PROJECT_DIR="$REAL" bash "$FW" version
+    run env -u PROJECT_ROOT HOME="$DECOY" CLAUDE_PROJECT_DIR="$REAL" bash "$FW" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "Project:.*$REAL"
     ! echo "$output" | grep -q "Project:.*$DECOY"
