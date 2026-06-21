@@ -3707,3 +3707,10 @@ X'` returning empty group."
   date: 2026-06-18
   context: Added via context agent
   application: TBD
+- id: L-487
+  learning: "Daemon-inherited env-var poison (a long-lived CC-spawned daemon — TermLink/cron — exporting PROJECT_ROOT or CLAUDE_PROJECT_DIR to every descendant) is a CLASS, not a single var: fix every inherited env var that feeds bin/fw root-resolution at once, with one shared discriminator. T-2391 guarded PROJECT_ROOT via _project_root_is_stale (=HOME/no-marker) but the sibling CLAUDE_PROJECT_DIR branch (T-2390, one commit earlier) never got it, so the same poison resurfaced as F10. Reuse the existing guard rather than authoring a parallel one — separate guards drift."
+  source: G-019
+  task: T-2446
+  date: 2026-06-21
+  context: Added via context agent
+  application: TBD
