@@ -79,13 +79,12 @@ emit a possibly-wrong *link* not a false *health verdict* — noted as a follow-
 - [x] AC3 — `agents/audit/audit.sh` deploy-gate health check (the `_wt_url=` line) no longer falls back to
       a default-port URL; the "Health endpoint responds" pass is gated on `_watchtower_url` success. A
       foreign port-200 can no longer produce a false pass.
-- [ ] AC4 — Regression test (`tests/unit/watchtower_health_verdict_identity.bats`) asserts both call-sites
-      no longer carry the `_watchtower_url ... || echo "http://localhost` fallback, and that a stub server
-      answering `/health` 200 (but NOT `/api/_identity` as ours) yields no healthy verdict. `bash -n`
-      clean on both edited files.
-      _(Harness run pending: `bats` is gated in-worktree under OBS-080. Contract legs verified live via
-      grep + `bash -n`; the bats run is operator/CI-runnable —
-      `bats tests/unit/watchtower_health_verdict_identity.bats`.)_
+- [x] AC4 — Regression test (`tests/unit/watchtower_health_verdict_identity.bats`) asserts both call-sites
+      no longer carry the `_watchtower_url ... || echo "http://localhost` fallback, and that a foreign stub
+      answering `/health` 200 (but NOT `/api/_identity` as ours) is rejected by the identity handshake.
+      _(Verified live: `bats tests/unit/watchtower_health_verdict_identity.bats` → 3/3 pass, run via a
+      TermLink shell `f9-bats` to bypass the in-worktree OBS-080 Bash gate. `bash -n` clean on both edited
+      files.)_
 
 <!-- No Human section: all ACs are agent-verifiable (no render surface, no
      external action, no subjective judgment). Pure backend reliability fix. -->

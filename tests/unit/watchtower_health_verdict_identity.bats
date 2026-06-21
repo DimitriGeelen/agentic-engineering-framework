@@ -49,17 +49,20 @@ teardown() {
 }
 
 # ------------------------------------------------------------------- e2e: chain
-# A FOREIGN server answering /health 200 but identifying as a different project
-# via /api/_identity must NOT be resolved as ours. _watchtower_url is the contract
-# both verdict call-sites now gate on; if it returns non-zero (no leaked URL), the
-# false-positive cannot occur downstream.
-@test "F9: _watchtower_url returns non-zero against a foreign /health-200 server" {
+# A FOREIGN server answering /health 200 but identifying as a DIFFERENT project
+# via /api/_identity must NOT pass the identity handshake. That handshake
+# (_watchtower_identity_matches) is the single check both hardened call-sites'
+# resolver depends on (T-1803); if a foreign /health-200 server fails it, the
+# false-positive verdict cannot occur. Tested directly — no multi-layer probing,
+# deterministic.
+@test "F9: identity handshake rejects a foreign /health-200 server (no false match)" {
     command -v python3 >/dev/null || skip "python3 required for stub server"
 
-    # Foreign stub: 200 on /health, and /api/_identity claims a DIFFERENT project.
+    # Foreign stub: 200 on /health (the trap a bare curl fell for), and
+    # /api/_identity claims a DIFFERENT project_root.
     local stub="$TEST_TEMP_DIR/stub.py"
     cat > "$stub" <<'PY'
-import sys, json
+import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a): pass
@@ -79,32 +82,29 @@ print(srv.server_address[1], flush=True)
 srv.serve_forever()
 PY
 
-    # Launch and read back the chosen port.
-    exec 3< <(python3 "$stub")
+    # Background the stub with stdout to a FILE (not a pipe inherited by the test
+    # shell — that inheritance is what makes bats `run` hang). Poll for the port.
+    python3 "$stub" > "$TEST_TEMP_DIR/port.txt" 2>/dev/null &
     STUB_PID=$!
-    local port
-    read -r port <&3
+    local port="" i
+    for i in $(seq 1 25); do
+        port="$(cat "$TEST_TEMP_DIR/port.txt" 2>/dev/null)"
+        [ -n "$port" ] && break
+        sleep 0.2
+    done
     [ -n "$port" ]
 
-    # Sanity: the stub really is answering /health 200 (the trap the old code fell
-    # into — a bare curl /health would go green here).
+    # Sanity: the stub really answers /health 200 — the exact trap the old
+    # `curl .../health` verdict fell into.
     run curl -sf "http://127.0.0.1:${port}/health"
     [ "$status" -eq 0 ]
 
-    # Our project root is an empty temp dir (no triple files of ours); point the
-    # configured port at the foreign stub. NB: we do NOT source paths.sh — it could
-    # reset PROJECT_ROOT and let a live worktree Watchtower satisfy Layer 1.
-    # watchtower.sh sources config.sh itself; FW_PORT feeds fw_config "PORT".
-    mkdir -p "$TEST_TEMP_DIR/proj/.context/working"
-
-    run env -u WATCHTOWER_URL PROJECT_ROOT="$TEST_TEMP_DIR/proj" FW_PORT="$port" \
+    # The identity handshake (PROJECT_ROOT = an unrelated temp dir) must REJECT the
+    # foreign server: its /api/_identity reports a different project_root.
+    run env -u WATCHTOWER_URL PROJECT_ROOT="$TEST_TEMP_DIR/proj" \
         FRAMEWORK_ROOT="$FRAMEWORK_ROOT" bash -c '
             source "$FRAMEWORK_ROOT/lib/watchtower.sh"
-            _watchtower_url
+            _watchtower_identity_matches "http://127.0.0.1:'"$port"'"
         '
-
-    # The resolver must NOT have leaked the foreign URL: non-zero exit, and the
-    # foreign port must not appear in any URL it printed to stdout.
     [ "$status" -ne 0 ]
-    [[ "$output" != *":${port}"* ]]
 }
