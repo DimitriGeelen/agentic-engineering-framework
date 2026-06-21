@@ -726,7 +726,7 @@ show_help() {
     echo -e "  ${GREEN}traceability${NC} baseline Set traceability baseline (imported projects)"
     echo -e "  ${GREEN}preflight${NC}            Check OS dependencies (interactive install)"
     echo -e "  ${GREEN}validate-init${NC}        Verify fw init output is correct and complete"
-    echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
+    echo -e "  ${GREEN}doctor${NC} ${CYAN}[--quick]${NC}     Check framework health (--quick: project-only, skip host/network probes)"
     echo -e "  ${GREEN}verify-acs${NC}           Automated Human AC evidence collection"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
@@ -781,12 +781,51 @@ show_version() {
 # --- Doctor Command ---
 
 do_doctor() {
+    # T-2452/F6: --quick — project-only fast mode. Skips the slow host/network
+    # probes (mirror divergence ls-remote, litellm/ollama/watchtower curls,
+    # global-install du scan) so the onboarding fix-and-rerun loop isn't paying
+    # ~150s per run (T-2441 dogfood: 3 calls timed out a 120s budget). Project
+    # checks are unaffected; full `fw doctor` (no flag) is unchanged.
+    local quick_mode=0
+    local _arg
+    for _arg in "$@"; do
+        case "$_arg" in
+            --quick) quick_mode=1 ;;
+            --help|-h)
+                echo "Usage: fw doctor [--quick]"
+                echo ""
+                echo "  Framework + project health check."
+                echo ""
+                echo "  --quick   Project-only fast mode: skip the slow host/network probes"
+                echo "            (mirror divergence ls-remote, litellm/ollama/watchtower"
+                echo "            curls). For the onboarding fix-and-rerun loop. Project"
+                echo "            checks are unaffected; the project-health verdict still renders."
+                return 0
+                ;;
+        esac
+    done
+
     echo -e "${BOLD}fw doctor${NC} - Framework Health Check"
+    if [ "$quick_mode" = "1" ]; then
+        echo -e "  ${CYAN}--quick${NC}: project-only mode — host/network probes skipped"
+    fi
     echo ""
 
     local issues=0
     local warnings=0
     local host_warnings=0
+
+    # T-2452/F6: returns 0 (true) when a slow host/network probe block should be
+    # skipped under --quick, emitting a one-line SKIP marker. Returns 1 (proceed)
+    # in full mode. Centralises the skip decision so the guarded blocks stay
+    # readable and the SKIP wording is consistent.
+    _doctor_quick_skip() {
+        if [ "$quick_mode" = "1" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  $1 (--quick)"
+            return 0
+        fi
+        return 1
+    }
 
     # T-1707: host-scope findings can't be fixed from this project session —
     # they live at the machine level (system installs, ~/.gitconfig,
@@ -1536,6 +1575,7 @@ else:
 
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
+    if _doctor_quick_skip "Watchtower smoke test (HTTP probes)"; then :; else
     source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
     local _doctor_wt_url _doctor_wt_port
     # F9 (T-2445): gate the smoke verdict on the identity-verified resolver. A bare
@@ -1569,6 +1609,7 @@ for e in d.get('errors',[])[:3]:
             warnings=$((warnings + 1))
         fi
     fi
+    fi  # T-2452/F6: end --quick guard for Watchtower smoke test
 
     # Check: TermLink (optional cross-terminal session communication)
     if command -v termlink >/dev/null 2>&1; then
@@ -1602,6 +1643,7 @@ for e in d.get('errors',[])[:3]:
     # ANTHROPIC_BASE_URL: http://localhost:4000 (the litellm proxy port).
     # Mirrors T-1694 pi pattern.
     local _wf_dir="$PROJECT_ROOT/.context/project/workflows"
+    if _doctor_quick_skip "litellm/ollama reachability curls"; then :; else
     if [ -d "$_wf_dir" ] && \
        grep -lE "ANTHROPIC_BASE_URL:\s*http://localhost:4000" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
         if curl -sf --max-time 2 http://localhost:4000/health >/dev/null 2>&1; then
@@ -1625,6 +1667,7 @@ for e in d.get('errors',[])[:3]:
             _doctor_warn_host "ollama not reachable on http://192.168.10.107:11434; ollama-loop workflows will fail"
         fi
     fi
+    fi  # T-2452/F6: end --quick guard for litellm/ollama curls
 
     # Check: TypeScript build health (optional)
     if [ -d "$FRAMEWORK_ROOT/lib/ts/src" ]; then
@@ -2054,6 +2097,7 @@ else:
     # mirror push is rejected as non-fast-forward and AEF stops reaching GitHub
     # silently. T-1591 root cause was annotated-vs-lightweight tag mismatch
     # going undetected for 50+ failed mirror builds (~22h).
+    if _doctor_quick_skip "Mirror divergence (origin↔mirror ls-remote)"; then :; else
     set +e  # tolerate ls-remote / comm / wc pipe failures (network, empty refs)
     local _all_remotes _has_origin
     _all_remotes=$(git -C "$PROJECT_ROOT" remote 2>/dev/null)
@@ -2104,6 +2148,7 @@ else:
         rm -f "$_origin_dump"
     fi
     set -e
+    fi  # T-2452/F6: end --quick guard for mirror divergence
 
     # Check: Workflow file schema linter (T-1694 / Q14)
     # Lints all .context/project/workflows/*.yaml against ADR-0003 schema:
