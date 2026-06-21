@@ -4,16 +4,16 @@ name: "F8 — bare fw routes to global legacy shim instead of consumer-local fw 
 description: >
   Inception: F8 — bare fw routes to global legacy shim instead of consumer-local fw (T-1257 hazard)
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-21T10:39:29Z
-last_update: 2026-06-21T10:39:29Z
-date_finished: null
+last_update: 2026-06-21T11:17:49Z
+date_finished: 2026-06-21T11:17:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -94,7 +94,7 @@ skew. **OUT (sibling findings, separate tasks):** F2 (legacy-shim messaging), F3
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -166,7 +166,20 @@ out of scope (one inception = one question).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The defect is real and concrete — the global shim is a symlink to the global `bin/fw` and lacks the
+T-2446 fix, so bare `fw` from a consumer runs stale resolution logic (the exact surface
+T-2389→T-2446 keep fixing). Doing nothing (D) leaves the T-1257 hazard the operator flagged. The
+operator's F8 instinct was re-exec; Candidate C delivers it while isolating the recursion risk to a
+small, independently-testable shim **off** bin/fw's SEV-1 hot path (Candidate A puts it ON that path —
+rejected). The env-sentinel guard is proven by T-2099 (which already uses env-scoped FRAMEWORK_ROOT to
+break this exact recursion), so the fork-bomb class is preventable by construction. Candidate E ships
+alongside because the real harm is *silent* skew and a new wrapper won't retroactively fix the symlink
+shims already in the wild — the doctor WARN closes that gap. F2/F3 are sibling findings, deliberately
+out of scope (one inception = one question).
+
+**Date**: 2026-06-21T11:17:48Z
 
 ## Updates
 
@@ -175,9 +188,30 @@ out of scope (one inception = one question).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-882e4fa8
-- **Timestamp:** 2026-06-21T10:49:14Z
+- **Scan ID:** R-76ea8d9f
+- **Timestamp:** 2026-06-21T11:17:49Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+### 2026-06-21T11:17:48Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The defect is real and concrete — the global shim is a symlink to the global `bin/fw` and lacks the
+T-2446 fix, so bare `fw` from a consumer runs stale resolution logic (the exact surface
+T-2389→T-2446 keep fixing). Doing nothing (D) leaves the T-1257 hazard the operator flagged. The
+operator's F8 instinct was re-exec; Candidate C delivers it while isolating the recursion risk to a
+small, independently-testable shim **off** bin/fw's SEV-1 hot path (Candidate A puts it ON that path —
+rejected). The env-sentinel guard is proven by T-2099 (which already uses env-scoped FRAMEWORK_ROOT to
+break this exact recursion), so the fork-bomb class is preventable by construction. Candidate E ships
+alongside because the real harm is *silent* skew and a new wrapper won't retroactively fix the symlink
+shims already in the wild — the doctor WARN closes that gap. F2/F3 are sibling findings, deliberately
+out of scope (one inception = one question).
+
+### 2026-06-21T11:17:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+### 2026-06-21T11:17:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
