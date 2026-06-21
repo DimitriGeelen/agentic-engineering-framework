@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2452: F6: fw doctor --quick — project-only fast mode skipping host/network probes (T-2441 dogfood; doctor ~72s)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-21T13:18:42Z
+# ============================================================================
+
+task_id: T-2452
+task_name: "F6: fw doctor --quick — project-only fast mode skipping host/network probes (T-2441 dogfood; doctor ~72s)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-21T12:00:27Z
+completed: 2026-06-21T13:17:54Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'AC1 — `fw doctor --quick` runs project-scoped checks only, skipping host + network probes; flag is'
+  - 'AC2 — `--quick` is measurably faster than full doctor. **Done:** live A/B (T-2452 session):'
+  - 'AC3 — full `fw doctor` (no flag) is unchanged; existing doctor tests stay green; a new assertion'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-21 — `--quick` skips network probes via guard wrappers, not a full reorder'
+    chose: 'a `quick_mode` flag + `_doctor_quick_skip` helper that wraps the 3 slowest host/network'
+    rationale: 'additive, low-blast (the original blocks are untouched in the `else` branch), and targets the'
+    alternatives_rejected: ['(a) a full project-first/host-last reorder of `do_doctor` (~1450 lines — high blast, the']
+  - decision: '2026-06-21 — Test --quick behaviourally once; record the full/quick delta, don''t run full in bats'
+    chose: '4 source-level pins (flag parse, helper, ≥3 guards, --help docs) + 1 behavioural `--quick`'
+    rationale: 'running full `fw doctor` (~150s, network-coupled) in a unit test is exactly the slowness this'
+    alternatives_rejected: ['a timed A/B inside bats (would run full doctor — 150s, flaky, self-defeating).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 77 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 77
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2452-f6-fw-doctor---quick--project-only-fast-.md
+generated_by: context-agent-hybrid
