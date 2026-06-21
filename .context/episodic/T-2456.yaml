@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2456: fw note writes unescaped double-quoted YAML — backslash in note body corrupts inbox.yaml + audit does not validate inbox.yaml parse
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-21T15:23:33Z
+# ============================================================================
+
+task_id: T-2456
+task_name: "fw note writes unescaped double-quoted YAML — backslash in note body corrupts inbox.yaml + audit does not validate inbox.yaml parse"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-21T15:13:20Z
+completed: 2026-06-21T15:23:26Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '**Writer:** `do_add` escapes `$text` (`\`→`\\`, then `"`→`\"`) before the double-quoted scalar, so a backslash/quote in a note body can no longer corrupt inbox.yaml; both readers (yaml.safe_load + the sed reader) stay correct'
+  - '**Data:** the corrupt OBS-081 entry repaired (`\d`→`\\d`); `.context/inbox.yaml` parses again (81 obs) and `fw note list` is restored'
+  - '**Detection:** the audit''s YAML-parse check (agents/audit/audit.sh) extended to validate `.context/inbox.yaml` (was only `.context/{project,arcs}/*.yaml`) — proven in isolation to PASS on the valid inbox and FAIL on an unescaped-`\d` fixture'
+  - '**Regression:** `tests/unit/observe.bats` +3 (16/16): backslash round-trip, embedded-quote round-trip, two-note parse — each asserting **exact value preservation** (single backslash in → single backslash out), not just "parses"'
+  - 'Junk test note (the OBS-084 throwaway written during live-fire) removed; no inbox pollution left behind'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 10
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2456-fw-note-writes-unescaped-double-quoted-y.md
+generated_by: context-agent-hybrid
