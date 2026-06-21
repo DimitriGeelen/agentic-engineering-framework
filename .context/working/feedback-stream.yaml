@@ -19732,3 +19732,39 @@ scan_id: R-e0829cc0
 task_id: T-2452
 payload:
   task_file: .tasks/active/T-2452-f6-fw-doctor---quick--project-only-fast-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T13:32:06Z'
+scan_id: R-cdd6d70b
+task_id: T-2454
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T13:32:06Z'
+scan_id: R-cdd6d70b
+task_id: T-2454
+payload:
+  task_file: .tasks/active/T-2454-obs-083-resolveframeworkbats-non-hermeti.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T13:32:16Z'
+scan_id: R-e82b861a
+task_id: T-2454
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T13:32:16Z'
+scan_id: R-e82b861a
+task_id: T-2454
+payload:
+  task_file: .tasks/active/T-2454-obs-083-resolveframeworkbats-non-hermeti.md

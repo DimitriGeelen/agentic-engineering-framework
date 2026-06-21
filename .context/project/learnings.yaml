@@ -3728,3 +3728,10 @@ X'` returning empty group."
   date: 2026-06-21
   context: Added via context agent
   application: TBD
+- id: L-490
+  learning: "Resolution-test hermeticity: any bats exercising bin/fw filesystem resolution must strip FRAMEWORK_ROOT/PROJECT_ROOT/CLAUDE_PROJECT_DIR on the inner run — test_helper.bash exports FRAMEWORK_ROOT and bin/fw honours it as an explicit override, pinning fixtures to the real repo. An outer 'env -u bats' does NOT work (test_helper re-exports)."
+  source: P-011
+  task: T-2454
+  date: 2026-06-21
+  context: Added via context agent
+  application: TBD
