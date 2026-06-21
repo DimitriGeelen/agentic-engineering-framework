@@ -2102,3 +2102,31 @@ decisions:
     date: 2026-06-21
     task: T-2446
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-303
+    decision: "`Project <root>: N project warning(s), K failure(s)` (or `healthy` when 0/0), plus a"
+    scope: project
+    date: 2026-06-21
+    task: T-2451
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-304
+    decision: "four fast source-grep pins (verdict line, host-exclusion line, project_warnings computation,"
+    scope: project
+    date: 2026-06-21
+    task: T-2451
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-305
+    decision: "a `quick_mode` flag + `_doctor_quick_skip` helper that wraps the 3 slowest host/network"
+    scope: project
+    date: 2026-06-21
+    task: T-2452
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-306
+    decision: "4 source-level pins (flag parse, helper, ≥3 guards, --help docs) + 1 behavioural `--quick`"
+    scope: project
+    date: 2026-06-21
+    task: T-2452
+    rationale: "Auto-captured from task file on completion"

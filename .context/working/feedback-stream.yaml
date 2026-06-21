@@ -19660,3 +19660,75 @@ scan_id: R-68b2ee2a
 task_id: T-2450
 payload:
   task_file: .tasks/active/T-2450-f3-fw---version-reports-vdev-instead-of-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T13:03:06Z'
+scan_id: R-60669ab0
+task_id: T-2451
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T13:03:06Z'
+scan_id: R-60669ab0
+task_id: T-2451
+payload:
+  task_file: .tasks/active/T-2451-f7-fw-doctor-segments-project-vs-host-ch.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T13:03:18Z'
+scan_id: R-d02416d5
+task_id: T-2451
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T13:03:18Z'
+scan_id: R-d02416d5
+task_id: T-2451
+payload:
+  task_file: .tasks/active/T-2451-f7-fw-doctor-segments-project-vs-host-ch.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T13:17:40Z'
+scan_id: R-f753c7f2
+task_id: T-2452
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T13:17:40Z'
+scan_id: R-f753c7f2
+task_id: T-2452
+payload:
+  task_file: .tasks/active/T-2452-f6-fw-doctor---quick--project-only-fast-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-21T13:18:37Z'
+scan_id: R-e0829cc0
+task_id: T-2452
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-21T13:18:37Z'
+scan_id: R-e0829cc0
+task_id: T-2452
+payload:
+  task_file: .tasks/active/T-2452-f6-fw-doctor---quick--project-only-fast-.md
