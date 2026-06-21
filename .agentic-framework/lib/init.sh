@@ -301,7 +301,7 @@ LYAML
     # Skipped silently when --force re-runs: the destination existence check
     # handles re-init without trampling customisations.
     mkdir -p "$target_dir/policy"
-    #@init: yaml-2bv policy/value-drivers.yaml drivers
+    #@init: yaml-2bv policy/value-drivers.yaml protected_drivers
     # BVP value-drivers definitions (T-2229)
     if [ ! -f "$target_dir/policy/value-drivers.yaml" ]; then
         if [ -f "$FRAMEWORK_ROOT/policy/value-drivers.yaml" ]; then
@@ -440,13 +440,25 @@ CYAML
     fi
 
     # --- Activate governance: initialize session context (T-002) ---
+    # F5 (T-2444): route through the project's vendored fw — the SAME entry
+    # point as the `fw context init` recovery — so context.sh runs with the
+    # full env bin/fw exports. The earlier direct `context.sh init` call set
+    # only PROJECT_ROOT, so context.sh's `set -euo pipefail` aborted on env
+    # bin/fw would have provided, while the recovery (same script via bin/fw)
+    # succeeded. The old `2>/dev/null` masked the real error (Directive-2) —
+    # capture stderr and surface it on failure instead of discarding it.
     echo ""
     echo -e "Activating governance..."
-    local context_init_script="$FRAMEWORK_ROOT/agents/context/context.sh"
-    if [ -x "$context_init_script" ]; then
-        PROJECT_ROOT="$target_dir" "$context_init_script" init 2>/dev/null && \
-            echo -e "  ${GREEN}✓${NC}  Session initialized (governance active)" || \
+    local si_fw="$target_dir/.agentic-framework/bin/fw"
+    [ -x "$si_fw" ] || si_fw="$FRAMEWORK_ROOT/bin/fw"
+    if [ -x "$si_fw" ]; then
+        local si_err
+        if si_err="$(PROJECT_ROOT="$target_dir" "$si_fw" context init 2>&1 >/dev/null)"; then
+            echo -e "  ${GREEN}✓${NC}  Session initialized (governance active)"
+        else
             echo -e "  ${YELLOW}⚠${NC}  Session init failed — run 'fw context init' manually"
+            [ -n "$si_err" ] && echo "$si_err" | sed 's/^/      /' >&2
+        fi
     fi
 
     # --- Copy onboarding task templates (T-460) ---

@@ -4500,9 +4500,15 @@ for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-rou
 done
 
 # Check health endpoint responds (if server is running)
-_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:$(fw_config "PORT" 3000)")
+# F9 (T-2445): gate the health pass on the identity-verified resolver. A bare
+# `|| echo http://localhost:PORT` fallback re-points at a FOREIGN service holding
+# the default port and curls its /health (any server answers 200) → false pass.
+# _watchtower_url returns non-zero when no Watchtower of OURS is reachable (T-1803).
+if ! _wt_url=$(_watchtower_url 2>/dev/null); then
+    _wt_url=""
+fi
 _wt_port=$(echo "$_wt_url" | grep -oP ':\K\d+$' || echo "3000")
-if curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
+if [ -n "$_wt_url" ] && curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :${_wt_port}"
 elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :5050"
