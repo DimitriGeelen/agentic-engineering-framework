@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2461: fw doctor MCP check is framework-only — SKIPs misleadingly on consumers (T-2459 follow-on)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-22T19:25:48Z
+# ============================================================================
+
+task_id: T-2461
+task_name: "fw doctor MCP check is framework-only — SKIPs misleadingly on consumers (T-2459 follow-on)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-22T10:32:05Z
+completed: 2026-06-22T19:25:40Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'doctor MCP-manifest asset paths (manifest, tool-set.yaml, manifest.py) resolve via `_fw_root="${FRAMEWORK_ROOT:-$PROJECT_ROOT}"` — no-op when the two roots are equal (framework repo = no regression), vendored path on a consumer (bin/fw:1382-1384, 1402)'
+  - 'runtime pid file stays per-project on `$PROJECT_ROOT` (RUNTIME state, not a vendored asset) (bin/fw:1389)'
+  - 'absent-manifest SKIP branch is consumer-aware: vendored framework (`_fw_root != PROJECT_ROOT`) → "run: fw upgrade"; framework repo → "run: fw mcp emit-manifest" (bin/fw:1414-1422)'
+  - 'regression test `t2461_doctor_mcp_consumer_path.bats` pins the resolution source + replays consumer/framework layouts (proves the bug under old logic), 6/6 green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 533 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 533
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2461-fw-doctor-mcp-check-is-framework-only--s.md
+generated_by: context-agent-hybrid
