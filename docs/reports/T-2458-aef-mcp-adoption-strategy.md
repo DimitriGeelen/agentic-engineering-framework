@@ -74,15 +74,36 @@ The coverage/docs direction depends on a decision only the operator can make:
 
 ## 4. What TermLink teaches (benchmark — theirs is adopted)
 
-> *TermLink's MCP has hundreds of `mcp__termlink__*` tools in daily use. AEF's has 22 unused. Why the
-> difference?* Code-read of `/opt/termlink` in progress; agent contact filed on thread `aef-mcp-adoption`
-> (note: local termlink session shares this host's identity fingerprint, so the DM is a self-loop — the
-> code is the reliable source).
+TermLink's MCP is adopted because of **three design choices AEF made the opposite of**. (Contact
+filed on thread `aef-mcp-adoption` — but the local termlink session shares this host's identity
+fingerprint, so that DM is a self-loop; findings below are from the code-read, the reliable source.)
 
-_[TO FILL from the /opt/termlink code-read: (1) server architecture + tool-registration mechanism;
-(2) codegen-from-CLI vs hand-maintained; (3) how the server gets auto-wired into `.mcp.json` — their
-answer to our RC-1; (4) discoverability/adoption design; (5) transferable vs non-transferable lessons
-given TermLink is intentionally machine-wide and AEF is intentionally per-project-isolated.]_
+| Dimension | TermLink (adopted) | AEF fw-MCP (not adopted) |
+|-----------|--------------------|--------------------------|
+| **Wiring** | Pre-wired in the `.mcp.json` template `fw init`/`upgrade` ships (`{"command":"termlink","args":["mcp","serve"]}`) — every consumer gets it automatically | `fw` server in the framework's *own* `.mcp.json` only; consumer template (`lib/init.sh:822`, `lib/upgrade.sh:1462`) omits it → **RC-1** |
+| **Server** | Built-in subcommand `termlink mcp serve` (single machine-wide binary) | Separate per-project python script `agents/mcp/framework_mcp_server.py` |
+| **Tool catalogue** | ~220 tools auto-discovered + convention-classified by verb-suffix (`*_list/_status` → read; `_post/_send/work_on` → mutator); self-healing baseline, **zero manual maintenance** (`agents/audit/orchestrator-mcp-scan.sh:162-210`, 196 tools / 7 batches / 0 misclassifications) | 22 hand-curated entries in `tool-set.yaml`; adding a verb = manual YAML edit. Agents fall back to shell for the long tail |
+| **Discoverability** | `termlink_<ns>_<verb>` naming; CLAUDE.md teaches the tools + `task_id` governance | `mcp__fw__*`, deferred; CLAUDE.md never mentions them → **RC-2** |
+
+**Transferable to AEF (adapted for the per-project model):**
+1. **Auto-wire the `fw` server into the consumer `.mcp.json` template** (init + upgrade). This is the
+   single thing that makes TermLink universal — and it's exactly our slice 1. Confirmed as THE fix.
+2. **Codegen the tool catalogue from `fw help` + convention-classify** instead of hand-curating
+   `tool-set.yaml`. AEF already has the drift-scan substrate — `orchestrator-mcp-scan.sh` has a
+   *framework-mcp leg* (~lines 398-448) that probes the fw MCP. Extending it to auto-classify by
+   verb-suffix would remove the maintenance tax and let coverage grow toward parity cheaply.
+3. **Document in CLAUDE.md** (MCP guidance + `task_id`) — TermLink's tools are used partly because
+   the docs teach them; ours are invisible.
+
+**NOT transferable:** TermLink is *intentionally machine-wide* (single binary on PATH — its session
+discovery needs system sockets); AEF is *intentionally per-project-vendored/isolated*. So we copy the
+*auto-wire-into-`.mcp.json`* and *convention-codegen* patterns, **not** the machine-wide install model.
+
+**Strategy implication:** the codegen insight materially lowers the cost of Strategy 3 (full parity).
+If new `fw` verbs auto-expose via convention-classification, "near-complete mirror" stops being an
+expensive hand-maintenance burden and becomes nearly free — which makes Strategy 1 (MCP-first) and
+Strategy 3 more attractive than a pure-curation reading would suggest. The operator's strategy call
+(IW-1) should weigh this: parity-via-codegen is the path that made TermLink's MCP the default surface.
 
 ## 5. Recommendation
 

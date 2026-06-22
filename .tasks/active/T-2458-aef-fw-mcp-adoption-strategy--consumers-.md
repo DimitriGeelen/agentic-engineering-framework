@@ -47,8 +47,11 @@ Three root causes (full evidence: `docs/reports/T-2458-aef-mcp-adoption-strategy
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
 - Wiring the `fw` server into consumer `.mcp.json` on init/upgrade is *necessary* to enable
   adoption (maybe not sufficient — docs/coverage may still gate actual use).
-- TermLink's adoption is driven by auto-wiring + near-complete CLI mirror (validating via
-  `/opt/termlink` code-read, §4 of the artifact).
+- TermLink's adoption is driven by auto-wiring + near-complete CLI mirror — **VALIDATED** by the
+  `/opt/termlink` code-read (artifact §4): TermLink ships its MCP pre-wired in the `.mcp.json`
+  template every consumer inherits, and auto-discovers ~220 tools by verb-suffix convention (zero
+  manual maintenance). AEF made the opposite choice on both. Codegen-from-`fw help` would make
+  Strategy 3 (parity) nearly free — a material input to the IW-1 strategy call.
 
 ## Open Questions
 
