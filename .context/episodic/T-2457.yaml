@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2457: fw fabric register/enrich write cards non-atomically — spurious unregistered drift FP (OBS-080)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-22T02:36:42Z
+# ============================================================================
+
+task_id: T-2457
+task_name: "fw fabric register/enrich write cards non-atomically — spurious unregistered drift FP (OBS-080)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-22T02:31:25Z
+completed: 2026-06-22T02:36:33Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`register.sh` writes the skeleton card to a same-dir temp then `mv -f` onto the real path (atomic rename); no bare `cat > "$card_file"` truncate-write remains'
+  - '`enrich.py` `save_card` writes to a same-dir temp then `os.replace` onto the real path; no bare `with open(path,"w")` truncate-write remains'
+  - 'Regression test `tests/unit/t2457_fabric_atomic_card_write.bats` (5 tests) pins both functional (fresh card carries `location:` + parses, no `.tmp` residue) and source (atomic-rename pattern present, bare-truncate absent) for both writers — all pass'
+  - 'No regression: existing `fabric_register_slug.bats`, `fabric_drift_data_artifact.bats`, and enrich py tests (`test_enrich_bats_parser.py`, `test_enrich_python_path_refs.py`) stay green; `register.sh` passes `bash -n`, `enrich.py` passes `py_compile`'
+  - 'Live verification: a real `fw fabric enrich <card>` writes via the new atomic path, the card still parses and carries `location:`, and no `.tmp` residue is left in `.fabric/components/`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2457-fw-fabric-registerenrich-write-cards-non.md
+generated_by: context-agent-hybrid

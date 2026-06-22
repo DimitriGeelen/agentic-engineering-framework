@@ -4,12 +4,12 @@ name: "fw fabric register/enrich write cards non-atomically — spurious unregis
 description: >
   fw fabric register/enrich write cards non-atomically — spurious unregistered drift FP (OBS-080)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/fabric/lib/register.sh, tests/unit/t2457_fabric_atomic_card_write.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-22T02:31:25Z
-last_update: 2026-06-22T02:31:25Z
-date_finished: null
+last_update: 2026-06-22T02:36:33Z
+date_finished: 2026-06-22T02:36:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -197,9 +197,12 @@ the next writer added to the fabric agent.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-99ba380a
-- **Timestamp:** 2026-06-22T02:36:07Z
+- **Scan ID:** R-9eb5419f
+- **Timestamp:** 2026-06-22T02:36:36Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-22T02:36:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
