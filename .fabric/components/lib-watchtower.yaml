@@ -18,6 +18,10 @@ depended_by:
   type: called_by
 - target: bin/watchtower.sh
   type: called_by
+- target: tests/unit/watchtower_health_verdict_identity.bats
+  type: called_by
+- target: tests/unit/watchtower_health_verdict_identity.bats
+  type: tests_by
 last_verified: 2026-04-12
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-06-22'

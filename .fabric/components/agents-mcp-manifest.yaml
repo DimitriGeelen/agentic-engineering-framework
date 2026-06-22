@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: agents/audit/orchestrator-mcp-scan.sh
   type: calls
+- target: bin/fw
+  type: calls
 depended_by:
 - target: agents/mcp/framework_mcp_server.py
   type: uses_by
@@ -19,6 +21,8 @@ depended_by:
   type: called_by
 - target: bin/fw
   type: called_by
+- target: tests/unit/t2461_doctor_mcp_consumer_path.bats
+  type: tests_by
 last_verified: 2026-06-08
 created_by: unknown
-last_enriched: '2026-06-10'
+last_enriched: '2026-06-22'

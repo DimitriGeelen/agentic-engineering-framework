@@ -114,6 +114,10 @@ depended_by:
   type: called_by
 - target: tests/unit/audit_ctl030_completed_horizon_drift.bats
   type: tests_by
+- target: tests/unit/watchtower_health_verdict_identity.bats
+  type: called_by
+- target: tests/unit/watchtower_health_verdict_identity.bats
+  type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-06-02'
+last_enriched: '2026-06-22'
