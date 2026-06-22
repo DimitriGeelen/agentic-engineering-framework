@@ -1373,8 +1373,15 @@ else:
     fi
 
     # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
-    local _mcp_mf="$PROJECT_ROOT/agents/mcp/framework-mcp-manifest.json"
-    local _mcp_ts="$PROJECT_ROOT/policy/capability-overlay/tool-set.yaml"
+    # T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
+    # FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is
+    # the vendored .agentic-framework/ in a consumer. Using PROJECT_ROOT made
+    # doctor SKIP misleadingly on every consumer (manifest IS present, vendored;
+    # and "fw mcp emit-manifest" can't run there — no tool-set.yaml). The pid
+    # file below is RUNTIME state → stays on PROJECT_ROOT.
+    local _fw_root="${FRAMEWORK_ROOT:-$PROJECT_ROOT}"
+    local _mcp_mf="$_fw_root/agents/mcp/framework-mcp-manifest.json"
+    local _mcp_ts="$_fw_root/policy/capability-overlay/tool-set.yaml"
     if [ -f "$_mcp_mf" ]; then
         local _mcp_tools _mcp_gated _mcp_msg
         _mcp_tools=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(len(m.get('tools',[])))" 2>/dev/null || echo "?")
@@ -1392,7 +1399,7 @@ else:
         # against the on-disk file — content match → still OK, content diff → WARN.
         if [ -f "$_mcp_ts" ] && [ "$_mcp_ts" -nt "$_mcp_mf" ]; then
             local _mcp_emitted_md5 _mcp_ondisk_md5
-            _mcp_emitted_md5=$(python3 "$PROJECT_ROOT/agents/mcp/manifest.py" show 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
+            _mcp_emitted_md5=$(python3 "$_fw_root/agents/mcp/manifest.py" show 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
             _mcp_ondisk_md5=$(md5sum "$_mcp_mf" 2>/dev/null | cut -d' ' -f1)
             if [ -n "$_mcp_emitted_md5" ] && [ "$_mcp_emitted_md5" = "$_mcp_ondisk_md5" ]; then
                 echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
@@ -1405,7 +1412,14 @@ else:
             echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
         fi
     else
-        echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
+        # Genuinely absent. In the framework repo: emit it. In a consumer
+        # (FRAMEWORK_ROOT vendored under .agentic-framework) the manifest ships
+        # vendored, so absence means a broken/stale vendor → re-vendor via upgrade.
+        if [ "$_fw_root" != "$PROJECT_ROOT" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent in vendored framework — run: fw upgrade"
+        else
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
+        fi
     fi
 
     # Check: proxy-policy emitted-but-not-installed drift (T-2432, arc-013)
