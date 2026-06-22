@@ -54,6 +54,26 @@ is_bash_safe_command() {
                 add)
                     return 0
                     ;;
+                # T-2462: `git push` / `git fetch` are task-agnostic. Push only
+                # PUBLISHES commits that already passed the commit-msg T-XXX gate
+                # (P-002) — it creates no work artifact, mutates no working tree,
+                # and is not inspected by the focus-drift detector (T-1730 only
+                # looks at fw task update / fw context add / git commit -m T-X:).
+                # Fetch is pure network read. Gating either on an active task adds
+                # zero governance and manufactures a deadlock that fires whenever
+                # focus is null: (1) post-completion — `--status work-completed`
+                # nulls focus, but "never end a session with unpushed commits"
+                # still requires the push (T-2054 exempted commit+add but stopped
+                # before push — this closes that 3rd leg of the commit→push
+                # pipeline, L-399 producer/consumer parity); (2) worktree sessions
+                # where the Bash hook resolves PROJECT_ROOT to the main repo (null
+                # focus). This does NOT weaken the pre-push hooks (self-vendor
+                # drift, secret scan) — those run inside git, independently of this
+                # active-task gate. `pull` is deliberately EXCLUDED: it merges into
+                # the working tree (a write), so it stays gated.
+                push|fetch)
+                    return 0
+                    ;;
             esac
             ;;
 

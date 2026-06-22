@@ -113,10 +113,35 @@ run_hook() {
 }
 
 @test "T-2054: null focus — an unrelated write is still BLOCKED" {
+    # T-2462: `git push` is no longer the example here — push is now task-agnostic
+    # (publication of already-T-XXX-governed commits) and safe-listed. `git pull`
+    # is the correct "unrelated write still blocked" example: it merges into the
+    # working tree, so it remains gated. This proves the git allowlist stays
+    # SELECTIVE — the commit/add/push exemptions don't blanket-allow git.
     set_null_focus
-    run_hook 'git push origin master'
+    run_hook 'git pull origin master'
     [ "$status" -eq 2 ]
     echo "$output" | grep -q "No active task"
+}
+
+# --- T-2462: post-completion / worktree push deadlock — push is task-agnostic ---
+
+@test "T-2462: null focus — git push is allowed (publication of governed commits)" {
+    set_null_focus
+    run_hook 'git push'
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2462: null focus — git push origin <branch> is allowed" {
+    set_null_focus
+    run_hook 'git push origin worktree-foo'
+    [ "$status" -eq 0 ]
+}
+
+@test "T-2462: null focus — git fetch is allowed" {
+    set_null_focus
+    run_hook 'git fetch --all'
+    [ "$status" -eq 0 ]
 }
 
 # --- focus-drift gate (T-1730) must remain intact when focus IS set ---

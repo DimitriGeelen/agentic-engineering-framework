@@ -33,8 +33,22 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "safe-commands: git push is NOT safe" {
+# T-2462: git push/fetch ARE safe — task-agnostic publication of commits that
+# already passed the commit-msg T-XXX gate; they create no work artifact and
+# mutate no working tree. Force-push protection is unaffected (separate Tier-0
+# hook). git pull stays UNSAFE (it merges into the working tree = a write).
+@test "safe-commands: git push is safe (T-2462)" {
     run is_bash_safe_command "git push origin main"
+    [ "$status" -eq 0 ]
+}
+
+@test "safe-commands: git fetch is safe (T-2462)" {
+    run is_bash_safe_command "git fetch --all"
+    [ "$status" -eq 0 ]
+}
+
+@test "safe-commands: git pull is NOT safe (T-2462 — merges into tree)" {
+    run is_bash_safe_command "git pull origin main"
     [ "$status" -eq 1 ]
 }
 
