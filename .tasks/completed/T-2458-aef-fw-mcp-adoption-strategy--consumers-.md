@@ -4,16 +4,16 @@ name: "AEF fw-MCP adoption strategy — consumers unwired + docs shell-only + de
 description: >
   Inception: AEF fw-MCP adoption strategy — consumers unwired + docs shell-only + deferred-tool friction (arc-010 headline-mechanic gap)
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-22T07:54:23Z
-last_update: 2026-06-22T07:54:23Z
-date_finished: null
+last_update: 2026-06-22T08:09:46Z
+date_finished: 2026-06-22T08:09:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -94,15 +94,15 @@ gated on IW-1); redesigning the MCP server; changing the sovereignty exclusion l
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -170,9 +170,40 @@ Adoption gap confirmed: (1) fw init/upgrade never wire the fw server into consum
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Adoption gap confirmed: (1) fw init/upgrade never wire the fw server into consumer .mcp.json (lib/init.sh:822, lib/upgrade.sh:1462) so other AEF projects cannot use it; (2) CLAUDE.md teaches bin/fw in every example, zero mcp__fw__ steering; (3) mcp__fw__ tools are deferred (ToolSearch friction) while Bash is always present. This is arc-010's headline mechanic (an agent observably using the MCP) never landing despite substrate shipping (G-062/ACD). GO to pursue adoption; consumer-wiring is correct under any strategy and is slice 1; human picks strategy 1/2/3 via the inception decision.
+
+**Date**: 2026-06-22T08:09:45Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-22T08:09:45Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Adoption gap confirmed: (1) fw init/upgrade never wire the fw server into consumer .mcp.json (lib/init.sh:822, lib/upgrade.sh:1462) so other AEF projects cannot use it; (2) CLAUDE.md teaches bin/fw in every example, zero mcp__fw__ steering; (3) mcp__fw__ tools are deferred (ToolSearch friction) while Bash is always present. This is arc-010's headline mechanic (an agent observably using the MCP) never landing despite substrate shipping (G-062/ACD). GO to pursue adoption; consumer-wiring is correct under any strategy and is slice 1; human picks strategy 1/2/3 via the inception decision.
+
+### 2026-06-22T08:09:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3b8a760e
+- **Timestamp:** 2026-06-22T08:09:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-22T08:09:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
