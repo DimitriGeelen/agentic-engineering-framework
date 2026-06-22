@@ -4,10 +4,10 @@ name: "Slice 1 (T-2458 C): fw init/upgrade auto-wire the fw MCP server into cons
 description: >
   Slice 1 (T-2458 C): fw init/upgrade auto-wire the fw MCP server into consumer .mcp.json
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-22T08:47:40Z
-last_update: 2026-06-22T08:47:40Z
-date_finished: null
+last_update: 2026-06-22T09:32:33Z
+date_finished: 2026-06-22T09:32:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -78,15 +78,29 @@ server is proven to operate on the consumer project.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Server resolves a distinct **framework_root** (manifest + `bin/fw` location) and **project_root**
+- [x] Server resolves a distinct **framework_root** (manifest + `bin/fw` location) and **project_root**
       (fw operating dir = consumer root when vendored, framework root otherwise); unit test covers both layouts
-- [ ] Server loads its tool catalogue from the vendored manifest when `tool-set.yaml` is absent
+      → `manifest.framework_root()`/`project_root()`; t2459 t1/t2/t3/t6 (framework + vendored layouts).
+- [x] Server loads its tool catalogue from the vendored manifest when `tool-set.yaml` is absent
       (consumer case), falling back to `tool-set.yaml` in the framework repo
-- [ ] `fw` invoked by the server runs with `cwd = project_root` (consumer root), proven by a test asserting
+      → `manifest.load_catalogue()`; t2459 t4 (tool-set preferred) + t5 (manifest fallback, fw_command preserved).
+- [x] `fw` invoked by the server runs with `cwd = project_root` (consumer root), proven by a test asserting
       the resolved cwd for a synthetic `.agentic-framework/` layout
-- [ ] Live: against `/opt/505-Ring20-Site`, the vendored server starts, lists tools, and a read-only tool
+      → `_run_fw(fw_root, proj_root, …)`: bin/fw from framework_root, cwd=project_root; t2459 t6 + t9 (server build).
+- [x] Live: against `/opt/505-Ring20-Site`, the vendored server starts, lists tools, and a read-only tool
       (e.g. `version`/`metrics`) operates on the /opt/505 project (not `.agentic-framework/`)
-- [ ] No regression: existing `agents/mcp` tests + manifest emit stay green
+      → with my 3 files copied into /opt/505/.agentic-framework: `framework_root=/opt/505/.agentic-framework`,
+      `project_root=/opt/505-Ring20-Site` (NOT `.agentic-framework/`), catalogue=22 via manifest fallback,
+      server built, `fw version`/`task list` rc=0 with cwd=project_root. /opt/505 restored after.
+      **Caveat (separate pre-existing bug → OBS filed):** /opt/505's *own* stale vendored `bin/fw` mis-resolves
+      its project root to the framework (reports 234 tasks vs its own 7) regardless of cwd — reproduced with
+      zero server involvement (`cd /opt/505 && .agentic-framework/bin/fw task list` → 234). The MCP fix's job
+      (hand `fw` the correct cwd=project_root) is done; the consumer-fw mis-resolution is the wiring/re-vendor
+      slice's concern (a freshly-upgraded consumer carries the T-2389/2390/2391 resolution fixes).
+- [x] No regression: existing `agents/mcp` tests + manifest emit stay green
+      → t2459 9/9, t2293 4/4, test_orchestrator_mcp_classify 22/22, t2290/t2294/t2296 drift suite green;
+      `fw mcp check` = in sync (22 tools). t2272 wire-fragment failures are pre-existing (`git diff HEAD` = 0
+      lines on fragment + test; fragment top-key is `fw` but T-2272 test asserts `framework-mcp`) — OBS filed.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,6 +165,14 @@ server is proven to operate on the consumer project.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# Fast + decisive only (slow doctor/audit drift tests verified manually, cited
+# in ACs — kept out of the gate to avoid the F6 ~150s doctor timeout). FRAMEWORK_ROOT
+# pinned to cwd + PROJECT_ROOT unset for hermeticity (L-490).
+out=$(env -u PROJECT_ROOT FRAMEWORK_ROOT="$(pwd)" bats tests/unit/t2459_mcp_server_root_split.bats 2>&1); echo "$out" | grep -qE "^ok 9 " && ! echo "$out" | grep -q "^not ok"
+out=$(env -u PROJECT_ROOT FRAMEWORK_ROOT="$(pwd)" bats tests/unit/t2293_mcp_check.bats 2>&1); echo "$out" | grep -qE "^ok 4 " && ! echo "$out" | grep -q "^not ok"
+out=$(bin/fw mcp check 2>&1); echo "$out" | grep -q "in sync"
+out=$(env -u PROJECT_ROOT FRAMEWORK_ROOT="$(pwd)" python3 -m pytest tests/unit/test_orchestrator_mcp_classify.py -q 2>&1); echo "$out" | grep -qE "[0-9]+ passed" && ! echo "$out" | grep -qE "failed|error"
 
 ## RCA
 
@@ -194,14 +216,27 @@ server is proven to operate on the consumer project.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-22 — catalogue source for the consumer case
+- **Chose:** enrich the **vendored manifest** (`framework-mcp-manifest.json`, already vendored under
+  `agents/`) with `fw_command`+`description` per tool, and have the server load from tool-set.yaml when
+  present (framework/dev) else the manifest (consumer). `_manifest_tool` uses `.get("fw_command")` so a
+  malformed/partial source entry can't crash emission (and the drift-test path stays green).
+- **Why:** the manifest is *already* vendored to consumers and is JSON (no yaml dep at runtime); making it a
+  self-contained runtime catalogue removes the "policy/ not vendored" blocker without adding a second
+  vendor-filter change. It also aligns with slice 2 (B = codegen the catalogue) — the server reads the
+  emitted manifest regardless of how it was produced.
+- **Rejected:** (a) vendor `policy/capability-overlay/tool-set.yaml` to consumers — adds a vendor-filter
+  change + runtime yaml dep + two files to keep in sync in the consumer; (b) read the *un-enriched* manifest
+  — it lacked `fw_command`, so the server couldn't actually run any tool.
+
+### 2026-06-22 — framework_root vs project_root split
+- **Chose:** `framework_root` from `__file__` (`parents[2]`, FRAMEWORK_ROOT override) for assets + bin/fw;
+  `project_root` = `framework_root.parent` when vendored (`.agentic-framework`) else itself, PROJECT_ROOT
+  override; `bin/fw` from framework_root, subprocess `cwd` from project_root.
+- **Why:** the old `_project_root()` conflated the two — invisible in the framework repo (project == framework
+  == cwd) but wrong in a consumer, where fw must operate on the consumer checkout, not the vendored dir
+  (T-1633 consumer-breakage class). `_project_root` kept as a back-compat alias → `framework_root` (its
+  historic callers were asset-path lookups).
 
 ## Decision
 
@@ -219,3 +254,15 @@ server is proven to operate on the consumer project.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2459-slice-1-t-2458-c-fw-initupgrade-auto-wir.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1ae15fb5
+- **Timestamp:** 2026-06-22T09:32:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-22T09:32:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

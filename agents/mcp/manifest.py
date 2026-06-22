@@ -21,23 +21,60 @@ from typing import Any
 import yaml
 
 
-def _project_root() -> Path:
-    env_root = os.environ.get("FRAMEWORK_ROOT") or os.environ.get("PROJECT_ROOT")
+def framework_root() -> Path:
+    """Where the framework's own assets live (bin/fw, agents/, policy/).
+
+    Deterministic from this file's location: manifest.py lives at
+    ``<framework_root>/agents/mcp/manifest.py`` so the root is ``parents[2]``.
+    In the framework repo that's /opt/999…; in a consumer it's the vendored
+    ``.agentic-framework/`` dir. ``FRAMEWORK_ROOT`` env overrides (tests, CI).
+
+    T-2459 (arc-010 slice 1C): split out from the old ``_project_root()`` which
+    conflated asset-location with the project ``fw`` should operate on. Asset
+    paths (manifest, tool-set) resolve against THIS root; the operating dir is
+    ``project_root()`` below.
+    """
+    env_root = os.environ.get("FRAMEWORK_ROOT")
     if env_root:
         return Path(env_root).resolve()
-    here = Path(__file__).resolve()
-    for parent in (here, *here.parents):
-        if (parent / "bin" / "fw").exists() and (parent / "policy").is_dir():
-            return parent
-    return Path.cwd().resolve()
+    return Path(__file__).resolve().parents[2]
+
+
+def project_root() -> Path:
+    """The project ``fw`` should operate on (the subprocess cwd).
+
+    Derived from :func:`framework_root`: when the framework is vendored into a
+    consumer (root dir named ``.agentic-framework``), the project is its parent
+    — the consumer checkout. In the framework repo the two coincide.
+    ``PROJECT_ROOT`` env overrides.
+
+    T-2459: this is the fix for the consumer-breakage class (T-1633) — the
+    framework repo never exposed the conflation because project == framework ==
+    cwd there, but in a consumer ``fw`` must run against the consumer checkout,
+    not the vendored ``.agentic-framework/`` dir (else tasks/notes/focus land in
+    the wrong place).
+    """
+    env_root = os.environ.get("PROJECT_ROOT")
+    if env_root:
+        return Path(env_root).resolve()
+    fr = framework_root()
+    if fr.name == ".agentic-framework":
+        return fr.parent
+    return fr
+
+
+# Backward-compat alias. Historic callers used `_project_root()` for ASSET
+# paths (manifest/tool-set), so it maps to framework_root(). Callers that need
+# the operating dir (subprocess cwd) must use project_root() explicitly.
+_project_root = framework_root
 
 
 def tool_set_path(root: Path | None = None) -> Path:
-    return (root or _project_root()) / "policy" / "capability-overlay" / "tool-set.yaml"
+    return (root or framework_root()) / "policy" / "capability-overlay" / "tool-set.yaml"
 
 
 def manifest_path(root: Path | None = None) -> Path:
-    return (root or _project_root()) / "agents" / "mcp" / "framework-mcp-manifest.json"
+    return (root or framework_root()) / "agents" / "mcp" / "framework-mcp-manifest.json"
 
 
 def load_tool_set(path: Path | None = None) -> dict[str, Any]:
@@ -56,12 +93,31 @@ def load_tool_set(path: Path | None = None) -> dict[str, Any]:
     return data
 
 
+def _manifest_tool(entry: dict[str, Any], *, gated: bool) -> dict[str, Any]:
+    # name + gated FIRST so the scanner contract (orchestrator-mcp-scan.sh
+    # reads only t['name'] and t.get('gated')) is satisfied and the diff stays
+    # minimal. fw_command + description are ADDITIVE (T-2459) — they make the
+    # manifest a self-contained runtime catalogue so a consumer that never
+    # vendored policy/tool-set.yaml can still drive the server.
+    # .get (not []) for fw_command: a well-formed tool-set entry always carries
+    # it, but build_manifest must not crash on a malformed/partial entry — e.g.
+    # the drift-test (t2293:t2) appends {name, rationale} to force a diff. An
+    # empty fw_command still changes the emitted manifest (→ drift detected) and
+    # is caught loudly downstream by _catalogue_from_manifest at server build.
+    return {
+        "name": entry["name"],
+        "gated": gated,
+        "fw_command": entry.get("fw_command") or "",
+        "description": (entry.get("description") or "").strip(),
+    }
+
+
 def build_manifest(tool_set: dict[str, Any]) -> dict[str, Any]:
     tools: list[dict[str, Any]] = []
     for entry in tool_set.get("read_only", []):
-        tools.append({"name": entry["name"], "gated": False})
+        tools.append(_manifest_tool(entry, gated=False))
     for entry in tool_set.get("agent_authority", []):
-        tools.append({"name": entry["name"], "gated": True})
+        tools.append(_manifest_tool(entry, gated=True))
     return {
         "version": 1,
         "source": "policy/capability-overlay/tool-set.yaml",
@@ -70,6 +126,56 @@ def build_manifest(tool_set: dict[str, Any]) -> dict[str, Any]:
         "arc_id": tool_set.get("arc_id"),
         "tools": tools,
     }
+
+
+def _catalogue_from_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
+    """Reconstruct the {read_only:[...], agent_authority:[...]} catalogue shape
+    from an enriched manifest, so the server consumes one shape regardless of
+    source. Requires fw_command per tool (T-2459 enrichment); a pre-enrichment
+    manifest raises so the failure is loud, not a silently broken server."""
+    read_only: list[dict[str, Any]] = []
+    agent_authority: list[dict[str, Any]] = []
+    for tool in manifest.get("tools", []):
+        if "fw_command" not in tool:
+            raise ValueError(
+                f"manifest tool {tool.get('name')!r} lacks fw_command — "
+                "stale manifest; regenerate via `fw mcp emit-manifest`"
+            )
+        entry = {
+            "name": tool["name"],
+            "fw_command": tool["fw_command"],
+            "description": tool.get("description", ""),
+        }
+        (agent_authority if tool.get("gated") else read_only).append(entry)
+    return {
+        "read_only": read_only,
+        "agent_authority": agent_authority,
+        "version": manifest.get("source_version"),
+        "filed_by": manifest.get("filed_by"),
+        "arc_id": manifest.get("arc_id"),
+    }
+
+
+def load_catalogue(root: Path | None = None) -> dict[str, Any]:
+    """Load the tool catalogue the MCP server registers from.
+
+    Prefers ``policy/capability-overlay/tool-set.yaml`` (richest source, present
+    in the framework repo / dev checkout); falls back to the vendored
+    ``agents/mcp/framework-mcp-manifest.json`` (the consumer case, where policy/
+    is not vendored). Returns the same {read_only, agent_authority} shape from
+    either source. T-2459 (arc-010 slice 1C)."""
+    fr = root or framework_root()
+    ts_path = tool_set_path(fr)
+    if ts_path.is_file():
+        return load_tool_set(ts_path)
+    mf_path = manifest_path(fr)
+    if mf_path.is_file():
+        with mf_path.open("r", encoding="utf-8") as fh:
+            return _catalogue_from_manifest(json.load(fh))
+    raise FileNotFoundError(
+        f"no tool catalogue: neither {ts_path} (source) nor {mf_path} "
+        "(vendored manifest) is present"
+    )
 
 
 def emit_manifest(

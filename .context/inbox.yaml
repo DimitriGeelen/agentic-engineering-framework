@@ -711,3 +711,31 @@ observations:
   tags: [dogfood]
   status: pending
   promoted_to: null
+- id: OBS-086
+  text: "add"
+  captured: 2026-06-22T09:30:41Z
+  context_task: T-2459
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-087
+  text: "add"
+  captured: 2026-06-22T09:30:41Z
+  context_task: T-2459
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-088
+  text: "T-2459 finding: /opt/505 stale vendored bin/fw mis-resolves project root — 'fw task list' reports 234 (framework count) despite /opt/505 having 7 tasks in its own .tasks/active/. Reproduced with zero MCP-server involvement (cd /opt/505 && .agentic-framework/bin/fw task list -> 234). Pre-existing F8/T-1257 stale-consumer class; relevant to T-2458 wiring/re-vendor slice."
+  captured: 2026-06-22T09:31:18Z
+  context_task: T-2459
+  tags: [bug]
+  status: pending
+  promoted_to: null
+- id: OBS-089
+  text: "T-2459 finding: tests/unit/test_mcp_wire_fragment.bats (T-2272) t2/t3/t4 FAIL on master — fragment agents/mcp/framework-mcp.mcp-fragment.json top-key is 'fw' (T-2268) but the T-2272 test still asserts 'framework-mcp'. Pre-existing (git diff HEAD = 0 lines both files). Relevant to T-2458 consumer-wiring slice which consumes this fragment."
+  captured: 2026-06-22T09:31:18Z
+  context_task: T-2459
+  tags: [bug]
+  status: pending
+  promoted_to: null

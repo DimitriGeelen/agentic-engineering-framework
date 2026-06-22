@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2459: Slice 1 (T-2458 C): fw init/upgrade auto-wire the fw MCP server into consumer .mcp.json
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-22T09:32:44Z
+# ============================================================================
+
+task_id: T-2459
+task_name: "Slice 1 (T-2458 C): fw init/upgrade auto-wire the fw MCP server into consumer .mcp.json"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-22T08:47:40Z
+completed: 2026-06-22T09:32:33Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Server resolves a distinct **framework_root** (manifest + `bin/fw` location) and **project_root**'
+  - 'Server loads its tool catalogue from the vendored manifest when `tool-set.yaml` is absent'
+  - '`fw` invoked by the server runs with `cwd = project_root` (consumer root), proven by a test asserting'
+  - 'Live: against `/opt/505-Ring20-Site`, the vendored server starts, lists tools, and a read-only tool'
+  - 'No regression: existing `agents/mcp` tests + manifest emit stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-22 — catalogue source for the consumer case'
+    chose: 'enrich the **vendored manifest** (`framework-mcp-manifest.json`, already vendored under'
+    rationale: 'the manifest is *already* vendored to consumers and is JSON (no yaml dep at runtime); making it a'
+    alternatives_rejected: ['(a) vendor `policy/capability-overlay/tool-set.yaml` to consumers — adds a vendor-filter']
+  - decision: '2026-06-22 — framework_root vs project_root split'
+    chose: '`framework_root` from `__file__` (`parents[2]`, FRAMEWORK_ROOT override) for assets + bin/fw;'
+    rationale: 'the old `_project_root()` conflated the two — invisible in the framework repo (project == framework'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2459-slice-1-t-2458-c-fw-initupgrade-auto-wir.md
+generated_by: context-agent-hybrid
