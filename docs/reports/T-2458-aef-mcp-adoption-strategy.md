@@ -107,10 +107,41 @@ Strategy 3 more attractive than a pure-curation reading would suggest. The opera
 
 ## 5. Recommendation
 
-**GO.** Pursue adoption. The gap is real, evidenced, and is the arc-010 deliverable that never landed.
-Consumer-wiring (slice 1) is unambiguously correct and high-leverage — file it as the first build child
-regardless of the strategy choice. The strategy fork (§3) is the operator's call and gates only the
-docs/coverage scope (slices 3+).
+**GO.** Pursue adoption.
+
+**Operator-chosen direction (2026-06-22 chat):** the full "make the MCP the real interface" path —
+(A) MCP as the default path, (B) CLI commands auto-added to the MCP, (C) auto-propagation via
+`fw init`/`upgrade`. This resolves IW-1 toward Strategy 3, fed by auto-codegen (B) and propagated by
+upgrade (C). The TermLink benchmark validates this is the path that produced their adoption.
+
+### Sequenced slices (C → B → A — availability, then coverage, then default)
+
+- **Slice 1 (C) — auto-propagate** (`fw init`/`upgrade` wire the `fw` server into consumer
+  `.mcp.json`). Foundational + safe + testable (`upgrade_fresh_machine_simulation.bats`). Do first —
+  nothing else matters if consumers don't have the server.
+- **Slice 2 (B) — auto-codegen** the MCP catalogue from the `fw` command registry / `fw help` +
+  convention-classify (verb-suffix: `*-list/-show/-status` → read; `work-on/task-update` →
+  agent-authority). Replaces manual `tool-set.yaml` curation. Extend the existing
+  `orchestrator-mcp-scan.sh` framework-mcp leg for drift/auto-class.
+- **Slice 3 (A) — make it default** — CLAUDE.md MCP-first guidance + `task_id` docs; ensure the
+  tools surface without per-call ToolSearch friction (registration/preload).
+
+### Two hard design constraints (NEW — scope-affecting)
+
+1. **Gate-matcher parity (governance hole if missed).** The PreToolUse hooks
+   (`check-active-task`, `budget-gate`, `check-tier0`, `block-task-tools`) match `Bash|Write|Edit`
+   only — **none match `mcp__fw__*`**. Today that's harmless (nobody uses the MCP). But the moment
+   the MCP becomes the *default path* (A), agents routing through `mcp__fw__*` would **bypass the task
+   gate, budget gate, and tier-0 gate**. So slice A/B MUST extend the hook matchers to cover the
+   `mcp__fw__*` tools (or move the equivalent checks server-side in `framework_mcp_server.py`).
+   Making MCP default *without* this would weaken governance, not strengthen it. This is L-399
+   producer/consumer parity applied to the gate layer.
+2. **Sovereignty denylist is a HARD gate in the codegen (B).** Auto-discovery must never expose the
+   sovereignty verbs (`inception_decide`, `tier0_approve`, `arc_close`, `bvp_confirm`,
+   `enforcement_baseline`). TermLink's convention-classifier had zero misclassifications, but for AEF
+   a single false-positive that exposed `tier0_approve` to an agent is a sovereignty breach, not a
+   cosmetic bug. The codegen needs the exclusion list as an explicit denylist + a regression test that
+   asserts no sovereignty verb ever appears in the emitted manifest.
 
 ## 6. Dialogue log
 
@@ -122,3 +153,12 @@ docs/coverage scope (slices 3+).
 - **Response:** investigated (Explore sweep) → 3 root causes; reframed as arc-010 headline-mechanic gap;
   filed this inception (GO, strategy fork for human); dispatched a /opt/termlink code-read + contacted the
   termlink agent thread. Consumer-wiring teed up as slice 1.
+
+### 2026-06-22 — operator resolves the strategy
+- **Operator:** "not sure what the choices are but i know that: A: i want mcp to be the default path;
+  B: i want cli commands to be auto added to the mcp; C: i want it to propagate automatically via
+  upgrades etc."
+- **Outcome:** IW-1 resolved → the full "make MCP the real interface" path (Strategy 3). A=default path,
+  B=auto-codegen catalogue, C=auto-propagate via init/upgrade. Sequenced C→B→A (see §5). Two hard
+  constraints surfaced: gate-matcher parity for `mcp__fw__*`, and a sovereignty denylist in the codegen.
+  Formal GO recorded by operator at `/inception/T-2458` (agent cannot self-decide — sovereign).

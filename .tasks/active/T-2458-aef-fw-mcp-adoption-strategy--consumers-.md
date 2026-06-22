@@ -58,10 +58,12 @@ Three root causes (full evidence: `docs/reports/T-2458-aef-mcp-adoption-strategy
 - **IW-1: Which adoption strategy — (1) MCP-first for the common path, (2) MCP for specific
   contexts only [consumer/cross-project, sandboxed, worktree gate-bypass], or (3) invest to
   full CLI parity + MCP-first docs?**
-  confidence: 1
-  disposition: deferred
-  rationale: Operator's strategic call; gates docs/coverage scope (slices 3+). Consumer-wiring
-  (slice 1) and worker-hang (slice 2) are correct under all three and not blocked on it.
+  confidence: 3
+  disposition: answered
+  rationale: Operator chose (chat 2026-06-22) the full "make MCP the real interface" path —
+  A=MCP-default + B=CLI-auto-added-to-MCP (codegen) + C=auto-propagate via init/upgrade = Strategy 3.
+  Sequenced C→B→A. Two hard constraints: gate-matcher parity for mcp__fw__*; sovereignty denylist in
+  codegen. See artifact §5. Formal GO recorded at /inception/T-2458.
 - **IW-2: Is consumer-wiring alone (slice 1) sufficient for adoption, or is an MCP-first docs/
   steering change also required?**
   confidence: 2
