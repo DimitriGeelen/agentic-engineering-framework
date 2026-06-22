@@ -3735,3 +3735,24 @@ X'` returning empty group."
   date: 2026-06-21
   context: Added via context agent
   application: TBD
+- id: L-491
+  learning: "Self-vendor sync helpers (lib/upgrade.sh _self_vendor_libs/agents/web) and the audit's check_self_vendor_drift scanner MUST share an identical find-filter set, or a file type the audit scans but the helper skips becomes un-vendorable: the audit FAILs and 'fw vendor self' (the FAIL's own fix command) cannot clear it -> permanent push block. T-2455: _self_vendor_libs scanned *.sh+*.md but the audit scanned *.sh+*.py+fw+*.md, so every lib/**/*.py was scanned-but-never-synced. Pin helper-filter<->audit-filter parity with a source-grep test (t2455 t3). 2nd hit of this asymmetry class after T-2436/OBS-076 (.md leg)."
+  source: P-001
+  task: T-2455
+  date: 2026-06-21
+  context: Added via context agent
+  application: TBD
+- id: L-492
+  learning: "Single-tool-reader trap: a data file whose ONLY consumer crashes on corruption cannot detect its own corruption — it needs an INDEPENDENT parse gate. T-2456/OBS-084: fw note wrote note bodies as 'text: $text' into a double-quoted YAML scalar (string-concat as serializer); OBS-081's regex backslash '\\d' became an invalid YAML escape -> yaml.safe_load ScannerError -> fw note list/triage crashed -> inbox unreadable ~a day, undetected because (a) the writer never escaped and (b) .context/inbox.yaml was outside the audit's YAML-parse set (only .context/{project,arcs}/*.yaml) and fw note was its only reader. Fix both: escape at write (\\ then \\\") AND add an independent audit parse gate. Never string-concat untrusted text into a quoted YAML scalar."
+  source: P-001
+  task: T-2456
+  date: 2026-06-21
+  context: Added via context agent
+  application: TBD
+- id: L-493
+  learning: "Read-during-non-atomic-write TOCTOU: fabric card writers (register.sh cat>file, enrich.py open(path,'w')) truncated-then-streamed the destination, so a concurrent reader scanning *.yaml (fw fabric drift's grep '^location:' registered-set builder) could read a card mid-write and miss its location: line -> spurious 'unregistered' FP that clears on re-run. Any framework writer of a file that other tools scan/grep concurrently MUST write to a same-dir temp then atomic-rename (mv -f / os.replace). Intermittent + self-clearing makes this look like noise, not a bug."
+  source: P-001
+  task: T-2457
+  date: 2026-06-22
+  context: Added via context agent
+  application: TBD
