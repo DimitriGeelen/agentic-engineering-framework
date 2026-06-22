@@ -835,11 +835,15 @@ SJSON
     "termlink": {
       "command": "termlink",
       "args": ["mcp", "serve"]
+    },
+    "fw": {
+      "command": "python3",
+      "args": [".agentic-framework/agents/mcp/framework_mcp_server.py"]
     }
   }
 }
 MCPJSON
-        echo -e "  ${GREEN}OK${NC}  .mcp.json (MCP servers: context7, playwright, termlink)"
+        echo -e "  ${GREEN}OK${NC}  .mcp.json (MCP servers: context7, playwright, termlink, fw)"
     else
         echo -e "  ${YELLOW}SKIP${NC}  .mcp.json already exists"
     fi

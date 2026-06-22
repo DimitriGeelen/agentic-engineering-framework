@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2460: Slice 1C-wiring (T-2458): fw init/upgrade add fw MCP server to consumer .mcp.json
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-22T10:13:11Z
+# ============================================================================
+
+task_id: T-2460
+task_name: "Slice 1C-wiring (T-2458): fw init/upgrade add fw MCP server to consumer .mcp.json"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-22T10:06:04Z
+completed: 2026-06-22T10:12:55Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw init` writes a `.mcp.json` whose `mcpServers` includes a `fw` entry ='
+  - '`fw upgrade` adds the `fw` entry to a consumer `.mcp.json` that lacks it (merge-missing path, preserving'
+  - 'The wired args path is consumer-relative (`.agentic-framework/agents/mcp/framework_mcp_server.py`) and'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green (T-1633 consumer-facing hygiene gate)'
+  - 'No regression: existing init/upgrade + mcp tests green; new wiring bats covers init-create, upgrade-create,'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2460-slice-1c-wiring-t-2458-fw-initupgrade-ad.md
+generated_by: context-agent-hybrid
