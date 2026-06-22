@@ -24,7 +24,14 @@
 #   - is_bash_safe_command("git commit")    → 1  (unit level — gate-handled)
 
 setup() {
-    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
+    # T-2462: resolve FRAMEWORK_ROOT from THIS test file's own location, not a
+    # hardcoded /opt/999 fallback. Hardcoding main made the e2e tests exercise
+    # main's hook+safe-commands even when run from a worktree checkout — so a fix
+    # present only in the worktree (like push|fetch safe-listing) tested green
+    # nowhere until merged to main, a chicken-and-egg that silently failed the
+    # close gate. Walk up to the repo root (tests/unit/ → repo). Explicit
+    # FRAMEWORK_ROOT export still wins (CI). L-490 hermetic-test class.
+    FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
     [ -f "$HOOK" ] || skip "hook script not found"
 
