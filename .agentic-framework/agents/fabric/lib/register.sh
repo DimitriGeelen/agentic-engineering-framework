@@ -262,8 +262,18 @@ else:
     local name
     name=$(basename "$rel_path" | sed 's/\.[^.]*$//')
 
-    # Create skeleton card
-    cat > "$card_file" << EOF
+    # Create skeleton card.
+    # Atomic write (T-2457 / OBS-080): stream into a same-dir temp file, then
+    # mv -f (atomic rename on POSIX). A bare "cat > $card_file" truncates the
+    # card first and streams content, so a concurrent reader — notably
+    # `fw fabric drift` doing `grep "^location:" *.yaml` to build its
+    # registered set — can read the card after truncation but before the
+    # `location:` line lands → the source path drops out of the registered set
+    # → spurious "unregistered" FP that clears on re-run. The rename keeps
+    # readers seeing the complete old card or the complete new one, never a
+    # partial.
+    local tmp_card="$card_file.tmp"
+    cat > "$tmp_card" << EOF
 id: $rel_path
 name: $name
 type: $comp_type
@@ -285,6 +295,7 @@ depended_by:
 last_verified: $(date -u +%Y-%m-%d)
 created_by: ${CURRENT_TASK:-unknown}
 EOF
+    mv -f "$tmp_card" "$card_file"
 
     echo -e "${GREEN}Card created: $card_file${NC}"
     echo "  Type: $comp_type"
