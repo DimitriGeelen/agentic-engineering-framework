@@ -704,3 +704,10 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-085
+  text: "fw note <unknown-verb> silently captures the verb as a new note instead of erroring/hinting. Hit live in T-2457: 'fw note resolve OBS-080 --note ...' created a junk OBS-084 with text 'resolve' (no resolve verb exists; verbs are triage/promote/dismiss). Footgun: typo'd or plausible-but-wrong verbs (resolve/close/fix/done) become silent junk notes. Consider a 'did you mean dismiss?' hint when the sole non-flag arg matches a small denylist AND subcommand-style flags (--reason/--note) follow. Design judgment on capture-first ergonomics — operator call."
+  captured: 2026-06-22T02:40:22Z
+  context_task: null
+  tags: [dogfood]
+  status: pending
+  promoted_to: null
