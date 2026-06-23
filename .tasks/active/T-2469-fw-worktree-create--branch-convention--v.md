@@ -4,10 +4,10 @@ name: "fw worktree create — branch convention + vendor-sync + +x, folding term
 description: >
   T-2464 follow-up. Build fw worktree create: standard branch naming, auto vendor-sync, executable-bit handling. Fold termlink's scripts/worktree-bootstrap.sh (their T-2255, prior art) per P-047 Q3 alignment. Companion to fw worktree status (T-2466). merge-back stays with fw integrate (arc-011).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T18:31:33Z
-last_update: 2026-06-23T18:31:33Z
+last_update: 2026-06-23T20:05:43Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,14 +40,20 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2464 follow-up, companion to `fw worktree status` (T-2466). Build `fw worktree create
+<name>` so spinning up a worktree is one safe step instead of manual `git worktree add` +
+vendor-sync + executable-bit fixups. Folds termlink's `scripts/worktree-bootstrap.sh` prior
+art (their T-2255) per the P-047 alignment (their Q3). merge-back stays with `fw integrate`
+(arc-011); this task owns creation only.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw worktree create <name>` creates `.claude/worktrees/<name>` on a new branch following the framework's branch convention (e.g. `worktree-<name>`), erroring clearly if the name/branch already exists
+- [ ] After creation it runs the vendor-sync (`fw vendor self` equivalent) so the new worktree's `.agentic-framework/` is current, and ensures hook wrappers are usable (no reliance on the +x bit — consistent with T-2467)
+- [ ] `fw worktree create --help` documents the command and cross-references `fw worktree status` (T-2466) and `fw integrate` (merge-back)
+- [ ] `tests/unit/t2469_worktree_create.bats` passes — synthetic fixture covers: create succeeds, duplicate-name errors, new worktree has vendored `.agentic-framework/`
+- [ ] Branch convention + bootstrap behavior reconciled with termlink's `worktree-bootstrap.sh` (P-047 Q3) — documented in Decisions
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,3 +186,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2469-fw-worktree-create--branch-convention--v.md
 - **Context:** Initial task creation
+
+### 2026-06-23T20:05:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
