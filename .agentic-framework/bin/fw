@@ -3558,10 +3558,10 @@ EOF
         esac
         ;;
     worktree)
-        # T-2466 (T-2464 GO Candidate C, slice 2): worktree topology observability.
-        # Read-only. `status` reports which branch MAIN is on (live-on-host implication),
-        # master-lock holder, and per-worktree merged?/live? state. merge-back routes to
-        # `fw integrate` (arc-011); `create` is a planned follow-up — neither is built here.
+        # T-2466 (slice 2): worktree topology observability — `status` reports which
+        # branch MAIN is on (live-on-host implication), master-lock holder, per-worktree
+        # merged?/live? state. T-2469 adds `create` (one-step isolated-worktree bootstrap).
+        # merge-back routes to `fw integrate run` (arc-011 / T-2471), not a subcommand here.
         wt_subcmd="${1:-}"
         shift || true
         case "$wt_subcmd" in
@@ -3571,9 +3571,16 @@ EOF
                 ( cd "$PROJECT_ROOT" && do_worktree_status "$@" )
                 exit $?
                 ;;
+            create)
+                # shellcheck source=lib/worktree.sh
+                . "$FRAMEWORK_ROOT/lib/worktree.sh"
+                ( cd "$PROJECT_ROOT" && do_worktree_create "$@" )
+                exit $?
+                ;;
             ""|--help|-h|help)
                 cat <<'EOF'
-fw worktree status [--json]      topology of the framework checkout (read-only)
+fw worktree status [--json]            topology of the framework checkout (read-only)
+fw worktree create <name> [--from R]   spin up an isolated worktree in one safe step
 
 Reports the git-worktree topology so parallel work + merge-back is legible:
   - which branch the MAIN checkout is on, and whether merging to master goes LIVE
@@ -3583,14 +3590,23 @@ Reports the git-worktree topology so parallel work + merge-back is legible:
     `git checkout master` in main fail → use `git push origin <branch>:master`)
   - per-worktree merged-into-master? and live-on-this-host? state
 
-Planned (not yet built — kept off the surface to avoid duplicating arc-011):
-  fw worktree create     branch convention + vendor-sync + +x preservation
-  fw worktree merge-back → delegates to `fw integrate` (lib/integrate.py;
-                           check|classify today, mutating `run` is arc-011's slice)
+create (T-2469) spins up an isolated worktree in one safe step:
+  - creates <main>/.claude/worktrees/<name> on branch `worktree-<name>`
+  - branches from master/main by default (clean divergence -> clean merge-back);
+    override with --from <ref> to branch from somewhere else
+  - vendor-syncs the new worktree's .agentic-framework/ (idempotent confirm)
+  - does NOT touch the +x bit: bin/fw dispatches hooks via `bash` (T-2467), so
+    hook wrappers work without it
+  Folds termlink's worktree-bootstrap.sh prior art (P-047 Q3).
+
+merge-back is `fw integrate run` (T-2471, run from inside the worktree) — not a
+worktree subcommand, to avoid duplicating the arc-011 integrate surface.
 
 Examples:
   fw worktree status
   fw worktree status --json
+  fw worktree create my-feature
+  fw worktree create hotfix --from origin/master
 EOF
                 exit 0
                 ;;

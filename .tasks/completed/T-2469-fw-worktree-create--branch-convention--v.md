@@ -4,12 +4,12 @@ name: "fw worktree create — branch convention + vendor-sync + +x, folding term
 description: >
   T-2464 follow-up. Build fw worktree create: standard branch naming, auto vendor-sync, executable-bit handling. Fold termlink's scripts/worktree-bootstrap.sh (their T-2255, prior art) per P-047 Q3 alignment. Companion to fw worktree status (T-2466). merge-back stays with fw integrate (arc-011).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/worktree.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T18:31:33Z
-last_update: 2026-06-23T20:47:55Z
-date_finished: null
+last_update: 2026-06-23T20:53:32Z
+date_finished: 2026-06-23T20:53:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -231,3 +231,15 @@ out=$(bin/fw worktree --help 2>&1); echo "$out" | grep -q "fw worktree create" &
 ### 2026-06-23T20:47:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9220d3b2
+- **Timestamp:** 2026-06-23T20:53:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-23T20:53:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

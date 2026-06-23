@@ -207,3 +207,107 @@ out = {"main": main, "master_holder": master_holder, "linked_worktrees": worktre
 print(json.dumps(out, indent=2))
 '
 }
+
+# do_worktree_create <name> [--from <ref>]
+# (T-2469, T-2464 GO Candidate C follow-up). Spins up an isolated worktree in one
+# safe step: creates the worktree under the MAIN checkout's .claude/worktrees/ on
+# branch `worktree-<name>`, branched from master (or --from <ref>), then vendor-syncs
+# the .agentic-framework/ tree. Folds termlink's scripts/worktree-bootstrap.sh prior
+# art (their T-2255, P-047 Q3). Companion to `fw worktree status` (T-2466); merge-back
+# is `fw integrate run` (T-2471).
+#
+# Design (see T-2469 Decisions):
+#   - Branch convention: worktree-<name> (matches existing live worktrees).
+#   - Default base = master/main (clean divergence -> clean merge-back); --from overrides.
+#   - +x is intentionally NOT touched -- bin/fw dispatches hooks via `bash` (T-2467),
+#     so hook wrappers are usable without the executable bit.
+#   - New worktree lands under the MAIN checkout regardless of where the command is
+#     invoked (resolved from the first porcelain record).
+do_worktree_create() {
+    local name="" from_ref=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --from) from_ref="${2:-}"; shift 2 || return 2 ;;
+            --from=*) from_ref="${1#--from=}"; shift ;;
+            -*) echo "worktree create: unknown option: $1" >&2; return 2 ;;
+            *)
+                if [ -z "$name" ]; then name="$1"; shift
+                else echo "worktree create: unexpected argument: $1" >&2; return 2; fi
+                ;;
+        esac
+    done
+
+    if [ -z "$name" ]; then
+        echo "usage: fw worktree create <name> [--from <ref>]" >&2
+        return 2
+    fi
+    # name becomes a directory + branch suffix -- keep it filesystem/ref safe.
+    case "$name" in
+        *[!A-Za-z0-9._-]*|""|.|..)
+            echo "worktree create: name must be [A-Za-z0-9._-] (no slashes/spaces): '$name'" >&2
+            return 2
+            ;;
+    esac
+
+    git rev-parse --git-dir >/dev/null 2>&1 || {
+        echo "worktree create: not inside a git repository" >&2; return 1; }
+
+    local branch="worktree-$name"
+
+    # Resolve MAIN worktree root (first porcelain record).
+    local -a _WT_PATH _WT_HEAD _WT_BRANCH
+    _wt_parse
+    local main_root="${_WT_PATH[0]}"
+    [ -n "$main_root" ] || { echo "worktree create: cannot resolve main worktree root" >&2; return 1; }
+    local wt_parent="$main_root/.claude/worktrees"
+    local wt_path="$wt_parent/$name"
+
+    # Refuse if the branch or the target path already exists (clear, actionable).
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+        echo "worktree create: branch '$branch' already exists -- pick another name or remove it first." >&2
+        return 1
+    fi
+    if [ -e "$wt_path" ]; then
+        echo "worktree create: path already exists: $wt_path" >&2
+        return 1
+    fi
+
+    # Base ref: explicit --from, else master/main.
+    local base base_label
+    if [ -n "$from_ref" ]; then
+        git rev-parse --verify --quiet "$from_ref" >/dev/null 2>&1 || {
+            echo "worktree create: --from ref not found: $from_ref" >&2; return 1; }
+        base="$from_ref"; base_label="$from_ref"
+    else
+        base="$(_wt_master_ref)" || {
+            echo "worktree create: no master/main ref to branch from (use --from <ref>)" >&2; return 1; }
+        base_label="${base#refs/heads/}"; base_label="${base_label#refs/remotes/}"
+    fi
+
+    mkdir -p "$wt_parent" || return 1
+
+    echo "Creating worktree '$name' on branch '$branch' (from $base_label)..."
+    if ! git worktree add -b "$branch" "$wt_path" "$base"; then
+        echo "worktree create: git worktree add failed" >&2
+        return 1
+    fi
+
+    # Vendor-sync so the new worktree's .agentic-framework/ matches its source. For a
+    # fresh checkout from master this is already consistent (idempotent confirm); it
+    # also repairs any base-ref vendor drift. Non-fatal -- never block creation on it.
+    if [ -f "$wt_path/bin/fw" ]; then
+        if ( cd "$wt_path" && bash bin/fw vendor self ) >/dev/null 2>&1; then
+            echo "Vendored .agentic-framework/ synced."
+        else
+            echo "NOTE: vendor self did not complete (non-fatal) -- run it in the worktree if needed." >&2
+        fi
+    fi
+
+    echo ""
+    echo "Worktree ready: $wt_path"
+    echo "  Branch:     $branch (from $base_label)"
+    echo "  Next:       cd $wt_path && fw work-on \"<task>\" --type build"
+    echo "  Topology:   fw worktree status        (is this branch live on the host?)"
+    echo "  Merge back: fw integrate run          (from inside the worktree -- T-2471)"
+    return 0
+}

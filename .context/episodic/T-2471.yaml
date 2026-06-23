@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2471: Implement fw integrate run — smooth worktree merge-back (T-2397 spec + live-gap extensions)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-23T20:45:53Z
+# ============================================================================
+
+task_id: T-2471
+task_name: "Implement fw integrate run — smooth worktree merge-back (T-2397 spec + live-gap extensions)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-23T20:15:20Z
+completed: 2026-06-23T20:45:47Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw integrate run [target] [--dry-run] [--push]` exists (default target master); composes `fw integrate check` as preflight and refuses cleanly (clear message, nonzero) on needs-human (exit 2) or not-on-a-branch (exit 3) — never blind-merges'
+  - 'Acquires a single-writer lock (git-common-dir lockfile, stale TTL per T-2397 §3.3) and always releases it on exit (trap), so concurrent integrations serialize'
+  - 'Quiesces regenerable working-tree churn in the target before merge (stash) so a clean merge is not blocked by uncommitted generated/governance files (the live blocker), and restores it after — using `lib/integrate.py` classify_path to decide what is regenerable'
+  - 'Refreshes vendored `.agentic-framework/` (`fw vendor self`) after the merge (T-2397 §3.1 step 6)'
+  - 'The run''s own git operations are NOT blocked by the focus/active-task gate — exemption is **verb-scoped in `agents/context/lib/safe-commands.sh`** (`fw integrate` allow-listed), NOT an `FW_INTEGRATION_IN_PROGRESS` env honor. Build-time revision (see Evolution): an env-var the gate honors would reintroduce the T-2446 inherited-env poison class this arc exists to eliminate; the env approach is also "too late" (the gate fires on the agent''s top-level call before bin/fw sets the env). The verb-scoped allow-list is poison-safe and is the EFFECTIVE exemption. `FW_INTEGRATION_IN_PROGRESS=1` remains as a marker for the python subprocess''s own internal git calls only.'
+  - '`--dry-run` prints the planned steps and the `fw integrate check` verdict without mutating anything; without `--push` the verb never pushes'
+  - '`tests/unit/t2471_integrate_run.bats` passes — synthetic fixture: a divergent branch + dirty regenerable churn in the target → `fw integrate run` yields target with branch merged, churn restored, vendored refreshed, exit 0; and a both-sided code conflict → clean refuse (nonzero, target untouched)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 30 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 30
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2471-implement-fw-integrate-run--smooth-workt.md
+generated_by: context-agent-hybrid

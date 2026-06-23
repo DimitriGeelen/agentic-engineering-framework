@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2469: fw worktree create — branch convention + vendor-sync + +x, folding termlink worktree-bootstrap.sh (P-047)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-23T20:53:38Z
+# ============================================================================
+
+task_id: T-2469
+task_name: "fw worktree create — branch convention + vendor-sync + +x, folding termlink worktree-bootstrap.sh (P-047)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-23T18:31:33Z
+completed: 2026-06-23T20:53:32Z
+duration_days: 0
+updates_count: 4
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw worktree create <name>` creates `.claude/worktrees/<name>` on a new branch following the framework''s branch convention (e.g. `worktree-<name>`), erroring clearly if the name/branch already exists'
+  - 'After creation it runs the vendor-sync (`fw vendor self` equivalent) so the new worktree''s `.agentic-framework/` is current, and ensures hook wrappers are usable (no reliance on the +x bit — consistent with T-2467)'
+  - '`fw worktree create --help` documents the command and cross-references `fw worktree status` (T-2466) and `fw integrate` (merge-back)'
+  - '`tests/unit/t2469_worktree_create.bats` passes — synthetic fixture covers: create succeeds, duplicate-name errors, new worktree has vendored `.agentic-framework/`'
+  - 'Branch convention + bootstrap behavior reconciled with termlink''s `worktree-bootstrap.sh` (P-047 Q3) — documented in Decisions'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-06-23 — Default base ref = master, not current HEAD'
+    chose: '`fw worktree create <name>` branches from master/main by default; `--from <ref>` overrides.'
+    rationale: 'A worktree branched from master has minimal divergence and merges back cleanly via'
+    alternatives_rejected: ['Branching from current HEAD (would inherit whatever divergence the invoking checkout']
+  - decision: '2026-06-23 — Reconciliation with termlink''s worktree-bootstrap.sh (P-047 Q3)'
+    chose: '`fw worktree create` is the framework-side promotion of termlink''s'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 141 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 141
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2469-fw-worktree-create--branch-convention--v.md
+generated_by: context-agent-hybrid
