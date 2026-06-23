@@ -1984,6 +1984,16 @@ else:
     case "$_fw_gd"  in /*) ;; *) _fw_gd="$PROJECT_ROOT/$_fw_gd" ;; esac
     case "$_fw_gcd" in /*) ;; *) _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;; esac
     [ "$_fw_gd" != "$_fw_gcd" ] && _fw_is_wt=1
+    if [ "$_fw_is_wt" = "1" ]; then
+        # T-2466: surface worktree topology so a session knows whether its branch is
+        # live on this host (hooks run MAIN's bin/fw; merge-to-master ≠ live until
+        # MAIN's branch contains the fix). Reuses lib/worktree.sh (self-contained, git-only).
+        if . "$FRAMEWORK_ROOT/lib/worktree.sh" 2>/dev/null; then
+            local _wt_line
+            _wt_line=$( cd "$PROJECT_ROOT" && do_worktree_doctor_line 2>/dev/null )
+            [ -n "$_wt_line" ] && echo -e "  ${CYAN}INFO${NC}  $_wt_line"
+        fi
+    fi
     if [ -f "$cron_registry" ] && [ "$_fw_is_wt" = "1" ]; then
         echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
     elif [ -f "$cron_registry" ]; then
@@ -3543,6 +3553,50 @@ EOF
             *)
                 echo "ERROR: unknown write-set subcommand: $ws_subcmd" >&2
                 echo "Run 'fw write-set --help' for usage." >&2
+                exit 64
+                ;;
+        esac
+        ;;
+    worktree)
+        # T-2466 (T-2464 GO Candidate C, slice 2): worktree topology observability.
+        # Read-only. `status` reports which branch MAIN is on (live-on-host implication),
+        # master-lock holder, and per-worktree merged?/live? state. merge-back routes to
+        # `fw integrate` (arc-011); `create` is a planned follow-up — neither is built here.
+        wt_subcmd="${1:-}"
+        shift || true
+        case "$wt_subcmd" in
+            status)
+                # shellcheck source=lib/worktree.sh
+                . "$FRAMEWORK_ROOT/lib/worktree.sh"
+                ( cd "$PROJECT_ROOT" && do_worktree_status "$@" )
+                exit $?
+                ;;
+            ""|--help|-h|help)
+                cat <<'EOF'
+fw worktree status [--json]      topology of the framework checkout (read-only)
+
+Reports the git-worktree topology so parallel work + merge-back is legible:
+  - which branch the MAIN checkout is on, and whether merging to master goes LIVE
+    on this host (it does NOT while main sits on a session branch — hooks run
+    MAIN's bin/fw, so a fix is live only once MAIN's branch contains it)
+  - which worktree (if any) holds `master` checked out (the master-lock that makes
+    `git checkout master` in main fail → use `git push origin <branch>:master`)
+  - per-worktree merged-into-master? and live-on-this-host? state
+
+Planned (not yet built — kept off the surface to avoid duplicating arc-011):
+  fw worktree create     branch convention + vendor-sync + +x preservation
+  fw worktree merge-back → delegates to `fw integrate` (lib/integrate.py;
+                           check|classify today, mutating `run` is arc-011's slice)
+
+Examples:
+  fw worktree status
+  fw worktree status --json
+EOF
+                exit 0
+                ;;
+            *)
+                echo "ERROR: unknown worktree subcommand: $wt_subcmd" >&2
+                echo "Run 'fw worktree --help' for usage." >&2
                 exit 64
                 ;;
         esac
