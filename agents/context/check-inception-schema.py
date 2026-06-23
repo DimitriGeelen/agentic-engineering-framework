@@ -23,6 +23,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# T-2468: resolve lib/ to import the shared hook project-root resolver
+# (parity with lib/paths.sh:fw_reanchor_from_cwd — re-anchor to the worktree).
+_FW_T2468 = Path(__file__).resolve().parent.parent.parent
+if str(_FW_T2468) not in sys.path:
+    sys.path.insert(0, str(_FW_T2468))
+from lib.hook_paths import reanchor_project_root  # noqa: E402
+
 
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", "/opt/999-Agentic-Engineering-Framework"))
 TASK_FILE_RE = re.compile(r"\.tasks/(active|completed)/T-\d+-[^/]+\.md$")
@@ -112,6 +119,8 @@ def _log_bypass(target: str, reason: str) -> None:
 def main() -> int:
     try:
         payload = json.load(sys.stdin)
+        global PROJECT_ROOT  # T-2468: re-anchor to the worktree from stdin cwd
+        PROJECT_ROOT = reanchor_project_root(payload, PROJECT_ROOT)
     except (json.JSONDecodeError, ValueError):
         return 0
 
