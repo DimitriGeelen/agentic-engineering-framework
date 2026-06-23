@@ -4,16 +4,16 @@ name: "Make git-worktree support reliable in the framework — systemic root-res
 description: >
   Inception: Make git-worktree support reliable in the framework — systemic root-resolution + parallel-work/merge-back lifecycle
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-23T11:13:13Z
-last_update: 2026-06-23T11:13:13Z
-date_finished: null
+last_update: 2026-06-23T13:05:03Z
+date_finished: 2026-06-23T13:05:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -106,15 +106,15 @@ define them).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -178,9 +178,42 @@ define them).
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 7+ point-fixes (T-2463/T-2446/T-2389/T-2392/T-2289/T-2054/T-2462) share one root: hooks wired by main's absolute path resolve PROJECT_ROOT from process cwd/inherited env, not per-call session context. Whack-a-mole confirmed. Merge-back/parallel-work half has zero framework support (hit live this session: master-locked-in-worktree, main-on-session-branch, FF ambiguity, vendored +x loss). Systematize via shared per-call resolver + fw worktree lifecycle.
+
+**Date**: 2026-06-23T13:05:02Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-06-23T13:05:02Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 7+ point-fixes (T-2463/T-2446/T-2389/T-2392/T-2289/T-2054/T-2462) share one root: hooks wired by main's absolute path resolve PROJECT_ROOT from process cwd/inherited env, not per-call session context. Whack-a-mole confirmed. Merge-back/parallel-work half has zero framework support (hit live this session: master-locked-in-worktree, main-on-session-branch, FF ambiguity, vendored +x loss). Systematize via shared per-call resolver + fw worktree lifecycle.
+
+### 2026-06-23T13:05:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b1b1326e
+- **Timestamp:** 2026-06-23T13:05:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-23T13:05:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
