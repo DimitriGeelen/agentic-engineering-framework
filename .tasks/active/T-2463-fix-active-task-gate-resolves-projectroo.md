@@ -55,11 +55,11 @@ safe-listed `git push` to sidestep this for the push case only.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `check-active-task.sh` extracts the top-level `cwd` field from its stdin JSON and, when `cwd` is non-empty and resolves (walking up) to a valid project root (has `.framework.yaml` or `.tasks/`), uses THAT root for PROJECT_ROOT + FOCUS_FILE — overriding the `bin/fw`-resolved value. Per-call stdin `cwd` is authoritative (it's the dir the tool actually runs in) and is NOT subject to the T-2446 inherited-env daemon-poison class, so it is trusted directly. Unit test with synthetic stdin `{cwd: <fixture-root>}` asserts focus is read from the fixture.
-- [ ] No-`cwd` / invalid-`cwd` regression: when stdin omits `cwd` or `cwd` is not a project root, resolution is byte-identical to current behavior (regression test on the existing stdin shape).
-- [ ] Worktree-vs-main scenario test: two fixture roots (mainfix, wtfix); stdin `cwd=wtfix` with `wtfix` focus = active task → ALLOWED; with `wtfix` focus = null → BLOCKED — proving the gate now reads the cwd-root's focus, not the process-resolved root's.
-- [ ] `bash -n agents/context/check-active-task.sh` passes (L-408).
-- [ ] Existing hook bats green (no regression): `check_active_task_fp_fix.bats`, `check_active_task_memory_exempt.bats`, `check_active_task_switch_focus.bats`, `integration/check_active_task.bats`.
+- [x] `check-active-task.sh` extracts the top-level `cwd` field from its stdin JSON and, when `cwd` is non-empty and resolves (walking up) to a valid project root (has `.framework.yaml` or `.tasks/`), uses THAT root for PROJECT_ROOT + FOCUS_FILE — overriding the `bin/fw`-resolved value. Per-call stdin `cwd` is authoritative (it's the dir the tool actually runs in) and is NOT subject to the T-2446 inherited-env daemon-poison class, so it is trusted directly. Unit test with synthetic stdin `{cwd: <fixture-root>}` asserts focus is read from the fixture. — check-active-task.sh:49-86; pinned by check_active_task_cwd_resolution.bats test 1.
+- [x] No-`cwd` / invalid-`cwd` regression: when stdin omits `cwd` or `cwd` is not a project root, resolution is byte-identical to current behavior (regression test on the existing stdin shape). — tests 3 & 5.
+- [x] Worktree-vs-main scenario test: two fixture roots (mainfix, wtfix); stdin `cwd=wtfix` with `wtfix` focus = active task → ALLOWED; with `wtfix` focus = null → BLOCKED — proving the gate now reads the cwd-root's focus, not the process-resolved root's. — tests 1 & 2.
+- [x] `bash -n agents/context/check-active-task.sh` passes (L-408). — verified.
+- [x] Existing hook bats green (no regression): `check_active_task_fp_fix.bats`, `check_active_task_memory_exempt.bats`, `check_active_task_switch_focus.bats`, `integration/check_active_task.bats`. — 47/47 ok across all suites incl. the new 5.
 
 ### Human
 - [ ] [REVIEW] End-to-end worktree unblock confirmed after merge to master
@@ -196,6 +196,32 @@ resolution.
 distinct project root drives focus resolution — the next regression of this class
 fails the test. (E2E on the real Claude Code `cwd` value is the merge-gated Human
 AC, since the live gate runs main's copy of the hook.)
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Root cause confirmed by live experiment (not just code-reading):
+the worktree gate reads main's focus.yaml because `bin/fw` resolves PROJECT_ROOT
+from the hook's process cwd (main launch dir) when `CLAUDE_PROJECT_DIR` is unset.
+Fix reads the authoritative per-call `cwd` Claude Code passes on stdin and
+re-anchors PROJECT_ROOT to it — conservative (no-op unless cwd's root differs, so
+zero regression for normal sessions) and immune to the T-2446 daemon-poison class
+(per-call cwd is fresh, not inherited). The one residual unknown — whether the
+real Claude Code `cwd` is the worktree path on this version — is the merge-gated
+Human AC; per the CC docs `cwd` = "working directory when the event fired", which
+is the worktree, and the session's `PWD` confirms the worktree.
+
+**Evidence:**
+- `agents/context/check-active-task.sh:49-86` — cwd re-anchor block
+- `tests/unit/check_active_task_cwd_resolution.bats` — 5/5 pass (worktree-allowed, worktree-null-blocked, no-cwd regression, no-op-when-equal, outside-project)
+- 47/47 across all check-active-task hook suites (no regression)
+- `bash -n` clean; vendored copy synced (`.agentic-framework/...`)
+- RCA §"Confirmed by live experiment (2026-06-23)"
+
+**Note:** verification of the real CC `cwd` value is e2e and merge-gated — the
+LIVE gate runs main's copy of the hook, so this fix is only observable in worktree
+sessions after FF-merge to master (same constraint as T-2462).
 
 ## Evolution
 
