@@ -4,12 +4,12 @@ name: "Worktree reliability slice 3 — vendored +x preservation + reassess T-20
 description: >
   Preserve executable bit on vendored .agentic-framework/agents/**/*.sh (bare fw shim hits Permission denied). Reassess whether the T-2054/T-2462 git push/fetch/commit safe-list exemptions are still needed once slice-1 central resolver lands (IW-3, deferred). T-2464 GO Candidate C slice 3.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/check-visual-verification.sh, lib/paths.sh, tests/unit/check_active_task_switch_focus.bats, tests/unit/check_inception_recommendation.bats, tests/unit/t2465_reanchor_from_cwd.bats, tests/unit/tier0_hash_normalization.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T13:09:08Z
-last_update: 2026-06-23T13:09:08Z
-date_finished: null
+last_update: 2026-06-23T18:30:29Z
+date_finished: 2026-06-23T18:30:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -219,3 +219,19 @@ doesn't need is a silent-coverage trap.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2467-worktree-reliability-slice-3--vendored-x.md
 - **Context:** Initial task creation
+
+### 2026-06-23T18:30:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6234e13b
+- **Timestamp:** 2026-06-23T18:30:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-23T18:30:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
