@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2468: Worktree reliability slice 1b — python-side hook root-resolver parity (check-arc-id / check-inception-* read env PROJECT_ROOT)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-23T17:46:34Z
+# ============================================================================
+
+task_id: T-2468
+task_name: "Worktree reliability slice 1b — python-side hook root-resolver parity (check-arc-id / check-inception-* read env PROJECT_ROOT)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-23T13:19:20Z
+completed: 2026-06-23T17:46:11Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/hook_paths.py:reanchor_project_root(payload, fallback)` added — python parity with `lib/paths.sh:fw_reanchor_from_cwd` (reads stdin `cwd`, walks up to project root, no-op for non-worktree)'
+  - '4 python hooks wired to re-derive project_root from stdin `cwd`: `check-arc-id.py`, `check-inception-decisions.py`, `check-inception-recommendation.py`, `check-inception-schema.py` (global re-anchor for the module-level PROJECT_ROOT case)'
+  - '`tests/unit/test_hook_paths.py` (8 tests) pass — re-anchor / walk-up / no-op cases'
+  - 'No regression: arc_id_validation_guard (15) + check_inception_decisions_hook (20) + check_inception_recommendation (7) + check_inception_schema (10) + create_task_inception_recommendation_gate (11) all green; `py_compile` clean on all 5 files'
+  - 'Restored `+x` on 10 hook wrappers that lost it (pre-existing, blocked the direct-invocation tests; `bin/fw` execs via `bash` so live dispatch was unaffected) — prevention is T-2467'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 266 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 266
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2468-worktree-reliability-slice-1b--python-si.md
+generated_by: context-agent-hybrid

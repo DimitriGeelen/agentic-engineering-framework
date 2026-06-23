@@ -4,12 +4,12 @@ name: "Worktree reliability slice 1b — python-side hook root-resolver parity (
 description: >
   The bash hooks now share fw_reanchor_from_cwd (T-2465). The python hooks (check-arc-id.py, check-inception-decisions.py, check-inception-recommendation.py, check-inception-schema.py) still read project_root = os.environ['PROJECT_ROOT'] (line 141 in check-arc-id.py) — misanchored to MAIN in worktree sessions, so they check main's .context/arcs / tasks. Add a python-side parity resolver (read stdin cwd → walk up to project root → override env PROJECT_ROOT), wire the 4 hooks, add python/bats tests. T-2464 GO Candidate C, slice 1b.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/check-visual-verification.sh, lib/paths.sh, tests/unit/t2465_reanchor_from_cwd.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T13:19:20Z
-last_update: 2026-06-23T13:19:20Z
-date_finished: null
+last_update: 2026-06-23T17:46:11Z
+date_finished: 2026-06-23T17:46:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -168,3 +168,18 @@ wrappers — root prevention tracked in T-2467.)
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2468-worktree-reliability-slice-1b--python-si.md
 - **Context:** Initial task creation
+
+### 2026-06-23T17:46:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9222f0dd
+- **Timestamp:** 2026-06-23T17:46:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-23T17:46:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
