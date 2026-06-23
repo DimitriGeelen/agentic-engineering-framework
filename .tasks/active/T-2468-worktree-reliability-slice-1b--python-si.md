@@ -40,45 +40,21 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2464 GO Candidate C, slice 1b. The bash hooks now share `fw_reanchor_from_cwd` (T-2465).
+The python hooks still read `project_root = os.environ['PROJECT_ROOT']`, which is misanchored
+to MAIN in worktree sessions — so they inspect main's `.context/arcs` / `.tasks` / bypass-log
+instead of the worktree. This adds a python-side parity resolver and wires the 4 hooks.
+RCA: `docs/reports/T-2464-worktree-reliability-rca.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/hook_paths.py:reanchor_project_root(payload, fallback)` added — python parity with `lib/paths.sh:fw_reanchor_from_cwd` (reads stdin `cwd`, walks up to project root, no-op for non-worktree)
+- [x] 4 python hooks wired to re-derive project_root from stdin `cwd`: `check-arc-id.py`, `check-inception-decisions.py`, `check-inception-recommendation.py`, `check-inception-schema.py` (global re-anchor for the module-level PROJECT_ROOT case)
+- [x] `tests/unit/test_hook_paths.py` (8 tests) pass — re-anchor / walk-up / no-op cases
+- [x] No regression: arc_id_validation_guard (15) + check_inception_decisions_hook (20) + check_inception_recommendation (7) + check_inception_schema (10) + create_task_inception_recommendation_gate (11) all green; `py_compile` clean on all 5 files
+- [x] Restored `+x` on 10 hook wrappers that lost it (pre-existing, blocked the direct-invocation tests; `bin/fw` execs via `bash` so live dispatch was unaffected) — prevention is T-2467
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
@@ -112,22 +88,34 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m py_compile lib/hook_paths.py agents/context/check-arc-id.py agents/context/check-inception-decisions.py agents/context/check-inception-recommendation.py agents/context/check-inception-schema.py
+python3 tests/unit/test_hook_paths.py
+bats tests/unit/arc_id_validation_guard.bats
+bats tests/unit/check_inception_decisions_hook.bats
+bats tests/unit/check_inception_recommendation.bats
+bats tests/unit/check_inception_schema.bats
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** In a worktree session the python PreToolUse hooks (arc_id / inception-decisions /
+inception-recommendation / inception-schema) resolve project state against the MAIN repo —
+they check main's `.context/arcs`, task dirs, and `.gate-bypass-log.yaml` instead of the
+worktree the tool ran in. Same OBS-080 class as the bash hooks (T-2463/T-2465).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** each python hook does `project_root = os.environ['PROJECT_ROOT']`, and bin/fw
+exports PROJECT_ROOT resolved from the hook's process cwd — MAIN — when wired by main's
+absolute path. The stdin payload carries the authoritative per-call `cwd`, but the hooks
+never consulted it.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the T-2465 shared resolver was bash-only; python hooks had no
+parity path, so they kept reading the env var. No test exercised a python hook under a
+worktree-style invocation (PROJECT_ROOT=main, stdin cwd=worktree).
+
+**Prevention:** `lib/hook_paths.py:reanchor_project_root` — one python helper mirroring the
+bash `fw_reanchor_from_cwd`; all 4 hooks call it. `tests/unit/test_hook_paths.py` pins the
+contract. Same shape both languages now. (Also surfaced + restored a batch `+x` loss on hook
+wrappers — root prevention tracked in T-2467.)
+
 
 ## Evolution
 

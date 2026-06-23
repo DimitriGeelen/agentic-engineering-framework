@@ -48,6 +48,7 @@ _FRAMEWORK_ROOT = _SCRIPT_DIR.parent.parent
 if str(_FRAMEWORK_ROOT) not in sys.path:
     sys.path.insert(0, str(_FRAMEWORK_ROOT))
 
+from lib.hook_paths import reanchor_project_root  # noqa: E402  (T-2468)
 from lib.inception_decisions import (  # noqa: E402
     parse_inception_decisions,
     parse_unlocks_field,
@@ -141,7 +142,7 @@ def main() -> int:
     if not file_path.endswith(".md"):
         return 0
 
-    project_root = Path(os.environ.get("PROJECT_ROOT", "."))
+    project_root = reanchor_project_root(data, os.environ.get("PROJECT_ROOT", "."))
 
     new_content = _compute_new_content(tool_name, ti, file_path)
     if new_content is None:

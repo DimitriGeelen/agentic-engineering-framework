@@ -37,6 +37,13 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# T-2468: resolve lib/ to import the shared hook project-root resolver
+# (parity with lib/paths.sh:fw_reanchor_from_cwd — re-anchor to the worktree).
+_FW_T2468 = Path(__file__).resolve().parent.parent.parent
+if str(_FW_T2468) not in sys.path:
+    sys.path.insert(0, str(_FW_T2468))
+from lib.hook_paths import reanchor_project_root  # noqa: E402
+
 
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
 _ARC_ID_RE = re.compile(r"^arc_id:\s*(.*?)\s*$", re.MULTILINE)
@@ -138,7 +145,7 @@ def main() -> int:
     if not file_path.endswith(".md"):
         return 0
 
-    project_root = Path(os.environ.get("PROJECT_ROOT", "."))
+    project_root = reanchor_project_root(data, os.environ.get("PROJECT_ROOT", "."))
 
     # Read existing content (empty for new file).
     try:
