@@ -190,6 +190,24 @@ bats tests/unit/t2399_integrate_check.bats
   while reclaiming that free usability.
 - Scoring detail: Antifrag×4, Reliab×3, Usab×2, Port×1. Hybrid ≈4.1–4.3, dominating both.
 
+## Recommendation
+
+- **Recommendation:** GO
+- **Rationale:** All 6 Agent ACs pass with bats evidence over a genuine multi-worktree
+  fixture (real `git worktree` + FF + push to a bare origin). The hybrid was scored the
+  directive-optimal of three options. One Human AC remains — a smoothness judgment that
+  only you can make by running it against a real merge-back.
+- **Evidence:**
+  - `_land()` in `lib/integrate.py`: zone-2 auto-FF (clean+pushed only), zone-3 report-only.
+  - `tests/unit/t2474_integrate_run_landing.bats` — 5/5 green (clean-FF, dirty-skip, MAIN-report,
+    summary block, no-push-no-mutation).
+  - Regression: `t2471_integrate_run` + `t2399_integrate_check` — 13/13 green; `py_compile` OK.
+  - Live dry-run on this host confirmed FF-READY (+168/−0) and correctly refused on uncommitted
+    real code (the AC2-class guard firing for real).
+- **To verify the smoothness AC:** `cd <a worktree branch> && bin/fw integrate run --push` and
+  read the `Landing:` block — it should tell you at a glance which zones landed and the exact
+  command for any that need you.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
