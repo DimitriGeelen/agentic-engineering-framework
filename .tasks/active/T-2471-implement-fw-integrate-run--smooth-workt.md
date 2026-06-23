@@ -57,13 +57,13 @@ quiesce-and-clean-merge path and refuses (clean abort) when real both-sided conf
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw integrate run [target] [--dry-run] [--push]` exists (default target master); composes `fw integrate check` as preflight and refuses cleanly (clear message, nonzero) on needs-human (exit 2) or not-on-a-branch (exit 3) — never blind-merges
-- [ ] Acquires a single-writer lock (git-common-dir lockfile, stale TTL per T-2397 §3.3) and always releases it on exit (trap), so concurrent integrations serialize
-- [ ] Quiesces regenerable working-tree churn in the target before merge (stash) so a clean merge is not blocked by uncommitted generated/governance files (the live blocker), and restores it after — using `lib/integrate.py` classify_path to decide what is regenerable
-- [ ] Refreshes vendored `.agentic-framework/` (`fw vendor self`) after the merge (T-2397 §3.1 step 6)
-- [ ] The run's own git operations are NOT blocked by the focus/active-task gate — `FW_INTEGRATION_IN_PROGRESS=1` exemption set by the verb and honored in `agents/context/check-active-task.sh` (closes live gap (c)); exemption is logged Tier-2
-- [ ] `--dry-run` prints the planned steps and the `fw integrate check` verdict without mutating anything; without `--push` the verb never pushes
-- [ ] `tests/unit/t2471_integrate_run.bats` passes — synthetic fixture: a divergent branch + dirty regenerable churn in the target → `fw integrate run` yields target with branch merged, churn restored, vendored refreshed, exit 0; and a both-sided code conflict → clean refuse (nonzero, target untouched)
+- [x] `fw integrate run [target] [--dry-run] [--push]` exists (default target master); composes `fw integrate check` as preflight and refuses cleanly (clear message, nonzero) on needs-human (exit 2) or not-on-a-branch (exit 3) — never blind-merges
+- [x] Acquires a single-writer lock (git-common-dir lockfile, stale TTL per T-2397 §3.3) and always releases it on exit (trap), so concurrent integrations serialize
+- [x] Quiesces regenerable working-tree churn in the target before merge (stash) so a clean merge is not blocked by uncommitted generated/governance files (the live blocker), and restores it after — using `lib/integrate.py` classify_path to decide what is regenerable
+- [x] Refreshes vendored `.agentic-framework/` (`fw vendor self`) after the merge (T-2397 §3.1 step 6)
+- [x] The run's own git operations are NOT blocked by the focus/active-task gate — exemption is **verb-scoped in `agents/context/lib/safe-commands.sh`** (`fw integrate` allow-listed), NOT an `FW_INTEGRATION_IN_PROGRESS` env honor. Build-time revision (see Evolution): an env-var the gate honors would reintroduce the T-2446 inherited-env poison class this arc exists to eliminate; the env approach is also "too late" (the gate fires on the agent's top-level call before bin/fw sets the env). The verb-scoped allow-list is poison-safe and is the EFFECTIVE exemption. `FW_INTEGRATION_IN_PROGRESS=1` remains as a marker for the python subprocess's own internal git calls only.
+- [x] `--dry-run` prints the planned steps and the `fw integrate check` verdict without mutating anything; without `--push` the verb never pushes
+- [x] `tests/unit/t2471_integrate_run.bats` passes — synthetic fixture: a divergent branch + dirty regenerable churn in the target → `fw integrate run` yields target with branch merged, churn restored, vendored refreshed, exit 0; and a both-sided code conflict → clean refuse (nonzero, target untouched)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +128,12 @@ quiesce-and-clean-merge path and refuses (clean abort) when real both-sided conf
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m py_compile lib/integrate.py
+bash -n bin/fw
+bash -n agents/context/lib/safe-commands.sh
+bats tests/unit/t2471_integrate_run.bats
+bats tests/unit/t2399_integrate_check.bats
+out=$(bash -c "source agents/context/lib/safe-commands.sh && is_bash_safe_command 'fw integrate run master' && echo SAFE"); echo "$out" | grep -q SAFE
 
 ## RCA
 
@@ -168,6 +174,52 @@ quiesce-and-clean-merge path and refuses (clean abort) when real both-sided conf
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-06-23 — AC5 mechanism changed: verb-scoped allow-list, not env honor
+
+- **What changed:** The filed AC5 said the focus-gate exemption would be an
+  `FW_INTEGRATION_IN_PROGRESS=1` env var honored in `check-active-task.sh`. Building
+  it surfaced two problems: (1) **poison class** — a gate that exits 0 on a leaked
+  env var is exactly the T-2446 daemon-inherited-env vulnerability this whole arc
+  (T-2464) exists to eliminate; (2) **too late** — the gate fires on the agent's
+  top-level `fw integrate run` Bash call, *before* bin/fw runs and sets the env, so
+  the env honor can't even reach the call it's meant to exempt.
+- **Plan impact:** Implemented the exemption as a verb-scoped entry in
+  `lib/safe-commands.sh` (`fw integrate` → safe), the same category as the existing
+  `git push/add/commit` task-agnostic exemptions (T-2054/T-2462). Poison-safe (scoped
+  to a specific command verb, not an ambient flag) and it actually intercepts the
+  top-level call. `FW_INTEGRATION_IN_PROGRESS=1` is retained only as a marker for the
+  python subprocess's own internal git calls. bin/fw comments corrected to match.
+- **Triggered:** AC5 reworded; no new task.
+
+### 2026-06-23 — production bug found + fixed in _dirty_files() (porcelain slice)
+
+- **What changed:** While writing the AC7 fixture, the regenerable-churn test refused
+  instead of merging. Root cause: `_dirty_files()` parsed `git status --porcelain`
+  via `_git()`, whose `r.stdout.strip()` removes the **leading space** of the first
+  porcelain `XY ` status column (` M path` → `M path`). The fixed `line[3:]` slice
+  then dropped the path's first character — `.context/working/.hook-counter` became
+  `context/working/.hook-counter`, which misses the regenerable-classify rule and
+  mis-classifies as real code. This would have made `fw integrate run` refuse on the
+  most common churn case in real use (an unstaged-only modified counter/governance file).
+- **Plan impact:** `_dirty_files()` now parses raw, unstripped subprocess output
+  (per-line `line[3:]`), plus handles `R old -> new` rename lines. Caught only because
+  the AC7 fixture exercised the real mutating path, not just preflight.
+- **Triggered:** fix in same task; no follow-up needed.
+
+### 2026-06-23 — taxonomy completeness is the next usefulness gap (follow-up)
+
+- **What changed:** Live `fw integrate run --dry-run` on this very repo refuses because
+  many real-world transient/governance files (`.context/working/focus.yaml`,
+  `session.yaml`, `.session-metrics.yaml`, `watchtower.{log,pid}`, `.gate-bypass-log.yaml`,
+  `.context/project/decisions.yaml`, `VERSION`) are NOT in the T-2397 §3.2 taxonomy, so
+  classify_path defaults them to real-code/needs-human. The MVP is correct and SAFE
+  (refuse rather than risk stashing real work) but refuses more than ideal on a busy tree.
+- **Plan impact:** None for this MVP — the ACs are met and the core mechanism is proven.
+  Broadening the shared `classify_path` taxonomy touches T-2399's pinned behavior and each
+  new class needs a correct strategy, so it is genuinely separate work.
+- **Triggered:** follow-up (un-filed; deferred alongside the true append/id/field UNION at
+  both-sided conflicts noted in Context). File when merge-back is exercised for real.
 
 ## Decisions
 

@@ -273,14 +273,28 @@ def _release_lock(lp):
 
 
 def _dirty_files():
-    """Working-tree changed paths (staged + unstaged + untracked), repo-relative."""
-    rc, out = _git("status", "--porcelain")
-    if rc != 0:
+    """Working-tree changed paths (staged + unstaged + untracked), repo-relative.
+
+    Parses raw porcelain output directly — NOT via _git(), whose .strip() removes
+    the leading space of an `XY ` status column (e.g. ` M path` → `M path`), which
+    shifts the fixed `line[3:]` slice and drops the path's first character (a
+    regenerable `.context/...` file then mis-classifies as real code). Each line is
+    `XY PATH` with XY exactly two status chars; never lstrip the line.
+    """
+    try:
+        r = subprocess.run(["git", "status", "--porcelain"],
+                           capture_output=True, text=True)
+    except Exception:  # pragma: no cover - defensive
+        return []
+    if r.returncode != 0:
         return []
     files = []
-    for line in out.splitlines():
+    for line in r.stdout.split("\n"):
         if len(line) > 3:
-            files.append(line[3:].strip().strip('"'))
+            path = line[3:].strip().strip('"')
+            if " -> " in path:          # rename: 'R  old -> new' → take new
+                path = path.split(" -> ", 1)[1]
+            files.append(path)
     return files
 
 
