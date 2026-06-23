@@ -14,6 +14,13 @@ setup() {
 
     # Reset guard to allow re-sourcing
     unset _FW_PATHS_LOADED _FW_COMPAT_LOADED _FW_TASKS_LOADED _FW_YAML_LOADED _FW_ERRORS_LOADED
+    # L-490 hermeticity: the T-2289 derivation sentinel leaks in from any parent
+    # `fw` process (e.g. when this suite runs as a task ## Verification command,
+    # where update-task.sh has sourced paths.sh and exported it). A non-empty,
+    # mismatched value makes the source-time T-2289 block unset TASKS_DIR/CONTEXT_DIR,
+    # breaking the "preserves existing TASKS_DIR" fixture. Unset it so each test
+    # controls the derivation state explicitly. (T-2465)
+    unset _FW_PATHS_DERIVED_BY
 }
 
 teardown() {

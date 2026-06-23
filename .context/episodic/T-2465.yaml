@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2465: Worktree reliability slice 1 — shared per-call hook root-resolver
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-23T13:28:51Z
+# ============================================================================
+
+task_id: T-2465
+task_name: "Worktree reliability slice 1 — shared per-call hook root-resolver"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-23T13:08:26Z
+completed: 2026-06-23T13:28:31Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw_reanchor_from_cwd` + `fw_reanchor_from_hook_stdin` added to `lib/paths.sh` (shared resolver; no-op for non-worktree sessions; keeps `_FW_PATHS_DERIVED_BY` consistent with T-2289)'
+  - '`check-active-task.sh` refactored to call the shared resolver (inline T-2463 block removed) — behavior-preserving'
+  - '`check-visual-verification.sh` adopts the shared resolver (2nd bash hook that reads worktree-sensitive focus/tasks)'
+  - 'Dedicated unit tests for the resolver primitive: `tests/unit/t2465_reanchor_from_cwd.bats` (10 tests) pass'
+  - 'No regression: all check-active-task suites green (56 tests across unit+integration), `lib_paths.bats` green (11), `bash -n` clean on all edited scripts'
+  - 'Python-hook parity scoped as follow-up T-2468 (the 4 python hooks read env `PROJECT_ROOT` — same class, python mechanism)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2465-worktree-reliability-slice-1--shared-per.md
+generated_by: context-agent-hybrid

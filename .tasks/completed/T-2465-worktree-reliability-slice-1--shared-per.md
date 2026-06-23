@@ -4,12 +4,12 @@ name: "Worktree reliability slice 1 — shared per-call hook root-resolver"
 description: >
   Centralize T-2463 root-resolution into one shared per-call resolver all hooks call; add suite-level worktree-invocation test. T-2464 GO Candidate C slice 1.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/check-visual-verification.sh, lib/paths.sh, tests/unit/t2465_reanchor_from_cwd.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T13:08:26Z
-last_update: 2026-06-23T13:08:26Z
-date_finished: null
+last_update: 2026-06-23T13:28:31Z
+date_finished: 2026-06-23T13:28:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -145,6 +145,17 @@ observable rather than surprising.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-23 — lib_paths.bats non-hermeticity surfaced
+- **What changed:** Putting `bats tests/unit/lib_paths.bats` in this task's Verification
+  exposed a latent non-hermetic test — its setup() didn't unset `_FW_PATHS_DERIVED_BY`, so
+  when the completion gate runs bats from within a `fw` process (which exports that sentinel),
+  the T-2289 source-time block unset TASKS_DIR and test 4 ("preserves existing TASKS_DIR")
+  failed. Confirmed env-sensitivity (passes var-unset, fails var-exported); my paths.sh change
+  was additive-only (zero deletions) so it was not the cause.
+- **Plan impact:** None to the resolver design; added a one-line hermetic `unset` to the test
+  setup (L-490 class) so the suite is gate-safe.
+- **Triggered:** Fixed in-place (tests/unit/lib_paths.bats setup); no new task needed.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -172,3 +183,15 @@ observable rather than surprising.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2465-worktree-reliability-slice-1--shared-per.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-92743265
+- **Timestamp:** 2026-06-23T13:28:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-23T13:28:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
