@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T18:31:33Z
-last_update: 2026-06-23T20:05:43Z
+last_update: 2026-06-23T20:47:55Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -49,11 +49,11 @@ art (their T-2255) per the P-047 alignment (their Q3). merge-back stays with `fw
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw worktree create <name>` creates `.claude/worktrees/<name>` on a new branch following the framework's branch convention (e.g. `worktree-<name>`), erroring clearly if the name/branch already exists
-- [ ] After creation it runs the vendor-sync (`fw vendor self` equivalent) so the new worktree's `.agentic-framework/` is current, and ensures hook wrappers are usable (no reliance on the +x bit — consistent with T-2467)
-- [ ] `fw worktree create --help` documents the command and cross-references `fw worktree status` (T-2466) and `fw integrate` (merge-back)
-- [ ] `tests/unit/t2469_worktree_create.bats` passes — synthetic fixture covers: create succeeds, duplicate-name errors, new worktree has vendored `.agentic-framework/`
-- [ ] Branch convention + bootstrap behavior reconciled with termlink's `worktree-bootstrap.sh` (P-047 Q3) — documented in Decisions
+- [x] `fw worktree create <name>` creates `.claude/worktrees/<name>` on a new branch following the framework's branch convention (e.g. `worktree-<name>`), erroring clearly if the name/branch already exists
+- [x] After creation it runs the vendor-sync (`fw vendor self` equivalent) so the new worktree's `.agentic-framework/` is current, and ensures hook wrappers are usable (no reliance on the +x bit — consistent with T-2467)
+- [x] `fw worktree create --help` documents the command and cross-references `fw worktree status` (T-2466) and `fw integrate` (merge-back)
+- [x] `tests/unit/t2469_worktree_create.bats` passes — synthetic fixture covers: create succeeds, duplicate-name errors, new worktree has vendored `.agentic-framework/`
+- [x] Branch convention + bootstrap behavior reconciled with termlink's `worktree-bootstrap.sh` (P-047 Q3) — documented in Decisions
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +118,11 @@ art (their T-2255) per the P-047 alignment (their Q3). merge-back stays with `fw
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/worktree.sh
+bash -n bin/fw
+bats tests/unit/t2469_worktree_create.bats
+bats tests/unit/t2466_worktree_status.bats
+out=$(bin/fw worktree --help 2>&1); echo "$out" | grep -q "fw worktree create" && echo "$out" | grep -q "fw integrate run"
 
 ## RCA
 
@@ -170,6 +175,34 @@ art (their T-2255) per the P-047 alignment (their Q3). merge-back stays with `fw
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-06-23 — Default base ref = master, not current HEAD
+
+- **Chose:** `fw worktree create <name>` branches from master/main by default; `--from <ref>` overrides.
+- **Why:** A worktree branched from master has minimal divergence and merges back cleanly via
+  `fw integrate run` (T-2471) — the create→work→merge-back loop is coherent. The host topology
+  (MAIN sits on a session branch, master locked in another worktree) makes "branch from master ref"
+  the right clean-slate default; branching from the ref does not need master checked out.
+- **Rejected:** Branching from current HEAD (would inherit whatever divergence the invoking checkout
+  carries, complicating merge-back); branching from origin/master unconditionally (offline-fragile —
+  local master is the integration target).
+
+### 2026-06-23 — Reconciliation with termlink's worktree-bootstrap.sh (P-047 Q3)
+
+- **Chose:** `fw worktree create` is the framework-side promotion of termlink's
+  `scripts/worktree-bootstrap.sh` prior art (their T-2255), per the P-047 Q3 alignment ("yes, promote
+  bootstrap → planned fw worktree create"). It standardizes: branch convention `worktree-<name>`,
+  full `.agentic-framework/` vendor-sync, and +x-independence.
+- **Why:** termlink independently hit worktree-breaks-fw and shipped a local bootstrap script; the
+  framework owning the canonical bootstrap means consumers (incl. termlink) converge on one
+  governed command instead of per-repo scripts. The two facets are complementary: termlink's
+  root-cause facet was *consumer-vendoring completeness* (partial `.agentic-framework/`), which the
+  vendor-sync step here directly addresses; AEF's facet was *hook misanchoring* (fixed separately by
+  the cwd-reanchor resolver T-2465/T-2468). create + cwd-reanchor + full vendor-sync covers both.
+- **Rejected:** Leaving bootstrap as a termlink-local script (fragments the convention across repos;
+  no governance, no vendor-sync guarantee, no +x-independence guarantee). Note: this is documentation
+  of the design alignment from the recorded P-047 dialogue — no cross-repo edit to termlink was made
+  (per the no-cross-repo-edits discipline; termlink adopts the framework command on their side).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -188,5 +221,13 @@ art (their T-2255) per the P-047 alignment (their Q3). merge-back stays with `fw
 - **Context:** Initial task creation
 
 ### 2026-06-23T20:05:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-06-23T20:08:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: now → later
+
+### 2026-06-23T20:47:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
