@@ -36,18 +36,40 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2467: Worktree reliability slice 3 — vendored +x preservation + reassess T-2054/T-2462 safe-list exemptions
+# T-2467: Worktree reliability slice 3 — eliminate the hook-test +x dependency (live system is +x-independent)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2464 GO Candidate C, slice 3. RCA: `docs/reports/T-2464-worktree-reliability-rca.md`.
+
+**Premise corrected at build time (2026-06-23):** the task was filed as "vendored +x
+preservation" — but build-time investigation found the **live system never depends on the
+executable bit**. Every hook in `.claude/settings.json` invokes `bin/fw hook <name>`, and
+`bin/fw`'s dispatcher runs `bash "$_hook_script"` (bin/fw:6755,6760 — both branches). So
+"preserving +x" solves a non-problem for production.
+
+The *only* consumer of the +x bit was the **test suite**: 9 bats files invoked the wrapper as
+a bare command (`echo … | $HOOK`), which requires +x. Worse, 7 of them guarded with
+`[ -x "$HOOK" ] || skip "… not executable"` — so on a clean checkout (wrappers tracked 100644)
+those tests **silently skipped**, giving zero coverage while looking green. That silent-skip is
+the real defect; the +x churn (T-2468 surfaced it) was a symptom.
+
+**Fix (Option B, not the filed Option A):** make the 9 test files invoke `bash "$HOOK"` —
+matching the live dispatch exactly — and delete the silent-skip guards. This removes the +x
+dependency entirely rather than perpetually maintaining +x across 66 wrapper files (Option A,
+which would also need a new-wrapper regression check). Proven durable: with a wrapper
+`chmod -x`'d, the suite still passes.
+
+The **safelist reassessment (T-2054/T-2462)** that was bundled here is split to a follow-up —
+it is independent governance judgment, not part of the +x finding.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] All 9 hook-wrapper test files invoke via `bash "$HOOK"` (production parity — `bin/fw hook` always runs `bash "$_hook_script"`); zero bare-`$HOOK` command invocations remain
+- [x] The `[ -x "$HOOK" ] || skip "… not executable"` guards removed from all 7 files — they silently skipped coverage on non-executable checkouts (the real defect masking the +x churn)
+- [x] Proven durable: with a wrapper `chmod -x`'d, the suite still passes (62 tests across the 9 files, 0 failures, 0 skips)
+- [x] Premise correction recorded (live system is +x-independent → Option B over filed Option A); safelist reassessment (T-2054/T-2462) split to follow-up
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,22 +134,39 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(grep -rnE '\| +"?\$HOOK"?( |$)' tests/unit/check_inception_recommendation.bats tests/unit/tier0_idempotency.bats tests/unit/tier0_hash_normalization.bats tests/unit/check_tier0_comment_stripping.bats tests/unit/check_active_task_fp_fix.bats tests/unit/check_active_task_memory_exempt.bats tests/unit/check_active_task_switch_focus.bats tests/unit/test_check_active_task_bootstrap.bats tests/unit/inception_open_questions_gate.bats 2>/dev/null | grep -vE 'bash ' || true); [ -z "$out" ]
+out=$(grep -rln 'not executable' tests/unit/check_inception_recommendation.bats tests/unit/tier0_idempotency.bats tests/unit/tier0_hash_normalization.bats tests/unit/check_tier0_comment_stripping.bats tests/unit/check_active_task_fp_fix.bats tests/unit/check_active_task_memory_exempt.bats tests/unit/check_active_task_switch_focus.bats tests/unit/test_check_active_task_bootstrap.bats tests/unit/inception_open_questions_gate.bats 2>/dev/null || true); [ -z "$out" ]
+bats tests/unit/check_inception_recommendation.bats
+bats tests/unit/tier0_idempotency.bats
+bats tests/unit/tier0_hash_normalization.bats
+bats tests/unit/check_tier0_comment_stripping.bats
+bats tests/unit/check_active_task_fp_fix.bats
+bats tests/unit/check_active_task_memory_exempt.bats
+bats tests/unit/check_active_task_switch_focus.bats
+bats tests/unit/test_check_active_task_bootstrap.bats
+bats tests/unit/inception_open_questions_gate.bats
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** hook-wrapper bats tests (check-active-task, check-tier0, check-inception-*) appear
+green locally but provide zero coverage on a clean checkout — they `skip` silently when the
+wrapper `.sh` is tracked non-executable (100644, which 66 of 99 agent wrappers are). Surfaced
+in T-2468 when a +x loss made check_inception_recommendation.bats fail with "Permission denied".
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the 9 test files invoked the wrapper as a bare command (`echo … | $HOOK`),
+which requires the executable bit — even though the live system never does (`bin/fw hook`
+dispatches via `bash "$_hook_script"`). 7 files then guarded with `[ -x "$HOOK" ] || skip`,
+converting the missing-+x into a silent skip rather than a failure.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the test invocation diverged from the production invocation. Live
+dispatch is bash-always (+x-independent); tests were path-as-command (+x-dependent). Nothing
+asserted the two matched, and the `|| skip` guard hid the divergence behind a green-looking run.
+
+**Prevention:** tests now invoke `bash "$HOOK"` (production parity), guards removed. Regression
+guard in `## Verification`: asserts no bare-`$HOOK` invocation and no `not executable` skip-guard
+survives in the 9 files. Learning L-NEW: test invocation must match production invocation; a
+`|| skip "not <capability>"` guard that depends on an environment property the production path
+doesn't need is a silent-coverage trap.
 
 ## Evolution
 

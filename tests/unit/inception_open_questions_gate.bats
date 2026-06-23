@@ -22,7 +22,6 @@ EOF
 session_id: S-test
 EOF
     HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
-    [ -x "$HOOK" ] || skip "check-active-task.sh not executable"
 }
 
 teardown() {
@@ -61,7 +60,7 @@ _make_inception() {
 
 _run_hook_write() {
     local file_path="$1"
-    python3 -c "import json,sys; print(json.dumps({'tool_name':'Write','tool_input':{'file_path': sys.argv[1]}}))" "$file_path" | "$HOOK"
+    python3 -c "import json,sys; print(json.dumps({'tool_name':'Write','tool_input':{'file_path': sys.argv[1]}}))" "$file_path" | bash "$HOOK"
 }
 
 @test "placeholder-only Open Questions: source-file write is blocked" {

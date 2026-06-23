@@ -38,7 +38,7 @@ print(json.dumps({
 
 @test "non-task file path passes silently" {
     payload='{"tool_name":"Write","tool_input":{"file_path":"/tmp/other.md","content":"hello"}}'
-    run bash -c "echo '$payload' | $HOOK"
+    run bash -c "echo '$payload' | bash $HOOK"
     [ "$status" -eq 0 ]
 }
 
@@ -51,7 +51,7 @@ workflow_type: build
 # build task
 '''))")
     payload=$(write_envelope "/.tasks/active/T-9001-build.md" "$content")
-    run bash -c "echo '$payload' | $HOOK"
+    run bash -c "echo '$payload' | bash $HOOK"
     [ "$status" -eq 0 ]
 }
 
@@ -71,7 +71,7 @@ workflow_type: inception
 ## Decisions
 '''))")
     payload=$(write_envelope "/.tasks/active/T-9002-inception.md" "$content")
-    run bash -c "echo '$payload' | $HOOK"
+    run bash -c "echo '$payload' | bash $HOOK"
     [ "$status" -eq 0 ]
 }
 
@@ -89,7 +89,7 @@ workflow_type: inception
 ## Decisions
 '''))")
     payload=$(write_envelope "/.tasks/active/T-9003-inception.md" "$content")
-    run bash -c "echo '$payload' | $HOOK"
+    run bash -c "echo '$payload' | bash $HOOK"
     [ "$status" -eq 2 ]
     [[ "$output" =~ "INCEPTION RECOMMENDATION MISSING" ]]
     [[ "$output" =~ "FW_ALLOW_EMPTY_RECOMMENDATION=1" ]]
@@ -114,7 +114,7 @@ workflow_type: inception
 ## Decisions
 '''))")
     payload=$(write_envelope "/.tasks/active/T-9004-inception.md" "$content")
-    run bash -c "FW_ALLOW_EMPTY_RECOMMENDATION=1 PROJECT_ROOT='$TMP' echo '$payload' | FW_ALLOW_EMPTY_RECOMMENDATION=1 PROJECT_ROOT='$TMP' $HOOK"
+    run bash -c "FW_ALLOW_EMPTY_RECOMMENDATION=1 PROJECT_ROOT='$TMP' echo '$payload' | FW_ALLOW_EMPTY_RECOMMENDATION=1 PROJECT_ROOT='$TMP' bash $HOOK"
     [ "$status" -eq 0 ]
     [ -f "$TMP/.context/working/.gate-bypass-log.yaml" ]
     grep -q "FW_ALLOW_EMPTY_RECOMMENDATION" "$TMP/.context/working/.gate-bypass-log.yaml"
@@ -132,7 +132,7 @@ workflow_type: inception
 <!-- template only -->
 '''))")
     payload=$(write_envelope "/.tasks/active/T-9005-inception.md" "$content")
-    run bash -c "unset CLAUDECODE; echo '$payload' | $HOOK"
+    run bash -c "unset CLAUDECODE; echo '$payload' | bash $HOOK"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "NOTE: inception" ]] || true
     # Either NOTE present OR silent pass — both are acceptable for unset-CLAUDECODE.
@@ -140,6 +140,6 @@ workflow_type: inception
 
 @test "non-Write tool (Read) passes silently" {
     payload='{"tool_name":"Read","tool_input":{"file_path":"/.tasks/active/T-9006-inception.md"}}'
-    run bash -c "echo '$payload' | $HOOK"
+    run bash -c "echo '$payload' | bash $HOOK"
     [ "$status" -eq 0 ]
 }

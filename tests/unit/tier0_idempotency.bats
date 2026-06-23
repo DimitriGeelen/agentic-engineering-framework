@@ -18,7 +18,6 @@ setup() {
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     mkdir -p "$TEST_TEMP_DIR/.context/approvals" "$TEST_TEMP_DIR/.context/working"
     HOOK="$FRAMEWORK_ROOT/agents/context/check-tier0.sh"
-    [ -x "$HOOK" ] || skip "check-tier0.sh not executable"
     APPROVAL_FILE="$TEST_TEMP_DIR/.context/working/.tier0-approval"
     CONSUMED_FILE="${APPROVAL_FILE}.consumed"
 }
@@ -31,7 +30,7 @@ _run_hook() {
     local cmd="$1"
     local json
     json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command': sys.argv[1]}}))" "$cmd")
-    echo "$json" | "$HOOK"
+    echo "$json" | bash "$HOOK"
 }
 
 # Pre-approve a command by writing the approval file the way `fw tier0 approve` would

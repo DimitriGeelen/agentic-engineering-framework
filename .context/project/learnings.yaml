@@ -3756,3 +3756,10 @@ X'` returning empty group."
   date: 2026-06-22
   context: Added via context agent
   application: TBD
+- id: L-494
+  learning: "Test invocation must match production invocation. Hook bats tests invoked wrappers as bare $HOOK (needs +x), but live dispatch is bash-always (bin/fw hook -> bash \"$_hook_script\", +x-independent). A '[ -x \"$HOOK\" ] || skip \"not executable\"' guard converted missing-+x into a SILENT skip -> zero coverage on clean checkouts while looking green. Fix: invoke bash \"$HOOK\", delete the guard."
+  source: P-011
+  task: T-2467
+  date: 2026-06-23
+  context: Added via context agent
+  application: TBD

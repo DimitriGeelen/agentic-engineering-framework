@@ -17,14 +17,13 @@ setup() {
     echo "framework_root: $FRAMEWORK_ROOT" > "$TEST_TEMP_DIR/.framework.yaml"
     # No focus.yaml → agent has no active task
     HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
-    [ -x "$HOOK" ] || skip "check-active-task.sh not executable"
 }
 
 _run_hook_write() {
     local file_path="$1"
     local json
     json=$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Write','tool_input':{'file_path': sys.argv[1]}}))" "$file_path")
-    echo "$json" | "$HOOK"
+    echo "$json" | bash "$HOOK"
 }
 
 @test "memory exempt: /root/.claude/projects/<x>/memory/foo.md is allowed without task" {

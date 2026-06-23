@@ -17,7 +17,6 @@ setup() {
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     mkdir -p "$TEST_TEMP_DIR/.context/approvals" "$TEST_TEMP_DIR/.context/working"
     HOOK="$FRAMEWORK_ROOT/agents/context/check-tier0.sh"
-    [ -x "$HOOK" ] || skip "check-tier0.sh not executable"
 }
 
 # Helper: feed a command through the hook and capture exit code
@@ -26,7 +25,7 @@ _run_hook() {
     # Build JSON envelope. Use python to ensure correct escaping.
     local json
     json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command': sys.argv[1]}}))" "$cmd")
-    echo "$json" | "$HOOK"
+    echo "$json" | bash "$HOOK"
 }
 
 @test "tier0 hook: bare 'fw inception decide' is blocked" {

@@ -53,7 +53,6 @@ owner: agent
 ---
 EOF
     HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
-    [ -x "$HOOK" ] || skip "check-active-task.sh not executable"
 }
 
 teardown() {
@@ -64,7 +63,7 @@ _run_hook_bash() {
     local cmd="$1"
     local json
     json=$(python3 -c "import json,sys; print(json.dumps({'tool_name':'Bash','tool_input':{'command': sys.argv[1]}}))" "$cmd")
-    echo "$json" | "$HOOK"
+    echo "$json" | bash "$HOOK"
 }
 
 @test "FIX case2: fw upstream --help is exempt under work-completed focus" {
