@@ -3622,9 +3622,22 @@ EOF
                 fi
                 exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/integrate.py" classify "$@"
                 ;;
+            run)
+                # T-2471: mutating merge-back (T-2397 §3). Integrates TARGET's divergence
+                # into the current worktree branch, auto-resolving governance/generated
+                # conflicts via the taxonomy, around regenerable churn. The focus/active-task
+                # gate exemption is VERB-SCOPED in lib/safe-commands.sh (`fw integrate`), not
+                # env-based — an FW_INTEGRATION_IN_PROGRESS gate-honor would reintroduce the
+                # T-2446 inherited-env poison class this arc eliminates. The env below only
+                # marks the python subprocess's own internal git calls (vendor-self etc.).
+                exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                    FW_INTEGRATION_IN_PROGRESS=1 \
+                    python3 "$FRAMEWORK_ROOT/lib/integrate.py" run "$@"
+                ;;
             ""|--help|-h|help)
                 cat <<'EOF'
 fw integrate check [target]        (default target: master)
+fw integrate run [target] [--dry-run] [--push]
 fw integrate classify <path>...
 
 Layer-2 serialized-integration PREFLIGHT (read-only). Reports how the current
@@ -3648,9 +3661,19 @@ Examples:
   fw integrate check                 # preflight this branch vs master
   fw integrate classify .context/working/feedback-stream.yaml lib/foo.sh
 
+run (T-2471) is the MUTATING verb: integrates TARGET's divergence INTO the current
+worktree branch, auto-resolving governance/generated conflicts via the §3.2 taxonomy
+(regenerate/union/take-existing), quiescing regenerable working-tree churn around the
+merge, then refreshing vendored .agentic-framework/. After run, the branch ⊇ target so
+target FFs cleanly (reported, or done server-side with --push). Refuses (clean abort,
+target untouched) on a real both-sided code conflict or uncommitted real code. --dry-run
+prints the plan + check verdict without mutating. The run is exempt from the focus/active-
+task gate via a verb-scoped safe-command entry (lib/safe-commands.sh), not an env honor.
+Deferred: true field/append/id UNION at both-sided conflicts (MVP keeps branch-side "ours"
+for the auto classes).
+
 Part of the T-2394 structural-remediation (G2). Sibling: fw write-set check (G4,
-arc-011), the master-merge-only guard (G1, T-2396). The mutating verb
-(fw integrate run) is a later slice; this preflight is its read-only foundation.
+arc-011), the master-merge-only guard (G1, T-2396).
 EOF
                 exit 0
                 ;;

@@ -138,6 +138,23 @@ is_bash_safe_command() {
                     # fw hook * — hooks calling hooks, always allowed
                     return 0
                     ;;
+                integrate)
+                    # T-2471: `fw integrate {check,classify}` are read-only; `fw
+                    # integrate run` is the mutating merge-back verb. All three are
+                    # task-agnostic meta-operations on git history: the merge
+                    # commits run creates are --no-ff --no-edit (no T-XXX work
+                    # artifact — the commit-msg hook already exempts MERGE_HEAD),
+                    # and gating them on an active task manufactures a deadlock —
+                    # integration runs from a worktree whose Bash-hook PROJECT_ROOT
+                    # resolves to the main repo (null focus). This verb-scoped
+                    # exemption is the EFFECTIVE focus-gate bypass; it deliberately
+                    # does NOT use an FW_INTEGRATION_IN_PROGRESS env honor, which
+                    # would reintroduce the T-2446 inherited-env poison class this
+                    # arc exists to eliminate. Same category as git push/add/commit
+                    # (T-2054/T-2462). run sets FW_INTEGRATION_IN_PROGRESS=1 only
+                    # for the python subprocess's own internal git calls.
+                    return 0
+                    ;;
             esac
             ;;
 

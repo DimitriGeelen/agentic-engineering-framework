@@ -199,6 +199,242 @@ def cmd_classify(paths):
     return 0
 
 
+# ── run command (mutating merge-back, T-2397 §3) ─────────────────────────────
+# MVP: integrate TARGET's divergence INTO the current worktree branch, auto-
+# resolving both-sided governance/generated conflicts via the taxonomy, around
+# any regenerable working-tree churn. After this the worktree branch ⊇ target,
+# so target FFs to it cleanly. The final FF of target (often checked out / dirty
+# elsewhere) is reported, or done server-side with --push.
+#
+# Deferred (follow-up slice): true append/id/field UNION at both-sided conflicts.
+# This MVP keeps the integrating branch's version ("ours") for the auto classes
+# (body=branch is authoritative per §3.2) and only ABORTS on a real code conflict.
+
+import os
+import time
+
+_LOCK_TTL = 900  # seconds; a lock older than this (or with a dead pid) is stale
+
+
+def _git_rc(*args):
+    """Run git, return rc only (stderr surfaced to caller's stderr on failure)."""
+    try:
+        r = subprocess.run(["git", *args], capture_output=True, text=True)
+        if r.returncode != 0 and r.stderr.strip():
+            print(r.stderr.strip(), file=sys.stderr)
+        return r.returncode
+    except Exception as e:  # pragma: no cover - defensive
+        print(str(e), file=sys.stderr)
+        return 127
+
+
+def _pid_alive(pid):
+    try:
+        os.kill(pid, 0)
+        return True
+    except (ProcessLookupError, ValueError):
+        return False
+    except PermissionError:
+        return True  # exists, owned by another user
+
+
+def _lock_path():
+    rc, gcd = _git("rev-parse", "--git-common-dir")
+    if rc != 0:
+        return None
+    if not os.path.isabs(gcd):
+        gcd = os.path.abspath(gcd)
+    return os.path.join(gcd, ".fw-integrate.lock")
+
+
+def _acquire_lock():
+    lp = _lock_path()
+    if not lp:
+        return (False, "no git-common-dir")
+    if os.path.exists(lp):
+        try:
+            pid_s, ts_s = open(lp).read().split()[:2]
+            age = int(time.time()) - int(ts_s)
+            if _pid_alive(int(pid_s)) and age < _LOCK_TTL:
+                return (False, f"integration lock held by pid {pid_s} (age {age}s) — {lp}")
+        except Exception:
+            pass  # corrupt/stale → reclaim
+    with open(lp, "w") as f:
+        f.write(f"{os.getpid()} {int(time.time())}\n")
+    return (True, lp)
+
+
+def _release_lock(lp):
+    try:
+        if lp and os.path.exists(lp):
+            os.remove(lp)
+    except OSError:
+        pass
+
+
+def _dirty_files():
+    """Working-tree changed paths (staged + unstaged + untracked), repo-relative.
+
+    Parses raw porcelain output directly — NOT via _git(), whose .strip() removes
+    the leading space of an `XY ` status column (e.g. ` M path` → `M path`), which
+    shifts the fixed `line[3:]` slice and drops the path's first character (a
+    regenerable `.context/...` file then mis-classifies as real code). Each line is
+    `XY PATH` with XY exactly two status chars; never lstrip the line.
+    """
+    try:
+        r = subprocess.run(["git", "status", "--porcelain"],
+                           capture_output=True, text=True)
+    except Exception:  # pragma: no cover - defensive
+        return []
+    if r.returncode != 0:
+        return []
+    files = []
+    for line in r.stdout.split("\n"):
+        if len(line) > 3:
+            path = line[3:].strip().strip('"')
+            if " -> " in path:          # rename: 'R  old -> new' → take new
+                path = path.split(" -> ", 1)[1]
+            files.append(path)
+    return files
+
+
+def cmd_run(target="master", dry_run=False, push=False):
+    rc, branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    if rc != 0:
+        print(f"integrate run: not a git repo or detached HEAD ({branch})", file=sys.stderr)
+        return 4
+    if branch in ("master", "main"):
+        print(f"integrate run: HEAD is '{branch}' — nothing to integrate. Run from a worktree branch.",
+              file=sys.stderr)
+        return 3
+
+    # 1. Preflight — reuse the read-only verdict; never blind-merge.
+    print(f"── preflight: fw integrate check {target} ──")
+    verdict = cmd_check(target)
+    print(f"── preflight verdict: exit {verdict} "
+          f"({'ff/clean' if verdict == 0 else 'auto-resolvable' if verdict == 1 else 'needs-human' if verdict == 2 else 'error'}) ──\n")
+    if verdict == 2:
+        print("integrate run: REFUSED — real code/docs changed on both sides (needs-human).\n"
+              f"  Resolve manually in this worktree (`git merge {target}`), then re-run.", file=sys.stderr)
+        return 2
+    if verdict == 3:
+        return 3
+    if verdict not in (0, 1):
+        return 4
+
+    # Classify current churn: regenerable (safe to stash) vs real code (refuse to touch).
+    dirty = _dirty_files()
+    regenerable = [f for f in dirty if not classify_path(f)[2]]   # needs_human == False
+    real_dirty = [f for f in dirty if classify_path(f)[2]]
+    if real_dirty:
+        print("integrate run: REFUSED — uncommitted REAL code/doc changes in this worktree:",
+              file=sys.stderr)
+        for f in real_dirty[:10]:
+            print(f"    {f}", file=sys.stderr)
+        print("  Commit or stash them first; integrate run only quiesces generated/governance churn.",
+              file=sys.stderr)
+        return 2
+
+    plan = [
+        f"acquire single-writer lock ({_lock_path()})",
+        f"quiesce {len(regenerable)} regenerable working-tree file(s) (stash)" if regenerable
+        else "no regenerable churn to quiesce",
+        f"git merge --no-ff {target} into {branch}; auto-resolve governance conflicts via taxonomy",
+        "restore quiesced churn",
+        "refresh vendored .agentic-framework/ (fw vendor self)",
+        (f"push {branch}:{target} to origin (FF target)" if push
+         else f"report how to FF {target} (no --push given)"),
+        "release lock",
+    ]
+    if dry_run:
+        print("DRY-RUN plan:")
+        for i, step in enumerate(plan, 1):
+            print(f"  {i}. {step}")
+        return 0
+
+    ok, lock = _acquire_lock()
+    if not ok:
+        print(f"integrate run: {lock}", file=sys.stderr)
+        return 4
+    try:
+        stashed = False
+        if regenerable:
+            print(f"quiescing {len(regenerable)} regenerable file(s)…")
+            if _git_rc("stash", "push", "--include-untracked", "-m",
+                       f"fw-integrate-run {branch}", "--", *regenerable) == 0:
+                stashed = True
+
+        print(f"merging {target} into {branch}…")
+        mrc = _git_rc("merge", "--no-ff", "--no-edit", target)
+        if mrc != 0:
+            # Conflicts — auto-resolve governance/generated classes, abort on real code.
+            rc, out = _git("diff", "--name-only", "--diff-filter=U")
+            conflicts = [f for f in out.splitlines() if f]
+            unresolved = [f for f in conflicts if classify_path(f)[2]]
+            if unresolved:
+                print("integrate run: real code/doc conflict(s) — aborting (target untouched):",
+                      file=sys.stderr)
+                for f in unresolved[:10]:
+                    print(f"    {f}", file=sys.stderr)
+                _git_rc("merge", "--abort")
+                if stashed:
+                    _git_rc("stash", "pop")
+                return 2
+            # All conflicts are governance/generated → keep ours (branch authoritative, §3.2).
+            for f in conflicts:
+                _git_rc("checkout", "--ours", "--", f)
+                _git_rc("add", "--", f)
+                print(f"  auto-resolved [{classify_path(f)[0]}] {f}")
+            if _git_rc("commit", "--no-edit") != 0:
+                print("integrate run: failed to finalize merge commit", file=sys.stderr)
+                _git_rc("merge", "--abort")
+                if stashed:
+                    _git_rc("stash", "pop")
+                return 4
+
+        if stashed:
+            print("restoring quiesced churn…")
+            _git_rc("stash", "pop")  # regenerated files win on conflict; harmless if it re-conflicts
+
+        print("refreshing vendored .agentic-framework/…")
+        _vendor_refresh()
+
+        # FF target to the (now-superset) branch.
+        if push:
+            print(f"pushing {branch}:{target} to origin…")
+            prc = _git_rc("push", "origin", f"{branch}:{target}")
+            if prc != 0:
+                print(f"integrate run: push to {target} failed (see above); branch is integrated locally.",
+                      file=sys.stderr)
+        else:
+            print(f"\n✓ {branch} now contains {target}. To make {target} live, FF it:")
+            print(f"    git push origin {branch}:{target}      # or re-run with --push")
+            print(f"    (if {target} is checked out & clean elsewhere: git -C <wt> merge --ff-only {branch})")
+
+        print(f"\n✓ integrate run complete — {branch} ⊇ {target}.")
+        return 0
+    finally:
+        _release_lock(lock)
+
+
+def _vendor_refresh():
+    """Best-effort `fw vendor self`. Located via FW path env or git root."""
+    fw = os.environ.get("FW_BIN") or os.environ.get("FRAMEWORK_ROOT", "")
+    candidates = []
+    if fw:
+        candidates.append(os.path.join(fw, "bin", "fw") if os.path.isdir(fw) else fw)
+    rc, root = _git("rev-parse", "--show-toplevel")
+    if rc == 0:
+        candidates.append(os.path.join(root, "bin", "fw"))
+    for c in candidates:
+        if c and os.path.exists(c):
+            try:
+                subprocess.run([c, "vendor", "self"], capture_output=True, text=True, timeout=120)
+            except Exception:
+                pass
+            return
+
+
 def main(argv):
     if not argv:
         print("usage: integrate.py {check [target] | classify <path>...}", file=sys.stderr)
@@ -211,6 +447,12 @@ def main(argv):
             print("usage: integrate.py classify <path>...", file=sys.stderr)
             return 4
         return cmd_classify(rest)
+    if sub == "run":
+        dry_run = "--dry-run" in rest
+        push = "--push" in rest
+        positional = [a for a in rest if not a.startswith("-")]
+        target = positional[0] if positional else "master"
+        return cmd_run(target, dry_run=dry_run, push=push)
     print(f"integrate.py: unknown subcommand: {sub}", file=sys.stderr)
     return 4
 
