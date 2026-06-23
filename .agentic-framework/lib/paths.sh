@@ -74,6 +74,59 @@ CONTEXT_DIR="${CONTEXT_DIR:-$PROJECT_ROOT/.context}"
 _FW_PATHS_DERIVED_BY="$PROJECT_ROOT"
 export _FW_PATHS_DERIVED_BY
 
+# fw_reanchor_from_cwd <cwd> — re-anchor PROJECT_ROOT + path vars to the project
+# root that <cwd> resolves to (walking up for .framework.yaml / .tasks), when it
+# differs from the current PROJECT_ROOT. Always returns 0 (no-op cases included).
+#
+# T-2465 (generalizes T-2463 / OBS-080): every framework hook is wired into
+# Claude Code settings.json by MAIN's absolute path (`<main>/bin/fw hook …`). When
+# that hook fires inside a git-worktree (or spawned) session, bin/fw resolves
+# PROJECT_ROOT from the hook's process cwd / inherited env — the MAIN repo — so the
+# hook reads main's focus.yaml / tasks / context, NOT the worktree the tool ran in.
+# Claude Code passes the authoritative per-call working dir as top-level `cwd` on
+# the hook's stdin JSON ("working directory when the event fired"); this re-anchors
+# to it. Per-call stdin cwd is FRESH (not inherited), so it is immune to the
+# T-2446 daemon-poison class that limits CLAUDE_PROJECT_DIR trust.
+#
+# No-op when <cwd> is empty, not a dir, resolves to no project root, or already
+# == PROJECT_ROOT — so normal (non-worktree) sessions are unaffected. Keeps
+# _FW_PATHS_DERIVED_BY consistent (T-2289). Callers that cache their own
+# PROJECT_ROOT-derived paths (FOCUS_FILE, STATUS_FILE, …) must recompute after.
+fw_reanchor_from_cwd() {
+    local cwd="$1"
+    [ -n "$cwd" ] && [ -d "$cwd" ] || return 0
+    local root="" d
+    d="$(cd "$cwd" 2>/dev/null && pwd -P)" || return 0
+    while [ -n "$d" ] && [ "$d" != "/" ]; do
+        if [ -f "$d/.framework.yaml" ] || [ -d "$d/.tasks" ]; then
+            root="$d"; break
+        fi
+        d="$(dirname "$d")"
+    done
+    [ -n "$root" ] && [ "$root" != "${PROJECT_ROOT:-}" ] || return 0
+    PROJECT_ROOT="$root"
+    TASKS_DIR="$PROJECT_ROOT/.tasks"
+    CONTEXT_DIR="$PROJECT_ROOT/.context"
+    _FW_PATHS_DERIVED_BY="$PROJECT_ROOT"
+    export PROJECT_ROOT TASKS_DIR CONTEXT_DIR _FW_PATHS_DERIVED_BY
+    return 0
+}
+
+# fw_reanchor_from_hook_stdin <input_json> — convenience wrapper for hooks:
+# extract the top-level `cwd` from a Claude Code hook stdin payload and re-anchor
+# via fw_reanchor_from_cwd. One call replaces the per-hook inline block. (T-2465)
+fw_reanchor_from_hook_stdin() {
+    local cwd
+    cwd=$(printf '%s' "$1" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('cwd', '') or '')
+except Exception:
+    print('')
+" 2>/dev/null)
+    fw_reanchor_from_cwd "$cwd"
+}
+
 # T-2375: Claude Code transcript project-dir-name sanitizer.
 # Claude Code encodes a session's cwd into ~/.claude/projects/<name> by replacing
 # EVERY non-alphanumeric character with '-' (so both '/' and '.' become '-').
