@@ -298,6 +298,117 @@ def _dirty_files():
     return files
 
 
+# ── hybrid landing helpers (T-2474) ──────────────────────────────────────────
+# "Merge-back" has three landing zones: origin/master (zone 1, push), the local
+# master-holding worktree (zone 2, mechanical → auto-FF when clean), and MAIN's
+# running checkout (zone 3, a decision → report-only). These helpers feed _land().
+
+def _worktrees():
+    """Parse `git worktree list --porcelain` → [{path, head, branch}].
+
+    branch is the short name (refs/heads/X → X), or None when detached.
+    """
+    rc, out = _git("worktree", "list", "--porcelain")
+    if rc != 0:
+        return []
+    trees, cur = [], {}
+    for line in out.split("\n"):
+        if line.startswith("worktree "):
+            if cur:
+                trees.append(cur)
+            cur = {"path": line[len("worktree "):], "head": None, "branch": None}
+        elif line.startswith("HEAD "):
+            cur["head"] = line[len("HEAD "):]
+        elif line.startswith("branch "):
+            ref = line[len("branch "):]
+            cur["branch"] = ref[len("refs/heads/"):] if ref.startswith("refs/heads/") else ref
+    if cur:
+        trees.append(cur)
+    return trees
+
+
+def _wt_clean(path):
+    """True when the worktree at `path` has no staged/unstaged/untracked changes."""
+    try:
+        r = subprocess.run(["git", "-C", path, "status", "--porcelain"],
+                           capture_output=True, text=True)
+    except Exception:  # pragma: no cover - defensive
+        return False
+    return r.returncode == 0 and r.stdout.strip() == ""
+
+
+def _main_checkout():
+    """Absolute path of the MAIN checkout (parent of git-common-dir's .git)."""
+    rc, gcd = _git("rev-parse", "--git-common-dir")
+    if rc != 0:
+        return None
+    if not os.path.isabs(gcd):
+        gcd = os.path.abspath(gcd)
+    # gcd is <main>/.git → parent is the main checkout
+    return os.path.dirname(gcd.rstrip("/"))
+
+
+def _land(branch, target, pushed):
+    """Hybrid landing (T-2474). Zone 1 (origin) is handled by the caller.
+
+    Zone 2 (master-holding worktree): auto-FF to `branch` when clean AND we pushed
+    (mechanical — `branch` strictly contains `target` after the merge, so the FF is
+    always valid); otherwise report. Zone 3 (MAIN off-master): report-only go-live
+    command — never auto, because making a fix live changes which hooks execute.
+    Prints a "Landing:" summary so the three-zone state is legible.
+    """
+    trees = _worktrees()
+    rc, cwd_top = _git("rev-parse", "--show-toplevel")
+    cwd_top = os.path.realpath(cwd_top) if rc == 0 else None
+    main_path = _main_checkout()
+    main_path = os.path.realpath(main_path) if main_path else None
+
+    holder = next((t for t in trees if t.get("branch") == target), None)
+    main_branch = None
+    for t in trees:
+        if main_path and os.path.realpath(t["path"]) == main_path:
+            main_branch = t.get("branch")
+            break
+
+    lines = []
+    # Zone 1 — origin
+    lines.append(f"  origin/{target}   "
+                 + (f"← {branch} (pushed) ✓" if pushed else "not pushed (no --push)"))
+
+    # Zone 2 — local master-holding worktree (mechanical)
+    if holder is None:
+        lines.append(f"  {target} worktree  none checked out — local {target} ref unaffected"
+                     + (f"; sync ref: git fetch . {branch}:{target}" if pushed else ""))
+    elif cwd_top and os.path.realpath(holder["path"]) == cwd_top:
+        lines.append(f"  {target} worktree  this worktree already holds {target}")
+    elif not pushed:
+        lines.append(f"  {target} worktree  {holder['path']} — left as-is "
+                     f"(no --push; FF here would diverge from origin)")
+    elif _wt_clean(holder["path"]):
+        frc = _git_rc("-C", holder["path"], "merge", "--ff-only", branch)
+        if frc == 0:
+            lines.append(f"  {target} worktree  {holder['path']} — FF'd to {branch} ✓ (was clean)")
+        else:
+            lines.append(f"  {target} worktree  {holder['path']} — FF failed; sync manually: "
+                         f"cd {holder['path']} && git merge --ff-only {branch}")
+    else:
+        lines.append(f"  {target} worktree  {holder['path']} — DIRTY, left untouched. "
+                     f"Sync when clean: cd {holder['path']} && git merge --ff-only {branch}")
+
+    # Zone 3 — MAIN go-live (a decision → report-only)
+    if main_branch in (target, "master", "main"):
+        lines.append(f"  host (MAIN)    on {main_branch} — fix is LIVE on this host ✓")
+    elif main_path:
+        lines.append(f"  host (MAIN)    on {main_branch or 'detached'} — NOT live yet "
+                     f"(hooks run MAIN's bin/fw)")
+        lines.append(f"                 go live when ready (a decision): "
+                     f"cd {main_path} && git merge {branch}")
+
+    print("\nLanding:")
+    for ln in lines:
+        print(ln)
+
+
 def cmd_run(target="master", dry_run=False, push=False):
     rc, branch = _git("rev-parse", "--abbrev-ref", "HEAD")
     if rc != 0:
@@ -344,6 +455,8 @@ def cmd_run(target="master", dry_run=False, push=False):
         "refresh vendored .agentic-framework/ (fw vendor self)",
         (f"push {branch}:{target} to origin (FF target)" if push
          else f"report how to FF {target} (no --push given)"),
+        ("hybrid land: auto-FF clean master worktree; report MAIN go-live" if push
+         else "report landing zones (no --push: mutate no other worktree)"),
         "release lock",
     ]
     if dry_run:
@@ -399,17 +512,20 @@ def cmd_run(target="master", dry_run=False, push=False):
         print("refreshing vendored .agentic-framework/…")
         _vendor_refresh()
 
-        # FF target to the (now-superset) branch.
+        # Zone 1 — origin/target.
+        pushed = False
         if push:
             print(f"pushing {branch}:{target} to origin…")
             prc = _git_rc("push", "origin", f"{branch}:{target}")
-            if prc != 0:
+            if prc == 0:
+                pushed = True
+            else:
                 print(f"integrate run: push to {target} failed (see above); branch is integrated locally.",
                       file=sys.stderr)
-        else:
-            print(f"\n✓ {branch} now contains {target}. To make {target} live, FF it:")
-            print(f"    git push origin {branch}:{target}      # or re-run with --push")
-            print(f"    (if {target} is checked out & clean elsewhere: git -C <wt> merge --ff-only {branch})")
+
+        # Zones 2 & 3 — hybrid landing (T-2474): auto-FF a clean master-holding
+        # worktree (mechanical), report-only MAIN go-live (a decision).
+        _land(branch, target, pushed)
 
         print(f"\n✓ integrate run complete — {branch} ⊇ {target}.")
         return 0
