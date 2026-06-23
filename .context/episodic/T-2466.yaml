@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2466: Worktree reliability slice 2 — fw worktree lifecycle (create/status/merge-back) + doctor coverage
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-23T17:59:34Z
+# ============================================================================
+
+task_id: T-2466
+task_name: "Worktree reliability slice 2 — fw worktree lifecycle (create/status/merge-back) + doctor coverage"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-23T13:08:59Z
+completed: 2026-06-23T17:59:22Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw worktree status` exists (read-only) — shows: main-checkout path + current branch (flagged when main is NOT on master, i.e. "merge-to-master ≠ live here"); each linked worktree''s path / branch / short HEAD; which worktree (if any) holds `master` checked out (master-lock awareness); per-worktree merged-into-master? and is-it-live? (branch == main''s checked-out branch)'
+  - '`fw worktree status --json` emits the same topology as machine-readable JSON'
+  - '`fw worktree` / `fw worktree --help` documents the family: `status` available now; `create` (branch convention + vendor-sync + +x) and `merge-back` (→ delegates to `fw integrate`) documented as planned, so the surface doesn''t duplicate arc-011''s `fw integrate`'
+  - '`fw doctor` surfaces a worktree-topology line when run inside a linked worktree (current branch + merged/live state), reusing the status logic'
+  - '`tests/unit/t2466_worktree_status.bats` passes — synthetic `git worktree` fixture exercises: main-branch detection, master-lock holder, merged vs unmerged worktree, `--json` shape'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-23 — Re-scope away from merge-back (avoid duplicating `fw integrate`)'
+    chose: 'T-2466 ships only `fw worktree status` (+ doctor coverage). `merge-back` routes to `fw integrate` (arc-011); `create` is a separate follow-up.'
+    rationale: 'build-time investigation found arc-011 already shipped the merge-back substrate — `fw integrate check|classify` (lib/integrate.py), `fw write-set check` (lib/write_set.py), G1 master-merge-only guard (T-2396) — with mutating `fw integrate run` already scoped there. A `fw worktree merge-back` would be a second, competing merge-back surface.'
+    alternatives_rejected: ['building the full `create|status|merge-back` as filed — would duplicate `fw integrate` and split the merge-back contract across two command families.']
+  - decision: '2026-06-23 — AEF answers to P-047 (termlink worktree-alignment, framework:pickup)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 290 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 290
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2466-worktree-reliability-slice-2--fw-worktre.md
+generated_by: context-agent-hybrid

@@ -4,12 +4,12 @@ name: "Worktree reliability slice 2 — fw worktree lifecycle (create/status/mer
 description: >
   Build fw worktree create|status|merge-back: branch convention + auto vendor-sync + +x preservation; status shows which worktrees exist, which branch main is on, per-worktree merged?/live? state, master-lock awareness; merge-back FF helper handling the master-locked case + live-check. Doctor coverage for worktree drift. T-2464 GO Candidate C slice 2.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/check-visual-verification.sh, bin/fw, lib/paths.sh, lib/worktree.sh, tests/unit/t2465_reanchor_from_cwd.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T13:08:59Z
-last_update: 2026-06-23T17:49:10Z
-date_finished: null
+last_update: 2026-06-23T17:59:22Z
+date_finished: 2026-06-23T17:59:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -211,3 +211,15 @@ termlink (T-2255/T-2256) asked three alignment questions. AEF's authoritative an
 ### 2026-06-23T17:49:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7f5b324a
+- **Timestamp:** 2026-06-23T17:59:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-23T17:59:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
