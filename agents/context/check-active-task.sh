@@ -46,6 +46,44 @@ except:
     print('')
 " 2>/dev/null)
 
+# T-2463 (OBS-080): re-anchor PROJECT_ROOT to the per-call working directory.
+# In a git-worktree session this gate is invoked as <main>/bin/fw hook, and with
+# CLAUDE_PROJECT_DIR unset bin/fw resolves PROJECT_ROOT from the hook's process
+# cwd (the main launch dir) — so it would read main's focus.yaml, not the worktree
+# the tool actually runs in. Claude Code passes the authoritative per-call working
+# directory as top-level `cwd` on stdin ("working directory when the event fired").
+# If that cwd resolves (walking up) to a project root different from the one bin/fw
+# picked, re-anchor PROJECT_ROOT + path vars to it. Per-call stdin cwd is fresh
+# (not inherited), so it is immune to the T-2446 daemon-poison class that limits
+# CLAUDE_PROJECT_DIR trust. No-op when cwd is absent, not a project, or already
+# equal to PROJECT_ROOT — so normal (non-worktree) sessions are unaffected.
+HOOK_CWD=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('cwd', '') or '')
+except:
+    print('')
+" 2>/dev/null)
+if [ -n "$HOOK_CWD" ] && [ -d "$HOOK_CWD" ]; then
+    _t2463_root=""
+    _t2463_d="$(cd "$HOOK_CWD" 2>/dev/null && pwd -P)" || _t2463_d=""
+    while [ -n "$_t2463_d" ] && [ "$_t2463_d" != "/" ]; do
+        if [ -f "$_t2463_d/.framework.yaml" ] || [ -d "$_t2463_d/.tasks" ]; then
+            _t2463_root="$_t2463_d"
+            break
+        fi
+        _t2463_d="$(dirname "$_t2463_d")"
+    done
+    if [ -n "$_t2463_root" ] && [ "$_t2463_root" != "$PROJECT_ROOT" ]; then
+        PROJECT_ROOT="$_t2463_root"
+        FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
+        TASKS_DIR="$PROJECT_ROOT/.tasks"
+        CONTEXT_DIR="$PROJECT_ROOT/.context"
+        export PROJECT_ROOT TASKS_DIR CONTEXT_DIR
+    fi
+    unset _t2463_root _t2463_d
+fi
+
 # --- Bash tool: safe-command fast path (T-650) ---
 if [ "$TOOL_NAME" = "Bash" ]; then
     BASH_CMD=$(echo "$INPUT" | python3 -c "
