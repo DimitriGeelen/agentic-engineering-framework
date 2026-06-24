@@ -1656,15 +1656,21 @@ for e in d.get('errors',[])[:3]:
     # Skip-if-no-consumer: only fires when a workflow declares
     # ANTHROPIC_BASE_URL: http://localhost:4000 (the litellm proxy port).
     # Mirrors T-1694 pi pattern.
+    #
+    # T-2490/OBS-089: use /health/liveliness, NOT /health. litellm serves /health
+    # as an AUTH-REQUIRED endpoint (HTTP 401 without a key), so `curl -sf /health`
+    # exits non-zero (-f fails on 4xx) even when the proxy is fully up — a false
+    # WARN. /health/liveliness is the unauthenticated liveness probe (HTTP 200).
     local _wf_dir="$PROJECT_ROOT/.context/project/workflows"
+    local _litellm_port="${FW_LITELLM_PORT:-4000}"
     if _doctor_quick_skip "litellm/ollama reachability curls"; then :; else
     if [ -d "$_wf_dir" ] && \
        grep -lE "ANTHROPIC_BASE_URL:\s*http://localhost:4000" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
-        if curl -sf --max-time 2 http://localhost:4000/health >/dev/null 2>&1; then
-            echo -e "  ${GREEN}OK${NC}  litellm-proxy reachable (http://localhost:4000)"
+        if curl -sf --max-time 2 "http://localhost:${_litellm_port}/health/liveliness" >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  litellm-proxy reachable (http://localhost:${_litellm_port})"
         else
-            _doctor_warn_host "litellm-proxy not reachable on http://localhost:4000; workflow(s) declaring ANTHROPIC_BASE_URL will fail"
-            echo -e "         Start: pipx run litellm --config .context/litellm-config.yaml --port 4000  (or systemd unit)"
+            _doctor_warn_host "litellm-proxy not reachable on http://localhost:${_litellm_port}; workflow(s) declaring ANTHROPIC_BASE_URL will fail"
+            echo -e "         Start: setsid nohup litellm --config .context/litellm-config.yaml --port ${_litellm_port} >.context/working/litellm/proxy.log 2>&1 & (persist: sudo systemctl enable --now litellm-proxy — see deploy/litellm-proxy.service)"
         fi
     fi
 
