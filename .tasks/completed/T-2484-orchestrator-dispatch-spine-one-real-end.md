@@ -7,16 +7,16 @@ description: >
   dispatch to land, and triage the ~30 existing orchestrator tasks into
   critical-path / defer / kill.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [orchestrator, dispatch, triage, spine]
 components: []
 related_tasks: [T-1773, T-1774, T-1775, T-1797, T-1636, T-1685, T-1687, T-1792]
 created: 2026-06-24T15:07:23Z
-last_update: 2026-06-24T15:10:13Z
-date_finished: null
+last_update: 2026-06-24T16:17:24Z
+date_finished: 2026-06-24T16:17:24Z
 target_blast_radius: 5            # cross-subsystem (orchestrator/resolver/dispatch + worker primitives)
 voi_score: 0.9                    # unblocks the operator's stated top priority + gates all parallel-execution work
 ---
@@ -128,7 +128,7 @@ light/heavy worktree routing decision; any Watchtower orchestrator panel work
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go on the first build slice
+- [x] [REVIEW] Review exploration findings and approve go/no-go on the first build slice
   **Steps:**
   1. Run: `cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation && bin/fw task review T-2484`
   2. Review the Recommendation + the backlog triage table
@@ -200,9 +200,48 @@ delete T-2485 once Slice 2 dispatches a real task.
 
 ## Decision
 
-<!-- Filled at completion via Watchtower / fw inception decide -->
+**Decision**: GO
+
+**Rationale**: The spine is real and PROVEN LIVE — Spike 2 drove one real end-to-end dispatch
+(TermLink worker, status=success) with **zero new code**, and `fw orchestrator status` went from
+"no dispatches captured yet" to Dispatches 1 / Enriched 1/1 (100%). The problem was never
+construction; it was (a) the CLI verbs were unrunnable — `fw resolver`/`fw outcome` die on
+`Permission denied` because `lib/resolver.sh`/`lib/outcome.sh` are committed mode 100644 but
+`bin/fw` `exec`s them (needs +x) — and (b) nothing ever called the resolver. First build slice
+is ~1 line.
+
+**Date**: 2026-06-24T16:17:23Z
 
 ## Updates
 
 ### 2026-06-24T15:10:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-06-24T16:17:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The spine is real and PROVEN LIVE — Spike 2 drove one real end-to-end dispatch
+(TermLink worker, status=success) with **zero new code**, and `fw orchestrator status` went from
+"no dispatches captured yet" to Dispatches 1 / Enriched 1/1 (100%). The problem was never
+construction; it was (a) the CLI verbs were unrunnable — `fw resolver`/`fw outcome` die on
+`Permission denied` because `lib/resolver.sh`/`lib/outcome.sh` are committed mode 100644 but
+`bin/fw` `exec`s them (needs +x) — and (b) nothing ever called the resolver. First build slice
+is ~1 line.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-423bd7b1
+- **Timestamp:** 2026-06-24T16:17:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-06-24T16:17:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

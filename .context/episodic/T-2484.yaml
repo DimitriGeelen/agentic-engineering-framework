@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2484: orchestrator dispatch spine: one real end-to-end dispatch then iterate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T16:17:32Z
+# ============================================================================
+
+task_id: T-2484
+task_name: "orchestrator dispatch spine: one real end-to-end dispatch then iterate"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T15:07:23Z
+completed: 2026-06-24T16:17:24Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated (orchestrator-never-dispatched confirmed live; now 1 dispatch, enriched 100%)'
+  - 'Assumptions A1-A3 tested via Spike 1 + Spike 2 (A1 confirmed — zero new code; spine works live)'
+  - 'Backlog triaged: ~30 orchestrator tasks classified critical-path / runtime / defer / reframe (by category)'
+  - 'Recommendation written with rationale + named first build slice (exec-bit fix)'
+  - '[REVIEW] Review exploration findings and approve go/no-go on the first build slice'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-24 — isolation granularity is per-task, never per-arc'
+    chose: 'worktree isolation (when used at all) is decided per-*task*, not per-*arc*.'
+    rationale: 'arc-level worktrees batch a whole arc behind one merge — tasks pile up, closure'
+    alternatives_rejected: ['"arc_id -> heavy lane" auto-isolation (the agent''s initial heuristic) — it']
+  - decision: '2026-06-24 — orchestrator before worktree routing'
+    chose: 'prioritise wiring the orchestrator spine above finishing worktree/merge-back tooling.'
+    rationale: 'the light/heavy worktree routing decision is itself an orchestrator function; it'
+    alternatives_rejected: ['promoting `fw integrate go-live` / adding `fw worktree start` now (OBS-086']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 70 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [orchestrator, dispatch, triage, spine]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 70
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2484-orchestrator-dispatch-spine-one-real-end.md
+generated_by: context-agent-hybrid
