@@ -1,78 +1,81 @@
 # Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)
-# Source of truth: /opt/999-Agentic-Engineering-Framework/.context/cron/agentic-audit.crontab (git-tracked)
-# Installed to: /etc/cron.d/agentic-audit-999-agentic-engineering-framework
-# Project: /opt/999-Agentic-Engineering-Framework
+# Source of truth: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.context/cron/agentic-audit.crontab (git-tracked)
+# Installed to: /etc/cron.d/agentic-audit-inception-gov-payload-mediation
+# Project: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation
 SHELL=/bin/bash
 PATH=/usr/local/bin:/usr/bin:/bin
 
 # Reviewer Layer-3 audit (daily Pass B)
-37 4 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" reviewer audit 2>&1 | logger -t agentic-cron
+37 4 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" reviewer audit 2>&1 | logger -t agentic-cron
 
 # Structural audits (30 min)
-*/30 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-structural-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section structure,compliance,quality,discovery --cron' 2>&1 | logger -t agentic-cron
+*/30 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-structural-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --section structure,compliance,quality,discovery --cron' 2>&1 | logger -t agentic-cron
 
 # Git traceability + episodic (hourly)
-0 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-traceability-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section traceability,episodic,discovery-trends --cron' 2>&1 | logger -t agentic-cron
+0 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-traceability-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --section traceability,episodic,discovery-trends --cron' 2>&1 | logger -t agentic-cron
 
 # Observations + gaps (6 hourly)
-0 */6 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-observations-6h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section observations,gaps --cron' 2>&1 | logger -t agentic-cron
+0 */6 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-observations-6h.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --section observations,gaps --cron' 2>&1 | logger -t agentic-cron
 
 # OE fast checks (30 min)
-15,45 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-fast-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-fast,oe-research --cron' 2>&1 | logger -t agentic-cron
+15,45 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-oe-fast-30m.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --section oe-fast,oe-research --cron' 2>&1 | logger -t agentic-cron
 
 # OE hourly checks
-30 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-hourly --cron' 2>&1 | logger -t agentic-cron
+30 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-oe-hourly.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --section oe-hourly --cron' 2>&1 | logger -t agentic-cron
 
 # OE daily checks
-0 7 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-daily --cron' 2>&1 | logger -t agentic-cron
+0 7 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-oe-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --section oe-daily --cron' 2>&1 | logger -t agentic-cron
 
 # OE weekly checks
-0 9 * * 1 root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-oe-weekly.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --section oe-weekly --cron' 2>&1 | logger -t agentic-cron
+0 9 * * 1 root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-oe-weekly.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --section oe-weekly --cron' 2>&1 | logger -t agentic-cron
 
 # Full audit (daily)
-0 8 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-full-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" audit --cron' 2>&1 | logger -t agentic-cron
+0 8 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-full-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" audit --cron' 2>&1 | logger -t agentic-cron
 
 # Component docs regeneration (daily)
-15 8 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" docs --all 2>&1 | logger -t agentic-cron
+15 8 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" docs --all 2>&1 | logger -t agentic-cron
 
 # Cron audit file retention (daily)
-0 9 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 -c "import os,datetime; cutoff=str(datetime.date.today()-datetime.timedelta(days=7)); d='.context/audits/cron'; [os.remove(os.path.join(d,f)) for f in os.listdir(d) if f.endswith('.yaml') and len(f)>=15 and f[4]=='-' and f[:10]<cutoff]" 2>&1 | logger -t agentic-cron
+0 9 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && python3 -c "import os,datetime; cutoff=str(datetime.date.today()-datetime.timedelta(days=7)); d='.context/audits/cron'; [os.remove(os.path.join(d,f)) for f in os.listdir(d) if f.endswith('.yaml') and len(f)>=15 and f[4]=='-' and f[:10]<cutoff]" 2>&1 | logger -t agentic-cron
 
 # Pickup inbox processor (1 min)
-* * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-pickup-process.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" pickup process' 2>&1 | logger -t agentic-cron
+* * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-pickup-process.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" pickup process' 2>&1 | logger -t agentic-cron
 
 # Weekly release tagging (Monday 10:00)
-0 10 * * 1 root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" release tag-and-release 2>&1 | logger -t agentic-cron
+0 10 * * 1 root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" release tag-and-release 2>&1 | logger -t agentic-cron
 
 # TermLink hub + Claude + Watchtower liveness (1 min)
-* * * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh 2>&1 | logger -t agentic-cron
+* * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh 2>&1 | logger -t agentic-cron
 
 # Liveness check on startup
-@reboot root cd "/opt/999-Agentic-Engineering-Framework" && LIVENESS_BOOT_MARKER=1 /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh 2>&1 | logger -t agentic-cron
+@reboot root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && LIVENESS_BOOT_MARKER=1 /opt/999-Agentic-Engineering-Framework/agents/monitor/liveness-check.sh 2>&1 | logger -t agentic-cron
 
 # Pending-updates reminder (daily)
-# PAUSED: 0 10 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" NTFY_ENABLED=true /opt/999-Agentic-Engineering-Framework/bin/"/opt/999-Agentic-Engineering-Framework/bin/fw" pending remind 2>&1 | logger -t agentic-cron
+# PAUSED: 0 10 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" NTFY_ENABLED=true /opt/999-Agentic-Engineering-Framework/bin/"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" pending remind 2>&1 | logger -t agentic-cron
 
 # Mirror cascade auto-recovery (15 min)
-*/15 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-mirror-sync-15m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" mirror sync --quiet' 2>&1 | logger -t agentic-cron
+*/15 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-mirror-sync-15m.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" mirror sync --quiet' 2>&1 | logger -t agentic-cron
 
 # Escalation drift scan (G-019 Layer B v1)
-23 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 tools/escalation-scan-v0.py 2>&1 | logger -t agentic-cron
+23 5 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && python3 tools/escalation-scan-v0.py 2>&1 | logger -t agentic-cron
 
 # Escalation drift LLM augmentation (T-1727 — v0.5 runs after v0; idempotent over 7d)
-33 5 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200 2>&1 | logger -t agentic-cron
+33 5 * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && python3 tools/escalation-scan-v0.5.py --window-days 30 --limit 200 2>&1 | logger -t agentic-cron
 
 # BVP auto-promote pass (hourly; off by default)
-47 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-bvp-auto-promote.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" bvp auto-promote' 2>&1 | logger -t agentic-cron
+47 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-bvp-auto-promote.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" bvp auto-promote' 2>&1 | logger -t agentic-cron
 
 # Watchtower RSS observation (5 min, T-1611-B)
-*/5 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && /opt/999-Agentic-Engineering-Framework/agents/monitor/watchtower-rss-sample.sh 2>&1 | logger -t agentic-cron
+*/5 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && /opt/999-Agentic-Engineering-Framework/agents/monitor/watchtower-rss-sample.sh 2>&1 | logger -t agentic-cron
 
 # BVP estimator sweep (15 min, T-1923)
-*/15 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-bvp-estimator-sweep.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" bvp estimate sweep --cron' 2>&1 | logger -t agentic-cron
+*/15 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-bvp-estimator-sweep.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" bvp estimate sweep --cron' 2>&1 | logger -t agentic-cron
 
 # BVP cost-estimator sweep (15 min, T-1935)
-*/15 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-bvp-cost-estimator-sweep.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" bvp estimate-cost sweep --cron' 2>&1 | logger -t agentic-cron
+*/15 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-bvp-cost-estimator-sweep.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" bvp estimate-cost sweep --cron' 2>&1 | logger -t agentic-cron
 
 # Inception Recommendation retrofit (hourly, T-2204 Slice D)
-19 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-inception-retrofit-rec.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" inception retrofit-recommendations --apply' 2>&1 | logger -t agentic-cron
+19 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-inception-retrofit-rec.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" inception retrofit-recommendations --apply' 2>&1 | logger -t agentic-cron
+
+# Autonomous dispatch loop (PAUSED — operator enables)
+# PAUSED: 11,41 * * * * root cd "/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation" flock -n /var/lock/agentic-cron-resolver-loop.lock -c '"/opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/bin/fw" resolver loop --dispatch --max 1 --cooldown-min 30' 2>&1 | logger -t agentic-cron

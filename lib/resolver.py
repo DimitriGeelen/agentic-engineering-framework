@@ -928,6 +928,49 @@ def _inflight_task_ids() -> set:
     return {tid for tid, (_ts, te) in latest.items() if not te}
 
 
+def _recently_dispatched_ids(cooldown_min: int) -> set:
+    """Task IDs whose most-recent dispatch ts is within `cooldown_min` minutes.
+
+    Anti-thrash guard for the loop/cron (T-2491): a dispatched worker does not
+    auto-advance the task's frontmatter status, and a *completed* dispatch row
+    carries a terminal_event (so it is NOT in-flight). Without a cooldown the
+    cron would re-dispatch the same non-advancing task every tick. Parse
+    failures are skipped (fail-open — never wrongly exclude)."""
+    if cooldown_min <= 0 or not DISPATCHES_LOG.exists():
+        return set()
+    import datetime as _dt  # noqa: PLC0415
+
+    latest: Dict[str, str] = {}  # task_id -> max ts seen
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            tid = row.get("task_id")
+            ts = str(row.get("ts", ""))
+            if not tid or not ts:
+                continue
+            if tid not in latest or ts > latest[tid]:
+                latest[tid] = ts
+
+    now = _dt.datetime.now(_dt.timezone.utc)
+    cooling: set = set()
+    for tid, ts in latest.items():
+        try:
+            parsed = _dt.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=_dt.timezone.utc)
+        except (ValueError, TypeError):
+            continue
+        if (now - parsed).total_seconds() < cooldown_min * 60:
+            cooling.add(tid)
+    return cooling
+
+
 def _focused_task_id() -> str:
     """The task currently in focus.yaml — excluded from picking so the picker
     never dispatches the task the main agent is actively working."""
@@ -991,15 +1034,27 @@ def _pick_rank_key(meta: Dict[str, Any]) -> tuple:
     return (status_rank, horizon_rank, idnum)
 
 
-def _select_eligible() -> tuple:
-    """Return (eligible_sorted, excluded) — excluded is list of (id, reason)."""
+def _select_eligible(claimed: Optional[set] = None, cooldown_min: int = 0) -> tuple:
+    """Return (eligible_sorted, excluded) — excluded is list of (id, reason).
+
+    `claimed` (T-2491): task ids already picked earlier in the SAME loop run —
+    excluded so a single invocation never re-picks the same task (a completed
+    dispatch leaves frontmatter status unchanged, so the eligibility filter
+    alone would re-select it). `cooldown_min` (T-2491): exclude tasks dispatched
+    within the window — cross-tick anti-thrash. Both default off, so the
+    single-shot `cmd_pick` caller is unchanged."""
     inflight = _inflight_task_ids()
+    if claimed:
+        inflight = inflight | set(claimed)
     focused = _focused_task_id()
+    cooling = _recently_dispatched_ids(cooldown_min) if cooldown_min > 0 else set()
     eligible: List[Dict[str, Any]] = []
     excluded: List[tuple] = []
     for path in sorted(TASKS_ACTIVE.glob("T-*.md")):
         meta = _read_task_meta(path)
         reason = _pick_eligibility(meta, inflight, focused)
+        if reason is None and meta["id"] in cooling:
+            reason = f"cooldown (<{cooldown_min}m since last dispatch)"
         if reason is None:
             eligible.append(meta)
         else:
@@ -1101,6 +1156,105 @@ def cmd_pick(args: argparse.Namespace) -> int:
     return 2 if outcome["status"] == "error" else 0
 
 
+def _dispatch_one(pick: Dict[str, Any], chosen_type: str) -> tuple:
+    """Resolve + spawn a single pick. Returns (envelope, outcome). Raises
+    ResolverError / spawn.SpawnError / NotImplementedError / ImportError on
+    failure — caller decides whether to stop the loop. Mirrors cmd_pick's
+    --dispatch path so loop and single-shot share one dispatch contract."""
+    task_id, task_type = pick["id"], chosen_type
+    task_context = load_task_frontmatter(task_id)
+    task_context.setdefault("TASK_ID", task_id)
+    task_context.setdefault("TASK_TYPE", task_type)
+    task_context.setdefault("TASK_NAME", "")
+    task_context.setdefault("TASK_DESCRIPTION", "")
+    task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
+    envelope, _row = resolve(task_id, task_type, task_context, dry_run=False)
+    import spawn  # noqa: PLC0415
+
+    outcome = spawn.spawn_dispatch(envelope)
+    return envelope, outcome
+
+
+def cmd_loop(args: argparse.Namespace) -> int:
+    """fw resolver loop — bounded autonomous dispatch driver (T-2491).
+
+    Calls the picker up to --max times. Dry-run by default (surfaces the plan);
+    --dispatch fires each pick through resolve+spawn. An in-run `claimed` set
+    keeps a single invocation from re-picking the same task; --cooldown-min
+    blocks cross-tick re-dispatch of a non-advancing task. Stops early on no
+    eligible work or a dispatch error."""
+    if not TASKS_ACTIVE.is_dir():
+        print(f"resolver loop: no active tasks dir at {TASKS_ACTIVE}", file=sys.stderr)
+        return 1
+    max_iter = max(1, int(args.max))
+    cooldown = max(0, int(args.cooldown_min))
+    claimed: set = set()
+    results: List[Dict[str, Any]] = []
+    stop_reason = f"reached --max ({max_iter})"
+
+    for i in range(max_iter):
+        eligible, _excluded = _select_eligible(claimed=claimed, cooldown_min=cooldown)
+        pick = eligible[0] if eligible else None
+        if not pick:
+            stop_reason = "no eligible tasks" if i == 0 else "no more eligible tasks"
+            break
+        chosen_type = _pick_workflow_type(pick)
+        claimed.add(pick["id"])  # never re-pick within this run, dispatched or not
+
+        if not args.dispatch:
+            results.append({"id": pick["id"], "workflow": chosen_type, "dispatched": False})
+            continue
+
+        try:
+            envelope, outcome = _dispatch_one(pick, chosen_type)
+        except ResolverError as e:
+            results.append({"id": pick["id"], "dispatched": False, "error": f"resolve: {e}"})
+            stop_reason = "resolve error (stopping loop)"
+            break
+        except NotImplementedError as e:
+            results.append({"id": pick["id"], "dispatched": False, "error": str(e)})
+            stop_reason = "spawn not implemented (stopping loop)"
+            break
+        except Exception as e:  # spawn.SpawnError / ImportError / unexpected
+            results.append({"id": pick["id"], "dispatched": False, "error": f"spawn: {e}"})
+            stop_reason = "spawn error (stopping loop)"
+            break
+
+        results.append({
+            "id": pick["id"], "workflow": chosen_type,
+            "dispatch_id": envelope["dispatch_id"],
+            "dispatched": True, "status": outcome["status"],
+        })
+        if outcome["status"] == "error":
+            stop_reason = "dispatch returned error (stopping loop)"
+            break
+
+    dispatched_n = sum(1 for r in results if r.get("dispatched"))
+    had_error = any(r.get("status") == "error" or "error" in r for r in results)
+
+    if args.json:
+        print(json.dumps({
+            "max": max_iter, "dispatch": bool(args.dispatch), "cooldown_min": cooldown,
+            "picked": results, "dispatched_count": dispatched_n,
+            "stop_reason": stop_reason,
+        }, indent=2, default=str))
+    else:
+        mode = "DISPATCH" if args.dispatch else "DRY-RUN"
+        print(f"resolver loop [{mode}]  max={max_iter}  cooldown={cooldown}m")
+        if not results:
+            print(f"  nothing to do — {stop_reason}")
+        for r in results:
+            if r.get("dispatched"):
+                did = str(r.get("dispatch_id", ""))[:12]
+                print(f"  ✓ {r['id']:8s} → {r['workflow']:10s} dispatch={did} status={r.get('status')}")
+            elif "error" in r:
+                print(f"  ✗ {r['id']:8s} error: {r['error']}")
+            else:
+                print(f"  • {r['id']:8s} → {r['workflow']:10s} (would dispatch)")
+        print(f"  stop: {stop_reason}; dispatched {dispatched_n}")
+    return 2 if had_error else 0
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="fw resolver",
@@ -1160,6 +1314,26 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     sp_p.add_argument("--json", action="store_true", help="Emit selection (and outcome) as JSON")
     sp_p.set_defaults(func=cmd_pick)
+
+    sp_l = sub.add_parser(
+        "loop",
+        help="Bounded autonomous dispatch driver — pick up to --max times (T-2491)",
+    )
+    sp_l.add_argument("--max", type=int, default=3, help="Max distinct tasks to pick/dispatch (default 3)")
+    sp_l.add_argument(
+        "--dispatch",
+        action="store_true",
+        help="Fire each pick through resolve+spawn (default: dry-run plan only)",
+    )
+    sp_l.add_argument(
+        "--cooldown-min",
+        type=int,
+        default=30,
+        dest="cooldown_min",
+        help="Exclude tasks dispatched within N minutes — cross-tick anti-thrash (default 30)",
+    )
+    sp_l.add_argument("--json", action="store_true", help="Emit loop plan/outcome as JSON")
+    sp_l.set_defaults(func=cmd_loop)
 
     args = parser.parse_args(argv)
     return args.func(args)

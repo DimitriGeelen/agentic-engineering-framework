@@ -228,3 +228,12 @@ jobs:
     origin_task: T-2208
     status: active
     description: "T-2204 Slice D — preventive backstop for the recommendation-completeness gate. Producer surfaces (T-2205 Write/Edit hook, T-2207 create-task.sh CLI, T-1716 do_inception_start) catch agent-initiated inception filings, and T-2206 emit_review/batch refuses agent handoff of empty-Recommendation inceptions. This cron catches the remaining paths the producer gates cannot reach: direct YAML writes that bypass tools, post-hoc `fw task update --workflow-type inception` flips, and the window before an operator wires the T-2205 hook into .claude/settings.json. Calls `fw inception retrofit-recommendations --apply` (lib/inception.sh do_inception_retrofit_recommendations, T-1716 Stream C) — idempotent and side-effect-free on already-clean state; injects DEFER stubs with self-retrofit attribution when an active inception's ## Recommendation block is empty or template-only AND no `**Recommendation:**` line exists."
+
+  - id: resolver-loop-autonomous
+    name: "Autonomous dispatch loop (PAUSED — operator enables)"
+    schedule: "11,41 * * * *"
+    command: "flock -n /var/lock/agentic-cron-resolver-loop.lock -c 'fw resolver loop --dispatch --max 1 --cooldown-min 30'"
+    source_file: agentic-orchestrator.crontab
+    origin_task: T-2491
+    status: paused
+    description: "T-2491 — bounded autonomous dispatch. Each tick picks at most ONE eligible task (agent-owned, scoped, non-inception, not in-flight, not focused, not in cooldown) and fires it through resolve+spawn. Registered PAUSED by design: wiring is agent initiative, turning unattended dispatch live is the operator's explicit act (`fw cron resume resolver-loop-autonomous`). --cooldown-min 30 prevents re-dispatching a non-advancing task every tick; --max 1 caps per-tick fan-out so dispatches.jsonl in-flight exclusion naturally rate-limits."
