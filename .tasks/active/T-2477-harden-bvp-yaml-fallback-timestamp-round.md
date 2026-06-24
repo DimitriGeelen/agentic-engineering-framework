@@ -42,25 +42,23 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
-## Status — WIP handover (2026-06-24, budget gate at 95%)
+## Status — COMPLETE (2026-06-24)
 
-**Code fix APPLIED, NOT yet verified.** Done so far:
-- `agents/termlink/bvp-estimator/estimator.py`: added module-level `_str_safe_load` helper (after the ruamel guard, ~line 56); swapped all 4 frontmatter fallback sites `fm = yaml.safe_load(fm_text)` → `_str_safe_load(fm_text)`. (Left line ~205's read-only `yaml.safe_load(m.group(1))` untouched — not a round-trip.)
-- `lib/bvp.sh`: added the same `_str_safe_load` helper inside the `<<'PYEOF'` block (after the ruamel guard, ~line 63); swapped the confirm fallback `fm = yaml.safe_load(fm_text)` → `_str_safe_load(fm_text)` (~line 852).
-
-**NOT done (next session — all 4 ACs still UNticked):**
-1. Syntax-verify: `bash -n lib/bvp.sh`; `python3 -m py_compile agents/termlink/bvp-estimator/estimator.py`; extract+compile the bvp.sh PYEOF block (the budget gate blocked these before they ran — the edits are unverified).
-2. Write the regression test (AC3): force ruamel absent via a fake `ruamel/__init__.py` on PYTHONPATH (proven to flip `_HAS_RUAMEL=False`), run the real path, assert an unquoted `created: <ISO>Z` survives. Two surfaces: (a) `import estimator; estimator._str_safe_load("last_update: 2026-06-02T00:00:00Z")` → value is the string; (b) `fw bvp confirm T-<id> --override D1=3 --i-am-human` on a fixture task with an unquoted `created: ...Z`, ruamel hidden, assert Z survives in the rewritten file.
-3. Update OBS-085 `prevention:` in `.context/concerns.yaml` to name T-2477 as the closing fix; flip its `status: watching` → `resolved` once tests green.
-4. Tick ACs + complete.
+All four ACs done and verified live (the WIP handover from the prior budget-capped
+session is resolved):
+- `estimator.py`: `_str_safe_load` helper (:58) + 4 frontmatter fallback sites swapped (:2405/:2612/:2740/:2767). Read-only `safe_load(m.group(1))` (~:205) left untouched (not a round-trip).
+- `lib/bvp.sh`: same helper in the `<<'PYEOF'` block (:65) + confirm fallback swapped (:852).
+- Syntax: `bash -n lib/bvp.sh` OK; `py_compile estimator.py` OK; bvp.sh PYEOF block extracted+compiled OK.
+- Regression test `tests/unit/t2477_bvp_yaml_timestamp_fallback.bats` — 3/3 green.
+- OBS-085 → `resolved`; prevention names T-2477 + the pinning test.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A resolver-stripped SafeLoader (the `_str_loader` pattern from lib/integrate.py) is applied to the PyYAML `safe_load` fallback in lib/bvp.sh (the frontmatter round-trip ~line 836) so unquoted ISO `...Z` timestamps survive when ruamel is absent.
-- [ ] Same fix applied to the 4 PyYAML `safe_load` fallback sites in agents/termlink/bvp-estimator/estimator.py (frontmatter round-trips at ~2389/2596/2724/2751).
-- [ ] A regression test exercises the PyYAML fallback path with ruamel forced unavailable and asserts `last_update: <ISO>Z` round-trips unchanged (not reformatted to a datetime).
-- [ ] py_compile / bash -n clean on every edited file; OBS-085 prevention line updated to point at this task as the closing fix.
+- [x] A resolver-stripped SafeLoader (the `_str_loader` pattern from lib/integrate.py) is applied to the PyYAML `safe_load` fallback in lib/bvp.sh (the frontmatter round-trip ~line 836) so unquoted ISO `...Z` timestamps survive when ruamel is absent. — `_str_safe_load` at lib/bvp.sh:65 (PYEOF block), confirm fallback swapped at :852.
+- [x] Same fix applied to the 4 PyYAML `safe_load` fallback sites in agents/termlink/bvp-estimator/estimator.py (frontmatter round-trips at ~2389/2596/2724/2751). — helper at estimator.py:58; 4 sites swapped at :2405/:2612/:2740/:2767 (the read-only `safe_load(m.group(1))` ~line 205 left untouched — not a round-trip).
+- [x] A regression test exercises the PyYAML fallback path with ruamel forced unavailable and asserts `last_update: <ISO>Z` round-trips unchanged (not reformatted to a datetime). — tests/unit/t2477_bvp_yaml_timestamp_fallback.bats, 3/3 green (estimator helper + control + end-to-end `fw bvp confirm`).
+- [x] py_compile / bash -n clean on every edited file; OBS-085 prevention line updated to point at this task as the closing fix. — `bash -n lib/bvp.sh` OK, `py_compile estimator.py` OK, PYEOF block extracted+compiled OK; OBS-085 `status: watching`→`resolved`, prevention names T-2477 + the pinning test.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -126,7 +124,39 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/bvp.sh
+python3 -m py_compile agents/termlink/bvp-estimator/estimator.py
+grep -q "_str_safe_load" lib/bvp.sh
+grep -q "_str_safe_load" agents/termlink/bvp-estimator/estimator.py
+bats tests/unit/t2477_bvp_yaml_timestamp_fallback.bats
+
 ## RCA
+
+**Symptom:** On hosts without `ruamel.yaml`, `fw bvp confirm` (and the BVP
+estimator) silently rewrite a task's unquoted ISO timestamp `2026-06-02T00:00:00Z`
+to `2026-06-02 00:00:00+00:00` whenever they round-trip frontmatter — churning
+`created:`/`last_update:` and breaking `...Z`-expecting greps/readers.
+
+**Root cause:** PyYAML's `SafeLoader` carries an implicit
+`tag:yaml.org,2002:timestamp` resolver that auto-types unquoted ISO datetimes to
+`datetime`; `safe_dump` then re-emits the datetime in its own format. The BVP code
+prefers ruamel (which preserves the original string) but falls back to plain
+`safe_load`/`safe_dump`. The fallback corrupts — masked wherever ruamel is present
+(0.19.1 on this host), so it was latent here and only fires on ruamel-less hosts.
+
+**Why structurally allowed:** the round-trip's correctness depended on an
+environment-presence accident (ruamel installed) rather than on the code itself —
+a Portability-directive violation. No test exercised the fallback path with ruamel
+absent, so the latent leg never surfaced. The class was only caught because
+lib/integrate.py used plain PyYAML with no ruamel guard at all (corrupted on every
+host) → T-2473 found and fixed that leg, registering OBS-085 for the latent siblings.
+
+**Prevention:** ported the resolver-stripped `_str_safe_load` loader into the
+PyYAML fallback in both surfaces, so correctness no longer depends on ruamel being
+installed. Pinned by `tests/unit/t2477_bvp_yaml_timestamp_fallback.bats`, which
+forces ruamel absent (fake `ruamel` package raising ImportError) and includes a
+control test asserting plain `safe_load` *would* corrupt — so the regression test
+provably detects the bug, not just the absence of it. OBS-085 → resolved.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
