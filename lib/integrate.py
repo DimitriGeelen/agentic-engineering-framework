@@ -321,6 +321,205 @@ def _dirty_files():
     return files
 
 
+# ── true per-class UNION resolver (T-2473) ───────────────────────────────────
+# The MVP (T-2471) resolved every governance/generated both-sided conflict with
+# `checkout --ours` (branch wins), silently dropping the master side's entries in
+# union-class files. This resolver reads BOTH clean versions from git's merge
+# stages (:1:=base, :2:=ours, :3:=theirs) — never parsing conflict markers — and
+# returns a merged string that preserves every side's entries:
+#   id-union     union a keyed list by `id`; same-id keeps ours, no id dropped.
+#   append-union union append-only entries; dedupe by class key, no entry dropped.
+#   field-merge  task .md frontmatter field-by-field (higher last_update wins on
+#                collision); body taken from branch (ours).
+# Returns None for classes where ours-wins is correct (regenerate / take-existing)
+# or when it cannot safely merge (missing yaml, unknown shape) — the caller then
+# falls back to `checkout --ours`. Never raises to the caller.
+
+def _yaml():
+    try:
+        import yaml
+        return yaml
+    except Exception:  # pragma: no cover - pyyaml absent
+        return None
+
+
+def _str_loader(yaml):
+    """SafeLoader with the implicit timestamp resolver removed, so ISO datetimes
+    (e.g. `last_update: 2026-06-02T00:00:00Z`) round-trip as their original string
+    instead of being parsed to a datetime and re-emitted in a different text form
+    (which would churn task frontmatter and break `...Z`-expecting readers)."""
+    class _L(yaml.SafeLoader):
+        pass
+    _L.yaml_implicit_resolvers = {
+        ch: [(tag, rx) for tag, rx in res if tag != "tag:yaml.org,2002:timestamp"]
+        for ch, res in yaml.SafeLoader.yaml_implicit_resolvers.items()
+    }
+    return _L
+
+
+def _load(text):
+    yaml = _yaml()
+    return yaml.load(text, Loader=_str_loader(yaml))
+
+
+def _load_all(text):
+    yaml = _yaml()
+    return list(yaml.load_all(text, Loader=_str_loader(yaml)))
+
+
+def _hashable(x):
+    import json
+    try:
+        return json.dumps(x, sort_keys=True, default=str)
+    except Exception:  # pragma: no cover - defensive
+        return repr(x)
+
+
+def _union_by(a, b, key_field):
+    """Union list a then b, keeping first occurrence. Dedupe by item[key_field]
+    when key_field is set and the item is a dict, else by full-content identity."""
+    seen, out = set(), []
+    for item in list(a) + list(b):
+        if key_field and isinstance(item, dict):
+            k = ("kf", _hashable(item.get(key_field)))
+        else:
+            k = ("full", _hashable(item))
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(item)
+    return out
+
+
+def _split_leading_comments(text):
+    """Split leading #-comment / blank lines (a header) from the YAML body."""
+    lines = text.split("\n")
+    i = 0
+    while i < len(lines) and (lines[i].lstrip().startswith("#") or lines[i].strip() == ""):
+        i += 1
+    return ("\n".join(lines[:i]), "\n".join(lines[i:]))
+
+
+def _with_header(header, body):
+    return (header + "\n" + body) if header.strip() else body
+
+
+def _id_union(path, ours, theirs):
+    yaml = _yaml()
+    if yaml is None:
+        return None
+    if path.endswith("decisions.yaml"):
+        list_key = "decisions"
+    elif path.endswith("reviewer-overrides.yaml"):
+        list_key = "overrides"
+    else:
+        return None
+    header, obody = _split_leading_comments(ours)
+    od = _load(obody) or {}
+    td = _load(_split_leading_comments(theirs)[1]) or {}
+    if not isinstance(od, dict) or not isinstance(td, dict):
+        return None
+    merged = _union_by(od.get(list_key) or [], td.get(list_key) or [], "id")
+    out = dict(od)                      # keep ours' top-level scalars (schema_version)
+    out[list_key] = merged
+    return _with_header(header, yaml.safe_dump(out, sort_keys=False, allow_unicode=True))
+
+
+def _append_union(path, ours, theirs):
+    yaml = _yaml()
+    if yaml is None:
+        return None
+    if path.endswith("feedback-stream.yaml"):
+        return _append_union_stream(ours, theirs, yaml)
+    header, obody = _split_leading_comments(ours)
+    od = _load(obody)
+    td = _load(_split_leading_comments(theirs)[1])
+    if isinstance(od, dict) and "entries" in od:
+        merged = _union_by(od.get("entries") or [],
+                           (td or {}).get("entries") or [], "timestamp")
+        out = dict(od)
+        out["entries"] = merged
+        body = yaml.safe_dump(out, sort_keys=False, allow_unicode=True)
+    elif isinstance(od, list):
+        merged = _union_by(od, td or [], None)   # dedupe whole entries
+        body = yaml.safe_dump(merged, sort_keys=False, allow_unicode=True)
+    else:
+        return None
+    return _with_header(header, body)
+
+
+def _append_union_stream(ours, theirs, yaml):
+    """Multi-document YAML stream (feedback-stream.yaml): union docs, dedupe exact
+    duplicates by full content, preserve a leading comment header."""
+    header, obody = _split_leading_comments(ours)
+    o_docs = [d for d in _load_all(obody) if d is not None]
+    t_docs = [d for d in _load_all(_split_leading_comments(theirs)[1])
+              if d is not None]
+    merged = _union_by(o_docs, t_docs, None)
+    if not merged:
+        return None
+    body = "".join("---\n" + yaml.safe_dump(d, sort_keys=False, allow_unicode=True)
+                   for d in merged)
+    return _with_header(header, body)
+
+
+def _split_frontmatter(text):
+    """Return (frontmatter_text, body_text); frontmatter is None when absent."""
+    if not text.startswith("---"):
+        return (None, text)
+    lines = text.split("\n")
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            return ("\n".join(lines[1:i]), "\n".join(lines[i + 1:]))
+    return (None, text)
+
+
+def _field_merge(ours, theirs):
+    yaml = _yaml()
+    if yaml is None:
+        return None
+    ofm, obody = _split_frontmatter(ours)
+    tfm, _ = _split_frontmatter(theirs)
+    if ofm is None or tfm is None:
+        return None
+    od = _load(ofm) or {}
+    td = _load(tfm) or {}
+    if not isinstance(od, dict) or not isinstance(td, dict):
+        return None
+    o_lu, t_lu = str(od.get("last_update", "")), str(td.get("last_update", ""))
+    winner, loser = (td, od) if t_lu > o_lu else (od, td)
+    merged = dict(loser)
+    merged.update(winner)              # winner overlays loser on field collision
+    fm = yaml.safe_dump(merged, sort_keys=False, allow_unicode=True)
+    return "---\n" + fm + "---\n" + obody   # body always from branch (ours)
+
+
+def union_resolve(path, ours, theirs, base=""):
+    """Dispatch to the per-class union strategy. Returns merged text, or None when
+    ours-wins is correct / the merge is unsafe. Never raises."""
+    cls = classify_path(path)[0]
+    try:
+        if cls == "id-union":
+            return _id_union(path, ours, theirs)
+        if cls == "append-union":
+            return _append_union(path, ours, theirs)
+        if cls == "field-merge":
+            return _field_merge(ours, theirs)
+    except Exception:
+        return None
+    return None
+
+
+def _git_show_stage(path, stage):
+    """Clean text of `path` at a merge stage (1=base, 2=ours, 3=theirs); '' on miss."""
+    try:
+        r = subprocess.run(["git", "show", f":{stage}:{path}"],
+                           capture_output=True, text=True)
+        return r.stdout if r.returncode == 0 else ""
+    except Exception:  # pragma: no cover - defensive
+        return ""
+
+
 # ── hybrid landing helpers (T-2474) ──────────────────────────────────────────
 # "Merge-back" has three landing zones: origin/master (zone 1, push), the local
 # master-holding worktree (zone 2, mechanical → auto-FF when clean), and MAIN's
@@ -516,11 +715,32 @@ def cmd_run(target="master", dry_run=False, push=False):
                 if stashed:
                     _git_rc("stash", "pop")
                 return 2
-            # All conflicts are governance/generated → keep ours (branch authoritative, §3.2).
+            # All conflicts are governance/generated → true per-class UNION
+            # (T-2473): union-class files merge BOTH sides' entries; everything
+            # else (regenerate / take-existing) keeps ours (§3.2 body=branch).
+            rc_top, top = _git("rev-parse", "--show-toplevel")
+            top = top if rc_top == 0 else "."
             for f in conflicts:
+                cls = classify_path(f)[0]
+                merged = None
+                if cls in ("id-union", "append-union", "field-merge"):
+                    merged = union_resolve(f,
+                                           _git_show_stage(f, 2),
+                                           _git_show_stage(f, 3),
+                                           _git_show_stage(f, 1))
+                if merged is not None:
+                    try:
+                        with open(os.path.join(top, f), "w") as fh:
+                            fh.write(merged)
+                        _git_rc("add", "--", f)
+                        print(f"  union-merged [{cls}] {f}")
+                        continue
+                    except OSError as e:
+                        print(f"  union-merge write failed for {f} ({e}); keeping ours",
+                              file=sys.stderr)
                 _git_rc("checkout", "--ours", "--", f)
                 _git_rc("add", "--", f)
-                print(f"  auto-resolved [{classify_path(f)[0]}] {f}")
+                print(f"  auto-resolved [{cls}] (ours) {f}")
             if _git_rc("commit", "--no-edit") != 0:
                 print("integrate run: failed to finalize merge commit", file=sys.stderr)
                 _git_rc("merge", "--abort")

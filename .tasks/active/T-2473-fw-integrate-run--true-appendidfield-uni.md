@@ -4,10 +4,10 @@ name: "fw integrate run — true append/id/field UNION at both-sided conflicts"
 description: >
   T-2471 follow-up. The fw integrate run MVP, when a both-sided conflict is in a governance/generated class, keeps the branch-side version (checkout --ours) per T-2397 section-3.2 (body=branch authoritative). The full design calls for true per-class UNION: append-union (metrics-history.yaml, feedback-stream.yaml dedupe by key), id-union (reviewer-overrides.yaml by OV-id), field-merge (task .md frontmatter last-writer-wins by last_update). Implement the actual union strategies at real git conflict markers instead of ours-wins. Builds on classify_path strategy strings already encoded. See T-2471 Context + Evolution.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T20:56:55Z
-last_update: 2026-06-23T20:56:55Z
+last_update: 2026-06-24T06:45:31Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,14 +40,23 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2471/T-2472 follow-up. `cmd_run`'s conflict loop (lib/integrate.py:519-523) currently
+resolves EVERY governance/generated both-sided conflict with `checkout --ours` (branch
+wins). That silently drops master-side entries in union-class files (decisions.yaml,
+feedback-stream.yaml, .gate-bypass-log.yaml, metrics-history.yaml, reviewer-overrides.yaml).
+This task replaces ours-wins with true per-class UNION using git's three merge stages
+(`:1:`=base, `:2:`=ours, `:3:`=theirs) so no side's entries are lost.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/integrate.py` gains `union_resolve(path, ours, theirs, base) -> str|None` that returns merged text for append-union / id-union / field-merge classes, and `None` for classes where ours-wins is correct (regenerate / take-existing).
+- [x] **append-union**: entries from BOTH sides are unioned and deduped by a stable key (feedback-stream → per-entry identity; metrics-history → timestamp; .gate-bypass-log → entry). No side's entry is dropped; order is stable.
+- [x] **id-union**: list unioned by `id` field (decisions.yaml `D-*`, reviewer-overrides.yaml `OV-*`); a same-`id` collision keeps one copy (ours), but no `id` present on either side is dropped.
+- [x] **field-merge**: task `.md` frontmatter merged field-by-field (scalar collision → higher `last_update` wins); body taken from branch (ours).
+- [x] `cmd_run` conflict loop calls `union_resolve` for union/field classes (writes merged text + `git add`), falling back to `checkout --ours` only when `union_resolve` returns `None` or raises; real-code conflicts still abort (unchanged).
+- [x] `tests/unit/t2473_union_resolve.bats` drives a real both-sided conflict per class through `integrate run` and asserts BOTH sides' entries survive in the merge result (not ours-truncated).
+- [x] All existing integrate tests green (t2399, t2471, t2474) + `python3 -m py_compile lib/integrate.py` clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -81,6 +90,12 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m py_compile lib/integrate.py
+bats tests/unit/t2473_union_resolve.bats
+bats tests/unit/t2399_integrate_check.bats
+bats tests/unit/t2471_integrate_run.bats
+bats tests/unit/t2474_integrate_run_landing.bats
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -155,14 +170,19 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-24 — read clean versions from git merge stages, not conflict markers
+- **Chose:** `union_resolve` reads `:1:`/`:2:`/`:3:` (base/ours/theirs) via `git show` and unions the parsed structures.
+- **Why:** Parsing `<<<<<<< ======= >>>>>>>` markers is fragile and only sees the conflicted hunk, not the whole file. Merge stages give each side's complete, clean text.
+- **Rejected:** Conflict-marker parsing (fragile); pre-emptively unioning every both-sided union file before `git merge` (larger cmd_run rework — git's clean textual merge already keeps both entries when it doesn't conflict, so union only needs to fire on actual `U` conflicts).
+
+### 2026-06-24 — custom loader keeps ISO timestamps as strings
+- **Chose:** A SafeLoader with the implicit timestamp resolver removed (`_str_loader`).
+- **Why:** PyYAML parses `last_update: 2026-06-02T00:00:00Z` to a `datetime` and re-dumps it as `2026-06-02 00:00:00+00:00` — different text, breaks `...Z`-expecting readers and churns task frontmatter.
+- **Rejected:** Default `safe_load` (corrupts timestamp format); post-hoc regex fix-up (brittle).
+
+### 2026-06-24 — fall back to ours, never raise
+- **Chose:** `union_resolve` returns `None` on unknown shape / missing yaml / parse error; cmd_run then keeps the MVP `checkout --ours`. Real-code conflicts still abort (unchanged).
+- **Why:** Antifragility — a union bug must not abort a merge the safe MVP could complete.
 
 ## Decision
 
@@ -180,3 +200,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2473-fw-integrate-run--true-appendidfield-uni.md
 - **Context:** Initial task creation
+
+### 2026-06-24T06:45:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
