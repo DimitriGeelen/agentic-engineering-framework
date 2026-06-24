@@ -71,6 +71,29 @@ _RULES = [
     (_is_task_md,
      "field-merge", "frontmatter last-writer-wins by last_update; body=branch; "
                     "same-field two-writer → surface", False),
+    # ── T-2472: live working-dir transients ─────────────────────────────────
+    # These are dirty in EVERY live session, so without a rule `integrate run`
+    # refuses mid-session (they default to needs-human real-code) — and quiescing
+    # focus.yaml by hand breaks the active-task gate (catch-22, T-2475 demo).
+    # Classifying them needs_human=False lets cmd_run stash them as regenerable
+    # churn (after the gate has already read focus). The id-union/append-union
+    # labels document intent for T-2473's real union resolver; today's resolver
+    # keeps branch-side ("ours") on conflict, which is safe in the stash path.
+    (lambda p: p in (".context/working/focus.yaml",
+                     ".context/working/session.yaml",
+                     ".context/working/.session-metrics.yaml",
+                     ".context/working/.budget-status",
+                     ".context/working/watchtower.log",
+                     ".context/working/watchtower.pid",
+                     ".context/working/watchtower.url",
+                     ".context/working/watchtower.port"),
+     "regenerate", "session/runtime transient; take newest / reset, never merge", False),
+    (lambda p: p == ".context/working/.gate-bypass-log.yaml",
+     "append-union", "append-only Tier-2 bypass audit log; union by entry (T-2473)", False),
+    (lambda p: p == ".context/project/decisions.yaml",
+     "id-union", "union list by `id` (D-*); never drop a side's decisions (T-2473)", False),
+    (lambda p: p == "VERSION",
+     "take-existing", "single version token; keep branch-side on integrate (--ours)", False),
 ]
 
 # Everything else is genuine source/docs that SHOULD git-merge (and may conflict).
@@ -199,6 +222,578 @@ def cmd_classify(paths):
     return 0
 
 
+# ── run command (mutating merge-back, T-2397 §3) ─────────────────────────────
+# MVP: integrate TARGET's divergence INTO the current worktree branch, auto-
+# resolving both-sided governance/generated conflicts via the taxonomy, around
+# any regenerable working-tree churn. After this the worktree branch ⊇ target,
+# so target FFs to it cleanly. The final FF of target (often checked out / dirty
+# elsewhere) is reported, or done server-side with --push.
+#
+# Deferred (follow-up slice): true append/id/field UNION at both-sided conflicts.
+# This MVP keeps the integrating branch's version ("ours") for the auto classes
+# (body=branch is authoritative per §3.2) and only ABORTS on a real code conflict.
+
+import os
+import time
+
+_LOCK_TTL = 900  # seconds; a lock older than this (or with a dead pid) is stale
+
+
+def _git_rc(*args):
+    """Run git, return rc only (stderr surfaced to caller's stderr on failure)."""
+    try:
+        r = subprocess.run(["git", *args], capture_output=True, text=True)
+        if r.returncode != 0 and r.stderr.strip():
+            print(r.stderr.strip(), file=sys.stderr)
+        return r.returncode
+    except Exception as e:  # pragma: no cover - defensive
+        print(str(e), file=sys.stderr)
+        return 127
+
+
+def _pid_alive(pid):
+    try:
+        os.kill(pid, 0)
+        return True
+    except (ProcessLookupError, ValueError):
+        return False
+    except PermissionError:
+        return True  # exists, owned by another user
+
+
+def _lock_path():
+    rc, gcd = _git("rev-parse", "--git-common-dir")
+    if rc != 0:
+        return None
+    if not os.path.isabs(gcd):
+        gcd = os.path.abspath(gcd)
+    return os.path.join(gcd, ".fw-integrate.lock")
+
+
+def _acquire_lock():
+    lp = _lock_path()
+    if not lp:
+        return (False, "no git-common-dir")
+    if os.path.exists(lp):
+        try:
+            pid_s, ts_s = open(lp).read().split()[:2]
+            age = int(time.time()) - int(ts_s)
+            if _pid_alive(int(pid_s)) and age < _LOCK_TTL:
+                return (False, f"integration lock held by pid {pid_s} (age {age}s) — {lp}")
+        except Exception:
+            pass  # corrupt/stale → reclaim
+    with open(lp, "w") as f:
+        f.write(f"{os.getpid()} {int(time.time())}\n")
+    return (True, lp)
+
+
+def _release_lock(lp):
+    try:
+        if lp and os.path.exists(lp):
+            os.remove(lp)
+    except OSError:
+        pass
+
+
+def _dirty_files():
+    """Working-tree changed paths (staged + unstaged + untracked), repo-relative.
+
+    Parses raw porcelain output directly — NOT via _git(), whose .strip() removes
+    the leading space of an `XY ` status column (e.g. ` M path` → `M path`), which
+    shifts the fixed `line[3:]` slice and drops the path's first character (a
+    regenerable `.context/...` file then mis-classifies as real code). Each line is
+    `XY PATH` with XY exactly two status chars; never lstrip the line.
+    """
+    try:
+        r = subprocess.run(["git", "status", "--porcelain"],
+                           capture_output=True, text=True)
+    except Exception:  # pragma: no cover - defensive
+        return []
+    if r.returncode != 0:
+        return []
+    files = []
+    for line in r.stdout.split("\n"):
+        if len(line) > 3:
+            path = line[3:].strip().strip('"')
+            if " -> " in path:          # rename: 'R  old -> new' → take new
+                path = path.split(" -> ", 1)[1]
+            files.append(path)
+    return files
+
+
+# ── true per-class UNION resolver (T-2473) ───────────────────────────────────
+# The MVP (T-2471) resolved every governance/generated both-sided conflict with
+# `checkout --ours` (branch wins), silently dropping the master side's entries in
+# union-class files. This resolver reads BOTH clean versions from git's merge
+# stages (:1:=base, :2:=ours, :3:=theirs) — never parsing conflict markers — and
+# returns a merged string that preserves every side's entries:
+#   id-union     union a keyed list by `id`; same-id keeps ours, no id dropped.
+#   append-union union append-only entries; dedupe by class key, no entry dropped.
+#   field-merge  task .md frontmatter field-by-field (higher last_update wins on
+#                collision); body taken from branch (ours).
+# Returns None for classes where ours-wins is correct (regenerate / take-existing)
+# or when it cannot safely merge (missing yaml, unknown shape) — the caller then
+# falls back to `checkout --ours`. Never raises to the caller.
+
+def _yaml():
+    try:
+        import yaml
+        return yaml
+    except Exception:  # pragma: no cover - pyyaml absent
+        return None
+
+
+def _str_loader(yaml):
+    """SafeLoader with the implicit timestamp resolver removed, so ISO datetimes
+    (e.g. `last_update: 2026-06-02T00:00:00Z`) round-trip as their original string
+    instead of being parsed to a datetime and re-emitted in a different text form
+    (which would churn task frontmatter and break `...Z`-expecting readers)."""
+    class _L(yaml.SafeLoader):
+        pass
+    _L.yaml_implicit_resolvers = {
+        ch: [(tag, rx) for tag, rx in res if tag != "tag:yaml.org,2002:timestamp"]
+        for ch, res in yaml.SafeLoader.yaml_implicit_resolvers.items()
+    }
+    return _L
+
+
+def _load(text):
+    yaml = _yaml()
+    return yaml.load(text, Loader=_str_loader(yaml))
+
+
+def _load_all(text):
+    yaml = _yaml()
+    return list(yaml.load_all(text, Loader=_str_loader(yaml)))
+
+
+def _hashable(x):
+    import json
+    try:
+        return json.dumps(x, sort_keys=True, default=str)
+    except Exception:  # pragma: no cover - defensive
+        return repr(x)
+
+
+def _union_by(a, b, key_field):
+    """Union list a then b, keeping first occurrence. Dedupe by item[key_field]
+    when key_field is set and the item is a dict, else by full-content identity."""
+    seen, out = set(), []
+    for item in list(a) + list(b):
+        if key_field and isinstance(item, dict):
+            k = ("kf", _hashable(item.get(key_field)))
+        else:
+            k = ("full", _hashable(item))
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(item)
+    return out
+
+
+def _split_leading_comments(text):
+    """Split leading #-comment / blank lines (a header) from the YAML body."""
+    lines = text.split("\n")
+    i = 0
+    while i < len(lines) and (lines[i].lstrip().startswith("#") or lines[i].strip() == ""):
+        i += 1
+    return ("\n".join(lines[:i]), "\n".join(lines[i:]))
+
+
+def _with_header(header, body):
+    return (header + "\n" + body) if header.strip() else body
+
+
+def _id_union(path, ours, theirs):
+    yaml = _yaml()
+    if yaml is None:
+        return None
+    if path.endswith("decisions.yaml"):
+        list_key = "decisions"
+    elif path.endswith("reviewer-overrides.yaml"):
+        list_key = "overrides"
+    else:
+        return None
+    header, obody = _split_leading_comments(ours)
+    od = _load(obody) or {}
+    td = _load(_split_leading_comments(theirs)[1]) or {}
+    if not isinstance(od, dict) or not isinstance(td, dict):
+        return None
+    merged = _union_by(od.get(list_key) or [], td.get(list_key) or [], "id")
+    out = dict(od)                      # keep ours' top-level scalars (schema_version)
+    out[list_key] = merged
+    return _with_header(header, yaml.safe_dump(out, sort_keys=False, allow_unicode=True))
+
+
+def _append_union(path, ours, theirs):
+    yaml = _yaml()
+    if yaml is None:
+        return None
+    if path.endswith("feedback-stream.yaml"):
+        return _append_union_stream(ours, theirs, yaml)
+    header, obody = _split_leading_comments(ours)
+    od = _load(obody)
+    td = _load(_split_leading_comments(theirs)[1])
+    if isinstance(od, dict) and "entries" in od:
+        merged = _union_by(od.get("entries") or [],
+                           (td or {}).get("entries") or [], "timestamp")
+        out = dict(od)
+        out["entries"] = merged
+        body = yaml.safe_dump(out, sort_keys=False, allow_unicode=True)
+    elif isinstance(od, list):
+        merged = _union_by(od, td or [], None)   # dedupe whole entries
+        body = yaml.safe_dump(merged, sort_keys=False, allow_unicode=True)
+    else:
+        return None
+    return _with_header(header, body)
+
+
+def _append_union_stream(ours, theirs, yaml):
+    """Multi-document YAML stream (feedback-stream.yaml): union docs, dedupe exact
+    duplicates by full content, preserve a leading comment header."""
+    header, obody = _split_leading_comments(ours)
+    o_docs = [d for d in _load_all(obody) if d is not None]
+    t_docs = [d for d in _load_all(_split_leading_comments(theirs)[1])
+              if d is not None]
+    merged = _union_by(o_docs, t_docs, None)
+    if not merged:
+        return None
+    body = "".join("---\n" + yaml.safe_dump(d, sort_keys=False, allow_unicode=True)
+                   for d in merged)
+    return _with_header(header, body)
+
+
+def _split_frontmatter(text):
+    """Return (frontmatter_text, body_text); frontmatter is None when absent."""
+    if not text.startswith("---"):
+        return (None, text)
+    lines = text.split("\n")
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            return ("\n".join(lines[1:i]), "\n".join(lines[i + 1:]))
+    return (None, text)
+
+
+def _field_merge(ours, theirs):
+    yaml = _yaml()
+    if yaml is None:
+        return None
+    ofm, obody = _split_frontmatter(ours)
+    tfm, _ = _split_frontmatter(theirs)
+    if ofm is None or tfm is None:
+        return None
+    od = _load(ofm) or {}
+    td = _load(tfm) or {}
+    if not isinstance(od, dict) or not isinstance(td, dict):
+        return None
+    o_lu, t_lu = str(od.get("last_update", "")), str(td.get("last_update", ""))
+    winner, loser = (td, od) if t_lu > o_lu else (od, td)
+    merged = dict(loser)
+    merged.update(winner)              # winner overlays loser on field collision
+    fm = yaml.safe_dump(merged, sort_keys=False, allow_unicode=True)
+    return "---\n" + fm + "---\n" + obody   # body always from branch (ours)
+
+
+def union_resolve(path, ours, theirs, base=""):
+    """Dispatch to the per-class union strategy. Returns merged text, or None when
+    ours-wins is correct / the merge is unsafe. Never raises."""
+    cls = classify_path(path)[0]
+    try:
+        if cls == "id-union":
+            return _id_union(path, ours, theirs)
+        if cls == "append-union":
+            return _append_union(path, ours, theirs)
+        if cls == "field-merge":
+            return _field_merge(ours, theirs)
+    except Exception:
+        return None
+    return None
+
+
+def _git_show_stage(path, stage):
+    """Clean text of `path` at a merge stage (1=base, 2=ours, 3=theirs); '' on miss."""
+    try:
+        r = subprocess.run(["git", "show", f":{stage}:{path}"],
+                           capture_output=True, text=True)
+        return r.stdout if r.returncode == 0 else ""
+    except Exception:  # pragma: no cover - defensive
+        return ""
+
+
+# ── hybrid landing helpers (T-2474) ──────────────────────────────────────────
+# "Merge-back" has three landing zones: origin/master (zone 1, push), the local
+# master-holding worktree (zone 2, mechanical → auto-FF when clean), and MAIN's
+# running checkout (zone 3, a decision → report-only). These helpers feed _land().
+
+def _worktrees():
+    """Parse `git worktree list --porcelain` → [{path, head, branch}].
+
+    branch is the short name (refs/heads/X → X), or None when detached.
+    """
+    rc, out = _git("worktree", "list", "--porcelain")
+    if rc != 0:
+        return []
+    trees, cur = [], {}
+    for line in out.split("\n"):
+        if line.startswith("worktree "):
+            if cur:
+                trees.append(cur)
+            cur = {"path": line[len("worktree "):], "head": None, "branch": None}
+        elif line.startswith("HEAD "):
+            cur["head"] = line[len("HEAD "):]
+        elif line.startswith("branch "):
+            ref = line[len("branch "):]
+            cur["branch"] = ref[len("refs/heads/"):] if ref.startswith("refs/heads/") else ref
+    if cur:
+        trees.append(cur)
+    return trees
+
+
+def _wt_clean(path):
+    """True when the worktree at `path` has no staged/unstaged/untracked changes."""
+    try:
+        r = subprocess.run(["git", "-C", path, "status", "--porcelain"],
+                           capture_output=True, text=True)
+    except Exception:  # pragma: no cover - defensive
+        return False
+    return r.returncode == 0 and r.stdout.strip() == ""
+
+
+def _main_checkout():
+    """Absolute path of the MAIN checkout (parent of git-common-dir's .git)."""
+    rc, gcd = _git("rev-parse", "--git-common-dir")
+    if rc != 0:
+        return None
+    if not os.path.isabs(gcd):
+        gcd = os.path.abspath(gcd)
+    # gcd is <main>/.git → parent is the main checkout
+    return os.path.dirname(gcd.rstrip("/"))
+
+
+def _land(branch, target, pushed):
+    """Hybrid landing (T-2474). Zone 1 (origin) is handled by the caller.
+
+    Zone 2 (master-holding worktree): auto-FF to `branch` when clean AND we pushed
+    (mechanical — `branch` strictly contains `target` after the merge, so the FF is
+    always valid); otherwise report. Zone 3 (MAIN off-master): report-only go-live
+    command — never auto, because making a fix live changes which hooks execute.
+    Prints a "Landing:" summary so the three-zone state is legible.
+    """
+    trees = _worktrees()
+    rc, cwd_top = _git("rev-parse", "--show-toplevel")
+    cwd_top = os.path.realpath(cwd_top) if rc == 0 else None
+    main_path = _main_checkout()
+    main_path = os.path.realpath(main_path) if main_path else None
+
+    holder = next((t for t in trees if t.get("branch") == target), None)
+    main_branch = None
+    for t in trees:
+        if main_path and os.path.realpath(t["path"]) == main_path:
+            main_branch = t.get("branch")
+            break
+
+    lines = []
+    # Zone 1 — origin
+    lines.append(f"  origin/{target}   "
+                 + (f"← {branch} (pushed) ✓" if pushed else "not pushed (no --push)"))
+
+    # Zone 2 — local master-holding worktree (mechanical)
+    if holder is None:
+        lines.append(f"  {target} worktree  none checked out — local {target} ref unaffected"
+                     + (f"; sync ref: git fetch . {branch}:{target}" if pushed else ""))
+    elif cwd_top and os.path.realpath(holder["path"]) == cwd_top:
+        lines.append(f"  {target} worktree  this worktree already holds {target}")
+    elif not pushed:
+        lines.append(f"  {target} worktree  {holder['path']} — left as-is "
+                     f"(no --push; FF here would diverge from origin)")
+    elif _wt_clean(holder["path"]):
+        frc = _git_rc("-C", holder["path"], "merge", "--ff-only", branch)
+        if frc == 0:
+            lines.append(f"  {target} worktree  {holder['path']} — FF'd to {branch} ✓ (was clean)")
+        else:
+            lines.append(f"  {target} worktree  {holder['path']} — FF failed; sync manually: "
+                         f"cd {holder['path']} && git merge --ff-only {branch}")
+    else:
+        lines.append(f"  {target} worktree  {holder['path']} — DIRTY, left untouched. "
+                     f"Sync when clean: cd {holder['path']} && git merge --ff-only {branch}")
+
+    # Zone 3 — MAIN go-live (a decision → report-only)
+    if main_branch in (target, "master", "main"):
+        lines.append(f"  host (MAIN)    on {main_branch} — fix is LIVE on this host ✓")
+    elif main_path:
+        lines.append(f"  host (MAIN)    on {main_branch or 'detached'} — NOT live yet "
+                     f"(hooks run MAIN's bin/fw)")
+        lines.append(f"                 go live when ready (a decision): "
+                     f"cd {main_path} && git merge {branch}")
+
+    print("\nLanding:")
+    for ln in lines:
+        print(ln)
+
+
+def cmd_run(target="master", dry_run=False, push=False):
+    rc, branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    if rc != 0:
+        print(f"integrate run: not a git repo or detached HEAD ({branch})", file=sys.stderr)
+        return 4
+    if branch in ("master", "main"):
+        print(f"integrate run: HEAD is '{branch}' — nothing to integrate. Run from a worktree branch.",
+              file=sys.stderr)
+        return 3
+
+    # 1. Preflight — reuse the read-only verdict; never blind-merge.
+    print(f"── preflight: fw integrate check {target} ──")
+    verdict = cmd_check(target)
+    print(f"── preflight verdict: exit {verdict} "
+          f"({'ff/clean' if verdict == 0 else 'auto-resolvable' if verdict == 1 else 'needs-human' if verdict == 2 else 'error'}) ──\n")
+    if verdict == 2:
+        print("integrate run: REFUSED — real code/docs changed on both sides (needs-human).\n"
+              f"  Resolve manually in this worktree (`git merge {target}`), then re-run.", file=sys.stderr)
+        return 2
+    if verdict == 3:
+        return 3
+    if verdict not in (0, 1):
+        return 4
+
+    # Classify current churn: regenerable (safe to stash) vs real code (refuse to touch).
+    dirty = _dirty_files()
+    regenerable = [f for f in dirty if not classify_path(f)[2]]   # needs_human == False
+    real_dirty = [f for f in dirty if classify_path(f)[2]]
+    if real_dirty:
+        print("integrate run: REFUSED — uncommitted REAL code/doc changes in this worktree:",
+              file=sys.stderr)
+        for f in real_dirty[:10]:
+            print(f"    {f}", file=sys.stderr)
+        print("  Commit or stash them first; integrate run only quiesces generated/governance churn.",
+              file=sys.stderr)
+        return 2
+
+    plan = [
+        f"acquire single-writer lock ({_lock_path()})",
+        f"quiesce {len(regenerable)} regenerable working-tree file(s) (stash)" if regenerable
+        else "no regenerable churn to quiesce",
+        f"git merge --no-ff {target} into {branch}; auto-resolve governance conflicts via taxonomy",
+        "restore quiesced churn",
+        "refresh vendored .agentic-framework/ (fw vendor self)",
+        (f"push {branch}:{target} to origin (FF target)" if push
+         else f"report how to FF {target} (no --push given)"),
+        ("hybrid land: auto-FF clean master worktree; report MAIN go-live" if push
+         else "report landing zones (no --push: mutate no other worktree)"),
+        "release lock",
+    ]
+    if dry_run:
+        print("DRY-RUN plan:")
+        for i, step in enumerate(plan, 1):
+            print(f"  {i}. {step}")
+        return 0
+
+    ok, lock = _acquire_lock()
+    if not ok:
+        print(f"integrate run: {lock}", file=sys.stderr)
+        return 4
+    try:
+        stashed = False
+        if regenerable:
+            print(f"quiescing {len(regenerable)} regenerable file(s)…")
+            if _git_rc("stash", "push", "--include-untracked", "-m",
+                       f"fw-integrate-run {branch}", "--", *regenerable) == 0:
+                stashed = True
+
+        print(f"merging {target} into {branch}…")
+        mrc = _git_rc("merge", "--no-ff", "--no-edit", target)
+        if mrc != 0:
+            # Conflicts — auto-resolve governance/generated classes, abort on real code.
+            rc, out = _git("diff", "--name-only", "--diff-filter=U")
+            conflicts = [f for f in out.splitlines() if f]
+            unresolved = [f for f in conflicts if classify_path(f)[2]]
+            if unresolved:
+                print("integrate run: real code/doc conflict(s) — aborting (target untouched):",
+                      file=sys.stderr)
+                for f in unresolved[:10]:
+                    print(f"    {f}", file=sys.stderr)
+                _git_rc("merge", "--abort")
+                if stashed:
+                    _git_rc("stash", "pop")
+                return 2
+            # All conflicts are governance/generated → true per-class UNION
+            # (T-2473): union-class files merge BOTH sides' entries; everything
+            # else (regenerate / take-existing) keeps ours (§3.2 body=branch).
+            rc_top, top = _git("rev-parse", "--show-toplevel")
+            top = top if rc_top == 0 else "."
+            for f in conflicts:
+                cls = classify_path(f)[0]
+                merged = None
+                if cls in ("id-union", "append-union", "field-merge"):
+                    merged = union_resolve(f,
+                                           _git_show_stage(f, 2),
+                                           _git_show_stage(f, 3),
+                                           _git_show_stage(f, 1))
+                if merged is not None:
+                    try:
+                        with open(os.path.join(top, f), "w") as fh:
+                            fh.write(merged)
+                        _git_rc("add", "--", f)
+                        print(f"  union-merged [{cls}] {f}")
+                        continue
+                    except OSError as e:
+                        print(f"  union-merge write failed for {f} ({e}); keeping ours",
+                              file=sys.stderr)
+                _git_rc("checkout", "--ours", "--", f)
+                _git_rc("add", "--", f)
+                print(f"  auto-resolved [{cls}] (ours) {f}")
+            if _git_rc("commit", "--no-edit") != 0:
+                print("integrate run: failed to finalize merge commit", file=sys.stderr)
+                _git_rc("merge", "--abort")
+                if stashed:
+                    _git_rc("stash", "pop")
+                return 4
+
+        if stashed:
+            print("restoring quiesced churn…")
+            _git_rc("stash", "pop")  # regenerated files win on conflict; harmless if it re-conflicts
+
+        print("refreshing vendored .agentic-framework/…")
+        _vendor_refresh()
+
+        # Zone 1 — origin/target.
+        pushed = False
+        if push:
+            print(f"pushing {branch}:{target} to origin…")
+            prc = _git_rc("push", "origin", f"{branch}:{target}")
+            if prc == 0:
+                pushed = True
+            else:
+                print(f"integrate run: push to {target} failed (see above); branch is integrated locally.",
+                      file=sys.stderr)
+
+        # Zones 2 & 3 — hybrid landing (T-2474): auto-FF a clean master-holding
+        # worktree (mechanical), report-only MAIN go-live (a decision).
+        _land(branch, target, pushed)
+
+        print(f"\n✓ integrate run complete — {branch} ⊇ {target}.")
+        return 0
+    finally:
+        _release_lock(lock)
+
+
+def _vendor_refresh():
+    """Best-effort `fw vendor self`. Located via FW path env or git root."""
+    fw = os.environ.get("FW_BIN") or os.environ.get("FRAMEWORK_ROOT", "")
+    candidates = []
+    if fw:
+        candidates.append(os.path.join(fw, "bin", "fw") if os.path.isdir(fw) else fw)
+    rc, root = _git("rev-parse", "--show-toplevel")
+    if rc == 0:
+        candidates.append(os.path.join(root, "bin", "fw"))
+    for c in candidates:
+        if c and os.path.exists(c):
+            try:
+                subprocess.run([c, "vendor", "self"], capture_output=True, text=True, timeout=120)
+            except Exception:
+                pass
+            return
+
+
 def main(argv):
     if not argv:
         print("usage: integrate.py {check [target] | classify <path>...}", file=sys.stderr)
@@ -211,6 +806,12 @@ def main(argv):
             print("usage: integrate.py classify <path>...", file=sys.stderr)
             return 4
         return cmd_classify(rest)
+    if sub == "run":
+        dry_run = "--dry-run" in rest
+        push = "--push" in rest
+        positional = [a for a in rest if not a.startswith("-")]
+        target = positional[0] if positional else "master"
+        return cmd_run(target, dry_run=dry_run, push=push)
     print(f"integrate.py: unknown subcommand: {sub}", file=sys.stderr)
     return 4
 

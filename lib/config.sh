@@ -166,6 +166,7 @@ FW_CONFIG_REGISTRY=(
     "CONSUMER_SCAN_DIRS|/opt|Colon-separated directories to scan for consumer projects"
     "DISPATCH_MODEL_DEFAULT||Default LLM model for fw termlink dispatch when --model omitted (e.g. sonnet, haiku, opus). T-1643/W3."
     "ARC_COMPLETION_THRESHOLD|0.80|Ratio of completed children at which fw audit warns an in-progress arc (G-062 mechanism #2). T-1656."
+    "NTFY_URL||ntfy server base URL for push notifications. Empty = let the dispatcher use its own default. Each install points at its own ntfy instance via 'fw config set NTFY_URL <url>' — portable, no host-local fallback (T-2439)."
 )
 
 # fw_config_registry — Print all known settings with current values

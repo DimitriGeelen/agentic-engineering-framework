@@ -596,6 +596,37 @@ except yaml.YAMLError as e:
         fi
     done
 done
+# T-2456 (OBS-084): .context/inbox.yaml is a single top-level file (not under
+# .context/project or .context/arcs), so the per-dir loop above never validated
+# it. A note body with a backslash (e.g. a regex '\d+') written via `fw note`
+# corrupted it as a YAML double-quoted-scalar escape error — and it sat unreadable
+# for ~a day because no gate parsed it (`fw note list/triage` crashed, the audit
+# was blind). Validate it explicitly with the same logic + counters so the
+# pass-count message covers it and a future corruption FAILs the audit.
+inbox_yaml="$PROJECT_ROOT/.context/inbox.yaml"
+if [ -f "$inbox_yaml" ]; then
+    parse_err=$(python3 -c "
+import yaml, sys
+try:
+    with open('$inbox_yaml') as f:
+        data = yaml.safe_load(f)
+    if data is None:
+        print('empty-file'); sys.exit(1)
+    elif not isinstance(data, dict):
+        print('not-a-mapping'); sys.exit(1)
+except yaml.YAMLError as e:
+    print(str(e).split(chr(10))[0]); sys.exit(1)
+" 2>&1)
+    # shellcheck disable=SC2181 # $? needed: parse_err captures output, exit code checked separately
+    if [ $? -eq 0 ]; then
+        yaml_pass_count=$((yaml_pass_count + 1))
+    else
+        yaml_fail_count=$((yaml_fail_count + 1))
+        fail "YAML parse error: inbox.yaml" \
+             "$parse_err" \
+             "Fix .context/inbox.yaml — a note body with a backslash/quote corrupts it (T-2456); fw note now escapes new entries"
+    fi
+fi
 if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
     pass "All $yaml_pass_count project YAML files parse correctly"
 fi
@@ -1445,7 +1476,14 @@ fi
 # task closed work-completed while drift made the new job a no-op for
 # 3 days). G-064 closure path.
 _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-if [ -f "$_cron_registry" ]; then
+if [ -f "$_cron_registry" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+    # T-2435 (OBS-077): cron is a HOST-level concern installed once from the canonical
+    # main checkout. A linked worktree derives a worktree-named target that is never
+    # generated/installed (and must not be), so every cron drift check below is a pure
+    # worktree artifact, not content drift. Skip with INFO (counts as PASS; never blocks
+    # a worktree push). The real registry→generated→deployed chain is gated on main.
+    info "Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+elif [ -f "$_cron_registry" ]; then
     _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
     _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
@@ -1500,7 +1538,23 @@ fi
 # agentic-audit.crontab; this loop covers every other .context/cron/*.crontab
 # (release-mirror-canary, heartbeat, project-specific ad-hoc files, ...).
 _cron_lint_dir="$PROJECT_ROOT/.context/cron"
-if [ -d "$_cron_lint_dir" ]; then
+if [ -d "$_cron_lint_dir" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+    # T-2437 (OBS-077 keystone): sibling of the registry-block worktree-skip
+    # (T-2435). This lint reads /etc/cron.d/ for an install under the WORKTREE
+    # slug that never exists — cron is installed once from the main checkout
+    # under the MAIN slug — so every dormant-crontab FAIL here is a pure worktree
+    # artifact. Cron install state is HOST-ENVIRONMENT, not content, so it is
+    # owned by the main checkout and skipped in a linked worktree.
+    #
+    # The content-vs-environment classification (the keystone): a pre-push /
+    # audit check may FAIL in a linked worktree ONLY when it measures committed
+    # CONTENT drift (self-vendor T-2436, fabric, task YAML, secrets, hook
+    # threshold). Checks that measure HOST/working-copy ENVIRONMENT state
+    # (cron install at /etc/cron.d/, both legs here and at the registry block)
+    # are INFO-skipped — they are managed from main and their absence in a
+    # transient worktree is expected, not a regression. See L-486.
+    info "Cron-misload lint skipped — linked worktree (cron install is host-level, managed from the main checkout)"
+elif [ -d "$_cron_lint_dir" ]; then
     _cron_lint_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
     _cron_lint_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
     for _cf in "$_cron_lint_dir"/*.crontab; do
@@ -1664,12 +1718,16 @@ check_self_vendor_drift() {
     fi
 
     if [ "$_sv_libs" -gt 0 ]; then
-        # T-2247: 'fw vendor self' only syncs .agentic-framework/lib/ — libs class
-        # scans bin+lib+agents+web. Use full 'fw vendor' as the always-works
-        # superset; 'fw vendor self' would no-op for bin/agents/web drift.
+        # T-2436 (OBS-076): the T-2247 comment claimed `fw vendor self` only syncs
+        # .agentic-framework/lib/, so this recommended full `fw vendor`. That is
+        # STALE — since T-2264/T-2266/T-2267 `fw vendor self` runs all six helpers
+        # (libs+templates+policy+shim+agents+web) = bin+lib+agents+web, the exact
+        # scope this libs-class check scans. Recommend `fw vendor self` so the
+        # FAIL's fix command AGREES with the canonical sync verb (and with
+        # `fw vendor self --check`, the read-only verifier added in T-2436).
         fail "Self-vendor drift: libs class — $_sv_libs file(s) out of sync (T-2244)" \
              "First $([ $_sv_libs -gt 5 ] && echo 5 || echo $_sv_libs):$_sv_libs_list" \
-             "Run: fw vendor  (sync all vendored .agentic-framework/ classes with source)"
+             "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
     fi
     if [ "$_sv_tpl" -gt 0 ]; then
         # Templates class is correctly scoped to 'fw vendor self' — it syncs
@@ -4473,9 +4531,15 @@ for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-rou
 done
 
 # Check health endpoint responds (if server is running)
-_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:$(fw_config "PORT" 3000)")
+# F9 (T-2445): gate the health pass on the identity-verified resolver. A bare
+# `|| echo http://localhost:PORT` fallback re-points at a FOREIGN service holding
+# the default port and curls its /health (any server answers 200) → false pass.
+# _watchtower_url returns non-zero when no Watchtower of OURS is reachable (T-1803).
+if ! _wt_url=$(_watchtower_url 2>/dev/null); then
+    _wt_url=""
+fi
 _wt_port=$(echo "$_wt_url" | grep -oP ':\K\d+$' || echo "3000")
-if curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
+if [ -n "$_wt_url" ] && curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :${_wt_port}"
 elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :5050"
