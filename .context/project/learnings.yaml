@@ -3763,3 +3763,10 @@ X'` returning empty group."
   date: 2026-06-23
   context: Added via context agent
   application: TBD
+- id: L-495
+  learning: "PyYAML SafeLoader's implicit timestamp resolver parses unquoted ISO '...Z' datetimes to Python datetime on safe_load and re-emits them as '2026-06-02 00:00:00+00:00' on safe_dump — silently reformatting task-frontmatter/decisions timestamps. For any governance/task YAML round-trip use a resolver-stripped loader (SafeLoader subclass with tag:yaml.org,2002:timestamp removed) OR a full ruamel round-trip (load+dump). A ruamel-dump with a PyYAML-safe_load is NOT safe — preservation requires ruamel on BOTH sides. Relying on ruamel being installed is a portability hazard (latent corruption on ruamel-absent hosts)."
+  source: P-004
+  task: T-2476
+  date: 2026-06-24
+  context: Added via context agent
+  application: TBD
