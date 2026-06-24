@@ -47,3 +47,19 @@
   observed: 2026-06-24
   status: watching
   related: [T-2481, T-2482, T-2474]
+
+# T-2484 Spike 2 — keystone bug: the orchestrator dispatch CLI is unrunnable.
+# Found while proving the dispatch spine works (it does — one real dispatch landed
+# with zero new code). The reason it had NEVER dispatched is this perms bug.
+- id: OBS-087
+  type: bug
+  severity: high
+  surface: "bin/fw (exec \"$FW_LIB_DIR/<x>.sh\" dispatch, lines ~4773/4780); lib/resolver.sh, lib/outcome.sh, lib/pause.sh (committed mode 100644)"
+  detected_in: T-2484 Spike 2 (one real dispatch)
+  symptom: "`fw resolver run` and `fw outcome backprop` (the two verbs needed to drive + capture a dispatch) fail with `Permission denied`. The orchestrator dispatch substrate is fully implemented but was unrunnable from the CLI for its entire existence — `fw orchestrator status` showed 'no dispatches captured yet' because no one could invoke it (it only runs via `python3 lib/*.py` directly, which no caller does)."
+  root_cause: "bin/fw routes these verbs via `exec \"$FW_LIB_DIR/<x>.sh\"`, which requires the target to be executable. lib/resolver.sh, lib/outcome.sh (and lib/pause.sh) are committed at git mode 100644 (verified: `git ls-files -s` — NOT a worktree perms glitch). lib/ask.sh is the only exec-style verb committed 100755, which is why it is the lone survivor. Verbs invoked via `bash \"$FW_LIB_DIR/...\"` or sourced (e.g. inception) are unaffected, which masked the bug for the more commonly-used verbs."
+  prevention: "FIX (T-2484 GO slice 1, one bug = one task): either `git update-index --chmod=+x` the exec-style lib/*.sh, OR change bin/fw to `bash \"$FW_LIB_DIR/...\"` (more robust — survives future mode loss). PIN with a test asserting every `exec \"$FW_LIB_DIR/*.sh\"` target in bin/fw is executable (closes the class, not just resolver/outcome). G-019 question — why was the framework blind? No gate checks that exec-routed lib scripts keep their +x bit; the verbs were never exercised end-to-end so the breakage never surfaced. The regression test IS the structural prevention."
+  blast_radius: cross-cutting
+  observed: 2026-06-24
+  status: watching
+  related: [T-2484, T-2485]

@@ -83,28 +83,86 @@ capture the dialogue. **[CONVERGED]**
 
 ---
 
-## Findings so far
+## Spike 1 — substrate map [DONE]
 
-1. **F1 — Orchestrator has literally never dispatched.** Live: `fw orchestrator status` empty.
-   [verified]
-2. **F2 — ~30 substrate tasks exist ahead of a working spine.** [verified via active/ grep]
-3. **F3 — The spine, not the panels, is the critical path.** triage → craft → route → spawn →
-   capture-outcome. [hypothesis — Spike 1/2 to confirm]
-4. **F4 — Isolation granularity is per-task, never per-arc** (operator decision). [converged]
-5. **F5 — Worktree/merge-back work is parked, not wasted** — it is the eventual heavy-lane backend
-   the orchestrator will call once it routes. [converged]
+Explore-agent map (full detail in dialogue notes). **The chain is shipped end-to-end; no code
+gap blocks a dispatch.**
+- Triage = a workflow (`task_type=prompt-triage`), not separate code. [implemented]
+- Craft = `lib/resolver.py` `resolve()` + `capture_dispatch()` (appends the real envelope row to
+  `.context/dispatches.jsonl`). [implemented]
+- Route = `worker_kind` → `_DISPATCHERS` in `lib/spawn.py` (`pi`, `ollama-loop`, `TermLink` all
+  wired; `Task` raises NotImplementedError). [implemented]
+- Spawn = `lib/spawn.py` `spawn_dispatch()` → all 3 worker classes exist on disk
+  (`lib/pi_worker.py`, `lib/ollama_loop.py`, `lib/termlink_worker.py`). [implemented]
+- Outcome = `lib/outcome.py` `backprop_outcome()` appends to `dispatch-outcomes.jsonl`.
+  [implemented]
+- `fw orchestrator improve` = STUB ("v2 not yet implemented"). [stub, out of scope]
 
-## Next steps (exploration)
+**Spike-1 conclusion:** the blocker is *runtime/invocation*, not construction. The
+ollama-loop/triage workflows point at a litellm proxy on `localhost:4000` which is **down**
+(connection refused). The `TermLink` worker path (`default.yaml`) is the one that can fire live.
 
-- **[OPEN] Spike 1** — substrate map: what along triage→outcome is implemented vs stubbed vs
-  missing (read T-1773/74/75/1797/1636 + live `fw resolver`/`orchestrator`/`outcome`).
-- **[OPEN] Spike 2** — attempt one real dispatch end-to-end with existing verbs; the first break
-  point is the first build slice.
-- **[OPEN] Triage** — classify the ~30 tasks into critical-path / defer / kill.
-- Then finalise Recommendation + named first slice → `fw task review T-2484` for operator go/no-go.
+## Spike 2 — one real dispatch [DONE — SUCCESS]
 
-## Provisional recommendation
+Drove a controlled real dispatch: throwaway probe task **T-2485** (ACs: make no changes, confirm
+receipt, stop) via `python3 lib/resolver.py run T-2485 default` (TermLink worker, hub up).
 
-**GO** (confirm the specific first slice after Spike 1 + Spike 2). Orchestrator-above-all is the
-operator's stated priority; the move is one real dispatch then iterate, not more substrate. The
-inception is self-limiting (triage, not construction).
+**Result — the loop turned over for the first time in the framework's history:**
+- `dispatch_id 4e2f4f03-…` written to `.context/dispatches.jsonl` (was empty).
+- TermLink worker `tl-e76a0679` spawned → ran → exited 0; `status: success`, terminal=result,
+  is_error=False, 15 events.
+- `python3 lib/outcome.py backprop T-2485` → outcome appended.
+- `fw orchestrator status`: **Dispatches 1 · Outcome events 1 · Enriched 1/1 (100%)** — was
+  "no dispatches captured yet."
+
+**Zero new code was required.** A1 (composable from existing primitives) — CONFIRMED.
+
+## Smoking gun — why it was never invoked (NEW, Spike 2)
+
+`fw resolver run` and `fw outcome backprop` both fail with **`Permission denied`**. Root cause:
+`bin/fw` invokes these verbs via `exec "$FW_LIB_DIR/<x>.sh"` (needs `+x`), but `lib/resolver.sh`
+and `lib/outcome.sh` are committed **mode 100644** (`git ls-files -s` confirms — not a worktree
+glitch). `lib/ask.sh` is the lone `exec`-style verb at 100755, which is why it survives. The
+dispatch substrate was *unrunnable from the CLI for its entire existence* — it only works by
+calling `python3 lib/*.py` directly, which no caller does. **This is the concrete reason the
+orchestrator never dispatched, and the fix is one line.**
+
+## Findings (final)
+
+1. **F1 — Orchestrator never dispatched.** [verified — now: 1 dispatch, enriched 100%]
+2. **F2 — ~30 substrate tasks exist ahead of a working spine.** [verified]
+3. **F3 — The spine works end-to-end with ZERO new code.** [verified live — Spike 2]
+4. **F4 — Isolation granularity is per-task, never per-arc.** [converged — operator]
+5. **F5 — Worktree/merge-back work is parked, not wasted** (eventual heavy-lane backend). [converged]
+6. **F6 — `exec`-style fw verbs (`resolver`, `outcome`, `pause`) are broken** by committed 100644
+   perms → `Permission denied`. The keystone bug. [verified — `git ls-files -s`]
+7. **F7 — Default runtime down:** ollama-loop/triage workflows target litellm `:4000` (refused);
+   TermLink path is the working lane. [verified — Spike 1]
+
+## Backlog triage (lightweight, by category)
+
+- **Critical-path (do now):** the exec-bit fix (F6) + a real *caller* that invokes `fw resolver
+  run` (T-1774 is the CLI; what's missing is something that *calls* it on a real task).
+- **Runtime enablement (next):** bring up litellm `:4000` OR default more workflows to TermLink
+  (F7) so triage/research lanes work, not just `default`.
+- **Defer (until the spine is used in anger):** all Watchtower panels (T-1792-1807), outcome-
+  quality/workflow-coverage panels, multi-LLM cost-aware routing (T-1637), peer-consult
+  (T-1818-21).
+- **Reframe (not kill):** `fw orchestrator improve` (v2 self-improvement) stays a stub until v1
+  actually runs a workload.
+
+## Recommendation (final)
+
+**GO.** The orchestrator spine is real and *proven live* (Enriched 1/1) — the problem was never
+construction; it was that the CLI was unrunnable (F6) and nothing ever called it. First build
+slice is tiny and concrete:
+
+1. **Slice 1 (keystone, ~1 line):** `chmod +x` the `exec`-style `lib/*.sh` (or switch `bin/fw`
+   to `bash "$FW_LIB_DIR/…"`), restoring `fw resolver` / `fw outcome` / `fw pause`. Pin with a
+   test asserting every `exec "$FW_LIB_DIR/*.sh"` target is executable. → unblocks the CLI.
+2. **Slice 2:** a real caller — dispatch one genuine task (not a probe) via `fw resolver run` and
+   confirm a clean outcome.
+3. **Slice 3 (runtime):** litellm `:4000` up, or repoint triage/research workflows to TermLink.
+
+Autonomous queue-picking (IW-4) and all panels remain deferred. The inception delivered its
+question: the spine exists, works, and the gap was a one-line perms bug + no caller.

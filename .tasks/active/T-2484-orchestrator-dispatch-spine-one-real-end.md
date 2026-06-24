@@ -118,13 +118,13 @@ light/heavy worktree routing decision; any Watchtower orchestrator panel work
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated (orchestrator-never-dispatched confirmed live)
+- [x] Problem statement validated (orchestrator-never-dispatched confirmed live; now 1 dispatch, enriched 100%)
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions A1-A3 tested via Spike 1 + Spike 2
+- [x] Assumptions A1-A3 tested via Spike 1 + Spike 2 (A1 confirmed — zero new code; spine works live)
 <!-- @auto-tick-on-decide -->
-- [ ] Backlog triaged: ~30 orchestrator tasks classified critical-path / defer / kill
+- [x] Backlog triaged: ~30 orchestrator tasks classified critical-path / runtime / defer / reframe (by category)
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale + named first build slice
+- [x] Recommendation written with rationale + named first build slice (exec-bit fix)
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -155,16 +155,30 @@ light/heavy worktree routing decision; any Watchtower orchestrator panel work
 
 ## Recommendation
 
-<!-- Provisional framing; finalised after Spike 1 + Spike 2. -->
-**Recommendation:** GO (provisional — confirm first build slice after spikes)
-**Rationale:** "Orchestrator above all" is the operator's stated top priority (2026-06-24
-dialogue). The substrate exists but has never turned over; the highest-leverage move is one
-real dispatch, then iterate — not more substrate. The inception itself is self-limiting
-(triage, not construction).
+**Recommendation:** GO
+**Rationale:** The spine is real and PROVEN LIVE — Spike 2 drove one real end-to-end dispatch
+(TermLink worker, status=success) with **zero new code**, and `fw orchestrator status` went from
+"no dispatches captured yet" to Dispatches 1 / Enriched 1/1 (100%). The problem was never
+construction; it was (a) the CLI verbs were unrunnable — `fw resolver`/`fw outcome` die on
+`Permission denied` because `lib/resolver.sh`/`lib/outcome.sh` are committed mode 100644 but
+`bin/fw` `exec`s them (needs +x) — and (b) nothing ever called the resolver. First build slice
+is ~1 line.
 **Evidence:**
-- `fw orchestrator status` -> "no dispatches captured yet" (`.context/dispatches.jsonl` empty)
-- ~30 active orchestrator tasks built ahead of any working dispatch loop
-- Operator directive: wire the orchestrator above all else; start with one dispatch then scale
+- Spike 2: dispatch_id 4e2f4f03 → worker tl-e76a0679 exit 0, terminal=result, is_error=False,
+  15 events; backprop → enriched 1/1 (100%).
+- F6 keystone bug: `git ls-files -s lib/resolver.sh lib/outcome.sh` → 100644 (committed, not a
+  worktree glitch); `bin/fw` line 4773/4780 `exec "$FW_LIB_DIR/<x>.sh"`.
+- F7: ollama-loop/triage workflows target litellm :4000 (refused); TermLink lane works.
+- Full spike trail + by-category triage: docs/reports/T-2484-orchestrator-spine.md.
+
+**First build slices (on GO):**
+1. exec-bit fix (chmod +x the exec-style lib/*.sh, or switch bin/fw to `bash`) + regression test
+   — unblocks `fw resolver`/`fw outcome`/`fw pause`. (one bug = one task)
+2. a real caller dispatching one genuine task via `fw resolver run`.
+3. runtime: litellm :4000 up, or repoint triage/research workflows to TermLink.
+
+**Cleanup note:** throwaway probe T-2485 + its dispatch row remain as first-dispatch evidence;
+delete T-2485 once Slice 2 dispatches a real task.
 
 ## Decisions
 
