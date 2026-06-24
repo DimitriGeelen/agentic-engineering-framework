@@ -3770,3 +3770,10 @@ X'` returning empty group."
   date: 2026-06-24
   context: Added via context agent
   application: TBD
+- id: PL-013
+  learning: "Zone-3 host go-live must sync CODE only (git checkout <ref> -- lib agents bin && commit), never merge two divergent busy checkouts: merging conflicts on every .context/ data file both sides touched and races the host continuous index.lock writers. A go-live dry-run must predict against the SAME HEAD the apply path uses — v1 predicted via merge-tree vs pre-checkpoint HEAD (1 conflict) but apply merged post-checkpoint (18 conflicts): false-confidence verification/execution path divergence."
+  source: G-019
+  task: T-2483
+  date: 2026-06-24
+  context: Added via context agent
+  application: TBD

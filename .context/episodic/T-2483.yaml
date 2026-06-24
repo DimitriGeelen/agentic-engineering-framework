@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2483: fix integrate-go-live.sh: code-only sync model, not merge (OBS-086 live failure)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T12:12:59Z
+# ============================================================================
+
+task_id: T-2483
+task_name: "fix integrate-go-live.sh: code-only sync model, not merge (OBS-086 live failure)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T12:09:20Z
+completed: 2026-06-24T12:12:51Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`bin/integrate-go-live.sh` rewritten to the code-only model: `git checkout <remote-ref> -- <code dirs>` then a single `T-XXX` commit of only those staged code files. NO checkpoint-commit, NO `git merge`, NO conflict whitelist — it never touches `.context/` data, so it cannot conflict on accumulators or race a busy checkout''s data writers. — Verification asserts `git merge` absent + `git checkout … -- $CODE_DIRS` present.'
+  - 'Dry-run by default (`--apply` to execute); `--repo`, `--remote-ref`, `--task`, `--code-dirs`, `-h` flags; already-in-sync (no staged delta after checkout) is a clean no-op; refuses if the working tree has staged code changes it didn''t create. — dry-run vs MAIN reported "already in sync / already live".'
+  - 'RCA section explains the false-confidence dry-run (merge-tree vs pre-checkpoint HEAD) and why merge-of-divergent-busy-checkouts is the wrong model for zone-3 go-live. — see ## RCA.'
+  - '`bash -n` clean; a live `--dry-run` against MAIN shows the code-dir sync plan with ZERO mutations (MAIN `git status` md5 identical before/after). — bash -n OK; dry-run ran, MAIN status md5 identical before/after.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2483-fix-integrate-go-livesh-code-only-sync-m.md
+generated_by: context-agent-hybrid

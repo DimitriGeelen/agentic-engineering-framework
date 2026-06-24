@@ -4,10 +4,10 @@ name: "fix integrate-go-live.sh: code-only sync model, not merge (OBS-086 live f
 description: >
   The T-2482 merge-based go-live script failed in live --apply: committing MAIN transients then merging origin/master conflicts on every data file (18, not the 1 dry-run predicted) and races MAIN's concurrent git writers (index.lock crash, left MAIN half-merged). Recovered safely; went live via the correct pattern instead: git checkout origin/master -- lib agents bin && commit (code-only, data untouched). Rewrite the script around that model: code-only checkout, dry-run default, optional vendored refresh, no merge, no commit-then-merge. RCA the false-confidence dry-run.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T12:09:20Z
-last_update: 2026-06-24T12:09:20Z
-date_finished: null
+last_update: 2026-06-24T12:12:51Z
+date_finished: 2026-06-24T12:12:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -201,3 +201,22 @@ against the *same* HEAD the apply path will use, or it lies.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2483-fix-integrate-go-livesh-code-only-sync-m.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5e04ccd2
+- **Timestamp:** 2026-06-24T12:12:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 34
+     - evidence: `bin/integrate-go-live.sh -h | grep -q "code-only"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
+     - evidence: `code=$(grep -v '^[[:space:]]*#' bin/integrate-go-live.sh); ! echo "$code" | grep -q "git merge"`
+
+### 2026-06-24T12:12:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
