@@ -1,0 +1,18 @@
+# resolver-loop.timer — schedules resolver-loop.service every 30 min (T-2494 D / T-2495)
+#
+# Paired with resolver-loop.service. Replaces the host-cron deploy path for
+# unattended autonomy. Install/observe instructions are in resolver-loop.service.
+#
+# Persistent=true → a missed fire (host asleep/off) runs once on next boot rather
+# than being silently skipped.
+
+[Unit]
+Description=AEF autonomous dispatch loop — every 30 min
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

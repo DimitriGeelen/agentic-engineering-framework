@@ -1,0 +1,38 @@
+# resolver-loop.service — AEF autonomous dispatch loop (one tick) (T-2494 D / T-2495)
+#
+# Unattended autonomy WITHOUT the host-cron deploy topology. Fired by
+# resolver-loop.timer every 30 min. One tick = pick + dispatch at most ONE
+# eligible task (agent-owned, scoped, non-inception, not in-flight, not focused,
+# not in cooldown) through resolve+spawn, then capture the outcome.
+#
+# WHY systemd, not cron (T-2494 RCA): the loop's runtime dependency (litellm) is
+# already a systemd unit (litellm-proxy.service). Running the loop off the
+# CANONICAL MAIN checkout — fw AND PROJECT_ROOT both /opt/999-... — means it needs
+# NO /root/.agentic-framework host install, NO crontab, NO .context cron-registry
+# entry. PROJECT_ROOT is pinned by WorkingDirectory. The only requirement is
+# "MAIN's code is current", which `integrate-go-live` handles. This collapses
+# deploy-moles #5–#9 (see docs/reports/T-2494-deploy-topology-whack-a-mole-rca.md).
+#
+# HOST-SPECIFIC TEMPLATE — adjust paths/port for your install.
+#
+# Install (operator — the consequential "go autonomous unattended" act):
+#   sudo cp deploy/resolver-loop.service deploy/resolver-loop.timer /etc/systemd/system/ && \
+#     sudo systemctl daemon-reload && sudo systemctl enable --now resolver-loop.timer
+# Observe:
+#   systemctl status resolver-loop.timer        # next/last fire
+#   journalctl -u resolver-loop.service -n 50   # per-tick dispatch logs
+# Pause autonomy:
+#   sudo systemctl disable --now resolver-loop.timer
+
+[Unit]
+Description=AEF autonomous dispatch loop (one tick)
+After=network-online.target litellm-proxy.service
+Wants=litellm-proxy.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/999-Agentic-Engineering-Framework
+# fw + PROJECT_ROOT both resolve to the canonical MAIN checkout (WorkingDirectory) —
+# no host-vendored-install dependency. --max 1 caps per-tick fan-out; --cooldown-min
+# 30 prevents re-dispatching a non-advancing task every tick.
+ExecStart=/opt/999-Agentic-Engineering-Framework/bin/fw resolver loop --dispatch --max 1 --cooldown-min 30
