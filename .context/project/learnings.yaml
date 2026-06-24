@@ -3777,3 +3777,10 @@ X'` returning empty group."
   date: 2026-06-24
   context: Added via context agent
   application: TBD
+- id: PL-014
+  learning: "A fully-implemented feature can be silently unrunnable: lib/{resolver,outcome,pause}.sh shipped at git mode 100644 but bin/fw execs them (needs +x), so fw resolver/outcome/pause died on Permission denied. The orchestrator dispatch CLI was broken its ENTIRE existence (0 dispatches) because a zero-usage feature escapes all detection. Prevention: test asserting every exec-routed lib target keeps +x. G-019 sustained-blindness class."
+  source: P-001
+  task: T-2486
+  date: 2026-06-24
+  context: Added via context agent
+  application: TBD
