@@ -4,10 +4,10 @@ name: "fw integrate run — broaden taxonomy to live working-dir transients"
 description: >
   T-2471 follow-up. fw integrate run MVP refuses on a busy real tree because many transient/governance files are not in the T-2397 section-3.2 taxonomy (classify_path), defaulting to needs-human real-code: working focus.yaml, session.yaml, .session-metrics.yaml, watchtower.log, watchtower.pid, .gate-bypass-log.yaml, project decisions.yaml, VERSION. Add per-class strategies (regenerate, take-newest, append-union) so merge-back works on a live tree. Touches shared classify_path so must keep tests/unit/t2399_integrate_check.bats green and extend it. See T-2471 Evolution.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T20:56:42Z
-last_update: 2026-06-23T20:56:42Z
+last_update: 2026-06-24T00:04:23Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,14 +40,34 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw integrate run` refuses mid-session because the framework's own live
+working-state files are dirty in every session and the §3.2 taxonomy
+(`classify_path`) doesn't cover them → they default to needs-human real-code.
+Worse (T-2475 demo): `focus.yaml` is BOTH the active-task gate's source of truth
+AND a refuse-trigger, so quiescing it by hand breaks the gate — a catch-22 that
+makes merge-back unrunnable live. Fix: classify the transients `needs_human=False`
+so `cmd_run` stashes them as regenerable churn (after the gate has already read
+focus). The real union-merge-on-conflict is the separate T-2473; this task only
+classifies, which is enough to clear the dirty-refuse.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `classify_path` returns `needs_human=False` for the live transients:
+      `.context/working/{focus,session,.session-metrics,.budget-status,watchtower.log,
+      watchtower.pid,watchtower.url,watchtower.port}`, `.gate-bypass-log.yaml`,
+      `.context/project/decisions.yaml`, `VERSION`. Verified via `integrate classify`
+      (each row ends `…\tauto`) in extended t2399 tests. (t2399 t9 green)
+- [x] Labels document intent for T-2473: session files → `regenerate`,
+      `.gate-bypass-log.yaml` → `append-union`, `decisions.yaml` → `id-union`,
+      `VERSION` → `take-existing`. Grep-verified in t2399. (t2399 t9 green)
+- [x] A both-sided change to a newly-classified transient yields `integrate check`
+      exit 1 (auto-resolvable), NOT exit 2 (needs-human). New t2399 case. (t2399 t10 green)
+- [x] No regression: `tests/unit/t2399_integrate_check.bats`,
+      `tests/unit/t2471_integrate_run.bats`, `tests/unit/t2474_integrate_run_landing.bats`
+      stay green; `python3 -m py_compile lib/integrate.py` passes. (20/20 + py_compile OK)
+- [x] Live proof: `bin/fw integrate run --dry-run` on this dirty session no longer lists
+      session churn in the refuse set — only genuine uncommitted code remains (catch-22 gone).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,3 +200,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2472-fw-integrate-run--broaden-taxonomy-to-li.md
 - **Context:** Initial task creation
+
+### 2026-06-24T00:04:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

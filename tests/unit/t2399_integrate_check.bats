@@ -134,3 +134,44 @@ _master_change() {  # $1=file $2=text  (returns to previous branch caller handle
     [ "$status" -eq 2 ]
     echo "$output" | grep -q "Target:     release"
 }
+
+@test "t9: T-2472 live transients classify auto (not needs-human)" {
+    run python3 "$INT" classify \
+        .context/working/focus.yaml \
+        .context/working/session.yaml \
+        .context/working/.session-metrics.yaml \
+        .context/working/.budget-status \
+        .context/working/watchtower.log \
+        .context/working/watchtower.pid \
+        .context/working/watchtower.url \
+        .context/working/watchtower.port \
+        .context/working/.gate-bypass-log.yaml \
+        .context/project/decisions.yaml \
+        VERSION
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -qP '^\.context/working/focus\.yaml\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/session\.yaml\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/\.session-metrics\.yaml\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/\.budget-status\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/watchtower\.log\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/watchtower\.pid\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/watchtower\.url\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/watchtower\.port\tregenerate\tauto\b'
+    echo "$output" | grep -qP '^\.context/working/\.gate-bypass-log\.yaml\tappend-union\tauto\b'
+    echo "$output" | grep -qP '^\.context/project/decisions\.yaml\tid-union\tauto\b'
+    echo "$output" | grep -qP '^VERSION\ttake-existing\tauto\b'
+    # the prior real-code default still classifies needs-human
+    echo "$output" | grep -vqP 'needs-human' || true
+}
+
+@test "t10: both-sided change to a T-2472 transient (VERSION) → exit 1 auto-resolvable" {
+    echo "1.0.0" > VERSION
+    git add VERSION && git commit -qm "add VERSION"
+    _branch_change feat VERSION 1.0.1   # feat bumps VERSION
+    _master_change VERSION 1.0.2        # master bumps VERSION (both-sided)
+    git checkout -q feat
+    run python3 "$INT" check
+    [ "$status" -eq 1 ]
+    echo "$output" | grep -q "AUTO-RESOLVABLE"
+    ! echo "$output" | grep -q "NEEDS HUMAN"
+}

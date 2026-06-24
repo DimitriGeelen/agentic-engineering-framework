@@ -71,6 +71,29 @@ _RULES = [
     (_is_task_md,
      "field-merge", "frontmatter last-writer-wins by last_update; body=branch; "
                     "same-field two-writer → surface", False),
+    # ── T-2472: live working-dir transients ─────────────────────────────────
+    # These are dirty in EVERY live session, so without a rule `integrate run`
+    # refuses mid-session (they default to needs-human real-code) — and quiescing
+    # focus.yaml by hand breaks the active-task gate (catch-22, T-2475 demo).
+    # Classifying them needs_human=False lets cmd_run stash them as regenerable
+    # churn (after the gate has already read focus). The id-union/append-union
+    # labels document intent for T-2473's real union resolver; today's resolver
+    # keeps branch-side ("ours") on conflict, which is safe in the stash path.
+    (lambda p: p in (".context/working/focus.yaml",
+                     ".context/working/session.yaml",
+                     ".context/working/.session-metrics.yaml",
+                     ".context/working/.budget-status",
+                     ".context/working/watchtower.log",
+                     ".context/working/watchtower.pid",
+                     ".context/working/watchtower.url",
+                     ".context/working/watchtower.port"),
+     "regenerate", "session/runtime transient; take newest / reset, never merge", False),
+    (lambda p: p == ".context/working/.gate-bypass-log.yaml",
+     "append-union", "append-only Tier-2 bypass audit log; union by entry (T-2473)", False),
+    (lambda p: p == ".context/project/decisions.yaml",
+     "id-union", "union list by `id` (D-*); never drop a side's decisions (T-2473)", False),
+    (lambda p: p == "VERSION",
+     "take-existing", "single version token; keep branch-side on integrate (--ours)", False),
 ]
 
 # Everything else is genuine source/docs that SHOULD git-merge (and may conflict).
