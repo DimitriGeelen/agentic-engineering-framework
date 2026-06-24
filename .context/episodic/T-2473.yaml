@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2473: fw integrate run — true append/id/field UNION at both-sided conflicts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T06:55:57Z
+# ============================================================================
+
+task_id: T-2473
+task_name: "fw integrate run — true append/id/field UNION at both-sided conflicts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-23T20:56:55Z
+completed: 2026-06-24T06:55:41Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/integrate.py` gains `union_resolve(path, ours, theirs, base) -> str|None` that returns merged text for append-union / id-union / field-merge classes, and `None` for classes where ours-wins is correct (regenerate / take-existing).'
+  - '**append-union**: entries from BOTH sides are unioned and deduped by a stable key (feedback-stream → per-entry identity; metrics-history → timestamp; .gate-bypass-log → entry). No side''s entry is dropped; order is stable.'
+  - '**id-union**: list unioned by `id` field (decisions.yaml `D-*`, reviewer-overrides.yaml `OV-*`); a same-`id` collision keeps one copy (ours), but no `id` present on either side is dropped.'
+  - '**field-merge**: task `.md` frontmatter merged field-by-field (scalar collision → higher `last_update` wins); body taken from branch (ours).'
+  - '`cmd_run` conflict loop calls `union_resolve` for union/field classes (writes merged text + `git add`), falling back to `checkout --ours` only when `union_resolve` returns `None` or raises; real-code conflicts still abort (unchanged).'
+  - '`tests/unit/t2473_union_resolve.bats` drives a real both-sided conflict per class through `integrate run` and asserts BOTH sides'' entries survive in the merge result (not ours-truncated).'
+  - 'All existing integrate tests green (t2399, t2471, t2474) + `python3 -m py_compile lib/integrate.py` clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-24 — read clean versions from git merge stages, not conflict markers'
+    chose: '`union_resolve` reads `:1:`/`:2:`/`:3:` (base/ours/theirs) via `git show` and unions the parsed structures.'
+    rationale: 'Parsing `<<<<<<< ======= >>>>>>>` markers is fragile and only sees the conflicted hunk, not the whole file. Merge stages give each side''s complete, clean text.'
+    alternatives_rejected: ['Conflict-marker parsing (fragile); pre-emptively unioning every both-sided union file before `git merge` (larger cmd_run rework — git''s clean textual merge already keeps both entries when it doesn''t conflict, so union only needs to fire on actual `U` conflicts).']
+  - decision: '2026-06-24 — custom loader keeps ISO timestamps as strings'
+    chose: 'A SafeLoader with the implicit timestamp resolver removed (`_str_loader`).'
+    rationale: 'PyYAML parses `last_update: 2026-06-02T00:00:00Z` to a `datetime` and re-dumps it as `2026-06-02 00:00:00+00:00` — different text, breaks `...Z`-expecting readers and churns task frontmatter.'
+    alternatives_rejected: ['Default `safe_load` (corrupts timestamp format); post-hoc regex fix-up (brittle).']
+  - decision: '2026-06-24 — fall back to ours, never raise'
+    chose: '`union_resolve` returns `None` on unknown shape / missing yaml / parse error; cmd_run then keeps the MVP `checkout --ours`. Real-code conflicts still abort (unchanged).'
+    rationale: 'Antifragility — a union bug must not abort a merge the safe MVP could complete.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 598 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 598
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2473-fw-integrate-run--true-appendidfield-uni.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2480: propagate session YAML-timestamp + worktree fixes to consumers (vendor refresh + land handoff)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T11:26:44Z
+# ============================================================================
+
+task_id: T-2480
+task_name: "propagate session YAML-timestamp + worktree fixes to consumers (vendor refresh + land handoff)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T11:12:03Z
+completed: 2026-06-24T11:26:35Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'This repo''s vendored `.agentic-framework/` copies of the session''s framework edits are refreshed (`fw vendor self`) so `lib/bvp.sh`, `lib/integrate.py`, and `agents/termlink/bvp-estimator/estimator.py` are byte-identical between source and vendored copy (the self-vendor pre-push gate, T-2240, passes). — `fw vendor self` synced bvp.sh + estimator.py; all 3 verified in-sync; committed f264af001.'
+  - 'The branch is push-ready: `fw doctor`''s self-vendor check is clean (no "would sync" lines) OR the residual drift is explained. — broad vendored-drift scan = 0 stale; branch pushed clean (61734e966..f264af001), self-vendor gate passed.'
+  - 'Affected-host analysis recorded: which consumers/hosts actually inherit the YAML-timestamp corruption (ruamel-absent hosts only) and the concrete per-host action (`fw upgrade <path>` re-vendors lib/+agents/). NO remote machine is upgraded from this session — analysis + handoff only. — see ## Affected-host analysis: integrate.py leg (all hosts) already on master; bvp/estimator leg (ruamel-absent hosts only) lands with this task; detection one-liner + per-consumer `fw upgrade` action recorded; no fan-out.'
+  - 'Branch→master land is prepared and handed to the operator (Watchtower/CLI), since branch→master is operator authority — not self-executed. — integrate check = FF-READY (master +0); land command handed off in ## Recommendation (operator runs `fw integrate run master --push`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2480-propagate-session-yaml-timestamp--worktr.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2477: harden BVP YAML-fallback timestamp round-trip (OBS-085 latent leg)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T11:11:22Z
+# ============================================================================
+
+task_id: T-2477
+task_name: "harden BVP YAML-fallback timestamp round-trip (OBS-085 latent leg)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T07:39:31Z
+completed: 2026-06-24T11:11:11Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'A resolver-stripped SafeLoader (the `_str_loader` pattern from lib/integrate.py) is applied to the PyYAML `safe_load` fallback in lib/bvp.sh (the frontmatter round-trip ~line 836) so unquoted ISO `...Z` timestamps survive when ruamel is absent. — `_str_safe_load` at lib/bvp.sh:65 (PYEOF block), confirm fallback swapped at :852.'
+  - 'Same fix applied to the 4 PyYAML `safe_load` fallback sites in agents/termlink/bvp-estimator/estimator.py (frontmatter round-trips at ~2389/2596/2724/2751). — helper at estimator.py:58; 4 sites swapped at :2405/:2612/:2740/:2767 (the read-only `safe_load(m.group(1))` ~line 205 left untouched — not a round-trip).'
+  - 'A regression test exercises the PyYAML fallback path with ruamel forced unavailable and asserts `last_update: <ISO>Z` round-trips unchanged (not reformatted to a datetime). — tests/unit/t2477_bvp_yaml_timestamp_fallback.bats, 3/3 green (estimator helper + control + end-to-end `fw bvp confirm`).'
+  - 'py_compile / bash -n clean on every edited file; OBS-085 prevention line updated to point at this task as the closing fix. — `bash -n lib/bvp.sh` OK, `py_compile estimator.py` OK, PYEOF block extracted+compiled OK; OBS-085 `status: watching`→`resolved`, prevention names T-2477 + the pinning test.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 211 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 211
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2477-harden-bvp-yaml-fallback-timestamp-round.md
+generated_by: context-agent-hybrid

@@ -4,12 +4,12 @@ name: "fw integrate run — true append/id/field UNION at both-sided conflicts"
 description: >
   T-2471 follow-up. The fw integrate run MVP, when a both-sided conflict is in a governance/generated class, keeps the branch-side version (checkout --ours) per T-2397 section-3.2 (body=branch authoritative). The full design calls for true per-class UNION: append-union (metrics-history.yaml, feedback-stream.yaml dedupe by key), id-union (reviewer-overrides.yaml by OV-id), field-merge (task .md frontmatter last-writer-wins by last_update). Implement the actual union strategies at real git conflict markers instead of ours-wins. Builds on classify_path strategy strings already encoded. See T-2471 Context + Evolution.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/integrate.py, tests/unit/t2399_integrate_check.bats, tests/unit/t2473_union_resolve.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T20:56:55Z
-last_update: 2026-06-24T06:45:31Z
-date_finished: null
+last_update: 2026-06-24T06:55:41Z
+date_finished: 2026-06-24T06:55:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -204,3 +204,15 @@ bats tests/unit/t2474_integrate_run_landing.bats
 ### 2026-06-24T06:45:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4fae4f64
+- **Timestamp:** 2026-06-24T06:55:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-24T06:55:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

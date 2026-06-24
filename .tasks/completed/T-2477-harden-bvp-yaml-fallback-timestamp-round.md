@@ -4,12 +4,12 @@ name: "harden BVP YAML-fallback timestamp round-trip (OBS-085 latent leg)"
 description: >
   OBS-085 latent leg. lib/bvp.sh (~836-869) and agents/termlink/bvp-estimator/estimator.py (4 sites) round-trip task frontmatter via a ruamel-preferred path with a PyYAML safe_load->safe_dump FALLBACK. The fallback corrupts unquoted ISO ...Z timestamps (datetime reformat). Port the resolver-stripped SafeLoader from lib/integrate.py:_str_loader into the PyYAML fallback so it is correct regardless of whether ruamel is installed. Add a test exercising the fallback with ruamel forced absent, asserting last_update ...Z survives. See OBS-085, L-495.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/bvp-estimator/estimator.py, lib/bvp.sh]
 related_tasks: [T-2473, T-2476]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: [T-2473, T-2476]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T07:39:31Z
-last_update: 2026-06-24T10:10:49Z
-date_finished: null
+last_update: 2026-06-24T11:11:11Z
+date_finished: 2026-06-24T11:11:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -227,3 +227,20 @@ provably detects the bug, not just the absence of it. OBS-085 → resolved.
 ### 2026-06-24T10:10:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-85f3cc7e
+- **Timestamp:** 2026-06-24T11:11:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/t2477_bvp_yaml_timestamp_fallback.bats`
+
+### 2026-06-24T11:11:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

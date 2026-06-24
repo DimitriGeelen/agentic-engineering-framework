@@ -4,12 +4,12 @@ name: "fw integrate run — broaden taxonomy to live working-dir transients"
 description: >
   T-2471 follow-up. fw integrate run MVP refuses on a busy real tree because many transient/governance files are not in the T-2397 section-3.2 taxonomy (classify_path), defaulting to needs-human real-code: working focus.yaml, session.yaml, .session-metrics.yaml, watchtower.log, watchtower.pid, .gate-bypass-log.yaml, project decisions.yaml, VERSION. Add per-class strategies (regenerate, take-newest, append-union) so merge-back works on a live tree. Touches shared classify_path so must keep tests/unit/t2399_integrate_check.bats green and extend it. See T-2471 Evolution.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/integrate.py, tests/unit/t2399_integrate_check.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T20:56:42Z
-last_update: 2026-06-24T00:04:23Z
-date_finished: null
+last_update: 2026-06-24T00:10:16Z
+date_finished: 2026-06-24T00:10:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -208,3 +208,15 @@ bats tests/unit/t2474_integrate_run_landing.bats
 ### 2026-06-24T00:04:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8ac9dcc7
+- **Timestamp:** 2026-06-24T00:10:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-24T00:10:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

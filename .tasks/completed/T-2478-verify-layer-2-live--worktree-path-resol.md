@@ -4,10 +4,10 @@ name: "verify Layer 2 live — worktree path-resolution arc (T-2464/2465 + OBS-0
 description: >
   Operator asked to verify live (not from memory) whether the worktree path-resolution systemic fix actually landed. Check: T-2464 inception decision, T-2465 shared resolver (fw_reanchor_from_cwd in lib/paths.sh) presence + tests, slices T-2466/2467/2468 status, and whether the OBS-080 gate bug (PROJECT_ROOT resolves to MAIN inside a worktree) still reproduces. Report DONE/ISSUE/OUTSTANDING per item with evidence.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T07:43:23Z
-last_update: 2026-06-24T07:43:23Z
-date_finished: null
+last_update: 2026-06-24T07:45:45Z
+date_finished: 2026-06-24T07:45:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -190,3 +190,20 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2478-verify-layer-2-live--worktree-path-resol.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0ec125fc
+- **Timestamp:** 2026-06-24T07:45:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Presence + shape of the shared resolver (`fw_reanchor_from_cwd` / equivalent in `lib/paths.sh`) confirmed, with its tests located and their pass/fail recorded.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/paths.sh in: Presence + shape of the shared resolver (`fw_reanchor_from_cwd` / equivalent in `lib/paths.sh`) confirmed, with its tests located and their pass/fail `
+
+### 2026-06-24T07:45:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

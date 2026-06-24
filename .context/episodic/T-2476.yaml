@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2476: investigate PyYAML timestamp round-trip corruption class — register concern, fix if systemic
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T07:40:50Z
+# ============================================================================
+
+task_id: T-2476
+task_name: "investigate PyYAML timestamp round-trip corruption class — register concern, fix if systemic"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T07:34:55Z
+completed: 2026-06-24T07:40:41Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Every `yaml.safe_dump`/`yaml.dump` site in lib/ agents/ web/ bin/ is enumerated, and for each, classified: does it round-trip (load→dump) a file whose schema contains unquoted ISO `...Z` timestamps (task .md frontmatter, decisions.yaml, etc.)? Evidence: the grep + per-site verdict.'
+  - 'A concern is registered in `.context/concerns.yaml` for the timestamp-round-trip corruption class (or, if a matching entry already exists e.g. under L-385, cross-linked rather than duplicated).'
+  - 'A learning is captured (`fw context add-learning`) for the class: "PyYAML safe_load→safe_dump silently reformats unquoted ISO timestamps; use a resolver-stripped loader for any governance/task YAML round-trip."'
+  - 'Verdict recorded in this task''s RCA: SYSTEMIC (other corrupting sites exist → fix task filed with id) or CONTAINED (only T-2473''s path round-tripped these schemas, now fixed → no further task).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2476-investigate-pyyaml-timestamp-round-trip-.md
+generated_by: context-agent-hybrid

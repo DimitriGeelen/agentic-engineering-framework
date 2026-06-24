@@ -1,15 +1,15 @@
 ---
-id: T-2480
-name: "propagate session YAML-timestamp + worktree fixes to consumers (vendor refresh + land handoff)"
+id: T-2475
+name: "execute worktree to master merge-back via fw integrate run (dogfood T-2474 landing)"
 description: >
-  Refresh this repo's vendored .agentic-framework/ copies of the session's framework edits (integrate.py union resolver, bvp.sh + estimator.py YAML-timestamp fallback) so the branch can push and consumers inherit correct copies on fw upgrade. Identify which hosts/consumers are actually affected and give concrete per-host upgrade actions. Do NOT remote-upgrade machines from this session.
+  execute worktree to master merge-back via fw integrate run (dogfood T-2474 landing)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/integrate.py, tests/unit/t2399_integrate_check.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-24T11:12:03Z
-last_update: 2026-06-24T11:12:03Z
-date_finished: null
+created: 2026-06-23T23:45:05Z
+last_update: 2026-06-24T00:11:37Z
+date_finished: 2026-06-24T00:11:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,59 +36,41 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2480: propagate session YAML-timestamp + worktree fixes to consumers (vendor refresh + land handoff)
+# T-2475: execute worktree to master merge-back via fw integrate run (dogfood T-2474 landing)
 
 ## Context
 
-Propagate the session's framework fixes to consumers without remote-upgrading
-machines from this session. Two mechanisms: (a) refresh this repo's vendored
-`.agentic-framework/` copies so the branch pushes and consumers inherit correct
-copies on `fw upgrade`; (b) hand the branch→master land to the operator (operator
-authority).
-
-## Affected-host analysis (AC3)
-
-**What's affected, and how badly:**
-- **`integrate.py` union resolver** — used plain PyYAML with *no* ruamel guard, so
-  it corrupted ISO-Z timestamps on **every** host. This is the leg that surfaced the
-  class. Already FIXED and **on master** (T-2473, origin/master=47a20c351).
-- **`bvp.sh` + `estimator.py` BVP frontmatter round-trip** — prefer ruamel, fall back
-  to PyYAML. Corruption only fires where **ruamel.yaml is ABSENT**. Fixed in T-2477,
-  currently on the branch — lands to master with this task.
-
-**Severity is LOW / latent.** The BVP corruption only bites a host that BOTH
-(a) runs `fw bvp confirm` or the BVP estimator (writes task frontmatter) AND
-(b) lacks `ruamel.yaml`. This host has ruamel 0.19.1 → it never fired here.
-
-**Per-host detection one-liner** (run on any host to see if it *was* exposed):
-`python3 -c "import ruamel.yaml" 2>&1` — an ImportError means that host's BVP
-write paths were reformatting `...Z` timestamps until it picks up the fix.
-
-**Propagation mechanism (no remote upgrade from here):** once T-2480 lands to
-master, each consumer inherits the corrected `bvp.sh`/`estimator.py`/`integrate.py`
-on its next `fw upgrade` (which re-vendors `lib/` + `agents/`). Concrete per-consumer
-action, run *in that consumer's own context* (not from this session):
-`cd /path/to/consumer && .agentic-framework/bin/fw upgrade`
-No emergency fan-out is warranted given the latent/low severity.
-
-## Recommendation
-
-**Recommendation:** GO — land the branch to master (FF-ready, clean).
-**Rationale:** All session fixes are verified (T-2477 3/3 tests green, T-2473 union
-resolver tested, Layer-2 worktree resolution verified live in T-2478). Vendored
-copies in-sync, branch pushed, self-vendor gate clean. integrate check = FF-READY
-(master +0). No conflicts.
-**Land command (operator — branch→master is operator authority):**
-`cd /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation && bin/fw integrate run master --push`
+Operator-authorized live merge-back of `worktree-inception-gov-payload-mediation`
+→ master, run via `fw integrate run --push` to dogfood T-2474's hybrid landing and
+settle T-2474's smoothness Human AC. Operator said "2" (run the live demo). This is
+a real master push (operator-owned, explicitly authorized this turn).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] This repo's vendored `.agentic-framework/` copies of the session's framework edits are refreshed (`fw vendor self`) so `lib/bvp.sh`, `lib/integrate.py`, and `agents/termlink/bvp-estimator/estimator.py` are byte-identical between source and vendored copy (the self-vendor pre-push gate, T-2240, passes). — `fw vendor self` synced bvp.sh + estimator.py; all 3 verified in-sync; committed f264af001.
-- [x] The branch is push-ready: `fw doctor`'s self-vendor check is clean (no "would sync" lines) OR the residual drift is explained. — broad vendored-drift scan = 0 stale; branch pushed clean (61734e966..f264af001), self-vendor gate passed.
-- [x] Affected-host analysis recorded: which consumers/hosts actually inherit the YAML-timestamp corruption (ruamel-absent hosts only) and the concrete per-host action (`fw upgrade <path>` re-vendors lib/+agents/). NO remote machine is upgraded from this session — analysis + handoff only. — see ## Affected-host analysis: integrate.py leg (all hosts) already on master; bvp/estimator leg (ruamel-absent hosts only) lands with this task; detection one-liner + per-consumer `fw upgrade` action recorded; no fan-out.
-- [x] Branch→master land is prepared and handed to the operator (Watchtower/CLI), since branch→master is operator authority — not self-executed. — integrate check = FF-READY (master +0); land command handed off in ## Recommendation (operator runs `fw integrate run master --push`).
+- [x] `origin/master` advances to this branch's HEAD (FF push via `fw integrate run --push`).
+      → origin/master = 627894970 = branch HEAD ✓ (verified via fetch + rev-parse).
+- [x] The `Landing:` block reports zone 2 (local master worktree) and zone 3 (MAIN
+      off-master go-live command) — captured in Decisions below.
+- [x] No real-code loss: 18 files quiesced + restored; decisions.yaml still 2174 lines,
+      focus/session/VERSION intact.
+
+## Decisions
+
+### 2026-06-24 — live merge-back outcome (required T-2472 first)
+First attempt FAILED: `integrate run` refused on session churn, and stashing
+`focus.yaml` by hand broke the active-task gate (catch-22, root cause = T-2472).
+After shipping T-2472, the live run succeeded. Verbatim Landing block:
+
+```
+Landing:
+  origin/master   ← worktree-inception-gov-payload-mediation (pushed) ✓
+  master worktree  …/livefire-t2389 — DIRTY, left untouched. Sync when clean:
+                   cd …/livefire-t2389 && git merge --ff-only worktree-…
+  host (MAIN)    on t2417-fw-sessions — NOT live yet (hooks run MAIN's bin/fw)
+                 go live when ready (a decision): cd /opt/999-… && git merge worktree-…
+```
+Zone 2 correctly refused to FF a DIRTY worktree (clean-guard); zone 3 report-only.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -217,7 +199,19 @@ copies in-sync, branch pushed, self-vendor gate clean. integrate check = FF-READ
 
 ## Updates
 
-### 2026-06-24T11:12:03Z — task-created [task-create-agent]
+### 2026-06-23T23:45:05Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2480-propagate-session-yaml-timestamp--worktr.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2475-execute-worktree-to-master-merge-back-vi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-96436551
+- **Timestamp:** 2026-06-24T00:11:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-24T00:11:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
