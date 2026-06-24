@@ -61,5 +61,7 @@
   prevention: "FIX (T-2484 GO slice 1, one bug = one task): either `git update-index --chmod=+x` the exec-style lib/*.sh, OR change bin/fw to `bash \"$FW_LIB_DIR/...\"` (more robust — survives future mode loss). PIN with a test asserting every `exec \"$FW_LIB_DIR/*.sh\"` target in bin/fw is executable (closes the class, not just resolver/outcome). G-019 question — why was the framework blind? No gate checks that exec-routed lib scripts keep their +x bit; the verbs were never exercised end-to-end so the breakage never surfaced. The regression test IS the structural prevention."
   blast_radius: cross-cutting
   observed: 2026-06-24
-  status: watching
-  related: [T-2484, T-2485]
+  status: resolved
+  fixed_in: T-2486
+  fixed_date: 2026-06-24
+  related: [T-2484, T-2485, T-2486]
