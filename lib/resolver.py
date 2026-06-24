@@ -861,6 +861,246 @@ def cmd_list_workflows(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Autonomous task selection (T-2489) — fw resolver pick
+#
+# The picker is the "selection" lever off single-agent execution (T-2484 IW-4):
+# enumerate active tasks, keep only those SAFE for autonomous dispatch, rank, and
+# surface the top pick (dry-run by default; --dispatch fires it through the same
+# resolve()+spawn path as `run`). Authority model: selection is initiative (the
+# default dry-run only *proposes*); execution stays explicit (--dispatch). The
+# eligibility filter is the structural guard — the picker can only ever fire
+# agent-owned, scoped, non-inception work.
+# ---------------------------------------------------------------------------
+_DISPATCHABLE_TYPES = {"build", "test", "refactor", "decommission"}
+_NON_DISPATCHABLE_TYPES = {"inception", "specification", "design"}
+_ELIGIBLE_STATUS = {"started-work", "captured"}
+
+
+def _read_task_meta(path: Path) -> Dict[str, Any]:
+    """Parse a task .md → eligibility-relevant fields."""
+    text = path.read_text()
+    fm: Dict[str, Any] = {}
+    body = text
+    if text.startswith("---\n"):
+        end = text.find("\n---\n", 4)
+        if end > 0:
+            try:
+                fm = yaml.safe_load(text[4:end]) or {}
+            except yaml.YAMLError:
+                fm = {}
+            body = text[end + 5 :]
+    m = re.match(r"(T-\d+)", path.name)
+    tid = str(fm.get("id") or (m.group(1) if m else path.stem))
+    return {
+        "id": tid,
+        "name": str(fm.get("name", "")),
+        "workflow_type": str(fm.get("workflow_type", "")).strip().lower(),
+        "owner": str(fm.get("owner", "")).strip().lower(),
+        "horizon": str(fm.get("horizon", "now")).strip().lower(),
+        "status": str(fm.get("status", "")).strip().lower(),
+        "ac_block": _extract_section(body, "Acceptance Criteria"),
+        "path": str(path),
+    }
+
+
+def _inflight_task_ids() -> set:
+    """Task IDs whose most-recent dispatch row has no terminal_event — a worker
+    may still be running, so the picker must not double-dispatch them."""
+    if not DISPATCHES_LOG.exists():
+        return set()
+    latest: Dict[str, tuple] = {}  # task_id -> (ts, terminal_event)
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            tid = row.get("task_id")
+            if not tid:
+                continue
+            ts = str(row.get("ts", ""))
+            if tid not in latest or ts >= latest[tid][0]:
+                latest[tid] = (ts, row.get("terminal_event"))
+    return {tid for tid, (_ts, te) in latest.items() if not te}
+
+
+def _focused_task_id() -> str:
+    """The task currently in focus.yaml — excluded from picking so the picker
+    never dispatches the task the main agent is actively working."""
+    focus = PROJECT_ROOT / ".context" / "working" / "focus.yaml"
+    if not focus.exists():
+        return ""
+    try:
+        data = yaml.safe_load(focus.read_text()) or {}
+    except yaml.YAMLError:
+        return ""
+    return str(data.get("current_task") or "").strip()
+
+
+def _ac_is_placeholder(ac_block: str) -> bool:
+    """True when the Acceptance Criteria block is template-only / unscoped —
+    mirrors the G-020 readiness gate's intent (don't dispatch unscoped work)."""
+    s = ac_block.strip()
+    if not s:
+        return True
+    if "[First criterion]" in s or "[Second criterion]" in s:
+        return True
+    # Must have at least one real unchecked item to be worth dispatching.
+    if not re.search(r"-\s*\[\s*\]\s+\S", s):
+        return True
+    return False
+
+
+def _pick_eligibility(meta: Dict[str, Any], inflight: set, focused: str = "") -> Optional[str]:
+    """Return None if the task is eligible for autonomous dispatch, else a
+    one-line exclusion reason."""
+    if focused and meta["id"] == focused:
+        return "in focus (main agent working it)"
+    wt = meta["workflow_type"]
+    if wt in _NON_DISPATCHABLE_TYPES:
+        return f"workflow_type={wt} (needs human decision)"
+    if not wt:
+        return "no workflow_type"
+    if wt not in _DISPATCHABLE_TYPES:
+        return f"workflow_type={wt} (not auto-dispatchable)"
+    if meta["owner"] == "human":
+        return "owner=human"
+    if meta["horizon"] == "later":
+        return "horizon=later"
+    if meta["status"] not in _ELIGIBLE_STATUS:
+        return f"status={meta['status']}"
+    if _ac_is_placeholder(meta["ac_block"]):
+        return "placeholder/unscoped ACs"
+    if meta["id"] in inflight:
+        return "in-flight dispatch"
+    return None
+
+
+def _pick_rank_key(meta: Dict[str, Any]) -> tuple:
+    """Deterministic ranking: started-work before captured, now before next,
+    then oldest task id first (FIFO). Pluggable — BVP-aware ranking is a
+    follow-up once cost_estimate/bvp_scores are populated corpus-wide."""
+    status_rank = 0 if meta["status"] == "started-work" else 1
+    horizon_rank = 0 if meta["horizon"] == "now" else 1
+    m = re.search(r"T-(\d+)", meta["id"])
+    idnum = int(m.group(1)) if m else 0
+    return (status_rank, horizon_rank, idnum)
+
+
+def _select_eligible() -> tuple:
+    """Return (eligible_sorted, excluded) — excluded is list of (id, reason)."""
+    inflight = _inflight_task_ids()
+    focused = _focused_task_id()
+    eligible: List[Dict[str, Any]] = []
+    excluded: List[tuple] = []
+    for path in sorted(TASKS_ACTIVE.glob("T-*.md")):
+        meta = _read_task_meta(path)
+        reason = _pick_eligibility(meta, inflight, focused)
+        if reason is None:
+            eligible.append(meta)
+        else:
+            excluded.append((meta["id"], reason))
+    eligible.sort(key=_pick_rank_key)
+    return eligible, excluded
+
+
+def _pick_workflow_type(meta: Dict[str, Any]) -> str:
+    """Use a per-type workflow file if one exists, else the default workflow."""
+    wt = meta["workflow_type"]
+    if wt and (WORKFLOWS_DIR / f"{wt}.yaml").exists():
+        return wt
+    return "default"
+
+
+def cmd_pick(args: argparse.Namespace) -> int:
+    """fw resolver pick [--dispatch] [--json] — autonomous task selection."""
+    if not TASKS_ACTIVE.is_dir():
+        print(f"resolver pick: no active tasks dir at {TASKS_ACTIVE}", file=sys.stderr)
+        return 1
+    eligible, excluded = _select_eligible()
+    pick = eligible[0] if eligible else None
+    chosen_type = _pick_workflow_type(pick) if pick else None
+
+    if not pick:
+        if args.json:
+            print(json.dumps({
+                "eligible": [], "pick": None, "reason": "no eligible tasks",
+                "excluded": dict(excluded), "dispatched": False,
+            }, indent=2))
+        else:
+            print("resolver pick: no eligible tasks for autonomous dispatch")
+            if excluded:
+                print(f"  ({len(excluded)} active task(s) excluded — --json for reasons)")
+        return 0
+
+    if not args.dispatch:
+        if args.json:
+            print(json.dumps({
+                "eligible": [m["id"] for m in eligible],
+                "pick": pick["id"], "workflow": chosen_type,
+                "reason": f"status={pick['status']}, horizon={pick['horizon']}",
+                "excluded": dict(excluded), "dispatched": False,
+            }, indent=2))
+        else:
+            print(f"Eligible for autonomous dispatch ({len(eligible)}):")
+            for m in eligible:
+                marker = "→" if m["id"] == pick["id"] else " "
+                print(f"  {marker} {m['id']:8s} [{m['status']}/{m['horizon']}] {m['name'][:60]}")
+            print()
+            print(f"Top pick:  {pick['id']}  →  workflow '{chosen_type}'")
+            print(f"Dispatch:  bin/fw resolver pick --dispatch")
+        return 0
+
+    # --dispatch: fire the top pick via resolve + spawn (parity with cmd_run).
+    task_id, task_type = pick["id"], chosen_type
+    task_context = load_task_frontmatter(task_id)
+    task_context.setdefault("TASK_ID", task_id)
+    task_context.setdefault("TASK_TYPE", task_type)
+    task_context.setdefault("TASK_NAME", "")
+    task_context.setdefault("TASK_DESCRIPTION", "")
+    task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
+    try:
+        envelope, _row = resolve(task_id, task_type, task_context, dry_run=False)
+    except ResolverError as e:
+        print(f"resolver pick: error: {e}", file=sys.stderr)
+        return 1
+    try:
+        import spawn  # noqa: PLC0415
+    except ImportError as e:
+        print(f"resolver pick: cannot import lib/spawn.py: {e}", file=sys.stderr)
+        return 1
+    try:
+        outcome = spawn.spawn_dispatch(envelope)
+    except NotImplementedError as e:
+        print(f"resolver pick: {e}", file=sys.stderr)
+        return 1
+    except spawn.SpawnError as e:
+        print(f"resolver pick: spawn error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(json.dumps({
+            "eligible": [m["id"] for m in eligible],
+            "pick": task_id, "workflow": task_type,
+            "excluded": dict(excluded), "dispatched": True, "outcome": outcome,
+        }, indent=2, default=str))
+    else:
+        print(f"Picked + dispatched: {task_id} (workflow '{task_type}')")
+        print(f"dispatch_id:    {envelope['dispatch_id']}")
+        print(f"status:         {outcome['status']}")
+        print(f"events_count:   {outcome['events_count']}")
+        if outcome.get("terminal_event"):
+            te = outcome["terminal_event"]
+            print(f"terminal:       {te.get('type')}")
+            if te.get("type") == "result" and "is_error" in te:
+                print(f"is_error:       {te['is_error']}")
+    return 2 if outcome["status"] == "error" else 0
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="fw resolver",
@@ -908,6 +1148,18 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     sp_w = sub.add_parser("workflows", help="List configured workflows")
     sp_w.set_defaults(func=cmd_list_workflows)
+
+    sp_p = sub.add_parser(
+        "pick",
+        help="Autonomously select an eligible task; dry-run surface or --dispatch (T-2489)",
+    )
+    sp_p.add_argument(
+        "--dispatch",
+        action="store_true",
+        help="Fire the top pick through resolve+spawn (default: dry-run surface only)",
+    )
+    sp_p.add_argument("--json", action="store_true", help="Emit selection (and outcome) as JSON")
+    sp_p.set_defaults(func=cmd_pick)
 
     args = parser.parse_args(argv)
     return args.func(args)
