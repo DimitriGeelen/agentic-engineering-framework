@@ -527,6 +527,12 @@ def capture_dispatch(
         "effort": workflow.get("effort"),
         "prompt": rendered_prompt,
         "allowed_tools": workflow.get("allowed_tools", []),
+        # T-2488/OBS-088: strict-mcp defaults ON so resolver-dispatched
+        # claude -p workers stay lean (no inherited .mcp.json schema injection,
+        # ~175K tokens). A workflow that needs MCP sets strict_mcp_config: false
+        # and supplies mcp_config: <path>.
+        "strict_mcp_config": workflow.get("strict_mcp_config", True),
+        "mcp_config": workflow.get("mcp_config"),
         "cost_cap_usd": workflow.get("cost_cap_usd"),
         "cwd": cwd_resolved,
         "env": workflow.get("env", {}),

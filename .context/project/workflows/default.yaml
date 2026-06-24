@@ -4,5 +4,11 @@ model: sonnet
 effort: medium
 prompt_template: prompts/default.md
 allowed_tools: [Read, Edit, Bash, Grep]
+# T-2488/OBS-088: lean MCP. Without this the bare worker's `claude -p` inherits
+# the parent .mcp.json (termlink/skills/playwright/fw/context7 → ~175K tokens of
+# tool schemas) and blows the 200K context window before doing any work
+# ("Prompt is too long"). strict-mcp with no mcp_config = no MCP servers; this
+# fallback workflow needs only the built-in Read/Edit/Bash/Grep above.
+strict_mcp_config: true
 cost_cap_usd: 1.50
 cwd: $PROJECT_ROOT

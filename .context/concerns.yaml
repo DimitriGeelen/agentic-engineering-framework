@@ -65,3 +65,23 @@
   fixed_in: T-2486
   fixed_date: 2026-06-24
   related: [T-2484, T-2485, T-2486]
+
+# T-2488 — second keystone-class bug found the moment the orchestrator dispatch
+# spine actually ran live. The first real worker (T-2487) failed "Prompt is too
+# long" because it inherited the parent .mcp.json (~175K tokens of MCP schemas).
+# Sibling to OBS-087/PL-014: a zero-usage feature's most basic failure mode sat
+# undetected the whole time it couldn't run.
+- id: OBS-088
+  type: bug
+  severity: high
+  surface: "agents/termlink/termlink.sh:846 (claude -p assembly); .context/project/workflows/default.yaml; lib/{resolver,spawn,termlink_worker}.py"
+  detected_in: T-2487 (first real fw resolver dispatch) → RCA/fix T-2488
+  symptom: "A resolver-dispatched TermLink worker's `claude -p` died with `result: 'Prompt is too long'`, `is_error: true`, `terminal_reason: blocking_limit` on a TRIVIAL task (install litellm + curl). The assembled prompt was a clean 4925 chars — the blow-up was entirely tool-schema injection."
+  root_cause: "The default workflow passed no `--strict-mcp-config`, so the worker's `claude -p` inherited the parent worktree `.mcp.json` (5 servers: termlink ~300 tools, skills ~150, playwright, fw, context7). Their schemas injected ~175,817 tokens into iteration-0 system prompt (terminal cache_creation 224,865 > 200K contextWindow). `--tools`/`--allowed-tools` (which the workflow DID set) gate which tools the model may CALL, not which MCP servers connect/inject — only `--strict-mcp-config` (T-2284 lever) stops the inheritance. The substrate had never run end-to-end before (OBS-087 made it unrunnable), so no dispatched worker had ever started with the inherited catalogue — the foot-gun was invisible because the gun had never fired."
+  prevention: "FIXED in T-2488. (1) Resolver envelope defaults strict-mcp ON: `workflow.get('strict_mcp_config', True)` in lib/resolver.py; default.yaml declares `strict_mcp_config: true` explicitly. Plumbed end-to-end resolver→spawn→TermLinkWorker(`--strict-mcp-config`)→cmd_dispatch sentinel→run.sh→claude -p. Lean is the default; MCP is opt-in (`strict_mcp_config: false` + `mcp_config: <path>`). (2) tests/unit/t2488_strict_mcp_lean_worker.bats (3/3) pins the class at workflow/envelope/worker joins. (3) Verified live: re-dispatch of probe T-2485 dropped cache_creation 224,865 → 48,516, cost $1.35 → $0.29, is_error False. G-019 answer: the blindness was 'feature never exercised end-to-end' — the regression test + lean default are the structural prevention."
+  blast_radius: cross-cutting
+  observed: 2026-06-24
+  status: resolved
+  fixed_in: T-2488
+  fixed_date: 2026-06-24
+  related: [T-2484, T-2487, T-2488, T-2284]
