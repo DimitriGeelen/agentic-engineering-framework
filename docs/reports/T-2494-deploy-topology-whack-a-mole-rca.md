@@ -166,3 +166,75 @@ of it structurally.
   on-demand. Exposed (a) the cron deploy may be premature, (b) cron may be the wrong
   vehicle, (c) moles #5–#9 are *cron-path-only*. Drove remediation candidate **D**
   (trigger-mechanism review) to the front of the sequence.
+- **Operator:** *"proceed as suggested."* → Drop the cron deploy (host crontab confirmed
+  clean, registry re-paused); execute **D** (below).
+
+---
+
+## D — Trigger-mechanism review (IW-1) — RESOLVED
+
+**Question:** what should trigger unattended autonomous dispatch (`fw resolver loop
+--dispatch`)?
+
+| Option | Persistence | PROJECT_ROOT | Deploy cost | Observability | Moles eliminated |
+|--------|-------------|--------------|-------------|---------------|------------------|
+| **Host cron** (attempted) | crontab (host) | ambiguous (templated) | 7-transition chain | syslog only | none — *causes* #5–#9 |
+| **systemd timer** (off canonical MAIN) | native (`enable`) | pinned by `WorkingDirectory=` | 1 declarative file in `deploy/` | `systemctl status` / `journalctl` | **#7, #8, #9; #5/#6 sidestepped** |
+| Watchtower process scheduler | tied to web proc | Watchtower's project | code, but couples autonomy to web app | Watchtower UI | #7,#8 — but couples concerns |
+| Event-driven (hook on task change) | needs a daemon anyway | n/a | hook + daemon | — | doesn't solve "unattended" alone |
+
+**Decision: systemd timer, co-located with the litellm lane.** Rationale:
+
+1. **The loop's runtime dependency is already systemd** — `deploy/litellm-proxy.service`
+   (T-2490). Autonomy should ride the same lane as the runtime it needs, not a parallel
+   cron topology.
+2. **Run it entirely off the canonical MAIN checkout.** `ExecStart=/opt/999.../bin/fw` +
+   `WorkingDirectory=/opt/999...` means the loop uses MAIN's own `fw` and MAIN as
+   `PROJECT_ROOT` — **no `/root/.agentic-framework` dependency at all** (moles #5/#6 become
+   irrelevant to the loop), **no crontab** (mole #7 gone), **no `.context` registry entry**
+   (mole #8 gone — the unit is a code-plane file in `deploy/`), **PROJECT_ROOT pinned** in
+   the unit (mole #9 gone). The *only* remaining requirement is "MAIN's code is current",
+   which `integrate-go-live` already handles and is now done.
+3. **Native observability + persistence** — `systemctl status resolver-loop.timer`,
+   `journalctl -u resolver-loop.service`, survives reboot via `enable`. The cron path had
+   neither cleanly.
+
+### Proposed units (design — ship on GO, operator installs)
+
+`deploy/resolver-loop.service` (oneshot, fired by the timer):
+```ini
+[Unit]
+Description=AEF autonomous dispatch loop (one tick)
+After=network-online.target litellm-proxy.service
+Wants=litellm-proxy.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/999-Agentic-Engineering-Framework
+# fw + PROJECT_ROOT both = the canonical MAIN checkout; no host-vendored-install dep
+ExecStart=/opt/999-Agentic-Engineering-Framework/bin/fw resolver loop --dispatch --max 1 --cooldown-min 30
+```
+
+`deploy/resolver-loop.timer`:
+```ini
+[Unit]
+Description=AEF autonomous dispatch loop — every 30 min
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+Install (operator, one block — the consequential "go autonomous" act stays human):
+```
+sudo cp deploy/resolver-loop.service deploy/resolver-loop.timer /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now resolver-loop.timer
+```
+
+**This is the mole-free path to scheduled autonomy.** The strategic remainder of this
+inception (declared topology `policy/deploy-topology.yaml` + `fw deploy status` deploy-
+doctor, IW-2/IW-3) stands as the generalized fix so the *next* feature's go-live is never
+blind — but it is no longer on the critical path for *this* feature.
