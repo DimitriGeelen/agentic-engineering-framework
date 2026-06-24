@@ -29,3 +29,21 @@
   observed: 2026-06-24
   status: resolved
   related: [T-2473, T-2476, T-2477]
+
+# T-2481 — zone-3 go-live friction. `fw integrate run` makes worktree->master
+# smooth (quiesce regenerable transients, FF/union-merge, restore) but offers
+# NOTHING for the third zone: going live on MAIN's busy checkout. The operator's
+# `git merge` aborted on uncommitted real-state transients + an untracked vendored
+# file. The land tool's own smoothness does not extend to the host it reports on.
+- id: OBS-086
+  type: gap
+  severity: medium
+  surface: "lib/integrate.py (cmd_run hybrid-landing) — zone-3 reported but not actioned"
+  detected_in: T-2481 (operator go-live merge aborted)
+  symptom: "After `fw integrate run master --push` lands zone 1 (origin/master) and reports zone 3 (MAIN host on a different branch, hooks run MAIN's bin/fw), the operator's manual `cd MAIN && git merge <branch>` aborts: 16 tracked regenerable/real-state transients have local edits and 1 untracked vendored `.agentic-framework/lib/integrate.py` would be overwritten. Go-live is the one merge-back step the arc never made smooth."
+  root_cause: "Zone 3 is the MAIN checkout, frequently on a divergent session branch (t2417-fw-sessions) with continuous hook/cron transient churn + accumulating real-state (feedback-stream, gate-bypass-log, decisions, inbox). `fw integrate` quiesces transients on the WORKTREE side only; it emits a bare `git merge` suggestion for zone 3 with no quiesce/restore, so the suggestion fails the moment MAIN has any dirty transient — which is always. The committed merge itself is clean (one regenerable LATEST.md conflict); the friction is entirely uncommitted-state handling the tool already knows how to do for the other side."
+  prevention: "PROPOSED follow-up: `fw integrate go-live [--target-checkout PATH]` — run the same quiesce(real-state checkpoint + regenerable stash)/merge/restore it already does for the worktree, against MAIN's checkout; auto-resolve LATEST.md (regenerate); refresh vendored after. Until built, the safe manual sequence is in T-2481 ## Recommendation. NOT yet fixed — registered so the next go-live is a verb, not a 4-step manual dance."
+  blast_radius: scoped
+  observed: 2026-06-24
+  status: watching
+  related: [T-2481, T-2474]
