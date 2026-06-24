@@ -3784,3 +3784,17 @@ X'` returning empty group."
   date: 2026-06-24
   context: Added via context agent
   application: TBD
+- id: PL-015
+  learning: "Dispatched bare claude -p workers inherit the parent .mcp.json unless --strict-mcp-config is passed: 5 MCP servers (termlink/skills/playwright/fw/context7) inject ~175K tokens of tool schemas into iteration-0, blowing the 200K window before any work ('Prompt is too long', terminal_reason=blocking_limit). --tools/--allowed-tools gate CALLING not schema injection — only --strict-mcp-config stops inheritance. Make strict-mcp the resolver default; MCP opt-in per workflow."
+  source: P-001
+  task: T-2488
+  date: 2026-06-24
+  context: Added via context agent
+  application: TBD
+- id: PL-016
+  learning: "Health-check endpoints: litellm serves /health as auth-required (HTTP 401) and /health/liveliness as the unauthenticated liveness probe (200). curl -sf treats 4xx as failure, so a reachability check curling /health false-WARNs even when the service is healthy. Always probe the unauthenticated liveness endpoint, and exercise health checks against a LIVE target before shipping — a check never run against a healthy service ships a guaranteed false-negative (authored-ahead-of-use class, sibling OBS-087/088)."
+  source: P-001
+  task: T-2490
+  date: 2026-06-24
+  context: Added via context agent
+  application: TBD
