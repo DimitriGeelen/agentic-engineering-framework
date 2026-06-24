@@ -132,6 +132,10 @@ classifies, which is enough to clear the dirty-refuse.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m py_compile lib/integrate.py
+bats tests/unit/t2399_integrate_check.bats
+bats tests/unit/t2471_integrate_run.bats
+bats tests/unit/t2474_integrate_run_landing.bats
 
 ## RCA
 
