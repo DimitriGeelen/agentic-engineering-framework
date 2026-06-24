@@ -85,3 +85,21 @@
   fixed_in: T-2488
   fixed_date: 2026-06-24
   related: [T-2484, T-2487, T-2488, T-2284]
+
+# T-2490 — third "authored-ahead-of-use" bug surfaced by the litellm lane going
+# live. fw doctor's litellm reachability check curled the wrong (auth-required)
+# endpoint → false WARN even when the proxy was healthy.
+- id: OBS-089
+  type: bug
+  severity: low
+  surface: "bin/fw:1663 (do_doctor litellm reachability check, T-1700)"
+  detected_in: T-2490 (litellm lane durability follow-up)
+  symptom: "`fw doctor` emitted a host WARN 'litellm-proxy not reachable on http://localhost:4000' even when the proxy was fully up and serving completions."
+  root_cause: "The check ran `curl -sf --max-time 2 http://localhost:4000/health`. litellm serves /health as an AUTH-REQUIRED endpoint → HTTP 401 without a key. `curl -f` treats 4xx as failure (non-zero exit), so the WARN branch fired regardless of proxy health. The unauthenticated liveness probe is /health/liveliness (200). The check was authored against an assumed endpoint and never run against a live litellm (the lane only came up in T-2487) — a health check never exercised against a healthy target shipped a guaranteed false-negative. Same authored-ahead-of-use class as OBS-087/OBS-088/PL-014."
+  prevention: "FIXED in T-2490: endpoint → /health/liveliness; port via FW_LITELLM_PORT (default 4000). tests/unit/t2490_litellm_doctor.bats pins it structurally (check targets /health/liveliness, not bare /health) + functionally (stub mirrors litellm auth: /health=401, /health/liveliness=200; -sf distinguishes). systemd unit deploy/litellm-proxy.service (Restart=on-failure) closes the persistence leg and probes the same correct endpoint in ExecStartPost."
+  blast_radius: scoped
+  observed: 2026-06-24
+  status: resolved
+  fixed_in: T-2490
+  fixed_date: 2026-06-24
+  related: [T-1700, T-2487, T-2490]

@@ -1,0 +1,35 @@
+# litellm proxy — AEF local-model worker lane (T-1700 / T-2487 / T-2490)
+#
+# Persists the litellm :4000 proxy across reboot so the orchestrator's
+# ollama-loop / triage workflows (worker_kind: ollama-loop, ANTHROPIC_BASE_URL:
+# http://localhost:4000) always have a runtime to dispatch to.
+#
+# HOST-SPECIFIC TEMPLATE — adjust WorkingDirectory / ExecStart / port for your
+# install. Paths below are for the framework host (/opt/999-Agentic-Engineering-Framework).
+#
+# Install (system unit, runs as root — matches how the lane runs today):
+#   sudo cp deploy/litellm-proxy.service /etc/systemd/system/litellm-proxy.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now litellm-proxy
+#   systemctl status litellm-proxy
+# Verify:
+#   curl -sf http://localhost:4000/health/liveliness    # -> 200 (NOT /health, which is 401)
+#
+# `fw doctor` surfaces reachability (T-2490): OK when this unit is up, WARN when down.
+
+[Unit]
+Description=litellm proxy (AEF local-model worker lane)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/999-Agentic-Engineering-Framework
+ExecStart=/root/.local/bin/litellm --config .context/litellm-config.yaml --port 4000
+Restart=on-failure
+RestartSec=5
+# liveliness probe is unauthenticated; /health requires a key (401)
+ExecStartPost=/bin/sh -c 'sleep 8; curl -sf http://localhost:4000/health/liveliness >/dev/null'
+
+[Install]
+WantedBy=multi-user.target
