@@ -54,6 +54,22 @@ try:
 except ImportError:
     _HAS_RUAMEL = False
 
+
+def _str_safe_load(text):
+    """PyYAML safe_load with the implicit timestamp resolver removed, so unquoted
+    ISO `2026-06-02T00:00:00Z` datetimes round-trip as strings instead of being
+    parsed to a datetime and re-emitted as `2026-06-02 00:00:00+00:00` (which
+    churns frontmatter and breaks `...Z`-expecting readers). Used ONLY on the
+    no-ruamel fallback path — ruamel round-trip already preserves them.
+    Origin: OBS-085 / L-495 (the integrate.py:_str_loader fix, shared here)."""
+    class _L(yaml.SafeLoader):
+        pass
+    _L.yaml_implicit_resolvers = {
+        ch: [(t, rx) for t, rx in res if t != "tag:yaml.org,2002:timestamp"]
+        for ch, res in yaml.SafeLoader.yaml_implicit_resolvers.items()
+    }
+    return yaml.load(text, Loader=_L)
+
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT") or
                     os.environ.get("FRAMEWORK_ROOT") or
                     Path(__file__).resolve().parents[3])
@@ -2386,7 +2402,7 @@ def write_proposed(task_path: Path, scores: dict[str, int],
     if _HAS_RUAMEL:
         fm = _ruamel.load(fm_text)
     else:
-        fm = yaml.safe_load(fm_text) or {}
+        fm = _str_safe_load(fm_text) or {}
 
     confirmed = fm.get("bvp_scores") if fm else None
     if _v2_delta_should_skip(scores, confirmed):
@@ -2593,7 +2609,7 @@ def write_proposed_cost(task_path: Path, cost_estimate: dict,
     if _HAS_RUAMEL:
         fm = _ruamel.load(fm_text)
     else:
-        fm = yaml.safe_load(fm_text) or {}
+        fm = _str_safe_load(fm_text) or {}
 
     confirmed = fm.get("cost_estimate") if fm else None
     if _cost_v2_delta_should_skip(cost_estimate, confirmed):
@@ -2721,7 +2737,7 @@ def _clear_unscored_flag(task_path: Path) -> bool:
     if _HAS_RUAMEL:
         fm = _ruamel.load(fm_text)
     else:
-        fm = yaml.safe_load(fm_text) or {}
+        fm = _str_safe_load(fm_text) or {}
     if not fm or not fm.get("unscored"):
         return False
     del fm["unscored"]
@@ -2748,7 +2764,7 @@ def _set_unscored_flag(task_path: Path) -> bool:
     if _HAS_RUAMEL:
         fm = _ruamel.load(fm_text)
     else:
-        fm = yaml.safe_load(fm_text) or {}
+        fm = _str_safe_load(fm_text) or {}
     fm = fm or {}
     if fm.get("unscored") is True:
         return False  # already set

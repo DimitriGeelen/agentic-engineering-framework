@@ -4,10 +4,10 @@ name: "harden BVP YAML-fallback timestamp round-trip (OBS-085 latent leg)"
 description: >
   OBS-085 latent leg. lib/bvp.sh (~836-869) and agents/termlink/bvp-estimator/estimator.py (4 sites) round-trip task frontmatter via a ruamel-preferred path with a PyYAML safe_load->safe_dump FALLBACK. The fallback corrupts unquoted ISO ...Z timestamps (datetime reformat). Port the resolver-stripped SafeLoader from lib/integrate.py:_str_loader into the PyYAML fallback so it is correct regardless of whether ruamel is installed. Add a test exercising the fallback with ruamel forced absent, asserting last_update ...Z survives. See OBS-085, L-495.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-2473, T-2476]
@@ -22,7 +22,7 @@ related_tasks: [T-2473, T-2476]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T07:39:31Z
-last_update: 2026-06-24T07:39:31Z
+last_update: 2026-06-24T10:10:49Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -42,12 +42,25 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+## Status — WIP handover (2026-06-24, budget gate at 95%)
+
+**Code fix APPLIED, NOT yet verified.** Done so far:
+- `agents/termlink/bvp-estimator/estimator.py`: added module-level `_str_safe_load` helper (after the ruamel guard, ~line 56); swapped all 4 frontmatter fallback sites `fm = yaml.safe_load(fm_text)` → `_str_safe_load(fm_text)`. (Left line ~205's read-only `yaml.safe_load(m.group(1))` untouched — not a round-trip.)
+- `lib/bvp.sh`: added the same `_str_safe_load` helper inside the `<<'PYEOF'` block (after the ruamel guard, ~line 63); swapped the confirm fallback `fm = yaml.safe_load(fm_text)` → `_str_safe_load(fm_text)` (~line 852).
+
+**NOT done (next session — all 4 ACs still UNticked):**
+1. Syntax-verify: `bash -n lib/bvp.sh`; `python3 -m py_compile agents/termlink/bvp-estimator/estimator.py`; extract+compile the bvp.sh PYEOF block (the budget gate blocked these before they ran — the edits are unverified).
+2. Write the regression test (AC3): force ruamel absent via a fake `ruamel/__init__.py` on PYTHONPATH (proven to flip `_HAS_RUAMEL=False`), run the real path, assert an unquoted `created: <ISO>Z` survives. Two surfaces: (a) `import estimator; estimator._str_safe_load("last_update: 2026-06-02T00:00:00Z")` → value is the string; (b) `fw bvp confirm T-<id> --override D1=3 --i-am-human` on a fixture task with an unquoted `created: ...Z`, ruamel hidden, assert Z survives in the rewritten file.
+3. Update OBS-085 `prevention:` in `.context/concerns.yaml` to name T-2477 as the closing fix; flip its `status: watching` → `resolved` once tests green.
+4. Tick ACs + complete.
+
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A resolver-stripped SafeLoader (the `_str_loader` pattern from lib/integrate.py) is applied to the PyYAML `safe_load` fallback in lib/bvp.sh (the frontmatter round-trip ~line 836) so unquoted ISO `...Z` timestamps survive when ruamel is absent.
+- [ ] Same fix applied to the 4 PyYAML `safe_load` fallback sites in agents/termlink/bvp-estimator/estimator.py (frontmatter round-trips at ~2389/2596/2724/2751).
+- [ ] A regression test exercises the PyYAML fallback path with ruamel forced unavailable and asserts `last_update: <ISO>Z` round-trips unchanged (not reformatted to a datetime).
+- [ ] py_compile / bash -n clean on every edited file; OBS-085 prevention line updated to point at this task as the closing fix.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,3 +193,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2477-harden-bvp-yaml-fallback-timestamp-round.md
 - **Context:** Initial task creation
+
+### 2026-06-24T10:10:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -62,6 +62,22 @@ except ImportError:
     _HAS_RUAMEL = False
 
 
+def _str_safe_load(text):
+    """PyYAML safe_load with the implicit timestamp resolver removed, so unquoted
+    ISO `2026-06-02T00:00:00Z` datetimes round-trip as strings instead of being
+    parsed to a datetime and re-emitted as `2026-06-02 00:00:00+00:00` (which
+    churns task frontmatter and breaks `...Z`-expecting readers). Used ONLY on the
+    no-ruamel fallback path — ruamel round-trip already preserves them.
+    Origin: OBS-085 / L-495 (the integrate.py:_str_loader fix, shared here)."""
+    class _L(yaml.SafeLoader):
+        pass
+    _L.yaml_implicit_resolvers = {
+        ch: [(t, rx) for t, rx in res if t != 'tag:yaml.org,2002:timestamp']
+        for ch, res in yaml.SafeLoader.yaml_implicit_resolvers.items()
+    }
+    return yaml.load(text, Loader=_L)
+
+
 # ----------------------------------------------------------- §ACD agent gate
 def acd_gate(verb, args, refusal_hint=""):
     """T-1671 §ACD shape: refuse under $CLAUDECODE=1 unless --i-am-human or
@@ -833,7 +849,7 @@ def cmd_confirm(args):
         from io import StringIO
         fm = _ruamel_yaml.load(fm_text)
     else:
-        fm = yaml.safe_load(fm_text)
+        fm = _str_safe_load(fm_text)
 
     proposed = fm.get('bvp_scores_proposed') if fm else None
     if not proposed and not overrides:
