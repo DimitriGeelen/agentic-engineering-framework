@@ -1,13 +1,13 @@
 ---
-id: T-2501
-name: "claude-fw --worktree strips FW_CLAUDE_FW_SUPERVISED — worktree sessions silently unsupervised"
+id: T-2502
+name: "Vendored claude-fw drift uncovered — audit filter + vendor-self helper parity (sibling of T-2501)"
 description: >
-  claude-fw --worktree strips FW_CLAUDE_FW_SUPERVISED — worktree sessions silently unsupervised
+  Sibling of T-2501. In-repo vendored .agentic-framework/bin/claude-fw drifts undetected: check_self_vendor_drift (audit.sh:1698) filter excludes claude-fw, and fw vendor self _self_vendor_shim (lib/upgrade.sh) syncs bin/fw only. Ship filter widen + helper extend TOGETHER (L-399 parity, L-491 unresolvable-block avoidance).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-25T12:53:15Z
-last_update: 2026-06-25T12:57:11Z
+created: 2026-06-25T13:06:11Z
+last_update: 2026-06-25T13:06:11Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,26 +36,18 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2501: claude-fw --worktree strips FW_CLAUDE_FW_SUPERVISED — worktree sessions silently unsupervised
+# T-2502: Vendored claude-fw drift uncovered — audit filter + vendor-self helper parity (sibling of T-2501)
 
 ## Context
 
-Launching `claude-fw --worktree <name> --resume` produced a session where
-`FW_CLAUDE_FW_SUPERVISED` is unset and `fw doctor` reports unsupervised — even
-though `bin/claude-fw:33` unconditionally exports the marker before launching
-`claude`. The T-2499 loudness WARN fired correctly, surfacing the gap. If the
-mechanism is real, the arc-012 budget-critical auto-restart loop silently does
-not arm for any worktree-launched session (the 300K→350K overrun class T-2499
-was built to make loud). RCA the mechanism, confirm it, then fix so worktree
-sessions are supervised (or fail loud at launch).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Process ancestry traced: determine whether `claude-fw` is an ancestor of this session's process, and which (if any) ancestor carries `FW_CLAUDE_FW_SUPERVISED=1` in `/proc/PID/environ`. Finding recorded in `## RCA`.
-- [x] Mechanism confirmed: the specific reason the marker does not reach the session is identified and evidenced (not inferred) — recorded in `## RCA` with the structural "why allowed" leg.
-- [x] Fix shipped IF a code fix is warranted: `fw doctor` now detects on-PATH `claude-fw` drift (`bin/fw` ~line 1496) — resolves the wrapper actually on PATH and compares against repo source; WARN + refresh command on drift, OK on match, SKIP when not installed. Live-confirmed: fires against the stale `/root/.agentic-framework/bin/claude-fw` that caused this session's unsupervised state. (The wrapper code itself was correct — the bug was deployment, so the fix is detection of the deploy drift, not a wrapper edit.)
-- [x] Regression coverage: `tests/integration/t2501_claude_fw_drift.bats` (3 cases: DIFFERS→WARN, MATCHES→OK, not-on-PATH→SKIP) — all green.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -90,9 +82,6 @@ sessions are supervised (or fail loud at launch).
 
 ## Verification
 
-bash -n bin/fw
-bats tests/integration/t2501_claude_fw_drift.bats
-
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -126,71 +115,19 @@ bats tests/integration/t2501_claude_fw_drift.bats
 
 ## RCA
 
-**Symptom:** Operator launched `claude-fw` (from inside the worktree cwd) and
-believed the session was supervised. `fw doctor` reported `WARN Unsupervised
-session — auto-restart will NOT fire`, and `FW_CLAUDE_FW_SUPERVISED` was unset
-in the session environment. The arc-012 budget-critical auto-restart loop would
-not have armed for this session.
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
 
-**Trace (verified, not inferred):**
-- Process ancestry confirmed `claude-fw` IS the parent: `/bin/bash
-  /root/.local/bin/claude-fw --resume` → child `claude --resume` → this shell.
-  (The real argv was `claude-fw --resume`, not `--worktree …`; we are in the
-  worktree because the wrapper was run from the worktree cwd.)
-- `FW_CLAUDE_FW_SUPERVISED` absent in `/proc/<claude>/environ` AND in the
-  wrapper's own environ → the export never reached the child.
-- `/root/.local/bin/claude-fw` → symlink → `/root/.agentic-framework/bin/claude-fw`.
-- The symlink target is STALE: 344 lines, **no** `FW_CLAUDE_FW_SUPERVISED` line.
-  Repo `bin/claude-fw` is 352 lines WITH the export at line 33. `diff -q` →
-  DIFFER. `grep` → export present in repo, absent in installed.
-- **Correction (refresh-path trace):** `~/.agentic-framework` is NOT a vendored
-  copy — it is a **git clone** (the install target of `install.sh`, refreshed by
-  `do_install()` `git fetch` + `git reset --hard origin/$BRANCH`,
-  `install.sh:153/162`; shim linked by `link_fw()` `ln -sf … claude-fw`,
-  `install.sh:245/256`). It is stale simply because the clone is **behind
-  origin/master** — T-2499 landed to master but this separate host clone never
-  pulled. `fw vendor self` does NOT refresh it (`_self_vendor_shim` targets
-  `bin/fw` only, explicitly excludes `claude-fw` — `lib/upgrade.sh:316/334`).
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
 
-**Root cause:** NOT a logic bug in claude-fw — the wrapper code is correct. It
-is a **deployment-propagation gap**. T-2499's export shipped to repo
-`bin/claude-fw`, to master, and to MAIN's running code (integrate-go-live syncs
-`lib agents bin` inside `/opt/999-…`). But the wrapper the operator actually
-executes is a **separate host-level git clone** (`~/.agentic-framework`) that
-nothing in the land/go-live path pulls. The running wrapper is therefore an
-older commit than the one shipped — and stays stale until someone re-runs the
-installer or `git reset`s the clone.
-
-**Why structurally allowed:** Same class as [[project_t2494_deploy_whackamole_rca]]
-(deploy whack-a-mole — code lives in N locations, no declared topology, no
-end-to-end verifier). `claude-fw` exists in four places, and **none has drift
-detection**: (1) repo `bin/claude-fw` (truth); (2) host clone
-`~/.agentic-framework/bin/claude-fw` (stale if behind origin); (3) in-repo
-vendored `.agentic-framework/bin/claude-fw` (only full `fw vendor` touches it;
-`fw vendor self` excludes it); (4) `~/.local/bin/claude-fw` symlink (auto-current
-vs #2). Concretely: `check_self_vendor_drift` (`audit.sh:1668`) find-filter
-matches only `*.sh|*.py|fw|*.md` → `claude-fw` (no extension, name≠`fw`) is
-invisible; CTL-019 (`audit.sh:3112`) checks existence/executability only; the
-pre-push `fw vendor self --dry-run` gate excludes it too. The T-2499 loudness
-WARN caught the *symptom* (session unsupervised); nothing pointed at the *cause*
-(stale on-PATH wrapper).
-
-**Prevention (selected):**
-- **Primary (this task):** add a `fw doctor` drift check that resolves the
-  `claude-fw` actually on PATH (`command -v` → `readlink -f`) and compares its
-  content against repo `bin/claude-fw`; WARN on divergence with the refresh
-  command. This catches the *operator-facing* wrapper regardless of install
-  topology (host clone, in-repo vendor, or symlink) — it checks the file that
-  actually runs. Pin with a regression test.
-- **Secondary (SIBLING task, not folded):** widen `check_self_vendor_drift`'s
-  find-filter (`audit.sh:1698`) to include `claude-fw` so the in-repo vendored
-  copy (#3) is covered. NOT folded here because it is **coupled**: `fw vendor
-  self`'s `_self_vendor_shim` (`lib/upgrade.sh:316/334`) deliberately syncs
-  `bin/fw` only, excluding `claude-fw`. Widening the audit filter alone would
-  produce an audit FAIL with no helper to clear it — the L-491 unresolvable-
-  push-block trap / L-399 producer-consumer parity break. The sibling must ship
-  filter + helper together. Filed as T-2502.
-- **Operator unblock (not a code fix):** refresh the host clone — see Decisions.
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -239,7 +176,7 @@ WARN caught the *symptom* (session unsupervised); nothing pointed at the *cause*
 
 ## Updates
 
-### 2026-06-25T12:53:15Z — task-created [task-create-agent]
+### 2026-06-25T13:06:11Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2501-claude-fw---worktree-strips-fwclaudefwsu.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2502-vendored-claude-fw-drift-uncovered--audi.md
 - **Context:** Initial task creation

@@ -3798,3 +3798,10 @@ X'` returning empty group."
   date: 2026-06-24
   context: Added via context agent
   application: TBD
+- id: L-496
+  learning: "Framework code lands to master + MAIN go-live, but the operator's interactive claude-fw runs from a SEPARATE host-level git clone (~/.agentic-framework, symlinked via ~/.local/bin) that nothing in the land/go-live path pulls — so the operator runs a stale wrapper. claude-fw had zero drift detection (audit self-vendor find-filter excludes no-extension names, CTL-019 checks existence only, fw vendor self skips it). Fix: fw doctor now compares the on-PATH claude-fw against repo source. Class: deploy whack-a-mole (T-2494) — code in N locations, the host clone is an undeclared deploy hop."
+  source: P-001
+  task: T-2501
+  date: 2026-06-25
+  context: Added via context agent
+  application: TBD
