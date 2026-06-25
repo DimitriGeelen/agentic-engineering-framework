@@ -877,6 +877,166 @@ _NON_DISPATCHABLE_TYPES = {"inception", "specification", "design"}
 _ELIGIBLE_STATUS = {"started-work", "captured"}
 
 
+# ---------------------------------------------------------------- BVP ranking
+# T-2497: value-aware picker. The live resolver loop (resolver-loop.timer)
+# dispatches the picker's top pick every tick; ranking by BVP quadrant makes the
+# loop clear the HV/LC backlog by value instead of in id-order — the enabler for
+# autonomous HV/LC clearance.
+#
+# These formulas REPLICATE lib/bvp.sh's python engine (F8-stable, documented in
+# CLAUDE.md §BVP). bvp.sh embeds its math in a `python3 - <<PYEOF` heredoc and so
+# is not importable; the math is mirrored here and pinned to `fw bvp` output by a
+# parity test (tests/unit/t2497_resolver_bvp_rank.bats). If the F8 cost formula or
+# the driver-weight model changes in bvp.sh, update here too — the parity test is
+# the tripwire.
+_BVP_POLICY = PROJECT_ROOT / "policy" / "value-drivers.yaml"
+_TSHIRT_COST = {"S": 2, "M": 4, "L": 6, "XL": 8}
+# Quadrant priority for the picker: HV-LC first, then value-leaning (HV-HC before
+# LV-LC), LV-HC last. Tasks with no usable BVP signal get the neutral no-data
+# bucket so ranking falls back to FIFO.
+_QUADRANT_RANK = {"hv-lc": 0, "hv-hc": 1, "lv-lc": 2, "lv-hc": 3}
+_NO_BVP_RANK = 4
+_COST_SENTINEL = 1e9
+
+
+def _bvp_driver_weights() -> Dict[str, int]:
+    """{driver_id: weight} from policy/value-drivers.yaml (protected + free).
+    Empty when the policy file is absent/unreadable — ranking then degrades to
+    FIFO (fail-open; the picker must never crash on a missing policy)."""
+    if not _BVP_POLICY.is_file():
+        return {}
+    try:
+        policy = yaml.safe_load(_BVP_POLICY.read_text()) or {}
+    except yaml.YAMLError:
+        return {}
+    out: Dict[str, int] = {}
+    for group in ("protected_drivers", "free_drivers"):
+        for d in (policy.get(group) or []):
+            try:
+                out[d["id"]] = int(d["weight"])
+            except (KeyError, TypeError, ValueError):
+                continue
+    return out
+
+
+def _bvp_norm(scores: Any, weights: Dict[str, int]) -> Optional[float]:
+    """Normalised BVP in [0,1] against 5×sum(weights-in-use). None when no driver
+    overlaps (mirrors bvp.sh compute_bvp; None means 'no value signal')."""
+    if not isinstance(scores, dict) or not weights:
+        return None
+    raw = 0
+    weight_sum = 0
+    for driver_id, weight in weights.items():
+        if driver_id in scores:
+            try:
+                raw += int(scores[driver_id]) * weight
+                weight_sum += weight
+            except (TypeError, ValueError):
+                continue
+    if weight_sum == 0:
+        return None
+    return raw / (5 * weight_sum)
+
+
+def _bvp_cost(cost_estimate: Any) -> Optional[float]:
+    """F8 composite 0.6×br+0.3×tier+0.1×effort, or the T-shirt fallback. None
+    when absent (mirrors bvp.sh compute_cost)."""
+    if not isinstance(cost_estimate, dict):
+        return None
+    br, tier, effort = (cost_estimate.get(k) for k in ("blast_radius", "tier", "effort"))
+    if br is not None and tier is not None and effort is not None:
+        try:
+            return 0.6 * float(br) + 0.3 * float(tier) + 0.1 * float(effort)
+        except (TypeError, ValueError):
+            pass
+    size = cost_estimate.get("size")
+    if size and str(size).upper() in _TSHIRT_COST:
+        return float(_TSHIRT_COST[str(size).upper()])
+    return None
+
+
+def _bvp_latest_proposed(fm: Dict[str, Any], key: str, inner: str) -> Optional[dict]:
+    """Newest entry's `inner` dict from a list-of-timestamped-entries field
+    (bvp_scores_proposed / cost_estimate_proposed)."""
+    lst = fm.get(key)
+    if not isinstance(lst, list) or not lst:
+        return None
+    latest = lst[-1] if isinstance(lst[-1], dict) else None
+    if not latest:
+        return None
+    val = latest.get(inner)
+    return val if isinstance(val, dict) else None
+
+
+def _bvp_value_cost(fm: Dict[str, Any], weights: Dict[str, int]) -> Tuple[Optional[float], Optional[float]]:
+    """(bvp_norm, cost) for a task's frontmatter. Confirmed `bvp_scores:` first;
+    falls back to the latest estimator-proposed scores/cost (advisory — matches
+    `fw bvp --include-proposed`, the realistic corpus state). This is
+    ordering-only and never writes, so consuming advisory inputs does not cross
+    the `bvp_scores:` sovereignty boundary (T-1924)."""
+    scores = fm.get("bvp_scores") or _bvp_latest_proposed(fm, "bvp_scores_proposed", "scores")
+    norm = _bvp_norm(scores, weights)
+    cost = _bvp_cost(fm.get("cost_estimate"))
+    if cost is None:
+        cost = _bvp_cost(_bvp_latest_proposed(fm, "cost_estimate_proposed", "cost_estimate"))
+    return norm, cost
+
+
+def _annotate_bvp_rank(metas: List[Dict[str, Any]]) -> None:
+    """T-2497: attach bvp_norm / bvp_cost / _quadrant / _quadrant_rank in place.
+
+    Quadrant boundaries use the median value/cost over the SCORED eligible tasks
+    (mirroring bvp.sh cmd_rank, including its 0.5/4.0 empty-set fallbacks). Off
+    when FW_RESOLVER_BVP_RANK=0 or policy/value-drivers.yaml is absent — every
+    task then sits in the neutral no-data bucket and ranking is pure FIFO."""
+    for m in metas:
+        m["bvp_norm"] = None
+        m["bvp_cost"] = None
+        m["_quadrant"] = "-"
+        m["_quadrant_rank"] = _NO_BVP_RANK
+    if os.environ.get("FW_RESOLVER_BVP_RANK", "1") == "0":
+        return
+    weights = _bvp_driver_weights()
+    if not weights:
+        return
+    scored: List[Dict[str, Any]] = []
+    for m in metas:
+        norm, cost = _bvp_value_cost(m.get("fm") or {}, weights)
+        m["bvp_norm"] = norm
+        m["bvp_cost"] = cost
+        if norm is not None:
+            scored.append(m)
+    if not scored:
+        return
+    import statistics  # noqa: PLC0415
+
+    norms = [m["bvp_norm"] for m in scored]
+    costs = [m["bvp_cost"] for m in scored if m["bvp_cost"] is not None]
+    bvp_median = statistics.median(norms) if norms else 0.5
+    cost_median = statistics.median(costs) if costs else 4.0
+    for m in scored:
+        # A scored task with no cost signal can't claim to be cheap — place it on
+        # the cost median (neutral) so it still lands in a defined quadrant.
+        cost = m["bvp_cost"] if m["bvp_cost"] is not None else cost_median
+        quad = ("hv" if m["bvp_norm"] >= bvp_median else "lv") + "-" + (
+            "lc" if cost <= cost_median else "hc"
+        )
+        m["_quadrant"] = quad
+        m["_quadrant_rank"] = _QUADRANT_RANK[quad]
+
+
+def _bvp_summary(meta: Dict[str, Any]) -> Dict[str, Any]:
+    """T-2497: observability payload for a pick — value/cost/quadrant as ranked.
+    null fields mean the task carried no BVP signal (ranked FIFO)."""
+    norm = meta.get("bvp_norm")
+    cost = meta.get("bvp_cost")
+    return {
+        "bvp_norm": round(norm, 4) if isinstance(norm, (int, float)) else None,
+        "cost": round(cost, 2) if isinstance(cost, (int, float)) else None,
+        "quadrant": meta.get("_quadrant", "-"),
+    }
+
+
 def _read_task_meta(path: Path) -> Dict[str, Any]:
     """Parse a task .md → eligibility-relevant fields."""
     text = path.read_text()
@@ -901,6 +1061,7 @@ def _read_task_meta(path: Path) -> Dict[str, Any]:
         "status": str(fm.get("status", "")).strip().lower(),
         "ac_block": _extract_section(body, "Acceptance Criteria"),
         "path": str(path),
+        "fm": fm if isinstance(fm, dict) else {},  # T-2497: BVP ranking source
     }
 
 
@@ -1024,14 +1185,25 @@ def _pick_eligibility(meta: Dict[str, Any], inflight: set, focused: str = "") ->
 
 
 def _pick_rank_key(meta: Dict[str, Any]) -> tuple:
-    """Deterministic ranking: started-work before captured, now before next,
-    then oldest task id first (FIFO). Pluggable — BVP-aware ranking is a
-    follow-up once cost_estimate/bvp_scores are populated corpus-wide."""
+    """Deterministic ranking (T-2497 BVP-aware).
+
+    WIP-reduction and horizon lead — finish started-work, prefer horizon=now —
+    so the picker never abandons in-flight work for a shinier new task. WITHIN a
+    (status, horizon) tier it ranks by BVP quadrant (HV-LC first), then value
+    descending and cost ascending, so the live loop grinds the HV/LC backlog by
+    value. FIFO oldest-id is the final tiebreak. When no BVP data is present every
+    task shares the neutral no-data bucket and value/cost are constant, so this
+    reduces exactly to the original status→horizon→id FIFO order."""
     status_rank = 0 if meta["status"] == "started-work" else 1
     horizon_rank = 0 if meta["horizon"] == "now" else 1
+    quad_rank = meta.get("_quadrant_rank", _NO_BVP_RANK)
+    norm = meta.get("bvp_norm")
+    value_key = -norm if norm is not None else 0.0  # higher value first
+    cost = meta.get("bvp_cost")
+    cost_key = cost if cost is not None else _COST_SENTINEL  # lower cost first
     m = re.search(r"T-(\d+)", meta["id"])
     idnum = int(m.group(1)) if m else 0
-    return (status_rank, horizon_rank, idnum)
+    return (status_rank, horizon_rank, quad_rank, value_key, cost_key, idnum)
 
 
 def _select_eligible(claimed: Optional[set] = None, cooldown_min: int = 0) -> tuple:
@@ -1059,6 +1231,7 @@ def _select_eligible(claimed: Optional[set] = None, cooldown_min: int = 0) -> tu
             eligible.append(meta)
         else:
             excluded.append((meta["id"], reason))
+    _annotate_bvp_rank(eligible)  # T-2497: attach bvp_norm/cost/quadrant in place
     eligible.sort(key=_pick_rank_key)
     return eligible, excluded
 
@@ -1097,14 +1270,18 @@ def cmd_pick(args: argparse.Namespace) -> int:
             print(json.dumps({
                 "eligible": [m["id"] for m in eligible],
                 "pick": pick["id"], "workflow": chosen_type,
-                "reason": f"status={pick['status']}, horizon={pick['horizon']}",
+                "reason": f"status={pick['status']}, horizon={pick['horizon']}, "
+                          f"quadrant={pick.get('_quadrant', '-')}",
+                "bvp": _bvp_summary(pick),
                 "excluded": dict(excluded), "dispatched": False,
             }, indent=2))
         else:
             print(f"Eligible for autonomous dispatch ({len(eligible)}):")
             for m in eligible:
                 marker = "→" if m["id"] == pick["id"] else " "
-                print(f"  {marker} {m['id']:8s} [{m['status']}/{m['horizon']}] {m['name'][:60]}")
+                quad = m.get("_quadrant", "-")
+                print(f"  {marker} {m['id']:8s} [{m['status']}/{m['horizon']}] "
+                      f"{quad:>5s} {m['name'][:54]}")
             print()
             print(f"Top pick:  {pick['id']}  →  workflow '{chosen_type}'")
             print(f"Dispatch:  bin/fw resolver pick --dispatch")
@@ -1141,6 +1318,7 @@ def cmd_pick(args: argparse.Namespace) -> int:
         print(json.dumps({
             "eligible": [m["id"] for m in eligible],
             "pick": task_id, "workflow": task_type,
+            "bvp": _bvp_summary(pick),
             "excluded": dict(excluded), "dispatched": True, "outcome": outcome,
         }, indent=2, default=str))
     else:
