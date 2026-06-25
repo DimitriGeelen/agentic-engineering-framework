@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2501: claude-fw --worktree strips FW_CLAUDE_FW_SUPERVISED — worktree sessions silently unsupervised
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-25T13:10:23Z
+# ============================================================================
+
+task_id: T-2501
+task_name: "claude-fw --worktree strips FW_CLAUDE_FW_SUPERVISED — worktree sessions silently unsupervised"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-25T12:53:15Z
+completed: 2026-06-25T13:07:34Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Process ancestry traced: determine whether `claude-fw` is an ancestor of this session''s process, and which (if any) ancestor carries `FW_CLAUDE_FW_SUPERVISED=1` in `/proc/PID/environ`. Finding recorded in `## RCA`.'
+  - 'Mechanism confirmed: the specific reason the marker does not reach the session is identified and evidenced (not inferred) — recorded in `## RCA` with the structural "why allowed" leg.'
+  - 'Fix shipped IF a code fix is warranted: `fw doctor` now detects on-PATH `claude-fw` drift (`bin/fw` ~line 1496) — resolves the wrapper actually on PATH and compares against repo source; WARN + refresh command on drift, OK on match, SKIP when not installed. Live-confirmed: fires against the stale `/root/.agentic-framework/bin/claude-fw` that caused this session''s unsupervised state. (The wrapper code itself was correct — the bug was deployment, so the fix is detection of the deploy drift, not a wrapper edit.)'
+  - 'Regression coverage: `tests/integration/t2501_claude_fw_drift.bats` (3 cases: DIFFERS→WARN, MATCHES→OK, not-on-PATH→SKIP) — all green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 14
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2501-claude-fw---worktree-strips-fwclaudefwsu.md
+generated_by: context-agent-hybrid
