@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-25T08:32:09Z
-last_update: 2026-06-25T08:32:09Z
+last_update: 2026-06-25T08:35:46Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,15 +41,14 @@ date_finished: null
 ## Context
 
 Operator observed a session run 300K→350K with no auto-restart/handover firing.
-Root cause (investigated, see RCA): the entire budget auto-recovery depends on the
-`claude-fw` wrapper consuming a `.restart-requested` signal on claude's exit — but
-every active session runs **plain `claude`**, so the signal budget-gate writes at
-critical is never consumed (a stale Jun-24 signal at 294K proves this). Separately,
-auto-compaction is disabled by design (D-027), so "compact at 300K" was never a
-feature — the only auto path is `claude-fw` → `claude -c` (continue). This task
-captures the RCA and ships the structural prevention: make the unsupervised state
-LOUD so it can never silently no-op again. (Direction beyond the warning — auto-relaunch
-vs reverse D-027 — is an open decision flagged to the operator, not built here.)
+The designed mechanism is the **arc-012 continuous-run loop** (budget-critical →
+auto-handover → `.restart-requested` → claude-fw restart → directive re-injection) —
+an explicitly-built, shipped feature, NOT a missing one. Root cause (investigated,
+see RCA): the loop's restart signal is consumed only by the `claude-fw` wrapper, but
+the session ran under **plain `claude`** — so budget-gate wrote the critical signal
+and nothing consumed it (a stale Jun-24 signal at 294K is the proof). This task
+ships the structural prevention: make the unsupervised state LOUD so a plain-`claude`
+launch can never silently disarm the loop again.
 
 ## Acceptance Criteria
 
@@ -146,16 +145,22 @@ The operator expected "at ~300K: compact, resume, start again" to fire automatic
    consumed it and the session sailed past to 350K. Under plain `claude`, the entire
    auto-recovery is inert.
 
-2. **Even when it fires, the auto path does not shed context.** Auto-compaction is
-   disabled by design (D-027 — compaction destroys working memory; confirmed
-   `budget-gate.sh:89`, `checkpoint.sh:33`). The claude-fw restart relaunches with
-   `claude -c` (`bin/claude-fw:330-331`) — *continue the same conversation with full
-   context*. So even a correctly-supervised restart resumes at ~285K and would
-   immediately re-trip critical (thrash to MAX_RESTARTS=5). The only mechanism that
-   actually reduces budget is **manual `/compact`** (PreCompact handover +
-   SessionStart:compact reinjection) — which is exactly what the operator did by hand
-   this session. The operator's mental model ("auto-compact at 300K") matches NO
-   existing automatic mechanism.
+   The designed loop is **arc-012 continuous-run** — the explicit, shipped
+   auto-compact-and-continue mechanism: budget-critical → auto-handover →
+   `.restart-requested` → claude-fw terminator restart → resume-side directive
+   re-injection (`post-compact-resume.sh`) under the bounded-autonomy ceiling
+   (`.continuous-mode.yaml`). It has demoed working end-to-end (the Jun-24 signal
+   quotes its own headline-mechanic). NOTE: D-027 disables Claude Code's *native*
+   silent auto-compaction (which destroys working memory); arc-012 is the framework's
+   deliberate *replacement* for it. The two are not in conflict — conflating "native
+   auto-compact is off" with "no auto-continue exists" was an analysis error in the
+   first draft of this RCA (corrected). The loop is correct; the failure is solely
+   that it ran unsupervised (gap 1).
+
+   OPEN (do NOT assert without testing): whether the `claude -c` restart
+   (`bin/claude-fw:330-331`) sheds enough context on its own or relies on
+   compaction-on-resume — to be verified empirically, NOT speculated. The first draft
+   wrongly asserted it would thrash; that claim is retracted pending a real test.
 
 **Why structurally allowed:** the auto-recovery hard-depends on an opt-in wrapper
 (`claude-fw`) with zero signal that it's absent. Launch plain `claude` and every
