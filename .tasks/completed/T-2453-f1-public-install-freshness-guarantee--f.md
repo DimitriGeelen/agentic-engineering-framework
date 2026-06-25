@@ -4,16 +4,16 @@ name: "F1: public install freshness guarantee — fresh github clone ships stale
 description: >
   Inception: F1: public install freshness guarantee — fresh github clone ships stale framework (v1.6.25 vs HEAD v1.6.66)
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-06-21T13:22:44Z
-last_update: 2026-06-21T13:23:46Z
-date_finished: null
+last_update: 2026-06-25T22:55:18Z
+date_finished: 2026-06-25T22:55:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -99,15 +99,15 @@ evidence gap about whether to act). Parked `horizon: next` for a dedicated sessi
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -164,7 +164,17 @@ Confirmed reliability gap from T-2441 dogfood: public GitHub install.sh ships fw
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Confirmed reliability gap from T-2441 dogfood: public GitHub install.sh ships fw v1.6.25 while origin HEAD is v1.6.66 (~40 patch versions behind); a real onboarder gets a months-old framework. fw doctor already surfaces the mirror divergence but the public front door has no freshness guarantee. Worth a focused inception to choose among 3 candidates (gate github mirror push on release / install.sh staleness WARN vs latest tag / tagged releases + install.sh --tag pin); first spike = why fw mirror sync (T-1594, 15-min cron) did not keep github fresh.
+
+Evidence:
+
+**Date**: 2026-06-25T22:55:17Z
 
 ## Updates
 
@@ -173,3 +183,32 @@ Confirmed reliability gap from T-2441 dogfood: public GitHub install.sh ships fw
 
 ### 2026-06-21T13:23:46Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-06-25T22:55:17Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Confirmed reliability gap from T-2441 dogfood: public GitHub install.sh ships fw v1.6.25 while origin HEAD is v1.6.66 (~40 patch versions behind); a real onboarder gets a months-old framework. fw doctor already surfaces the mirror divergence but the public front door has no freshness guarantee. Worth a focused inception to choose among 3 candidates (gate github mirror push on release / install.sh staleness WARN vs latest tag / tagged releases + install.sh --tag pin); first spike = why fw mirror sync (T-1594, 15-min cron) did not keep github fresh.
+
+Evidence:
+
+### 2026-06-25T22:55:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6ebb5c3c
+- **Timestamp:** 2026-06-25T22:55:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-25T22:55:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
