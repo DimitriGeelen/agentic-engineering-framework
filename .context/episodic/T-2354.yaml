@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2354: BVP estimator score_audit_severity handler + audit_severity frontmatter (T-2352
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-25T23:02:03Z
+# ============================================================================
+
+task_id: T-2354
+task_name: "BVP estimator score_audit_severity handler + audit_severity frontmatter (T-2352"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T12:24:41Z
+completed: 2026-06-25T23:01:52Z
+duration_days: 13
+updates_count: 4
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator''s 0–5 scale, mirroring `score_f_autonomy` structure'
+  - 'Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml` (registered at estimator.py handlers dict; `test_estimate_task_routes_audit_severity_to_dedicated_scorer` proves dispatch fires when the driver is in the active set)'
+  - '`audit_severity: fail|warn` documented as a recognised frontmatter field — value-drivers.yaml `audit_severity` candidate carve carries an explicit FRONTMATTER FIELD CONTRACT block (fail→5 / warn→4 / absent→0)'
+  - 'Unit tests cover fail→high score, warn→mid score, absent→0/no-signal (6 tests in `tests/unit/test_bvp_estimator.py`: fail→5, warn→4, absent→0, unrecognised→0, case-insensitive, dispatch+rank)'
+  - 'Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task — proven via `estimate_task()` (the engine `fw bvp` calls per task): identical bodies, only the field differs → FAIL weighted contribution (5×6) strictly above routine (0×6). NOTE: the literal `fw bvp` CLI surface shows the boost only after the operator *activates* the carved driver (Sovereignty / D8 — see §Decisions)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+  - decision: '2026-06-26 — Ship the driver LATENT (carved), not active'
+    chose: 'Add `score_audit_severity` handler + register it, but ship the'
+    rationale: 'Activating a new BVP driver reweights **every** task''s rank — that is a'
+    alternatives_rejected: ['Activating it directly — would be an un-sanctioned policy change.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 19357 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19357
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/livefire-t2389/.tasks/completed/T-2354-bvp-estimator-scoreauditseverity-handler.md
+generated_by: context-agent-hybrid

@@ -2060,3 +2060,17 @@ decisions:
     date: 2026-06-14
     task: T-2396
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-297
+    decision: "Add `score_audit_severity` handler + register it, but ship the"
+    scope: project
+    date: 2026-06-25
+    task: T-2354
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-298
+    decision: "Map `audit_severity: fail`→5, `warn`→4, absent/other→0."
+    scope: project
+    date: 2026-06-25
+    task: T-2354
+    rationale: "Auto-captured from task file on completion"
