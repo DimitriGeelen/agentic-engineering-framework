@@ -120,19 +120,22 @@ The decision binds: AEF-IC-4 (sidecar + cooperative-poll harness) consumes which
 ## Open Questions
 
 - **IW-1: Which yield-point granularity wins — per-tool-call, per-file-write, or per-message boundary?**
-  confidence: 1
-  disposition: deferred
-  rationale: Leading candidate from T-2303 prep work is per-file-write (matches disjoint-write-set governance focus). But over-yield risk (option 1) vs miss-window risk (option 3) needs operator dialogue to pin against the AEF-IC-4 ear-check cost model. Spike A resolves.
+  confidence: 5
+  disposition: answered
+  answer: per-file-write
+  rationale: Operator-confirmed (dialogue 2026-06-25/26). The yield-point that matters is "I'm about to write" — write collisions on disjoint write-sets are the only collisions the harness exists to prevent. Per-tool-call over-yields on read-only sprawl (grep/read/list); per-message is too coarse (warning lands after the conflicting write). Caveat: assumes a write-classifier (couples to AEF-IC-2 / T-2324).
 
 - **IW-2: What is the flag's source-of-truth mechanism — env var, sidecar file, hub-state RPC, or composite?**
-  confidence: 1
-  disposition: deferred
-  rationale: Each mechanism has different staleness + race characteristics. Env var = startup-only, no mid-session updates. Sidecar = stale-read race (parallel of L-477 + T-2322 sidecar-degradation class). Hub-state RPC = network cost per yield. Composite (env + hub-state-on-demand) is the likely answer but needs operator confirm. Spike B resolves.
+  confidence: 4
+  disposition: answered-with-IC-4-handoff
+  answer: local atomically-written per-agent file co-locating {dirty, priority, heartbeat_ts}
+  rationale: Operator-confirmed (dialogue 2026-06-25/26). The AGENT reads a LOCAL, atomically-written (write-temp-rename), PER-AGENT file keyed by agent_id (e.g. ~/.termlink/harness/<agent_id>.flag) that co-locates flag + heartbeat (ADR §6.3). Co-location is the safety property — one staleness check covers both dead-sidecar and stuck-flag. Fail-closed (missing/stale/unreadable ⇒ deaf ⇒ STOP) + initial-heartbeat handshake. The "how the sidecar LEARNS of a flip" sub-choice (kv watch vs topic-tail) is sidecar-internal → deferred to AEF-IC-4. Rejected: env var (startup-only), hub-state RPC direct (network cost + hub load spike).
 
 - **IW-3: What's the ear-check poll cadence + cost budget?**
-  confidence: 0
-  disposition: deferred
-  rationale: At per-file-write granularity (IW-1 leading candidate) the ear-check fires hundreds of times per task. Each poll costs CPU + (if hub-RPC) network + (if sidecar) FS read. Need an explicit budget — e.g. "ear-check cost ≤ 5% of total harness overhead at p99" — before AEF-IC-4 designs the polling loop. Spike C resolves.
+  confidence: 5
+  disposition: answered
+  answer: local read (µs/check), trivially inside ≤5% harness-overhead budget
+  rationale: Effectively decided by cost math once IW-1=per-file-write. Local read = one stat/read + timestamp subtraction ≈ µs; ~1000 checks/task ≈ a few ms total — non-issue against the ≤5% budget. Hub-KV-direct rejected: network RPC per check ≈ ms ×1000 = seconds/task + self-inflicted hub load spike (T-1991 traffic class, substrate ADR §10). "Local read, done" — not an open number.
 
 ## Exploration Plan
 
@@ -208,9 +211,13 @@ The harness runs as a wrapper around `claude` CLI. Constraints:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
-**Rationale:** Scoping inception — the question itself (where does the harness check?) is the evidence gap. Spike dialogue resolves: (a) yield-point granularity (file-write boundary vs tool-call boundary vs message boundary); (b) flag shape (env var vs sidecar file vs hub-state poll); (c) ear-check semantics (poll cadence + busy/idle response shape). Leading candidate per T-2303 Spike 5 prep work: 'before every file-write tool call' — but this needs operator dialogue to pin. Legitimate evidence-gap DEFER per T-2144 — this inception's job is to gather the evidence via spike dialogue. Concrete revisit trigger: operator-led spike dialogue session OR first downstream build pressure on harness design (whichever lands first).
+**Rationale:** The scoping-phase evidence gap is now filled — operator dialogue (2026-06-25/26, logged in `docs/reports/T-2323-yield-point-granularity-inception.md`) converged all three open questions: IW-1 = per-file-write; IW-2 = local atomically-written per-agent file co-locating `{dirty, priority, heartbeat_ts}` (sidecar-fill mechanism deferred to AEF-IC-4), fail-closed + initial-heartbeat handshake; IW-3 = local read (µs/check, ≤5% budget non-issue). The decision is coherent, fail-closed, and consumable by AEF-IC-4 as ear-check semantics. The prior DEFER was the legitimate scoping-phase recommendation (the evidence gap WAS the dialogue); per T-2144, holding DEFER now that the artifact is complete would be a confidence-calibration hedge, not a knowledge gap.
+
+**Coupling:** GO depends on the AEF-IC-2 (T-2324) write-classifier landing (per-file-write assumes a write classifier). The outbound ack-with-retry leg ties to TermLink T-2285 (same build territory — the bidirectional sidecar is that retry helper's home).
+
+**Decision ownership:** Agent advisory. The human owns the GO/NO-GO via `fw inception decide T-2323 go`. No decision recorded by this recording session.
 
 ## Decisions
 
@@ -222,6 +229,14 @@ The harness runs as a wrapper around `claude` CLI. Constraints:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-06-26 — Yield-point granularity + flag mechanism (dialogue convergence)
+- **Chose:** **Per-file-write** yield-point granularity (IW-1). Flag mechanism (IW-2) = a **local, atomically-written (write-temp-rename), per-agent file** keyed by `agent_id` that **co-locates** the flag and heartbeat: schema `{dirty: bool, priority: u8, heartbeat_ts}` (ADR §6.3). Cost budget (IW-3) = **local read** (µs/check) — trivially inside the ≤5% harness-overhead budget. Fail-closed lifecycle (missing/stale/unreadable ⇒ deaf ⇒ STOP) + initial-heartbeat handshake.
+- **Why:** Write collisions on disjoint write-sets are the only collisions the harness exists to prevent, so the yield-point that matters is "I'm about to write". Co-locating flag + heartbeat means a single staleness check covers both dead-sidecar and stuck-flag failure modes — this is the safety property that makes the local file safe rather than racy. The governing asymmetry (a false "deaf" only pauses; a false "all clear" lets a collision through) forces every ambiguous state to resolve to deaf ⇒ stop.
+- **Rejected:** Per-tool-call (over-yields on read-only sprawl — grep/read/list — where no collision can occur); per-message (too coarse — a turn can do many writes before yielding, so the warning lands AFTER the conflicting write); env-var flag (startup-only, no mid-session updates); hub-state RPC direct per check (network cost ms ×1000 = seconds/task PLUS a self-inflicted hub load spike, T-1991 traffic class / substrate ADR §10).
+- **Deferred:** The "how does the sidecar LEARN of a flip" sub-choice (`termlink kv watch` vs topic-tail) is sidecar-internal → **AEF-IC-4** (sidecar design). T-2323 only fixes that the AGENT reads a local co-located file.
+- **Coupling:** per-file-write assumes a write-classifier → **AEF-IC-2 (T-2324)**. Outbound sender-side ack-with-retry → **TermLink T-2285** (the bidirectional sidecar is that client-side retry helper's home).
+- **Decision ownership:** Agent advisory only. Overall inception GO/NO-GO stays with the human via `fw inception decide T-2323 go`. No decision recorded by this recording session.
 
 ## Decision
 
