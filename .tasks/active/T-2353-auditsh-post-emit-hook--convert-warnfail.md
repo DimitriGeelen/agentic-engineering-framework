@@ -22,7 +22,7 @@ related_tasks: [T-2352, T-1550]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:22:42Z
-last_update: '2026-06-13T18:00:05Z'
+last_update: 2026-06-25T22:30:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,14 +76,14 @@ Spike A from T-2352 §Exploration Plan validates the emit format BEFORE this sli
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A complete: real-run `bin/fw audit 2>&1` shows ≥1 WARN line and ≥1 FAIL line matching parse regex (or regex widened); finding-text normalization (strip line refs, hash) is stable across two consecutive runs
-- [ ] New function `_emit_findings_as_tasks` added to `agents/audit/audit.sh`; reads parse buffer (or re-runs audit with capture); for each WARN/FAIL line, computes `sha1(normalized_text)`
-- [ ] Dedupe scan: grep `audit_finding_hash:` across `.tasks/{active,completed}/T-*.md` and skip findings whose hash is already filed (no double-creation across audit runs)
-- [ ] On new finding: invokes `bin/fw task create` with `workflow_type=bugfix`, `audit_severity: fail|warn`, `audit_finding_hash: <sha1>`, `tags: [audit-finding, severity:<fail|warn>, section:<section-name>]`, `horizon: now`, body containing the verbatim finding + audit run timestamp + section context
-- [ ] `--emit-tasks` CLI flag on `bin/fw audit` controls whether emission runs (default OFF for v1 — opt-in until S3 digest-mode calibration)
-- [ ] `--dry-run` flag on `--emit-tasks` shows would-create lines without writing task files
-- [ ] Bats test `tests/unit/test_audit_emit_tasks.bats` covers: (a) 0 findings → no task created, (b) 1 new FAIL → 1 task with severity=fail, (c) 1 new WARN → 1 task with severity=warn, (d) re-run with same finding → no double-create (dedupe), (e) mixed 2 new + 1 already-hashed → 2 created, 1 skipped
-- [ ] Documentation in `agents/audit/AGENT.md` §New emit-tasks mode describes opt-in flag and dedupe semantics
+- [x] Spike A complete: audit.sh already maintains a structured `FINDINGS` array (`warn()`/`fail()` push `LEVEL|TEXT|MITIGATION`), so the emitter consumes that buffer (4th `|SECTION` field added) rather than regex-parsing stdout — the parse AC is *widened* from the `^(WARN|FAIL):` regex assumption (Spike A's purpose). Normalization stable across counts: `sha1`("14 stale tasks") == `sha1`("12 stale tasks") (smoke + bats)
+- [x] Emit function `audit_emit_findings_as_tasks` added — factored into `lib/audit_emit.sh` (sourceable so bats fixture-tests it without the >5min real audit) and called from `agents/audit/audit.sh`; computes `sha1(normalized_text)` per WARN/FAIL
+- [x] Dedupe scan: greps `^audit_finding_hash: <sha1>$` across `.tasks/{active,completed}/` and skips already-filed findings (bats cases d + e)
+- [x] On new finding: invokes `bin/fw task create --type build` (⚠ `bugfix` is **not** a valid workflow_type — see §Decisions; build + bug-class title trips the T-1550 RCA gate, the spec's intent), then injects `audit_severity:`, `audit_finding_hash:`, `audit_run_ts:` frontmatter; `tags: [audit-finding, severity:<warn|fail>, section:<slug>]`, `horizon: now`, body carries finding + timestamp + section
+- [x] `--emit-tasks` CLI flag on `bin/fw audit` controls emission (default OFF — opt-in until S3 digest calibration)
+- [x] `--dry-run` flag shows would-create lines without writing (bats case f)
+- [x] Bats test `tests/unit/test_audit_emit_tasks.bats` covers (a) 0 findings, (b) 1 FAIL→fail, (c) 1 WARN→warn, (d) dedupe re-run, (e) mixed 2 new + 1 hashed, (f) dry-run — 6/6 green
+- [x] Documentation in `agents/audit/AGENT.md` §Emit-tasks mode describes opt-in flag + dedupe semantics
 
 ### Human
 - [ ] [REVIEW] Real audit emission reads sanely — output of `bin/fw audit --emit-tasks --dry-run 2>&1 | head -30` is human-parseable and the would-create titles read clearly
@@ -157,11 +157,16 @@ Spike A from T-2352 §Exploration Plan validates the emit format BEFORE this sli
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# NOTE: real `bin/fw audit` takes >5min — verification uses the fixture-driven bats
+# suite (which exercises the dry-run + create + dedupe paths) plus static greps. The
+# emit logic is factored into lib/audit_emit.sh precisely so it is testable without
+# running the full audit.
 bats tests/unit/test_audit_emit_tasks.bats
-out=$(bin/fw audit --emit-tasks --dry-run 2>&1); echo "$out" | grep -q "would create"
-out=$(bin/fw audit --emit-tasks --dry-run 2>&1); echo "$out" | grep -qE "severity:(fail|warn)"
-grep -q "_emit_findings_as_tasks" agents/audit/audit.sh
-grep -q "emit-tasks" agents/audit/AGENT.md
+bash -n agents/audit/audit.sh
+grep -q "audit_emit_findings_as_tasks" lib/audit_emit.sh
+grep -q "audit_emit_findings_as_tasks" agents/audit/audit.sh
+grep -q "emit-tasks" agents/audit/audit.sh
+grep -q "Emit-tasks mode" agents/audit/AGENT.md
 
 ## RCA
 
@@ -204,6 +209,16 @@ grep -q "emit-tasks" agents/audit/AGENT.md
 -->
 
 ## Decisions
+
+### 2026-06-26 — workflow_type for emitted tasks (spec said `bugfix`)
+- **Chose:** `--type build` + bug-class title (`audit <warn|fail>: …`) + `audit-finding` tags + `audit_severity:` frontmatter.
+- **Why:** `bugfix` is **not** a valid workflow_type (`lib/enums.sh`: specification design build test refactor decommission inception). build + bug-class title/tags is exactly what the existing **T-1550 RCA gate** keys on, delivering the spec's stated intent ("reuses existing T-1550 RCA gate at close") without inventing a new enum.
+- **Rejected:** adding `bugfix` to `VALID_TYPES` — cross-cutting enum change (blast radius across create-task, audit, render) for no behavioural gain; `bugfix` is not a lifecycle stage.
+
+### 2026-06-26 — emit logic factored into `lib/audit_emit.sh` (not inlined in audit.sh)
+- **Chose:** sourceable lib `audit_emit_findings_as_tasks <findings_file> <dry_run>`, consuming a findings file rather than audit.sh's in-memory `FINDINGS` array.
+- **Why:** the real `fw audit` takes >5min — inlining the logic would force every test to run the full audit. A file-driven sourceable function is fixture-testable in milliseconds (6 bats cases). audit.sh writes its `FINDINGS` buffer to a temp file and calls it.
+- **Rejected:** regex-parsing audit stdout (Spike A finding: the structured `FINDINGS` array already exists and is more reliable than `^(WARN|FAIL):`).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

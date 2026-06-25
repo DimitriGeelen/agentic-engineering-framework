@@ -269,6 +269,8 @@ fi
 SECTIONS=""       # Comma-separated section names (empty = all)
 OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
 QUIET=false       # Suppress terminal output
+EMIT_TASKS=false  # T-2353: convert WARN/FAIL findings into bugfix tasks (opt-in, default OFF)
+EMIT_DRY_RUN=false # T-2353: with --emit-tasks, print would-create lines without writing
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -276,6 +278,8 @@ while [[ $# -gt 0 ]]; do
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --quiet) QUIET=true; shift ;;
         --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; shift ;;
+        --emit-tasks) EMIT_TASKS=true; shift ;;
+        --dry-run) EMIT_DRY_RUN=true; shift ;;
         -h|--help)
             echo "Usage: audit.sh [options]"
             echo ""
@@ -284,6 +288,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --output DIR      Write YAML report to custom directory"
             echo "  --quiet           Suppress terminal output (for cron)"
             echo "  --cron            Shorthand for --output .context/audits/cron --quiet"
+            echo "  --emit-tasks      Convert WARN/FAIL findings into bugfix tasks (opt-in; T-2353)"
+            echo "  --dry-run         With --emit-tasks: show would-create lines, write nothing"
             echo ""
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
             echo "          learning, episodic, observations, gaps, handover, graduation,"
@@ -372,8 +378,14 @@ FAIL_COUNT=0
 # Priority actions
 declare -a PRIORITY_ACTIONS
 
-# Findings for history (format: "LEVEL|CHECK|MESSAGE")
+# Findings for history (format: "LEVEL|CHECK|MESSAGE|SECTION")
+# T-2353: 4th field (SECTION) appended for emit-tasks tagging. Existing consumers
+# read only fields 1-3 via `cut -d'|' -f1..3`, so the extra field is backward-compatible.
 declare -a FINDINGS
+
+# T-2353: current section name, set by section() and captured into FINDINGS for
+# emit-tasks tagging. Empty until the first section() call.
+CURRENT_SECTION=""
 
 # Timestamp for this audit
 AUDIT_TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -393,7 +405,7 @@ warn() {
     echo "       Mitigation: $3"
     WARN_COUNT=$((WARN_COUNT + 1))
     PRIORITY_ACTIONS+=("$3")
-    FINDINGS+=("WARN|$1|$3")
+    FINDINGS+=("WARN|$1|$3|${CURRENT_SECTION}")
 }
 
 fail() {
@@ -402,7 +414,14 @@ fail() {
     echo "       Mitigation: $3"
     FAIL_COUNT=$((FAIL_COUNT + 1))
     PRIORITY_ACTIONS+=("$3")
-    FINDINGS+=("FAIL|$1|$3")
+    FINDINGS+=("FAIL|$1|$3|${CURRENT_SECTION}")
+}
+
+# T-2353: section header helper — sets CURRENT_SECTION (captured into FINDINGS for
+# emit-tasks tagging) and prints the same "=== NAME ===" banner the audit always has.
+section() {
+    CURRENT_SECTION="$1"
+    echo "=== $1 ==="
 }
 
 info() {
@@ -453,7 +472,7 @@ if [ "$QUIET" = true ]; then
 fi
 
 # Header
-echo "=== AUDIT REPORT ==="
+section "AUDIT REPORT"
 echo "Timestamp: $(date -Iseconds)"
 echo "Project: $PROJECT_ROOT"
 [ -n "$SECTIONS" ] && echo "Sections: $SECTIONS"
@@ -484,7 +503,7 @@ fi
 # SECTION 1: STRUCTURE CHECKS
 # ============================================
 if should_run_section "structure"; then
-echo "=== STRUCTURE CHECKS ==="
+section "STRUCTURE CHECKS"
 
 # Check .tasks/ directory
 if [ -d "$TASKS_DIR" ]; then
@@ -1688,7 +1707,7 @@ fi # end structure
 # SECTION 2: TASK COMPLIANCE CHECKS
 # ============================================
 if should_run_section "compliance"; then
-echo "=== TASK COMPLIANCE CHECKS ==="
+section "TASK COMPLIANCE CHECKS"
 
 # Check each active task (T-955: uses single-pass scan)
 task_count=0
@@ -1731,7 +1750,7 @@ fi # end compliance
 # SECTION 2B: TASK QUALITY CHECKS (P-001, P-004)
 # ============================================
 if should_run_section "quality"; then
-echo "=== TASK QUALITY CHECKS ==="
+section "TASK QUALITY CHECKS"
 
 # Quality checks (T-955: uses single-pass scan)
 quality_issues=0
@@ -1762,7 +1781,7 @@ fi # end quality
 # SECTION 3: GIT TRACEABILITY CHECKS
 # ============================================
 if should_run_section "traceability"; then
-echo "=== GIT TRACEABILITY CHECKS ==="
+section "GIT TRACEABILITY CHECKS"
 
 if git -C "$PROJECT_ROOT" rev-parse --git-dir > /dev/null 2>&1; then
     # T-590: Traceability baseline — only count commits after baseline on imported projects
@@ -1882,7 +1901,7 @@ fi # end traceability
 # SECTION 4: ENFORCEMENT CHECKS
 # ============================================
 if should_run_section "enforcement"; then
-echo "=== ENFORCEMENT CHECKS ==="
+section "ENFORCEMENT CHECKS"
 
 # Check for bypass log
 if [ -f "$CONTEXT_DIR/bypass-log.yaml" ]; then
@@ -2006,7 +2025,7 @@ fi # end enforcement
 # SECTION 5: LEARNING CAPTURE CHECKS
 # ============================================
 if should_run_section "learning"; then
-echo "=== LEARNING CAPTURE CHECKS ==="
+section "LEARNING CAPTURE CHECKS"
 
 # Check practices file (supports both 015-Practices.md and practices.yaml)
 PRACTICES_MD="$PROJECT_ROOT/015-Practices.md"
@@ -2116,7 +2135,7 @@ fi # end learning
 # SECTION 6: EPISODIC MEMORY CHECKS
 # ============================================
 if should_run_section "episodic"; then
-echo "=== EPISODIC MEMORY CHECKS ==="
+section "EPISODIC MEMORY CHECKS"
 
 episodic_dir="$CONTEXT_DIR/episodic"
 
@@ -2214,7 +2233,7 @@ fi # end episodic
 # SECTION 7: OBSERVATION INBOX CHECKS
 # ============================================
 if should_run_section "observations"; then
-echo "=== OBSERVATION INBOX CHECKS ==="
+section "OBSERVATION INBOX CHECKS"
 
 INBOX_FILE="$CONTEXT_DIR/inbox.yaml"
 
@@ -2287,7 +2306,7 @@ fi # end observations
 # SECTION 8: CONCERNS REGISTER CHECKS (T-397: was gaps register)
 # ============================================
 if should_run_section "gaps"; then
-echo "=== CONCERNS REGISTER CHECKS ==="
+section "CONCERNS REGISTER CHECKS"
 
 # T-397: Unified concerns register (was gaps.yaml)
 GAPS_FILE="$CONTEXT_DIR/project/concerns.yaml"
@@ -2386,7 +2405,7 @@ fi # end gaps
 # SECTION 8b: HANDOVER OPEN QUESTIONS (G-002)
 # ============================================
 if should_run_section "handover"; then
-echo "=== HANDOVER OPEN QUESTIONS CHECK ==="
+section "HANDOVER OPEN QUESTIONS CHECK"
 
 HANDOVER_FILE="$CONTEXT_DIR/handovers/LATEST.md"
 
@@ -2448,7 +2467,7 @@ fi # end handover
 # SECTION 9: GRADUATION PIPELINE CHECK
 # ============================================
 if should_run_section "graduation"; then
-echo "=== GRADUATION PIPELINE CHECKS ==="
+section "GRADUATION PIPELINE CHECKS"
 
 LEARNINGS_FILE="$CONTEXT_DIR/project/learnings.yaml"
 if [ -f "$LEARNINGS_FILE" ]; then
@@ -2483,7 +2502,7 @@ fi # end graduation
 # SECTION 10: INCEPTION RESEARCH ARTIFACT CHECK (T-178/T-185)
 # ============================================
 if should_run_section "research"; then
-echo "=== INCEPTION RESEARCH CHECKS ==="
+section "INCEPTION RESEARCH CHECKS"
 
 # Check completed inception tasks for research artifacts (T-955: uses single-pass scan)
 missing_research=0
@@ -2513,7 +2532,7 @@ fi # end research
 # SECTION 11: RESEARCH PERSISTENCE OE TESTS (C-001/C-002/C-003, T-194)
 # ============================================
 if should_run_section "oe-research"; then
-echo "=== RESEARCH PERSISTENCE OE CHECKS ==="
+section "RESEARCH PERSISTENCE OE CHECKS"
 
 # C-001 OE: Active inception tasks with started-work should have docs/reports/ artifact (T-955: uses scan)
 c001_missing=0
@@ -2614,7 +2633,7 @@ fi # end oe-research
 # CTL-001, CTL-003, CTL-004, CTL-018
 # ============================================
 if should_run_section "oe-fast"; then
-echo "=== OE-FAST: 30-MINUTE CONTROL CHECKS ==="
+section "OE-FAST: 30-MINUTE CONTROL CHECKS"
 
 # CTL-001 OE: Task-First Gate — focus file exists when source commits happen
 FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
@@ -2696,7 +2715,7 @@ fi # end oe-fast
 # CTL-008, CTL-020
 # ============================================
 if should_run_section "oe-hourly"; then
-echo "=== OE-HOURLY: HOURLY CONTROL CHECKS ==="
+section "OE-HOURLY: HOURLY CONTROL CHECKS"
 
 # CTL-008 OE: Task Reference Gate — recent commits have T-XXX prefix
 # T-590: Respect traceability baseline if set
@@ -2764,7 +2783,7 @@ fi # end oe-hourly
 # CTL-002, CTL-005, CTL-006, CTL-007, CTL-009, CTL-010, CTL-011, CTL-012, CTL-013, CTL-019
 # ============================================
 if should_run_section "oe-daily"; then
-echo "=== OE-DAILY: DAILY CONTROL CHECKS ==="
+section "OE-DAILY: DAILY CONTROL CHECKS"
 
 # CTL-002 OE: Tier 0 Guard — hook script exists + settings wired
 if [ -x "$FRAMEWORK_ROOT/agents/context/check-tier0.sh" ]; then
@@ -3359,7 +3378,7 @@ fi
 # D8 (handover quality decay)
 # ============================================
 if should_run_section "discovery"; then
-echo "=== DISCOVERY: OMISSION DETECTION ==="
+section "DISCOVERY: OMISSION DETECTION"
 
 # D1: Episodic Quality Decay (Score 25)
 # Scan episodic files for [TODO] placeholders
@@ -3635,7 +3654,7 @@ fi # end discovery
 # D6 (completion velocity trends), D9 (control drift), D12 (bypass growth)
 # ============================================
 if should_run_section "discovery-trends"; then
-echo "=== DISCOVERY: TREND DETECTION ==="
+section "DISCOVERY: TREND DETECTION"
 
 # D4: Audit Trend Regression (Score 20)
 # Compare 7-entry rolling average of warn+fail counts against previous 7-entry window
@@ -4388,7 +4407,7 @@ fi # end discovery-trends
 # CTL-016
 # ============================================
 if should_run_section "oe-weekly"; then
-echo "=== OE-WEEKLY: WEEKLY CONTROL CHECKS ==="
+section "OE-WEEKLY: WEEKLY CONTROL CHECKS"
 
 # CTL-016 OE: Hypothesis Debugging — healing patterns resolved with mitigation
 PATTERNS_FILE="$CONTEXT_DIR/project/patterns.yaml"
@@ -4422,7 +4441,7 @@ fi # end oe-weekly
 # Not included in default full audit or pre-push checks
 # ============================================
 if [ -n "$SECTIONS" ] && should_run_section "deployment"; then
-echo "=== DEPLOYMENT CHECKS ==="
+section "DEPLOYMENT CHECKS"
 
 # Check active task exists (must deploy under a task)
 FOCUS_FILE="$CONTEXT_DIR/working/focus.yaml"
@@ -4493,7 +4512,7 @@ fi # end deployment
 # Origin: T-1641 W10. Probes /opt/termlink, classifies MCP tools, surfaces drift.
 # ============================================
 if should_run_section "orchestrator"; then
-echo "=== ORCHESTRATOR ARC CHECKS ==="
+section "ORCHESTRATOR ARC CHECKS"
 
 ORCH_SCRIPT="$FRAMEWORK_ROOT/agents/audit/orchestrator-mcp-scan.sh"
 ORCH_LATEST="$CONTEXT_DIR/audits/orchestrator-LATEST.yaml"
@@ -4654,7 +4673,7 @@ fi # end orchestrator
 # check" failure mode codified in CLAUDE.md §Arc Completion Discipline.
 # ============================================
 if should_run_section "arc-completion" || should_run_section "oe-daily"; then
-echo "=== ARC-COMPLETION CHECKS ==="
+section "ARC-COMPLETION CHECKS"
 
 ARC_DIR="$CONTEXT_DIR/arcs"
 if [ ! -d "$ARC_DIR" ] || ! ls "$ARC_DIR"/*.yaml >/dev/null 2>&1; then
@@ -4753,7 +4772,7 @@ fi # end arc-completion
 # ============================================
 # SUMMARY (always runs)
 # ============================================
-echo "=== SUMMARY ==="
+section "SUMMARY"
 echo -e "${GREEN}Pass:${NC} $PASS_COUNT"
 echo -e "${YELLOW}Warn:${NC} $WARN_COUNT"
 echo -e "${RED}Fail:${NC} $FAIL_COUNT"
@@ -4857,7 +4876,7 @@ fi
 
 # Trend detection: Compare with previous audits
 echo ""
-echo "=== TREND ANALYSIS ==="
+section "TREND ANALYSIS"
 
 # Get previous audit files (excluding today)
 shopt -s nullglob
@@ -5096,7 +5115,7 @@ METRICS_EOF
 fi
 
 echo ""
-echo "=== END AUDIT ==="
+section "END AUDIT"
 
 # Restore stdout if quiet mode was active
 if [ "$QUIET" = true ]; then
@@ -5107,6 +5126,25 @@ fi
 if [ $FAIL_COUNT -gt 0 ] && [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/notify.sh"
     fw_notify "Audit Failures: $FAIL_COUNT" "Pass: $PASS_COUNT | Warn: $WARN_COUNT | Fail: $FAIL_COUNT" "health_check_failed" "audit"
+fi
+
+# T-2353: emit WARN/FAIL findings as bugfix (build + bug-class) tasks — opt-in.
+# Default OFF; only runs when the operator passes --emit-tasks. Reads the in-memory
+# FINDINGS buffer (LEVEL|TEXT|MITIGATION|SECTION), never re-runs the audit.
+if [ "$EMIT_TASKS" = true ]; then
+    if [ -f "$FRAMEWORK_ROOT/lib/audit_emit.sh" ]; then
+        _emit_buf=$(mktemp "${TMPDIR:-/tmp}/audit-findings.XXXXXX")
+        for _f in "${FINDINGS[@]}"; do printf '%s\n' "$_f"; done > "$_emit_buf"
+        # shellcheck source=lib/audit_emit.sh
+        source "$FRAMEWORK_ROOT/lib/audit_emit.sh"
+        echo ""
+        echo "=== EMIT-TASKS (T-2353) ==="
+        FW_BIN="${FW_BIN:-$FRAMEWORK_ROOT/bin/fw}" \
+            audit_emit_findings_as_tasks "$_emit_buf" "$EMIT_DRY_RUN"
+        rm -f "$_emit_buf"
+    else
+        echo "audit-emit: lib/audit_emit.sh not found under $FRAMEWORK_ROOT/lib — --emit-tasks skipped" >&2
+    fi
 fi
 
 # Exit code based on findings
