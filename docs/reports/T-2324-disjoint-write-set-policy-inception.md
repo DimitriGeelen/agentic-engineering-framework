@@ -2,7 +2,8 @@
 task: T-2324
 title: "AEF-IC-2: Disjoint write-set policy — how does the orchestrator prove disjoint write-sets before parallel dispatch?"
 arc: parallel-execution-aef
-status: open
+status: converged
+dialogue_converged: 2026-06-26
 created: 2026-06-25
 companion_adr: docs/architecture/parallel-execution-aef.md
 substrate_adr: docs/architecture/parallel-execution-substrate.md
@@ -137,20 +138,55 @@ This inception resolves through **operator dialogue** (not code spikes). Four qu
 
 ## Dialogue Log
 
-_Empty — ready for human dialogue sessions. Record questions, answers, course corrections, and the decision that results._
+Session 2026-06-26 (operator + termlink-substrate-agent → AEF recording agent).
 
 | # | Who | Exchange |
 |---|-----|----------|
-| — | — | _(no dialogue recorded yet)_ |
+| 1 | substrate-agent | Surfaced that `fw write-set check` **already exists** at `bin/fw` and is consumed by "the arc-011 orchestrator (T-2337)". This contradicts the inception framing, which treats the validator as an un-built post-GO deliverable (Scope Fence already carried a hedge note to this effect at line 130). |
+| 2 | operator | Course correction: *"investigate arc-011 first."* Don't re-deliberate static-vs-dynamic-vs-hybrid in the abstract — check what the arc has already shipped. |
+| 3 | investigation (read-only) | Found **arc-011 ≡ `parallel-execution-aef`** — the same arc this inception belongs to (`arc_id: parallel-execution-aef`). The disjoint-write-set policy is **already built and shipped within this arc**: T-2337 (`lib/write_set.py` + `fw write-set check`, status work-completed) and T-2339 (`agents/orchestrator/orchestrator-graph.py`, status work-completed). The shipped mechanism is **static frontmatter (`write_set:`), path-level + glob-expanded, serialize-on-overlap-OR-undecidable**. |
+| 4 | operator | Decision: **RATIFY the as-built static mechanism** as the policy of record for IW-1/IW-2/IW-3. Do NOT re-open the proof-shape question — the arc chose static, built it, and wired it. Document the static-vs-hybrid trade-off (fabric blast-radius predicts READS not WRITES, and drifts → at best a post-dispatch audit, never the blocking gate) as the *rationale for why static won*, not as an open question. |
+| 5 | operator | IW-4 (false-disjoint mitigation) is the **one genuine forward gap**. Choose **reviewer static scan** for v1: a pre-dispatch check (`fw reviewer T-XXX`) that flags when a task's declared `write_set:` plausibly UNDER-covers its body. Under-declaration is the only dangerous error class — every other declaration error merely over-serializes (safe). Post-execution declared-vs-actual write audit is v2 (needs filesystem-write observation = substrate gap #4, out of scope for conservative-at-launch). |
+| 6 | recording agent | Converged: **RATIFY-as-built + add IW-4 reviewer-scan**. Verified the as-built orchestrator (T-2339) has **no** under-declaration / false-disjoint guard (grep of `orchestrator-graph.py` and `lib/reviewer/` — zero `write_set` / `disjoint` / `under-declar` / `plausib` / `cover` detector hits). So IW-4 is **not** redundant — it is T-2324's actual contribution. |
 
 ---
 
 ## Findings
 
-_Populated as dialogue proceeds._
+**F1 — arc-011 ≡ this arc.** `.context/arcs/parallel-execution-aef.yaml` has `id: arc-011`. The "arc-011" the substrate agent referenced and the `parallel-execution-aef` arc this inception (`arc_id: parallel-execution-aef`) belongs to are the same arc. There is no second arc to investigate.
+
+**F2 — the policy is already built and wired (IW-1/2/3 retroactively answered).** Two completed sibling tasks in this arc's M1 milestone implement exactly the policy this inception was deliberating:
+- **T-2337** (arc-011 M1 §3, work-completed) — `lib/write_set.py` + `fw write-set check <T-A> <T-B>`. `compare()` returns `disjoint` (both declared, no path overlap) / `overlap` (both declared, ≥1 shared path) / `undecidable` (≥1 task lacks `write_set:`). Globs are expanded against the working tree; unborn declared paths overlap correctly (`lib/write_set.py:14-16, 130`).
+- **T-2339** (arc-011 M1 §1, work-completed) — `agents/orchestrator/orchestrator-graph.py`. Reads active-task `write_set:` frontmatter, builds the overlap graph via `write_set.compare()`, and **serializes on `overlap` OR `undecidable`** (`orchestrator-graph.py:132-133`). A task with no `write_set:` frontmatter → `undecidable` → "pre-flight skipped" → serialized, never parallel-dispatched (`orchestrator-graph.py:235-252`).
+
+This answers the inception's three deliberated questions as built fact, not open choices:
+- **IW-1 (proof shape)** → **static** frontmatter declaration. (Candidate 1, not the ADR's "leading" hybrid Candidate 3.)
+- **IW-2 (granularity)** → **path-level + glob-expanded** (`.tasks/active/T-*` and source paths both supported by glob expansion).
+- **IW-3 (serialization trigger)** → **`overlap` OR `undecidable`** (missing declaration is conservatively serialized); `depends_on` ordering composes on top.
+
+**F3 — why static won (the trade-off the candidates raise, recorded as rationale).** Candidate 2 (dynamic, `fw fabric blast-radius`) and the hybrid Candidate 3 both lean on blast-radius to *predict* write-sets. But fabric blast-radius predicts **read** impact (downstream consumers via `depends_on` edges), not **write** locations, and fabric cards drift (`fw fabric drift`). A predictor that over-includes reads and can be stale is unsafe as a *blocking* disjointness gate — it would refuse safe parallels (false-overlap) and, worse, could be trusted past a real overlap if cards are stale. Static declaration with serialize-on-undecidable inverts the risk: every declaration error except under-declaration merely over-serializes (safe). Hence the arc shipped static; blast-radius is at best a **post-dispatch audit** signal, never the gate. The worked example at line 165 (static → disjoint vs dynamic → false-overlap on the shared inception-render path) is the load-bearing data point, and it resolved in static's favour.
+
+**F4 — IW-4 is the one forward gap (T-2324's actual contribution).** Static declaration's single dangerous failure is **under-declaration** (declared `write_set:` too narrow → orchestrator computes `disjoint` → two workers collide on an undeclared shared path). The as-built orchestrator (T-2339) does **not** guard this: grep of `orchestrator-graph.py` and `lib/reviewer/` finds zero under-declaration / false-disjoint / coverage-plausibility detector. The operator chose **reviewer static scan** (`fw reviewer T-XXX`) as the v1 mitigation — a pre-dispatch check that flags when a declared `write_set:` plausibly under-covers the task body. Post-execution declared-vs-actual write audit is **v2** (requires filesystem-write observation = substrate gap #4, ruled out by the conservative-at-launch constraint).
+
+**F5 — field-name reconciliation.** This artifact (Candidates section) and the task body's earlier framing used the assumed field name `artifactWrites`. The actual shipped frontmatter field is **`write_set:`** (the task body at line 106 already uses the correct name; the Candidates section here does not). All references to `artifactWrites` should read `write_set:`.
+
+**F6 — process note (mild smell).** This inception was deliberating a question its own arc had already shipped a build answer for (T-2337 + T-2339 completed 2026-06-11; this inception was un-parked 2026-06-25 and still framed the validator as un-built). An inception lagging its own arc's build work is a one-line process smell worth recording — the Scope Fence already carried a hedge note (line 130: "`fw write-set check` already exists... check `--help` before assuming it needs to be built"), which is the seam where the lag was already visible.
 
 ---
 
 ## Recommendation
 
-_Not yet set — inception requires dialogue before a recommendation can be made._
+**Recommendation:** GO — to **RATIFY** the as-built policy (recording-only; human owns `fw inception decide T-2324 go`).
+
+**Rationale:** The disjoint-write-set policy is not an open question — it is shipped and wired within this same arc (T-2337 validator + T-2339 orchestrator-graph). The policy of record is **as-built static**: `write_set:` frontmatter, path-level + glob-expanded, **serialize-on-overlap-OR-undecidable**. Static won over dynamic/hybrid because fabric blast-radius predicts reads not writes and drifts (so it is at most a post-dispatch audit, never the blocking gate); under serialize-on-undecidable, every declaration error except under-declaration is safe.
+
+**Single forward addition authorised on GO:** IW-4 false-disjoint guard via **reviewer static scan** — a `fw reviewer T-XXX` detector that flags plausible `write_set:` under-coverage of a task body. This is a small build task; the as-built orchestrator (T-2339) lacks it, and under-declaration is the only un-guarded dangerous error class. Post-execution declared-vs-actual write audit is noted as **v2** (substrate gap #4 — filesystem-write observation, out of scope for conservative-at-launch).
+
+**Evidence:**
+- `lib/write_set.py:14-16,130` — `compare()` → disjoint/overlap/undecidable, glob-expanded.
+- `agents/orchestrator/orchestrator-graph.py:132-133,235-252` — serialize-on-overlap-or-undecidable; no-declaration → undecidable → serialized.
+- `.context/arcs/parallel-execution-aef.yaml:id: arc-011` — arc identity.
+- T-2337, T-2339 both in `.tasks/completed/` (work-completed).
+- grep `lib/reviewer/` + `orchestrator-graph.py` — zero under-declaration guard → IW-4 not redundant.
+
+**Frontmatter:** status `open` → `converged`; `dialogue_converged: 2026-06-26`.
