@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-25T08:32:09Z
-last_update: 2026-06-25T08:35:46Z
+last_update: 2026-06-25T09:14:25Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -54,10 +54,10 @@ launch can never silently disarm the loop again.
 
 ### Agent
 - [x] RCA section documents the full chain and names the primary root cause (signal written under plain `claude`, no `claude-fw` supervisor to consume it) + the D-027 "no auto-compact" clarification + the PreToolUse/PostToolUse text-only blind spot.
-- [ ] The framework can detect whether the current session is supervised by `claude-fw` (via a wrapper-set env var or supervisor sentinel) — pinned by a test.
-- [ ] When budget reaches WARN (225K) in an UNSUPERVISED session, the budget hook emits a clear one-line notice that auto-restart will NOT fire and states the two recourses (relaunch via `claude-fw`, or `/compact` manually) — so the silent failure becomes loud at the point it first matters.
-- [ ] `fw doctor` surfaces the unsupervised-but-high-budget state (or confirms supervision) so it's visible outside the hook path.
-- [ ] Regression test pins: unsupervised + WARN → notice present; supervised → notice absent.
+- [x] The framework can detect whether the current session is supervised by `claude-fw` (via a wrapper-set env var or supervisor sentinel) — pinned by a test. `claude-fw` exports `FW_CLAUDE_FW_SUPERVISED=1` (`bin/claude-fw`), inherited by `claude` + every hook subprocess. Pinned by `tests/integration/t2499_supervision_notice.bats`.
+- [x] When budget reaches WARN (225K) in an UNSUPERVISED session, the budget hook emits a clear one-line notice that auto-restart will NOT fire and states the two recourses (relaunch via `claude-fw`, or `/compact` manually) — so the silent failure becomes loud at the point it first matters. `_supervision_notice()` in `agents/context/budget-gate.sh` fires at warn/urgent (every call) + critical-block.
+- [x] `fw doctor` surfaces the unsupervised-but-high-budget state (or confirms supervision) so it's visible outside the hook path. New "Session supervision" check in `bin/fw do_doctor` — WARN when `CLAUDECODE=1` and unsupervised (with current budget tokens), OK when supervised, SKIP outside a Claude Code session.
+- [x] Regression test pins: unsupervised + WARN → notice present; supervised → notice absent. `tests/integration/t2499_supervision_notice.bats` — 9 tests (hook notice across warn/urgent/critical × supervised/unsupervised + 3 doctor-line cases), all green.
 
 ### Human
 
@@ -124,6 +124,10 @@ launch can never silently disarm the loop again.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/context/budget-gate.sh
+bash -n bin/claude-fw
+bash -n bin/fw
+bats tests/integration/t2499_supervision_notice.bats
 
 ## RCA
 
@@ -158,9 +162,31 @@ The operator expected "at ~300K: compact, resume, start again" to fire automatic
    that it ran unsupervised (gap 1).
 
    OPEN (do NOT assert without testing): whether the `claude -c` restart
-   (`bin/claude-fw:330-331`) sheds enough context on its own or relies on
-   compaction-on-resume — to be verified empirically, NOT speculated. The first draft
-   wrongly asserted it would thrash; that claim is retracted pending a real test.
+   (`bin/claude-fw:338-339`) sheds enough context on its own or relies on
+   compaction-on-resume. **Evidence gathered (2026-06-25, claude-code-guide agent vs
+   official CC docs):** `claude --continue` reopens the session under the same session
+   ID and *appends* new messages to the existing conversation — i.e. it reloads the
+   FULL prior transcript, with **no automatic compaction triggered by the resume
+   itself**. `/compact` is manual; native auto-compaction is a separate background
+   mechanism (and is disabled here by D-027). The SessionStart `source` value for a
+   `claude -c` continuation is not documented (claude-fw assumes "startup",
+   `bin/claude-fw:326-331`).
+
+   **Implication (flagged, NOT asserted as settled):** if native auto-compact is off
+   (D-027) and `claude -c` reloads full history, the supervised autonomous restart
+   would resume at ~the same token weight and re-hit critical — a thrash bounded by
+   `MAX_RESTARTS=5`. This *appears* to conflict with the operator's working arc-012
+   demo, which is precisely the signal to re-check rather than assert: the demo may
+   have run with native auto-compact enabled in that env, or there is a compaction
+   step in the chain not yet traced. **Authoritative resolution is one empirical
+   check** (guide agent's own recommendation): let a supervised session hit critical,
+   observe the `claude -c` restart, and read `/context` on the resumed session — if the
+   token count matches the prior end-state, the restart does NOT shed context and the
+   restart vehicle needs revisiting (separate task); if it's lighter, the loop recovers
+   as designed. This is an OPEN DECISION for the operator, deliberately NOT built under
+   T-2499 (whose verified scope is the unsupervised-loudness fix). The earlier "would
+   thrash" assertion remains retracted — the evidence above raises it as a *hypothesis
+   with documentation support*, not a verified finding.
 
 **Why structurally allowed:** the auto-recovery hard-depends on an opt-in wrapper
 (`claude-fw`) with zero signal that it's absent. Launch plain `claude` and every

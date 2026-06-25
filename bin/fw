@@ -1466,6 +1466,33 @@ else:
         echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
     fi
 
+    # Check: Session supervision (T-2499) — is the auto-restart loop armed?
+    # The arc-012 continuous-run loop (budget-critical → auto-handover →
+    # .restart-requested → claude-fw restart → directive re-injection) only fires
+    # when the session runs under the `claude-fw` wrapper, which exports
+    # FW_CLAUDE_FW_SUPERVISED=1. Plain `claude` writes the restart signal into the
+    # void — no consumer. This surfaces the unsupervised state OUTSIDE the hook path
+    # so it's visible even on a budget-quiet (all-text, no-tool-call) overrun.
+    # Only meaningful inside a Claude Code session (CLAUDECODE=1); a human running
+    # `fw doctor` in a plain terminal is not under any supervisor and need not care.
+    if [ "${CLAUDECODE:-0}" = "1" ]; then
+        if [ "${FW_CLAUDE_FW_SUPERVISED:-0}" = "1" ]; then
+            echo -e "  ${GREEN}OK${NC}  Session supervised by claude-fw — budget auto-restart armed"
+        else
+            local _bs_tokens=""
+            local _bs_f="$PROJECT_ROOT/.context/working/.budget-status"
+            [ -f "$_bs_f" ] && _bs_tokens=$(grep -o '"tokens"[[:space:]]*:[[:space:]]*[0-9]*' "$_bs_f" 2>/dev/null | grep -o '[0-9]*$' || true)
+            echo -e "  ${YELLOW}WARN${NC}  Unsupervised session (not under claude-fw) — budget auto-restart will NOT fire"
+            if [ -n "$_bs_tokens" ]; then
+                echo -e "         Current budget: ${_bs_tokens} tokens"
+            fi
+            echo -e "         Relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before critical."
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  Session supervision (not inside a Claude Code session)"
+    fi
+
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
     if [ -f "$settings_file" ]; then
         local hook_result
