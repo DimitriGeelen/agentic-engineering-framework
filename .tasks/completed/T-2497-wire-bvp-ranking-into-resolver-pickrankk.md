@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-25T06:40:59Z
-last_update: 2026-06-25T06:40:59Z
+last_update: 2026-06-25T06:58:25Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -56,8 +56,6 @@ degrade to the existing FIFO order when no task carries BVP data (backward-compa
 - [x] Backward-compat: when no eligible task carries BVP data, picker order is byte-identical to today's FIFO — the existing t2489 ordering test stays green unchanged.
 - [x] `cmd_pick` JSON surfaces `bvp_norm`/`cost`/`quadrant` for the pick so the loop's choice is observable.
 - [x] New bats `t2497_resolver_bvp_rank.bats` covers: HV-LC task outranks a lower-id LV task of equal status/horizon; FIFO fallback when unscored; env-gate-off → pure FIFO; norm parity with `fw bvp`.
-
-### Human
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
