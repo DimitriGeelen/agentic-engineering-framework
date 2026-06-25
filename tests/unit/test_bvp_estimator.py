@@ -218,6 +218,68 @@ def test_unknown_free_driver_falls_back_to_generic_score_free_driver(tmp_path):
     assert any("F-NEWHYPOTHETICAL" in e for e in result["evidence"]["F-NEWHYPOTHETICAL"])
 
 
+# ----------------------------------------------- audit_severity (T-2354, T-2352 S2)
+
+def test_audit_severity_fail_scores_5():
+    """A FAIL audit-finding task scores the top triage band."""
+    score, ev = estimator.score_audit_severity({"audit_severity": "fail"}, "", [])
+    assert score == 5
+    assert any("audit_severity=fail" in e for e in ev)
+
+
+def test_audit_severity_warn_scores_4():
+    """A WARN audit-finding task scores the next band, below FAIL."""
+    score, ev = estimator.score_audit_severity({"audit_severity": "warn"}, "", [])
+    assert score == 4
+    assert any("audit_severity=warn" in e for e in ev)
+
+
+def test_audit_severity_absent_scores_0():
+    """A routine task (no audit_severity field) scores 0 / no-signal."""
+    score, ev = estimator.score_audit_severity({}, "some routine body", [])
+    assert score == 0
+    assert any("absent" in e for e in ev)
+
+
+def test_audit_severity_unrecognised_value_scores_0():
+    """An unrecognised severity value is not a triage boost."""
+    score, _ = estimator.score_audit_severity({"audit_severity": "info"}, "", [])
+    assert score == 0
+
+
+def test_audit_severity_case_insensitive():
+    """Field value is normalised — FAIL / Fail / fail all score 5."""
+    assert estimator.score_audit_severity({"audit_severity": "FAIL"}, "", [])[0] == 5
+    assert estimator.score_audit_severity({"audit_severity": "Warn"}, "", [])[0] == 4
+
+
+def test_estimate_task_routes_audit_severity_to_dedicated_scorer(tmp_path):
+    """AC #2/#5: estimate_task dispatches the audit_severity driver to the
+    dedicated handler, and a FAIL finding outranks an otherwise-equal routine
+    task on the same active driver set."""
+    drivers = {"D1": 9, "audit_severity": 6}
+
+    fail_dir = tmp_path / "fail"
+    routine_dir = tmp_path / "routine"
+    fail_dir.mkdir()
+    routine_dir.mkdir()
+    fail_path = _make_task(fail_dir, "Audit fixing body.", {"audit_severity": "fail"})
+    routine_path = _make_task(routine_dir, "Audit fixing body.")
+
+    fail_res = estimator.estimate_task(fail_path, drivers)
+    routine_res = estimator.estimate_task(routine_path, drivers)
+
+    # Handler fired (not the generic score_free_driver fallback): FAIL → 5.
+    assert fail_res["scores"]["audit_severity"] == 5
+    assert routine_res["scores"]["audit_severity"] == 0
+    # Live-rank check: identical bodies, only the audit_severity field differs,
+    # so the FAIL task's weighted audit_severity contribution (5×6) lifts it
+    # strictly above the routine task's (0×6).
+    fail_contrib = fail_res["scores"]["audit_severity"] * drivers["audit_severity"]
+    routine_contrib = routine_res["scores"]["audit_severity"] * drivers["audit_severity"]
+    assert fail_contrib > routine_contrib
+
+
 def test_f_recall_rationale_is_informative_not_naive_count():
     """AC #4: rationale cites the SIGNAL, not a string-count placeholder."""
     fm = {"workflow_type": "build", "components": ["CLAUDE.md"]}

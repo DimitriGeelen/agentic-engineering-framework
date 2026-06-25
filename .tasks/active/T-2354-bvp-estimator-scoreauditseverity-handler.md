@@ -25,7 +25,7 @@ related_tasks: [T-2352, T-2353, T-2329]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:24:41Z
-last_update: '2026-06-13T18:00:05Z'
+last_update: 2026-06-25T22:55:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,11 +91,11 @@ when S1 fixes the driver's scale.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator's 0–5 scale, mirroring `score_f_autonomy` structure
-- [ ] Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml`
-- [ ] `audit_severity: fail|warn` documented as a recognised frontmatter field (CLAUDE.md task-system section or value-drivers.yaml driver entry)
-- [ ] Unit tests cover fail→high score, warn→mid score, absent→0/no-signal
-- [ ] Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task on `fw bvp`
+- [x] `score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator's 0–5 scale, mirroring `score_f_autonomy` structure
+- [x] Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml` (registered at estimator.py handlers dict; `test_estimate_task_routes_audit_severity_to_dedicated_scorer` proves dispatch fires when the driver is in the active set)
+- [x] `audit_severity: fail|warn` documented as a recognised frontmatter field — value-drivers.yaml `audit_severity` candidate carve carries an explicit FRONTMATTER FIELD CONTRACT block (fail→5 / warn→4 / absent→0)
+- [x] Unit tests cover fail→high score, warn→mid score, absent→0/no-signal (6 tests in `tests/unit/test_bvp_estimator.py`: fail→5, warn→4, absent→0, unrecognised→0, case-insensitive, dispatch+rank)
+- [x] Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task — proven via `estimate_task()` (the engine `fw bvp` calls per task): identical bodies, only the field differs → FAIL weighted contribution (5×6) strictly above routine (0×6). NOTE: the literal `fw bvp` CLI surface shows the boost only after the operator *activates* the carved driver (Sovereignty / D8 — see §Decisions)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -129,6 +129,13 @@ when S1 fixes the driver's scale.
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_bvp_estimator.py -q -k audit_severity
+python3 -c "import py_compile; py_compile.compile('agents/termlink/bvp-estimator/estimator.py', doraise=True)"
+python3 -c "import yaml; yaml.safe_load(open('policy/value-drivers.yaml'))"
+grep -q '"audit_severity": score_audit_severity,' agents/termlink/bvp-estimator/estimator.py
+# Driver stays LATENT (carved) — must NOT appear in the active free_drivers list:
+python3 -c "import yaml,sys; d=yaml.safe_load(open('policy/value-drivers.yaml')); sys.exit(0 if 'audit_severity' not in [x.get('id') for x in d.get('free_drivers',[])] else 1)"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -211,6 +218,33 @@ when S1 fixes the driver's scale.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-06-26 — Ship the driver LATENT (carved), not active
+- **Chose:** Add `score_audit_severity` handler + register it, but ship the
+  `audit_severity` driver as a CANDIDATE carve (commented) in
+  `policy/value-drivers.yaml` — mirroring the original F-AUTONOMY carve (T-2329).
+  The handler is wired and tested; it dispatches the moment the operator
+  uncomments the carve.
+- **Why:** Activating a new BVP driver reweights **every** task's rank — that is a
+  Sovereignty boundary (D8), not delegated to the agent under "proceed as you see
+  fit" (CLAUDE.md §Autonomous Mode Boundaries: changing policy is not delegated).
+  The free-driver cap is also already at/over 5, so adding a 7th active driver is
+  a focus/policy call the operator must make (which driver, if any, to drop).
+- **Rejected:** Activating it directly — would be an un-sanctioned policy change.
+  AC #5's literal "on `fw bvp`" live ranking is therefore demonstrated through
+  `estimate_task()` (the per-task engine `fw bvp` calls) with the driver in the
+  active set; the CLI surface shows the boost once the operator activates.
+
+### 2026-06-26 — Scale: fail→5 / warn→4 (reconcile float spec to int handler scale)
+- **Chose:** Map `audit_severity: fail`→5, `warn`→4, absent/other→0.
+- **Why:** The T-2352 filing said FAIL=1.0 / WARN=0.75 (0-1 floats), but estimator
+  handlers return `tuple[int, list[str]]` on a 0-5 scale (multiplied by driver
+  weight). fail→5 / warn→4 preserves the intended fail > warn > routine ordering
+  on the scale the framework actually uses. (Blocker note in §Context flagged this
+  reconciliation as required; resolved here.)
+- **Rejected:** fail→5 / warn→3 (wider gap) — 4 keeps WARN clearly above routine
+  while leaving 5 as the unambiguous top band; the one-band gap matches the
+  modest float gap (1.0 vs 0.75).
 
 ## Decision
 
