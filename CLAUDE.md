@@ -1109,6 +1109,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 **Setup and upgrade:**
 - `fw init [dir]` / `fw upgrade [dir]` / `fw update` / `fw vendor`
 - `fw consumer-recover <host> [path] [--apply] [--via {ssh,termlink}] [--session ID] [--upstream URL]` — recover a legacy vendored consumer (pre-T-2232 / pre-T-1634) via SSH or TermLink + fresh-clone + env-scoped upgrade. Dry-run default; `--apply` executes. Refuses with exit 2 when the target already has the `.upstream` sentinel (use plain `fw upgrade` instead). See memory `feedback_t2232_forward_looking_recovery` for boundary and rationale (T-2232 protects forward-looking only).
+- `fw integrate check [target] | classify <path>... | run` — Layer-2 serialized-integration preflight + hybrid 3-zone merge-back of the current worktree branch onto master (default target). `check` is read-only (reports FF-ready / mechanically-resolvable governance drift / real code conflict); `run` lands it. The un-partitionable-file taxonomy (counters, metrics-history, feedback-stream, reviewer-overrides, LATEST audit yamls, episodics, task `.md`) is regenerated/unioned at the join, never git-merged (T-2397, T-2473/T-2474).
 - `fw serve [--port N]` — start Watchtower
 - `fw watchtower port|url|status`
 

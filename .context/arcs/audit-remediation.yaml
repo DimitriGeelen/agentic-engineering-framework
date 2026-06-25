@@ -1,0 +1,17 @@
+id: arc-013
+slug: audit-remediation
+name: "Audit remediation \u2014 resolve fw doctor warning classes via per-problem inceptions"
+description: ""
+status: in-progress
+anchor_task: T-2416
+headline_mechanic: "Operator runs fw doctor and observes each remediable warning class either cleared\
+  \ or traced to a decided inception, so no warning is left unexplained"
+demo_evidence: null
+created: 2026-06-25T22:05:04Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
