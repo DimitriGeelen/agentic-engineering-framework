@@ -4,10 +4,10 @@ name: "Land T-2497/2499 to master and host go-live via TermLink"
 description: >
   Land T-2497/2499 to master and host go-live via TermLink
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-25T10:03:41Z
-last_update: 2026-06-25T10:03:41Z
-date_finished: null
+last_update: 2026-06-25T10:08:54Z
+date_finished: 2026-06-25T10:08:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -49,9 +49,9 @@ once authorised.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] TermLink session spawned in the worktree, `fw integrate run` executed, master advanced (HEAD on master includes T-2497/2499 commits)
-- [ ] Host go-live executed via TermLink in MAIN checkout (`bin/integrate-go-live.sh --apply`) — resolver-loop units reflect the new code, or operator-deferred and noted
-- [ ] Outcome of each TermLink run captured (exit status + key output lines) back into this session
+- [x] TermLink session spawned in the worktree, `fw integrate run --push` executed, master advanced (FF-READY, `origin/master ← branch pushed ✓`, exit 0 — master now ⊇ T-2497/2499)
+- [x] Host go-live executed via TermLink in MAIN checkout (`bin/integrate-go-live.sh --apply`) — 3 supervision files (budget-gate.sh, claude-fw, bin/fw) synced from origin/master, go-live commit c59150fb0; verified live (grep matches on host)
+- [x] Outcome of each TermLink run captured (exit status + key output lines) back into this session
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -116,6 +116,10 @@ once authorised.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+grep -q "Unsupervised session" agents/context/budget-gate.sh
+grep -q "Session supervision" bin/fw
+grep -q "FW_CLAUDE_FW_SUPERVISED=1" bin/claude-fw
 
 ## RCA
 
@@ -184,3 +188,20 @@ once authorised.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2500-land-t-24972499-to-master-and-host-go-li.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d5abb296
+- **Timestamp:** 2026-06-25T10:08:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Host go-live executed via TermLink in MAIN checkout (`bin/integrate-go-live.sh --apply`) — 3 supervision files (budget-gate.sh, claude-fw, bin/fw) synced from origin/master, go-live commit c59150fb0; 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/integrate-go-live.sh in: Host go-live executed via TermLink in MAIN checkout (`bin/integrate-go-live.sh --apply`) — 3 supervision files (budget-gate.sh, claude-fw, bin/fw) syn`
+
+### 2026-06-25T10:08:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2500: Land T-2497/2499 to master and host go-live via TermLink
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-25T10:09:02Z
+# ============================================================================
+
+task_id: T-2500
+task_name: "Land T-2497/2499 to master and host go-live via TermLink"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-25T10:03:41Z
+completed: 2026-06-25T10:08:54Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'TermLink session spawned in the worktree, `fw integrate run --push` executed, master advanced (FF-READY, `origin/master ← branch pushed ✓`, exit 0 — master now ⊇ T-2497/2499)'
+  - 'Host go-live executed via TermLink in MAIN checkout (`bin/integrate-go-live.sh --apply`) — 3 supervision files (budget-gate.sh, claude-fw, bin/fw) synced from origin/master, go-live commit c59150fb0; verified live (grep matches on host)'
+  - 'Outcome of each TermLink run captured (exit status + key output lines) back into this session'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2500-land-t-24972499-to-master-and-host-go-li.md
+generated_by: context-agent-hybrid

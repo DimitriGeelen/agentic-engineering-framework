@@ -19786,3 +19786,21 @@ scan_id: R-51c3f39f
 task_id: T-2499
 payload:
   task_file: .tasks/active/T-2499-fix-budget-auto-restart-silently-no-ops-.md
+---
+kind: scan_emitted
+timestamp: '2026-06-25T10:08:55Z'
+scan_id: R-d5abb296
+task_id: T-2500
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-06-25T10:08:55Z'
+scan_id: R-d5abb296
+task_id: T-2500
+payload:
+  task_file: .tasks/active/T-2500-land-t-24972499-to-master-and-host-go-li.md
