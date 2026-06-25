@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2486: fix OBS-087 exec-bit: fw resolver/outcome/pause die on Permission denied
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T16:22:28Z
+# ============================================================================
+
+task_id: T-2486
+task_name: "fix OBS-087 exec-bit: fw resolver/outcome/pause die on Permission denied"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T16:18:36Z
+completed: 2026-06-24T16:22:18Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`lib/resolver.sh`, `lib/outcome.sh`, `lib/pause.sh` are executable, committed at git mode 100755 (matching `lib/ask.sh`) — verified `git ls-files -s`'
+  - '`bin/fw resolver workflows` and `bin/fw outcome list T-2485` run with no `Permission denied` (exit 0) — both confirmed live'
+  - 'Regression test `tests/unit/t2486_exec_bit.bats` asserts EVERY `exec "$FW_LIB_DIR/*.sh"` target in `bin/fw` is executable, and passes (3/3)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2486-fix-obs-087-exec-bit-fw-resolveroutcomep.md
+generated_by: context-agent-hybrid

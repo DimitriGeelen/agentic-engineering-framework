@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2492: dogfood the autonomous picker+loop live (post-compaction)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T20:19:53Z
+# ============================================================================
+
+task_id: T-2492
+task_name: "dogfood the autonomous picker+loop live (post-compaction)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T20:12:31Z
+completed: 2026-06-24T20:19:43Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`fw resolver pick` (dry-run) surfaces ≥1 eligible task with a deterministic top pick (post-compaction sanity); this harness task T-2492 is NOT in the eligible list (focus exclusion holds) — 16 eligible, top pick T-1687, T-2492 absent'
+  - 'One real dispatch fired through the orchestrator against an eligible task; a new row is appended to `.context/dispatches.jsonl` and `fw orchestrator status` dispatch count increments — loop --dispatch --max 1 fired T-1687 (dispatch_id 7af88c8c, worker tl-580df3f5 exit 0, status success), dispatches.jsonl 3→4, orchestrator Dispatches 4'
+  - 'The dispatched task''s outcome is captured (terminal event present / status reported), confirming the spawn→capture leg ran live — `fw outcome read 7af88c8c`: task_id T-1687, terminal=result, is_error=False'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2492-dogfood-the-autonomous-pickerloop-live-p.md
+generated_by: context-agent-hybrid

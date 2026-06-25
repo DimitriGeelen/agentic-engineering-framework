@@ -1,2 +1,5 @@
-/opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.agentic-framework/agents/handover/handover.sh: line 1014: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.agentic-framework/agents/git/git.sh: Permission denied
-  WARNING: Push to origin failed (non-blocking)
+
+WARNING: Task T-012 is closed (in .tasks/completed/)
+  Consider: create a new task, or reopen this one.
+  Commit allowed (Tier 1 warning).
+

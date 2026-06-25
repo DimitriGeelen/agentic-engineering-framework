@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2499: fix budget auto-restart silently no-ops under plain claude not claude-fw — 300K session overran to 350K with no restart
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-25T09:42:21Z
+# ============================================================================
+
+task_id: T-2499
+task_name: "fix budget auto-restart silently no-ops under plain claude not claude-fw — 300K session overran to 350K with no restart"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-25T08:32:09Z
+completed: 2026-06-25T09:42:06Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'RCA section documents the full chain and names the primary root cause (signal written under plain `claude`, no `claude-fw` supervisor to consume it) + the D-027 "no auto-compact" clarification + the PreToolUse/PostToolUse text-only blind spot.'
+  - 'The framework can detect whether the current session is supervised by `claude-fw` (via a wrapper-set env var or supervisor sentinel) — pinned by a test. `claude-fw` exports `FW_CLAUDE_FW_SUPERVISED=1` (`bin/claude-fw`), inherited by `claude` + every hook subprocess. Pinned by `tests/integration/t2499_supervision_notice.bats`.'
+  - 'When budget reaches WARN (225K) in an UNSUPERVISED session, the budget hook emits a clear one-line notice that auto-restart will NOT fire and states the two recourses (relaunch via `claude-fw`, or `/compact` manually) — so the silent failure becomes loud at the point it first matters. `_supervision_notice()` in `agents/context/budget-gate.sh` fires at warn/urgent (every call) + critical-block.'
+  - '`fw doctor` surfaces the unsupervised-but-high-budget state (or confirms supervision) so it''s visible outside the hook path. New "Session supervision" check in `bin/fw do_doctor` — WARN when `CLAUDECODE=1` and unsupervised (with current budget tokens), OK when supervised, SKIP outside a Claude Code session.'
+  - 'Regression test pins: unsupervised + WARN → notice present; supervised → notice absent. `tests/integration/t2499_supervision_notice.bats` — 9 tests (hook notice across warn/urgent/critical × supervised/unsupervised + 3 doctor-line cases), all green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 69 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 69
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2499-fix-budget-auto-restart-silently-no-ops-.md
+generated_by: context-agent-hybrid

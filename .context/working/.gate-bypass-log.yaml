@@ -4066,3 +4066,22 @@ git add .tasks/active/T-2391-binfw-validate-inherited-projectroot-rej.md .tasks/
   flag: '--skip-sovereignty'
   caller: 'check_human_sovereignty'
   reason: 'Inception decision: GO'
+- timestamp: '2026-06-25T09:41:40Z'
+  task: 'T-2499'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2497'
+  command: 'FW_SWITCH_FOCUS=1 git commit -q -m "$(cat <<EOF
+T-2497: commit vendored resolver.py (BVP picker) — self-vendor sync
+
+The .agentic-framework/ vendored copy of lib/resolver.py was synced to the
+T-24'
+- timestamp: '2026-06-25T09:41:49Z'
+  task: 'T-2499'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-2497'
+  command: 'git add .agentic-framework/lib/resolver.py && FW_SWITCH_FOCUS=1 git commit -q -m "$(cat <<EOF
+T-2497: commit vendored resolver.py (BVP picker) — self-vendor sync
+
+The .agentic-framework/ vendored '

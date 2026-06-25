@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2487: stand up litellm :4000 proxy (local-model lane, T-2484 slice 3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T16:39:36Z
+# ============================================================================
+
+task_id: T-2487
+task_name: "stand up litellm :4000 proxy (local-model lane, T-2484 slice 3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T16:34:26Z
+completed: 2026-06-24T16:39:28Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '**Install litellm.** Already installed from T-1700: `~/.local/bin/litellm` → pipx venv (no reinstall needed; the dispatched worker''s "not on PATH" was a PATH artifact in its exec context).'
+  - '**Start the proxy daemon on :4000.** Started: pid 4146440 listening on `0.0.0.0:4000` (logs `.context/working/litellm/proxy.log`, pid `.context/working/litellm/proxy.pid`).'
+  - '**Verify :4000 responds.** `/health/liveliness` OK at ~14s; `/v1/models` (with key `sk-litellm-local-dev`) lists 12 aliases; a real `/v1/chat/completions` (claude-3-5-sonnet-20241022 → gpt-oss:20b) returned `content:''PONG''`, finish=stop, 27 tokens (first call empty = cold VRAM load; warm call correct).'
+  - '**Report** — version/pid/aliases captured above + in the dispatching session''s narration.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 5
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2487-stand-up-litellm-4000-proxy-local-model-.md
+generated_by: context-agent-hybrid

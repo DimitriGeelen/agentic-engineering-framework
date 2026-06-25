@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2493: land orchestrator autonomy work to master (T-2488..2492)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-24T20:25:45Z
+# ============================================================================
+
+task_id: T-2493
+task_name: "land orchestrator autonomy work to master (T-2488..2492)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-24T20:20:51Z
+completed: 2026-06-24T20:25:37Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Re-vendored `.agentic-framework/{bin/fw,lib/resolver.py,lib/spawn.py,lib/termlink_worker.py}` are in sync with their source counterparts and committed — `fw vendor self` synced (full tree, L-249); commits 5a863e786 + 327714e3f'
+  - '`fw integrate run --push` lands the branch to master FF and pushes to origin (origin/master advances to include T-2488..T-2492) — push ✓; HEAD == origin/master == 327714e3f (includes T-2488..T-2493)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2493-land-orchestrator-autonomy-work-to-maste.md
+generated_by: context-agent-hybrid
