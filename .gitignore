@@ -75,3 +75,4 @@ datetime
 .context/working/*.db
 .context/working/*.db-shm
 .context/working/*.db-wal
+.context/working/.agent-dispatch-counter
