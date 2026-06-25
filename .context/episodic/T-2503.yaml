@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2503: land T-2501 to master + go-live via TermLink
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-25T14:00:48Z
+# ============================================================================
+
+task_id: T-2503
+task_name: "land T-2501 to master + go-live via TermLink"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-25T13:48:27Z
+completed: 2026-06-25T14:00:39Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Worktree governance churn committed so `fw integrate run --push` clean-worktree precheck passes (8dcaa09bc, 927a8d6f1; plus gitignored the untracked `.agent-dispatch-counter` that `bin/fw` re-bumps on every invocation — self-defeating integrate loop).'
+  - '`fw integrate run --push` lands the branch (incl. T-2501) to master — `origin/master` now at `ba113352e` = branch HEAD; T-2501''s 3 commits + drift-check string confirmed present on `origin/master`.'
+  - '`bin/integrate-go-live.sh --apply` from MAIN synced code to origin/master — staged exactly `bin/fw` (the T-2501 drift check); MAIN running code current.'
+  - 'Host shim refreshed (`install.sh` "All verification steps passed"); host `~/.agentic-framework/bin/fw` carries the drift check (grep=1); drift-check predicate evaluated live on host = identical (on-PATH claude-fw == FRAMEWORK_ROOT/bin/claude-fw → reports OK); host `claude-fw` carries the supervision export (original bug fixed). Full `fw doctor` text run truncates at the watchtower stage inside the worker shell (worker-shell artifact) — operator confirms OK + "Session supervised" on relaunch.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2503-land-t-2501-to-master--go-live-via-terml.md
+generated_by: context-agent-hybrid
