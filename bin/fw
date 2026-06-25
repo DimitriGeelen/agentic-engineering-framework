@@ -1493,6 +1493,33 @@ else:
         echo -e "  ${CYAN}SKIP${NC}  Session supervision (not inside a Claude Code session)"
     fi
 
+    # Check: on-PATH claude-fw drift (T-2501) — does the wrapper the operator
+    # actually runs match repo source? The supervision check above tells you THIS
+    # session is unsupervised; this tells you WHY — the installed claude-fw can be
+    # a stale clone/copy missing the FW_CLAUDE_FW_SUPERVISED export. claude-fw
+    # lives in up to four places (repo bin/, host clone ~/.agentic-framework,
+    # in-repo vendor, ~/.local/bin symlink) and no other check covers it: the
+    # audit self-vendor find-filter skips no-extension names, CTL-019 checks
+    # existence only, and `fw vendor self` excludes claude-fw. We compare the file
+    # actually on PATH (symlink resolved) against this checkout's bin/claude-fw.
+    # WARN-only; SKIP when claude-fw is not installed (humans who never use it).
+    local _cfw_path _cfw_real _cfw_src="$FRAMEWORK_ROOT/bin/claude-fw"
+    _cfw_path=$(command -v claude-fw 2>/dev/null || true)
+    if [ -n "$_cfw_path" ] && [ -f "$_cfw_src" ]; then
+        _cfw_real=$(readlink -f "$_cfw_path" 2>/dev/null || echo "$_cfw_path")
+        if cmp -s "$_cfw_real" "$_cfw_src"; then
+            echo -e "  ${GREEN}OK${NC}  Installed claude-fw matches repo source"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw drifted from repo source — supervision export may be stale"
+            echo -e "         on PATH: $_cfw_real"
+            echo -e "         repo:    $_cfw_src"
+            echo -e "         Refresh: bash ~/.agentic-framework/install.sh   # git reset --hard origin/master + relink, then relaunch claude-fw"
+            warnings=$((warnings + 1))
+        fi
+    elif [ -z "$_cfw_path" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  claude-fw not on PATH (no auto-restart wrapper installed)"
+    fi
+
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
     if [ -f "$settings_file" ]; then
         local hook_result
