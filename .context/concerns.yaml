@@ -103,3 +103,21 @@
   fixed_in: T-2490
   fixed_date: 2026-06-24
   related: [T-1700, T-2487, T-2490]
+
+# OBS-087 SIBLING in an uncovered surface. OBS-087's prevention test pinned the
+# exec bit on `exec "$FW_LIB_DIR/*.sh"` ROUTED verbs (lib/*.sh) — it never covered
+# STANDALONE bin/*.sh scripts. So three runnable bin scripts kept shipping 100644.
+- id: OBS-090
+  type: bug
+  severity: medium
+  surface: "bin/integrate-go-live.sh, bin/hook-enable.sh, bin/migrate-horizon-null-completed.sh (committed mode 100644)"
+  detected_in: T-2497 follow-up (operator ran the documented MAIN go-live command)
+  symptom: "`bin/integrate-go-live.sh --apply` fails with `Permission denied` on a clean checkout (the host MAIN go-live step). Two sibling bin scripts (hook-enable, migrate-horizon-null-completed) carried the same defect, latent."
+  root_cause: "Same git-mode-not-set class as OBS-087: a runnable script (has a `#!` shebang) tracked at git mode 100644 fails the moment a caller invokes it directly on a checkout that lacks a stray local exec bit. OBS-087 was fixed for `lib/*.sh` exec-routed verbs and its regression test asserted those targets only — `bin/*.sh` standalone scripts were outside the test's scope, so the class re-surfaced in a sibling surface. The dev checkout had a local +x bit masking it; the operator's MAIN checkout did not."
+  prevention: "FIXED in T-2498: `git update-index --chmod=+x` on all three; regression guard tests/unit/t2498_bin_scripts_executable.bats asserts EVERY tracked `bin/*.sh` with a `#!` shebang is mode 100755 — closes the bin surface the way T-2486 closed the lib-routed surface. The two guards together cover both invocation shapes (routed exec + standalone)."
+  blast_radius: scoped
+  observed: 2026-06-25
+  status: resolved
+  fixed_in: T-2498
+  fixed_date: 2026-06-25
+  related: [OBS-087, T-2486, T-2483, T-2497, T-2498]
