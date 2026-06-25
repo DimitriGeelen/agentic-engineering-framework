@@ -82,6 +82,19 @@ SIGNAL_EOF
     } 2>/dev/null || true
 }
 
+# T-2499: the budget-critical auto-restart loop only fires when the session is
+# supervised by claude-fw (it consumes the .restart-requested signal this gate
+# writes). A plain `claude` launch leaves FW_CLAUDE_FW_SUPERVISED unset → the
+# signal is written into the void and the session silently overruns (the 300K→
+# 350K bug). This makes that state LOUD at every warn/urgent/critical surface so
+# it can never silently disarm the loop again. Emits nothing when supervised.
+_supervision_notice() {
+    if [ "${FW_CLAUDE_FW_SUPERVISED:-0}" != "1" ]; then
+        echo "  ⚠ Unsupervised session (not under claude-fw): the budget auto-restart loop will NOT fire." >&2
+        echo "    Relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before you hit critical." >&2
+    fi
+}
+
 # Context window size — conservative default, override via FW_CONTEXT_WINDOW.
 # Opus 4.6 supports 1M but 300K is a safe default for quality + cost control.
 CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 300000)
@@ -172,10 +185,12 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             ;;
         warn)
             echo "Note: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work." >&2
+            _supervision_notice
             exit 0
             ;;
         urgent)
             echo "WARNING: Context at ~${STATUS_TOKENS} tokens (~$((STATUS_TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
+            _supervision_notice
             exit 0
             ;;
         critical)
@@ -195,6 +210,7 @@ if [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ]; then
             echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
             echo "" >&2
             echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
+            _supervision_notice
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
             _write_restart_signal "$STATUS_TOKENS"   # T-2403: arm autonomous restart
@@ -335,10 +351,12 @@ case "$LEVEL" in
         ;;
     warn)
         echo "Note: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Commit before starting new work." >&2
+        _supervision_notice
         exit 0
         ;;
     urgent)
         echo "WARNING: Context at ${TOKENS} tokens (~$((TOKENS * 100 / CONTEXT_WINDOW))%). Do not start new work. Commit and handover." >&2
+        _supervision_notice
         exit 0
         ;;
     critical)
@@ -358,6 +376,7 @@ case "$LEVEL" in
         echo "  BLOCKED: Write/Edit to source files, Bash (except commit/handover)" >&2
         echo "" >&2
         echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
+        _supervision_notice
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
         _write_restart_signal "$TOKENS"   # T-2403: arm autonomous restart
