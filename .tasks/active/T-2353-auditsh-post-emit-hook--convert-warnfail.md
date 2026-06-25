@@ -229,6 +229,17 @@ grep -q "Emit-tasks mode" agents/audit/AGENT.md
      - **Rejected:** [alternatives and why not]
 -->
 
+## Recommendation
+
+- **Recommendation:** GO (ship Slice 1; one `[REVIEW]` Human AC remains)
+- **Rationale:** All 8 Agent ACs met and verified. The feature is opt-in (`--emit-tasks`, default OFF) so it is zero-risk to master — audit behaviour is unchanged unless the flag is passed. Two spec divergences were resolved and logged in §Decisions (`bugfix`→`build` to reuse the T-1550 RCA gate; consume the structured `FINDINGS` buffer rather than regex stdout, per Spike A). The remaining Human AC is a readability check on the dry-run output, which genuinely needs human taste.
+- **Evidence:**
+  - `tests/unit/test_audit_emit_tasks.bats` — 6/6 green (0-findings, FAIL, WARN, dedupe re-run, mixed 2-new+1-hashed, dry-run)
+  - `bash -n agents/audit/audit.sh` clean; section refactor 26/26; FINDINGS 4th field backward-compatible (existing `cut -f1..3` consumers unaffected)
+  - Hash stability proven: `sha1`("14 stale tasks") == `sha1`("12 stale tasks")
+  - Committed `99d76f715` on branch `t2353-audit-emit-tasks` (awaits merge-back to master)
+- **Human AC to verify:** run `bin/fw audit --emit-tasks --dry-run` (note: full audit ~5min) and confirm the would-create titles read clearly. *Lower-cost alternative:* the bats dry-run case shows representative output without the 5-min wait.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
