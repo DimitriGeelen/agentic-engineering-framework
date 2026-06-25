@@ -6,17 +6,17 @@ description: >
   write-sets before parallel dispatch. Three candidate proof shapes: static (frontmatter-declared)
   / dynamic (blast-radius predicted) / hybrid.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [arc-parallel-execution-aef, downstream-of-T-2303, orchestrator, 
       planning-layer]
 components: []
 related_tasks: [T-2303, T-2323]
 arc_id: parallel-execution-aef
 created: 2026-06-10T21:32:35Z
-last_update: '2026-06-13T18:00:05Z'
+last_update: 2026-06-25T14:04:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -281,3 +281,9 @@ Four operator-dialogue spikes (A: policy shape / B: granularity / C: capture sur
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** Inception decision: DEFER — parking task
+
+### 2026-06-25T14:04:47Z — status-update [task-update-agent]
+- **Change:** horizon: later → now
+
+### 2026-06-25T14:04:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
