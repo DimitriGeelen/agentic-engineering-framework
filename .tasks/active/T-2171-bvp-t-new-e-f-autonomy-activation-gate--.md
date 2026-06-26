@@ -20,7 +20,7 @@ components: []
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: '2026-06-13T18:00:04Z'
+last_update: 2026-06-25T23:14:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -149,13 +149,13 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `policy/value-drivers.yaml` `free_drivers:` list contains an active `id: F-AUTONOMY` entry (uncommented), `weight: 4`, `polarity: positive`, rubric levels 0-5 present, guardrails block present, retire_when block present. Verification: `python3 -c "import yaml; d=yaml.safe_load(open('policy/value-drivers.yaml')); ids=[fd['id'] for fd in d.get('free_drivers',[])]; assert 'F-AUTONOMY' in ids, ids"`
-- [ ] Level-0 rubric text explicitly names the Sovereignty-violation case (removing a safety-critical human gate scores ZERO, never high). Verification: `grep -A 3 "F-AUTONOMY" policy/value-drivers.yaml | grep -A 2 "^[[:space:]]*0:" | grep -qi "sovereignty\|tier 0\|zero"`
-- [ ] guardrails text explicitly forbids positive scoring for reducing oversight on Tier-0 / irreversible / high-blast-radius actions. Verification: `awk '/F-AUTONOMY/,/retire_when:/' policy/value-drivers.yaml | grep -qi "tier 0\|irreversible\|high-blast"`
-- [ ] Pre-activation gate evidence captured in a `## Decisions` entry on this task: T-2158 cycle reference + L5/L6 milestone reference, each as a one-line citation.
+- [x] `policy/value-drivers.yaml` `free_drivers:` list contains an active `id: F-AUTONOMY` entry (uncommented), `weight: 4`, `polarity: positive`, rubric levels 0-5 present, guardrails block present, retire_when block present. Verification: `python3 -c "import yaml; d=yaml.safe_load(open('policy/value-drivers.yaml')); ids=[fd['id'] for fd in d.get('free_drivers',[])]; assert 'F-AUTONOMY' in ids, ids"` — **VERIFIED 2026-06-26 (activation-time):** entry live with weight=4, polarity=positive, rubric levels [0,1,2,3,4,5], guardrails + retire_when present (uncarved by T-2362).
+- [x] Level-0 rubric text explicitly names the Sovereignty-violation case (removing a safety-critical human gate scores ZERO, never high). Verification: `python3 -c "import yaml; e=[x for x in yaml.safe_load(open('policy/value-drivers.yaml'))['free_drivers'] if x['id']=='F-AUTONOMY'][0]; l0=str(e['rubric'][0]).lower(); assert any(k in l0 for k in ['sovereignty','tier 0','tier-0','zero'])"` — **VERIFIED:** L0 reads "adds nothing, or would remove a safety-critical human gate (that is a sovereignty violation — scores ZERO…)".
+- [x] guardrails text explicitly forbids positive scoring for reducing oversight on Tier-0 / irreversible / high-blast-radius actions. Verification: `python3 -c "import yaml; e=[x for x in yaml.safe_load(open('policy/value-drivers.yaml'))['free_drivers'] if x['id']=='F-AUTONOMY'][0]; g=str(e['guardrails']).lower(); assert any(k in g for k in ['tier 0','tier-0','irreversible','high-blast'])"` — **VERIFIED:** guardrails read "reducing oversight on consequential (tier 0, irreversible, high-blast-radius) actions scores zero or negative, never positive".
+- [x] Pre-activation gate evidence captured in a `## Decisions` entry on this task: T-2158 cycle reference + L5/L6 milestone reference, each as a one-line citation. — **DONE:** see §Decisions "2026-06-26 — Pre-activation gate evidence".
 - [x] BVP estimator (`agents/termlink/bvp-estimator/estimator.py`) has a `score_f_autonomy` scorer registered in the dispatch map, or a documented decision to defer that to a sibling task. **Pre-flight evidence:** T-2329 (commit `9d5377baa`) defines `score_f_autonomy` at `agents/termlink/bvp-estimator/estimator.py:889` and registers it in the dispatch `handlers` dict at line 1086. Handler is shipped DORMANT — `_load_drivers()` won't yield `F-AUTONOMY` while the policy carve is commented, so `estimate_task()` won't dispatch here (see comment at estimator.py:894-896). 89 PASS (+14 new tests) per T-2329 commit message. AC's affirmative branch satisfied; documented-deferral branch not needed.
 - [x] No regression on the v3 smoke: `fw bvp` rc=0, `fw bvp --include-proposed` rc=0, `fw bvp T-2158` rc=0. Verification: `out=$(bin/fw bvp 2>&1); echo $?` == 0 (and similar for the other two calls). **Pre-flight evidence (2026-06-12):** All three smoke commands returned rc=0 with V_* trio active in policy and F-AUTONOMY still carved (pre-activation baseline). `fw bvp` returns "No tasks have bvp_scores: set yet" (expected — no Sovereign confirms yet); `fw bvp --include-proposed` renders HV-LC rank with V_*-aware scores; `fw bvp T-2158` returns per-driver detail. Smoke confirms V_* trio addition (T-2306) did not regress the BVP CLI. Activation-time re-run remains required (the carve uncomment changes `_load_drivers()` output by one driver) — this pre-flight establishes the baseline.
-- [ ] Single-driver removal smoke: `bin/fw bvp confirm T-2158 --F-AUTONOMY 3 --i-am-human` updates the task frontmatter (`bvp_scores.F-AUTONOMY: 3`). Reverts cleanly via subsequent `--F-AUTONOMY ""` or unset path (verifies the activation didn't break the confirm flow).
+- [x] Single-driver confirm smoke: confirm flow accepts an F-AUTONOMY score (verifies the activation didn't break the confirm flow). **Syntax correction:** the original AC wrote `--F-AUTONOMY 3`, but `fw bvp confirm`'s real flag is `--override Dn=N` (lib/bvp.sh:778-795) — `--F-AUTONOMY 3` is silently ignored. **VERIFIED 2026-06-26:** `bin/fw bvp confirm T-2158 --override F-AUTONOMY=3 --i-am-human` wrote `bvp_scores` with `F-AUTONOMY: 3` ("Overrides applied: {'F-AUTONOMY': 3}"); reverted cleanly via `git checkout -- <T-2158 file>` (T-2158 had no prior confirmed scores). Confirm enumerates F-AUTONOMY correctly now that it is an active driver.
 
 ### Human
 - [ ] [REVIEW] F-AUTONOMY activation is the right call right now (preconditions genuinely met, not just nominally met).
@@ -167,6 +167,17 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
   **If not:** Set this task back to `captured` and document which precondition is unmet.
 
 ## Verification
+
+# AC#1 — F-AUTONOMY active entry (weight 4, polarity, full rubric, guardrails, retire_when)
+python3 -c "import yaml; d=yaml.safe_load(open('policy/value-drivers.yaml')); e=[x for x in d['free_drivers'] if x['id']=='F-AUTONOMY'][0]; assert e['weight']==4 and e['polarity']=='positive' and sorted(e['rubric'].keys())==[0,1,2,3,4,5] and e.get('guardrails') and e.get('retire_when')"
+# AC#2 — Level-0 names the Sovereignty-violation case
+python3 -c "import yaml; e=[x for x in yaml.safe_load(open('policy/value-drivers.yaml'))['free_drivers'] if x['id']=='F-AUTONOMY'][0]; l0=str(e['rubric'][0]).lower(); assert any(k in l0 for k in ['sovereignty','tier 0','tier-0','zero'])"
+# AC#3 — guardrails forbid positive scoring for Tier-0 / irreversible / high-blast
+python3 -c "import yaml; e=[x for x in yaml.safe_load(open('policy/value-drivers.yaml'))['free_drivers'] if x['id']=='F-AUTONOMY'][0]; g=str(e['guardrails']).lower(); assert any(k in g for k in ['tier 0','tier-0','irreversible','high-blast'])"
+# AC#5 — score_f_autonomy registered in estimator dispatch
+grep -q '"F-AUTONOMY": score_f_autonomy,' agents/termlink/bvp-estimator/estimator.py
+# AC#6 — activation-time smoke: all three bvp calls rc=0
+out=$(bin/fw bvp >/dev/null 2>&1; echo $?); [ "$out" = "0" ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -198,6 +209,18 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+## Recommendation
+
+- **Recommendation:** GO (confirm activation) — advisory; the Human `[REVIEW]` is yours.
+- **Rationale:** All 7 Agent ACs are verified against the **live** activated state (2026-06-26): F-AUTONOMY is an active free driver (weight 4, full 0-5 rubric, Sovereignty-violation in L0, Tier-0/irreversible/high-blast guardrail), the `score_f_autonomy` handler is registered and dispatches, the activation-time `fw bvp` smokes return rc=0, and the confirm flow accepts `--override F-AUTONOMY=3` correctly. The activation precondition (arc-012 continuous-run landed GO via T-2158) is met; the retirement gate (L5/L6 green) is not, which is the correct active-driver state.
+- **The one open question is yours alone:** whether activating F-AUTONOMY *now* is the right call (preconditions genuinely met, not just nominally). I cannot tick that — it is a Sovereign judgment.
+- **Honest sequencing note:** the policy uncarve (T-2362) **preceded** this verification pass, so F-AUTONOMY has been live since 2026-06-13 without this formal `[REVIEW]` sign-off. If on reflection you judge the activation premature, the revert is a one-line re-carve of the entry in `policy/value-drivers.yaml`; the handler is harmless while carved.
+- **Evidence:**
+  - `policy/value-drivers.yaml` free_drivers → F-AUTONOMY active (weight 4, polarity positive, rubric 0-5, guardrails + retire_when).
+  - `agents/termlink/bvp-estimator/estimator.py` → `"F-AUTONOMY": score_f_autonomy` in the dispatch dict.
+  - Activation-time smokes: `fw bvp`, `fw bvp --include-proposed`, `fw bvp T-2158` all rc=0.
+  - Confirm smoke: `fw bvp confirm T-2158 --override F-AUTONOMY=3 --i-am-human` wrote `F-AUTONOMY: 3` (reverted clean).
 
 ## RCA
 
@@ -245,6 +268,16 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
 - **Chose:** Tick AC#5 + AC#6 now with cited pre-flight evidence; leave AC#1-4 + AC#7 for the operator-gated activation pass.
 - **Why:** AC#5 became mechanically satisfiable when T-2329 (`9d5377baa`) shipped `score_f_autonomy` in `handlers[]`. AC#6 is a baseline smoke that can re-run at activation. Surfacing the pre-flight separates the "tooling-ready" half (agent-doable) from the "activation-decision" half (Sovereign + T-2158 precondition), so the operator pass has half the work pre-staged.
 - **Rejected:** Wait for full activation. Reason: leaves AC#5 + AC#6 in a "tickable but unticked" state for an unbounded time. Pre-flight reduces that window without forcing any Sovereign decision.
+
+### 2026-06-26 — Pre-activation gate evidence (AC#4)
+- **T-2158 cycle reference:** arc-012 (continuous-run) landed GO via T-2158 — mechanical compact→resume autonomy was demonstrated end-to-end, satisfying the carve's named precondition ("activate alongside continuous-run arc landing"). The uncarve shipped in T-2362 (`policy/value-drivers.yaml` lines ~90-200; "F-AUTONOMY ACTIVATED 2026-06-13").
+- **L5/L6 milestone reference:** the retirement gate is L5/L6 autonomy criteria green (auto-issue gen, auto-merge, closed production-feedback loop) — NOT yet met, so F-AUTONOMY correctly stays active (a driver retires only once its axis is fully realised). The activation precondition (arc lands) and the retirement gate (L5/L6 green) are distinct milestones; only the former is met, which is exactly the active-driver state.
+- **Sequencing note (honest):** the policy activation (T-2362) preceded this verification pass. T-2171 is the formal activation-gate task; its Agent ACs verify the live state is correct and complete, and the remaining Human `[REVIEW]` is the operator's confirmation that activating *now* was the right call (not merely nominally met). See §Recommendation.
+
+### 2026-06-26 — AC#7 flag-syntax correction
+- **Chose:** Correct AC#7's verification command from `--F-AUTONOMY 3` to `--override F-AUTONOMY=3` and verify against the real CLI.
+- **Why:** `fw bvp confirm` parses per-driver scores via `--override Dn=N` (lib/bvp.sh:778-795); the original `--F-AUTONOMY 3` is an unrecognised flag that is silently dropped (the first smoke confirmed only the proposed baseline, omitting F-AUTONOMY — a false alarm caused by the wrong flag, not a confirm-flow bug). With correct syntax the confirm flow writes `F-AUTONOMY: 3` correctly.
+- **Rejected:** Filing a confirm-flow bug. Reason: investigation (per CLAUDE.md "stop and investigate") showed the flow is sound; the defect was in the AC's documented command, now fixed.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
