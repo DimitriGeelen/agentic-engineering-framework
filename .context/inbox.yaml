@@ -662,3 +662,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-079
+  text: "t2331_driver_propose.bats: 4 tests (1,2,4,8 — the JSONL file-content checks) fail when run from inside a git worktree. Root cause: the tests set `env PROJECT_ROOT=$TMPDIR` expecting hermetic isolation, but bin/fw re-anchors PROJECT_ROOT to the worktree root (fw_reanchor_from_cwd, project_t2464/t2465 class), so `fw bvp driver --propose` writes the JSONL to the worktree's real .context, not $TMPDIR/.context — the assertions on $TMPDIR/.context then fail. Pre-existing (fails on HEAD with T-2335 reverted); likely passes on master (non-worktree). Class: hermetic bats tests that set PROJECT_ROOT-in-tmp are silently clobbered by worktree re-anchoring — same family as test_resolve_framework FW_HERMETIC fix (T-2454). Fix candidate: bats setup should export a signal that suppresses worktree re-anchor, OR the re-anchor must honor an explicitly-set PROJECT_ROOT env. Discovered while verifying T-2335 (notify-on-propose)."
+  captured: 2026-06-26T10:28:14Z
+  context_task: T-2335
+  tags: [bug]
+  status: pending
+  promoted_to: null

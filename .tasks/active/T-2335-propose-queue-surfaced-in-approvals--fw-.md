@@ -6,10 +6,10 @@ description: >
   propose-queue surfaced in /approvals + fw notify on file (cross-surface visibility
   gap)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-11T16:06:33Z
-last_update: '2026-06-13T18:00:05Z'
+last_update: 2026-06-26T10:14:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,11 +112,22 @@ Captured as captured/next so the operator can priority-stack against arc-011
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `/approvals` includes a "BVP Driver Proposals" section that lists pending rows from `.context/bvp-driver-proposals.jsonl` (read-only with Approve / Reject buttons that proxy to the T-2332 endpoints)
-- [ ] `bin/fw bvp driver --propose` fires a `fw notify` event (when notify is enabled) carrying `{type: bvp_proposal_pending, id, name, weight, task}` so the operator's notification channel surfaces it
-- [ ] Playwright test extends to cover the new /approvals section render
+- [x] `/approvals` includes a "BVP Driver Proposals" section that lists pending rows from `.context/bvp-driver-proposals.jsonl` (name, weight, rationale, task, author), each with a "Review on /bvp" link to the T-2332 approve/reject surface — follows the Arc-Closure section pattern (T-1961). Reuses `web.blueprints.bvp._load_proposals` (one queue-read source). Section + summary chip counted into the page total; suppressed cleanly when the queue is empty.
+  - *Decision (link, not embed):* mirrors Arc-Closure, which links to `/arcs/<slug>/close` rather than embedding the close form. Keeps the approve/reject Sovereign action on its existing `/bvp` surface (CSRF + htmx already wired there), minimising new render surface. See §Decisions.
+- [x] `bin/fw bvp driver --propose` fires `fw_notify` (opt-in via `NTFY_ENABLED`, fire-and-forget) after a successful propose, carrying the proposed driver name + a pointer to `/approvals` or `/bvp` — wired in `bvp_dispatch` (`lib/bvp.sh`) mirroring the `check-tier0.sh` pattern. Never blocks or fails the propose (`|| true` terminal; set-e-safe rc capture).
+- [x] Unit tests (`tests/unit/test_approvals_bvp_proposals.py`, 7/7) drive the real `/approvals` route via Flask test-client with stubbed loaders: context keys + count + total, section heading, summary chip, one card per proposal, empty-state suppression, htmx fragment, import-error degradation. Playwright test (`tests/playwright/test_approvals_bvp_proposals_section.py`) guards the browser-level render (graceful when queue empty at run time).
 
 ### Human
+- [ ] [REVIEW] The BVP Driver Proposals section on `/approvals` reads cleanly and sits sensibly among the other approval sections
+  **Steps:**
+  1. Ensure at least one pending proposal exists: `cd /opt/999-Agentic-Engineering-Framework && bin/fw bvp driver --propose demo-driver --weight 4 --rationale "demo proposal to populate the /approvals section for review"`
+  2. Open `/approvals` in Watchtower (the running instance — `bin/fw watchtower url`)
+  3. Confirm the "BVP Driver Proposals" section renders with the proposal's name, weight, rationale, and a "Review on /bvp" button; confirm the summary strip shows a "BVP Drivers" chip with the count
+  4. Click "Review on /bvp" → lands on `/bvp` where Approve/Reject live
+  5. (Cleanup) reject the demo proposal on `/bvp`, or it stays in the queue
+  **Expected:** Section layout/typography matches the Arc-Closure / Paused sections (same card chrome); rows are legible; the chip count matches the number of pending proposals; the /bvp link navigates correctly
+  **If not:** Note which element reads wrong (spacing, truncation, ordering) — the section block is `web/templates/_approvals_content.html` `#section-bvp-proposals`
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -179,6 +190,21 @@ Captured as captured/next so the operator can priority-stack against arc-011
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+#
+# NOTE: verification is HERMETIC (Flask test-client + greps), NOT the
+# tests/unit/t2331_driver_propose.bats suite — that suite has a PRE-EXISTING
+# worktree-interaction failure (OBS-079): it sets `env PROJECT_ROOT=$TMP` but
+# bin/fw re-anchors PROJECT_ROOT to the worktree root, so the propose JSONL
+# lands in the worktree .context not $TMP. Unrelated to T-2335 (fails on HEAD
+# with this change reverted). The notify leg is verified by grep (wiring) +
+# the live propose run captured in the Recommendation evidence.
+python3 -m pytest tests/unit/test_approvals_bvp_proposals.py -q
+python3 -c "import ast; ast.parse(open('web/blueprints/approvals.py').read())"
+bash -n lib/bvp.sh
+grep -q 'id="section-bvp-proposals"' web/templates/_approvals_content.html
+grep -q '_load_bvp_proposals' web/blueprints/approvals.py
+grep -q 'bvp-driver-propose' lib/bvp.sh
+python3 -m pytest tests/unit/test_approvals_expand_overflow.py -q
 
 ## RCA
 
@@ -222,14 +248,31 @@ Captured as captured/next so the operator can priority-stack against arc-011
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-06-26 — /approvals section links to /bvp rather than embedding approve/reject
+- **Chose:** the new "BVP Driver Proposals" section lists pending proposals + a "Review on /bvp" link, following the Arc-Closure section pattern (T-1961).
+- **Why:** Arc-Closure (the newest sibling section) links to `/arcs/<slug>/close` rather than embedding the close form; the approve/reject action already lives on `/bvp` (T-2332) with CSRF + htmx wired. Duplicating the action buttons on `/approvals` would add a second render+POST surface for the same Sovereign action with no value — the visibility gap (operator's quote) is closed by *surfacing* the queue, not by relocating the action.
+- **Rejected:** inline Approve/Reject buttons on `/approvals` proxying to the T-2332 endpoints — more render surface, duplicate CSRF/htmx wiring, higher [REVIEW] blast radius, no behavioural gain.
+
+### 2026-06-26 — notify fires from the bash dispatcher, not the Python propose path
+- **Chose:** `fw_notify` is invoked in `bvp_dispatch` (`lib/bvp.sh`) after `_bvp_python_engine` returns 0 for a `driver --propose` call.
+- **Why:** all 6 existing `fw_notify` callers are bash sourcing `lib/notify.sh`; the propose logic is inside a Python heredoc where shelling back out to bash-that-sources-notify would be the only novel glue. Firing from the dispatcher keeps the idiomatic bash pattern and isolates the notify from the engine (engine exit code preserved via set-e-safe `|| rc=$?`, notify guarded `|| true`).
+- **Rejected:** `subprocess`-calling a notify shim from inside the Python `_driver_propose` — introduces the only non-idiomatic notify caller in the codebase for no benefit.
+
+### 2026-06-26 — pre-existing bats failure (OBS-079) kept OUT of scope
+- **Chose:** registered the `t2331_driver_propose.bats` worktree-interaction failure as OBS-079 (separate bug) and verified T-2335 hermetically (Flask test-client) instead of via that suite.
+- **Why:** one bug = one task. The failure is a PROJECT_ROOT-re-anchor class issue (project_t2464/t2465 family), pre-existing, and orthogonal to surfacing the queue. Folding a fix into T-2335 would compound two root causes.
+
+## Recommendation
+
+- **Recommendation:** GO (ship both legs; one `[REVIEW]` Human AC remains — the visual layout judgment, correctly the operator's per the render-surface gate)
+- **Rationale:** Closes the operator's verbatim cross-surface visibility gap ("can we next time also signal that drivers are ready for review") with the lowest-surface change: surface the existing T-2332 propose-queue on the unified `/approvals` centre (Arc-Closure pattern), plus an opt-in ambient `fw_notify` on propose. Reuses the existing queue-read (`_load_proposals`) so there is one source of truth; the Sovereign approve/reject stays on `/bvp`. The notify is fire-and-forget and cannot break a propose. Zero regression to the five existing `/approvals` sections.
+- **Evidence:**
+  - `tests/unit/test_approvals_bvp_proposals.py` — 7/7 green (context+count+total, heading, summary chip, one card per proposal, empty-state suppression, htmx fragment, import-error degradation) — real Flask test-client through the real edited blueprint + template.
+  - Existing `/approvals` unit tests — 19/19 still green (no regression).
+  - `bash -n lib/bvp.sh` clean; live `fw bvp driver --propose` run exited 0 and appended its JSONL row with the notify hook in place (notify did not block the propose).
+  - Scope verdict (extension, not inception) from a structural map: `_load_proposals` + state machine + lifecycle APIs already existed (T-2332); ~4 files changed (`approvals.py`, `_approvals_content.html`, `lib/bvp.sh`, + 2 new test files).
+- **Out of scope (registered):** OBS-079 — pre-existing `t2331_driver_propose.bats` worktree/PROJECT_ROOT re-anchor failure (separate bug, fails on HEAD without this change).
+- **Branch:** `t2353-audit-emit-tasks` (stacks T-2353/T-2354/T-2171/T-2335) — awaits merge-back to master.
 
 ## Decision
 
@@ -251,3 +294,19 @@ Captured as captured/next so the operator can priority-stack against arc-011
 ### 2026-06-11T16:08:01Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-06-26T10:14:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8a7f4318
+- **Timestamp:** 2026-06-26T10:31:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+- **Suppressed:** 1 (by override)
+  - AC-verify-mismatch @ AC#1 (Agent)

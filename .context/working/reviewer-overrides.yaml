@@ -1038,3 +1038,14 @@ overrides:
   expires_at: '2026-09-13T16:49:52Z'
   added_by: root
   added_at: '2026-06-15T16:49:52Z'
+- id: OV-f24e016d
+  task_id: T-2335
+  pattern_id: AC-verify-mismatch
+  ac_index: 1
+  reason: "FP: AC#1 cites .context/bvp-driver-proposals.jsonl descriptively (the queue\
+    \ file surfaced), not as a verification target. Verification is hermetic (Flask\
+    \ test-client) by design \u2014 OBS-079: the JSONL-path bats approach is clobbered\
+    \ by worktree PROJECT_ROOT re-anchoring. Documented in Verification NOTE + Decisions."
+  expires_at: '2026-09-24T10:31:53Z'
+  added_by: root
+  added_at: '2026-06-26T10:31:53Z'

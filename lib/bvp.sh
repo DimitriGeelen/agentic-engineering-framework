@@ -1573,5 +1573,35 @@ EOF
         echo "Try: fw bvp estimate-cost --help" >&2
         return 2
     fi
-    _bvp_python_engine "$@"
+    # Default: in-process Python engine (driver, rank, detail, confirm, …).
+    # Capture rc set-e-safely (`|| rc=$?`) so the propose-notify hook below can
+    # run without `set -eo pipefail` aborting on a non-zero engine exit.
+    local rc=0
+    _bvp_python_engine "$@" || rc=$?
+
+    # T-2335: notify the operator when a non-Sovereign driver proposal is filed.
+    # `driver --propose` is the only bvp verb that creates an operator-actionable
+    # queue item; /approvals now lists those items (this task's other leg), and
+    # this fires an ambient signal so the operator need not be told "go look at
+    # /bvp". Mirrors the agents/context/check-tier0.sh fw_notify pattern:
+    # opt-in via NTFY_ENABLED, fire-and-forget, never blocks or fails the propose.
+    if [ "$rc" -eq 0 ] && [ "${1:-}" = "driver" ]; then
+        case " $* " in
+            *" --propose "*)
+                local _pname="" _prev="" _a
+                for _a in "$@"; do
+                    if [ "$_prev" = "--propose" ]; then _pname="$_a"; break; fi
+                    _prev="$_a"
+                done
+                if [ -n "$_pname" ]; then
+                    # shellcheck disable=SC1090
+                    source "$FRAMEWORK_ROOT/lib/notify.sh" 2>/dev/null \
+                        && fw_notify "BVP driver proposed: $_pname" \
+                            "Agent filed a BVP driver proposal '$_pname'. Review + approve at /approvals or /bvp." \
+                            "bvp-driver-propose" "framework" 2>/dev/null || true
+                fi
+                ;;
+        esac
+    fi
+    return $rc
 }
