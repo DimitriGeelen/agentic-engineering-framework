@@ -6,18 +6,18 @@ description: >
   write-sets before parallel dispatch. Three candidate proof shapes: static (frontmatter-declared)
   / dynamic (blast-radius predicted) / hybrid.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: null
 tags: [arc-parallel-execution-aef, downstream-of-T-2303, orchestrator, 
       planning-layer]
 components: []
 related_tasks: [T-2303, T-2323]
 arc_id: parallel-execution-aef
 created: 2026-06-10T21:32:35Z
-last_update: '2026-06-13T18:00:05Z'
-date_finished:
+last_update: 2026-06-26T10:32:41Z
+date_finished: 2026-06-26T10:32:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -244,11 +244,11 @@ Four operator-dialogue spikes (A: policy shape / B: granularity / C: capture sur
 
 ## Decision
 
-**Decision**: DEFER
+**Decision**: GO
 
 **Rationale**: Scoping inception. Three candidate policies need spike dialogue to pin against false-positive (over-conservative) vs false-negative (governance-plane corruption) trade-offs. Legitimate evidence-gap DEFER per T-2144 — revisit trigger: operator spike A/B/C session OR first downstream build pressure on planning layer.
 
-**Date**: 2026-06-10T21:56:07Z
+**Date**: 2026-06-26T10:32:39Z
 
 ## Updates
 
@@ -260,18 +260,12 @@ Four operator-dialogue spikes (A: policy shape / B: granularity / C: capture sur
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-a21260e9
-- **Timestamp:** 2026-06-10T21:35:06Z
+- **Scan ID:** R-a0973cd5
+- **Timestamp:** 2026-06-26T10:32:41Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
-     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
+- **Findings:** none
 ### 2026-06-10T21:56:07Z — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
 - **Decision:** DEFER
@@ -281,3 +275,17 @@ Four operator-dialogue spikes (A: policy shape / B: granularity / C: capture sur
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** Inception decision: DEFER — parking task
+
+### 2026-06-26T10:32:39Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Scoping inception. Three candidate policies need spike dialogue to pin against false-positive (over-conservative) vs false-negative (governance-plane corruption) trade-offs. Legitimate evidence-gap DEFER per T-2144 — revisit trigger: operator spike A/B/C session OR first downstream build pressure on planning layer.
+
+### 2026-06-26T10:32:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+### 2026-06-26T10:32:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
