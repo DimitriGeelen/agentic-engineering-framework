@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2418: wire OpenRouter-Ring20 key from Infisical into litellm proxy via ring20-manager
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-27T16:04:59Z
+# ============================================================================
+
+task_id: T-2418
+task_name: "wire OpenRouter-Ring20 key from Infisical into litellm proxy via ring20-manager"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-27T11:55:34Z
+completed: 2026-06-27T16:04:50Z
+duration_days: 0
+updates_count: 5
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Handoff posted to ring20-manager via `termlink agent contact` (offset returned), stating the `OpenRouter-Ring20` ask and the two acceptable resolutions (provide value to set `OPENROUTER_API_KEY`, OR set it directly in the litellm proxy env on this host).'
+  - 'Task body documents the blocker chain (Infisical double-gate `fw-authority`+`fw-approve` both absent; `infisical` CLI absent; broker `/opt/150-skills-manager` is ring20 domain) and the two resolution paths.'
+  - 'OpenRouter fallback leg verified LIVE: after the proxy restart (key via EnvironmentFile + fixed slugs), `qwen3:14b-openrouter` → claude-sonnet-4.6 returns HTTP 200 real completion (provider Anthropic); `dolphin-llama3:8b-openrouter` → claude-haiku-4.5 returns HTTP 200 (provider Amazon Bedrock); ollama primary `qwen3:14b` still HTTP 200 (primary leg intact). [Reclassified from a [REVIEW] Human AC — verification is deterministic HTTP 200, per T-1878.]'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-27 — OpenRouter slug remapping (sonnet-4.6 / haiku-4.5, no opus)'
+    chose: 'map all retired `anthropic/claude-3.5-*` slugs to `claude-sonnet-4.6` (sonnet family) and `claude-haiku-4.5` (haiku family); opus-impersonation aliases also → sonnet-4.6.'
+    rationale: 'the 3.5 line is gone from OpenRouter''s catalogue (404 "No endpoints found"); 4.x are the current equivalents. The opus aliases fall back for a 14B local primary (qwen3:14b) and are rare fallback-only routes, so opus-4.7 (pricier) is unwarranted — sonnet-4.6 is a strong, cost-reasonable target. Account has ~14 credits remaining.'
+    alternatives_rejected: ['opus-4.7 for the opus aliases (cost, overkill for a 14B-primary fallback); the H2 account/privacy theory (disproved — the retired slug is absent from the public 339-model catalogue, so it''s a slug problem, not an endpoint-permission problem).']
+  - decision: '2026-06-27 — proxy deployment caveats (follow-up, not blocking)'
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 249 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 249
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/livefire-t2389/.tasks/completed/T-2418-wire-openrouter-ring20-key-from-infisica.md
+generated_by: context-agent-hybrid
