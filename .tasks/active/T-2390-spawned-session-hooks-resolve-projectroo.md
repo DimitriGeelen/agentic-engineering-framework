@@ -22,7 +22,7 @@ related_tasks: [T-2389, T-2377]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T07:16:26Z
-last_update: 2026-06-14T07:34:10Z
+last_update: 2026-06-27T16:46:05Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,7 +79,7 @@ armed. Evidence: `docs/reports/T-2389-livefire-evidence.md`.
 - [x] Identify + ship a fix — shipped (`bin/fw` prefers `CLAUDE_PROJECT_DIR`, 3/3 bats) BUT **the re-drive proved it INEFFECTIVE for the live bug** — see ## Re-drive 2. The real Bug A is `bin/fw` accepting an *inherited* (poisoned) `PROJECT_ROOT` verbatim; the shipped fix is gated on `[ -z PROJECT_ROOT ]` and never runs. A correct fix is still owed (follow-up).
 - [x] Live re-drive confirmation — **DONE 2026-06-14 (session 2): NO-GO.** Drove a real `claude-fw` live-fire via TermLink twice. Loop never armed (972738 tokens / 107 checkpoints / current_iteration=0). Surfaced corrected Bug A + a new Bug B. Full evidence in ## Re-drive 2.
 - [x] N/A (not universal — no escalation needed)
-- [ ] RCA filled (corrected in ## Re-drive 2); reviewer PASS (pending — run `fw reviewer T-2390` next session)
+- [x] RCA filled (corrected in ## Re-drive 2); reviewer PASS — **DONE 2026-06-27**: `fw reviewer T-2390` → Overall PASS, needs_human=no, 0 findings (R-cc58628e).
 
 ## Re-drive ready-state (for the next session — fix is shipped, just needs driving)
 
@@ -293,6 +293,30 @@ fallthrough.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-06-27 — both bugs re-homed into better-scoped siblings (stale-tracker)
+
+- **What changed:** Audit-trail review found T-2390's two diagnosed bugs were
+  *both* fixed/owned by sibling tasks filed AFTER T-2390 (2026-06-14):
+  - **Bug A (poisoned inherited `PROJECT_ROOT=/root`)** → **T-2391 (completed)**.
+    Code-confirmed: `bin/fw:167-201` now defines `_project_root_is_stale()` and
+    the resolve guard is `[ -z PROJECT_ROOT ] || _project_root_is_stale(...)`, so
+    a daemon-poisoned `=$HOME` value is re-resolved (narrow staleness preserves
+    the "env wins" contract). This is exactly the "correct fix still owed" that
+    AC#2 flagged — it landed, just under T-2391's id, not here.
+  - **Bug B (live-hook `transcript_path` yields 0 tokens / loop never arms)** →
+    **T-2377 (completed)** `find_transcript` rework + 0-token synthetic-entry skip
+    (`agents/context/checkpoint.sh:61-119`), and the residual loop-arming behaviour
+    is tracked by **T-2403 (active, "budget gate arms loop")**.
+- **Plan impact:** The owed `bin/fw` change is **not** mine to ship — it already
+  shipped (T-2391, high-blast-radius, done with tests). T-2390 has become a
+  diagnosis/tracker whose actionable fixes have moved on. Per gap-homing (file the
+  gap where the FIX lives), Bug A is homed in T-2391 and Bug B in T-2403.
+- **Triggered:** reviewer PASS (R-cc58628e); AC#5 ticked. Did NOT auto-complete:
+  confirming the loop fires end-to-end is a live-fire re-drive (T-2389/T-2403),
+  not a claim I'll make from a code read — and the operator is driving this arc.
+  **Recommend** closing T-2390 as *superseded* (its fixes live in T-2391+T-2403)
+  rather than driving new code under it.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -324,3 +348,12 @@ fallthrough.
 ### 2026-06-14T07:34:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cc58628e
+- **Timestamp:** 2026-06-27T16:47:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
