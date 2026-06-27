@@ -1064,6 +1064,7 @@ Full command catalogue: `fw help` (or `fw <cmd> --help`). This section lists the
 - `fw fabric deps <path>` / `fw fabric impact <path>` / `fw fabric blast-radius [ref]`
 - `fw fabric overview` / `fw fabric drift` / `fw fabric register <path>`
 - `fw write-set check <T-A> <T-B>` — disjoint-write-set validator for arc-011 parallel dispatch (T-2337); exit 0=disjoint, 1=overlap, 2=undecidable
+- `fw integrate check [target]` / `fw integrate classify <path>...` — Layer-2 serialized-integration preflight (read-only): reports how the current worktree branch would land on `target` (default master). Exit 0=ff-ready/clean, 1=auto-resolvable (only governance/generated files), 2=needs-human, 3=on-master, 4=usage (T-2397/T-2474)
 
 **Dispatch and cross-project:**
 - `fw termlink check|spawn|exec|dispatch|status|cleanup|wait|result` (see TermLink section)
