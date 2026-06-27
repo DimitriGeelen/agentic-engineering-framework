@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2388: Worker-kinds parity drift: VALID_WORKER_KINDS literal in bin/fw vs lib/resolver.py
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-27T20:09:29Z
+# ============================================================================
+
+task_id: T-2388
+task_name: "Worker-kinds parity drift: VALID_WORKER_KINDS literal in bin/fw vs lib/resolver.py"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-14T01:02:37Z
+completed: 2026-06-27T20:07:27Z
+duration_days: 13
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Classify (a) real drift vs (b) stale test — **(b) stale test, NO real drift.** lib/resolver.py and lib/workflow_lint.py both hold identical 4-kind sets `{Task, TermLink, pi, ollama-loop}` and are parity-checked at runtime (lib/worker_kinds_parity.py + fw doctor). bin/fw holds NO `VALID_WORKER_KINDS` literal — T-1946 extracted it (heredoc → lib/worker_kinds_parity.py per L-332/L-408). The 2 failing bats assertions pinned the pre-T-1946 bin/fw location. Dispatch is correct; no reconciliation needed.'
+  - 'Stale-test fix: retargeted the test from "bin/fw ↔ resolver.py" to the post-T-1946 "resolver.py ↔ workflow_lint.py" pair — #4 now greps lib/workflow_lint.py, #6 imports both python tables. Also hardened #2/#3 to exercise the REAL lib/worker_kinds_parity.py helper (stub-module temp dir) instead of an inline reimplementation, and de-staled the bin/fw:2041 prose comment (now references the source of truth instead of re-enumerating).'
+  - '`bats tests/unit/worker_kinds_parity.bats` green (7/7); `fw doctor` worker-kinds parity line green (`bash -n bin/fw` clean)'
+  - 'RCA filled; reviewer PASS — RCA below; reviewer run at completion.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 19864 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, governance, parity, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 19864
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/livefire-t2389/.tasks/completed/T-2388-worker-kinds-parity-drift-validworkerkin.md
+generated_by: context-agent-hybrid

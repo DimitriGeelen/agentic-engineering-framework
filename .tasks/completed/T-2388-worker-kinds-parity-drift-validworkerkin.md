@@ -4,10 +4,10 @@ name: "Worker-kinds parity drift: VALID_WORKER_KINDS literal in bin/fw vs lib/re
 description: >
   Bug-hunt unit suite found 2 failures in tests/unit/worker_kinds_parity.bats: #2402 (VALID_WORKER_KINDS literal not found in bin/fw at expected grep shape) + #2404 (bin/fw set != resolver.py set, source-of-truth check). Either a real parity drift between the two worker-kind definitions or a stale test after a bin/fw refactor. Classify drift-vs-stale-test, then fix the source-of-truth or the test.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [audit, governance, parity, dispatch]
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T01:02:37Z
-last_update: 2026-06-14T01:02:37Z
-date_finished: null
+last_update: 2026-06-27T20:07:27Z
+date_finished: 2026-06-27T20:07:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,10 +56,10 @@ a bin/fw refactor that moved/reshaped the `VALID_WORKER_KINDS` literal.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Classify (a) real drift vs (b) stale test: locate the worker-kind definition in bin/fw, compare its set to lib/resolver.py, and check git history for a bin/fw refactor that reshaped the literal
-- [ ] If real drift: reconcile to a single source of truth (the set both must share); if stale test: update the test's grep/extraction to match bin/fw's current shape
-- [ ] `bats tests/unit/worker_kinds_parity.bats` green; `fw doctor` worker-kinds parity line green
-- [ ] RCA filled; reviewer PASS
+- [x] Classify (a) real drift vs (b) stale test — **(b) stale test, NO real drift.** lib/resolver.py and lib/workflow_lint.py both hold identical 4-kind sets `{Task, TermLink, pi, ollama-loop}` and are parity-checked at runtime (lib/worker_kinds_parity.py + fw doctor). bin/fw holds NO `VALID_WORKER_KINDS` literal — T-1946 extracted it (heredoc → lib/worker_kinds_parity.py per L-332/L-408). The 2 failing bats assertions pinned the pre-T-1946 bin/fw location. Dispatch is correct; no reconciliation needed.
+- [x] Stale-test fix: retargeted the test from "bin/fw ↔ resolver.py" to the post-T-1946 "resolver.py ↔ workflow_lint.py" pair — #4 now greps lib/workflow_lint.py, #6 imports both python tables. Also hardened #2/#3 to exercise the REAL lib/worker_kinds_parity.py helper (stub-module temp dir) instead of an inline reimplementation, and de-staled the bin/fw:2041 prose comment (now references the source of truth instead of re-enumerating).
+- [x] `bats tests/unit/worker_kinds_parity.bats` green (7/7); `fw doctor` worker-kinds parity line green (`bash -n bin/fw` clean)
+- [x] RCA filled; reviewer PASS — RCA below; reviewer run at completion.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -124,6 +124,8 @@ a bin/fw refactor that moved/reshaped the `VALID_WORKER_KINDS` literal.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw
+bats tests/unit/worker_kinds_parity.bats
 
 ## RCA
 
@@ -140,6 +142,36 @@ a bin/fw refactor that moved/reshaped the `VALID_WORKER_KINDS` literal.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 2/2410 unit tests failed in `tests/unit/worker_kinds_parity.bats` —
+#2402 "parity literal exists at expected location in bin/fw" and #2404 "parity
+literal in both files is identical (vs bin/fw)". A grep for `VALID_WORKER_KINDS =
+{...}` in bin/fw returned nothing.
+
+**Root cause:** The test was pinning a code location that no longer exists. T-1946
+(2026-05-20) deliberately extracted the `VALID_WORKER_KINDS` literal OUT of bin/fw
+(it lived in an inline `python3 - <<PYEOF` heredoc) into `lib/worker_kinds_parity.py`,
+per L-332/L-408 (eliminate the last heredoc-in-command-substitution self-lockout
+site). After that refactor the two source-of-truth tables are `lib/resolver.py`
+and `lib/workflow_lint.py`; bin/fw holds no literal. The bats test still asserted
+the literal lived in bin/fw — a stale test, **not** a dispatch-correctness drift
+(both python tables are identical and runtime-parity-checked).
+
+**Why structurally allowed:** T-1946 updated the *runtime* parity check (doctor →
+worker_kinds_parity.py, comparing the two python modules) but did not update the
+*test file*, which still encoded the pre-T-1946 "bin/fw ↔ resolver.py" model. The
+test references no longer matched the code it was meant to pin — a producer/consumer
+split (L-399 class): the refactor moved the literal on one side, the test pinned the
+old side. The failure was invisible until a full-suite background bug-hunt ran all
+2410 tests (the parity .bats is not in the fast pre-commit subset).
+
+**Prevention:** the test now pins the *current* source-of-truth pair (resolver.py ↔
+workflow_lint.py) AND exercises the real shipped helper `lib/worker_kinds_parity.py`
+directly (stub-module temp dir) rather than an inline reimplementation — so a future
+refactor that moves the literal again, or that breaks the helper, fails the test at
+the helper boundary, not at a hard-coded file path. The bin/fw:2041 comment was also
+de-staled to reference the source of truth instead of re-enumerating the set (one
+fewer drift surface).
 
 ## Evolution
 
@@ -192,3 +224,19 @@ a bin/fw refactor that moved/reshaped the `VALID_WORKER_KINDS` literal.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2388-worker-kinds-parity-drift-validworkerkin.md
 - **Context:** Initial task creation
+
+### 2026-06-27T20:00:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4a7b8417
+- **Timestamp:** 2026-06-27T20:09:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-06-27T20:07:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

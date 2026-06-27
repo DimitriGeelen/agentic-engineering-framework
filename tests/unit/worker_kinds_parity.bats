@@ -1,10 +1,16 @@
 #!/usr/bin/env bats
-# T-1735: Worker-kinds parity (bin/fw ↔ lib/resolver.py) — unit tests
+# T-1735: Worker-kinds parity (lib/resolver.py ↔ lib/workflow_lint.py) — unit tests
 #
-# Closes the structural gap exposed by T-1734: bin/fw and lib/resolver.py
-# both held VALID_WORKER_KINDS sets and silently drifted for 5 months
-# (G-064's zero-consumer rule hid the bug). The fw doctor parity check is
-# the runtime witness; these tests pin its detection contract.
+# Closes the structural gap exposed by T-1734: two tables held VALID_WORKER_KINDS
+# sets and silently drifted for 5 months (G-064's zero-consumer rule hid the bug).
+# The fw doctor parity check is the runtime witness; these tests pin its contract.
+#
+# T-2388 (2026-06-27): retargeted from "bin/fw ↔ resolver.py" to
+# "resolver.py ↔ workflow_lint.py". T-1946 extracted the VALID_WORKER_KINDS
+# literal OUT of bin/fw (heredoc → lib/worker_kinds_parity.py) per L-332/L-408,
+# so the two source-of-truth tables are now the two python modules; bin/fw holds
+# no literal to grep. The "literal exists in bin/fw" + "identical vs bin/fw"
+# assertions failed because they pinned the pre-T-1946 location.
 
 setup() {
     FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-/opt/999-Agentic-Engineering-Framework}"
@@ -20,52 +26,35 @@ setup() {
     echo "$output" | grep -q "OK.*Worker-kinds parity"
 }
 
-@test "parity drift: doctor reports WARN when bin/fw set differs from resolver" {
-    # Stage a temporary bin/fw with a perturbed VALID_WORKER_KINDS literal,
-    # invoke the doctor's parity python directly against it, assert WARN.
-    TMP_FW="$(mktemp -d)/bin"
-    mkdir -p "$TMP_FW"
-    # Keep only the marker line; the python parser only needs that line in
-    # bin/fw and a working resolver import path.
-    cat > "$TMP_FW/fw" <<'BASH'
-#!/usr/bin/env bash
-# T-1735 test fixture — perturbed VALID_WORKER_KINDS:
-#     VALID_WORKER_KINDS = {"Task","TermLink","pi","ollama-loop","DRIFT-ONLY-IN-FW"}
-BASH
-    chmod +x "$TMP_FW/fw"
-    # Run the same parity-check python with TMP_FW as the bin/fw under test.
-    # Using the resolver from the real framework (parity = false because TMP_FW has DRIFT).
-    output=$(python3 - "$TMP_FW/fw" <<PYEOF
-import re, sys
-sys.path.insert(0, "$FRAMEWORK_ROOT/lib")
-from resolver import VALID_WORKER_KINDS as resolver_set
-fw_path = sys.argv[1]
-fw_set = None
-with open(fw_path) as fh:
-    for line in fh:
-        m = re.match(r'\s*#?\s*VALID_WORKER_KINDS\s*=\s*\{([^}]+)\}', line)
-        if m:
-            fw_set = {s.strip().strip('"').strip("'") for s in m.group(1).split(',') if s.strip()}
-            break
-only_fw = fw_set - resolver_set
-only_resolver = resolver_set - fw_set
-if only_fw or only_resolver:
-    parts = []
-    if only_fw: parts.append(f"only in bin/fw: {sorted(only_fw)}")
-    if only_resolver: parts.append(f"only in lib/resolver.py: {sorted(only_resolver)}")
-    print("WARN|drift detected — " + "; ".join(parts))
-else:
-    print(f"OK|{sorted(fw_set)}")
-PYEOF
-)
+@test "parity drift: worker_kinds_parity.py reports WARN when the two tables differ" {
+    # T-2388: exercise the REAL shipped helper (lib/worker_kinds_parity.py) against
+    # stub modules in a temp lib dir, instead of an inline reimplementation that can
+    # itself drift. The helper imports `from resolver import VALID_WORKER_KINDS` and
+    # `from workflow_lint import VALID_WORKER_KINDS` from argv[1] (sys.path[0]).
+    TMP_LIB="$(mktemp -d)"
+    printf 'VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop"}\n' > "$TMP_LIB/resolver.py"
+    printf 'VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop", "DRIFT-ONLY-IN-LINT"}\n' > "$TMP_LIB/workflow_lint.py"
+    output=$(python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$TMP_LIB")
+    rm -rf "$TMP_LIB"
     [[ "$output" == WARN\|* ]]
-    echo "$output" | grep -q "DRIFT-ONLY-IN-FW"
-    rm -rf "$(dirname "$TMP_FW")"
+    echo "$output" | grep -q "DRIFT-ONLY-IN-LINT"
 }
 
-@test "parity literal exists at expected location in bin/fw" {
-    # Pin: keep the literal where the doctor expects to find it (bin/fw line ~1804).
-    grep -E "VALID_WORKER_KINDS\s*=\s*\{" "$FRAMEWORK_ROOT/bin/fw"
+@test "parity OK: worker_kinds_parity.py reports OK when the two tables agree" {
+    # T-2388: positive case for the real helper — identical stub tables → OK|<list>.
+    TMP_LIB="$(mktemp -d)"
+    printf 'VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop"}\n' > "$TMP_LIB/resolver.py"
+    printf 'VALID_WORKER_KINDS = {"Task", "TermLink", "pi", "ollama-loop"}\n' > "$TMP_LIB/workflow_lint.py"
+    output=$(python3 "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" "$TMP_LIB")
+    rm -rf "$TMP_LIB"
+    [[ "$output" == OK\|* ]]
+}
+
+@test "parity literal exists at expected location in lib/workflow_lint.py" {
+    # T-2388: post-T-1946 the second source-of-truth table is lib/workflow_lint.py
+    # (bin/fw no longer holds the literal — it was extracted to
+    # lib/worker_kinds_parity.py). Pin the literal where it now lives.
+    grep -E "VALID_WORKER_KINDS\s*=\s*\{" "$FRAMEWORK_ROOT/lib/workflow_lint.py"
 }
 
 @test "parity literal exists at expected location in lib/resolver.py" {
@@ -73,14 +62,13 @@ PYEOF
 }
 
 @test "parity literal in both files is identical (source-of-truth check)" {
-    fw_set=$(python3 -c "
-import re
-with open('$FRAMEWORK_ROOT/bin/fw') as f:
-    for line in f:
-        m = re.match(r'\s*VALID_WORKER_KINDS\s*=\s*\{([^}]+)\}', line)
-        if m:
-            print(','.join(sorted({s.strip().strip(chr(34)).strip(chr(39)) for s in m.group(1).split(',') if s.strip()})))
-            break
+    # T-2388: compare the two python source-of-truth tables directly — this is
+    # exactly what lib/worker_kinds_parity.py / fw doctor check at runtime.
+    lint_set=$(python3 -c "
+import sys
+sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
+from workflow_lint import VALID_WORKER_KINDS
+print(','.join(sorted(VALID_WORKER_KINDS)))
 ")
     resolver_set=$(python3 -c "
 import sys
@@ -88,7 +76,7 @@ sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
 from resolver import VALID_WORKER_KINDS
 print(','.join(sorted(VALID_WORKER_KINDS)))
 ")
-    [ "$fw_set" = "$resolver_set" ]
+    [ "$lint_set" = "$resolver_set" ]
 }
 
 @test "doctor parity check exits without crashing in fresh shell" {
