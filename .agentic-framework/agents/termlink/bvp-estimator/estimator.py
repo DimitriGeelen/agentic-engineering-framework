@@ -1071,6 +1071,44 @@ def score_f_autonomy(fm: dict, body: str, tags: list[str]) -> tuple[int, list[st
     return 0, ev + ["→0 (no autonomy signal)"]
 
 
+def score_audit_severity(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """audit_severity — Audit-finding triage boost (T-2354 / T-2352 Slice 2).
+
+    Reads the `audit_severity:` frontmatter field that `fw audit --emit-tasks`
+    (T-2353, lib/audit_emit.sh) stamps onto every auto-filed audit-finding task,
+    and scores it so those tasks rank above routine backlog instead of evaporating
+    between audit runs. Mirrors the dedicated-handler structure of score_f_autonomy
+    (T-2329) — a field-reading handler dispatched by estimate_task() when its driver
+    is active in policy/value-drivers.yaml.
+
+    Rubric (0-5 int, the estimator handler scale):
+      5: audit_severity == "fail"  — a FAIL finding (push/gate-blocking class);
+         top triage band, must outrank routine work.
+      4: audit_severity == "warn"  — a WARN finding (advisory drift); next band.
+      0: field absent (routine task), OR an unrecognised value.
+
+    Scale reconciliation (T-2354 §Evolution / §Decisions): the originating T-2352
+    filing specified FAIL=1.0 / WARN=0.75 (0-1 floats), but estimator handlers
+    return int 0-5 (handlers return tuple[int, list[str]], multiplied by the
+    driver weight). Mapped fail→5 / warn→4 — preserving the fail > warn > routine
+    ordering the float spec intended, on the integer scale the framework uses.
+
+    LATENT by default: policy/value-drivers.yaml ships `audit_severity` as a
+    CANDIDATE carve (commented), so _load_drivers() does not yield it and
+    estimate_task() does not dispatch here until the operator activates the
+    driver (Sovereignty / D8 — activating a driver reweights every task's rank).
+    """
+    ev: list[str] = []
+    sev = str(fm.get("audit_severity") or "").strip().lower()
+    if sev == "fail":
+        return 5, ev + ["fm:audit_severity=fail", "→5 (audit FAIL — top triage band)"]
+    if sev == "warn":
+        return 4, ev + ["fm:audit_severity=warn", "→4 (audit WARN — next triage band)"]
+    if sev:
+        return 0, ev + [f"fm:audit_severity={sev}", "→0 (unrecognised audit severity)"]
+    return 0, ev + ["no-signal: audit_severity absent"]
+
+
 def score_d_disjoint(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """D-DISJOINT — Disjoint Write-Set Discipline (arc-011 scoped).
 
@@ -2292,6 +2330,13 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # the Sovereignty refuse-rule (level 0 on Tier-0 / safety-critical
         # gate removal without at-least-as-safe replacement).
         "F-AUTONOMY": score_f_autonomy,
+        # T-2354 — audit-finding triage boost (T-2352 Slice 2, sibling of T-2353).
+        # Reads the audit_severity: frontmatter that `fw audit --emit-tasks` stamps
+        # (lib/audit_emit.sh) so audit findings rank above routine backlog. LATENT
+        # until the operator activates the `audit_severity` driver in
+        # policy/value-drivers.yaml (Sovereignty / D8) — _load_drivers() ships it
+        # carved, so estimate_task() does not dispatch here until activated.
+        "audit_severity": score_audit_severity,
         # T-2356 — arc-011 scoped drivers (proposed via T-2344 batch_propose).
         # Latent in two ways: (1) _load_drivers() reads only global policy, so
         # arc-scoped drivers never reach `drivers:` here today; (2) even after

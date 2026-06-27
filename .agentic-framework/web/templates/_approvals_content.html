@@ -21,6 +21,13 @@
         <span class="stat-breakdown">Close-ready arcs</span>
     </a>
     {% endif %}
+    {% if bvp_proposal_count and bvp_proposal_count > 0 %}
+    <a href="#section-bvp-proposals" class="approval-stat approval-stat-group decisions-active" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ bvp_proposal_count }}</span>
+        <span class="stat-label">BVP Drivers</span>
+        <span class="stat-breakdown">Proposed, awaiting approval</span>
+    </a>
+    {% endif %}
     <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
         <span class="stat-label">Verifications</span>
@@ -251,6 +258,38 @@
        the readable .headline-mechanic-box callout — body text + accent stripe on
        tinted primary bg. Same class as T-2110's arc_review.html. #}
     <div class="headline-mechanic-box">{{ a.headline_mechanic }}</div>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+<!-- T-2335: BVP driver proposals — non-Sovereign propose-queue (.context/bvp-driver-proposals.jsonl). Operator approves/rejects on /bvp (T-2332); this surfaces them in the unified approval centre so no one has to be told "go look at /bvp". -->
+{% if bvp_proposals %}
+<h2 id="section-bvp-proposals" class="approvals-group-heading">BVP Driver Proposals</h2>
+<div class="section-header">
+    <h3>Proposed value drivers</h3>
+    <small>{{ bvp_proposal_count }} proposal{{ '' if bvp_proposal_count == 1 else 's' }} — agent-proposed BVP drivers awaiting your Approve / Reject on <a href="/bvp" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">/bvp</a></small>
+</div>
+{% for p in bvp_proposals %}
+<div class="approval-card bvp-proposal" data-proposal-id="{{ p.id }}">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+        <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <strong>{{ p.name }}</strong>
+            <span style="font-size:0.8rem; color:var(--pico-muted-color);">weight {{ p.weight }}</span>
+            {% if p.task %}
+            <span style="font-size:0.78rem; color:var(--pico-muted-color);">· <a href="/tasks/{{ p.task }}"
+                hx-target="#content" hx-swap="innerHTML" hx-push-url="true">{{ p.task }}</a></span>
+            {% endif %}
+            <span style="font-size:0.75rem; color:var(--pico-muted-color);">· {{ p.author }}</span>
+        </div>
+        <div style="display:flex; gap:0.4rem;">
+            <a href="/bvp" role="button" class="secondary outline"
+               hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+               style="margin:0; font-size:0.78rem;">Review on /bvp</a>
+        </div>
+    </div>
+    {% if p.rationale %}
+    <div class="approval-meta" style="font-size:0.82rem; color:var(--pico-muted-color); margin-top:0.3rem;">{{ p.rationale }}</div>
     {% endif %}
 </div>
 {% endfor %}

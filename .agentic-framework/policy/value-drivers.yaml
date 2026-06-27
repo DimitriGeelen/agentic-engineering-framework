@@ -199,6 +199,55 @@ free_drivers:
       L5/L6 autonomy criteria (auto-issue gen, auto-merge, closed
       production-feedback loop) are green.
 
+  # -------------------------------------------------------------------------
+  # CANDIDATE (INACTIVE) -- audit_severity. Not consuming a slot. Documented so
+  # the carve is recorded (mirrors the original F-AUTONOMY carve, lines 156-175).
+  #
+  # T-2354 (T-2352 Slice 2). This is a TRIAGE BOOST, not a value axis in the
+  # D1-D4 sense: it reads the `audit_severity: fail|warn` frontmatter field that
+  # `fw audit --emit-tasks` (T-2353, lib/audit_emit.sh) stamps onto every
+  # auto-filed audit-finding task, and scores it so those findings rank above
+  # routine backlog instead of evaporating between audit runs. The dedicated
+  # handler `score_audit_severity` (estimator.py) is already registered and will
+  # dispatch the moment this carve is uncommented under free_drivers:.
+  #
+  # FRONTMATTER FIELD CONTRACT (the recognised field this driver scores):
+  #   audit_severity: fail   → score 5 (FAIL finding — top triage band)
+  #   audit_severity: warn   → score 4 (WARN finding — next band)
+  #   (absent / other value) → score 0 (routine task)
+  # Written by lib/audit_emit.sh:_audit_inject_frontmatter; read by
+  # estimator.py:score_audit_severity. Scale note: the T-2352 filing said
+  # FAIL=1.0/WARN=0.75 (0-1 floats); reconciled to fail→5/warn→4 on the 0-5
+  # integer handler scale (estimator handlers return tuple[int, list[str]]).
+  #
+  # ACTIVATION IS SOVEREIGN (D8): flipping this to active reweights every task's
+  # rank, so it belongs to the operator. To activate: uncomment the entry below,
+  # move it under free_drivers:, assign a weight (suggest 6 — high enough that a
+  # FAIL finding outranks routine work, below D1/D2), and (cap permitting) drop
+  # a free driver whose focus has passed. Retire when audit findings stop rotting
+  # (emit-tasks digest-mode calibrated + audit-finding tasks reliably worked).
+  #
+  # - id: audit_severity
+  #   name: Audit-Finding Triage
+  #   weight: 6
+  #   polarity: positive
+  #   rationale: >
+  #     Audit WARN/FAIL findings are real drift that evaporated between runs until
+  #     T-2353 began filing them as tracked tasks. This driver makes those tasks
+  #     rank above routine backlog so drift gets fixed, not buried. Scores a task
+  #     PROPERTY (the audit_severity field), not body keywords — orthogonal to D2.
+  #   rubric:
+  #     0: Not an audit-finding task (audit_severity absent), or unrecognised value.
+  #     4: audit_severity == warn  -- advisory drift; ranks above routine.
+  #     5: audit_severity == fail  -- push/gate-blocking class; top triage band.
+  #   guardrails: >
+  #     Scores the field only; does NOT reward manufacturing audit_severity onto
+  #     non-audit tasks. The field is writer-controlled (lib/audit_emit.sh).
+  #   retire_when: >
+  #     emit-tasks digest-mode (S3) calibrated AND audit-finding tasks are reliably
+  #     triaged without a ranking boost.
+  # -------------------------------------------------------------------------
+
 # ---------------------------------------------------------------------------
 # AUTO-PROMOTION  -- ships OFF. This is the autonomy-IN-OPERATION dial, distinct
 # from any driver (drivers rank autonomy-ENABLING work; this governs whether HV/LC

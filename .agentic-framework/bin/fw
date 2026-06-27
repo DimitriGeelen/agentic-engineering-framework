@@ -2038,7 +2038,8 @@ else:
     #   - inline:true workflows must NOT carry dispatch fields
     #   - non-inline workflows require: task_type, worker_kind, model, effort,
     #     prompt_template, allowed_tools, cost_cap_usd, cwd
-    #   - worker_kind in {Task, TermLink, pi}
+    #   - worker_kind in VALID_WORKER_KINDS (source of truth: lib/resolver.py
+    #     ↔ lib/workflow_lint.py, parity-checked below; do not re-enumerate here)
     #   - prompt_template must resolve to an existing file
     #   - meta_model required iff prompt_strategy == meta-prompted
     #   - default.yaml missing → soft warning

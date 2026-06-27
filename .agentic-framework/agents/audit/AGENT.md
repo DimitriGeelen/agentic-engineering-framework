@@ -191,6 +191,29 @@ This agent performs **mechanical checks**. For intelligent analysis:
 - Interactive dimension filtering (--dimension flag)
 - Automatic practice generation from repeated issues
 
+## Emit-tasks mode (T-2353, opt-in)
+
+`fw audit --emit-tasks` converts each WARN/FAIL finding into a tracked bugfix task
+so audit findings stop evaporating between runs. **Default OFF** — opt-in until S3
+digest-mode calibration. Add `--dry-run` to preview without writing.
+
+```bash
+fw audit --emit-tasks --dry-run     # preview the would-create lines, write nothing
+fw audit --emit-tasks               # file one bugfix task per new WARN/FAIL finding
+```
+
+- **What is filed:** `--type build` with title `audit <warn|fail>: <finding>`, tags
+  `[audit-finding, severity:<warn|fail>, section:<slug>]`, `horizon: now`, and
+  frontmatter `audit_finding_hash:`, `audit_severity:`, `audit_run_ts:`. Build +
+  bug-class title trips the existing **T-1550 RCA gate** at close (the spec's intent;
+  `bugfix` is not a real workflow_type — see lib/enums.sh).
+- **Dedupe:** by `sha1(normalized finding text)` — digits/paths are normalized out, so
+  a fluctuating count ("14 stale tasks" → "12 stale tasks") hashes to the same class
+  and does **not** spawn a new task each run. A finding whose hash already appears in
+  `.tasks/{active,completed}/` is skipped.
+- **Implementation:** `lib/audit_emit.sh` (sourceable so bats can fixture-test it
+  without the >5min real audit). Pinned by `tests/unit/test_audit_emit_tasks.bats`.
+
 ## Related
 
 - `agents/git/git.sh` — Installs hooks, enforces task refs

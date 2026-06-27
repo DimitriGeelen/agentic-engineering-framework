@@ -445,6 +445,21 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
     return out
 
 
+def _load_bvp_proposals():
+    """T-2335: pending BVP driver proposals (.context/bvp-driver-proposals.jsonl)
+    surfaced on /approvals. Reuses web.blueprints.bvp._load_proposals so the
+    queue read + state machine live in one place (T-2332 shipped that surface
+    on /bvp; this mirrors it onto the unified approval centre). Lazy import +
+    broad except mirrors the arcs.py cross-blueprint pattern — a consumer
+    project without the bvp blueprint degrades to an empty section, not a 500.
+    """
+    try:
+        from web.blueprints.bvp import _load_proposals
+        return _load_proposals(state_filter="pending")
+    except Exception:  # pragma: no cover - defensive: missing blueprint / file
+        return []
+
+
 def _build_approvals_context(expand_overflow: bool = False):
     """Build template context for approvals page.
 
@@ -461,6 +476,7 @@ def _build_approvals_context(expand_overflow: bool = False):
     deferred_count = _count_deferred_inceptions()
     paused_dispatches = _load_paused_dispatches()  # T-1808
     arcs_close_ready = _load_close_ready_arcs()  # T-1961
+    bvp_proposals = _load_bvp_proposals()  # T-2335
 
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
@@ -470,7 +486,8 @@ def _build_approvals_context(expand_overflow: bool = False):
     )
     paused_count = len(paused_dispatches)  # T-1808
     arc_close_count = len(arcs_close_ready)  # T-1961
-    total = tier0_count + go_count + len(pending_acs) + paused_count + arc_close_count
+    bvp_proposal_count = len(bvp_proposals)  # T-2335
+    total = tier0_count + go_count + len(pending_acs) + paused_count + arc_close_count + bvp_proposal_count
 
     # Count tasks ready for batch completion (all human ACs checked)
     ready_count = sum(
@@ -485,12 +502,14 @@ def _build_approvals_context(expand_overflow: bool = False):
         pending_acs=pending_acs,
         paused_dispatches=paused_dispatches,
         arcs_close_ready=arcs_close_ready,
+        bvp_proposals=bvp_proposals,
         tier0_count=tier0_count,
         go_count=go_count,
         ac_count=ac_count,
         ac_task_count=len(pending_acs),
         paused_count=paused_count,
         arc_close_count=arc_close_count,
+        bvp_proposal_count=bvp_proposal_count,
         total_count=total,
         active_count=tier0_count,
         ready_count=ready_count,
