@@ -4,12 +4,12 @@ name: "diagnose ollama+openrouter LLM integration failure"
 description: >
   diagnose ollama+openrouter LLM integration failure
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/ask.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-26T12:07:24Z
-last_update: 2026-06-26T12:07:24Z
-date_finished: null
+last_update: 2026-06-27T16:42:43Z
+date_finished: 2026-06-27T16:42:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -115,9 +115,12 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 test -f docs/reports/T-2416-llm-integration-diagnosis.md
-out=$(cat docs/reports/T-2416-llm-integration-diagnosis.md); echo "$out" | grep -q "Root Cause 1 — Ollama"
-echo "$out" | grep -q "Root Cause 2 — OpenRouter"
-echo "$out" | grep -q "Remediation Plan"
+# Each line runs in an isolated shell under `set -u` — a var set on one line is
+# unbound on the next. Use self-contained `grep -q PATTERN FILE` per line (no pipe
+# → no SIGPIPE, no cross-line $out). Origin: this task's own gate run, 2026-06-27.
+grep -q "Root Cause 1 — Ollama" docs/reports/T-2416-llm-integration-diagnosis.md
+grep -q "Root Cause 2 — OpenRouter" docs/reports/T-2416-llm-integration-diagnosis.md
+grep -q "Remediation Plan" docs/reports/T-2416-llm-integration-diagnosis.md
 
 ## RCA
 
@@ -205,3 +208,22 @@ echo "$out" | grep -q "Remediation Plan"
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/livefire-t2389/.tasks/active/T-2416-diagnose-ollamaopenrouter-llm-integratio.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7140e66c
+- **Timestamp:** 2026-06-27T16:42:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — OpenRouter configuration gap confirmed against LIVE main checkout: `OPENROUTER_API_KEY` unset, main `.context/secrets/` EMPTY (no `api-keys.enc` Fernet store), `.context/settings.yaml` = `provider: ol
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/settings.yaml in: OpenRouter configuration gap confirmed against LIVE main checkout: `OPENROUTER_API_KEY` unset, main `.context/secrets/` EMPTY (no `api-keys.enc` Ferne`
+- **AC#3 (Agent)** — LLM consumers mapped (all three broken, same root cause): `lib/ask.py` (`ollama.chat` direct, no openrouter path); `fw resolver` workers (litellm :4000 → ollama, no openrouter route); **Watchtower sea
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/ask.py in: LLM consumers mapped (all three broken, same root cause): `lib/ask.py` (`ollama.chat` direct, no openrouter path); `fw resolver` workers (litellm :400`
+
+### 2026-06-27T16:42:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

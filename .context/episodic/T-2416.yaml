@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2416: diagnose ollama+openrouter LLM integration failure
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-27T16:42:51Z
+# ============================================================================
+
+task_id: T-2416
+task_name: "diagnose ollama+openrouter LLM integration failure"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-26T12:07:24Z
+completed: 2026-06-27T16:42:43Z
+duration_days: 1
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Ollama-unavailability root cause identified with evidence: NOT a crash — `ollama.service` is in a systemd **restart-rate-limit dead state** (`StartLimitBurst` exhausted after 3–4 rapid retries on 2026-06-24 23:41). Trigger: **GPU-discovery timeout on the RTX 5060 Ti (Blackwell sm_120)** — bundled CUDA libs probe too slowly; systemd SIGTERM''d each retry. CPU fallback is viable (62 GiB RAM, 41 free). `systemctl start` alone re-loops unless GPU probe is fixed/disabled first.'
+  - 'OpenRouter configuration gap confirmed against LIVE main checkout: `OPENROUTER_API_KEY` unset, main `.context/secrets/` EMPTY (no `api-keys.enc` Fernet store), `.context/settings.yaml` = `provider: ollama` with no key, litellm-config.yaml has zero openrouter routes. Key path is `web/llm/manager.py:109` (env) → `web/secrets_store.get_api_key("openrouter")` (Fernet). No key on any path → `OpenRouterProvider` never registered.'
+  - 'LLM consumers mapped (all three broken, same root cause): `lib/ask.py` (`ollama.chat` direct, no openrouter path); `fw resolver` workers (litellm :4000 → ollama, no openrouter route); **Watchtower search** (`web/blueprints/api.py` → `web/llm/manager.py` → OllamaProvider; openrouter in code but unregistered). Operator confirmed the surface is **Watchtower search** (web/llm lane).'
+  - 'Remediation plan written to `docs/reports/T-2416-llm-integration-diagnosis.md` — ordered steps, operator-owned (reset-failed + CPU drop-in OR ollama upgrade; provide OpenRouter key) vs agent-fixable (add openrouter routes to litellm-config.yaml; optionally refactor `fw ask` to route through a proxy).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1715 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1715
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/livefire-t2389/.tasks/completed/T-2416-diagnose-ollamaopenrouter-llm-integratio.md
+generated_by: context-agent-hybrid
