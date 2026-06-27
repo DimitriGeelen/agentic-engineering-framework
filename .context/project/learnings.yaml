@@ -3693,3 +3693,10 @@ X'` returning empty group."
   date: 2026-06-14
   context: Added via context agent
   application: TBD
+- id: L-485
+  learning: "P-011 Verification gate runs EACH line in a separate shell under set -u, so a multi-line capture (out=$(cmd) on one line, echo \"$out\" | grep on the next) fails with 'out: unbound variable'. The L-387 capture-first pattern only works when capture+grep are on the SAME line. Safest: self-contained 'grep -q PATTERN FILE' per line (no pipe, no cross-line var). Caught at T-2416 close."
+  source: P-011
+  task: T-2416
+  date: 2026-06-27
+  context: Added via context agent
+  application: TBD
