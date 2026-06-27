@@ -74,9 +74,122 @@ model_list:
       model: ollama_chat/krith/qwen2.5-coder-32b-instruct:IQ2_M
       api_base: http://192.168.10.107:11434
 
+  # ── Raw-name passthrough aliases (T-2417) ──────────────────────────────────
+  # `lib/ask.py` selects models by their raw ollama name (from .context/settings.yaml:
+  # primary_model: qwen3:14b, fallback_model: dolphin-llama3:8b). The claude-*
+  # impersonation aliases above are for `claude -p`; fw ask needs its native
+  # names to resolve through the proxy without a 400. These two map the raw
+  # names back to the same ollama backend, each with an openrouter fallback below.
+  - model_name: qwen3:14b
+    litellm_params:
+      model: ollama_chat/qwen3:14b
+      api_base: http://192.168.10.107:11434
+
+  - model_name: dolphin-llama3:8b
+    litellm_params:
+      model: ollama_chat/dolphin-llama3:8b
+      api_base: http://192.168.10.107:11434
+
+  # ── OpenRouter fallback siblings (T-2416 / T-2417) ─────────────────────────
+  # INERT until the operator sets OPENROUTER_API_KEY (env, or Watchtower
+  # Settings/Secrets → web/llm auto-registers OpenRouterProvider). litellm reads
+  # the key lazily via os.environ at request time — with no key, the primary
+  # ollama route still serves; only the *fallback* leg is dead. Do NOT hard-code
+  # a key here. Each sibling mirrors a primary alias and is wired as that
+  # alias's fallback under litellm_settings.fallbacks below.
+  - model_name: claude-3-5-sonnet-20241022-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-3-5-sonnet-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-3-5-sonnet-qwen3-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-3-5-sonnet-gemma4-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-haiku
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-3-5-sonnet-qwen35-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-3-5-sonnet-hermes3-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-haiku
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-3-5-haiku-20241022-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-haiku
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-haiku-4-5-20251001-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-haiku
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-haiku-4-5-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-haiku
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-opus-4-7-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-opus-4-7-20250101-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: claude-sonnet-coder-openrouter
+    litellm_params:
+      model: openrouter/qwen/qwen-2.5-coder-32b-instruct
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: qwen3:14b-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-sonnet
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
+  - model_name: dolphin-llama3:8b-openrouter
+    litellm_params:
+      model: openrouter/anthropic/claude-3.5-haiku
+      api_key: "os.environ/OPENROUTER_API_KEY"
+
 litellm_settings:
   drop_params: true
   set_verbose: false
+  # T-2417: ollama-primary → openrouter-fallback. When a primary ollama alias
+  # errors (ollama down, model not loaded, timeout), litellm retries the request
+  # against the mapped -openrouter sibling. Inert until OPENROUTER_API_KEY is set
+  # (the fallback request then 401s and litellm surfaces the original error —
+  # same as no-fallback today). Each key MUST exist as a model_name above.
+  fallbacks:
+    - claude-3-5-sonnet-20241022: ["claude-3-5-sonnet-20241022-openrouter"]
+    - claude-3-5-sonnet: ["claude-3-5-sonnet-openrouter"]
+    - claude-3-5-sonnet-qwen3: ["claude-3-5-sonnet-qwen3-openrouter"]
+    - claude-3-5-sonnet-gemma4: ["claude-3-5-sonnet-gemma4-openrouter"]
+    - claude-3-5-sonnet-qwen35: ["claude-3-5-sonnet-qwen35-openrouter"]
+    - claude-3-5-sonnet-hermes3: ["claude-3-5-sonnet-hermes3-openrouter"]
+    - claude-3-5-haiku-20241022: ["claude-3-5-haiku-20241022-openrouter"]
+    - claude-haiku-4-5-20251001: ["claude-haiku-4-5-20251001-openrouter"]
+    - claude-haiku-4-5: ["claude-haiku-4-5-openrouter"]
+    - claude-opus-4-7: ["claude-opus-4-7-openrouter"]
+    - claude-opus-4-7-20250101: ["claude-opus-4-7-20250101-openrouter"]
+    - claude-sonnet-coder: ["claude-sonnet-coder-openrouter"]
+    - qwen3:14b: ["qwen3:14b-openrouter"]
+    - dolphin-llama3:8b: ["dolphin-llama3:8b-openrouter"]
 
 general_settings:
   master_key: sk-litellm-local-dev

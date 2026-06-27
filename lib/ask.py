@@ -29,6 +29,73 @@ import ollama
 
 CONCISE_ADDENDUM = "\n\nBe extremely concise — answer in 2-3 sentences maximum."
 
+# ---------------------------------------------------------------------------
+# litellm proxy routing (T-2417)
+# ---------------------------------------------------------------------------
+# Route the chat call through the local litellm proxy so `fw ask` inherits the
+# proxy's ollama-primary + openrouter-fallback routing (.context/litellm-config.yaml).
+# Falls back to a direct ollama.chat call when the proxy is unreachable, so
+# `fw ask` never hard-depends on litellm being up. Disable entirely with
+# FW_ASK_NO_PROXY=1 (restores the exact legacy direct-ollama behaviour).
+
+DEFAULT_PROXY_URL = "http://localhost:4000/v1"
+DEFAULT_MASTER_KEY = "sk-litellm-local-dev"
+_LITELLM_CONFIG = os.path.join(PROJECT_ROOT, ".context", "litellm-config.yaml")
+
+
+def _resolve_proxy() -> tuple[str, str] | None:
+    """Return (base_url, api_key) for the litellm proxy, or None if disabled.
+
+    Resolution: FW_ASK_NO_PROXY=1 → disabled. Base URL from FW_ASK_PROXY_URL
+    else default. Key from LITELLM_MASTER_KEY env, else general_settings.master_key
+    in the config file, else the default dev key.
+    """
+    if os.environ.get("FW_ASK_NO_PROXY") == "1":
+        return None
+    base = os.environ.get("FW_ASK_PROXY_URL", DEFAULT_PROXY_URL)
+    key = os.environ.get("LITELLM_MASTER_KEY", "")
+    if not key:
+        try:
+            import yaml
+            with open(_LITELLM_CONFIG) as fh:
+                cfg = yaml.safe_load(fh) or {}
+            key = (cfg.get("general_settings") or {}).get("master_key") or ""
+        except Exception:
+            key = ""
+    return base, (key or DEFAULT_MASTER_KEY)
+
+
+def _chat_via_proxy(model: str, messages: list[dict], use_thinking: bool) -> tuple[str, str]:
+    """Call the litellm proxy (OpenAI-compatible). Returns (content, thinking).
+
+    Raises on any failure so the caller can fall back to direct ollama.
+    """
+    target = _resolve_proxy()
+    if target is None:
+        raise RuntimeError("proxy disabled (FW_ASK_NO_PROXY=1)")
+    base, key = target
+    from openai import OpenAI
+    client = OpenAI(base_url=base, api_key=key)
+    # `think` is ollama-specific; pass via extra_body (litellm drop_params drops it
+    # cleanly if the backend doesn't support it — answer content is unaffected).
+    resp = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        extra_body={"think": use_thinking},
+    )
+    msg = resp.choices[0].message
+    content = msg.content or ""
+    thinking = getattr(msg, "reasoning_content", None) or ""
+    return content, thinking
+
+
+def _chat_via_ollama(model: str, messages: list[dict], use_thinking: bool) -> tuple[str, str]:
+    """Direct ollama.chat call (legacy path / proxy-down fallback)."""
+    response = ollama.chat(model=model, messages=messages, think=use_thinking)
+    content = response.message.content or ""
+    thinking = getattr(response.message, "thinking", None) or ""
+    return content, thinking
+
 
 def ask(query: str, limit: int = 10, concise: bool = False, think: bool | None = None) -> dict:
     """Synchronous RAG+LLM query.
@@ -57,18 +124,19 @@ def ask(query: str, limit: int = 10, concise: bool = False, think: bool | None =
     model = get_model()
     use_thinking = think if think is not None else should_think(query)
 
-    # Non-streaming call
-    response = ollama.chat(
-        model=model,
-        messages=[
-            {"role": "system", "content": prompt},
-            {"role": "user", "content": user_message},
-        ],
-        think=use_thinking,
-    )
+    messages = [
+        {"role": "system", "content": prompt},
+        {"role": "user", "content": user_message},
+    ]
 
-    answer = response.message.content or ""
-    thinking = getattr(response.message, "thinking", None) or ""
+    # Proxy-primary (ollama→openrouter fallback via litellm), direct-ollama as
+    # safety net when the proxy is down (T-2417). Fallback is non-silent.
+    try:
+        answer, thinking = _chat_via_proxy(model, messages, use_thinking)
+    except Exception as exc:  # proxy unreachable / errored — degrade, don't break
+        print(f"fw ask: litellm proxy unavailable ({type(exc).__name__}), "
+              f"falling back to direct ollama", file=sys.stderr)
+        answer, thinking = _chat_via_ollama(model, messages, use_thinking)
 
     # Build source list
     sources = []
