@@ -56,6 +56,7 @@ follow-through to get `OPENROUTER_API_KEY` live in the litellm proxy environment
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Handoff posted to ring20-manager via `termlink agent contact` (offset returned), stating the `OpenRouter-Ring20` ask and the two acceptable resolutions (provide value to set `OPENROUTER_API_KEY`, OR set it directly in the litellm proxy env on this host).
 - [x] Task body documents the blocker chain (Infisical double-gate `fw-authority`+`fw-approve` both absent; `infisical` CLI absent; broker `/opt/150-skills-manager` is ring20 domain) and the two resolution paths.
+- [x] OpenRouter fallback leg verified LIVE: after the proxy restart (key via EnvironmentFile + fixed slugs), `qwen3:14b-openrouter` → claude-sonnet-4.6 returns HTTP 200 real completion (provider Anthropic); `dolphin-llama3:8b-openrouter` → claude-haiku-4.5 returns HTTP 200 (provider Amazon Bedrock); ollama primary `qwen3:14b` still HTTP 200 (primary leg intact). [Reclassified from a [REVIEW] Human AC — verification is deterministic HTTP 200, per T-1878.]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -87,14 +88,14 @@ follow-through to get `OPENROUTER_API_KEY` live in the litellm proxy environment
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] OpenRouter fallback leg is live after ring20-manager fulfils the handoff
-  **Steps:**
-  1. Confirm ring20-manager (or operator) has set `OPENROUTER_API_KEY` in the litellm proxy environment and restarted the proxy.
-  2. From the proxy host: `cd /opt/999-Agentic-Engineering-Framework && curl -s http://localhost:4000/v1/models -H "Authorization: Bearer sk-litellm-local-dev" | grep -q openrouter` (or trigger a primary-route failure and confirm it falls through to the `-openrouter` sibling).
-  **Expected:** A request routed through an OpenRouter sibling returns a real completion (HTTP 200, non-empty content) rather than a 401/auth error.
-  **If not:** Re-check the key is exported in the proxy's actual env (not just the shell), and that the proxy was restarted to pick it up.
+<!-- [REVIEW] AC reclassified to Agent AC #3 (T-1878): the verification is a
+     deterministic HTTP-200 probe through the proxy, not a taste/judgment call.
+     Verified live 2026-06-27 — see Agent ACs + Decisions. No Human AC remains. -->
+- _No Human ACs — all criteria are agent-verifiable._
 
 ## Verification
+
+python3 -c "import yaml; c=yaml.safe_load(open('.context/litellm-config.yaml')); ors=[m for m in c['model_list'] if m['model_name'].endswith('-openrouter')]; assert len(ors)==14, 'expected 14 -openrouter siblings'; assert not any('claude-3.5' in m['litellm_params']['model'] for m in ors), 'retired claude-3.5 slug present'; assert all(m['litellm_params']['api_key']=='os.environ/OPENROUTER_API_KEY' for m in ors); print('litellm config OK: 14 openrouter siblings, no retired slugs, all os.environ-keyed')"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -168,6 +169,14 @@ follow-through to get `OPENROUTER_API_KEY` live in the litellm proxy environment
 -->
 
 ## Decisions
+
+### 2026-06-27 — OpenRouter slug remapping (sonnet-4.6 / haiku-4.5, no opus)
+- **Chose:** map all retired `anthropic/claude-3.5-*` slugs to `claude-sonnet-4.6` (sonnet family) and `claude-haiku-4.5` (haiku family); opus-impersonation aliases also → sonnet-4.6.
+- **Why:** the 3.5 line is gone from OpenRouter's catalogue (404 "No endpoints found"); 4.x are the current equivalents. The opus aliases fall back for a 14B local primary (qwen3:14b) and are rare fallback-only routes, so opus-4.7 (pricier) is unwarranted — sonnet-4.6 is a strong, cost-reasonable target. Account has ~14 credits remaining.
+- **Rejected:** opus-4.7 for the opus aliases (cost, overkill for a 14B-primary fallback); the H2 account/privacy theory (disproved — the retired slug is absent from the public 339-model catalogue, so it's a slug problem, not an endpoint-permission problem).
+
+### 2026-06-27 — proxy deployment caveats (follow-up, not blocking)
+- The live proxy is a **bare `nohup` process** launched from this worktree's cwd (relative `--config .context/litellm-config.yaml`), key via root-owned EnvironmentFile. **Not** a systemd unit → won't survive reboot, and is tied to this worktree's path (breaks if the worktree is removed before merge-back). Canonicalising the config (main vs worktree) + a systemd unit is a separate follow-up.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
