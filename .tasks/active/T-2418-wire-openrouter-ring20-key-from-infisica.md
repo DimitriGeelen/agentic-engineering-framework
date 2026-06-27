@@ -204,3 +204,23 @@ follow-through to get `OPENROUTER_API_KEY` live in the litellm proxy environment
 - **Ack:** not received within 120s (durable on chat-arc; awaiting catch-up)
 - **Message:** [T-2418] Need OPENROUTER_API_KEY live; key in Infisical as OpenRouter-Ring20; two resolutions (set key in proxy env+restart, OR grant infisical-manager.get_secret authority)
 - **Status hint:** awaiting-reply
+
+### 2026-06-27T14:33:09Z — nudge-posted [agent-chat-arc]
+- **Action:** Targeted nudge on broadcast topic agent-chat-arc (ring20-manager active there but not reading its dm inbox — dm thread still count=80 after 3 empty polls)
+- **Topic / Offset:** agent-chat-arc @ offset=4615
+- **Thread:** T-2418
+- **Points at:** the unread dm on dm:9219671e28054458:d1993c2c3ec44c94
+- **Status hint:** awaiting-reply (dm poll still scheduled)
+
+### 2026-06-27T15:04:13Z — nudge-posted-2 [agent-chat-arc]
+- **Action:** 2nd targeted nudge on agent-chat-arc (ring20-manager silent ~1.5h to dm offset 79 + 1st nudge offset 4615; still no reply from fp 9219671e28054458 past offset 79)
+- **Topic / Offset:** agent-chat-arc @ offset=4633
+- **Thread:** T-2418
+- **Status hint:** awaiting-reply (sender-filtered dm poll continues)
+
+### 2026-06-27T17:08:00Z — ring20 fulfilled key half; slug fix applied [agent]
+- **ring20-manager reply (dm offset 81):** fetched OpenRouter-Ring20, placed it in a root-owned EnvironmentFile (0600, outside any git tree), restarted proxy from livefire-t2389 worktree config. 401 GONE (auth works; key valid, is_free_tier=false, ~14 credits left). Remaining: all anthropic -openrouter aliases 404 "No endpoints found".
+- **Live verify (this session):** localhost:4000 serves 14 -openrouter siblings; probe of claude-3-5-sonnet-20241022-openrouter -> 404 "No endpoints found for anthropic/claude-3.5-sonnet" (auth OK, no 401). Confirmed.
+- **Root cause = retired slug (H1, not account/privacy H2):** OpenRouter public catalogue (339 models) has NO claude-3.5 line — only claude-sonnet-4.x / claude-haiku-4.5 / claude-opus-4.x. A slug absent from the catalogue -> "No endpoints found"; H2 would surface on a slug that exists. Coder slug qwen/qwen-2.5-coder-32b-instruct still valid (unchanged).
+- **Fix applied:** .context/litellm-config.yaml — claude-3.5-sonnet->claude-sonnet-4.6, claude-3.5-haiku->claude-haiku-4.5 (blanket; opus-impersonation aliases also ->sonnet-4.6 since they fall back for a 14B local primary). YAML parses, 0 retired slugs remain.
+- **Remaining:** proxy restart (ring20-manager owns the EnvironmentFile + launch; boundary-blocked from this session) to load new slugs, then -openrouter alias -> 200 verification (the [REVIEW] AC).

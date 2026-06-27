@@ -90,66 +90,69 @@ model_list:
       model: ollama_chat/dolphin-llama3:8b
       api_base: http://192.168.10.107:11434
 
-  # ── OpenRouter fallback siblings (T-2416 / T-2417) ─────────────────────────
-  # INERT until the operator sets OPENROUTER_API_KEY (env, or Watchtower
-  # Settings/Secrets → web/llm auto-registers OpenRouterProvider). litellm reads
-  # the key lazily via os.environ at request time — with no key, the primary
-  # ollama route still serves; only the *fallback* leg is dead. Do NOT hard-code
-  # a key here. Each sibling mirrors a primary alias and is wired as that
-  # alias's fallback under litellm_settings.fallbacks below.
+  # ── OpenRouter fallback siblings (T-2416 / T-2417 / T-2418) ────────────────
+  # LIVE since T-2418: OPENROUTER_API_KEY is supplied to the proxy via
+  # EnvironmentFile /root/.litellm-openrouter.env (ring20-manager, key
+  # OpenRouter-Ring20). litellm reads the key lazily via os.environ at request
+  # time. Do NOT hard-code a key here. Each sibling mirrors a primary alias and
+  # is wired as that alias's fallback under litellm_settings.fallbacks below.
+  # T-2418 slug fix: the undated anthropic/claude-3.5-* slugs were RETIRED by
+  # OpenRouter (404 "No endpoints found"); remapped to current catalogue slugs
+  # claude-sonnet-4.6 / claude-haiku-4.5. Re-probe after any slug churn:
+  # `curl https://openrouter.ai/api/v1/models | grep anthropic`.
   - model_name: claude-3-5-sonnet-20241022-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-sonnet
+      model: openrouter/anthropic/claude-sonnet-4.6
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-3-5-sonnet-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-sonnet
+      model: openrouter/anthropic/claude-sonnet-4.6
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-3-5-sonnet-qwen3-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-sonnet
+      model: openrouter/anthropic/claude-sonnet-4.6
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-3-5-sonnet-gemma4-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-haiku
+      model: openrouter/anthropic/claude-haiku-4.5
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-3-5-sonnet-qwen35-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-sonnet
+      model: openrouter/anthropic/claude-sonnet-4.6
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-3-5-sonnet-hermes3-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-haiku
+      model: openrouter/anthropic/claude-haiku-4.5
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-3-5-haiku-20241022-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-haiku
+      model: openrouter/anthropic/claude-haiku-4.5
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-haiku-4-5-20251001-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-haiku
+      model: openrouter/anthropic/claude-haiku-4.5
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-haiku-4-5-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-haiku
+      model: openrouter/anthropic/claude-haiku-4.5
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-opus-4-7-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-sonnet
+      model: openrouter/anthropic/claude-sonnet-4.6
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-opus-4-7-20250101-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-sonnet
+      model: openrouter/anthropic/claude-sonnet-4.6
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: claude-sonnet-coder-openrouter
@@ -159,12 +162,12 @@ model_list:
 
   - model_name: qwen3:14b-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-sonnet
+      model: openrouter/anthropic/claude-sonnet-4.6
       api_key: "os.environ/OPENROUTER_API_KEY"
 
   - model_name: dolphin-llama3:8b-openrouter
     litellm_params:
-      model: openrouter/anthropic/claude-3.5-haiku
+      model: openrouter/anthropic/claude-haiku-4.5
       api_key: "os.environ/OPENROUTER_API_KEY"
 
 litellm_settings:
