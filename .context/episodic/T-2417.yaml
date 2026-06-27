@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2417: remediate LLM integration: OpenRouter fallback routes + route fw ask through litellm proxy
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-27T06:47:26Z
+# ============================================================================
+
+task_id: T-2417
+task_name: "remediate LLM integration: OpenRouter fallback routes + route fw ask through litellm proxy"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-27T06:28:55Z
+completed: 2026-06-27T06:47:14Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`.context/litellm-config.yaml` parses (yaml.safe_load) and adds, for each ollama-backed alias, an `-openrouter` sibling alias with `api_key: "os.environ/OPENROUTER_API_KEY"` routing to an `openrouter/...` model'
+  - '`.context/litellm-config.yaml` declares `litellm_settings.fallbacks` mapping each primary ollama alias → its `-openrouter` sibling'
+  - '`.context/litellm-config.yaml` resolves the raw model name `fw ask` uses (`qwen3:14b` and `dolphin-llama3:8b`) as a proxy alias with an openrouter fallback, so ask.py routes without a 400'
+  - '`lib/ask.py` calls the litellm proxy (`http://localhost:4000/v1`, key from `general_settings.master_key`) as primary, falling back to direct `ollama.chat` when the proxy is unreachable; public CLI output unchanged'
+  - 'Hermetic tests pass: config-shape test + ask.py proxy/fallback test (mocked, no live calls); `python3 -c "import ast; ast.parse(...)"` on ask.py'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-06-27 — proxy-primary with non-silent direct-ollama fallback'
+    chose: '`fw ask` calls the litellm proxy first; on ANY proxy exception it'
+    rationale: 'the proxy gives ollama→openrouter failover, but `fw ask` (healing,'
+    alternatives_rejected: ['proxy-only (breaks `fw ask` when litellm down); opt-in env flag']
+  - decision: '2026-06-27 — thinking mode via extra_body, best-effort in proxy mode'
+    chose: 'pass ollama''s `think` through `extra_body={"think": ...}`; read'
+    rationale: '`think` is ollama-specific; litellm `drop_params: true` drops it'
+    alternatives_rejected: ['adding raw-name aliases without `drop_params` handling (risks']
+  - decision: '2026-06-27 — live `fw ask` validation deferred to post-merge'
+    chose: 'ship on hermetic tests + direct proxy probes; do NOT restart the'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 18
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/livefire-t2389/.tasks/completed/T-2417-remediate-llm-integration-openrouter-fal.md
+generated_by: context-agent-hybrid

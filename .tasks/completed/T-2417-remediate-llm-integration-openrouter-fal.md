@@ -4,12 +4,12 @@ name: "remediate LLM integration: OpenRouter fallback routes + route fw ask thro
 description: >
   remediate LLM integration: OpenRouter fallback routes + route fw ask through litellm proxy
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, bin/fw, lib/ask.py, lib/review.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-27T06:28:55Z
-last_update: 2026-06-27T06:28:55Z
-date_finished: null
+last_update: 2026-06-27T06:47:14Z
+date_finished: 2026-06-27T06:47:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -193,9 +193,12 @@ re-hard-wiring ask.py) now fails a unit test.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8b91ed53
-- **Timestamp:** 2026-06-27T06:46:25Z
+- **Scan ID:** R-e8629a96
+- **Timestamp:** 2026-06-27T06:47:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
+
+### 2026-06-27T06:47:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
