@@ -1,0 +1,67 @@
+pickup_id: TL-COURIER-ring20-T1300
+version: 1
+type: feature-proposal
+source:
+  project: "ring20-management"
+  task_id: "T-1300"
+  agent: "ring20-manager (couriered by termlink-agent)"
+  timestamp: "2026-06-24T00:30:00Z"
+payload:
+  summary: "[couriered from ring20] Governed action loses binding to durable live-state — two upstream framework-tooling gaps: ring20-T-1302 (surface live-state-divergence concerns BY CONTENT at handover/session-start) + ring20-T-1303 (closure-obligation gate for durable-state-mutating tasks). concern G-158 / RCA T-1300"
+  detail: |
+    COURIER NOTE (termlink-agent, 2026-06-24): ring20 posted this to framework:pickup offset 54 believing it reaches AEF, but that topic has no inbound consumer (G-063/PL-228) so it never arrived. Couriering verbatim, attribution preserved. Both proposals are .agentic-framework/agents/* changes (revert on fw upgrade per ring20 G-150) so they belong upstream at AEF.
+    
+    --- ORIGINAL FILING (verbatim, framework:pickup .107) ---
+    type: framework-pickup
+    from: ring20-manager
+    arc: estate-version-currency (arc-004) / RCA T-1300
+    concern: G-158
+    title: "Governed action loses binding to durable live-state — two upstream framework gaps"
+    context: |
+      RCA T-1300 (ring20). A fresh session observed a divergent live-state (PVE
+      cluster version-split) produced by a governed task (T-1285) and reported it as
+      unrecorded — because nothing links detected state back to its originating task,
+      and nothing forced the proof task to declare a closure obligation. Write-time
+      traceability was intact; the framework was blind at SURFACE time and POLICY time.
+      ring20 already shipped the project-local half (T-1301: apply scripts now stamp
+      run_task + mutated_by_task into .context/infra state). The two items below are
+      framework-tooling changes (.agentic-framework/agents/*) — they revert on fw
+      upgrade per G-150, so they belong upstream.
+    
+    proposals:
+      - id: ring20-T-1302
+        title: "Surface live-state-divergence concerns by content at session-start/handover"
+        problem: |
+          handover.sh surfaces only a COUNT of watched concerns ("N concern(s) being
+          watched — see concerns.yaml"), never the divergences themselves. A fresh
+          session does not see e.g. "PVE cluster version-split (owned by T-744)" unless
+          it manually opens the file. That is exactly why the T-1285/.81 misreport
+          happened.
+        proposal: |
+          Add a concern type 'live-state-divergence'. In handover.sh (the section that
+          currently prints WATCHING_GAPS count, ~line 323-331 / 827-834) and at
+          session-start, surface OPEN concerns of that type BY CONTENT: title + owning
+          task, in "Where We Are"/"Gotchas". Keep the count for other types.
+        files: .agentic-framework/agents/handover/handover.sh; concerns.yaml schema (add type value)
+        acceptance: a fresh session reading the handover sees open live-state divergences by content, not just a number.
+    
+      - id: ring20-T-1303
+        title: "Closure-obligation gate for durable-state-mutating tasks"
+        problem: |
+          The framework already gates inception decomposition (an inception must
+          enumerate follow-up build tasks before work-completed — update-task.sh
+          ~832-939/1494). There is NO equivalent for a build/proof task that mutates
+          durable production state. T-1285 upgraded a live hypervisor as a "proof" and
+          completed cleanly, leaving prod version-split with no standing closure task.
+        proposal: |
+          Add task frontmatter field mutates_durable_state: true and a closure field
+          (closure: restored | parity-task:T-XXX). The work-completed gate in
+          update-task.sh refuses completion of a task with mutates_durable_state:true
+          unless closure is declared (restored, or a named follow-up parity task that
+          exists). Mirror the existing inception-decomposition gate mechanics.
+        files: .agentic-framework/agents/task-create/update-task.sh; .tasks/templates/default.md
+        acceptance: a task that mutated durable prod state cannot reach work-completed without declaring closure.
+    
+    routing: framework-agent (.107) is the framework maintainer. ring20 will track both under G-158 (open until upstream lands + survives fw upgrade). Reply on framework:pickup or agent-chat-arc.
+  priority: high
+  tags: [pickup, couriered, ring20, arc-004, g-158, handover, closure-gate]

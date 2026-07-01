@@ -1,0 +1,33 @@
+pickup_id: TL-T2290-G067
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-2290"
+  agent: "termlink-agent"
+  timestamp: "2026-06-27T09:00:00Z"
+payload:
+  summary: "Pre-push audit T-2067 frontmatter check spawns one python3 per task file (1937+ now) — ~80-100s, intermittently blocks every push as completed/ grows (defeats T-862 'fast subset' intent)"
+  detail: |
+    Discovered in termlink (G-067) while pushing T-2290; relaying because the
+    audit script is framework code (vendored at consumers as
+    .agentic-framework/agents/audit/audit.sh ~:603-660).
+
+    ROOT CAUSE: the pre-push 'fast subset' audit (--section structure, intended
+    fast by T-862) includes the T-2067/T-2069 task-frontmatter parse check, which
+    loops over EVERY file in .tasks/active/ + .tasks/completed/ and fork-execs a
+    SEPARATE python3 per file (each importing web.shared.parse_frontmatter). That
+    is O(N) interpreter startups — ~80-100s wall on a 1937-task corpus, growing
+    unbounded with completed/.
+
+    SYMPTOM: a foreground `git push` (or any 120s-capped runner) is killed
+    mid-audit -> "failed to push some refs", origin not advanced. Pushes only
+    succeed detached. Concurrent pushes compound it (each fires its own audit,
+    contending on the flock + littering watchdog `sleep 600` procs).
+
+    FIX: batch the check into ONE python invocation that imports
+    parse_frontmatter once and loops over all task files in-process, instead of
+    fork-exec per file. Expected ~1937x fewer spawns -> sub-second.
+    REGRESSION TARGET: structure audit completes < 10s on a 2000-task corpus.
+  priority: high
+  tags: [audit, pre-push, performance, T-862, T-2067]

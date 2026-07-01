@@ -1,0 +1,62 @@
+# Audit Results - 2026-06-29-0033
+timestamp: 2026-06-28T22:33:49Z
+sections: "structure"
+summary:
+  pass: 21
+  warn: 3
+  fail: 1
+findings:
+  - level: PASS
+    check: "Tasks directory exists"
+  - level: PASS
+    check: "Tasks/active directory exists"
+  - level: PASS
+    check: "Tasks/completed directory exists"
+  - level: PASS
+    check: "Tasks/templates directory exists"
+  - level: PASS
+    check: "Task template exists"
+  - level: PASS
+    check: "No duplicate task IDs across active/ and completed/"
+  - level: PASS
+    check: "All 23 project YAML files parse correctly"
+  - level: PASS
+    check: "All 11 arc anchor_task references resolve to existing tasks"
+  - level: PASS
+    check: "All 10 in-progress arc(s) had task commits within 30 days"
+  - level: WARN
+    check: "free driver F-ORCH: retire_when condition appears met (T-1643 completed cleanly OR G-064 closed) — review whether to retire"
+    mitigation: "Review the driver; if truly retired, comment it out or move to candidates section. Silence with FW_RETIRE_WHEN_ADVISORY=0."
+  - level: INFO
+    check: "free driver F-AUTONOMY: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F3: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F1: retire_when text present, no recognition heuristic — manual review"
+  - level: INFO
+    check: "free driver F2: retire_when text present, no recognition heuristic — manual review"
+  - level: PASS
+    check: "No inline arc:<slug> tag-only scans outside canonical lib (T-1881)"
+  - level: PASS
+    check: "No stale-slice-references (L-417)"
+  - level: PASS
+    check: "No GO-scope-not-propagated inception(s) (sibling to L-417)"
+  - level: PASS
+    check: "Fabric: 853 registered, 4 unregistered (coverage growing)"
+  - level: WARN
+    check: "Fabric: 98/844 cards have no edges"
+    mitigation: "Run: fw fabric enrich"
+  - level: WARN
+    check: "Fabric drift: 9 source file(s) have no fabric card"
+    mitigation: "Run: fw fabric scan"
+  - level: PASS
+    check: "Cron registry in sync with /etc/cron.d/agentic-audit-999-agentic-engineering-framework"
+  - level: PASS
+    check: "Hook threshold: no hooks failing over threshold"
+  - level: PASS
+    check: "Secret scan: tracked tree clean"
+  - level: PASS
+    check: "Large-file gate: tracked tree clean"
+  - level: FAIL
+    check: "Self-vendor drift: templates class — 1 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor self  (sync .agentic-framework/ templates with source)"

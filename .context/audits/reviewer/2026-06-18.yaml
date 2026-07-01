@@ -1,0 +1,78 @@
+scan_date: '2026-06-18'
+scan_timestamp: '2026-06-18T02:37:08Z'
+pass: B
+catalogue_version: v1.3-seed
+escalation_version: v1.1-seed
+tasks_scanned: 2156
+errors: []
+totals:
+  PASS: 1607
+  CONCERN: 549
+  FAIL: 0
+  needs_human: 70
+pattern_fire_counts:
+  AC-verify-mismatch: 371
+  l387-sigpipe-risk: 406
+  empty-output-success: 80
+  mock-only-integration: 23
+  audience-mismatch: 1
+  review-link-homework: 1
+  human-ac-mechanical-signal: 1
+  disposition-incomplete: 31
+suppressed_fire_counts:
+  human-ac-mechanical-signal: 11
+  tautology: 3
+  swallowed-errors: 11
+  empty-output-success: 1
+  AC-verify-mismatch: 28
+  skip-as-pass: 3
+  l387-sigpipe-risk: 7
+  mock-only-integration: 11
+suppressed_total: 75
+active_overrides: 95
+escalation_fire_counts:
+  external-publish: 4
+  cross-project-blast: 41
+  destructive-action: 24
+  secret-handling: 1
+top_findings:
+- pattern_id: l387-sigpipe-risk
+  count: 406
+  examples:
+  - T-1040
+  - T-1041
+  - T-1042
+  - T-1064
+  - T-1066
+- pattern_id: AC-verify-mismatch
+  count: 371
+  examples:
+  - T-1020
+  - T-1020
+  - T-1028
+  - T-1064
+  - T-1064
+- pattern_id: empty-output-success
+  count: 80
+  examples:
+  - T-1195
+  - T-1204
+  - T-1222
+  - T-1223
+  - T-1232
+- pattern_id: disposition-incomplete
+  count: 31
+  examples:
+  - T-2201
+  - T-2201
+  - T-2201
+  - T-2201
+  - T-2203
+- pattern_id: mock-only-integration
+  count: 23
+  examples:
+  - T-1320
+  - T-1446
+  - T-1480
+  - T-159
+  - T-1622

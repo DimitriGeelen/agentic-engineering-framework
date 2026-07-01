@@ -1,0 +1,35 @@
+pickup_id: P-048
+version: 1
+type: bug-report
+source:
+  project: 505-Ring20-Site
+  task_id: T-2441
+  agent: claude-code
+  timestamp: '2026-06-21T06:50:03Z'
+payload:
+  summary: Greenfield onboarding has 4 correctness defects (live dogfood of /opt/505
+    install)
+  detail: 'Dogfooded the 6-step install into empty /opt/505-Ring20-Site. Four defects
+    on the greenfield happy path:
+
+    F4 fw init scaffolds invalid policy/value-drivers.yaml (yaml-2bv: missing keys:
+    drivers) -> 1 error/42 every fresh project.
+
+    F5 ''fw init'' prints ''Session init failed - run fw context init manually'';
+    recovery works but happy path is broken.
+
+    F9 STEP-5 false-positive health: fw serve refuses busy foreign :3000 (good) but
+    starts nothing; fw watchtower url + curl then return 200 from the FOREIGN server
+    -> user thinks dashboard is up when it never started (Directive-2 silent failure).
+
+    F10 fw serve --port from /opt/505 logs ''project: /opt/999-Agentic-Engineering-Framework''
+    (PROJECT_ROOT empty) -> consumer Watchtower bleeds into the dev framework (sibling
+    of T-2391/T-2392 + T-1257).
+
+    Full evidence + RCA + proposed remediation: docs/reports/T-2441-aef-onboarding-dogfooding.md.
+    Proposal, not a build instruction (G-020).'
+  priority: high
+  tags:
+  - onboarding
+  - dogfooding
+  - greenfield

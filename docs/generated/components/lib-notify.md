@@ -14,7 +14,7 @@ audit failures, handovers, human AC ready). Uses the skills-manager (150) ntfy
 infrastructure via its alert dispatcher CLI.
 Usage:
 source "$FRAMEWORK_ROOT/lib/notify.sh"
-fw_notify "title" "message" [trigger] [category]
+fw_notify "title" "message" [trigger] [category] [click_url]
 Configuration:
 NTFY_ENABLED — set to "true" to enable (default: disabled)
 Design: Fire-and-forget, backgrounded, never blocks the calling script.

@@ -662,3 +662,17 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-079
+  text: "add"
+  captured: 2026-06-16T16:49:09Z
+  context_task: T-1687
+  tags: []
+  status: dismissed
+  promoted_to: null
+- id: OBS-080
+  text: "focus-drift gate noise: 104/110 (94.5%) of last-7d bypasses are close-cycle commits — update-task.sh nulls focus, agent re-focuses to T-OTHER for next ops, then commits 'T-XXX: close...' for the just-closed task → focus-drift fires. Possible structural fix: silent-allow git commit when msg-ref T-XXX resolves to .tasks/completed/T-XXX modified within last N minutes. Gate-semantics change — operator triage before any code edit."
+  captured: 2026-06-16T16:49:30Z
+  context_task: T-1687
+  tags: []
+  status: pending
+  promoted_to: null

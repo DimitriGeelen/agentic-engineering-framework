@@ -2,7 +2,7 @@ audit: orchestrator-mcp-scan
 task: T-1646
 parent_arc: T-1644
 origin: T-1641
-last_run: '2026-06-11T10:27:24Z'
+last_run: '2026-06-21T06:04:39Z'
 baseline_count: 263
 current_count: 270
 gated_baseline: 4
@@ -28,18 +28,24 @@ findings:
     suggested: null
     sample_sessions:
     - email-archive
+  - bad: task=
+    count: 1
+    suggested: 'task:'
+    sample_sessions:
+    - fed-fix-worker
   auto_classified:
     mutators_ungated: []
     readonly_exempt:
     - termlink_channel_cv_keys
 apply_result: null
-sessions_scanned: 8
+sessions_scanned: 6
 sessions_probe_error: null
 warnings:
 - "NEW: 6 unclassified tool(s) (manual review needed \u2014 outside T-1761 convention\
   \ scope): termlink_fleet_governor_history, termlink_fleet_governor_status, termlink_hub_governor_status,\
   \ termlink_substrate_history, termlink_substrate_status, termlink_whoami"
-- 'TAG-FORMAT-DRIFT: 1 non-canonical tag prefix(es) in live sessions: respawn=(1)'
+- 'TAG-FORMAT-DRIFT: 2 non-canonical tag prefix(es) in live sessions: respawn=(1),
+  task=(1)'
 errors: []
 framework_findings:
   status: pass

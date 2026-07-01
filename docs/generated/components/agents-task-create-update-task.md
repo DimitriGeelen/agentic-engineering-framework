@@ -35,7 +35,7 @@ Usage:
 | [bvp-estimator](/docs/generated/agents-termlink-bvp-estimator-bvp-estimator) | calls | TODO: describe what this component does |
 | [inception_decisions](/docs/generated/lib-inception_decisions) | calls | TODO: describe what this component does |
 
-## Used By (29)
+## Used By (31)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -68,6 +68,8 @@ Usage:
 | [disposition_gate](/docs/generated/tests-unit-disposition_gate) | tests_by | TODO: describe what this component does |
 | [test_update_task_horizon_null_reclose](/docs/generated/tests-unit-test_update_task_horizon_null_reclose) | called_by | TODO: describe what this component does |
 | [test_update_task_horizon_null_reclose](/docs/generated/tests-unit-test_update_task_horizon_null_reclose) | tests_by | TODO: describe what this component does |
+| [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | called_by | TODO: describe what this component does |
+| [recommendation_gate_build_partial](/docs/generated/tests-unit-recommendation_gate_build_partial) | tests_by | TODO: describe what this component does |
 
 ## Documentation
 

@@ -1,0 +1,53 @@
+pickup_id: P-050
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-2259"
+  agent: "claude-code"
+  timestamp: "2026-06-23T20:57:16Z"
+payload:
+  summary: "Pickup observer self-echo: G-046 self-filter only skips COMPLETED source tasks, so relaying in-flight work auto-creates duplicate inbound tasks"
+  detail: "BUG: pickup observer auto-creates DUPLICATE tasks from a project's OWN outbound
+relays when the source task is still active (self-echo loop).
+
+SYMPTOM: Every time termlink relays an in-flight finding upstream via
+`fw pickup send` (which bridges to the framework:pickup hub topic), the local
+pickup observer reads that same envelope back off the topic and auto-creates an
+inception task on termlink itself — a phantom "incoming" task that is really our
+own outbound. Observed this session: P-047 -> T-2257, P-048 -> T-2260 + T-2261,
+P-049 -> T-2263 (4 phantom tasks; all had source_project_in_origin: "termlink").
+
+ROOT CAUSE: lib/pickup.sh has a self-filter `pickup_is_self_completed` (G-046)
+that checks `source_project == local_project` — BUT it only auto-defers when the
+source task is ALREADY COMPLETED (it greps the source task into completed/). For
+a self-authored envelope whose source task is still ACTIVE / partial-complete
+(the normal case when you relay in-flight work), the completed-check returns
+false, so ingestion proceeds and `pickup_create_inception` makes a duplicate.
+
+WHY ALLOWED: G-046 was scoped to the narrow "I already finished this, don't
+re-open it" case. It missed the broader invariant: a self-authored envelope
+(source_project == local_project) should NEVER create an inbound task on the
+SAME project, regardless of the source task's completion state — it is our own
+outbound mirrored back, not peer work.
+
+FIX (recommended): broaden the guard to skip/auto-defer ANY self-authored
+envelope (source_project == local_project) independent of source-task status —
+e.g. rename/extend to `pickup_is_self_authored` and short-circuit in the
+ingestion loop. CAVEAT to weigh: legitimate cross-HOST same-project pickups
+(two instances sharing a project name on different hubs) — if that is a real
+use case, gate on an instance/host id rather than project name alone, or require
+self-authored inbound to be explicitly opted in.
+
+PREVENTION (distinct from fix): a test that bridges a self-authored envelope for
+an ACTIVE source task and asserts the observer creates ZERO tasks (currently it
+creates one). Pairs with the existing G-046 completed-source test.
+
+IMPACT: low-severity but high-noise — floods the inception/review queue with
+phantom duplicates every time the project relays in-flight work upstream
+(directly worsens the T-2194 "human review queue backlog" it was filed against).
+
+Filed by termlink under T-2259/T-2262 dedup work. NOTE: this very envelope will
+round-trip into one more self-echo until the fix lands; termlink will close it."
+  priority: medium
+  tags: [pickup, self-echo, g-046, observer, dedup]

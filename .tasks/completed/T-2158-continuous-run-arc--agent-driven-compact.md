@@ -9,82 +9,17 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon: null
+horizon:
 tags: [priority, arc-003, orchestrator, autonomy, continuous-run]
-components: [agents/termlink/bvp-estimator/estimator.py, tests/unit/test_bvp_estimator.py]
+components: [agents/termlink/bvp-estimator/estimator.py, 
+      tests/unit/test_bvp_estimator.py]
 related_tasks: []
 created: 2026-06-01T09:39:33Z
 last_update: 2026-06-13T08:43:48Z
 date_finished: 2026-06-13T08:43:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
-bvp_scores_proposed:
-  - ts: '2026-06-01T09:42:12Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 0
-      D3: 0
-      D4: 2
-    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
-      D4=2 (body:env-class-handled)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-02T09:45:02Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 0
-      D3: 0
-      D4: 2
-      F-RECALL: 0
-      F-ORCH: 0
-    rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=0 (no-signal); 
-      D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-05T18:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-11T16:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F1=2 
-      (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-11T22:23:32Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
-      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
+bvp_scores_proposed: []
 cost_estimate_proposed:
   - ts: '2026-06-01T09:45:03Z'
     estimator: bvp-estimator-v1-heuristic
@@ -106,6 +41,9 @@ cost_estimate_proposed:
     rubric_sha: e4a00f38e801
 target_blast_radius: 3   # T-2193 migration default (M=small-subsystem floor)
 voi_score: 0.5            # T-2193 migration default (medium)
+bvp_scores_proposed: []
+confirmed_by: unknown
+confirmed_at: '2026-06-25T14:23:02Z'
 ---
 
 # T-2158: continuous-run arc — agent-driven compact→resume loop with bounded-autonomy ceiling

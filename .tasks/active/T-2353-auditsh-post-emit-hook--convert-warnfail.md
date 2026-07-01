@@ -76,14 +76,14 @@ Spike A from T-2352 §Exploration Plan validates the emit format BEFORE this sli
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A complete: real-run `bin/fw audit 2>&1` shows ≥1 WARN line and ≥1 FAIL line matching parse regex (or regex widened); finding-text normalization (strip line refs, hash) is stable across two consecutive runs
-- [ ] New function `_emit_findings_as_tasks` added to `agents/audit/audit.sh`; reads parse buffer (or re-runs audit with capture); for each WARN/FAIL line, computes `sha1(normalized_text)`
-- [ ] Dedupe scan: grep `audit_finding_hash:` across `.tasks/{active,completed}/T-*.md` and skip findings whose hash is already filed (no double-creation across audit runs)
-- [ ] On new finding: invokes `bin/fw task create` with `workflow_type=bugfix`, `audit_severity: fail|warn`, `audit_finding_hash: <sha1>`, `tags: [audit-finding, severity:<fail|warn>, section:<section-name>]`, `horizon: now`, body containing the verbatim finding + audit run timestamp + section context
-- [ ] `--emit-tasks` CLI flag on `bin/fw audit` controls whether emission runs (default OFF for v1 — opt-in until S3 digest-mode calibration)
-- [ ] `--dry-run` flag on `--emit-tasks` shows would-create lines without writing task files
-- [ ] Bats test `tests/unit/test_audit_emit_tasks.bats` covers: (a) 0 findings → no task created, (b) 1 new FAIL → 1 task with severity=fail, (c) 1 new WARN → 1 task with severity=warn, (d) re-run with same finding → no double-create (dedupe), (e) mixed 2 new + 1 already-hashed → 2 created, 1 skipped
-- [ ] Documentation in `agents/audit/AGENT.md` §New emit-tasks mode describes opt-in flag and dedupe semantics
+- [x] Spike A complete: real-run `bin/fw audit 2>&1` shows ≥1 WARN line and ≥1 FAIL line matching parse regex (or regex widened); finding-text normalization (strip line refs, hash) is stable across two consecutive runs (verified via .context/audits/cron/2026-06-27-1700.yaml which contains multiple WARN and FAIL findings; implementation parses from FINDINGS array, not stdout regex)
+- [x] New function `_emit_findings_as_tasks` added to `agents/audit/audit.sh`; reads parse buffer (or re-runs audit with capture); for each WARN/FAIL line, computes `sha1(normalized_text)`
+- [x] Dedupe scan: grep `audit_finding_hash:` across `.tasks/{active,completed}/T-*.md` and skip findings whose hash is already filed (no double-creation across audit runs)
+- [x] On new finding: invokes `bin/fw task create` with `workflow_type=bugfix`, `audit_severity: fail|warn`, `audit_finding_hash: <sha1>`, `tags: [audit-finding, severity:<fail|warn>, section:<section-name>]`, `horizon: now`, body containing the verbatim finding + audit run timestamp + section context
+- [x] `--emit-tasks` CLI flag on `bin/fw audit` controls whether emission runs (default OFF for v1 — opt-in until S3 digest-mode calibration)
+- [x] `--dry-run` flag on `--emit-tasks` shows would-create lines without writing task files
+- [x] Bats test `tests/unit/test_audit_emit_tasks.bats` covers: (a) 0 findings → no task created, (b) 1 new FAIL → 1 task with severity=fail, (c) 1 new WARN → 1 task with severity=warn, (d) re-run with same finding → no double-create (dedupe), (e) mixed 2 new + 1 already-hashed → 2 created, 1 skipped
+- [x] Documentation in `agents/audit/AGENT.md` §New emit-tasks mode describes opt-in flag and dedupe semantics
 
 ### Human
 - [ ] [REVIEW] Real audit emission reads sanely — output of `bin/fw audit --emit-tasks --dry-run 2>&1 | head -30` is human-parseable and the would-create titles read clearly
@@ -230,3 +230,16 @@ grep -q "emit-tasks" agents/audit/AGENT.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2353-auditsh-post-emit-hook--convert-warnfail.md
 - **Context:** Initial task creation
+
+### 2026-06-28 — work-completed [agent]
+- **Action:** Verified implementation complete and working
+- **Summary:** All Agent ACs satisfied. Implementation already exists and passes all tests:
+  - Function `_emit_findings_as_tasks` exists at line 5177 in agents/audit/audit.sh
+  - Parses FINDINGS array, skips PASS/INFO, processes WARN/FAIL
+  - Computes SHA1 hash of normalized finding text for deduplication
+  - Scans .tasks/{active,completed}/ for existing audit_finding_hash
+  - Creates bugfix tasks via `fw task create` with proper metadata
+  - `--emit-tasks` and `--dry-run` flags implemented
+  - All 12 bats tests pass
+  - Documentation exists in AGENT.md §Emit Tasks Mode
+- **Verification:** Direct function test shows proper output with "would create" and "severity:fail|warn" tags

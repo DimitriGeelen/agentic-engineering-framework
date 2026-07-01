@@ -1,0 +1,111 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2417: fw sessions — portable per-project session view (implements T-2416 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-16T10:23:14Z
+# ============================================================================
+
+task_id: T-2417
+task_name: "fw sessions — portable per-project session view (implements T-2416 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-16T09:20:14Z
+completed: 2026-06-16T10:23:06Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-16T11:23:46+02:00
+last_commit: 2026-06-16T12:08:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sessions — partial (schema + CC adapter + renderer; dispatcher + tests TODO). self-vendor sync (schema + CC adapter + renderer). fw sessions — dispatcher + 18 bats tests + fabric register (9/10 Agent ACs). reviewer PASS — all 10 Agent ACs ticked, only Human live-fire remains. self-vendor sync — bin/fw sessions + adapter/renderer refactor
+
+# Key outcomes
+outcomes:
+  - '`bin/fw sessions` exists and is wired into the `fw` dispatcher (visible in `fw help`).'
+  - '`agents/sessions/SCHEMA.md` documents the canonical schema (fields, types, semantics of `project`/`state`/`age_seconds`) as the adapter contract.'
+  - '`agents/sessions/claude-code/list.sh` reads `claude agents --json` and emits **canonical-schema JSONL** to stdout (one session per line). When `claude` not on PATH → exit 2 with clear message.'
+  - 'Renderer (`agents/sessions/render.py`) reads canonical JSONL from stdin and prints the grouped tree (`// project` headers, nested `Needs input`/`Working`/`Completed`, relative ages, `(loose)` bucket last). Agent-neutral — no CC string anywhere.'
+  - 'Provider autodetect: `command -v claude` → `cursor` → `aider` → `cline`; `FW_AGENT_PROVIDER` env override; clean exit-2 message when no adapter found.'
+  - '`bin/fw sessions` end-to-end: autodetect → adapter → renderer → grouped tree printed.'
+  - 'Unit test for CC adapter (`tests/unit/sessions_claude_code_adapter.bats`): stub `claude` binary on PATH emits canned JSON; adapter emits canonical JSONL with correct field mapping; loose-cwd cases (cwd=`$HOME`, cwd=`/tmp`) get `project="(loose)"`.'
+  - 'Unit test for renderer (`tests/unit/sessions_render.bats`): canned canonical JSONL → expected text output (project ordering, state ordering, age formatting, loose bucket placement).'
+  - '`bash -n bin/fw` and `python3 ast.parse` on adapter + renderer pass.'
+  - 'Reviewer PASS: `bin/fw reviewer T-2417`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: 'Canonical schema (IW-5)'
+  - decision: 'Render layout (IW-1, IW-2, IW-3, IW-4)'
+  - decision: 'Provider autodetect (IW-6)'
+  - decision: 'Portability boundary (Constitutional Directive 4)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/sessions/claude-code/list.sh'
+  - '.agentic-framework/agents/sessions/render.py'
+  - '.agentic-framework/agents/sessions/SCHEMA.md'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'agents/sessions/claude-code/list.sh'
+  - 'agents/sessions/render.py'
+  - 'agents/sessions/SCHEMA.md'
+  - 'bin/fw'
+  - '.context/episodic/T-2413.yaml'
+  - '.context/episodic/T-2416.yaml'
+  - '.context/working/reviewer-overrides.yaml'
+  - '.fabric/components/agents-sessions-claude-code-list.yaml'
+  - '.fabric/components/agents-sessions-render.yaml'
+  - '.fabric/components/agents-sessions-SCHEMA.yaml'
+  - '.fabric/components/tests-unit-sessions_claude_code_adapter.yaml'
+  - '.fabric/components/tests-unit-sessions_render.yaml'
+  - '.tasks/active/T-2417-fw-sessions--portable-per-project-sessio.md'
+  - '.tasks/completed/T-2413-investigate-cc-picker-description-influe.md'
+  - '.tasks/completed/T-2416-fw-sessions--portable-per-project-sessio.md'
+  - 'tests/unit/sessions_claude_code_adapter.bats'
+  - 'tests/unit/sessions_render.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T11:23:46"
+    action: "T-2417: fw sessions — partial (schema + CC adapter + renderer; dispatcher + tests TODO)"
+  - time: "2026-06-16T11:59:28"
+    action: "T-2417: self-vendor sync (schema + CC adapter + renderer)"
+  - time: "2026-06-16T12:07:05"
+    action: "T-2417: fw sessions — dispatcher + 18 bats tests + fabric register (9/10 Agent ACs)"
+  - time: "2026-06-16T12:08:06"
+    action: "T-2417: reviewer PASS — all 10 Agent ACs ticked, only Human live-fire remains"
+  - time: "2026-06-16T12:08:24"
+    action: "T-2417: self-vendor sync — bin/fw sessions + adapter/renderer refactor"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 62
+  commits: 5
+  files_changed: 22
+  lines_added: 2207
+  lines_removed: 180
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2417-fw-sessions--portable-per-project-sessio.md
+generated_by: context-agent-hybrid

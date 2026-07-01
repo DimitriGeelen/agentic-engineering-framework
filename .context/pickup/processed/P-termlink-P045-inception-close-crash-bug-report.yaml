@@ -1,0 +1,13 @@
+pickup_id: P-045
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-2229"
+  agent: "claude-code"
+  timestamp: "2026-06-21T10:38:48Z"
+payload:
+  summary: "update-task.sh ships-reachable gate crashes on inception work-completed: __file__ is '-' under python3 stdin, breaks lib.inception_decisions import"
+  detail: "agents/task-create/update-task.sh ~line 578 runs the inception ships-reachable gate via 'python3 - "$TASK_FILE" "$PROJECT_ROOT" <<PYEOF'. Line 580 computes the framework root with os.path.abspath(__file__), but the snippet is fed on STDIN so __file__ == '-'. abspath('-') => <cwd>/- ; triple os.path.dirname() then yields '/' , which is inserted on sys.path instead of the framework root. The subsequent 'from lib.inception_decisions import ...' (line 588) then raises ModuleNotFoundError: No module named 'lib.inception_decisions' (the module exists at lib/inception_decisions.py). Apport also shows FileNotFoundError os.stat('<cwd>/-'). This ABORTS 'fw task update T-XXX --status work-completed' for any inception AFTER 'Inception decision: recorded' — the decision is saved but the task never flips to work-completed / moves to completed/. Repro: echo 'import sys,os; sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))); import lib.inception_decisions' | python3 -  => ModuleNotFoundError. FIX: bash already knows $FRAMEWORK_ROOT (line 17). Pass it into the snippet and use it instead of __file__, e.g. 'FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 - ...' then 'sys.path.insert(0, os.environ["FRAMEWORK_ROOT"])' (drop the __file__ triple-dirname). The code comment on lines 581-582 already notes argv differs under heredoc but still trusts __file__ for the path. Workaround until fixed: run work-completed with PYTHONPATH=<project>/.agentic-framework set. Observed on termlink 2026-06-21 completing inception T-2229."
+  priority: high
+  tags: []

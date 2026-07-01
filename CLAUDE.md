@@ -101,6 +101,10 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
   - `bvp_scores_proposed:` (list of timestamped entries) — estimator-proposed scores written by the TermLink BVP estimator worker (T-1922). Persists only when the proposal differs from `bvp_scores:` by ≥2 on any driver (M3 v2-delta semantics).
   - `cost_estimate:` (map) — F8 composite `0.6×blast_radius + 0.3×tier + 0.1×effort`. Q2 fallback: T-shirt `S/M/L/XL` mapped to `2/4/6/8` when `blast_radius` is not computable yet. Read by auto-promote (T-1931) and `fw bvp rank` (T-1919).
   - Audit (`fw audit`) treats unknown frontmatter fields as silent additions (A2). Documented in `policy/value-drivers.yaml` and `docs/reports/T-1915-bvp-inception.md`.
+- `audit_severity` (T-2354, arc-006) — Audit-finding urgency escalation field.
+  - Values: `fail` | `warn` — populated by `fw audit --emit-tasks` (T-2353) when converting audit WARN/FAIL findings into bugfix tasks.
+  - BVP estimator `score_audit_severity` handler scores: `fail` → 5 (top urgency), `warn` → 3 (elevated urgency), absent → 0.
+  - Validates that audit-finding tasks rank above routine backlog on `fw bvp rank`.
 
 ### Horizon (Priority Scheduling)
 

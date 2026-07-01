@@ -937,6 +937,76 @@ def test_f_autonomy_dispatch_distinguishes_dedicated_vs_fallback(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# T-2354 — score_audit_severity dedicated handler (S2 of T-2352 audit→bugfix arc).
+# Reads audit_severity:fail|warn frontmatter field (populated by fw audit
+# --emit-tasks, T-2353 S1) and scores audit-finding tasks high (fail=5, warn=3).
+# Handler stays LATENT until T-2353 lands field emission AND a driver
+# definition lands in policy/value-drivers.yaml.
+# ---------------------------------------------------------------------------
+
+
+def test_audit_severity_fail_scores_five():
+    """audit_severity=fail scores 5 (top urgency)."""
+    fm = {**FM_BUILD, "audit_severity": "fail"}
+    s, ev = estimator.score_audit_severity(fm, "Some body text.", [])
+    assert s == 5
+    assert any("audit_severity=fail" in e for e in ev)
+    assert any("top urgency" in e for e in ev)
+
+
+def test_audit_severity_warn_scores_three():
+    """audit_severity=warn scores 3 (elevated urgency)."""
+    fm = {**FM_BUILD, "audit_severity": "warn"}
+    s, ev = estimator.score_audit_severity(fm, "Some body text.", [])
+    assert s == 3
+    assert any("audit_severity=warn" in e for e in ev)
+    assert any("elevated urgency" in e for e in ev)
+
+
+def test_audit_severity_absent_scores_zero():
+    """Missing audit_severity field scores 0 (not an audit-finding task)."""
+    s, ev = estimator.score_audit_severity(FM_BUILD, "Regular task body.", [])
+    assert s == 0
+    assert any("no audit_severity field" in e for e in ev)
+
+
+def test_audit_severity_case_insensitive():
+    """Field value is case-insensitive (FAIL/Fail/fail all work)."""
+    fm_upper = {**FM_BUILD, "audit_severity": "FAIL"}
+    s_upper, _ = estimator.score_audit_severity(fm_upper, "", [])
+    assert s_upper == 5
+
+    fm_mixed = {**FM_BUILD, "audit_severity": "Warn"}
+    s_mixed, _ = estimator.score_audit_severity(fm_mixed, "", [])
+    assert s_mixed == 3
+
+
+def test_audit_severity_unknown_value_scores_zero():
+    """Unknown audit_severity value scores 0 (defensive)."""
+    fm = {**FM_BUILD, "audit_severity": "info"}
+    s, ev = estimator.score_audit_severity(fm, "", [])
+    assert s == 0
+    assert any("no audit_severity field" in e for e in ev)
+
+
+def test_audit_severity_registered_in_handlers_dict():
+    """audit_severity handler is present in the handlers dispatch dict."""
+    fm_fail = {**FM_BUILD, "audit_severity": "fail"}
+    task = None  # We'll test via estimate_task when driver is active
+    # The handler key should be registered
+    from estimator import estimate_task
+    # Create a temp task to verify dispatch
+    import tempfile
+    from pathlib import Path
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        task = _make_task(tmp_path, "Audit finding body.", fm_extra={"audit_severity": "fail"})
+        result = estimate_task(task, {"audit_severity": 5})
+        # When driver is active, dedicated handler fires (scores fail → 5)
+        assert result["scores"]["audit_severity"] == 5
+
+
+# ---------------------------------------------------------------------------
 # T-2356 — score_d_disjoint + score_d_wire_evidence dedicated handlers
 # (arc-011 scoped drivers proposed in T-2344). Both stay LATENT until the
 # operator approves the scoped drivers via Watchtower AND the estimator

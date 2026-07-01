@@ -1,2 +1,3 @@
 [2026-04-03T22:02:47Z] CRASH: check-active-task exit=1
 2026-05-01T07:17:49Z missing-hook nonexistent-hook-name script=/opt/999-Agentic-Engineering-Framework/agents/context/nonexistent-hook-name.sh
+2026-06-28T22:15:30Z missing-hook bogus-hook-name-for-T1628 script=/opt/999-Agentic-Engineering-Framework/agents/context/bogus-hook-name-for-T1628.sh

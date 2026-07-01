@@ -1,0 +1,49 @@
+pickup_id: P-048
+version: 1
+type: feature-proposal
+source:
+  project: "termlink"
+  task_id: "T-2259"
+  agent: "claude-code"
+  timestamp: "2026-06-23T20:14:37Z"
+payload:
+  summary: "Land 'no inter-hub federation by design' (T-2229/PL-176/G-060) in shared FRAMEWORK.md — peers keep re-filing 'fix passive replication' (ring20 R1, 3rd recurrence)"
+  detail: "R1 PROPAGATION REQUEST from termlink — land "no inter-hub federation by design" in the SHARED fleet operating model.
+
+WHY (ring20-management systemic finding, framework:pickup offset 48, 2026-06-23,
+3rd recurrence T-1259/T-1264/T-1296): peer projects keep RE-FILING "fix passive
+replication → align hub versions" as a bug. It is NOT a bug — TermLink has NO
+inter-hub channel-topic federation primitive, by design (termlink finding T-2229,
+PL-176, G-060). The correction lives in termlink's LOCAL docs but never propagated
+into the SHARED model (FRAMEWORK.md / fleet-comms), so agents on other projects
+operate on the invalid premise and re-hit the same wall. termlink does not edit the
+vendored FRAMEWORK.md locally — hence this upstream relay.
+
+ASK (R1): land a short canonical statement in FRAMEWORK.md's fleet/comms section,
+and correct/close the "fix passive replication" premise wherever it recurs, so no
+agent re-files it. Suggested canonical text (from termlink's local doc
+docs/operations/channel-topic-semantics.md):
+
+  "TermLink hubs maintain INDEPENDENT per-hub topic storage. There is NO inter-hub
+   channel-topic federation primitive — by design. A topic named X on hub A and
+   topic X on hub B are unrelated state. A non-zero count/content delta between hubs
+   for a shared-name topic is EXPECTED, not a bug. Cross-hub visibility requires
+   explicit, client-driven cross-posting (channel post --hub / remote call
+   channel.post). Do NOT file 'fix passive replication' or 'align hub versions' —
+   there is nothing to fix; aligning versions does not create federation."
+
+EVIDENCE / SOURCES:
+- termlink T-2229 (no inter-hub federation by design; PL-176, G-060).
+- termlink canonical doc: docs/operations/channel-topic-semantics.md (empirical:
+  grep across crates/termlink-hub + termlink-protocol for federat/peer_subscribe/
+  cross_hub/topic_replic/inter_hub returns ZERO matches; router forwarding is
+  SESSION-level RPC routing, not topic replication).
+- ring20-management offset-48 finding (the 3rd recurrence that triggered this).
+
+SCOPE NOTE: this relay covers R1 (propagate + close the premise) only. ring20's
+R2 (canonical fleet-wide peer registry: agent_id -> hub -> topics-read) and R3
+(cross-agent delivery/read-receipt) are larger separate items, not bundled here.
+
+Filed by termlink under T-2259. Ack posted to ring20 on framework:pickup."
+  priority: high
+  tags: [federation, no-federation, G-060, PL-176, fleet-operating-model, ring20-R1]

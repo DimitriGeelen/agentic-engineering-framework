@@ -269,6 +269,8 @@ fi
 SECTIONS=""       # Comma-separated section names (empty = all)
 OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
 QUIET=false       # Suppress terminal output
+EMIT_TASKS=false  # T-2353: Convert WARN/FAIL to bugfix tasks
+DRY_RUN=false     # T-2353: Show would-create without writing tasks
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -276,6 +278,8 @@ while [[ $# -gt 0 ]]; do
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --quiet) QUIET=true; shift ;;
         --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; shift ;;
+        --emit-tasks) EMIT_TASKS=true; shift ;;
+        --dry-run) DRY_RUN=true; shift ;;
         -h|--help)
             echo "Usage: audit.sh [options]"
             echo ""
@@ -284,6 +288,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --output DIR      Write YAML report to custom directory"
             echo "  --quiet           Suppress terminal output (for cron)"
             echo "  --cron            Shorthand for --output .context/audits/cron --quiet"
+            echo "  --emit-tasks      Convert WARN/FAIL findings into bugfix tasks (T-2353)"
+            echo "  --dry-run         Show would-create tasks without writing files"
             echo ""
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
             echo "          learning, episodic, observations, gaps, handover, graduation,"
@@ -5165,6 +5171,141 @@ echo "=== END AUDIT ==="
 # Restore stdout if quiet mode was active
 if [ "$QUIET" = true ]; then
     exec 1>&3
+fi
+
+# T-2353: Emit findings as bugfix tasks (S1)
+_emit_findings_as_tasks() {
+    local dry_run="$1"
+    local created_count=0
+    local skipped_count=0
+
+    # Parse FINDINGS array (format: "LEVEL|CHECK|MITIGATION")
+    for finding in "${FINDINGS[@]}"; do
+        # Extract severity, check name, and mitigation
+        local severity=$(echo "$finding" | cut -d'|' -f1)
+        local check=$(echo "$finding" | cut -d'|' -f2)
+        local mitigation=$(echo "$finding" | cut -d'|' -f3)
+
+        # Skip PASS/INFO entries — only emit WARN/FAIL
+        if [ "$severity" != "WARN" ] && [ "$severity" != "FAIL" ]; then
+            continue
+        fi
+
+        # Normalize finding text for hashing (strip line references, dedupe-stable)
+        # Format: "SEVERITY: CHECK_NAME"
+        local normalized="${severity}: ${check}"
+        local finding_hash=$(echo -n "$normalized" | sha1sum | cut -d' ' -f1)
+
+        # Dedupe scan: check if this finding hash already exists in tasks
+        if grep -r "audit_finding_hash: $finding_hash" "$PROJECT_ROOT/.tasks/active/" "$PROJECT_ROOT/.tasks/completed/" 2>/dev/null | grep -q .; then
+            skipped_count=$((skipped_count + 1))
+            if [ "$dry_run" = true ]; then
+                echo "[DRY-RUN] SKIP (already filed): $normalized"
+            fi
+            continue
+        fi
+
+        # Determine section from check text (best effort)
+        local section="general"
+        if echo "$check" | grep -qi "fabric"; then section="fabric"; fi
+        if echo "$check" | grep -qi "cron\|schedule"; then section="cron"; fi
+        if echo "$check" | grep -qi "task\|compliance"; then section="tasks"; fi
+        if echo "$check" | grep -qi "git\|traceability"; then section="git"; fi
+        if echo "$check" | grep -qi "vendor\|self-vendor"; then section="vendor"; fi
+
+        # Build task body
+        local task_body="## Context
+
+Audit finding from run at $AUDIT_TIMESTAMP
+
+**Severity:** $severity
+**Check:** $check
+**Section:** $section
+
+## Finding
+
+\`\`\`
+$check
+\`\`\`
+
+## Mitigation
+
+$mitigation
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Mitigation steps completed
+- [ ] Re-run \`bin/fw audit\` and verify this finding no longer appears
+- [ ] Root cause addressed (not just symptom suppressed)
+
+## Verification
+
+\`\`\`bash
+# Verify finding is resolved
+bin/fw audit 2>&1 | grep -qv \"$check\" || { echo \"Finding still present\"; exit 1; }
+\`\`\`
+"
+
+        # Generate task title
+        local task_title="Audit $severity: $(echo "$check" | head -c 60)"
+
+        if [ "$dry_run" = true ]; then
+            local severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
+            echo "[DRY-RUN] would create: $task_title"
+            echo "  severity:$severity_lower, section:$section"
+            created_count=$((created_count + 1))
+        else
+            # Create the task via fw task create, then inject metadata
+            local severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
+            local task_output
+            task_output=$("$FRAMEWORK_ROOT/bin/fw" task create \
+                --name "$task_title" \
+                --type bugfix \
+                --horizon now \
+                --tags "audit-finding,severity:$severity_lower,section:$section" \
+                2>&1)
+
+            if [ $? -eq 0 ]; then
+                # Extract task ID from output (format: "Created task T-XXX ...")
+                local task_id=$(echo "$task_output" | grep -oE 'T-[0-9]+' | head -1)
+                if [ -n "$task_id" ]; then
+                    # Find the task file
+                    local task_file=$(find "$PROJECT_ROOT/.tasks/active/" -name "${task_id}-*.md" 2>/dev/null | head -1)
+                    if [ -n "$task_file" ]; then
+                        # Inject metadata fields into frontmatter (after tags line)
+                        sed -i "/^tags:/a\\audit_finding_hash: $finding_hash\\naudit_severity: $severity_lower" "$task_file"
+
+                        # Append body to task file
+                        echo "$task_body" >> "$task_file"
+
+                        created_count=$((created_count + 1))
+                        echo "Created task: $task_id - $task_title"
+                    fi
+                fi
+            fi
+        fi
+    done
+
+    # Summary
+    if [ "$dry_run" = true ]; then
+        echo ""
+        echo "=== EMIT TASKS (DRY RUN) ==="
+        echo "Would create: $created_count"
+        echo "Would skip (already filed): $skipped_count"
+    else
+        if [ $created_count -gt 0 ] || [ $skipped_count -gt 0 ]; then
+            echo ""
+            echo "=== EMIT TASKS ==="
+            echo "Created: $created_count"
+            echo "Skipped (already filed): $skipped_count"
+        fi
+    fi
+}
+
+# Call emit function if --emit-tasks is set
+if [ "$EMIT_TASKS" = true ]; then
+    _emit_findings_as_tasks "$DRY_RUN"
 fi
 
 # T-709: Push notification on audit failures

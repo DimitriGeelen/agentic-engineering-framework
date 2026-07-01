@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2411: claude-fw startup banner: show project / branch / focus / arc
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-15T20:59:48Z
+# ============================================================================
+
+task_id: T-2411
+task_name: "claude-fw startup banner: show project / branch / focus / arc"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-15T20:55:28Z
+completed: 2026-06-15T20:59:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-15T22:59:14+02:00
+last_commit: 2026-06-15T22:59:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw startup banner — project / branch / focus / arc
+
+# Key outcomes
+outcomes:
+  - '`bin/claude-fw` emits a one-shot banner before launching `command claude` showing:'
+  - 'Banner is emitted exactly once per wrapper invocation (not on each auto-restart'
+  - 'Banner failures are non-fatal: missing focus file / missing arc / not in a git'
+  - '`--no-restart` continues to work (banner does not interact with restart flag)'
+  - '`bash -n bin/claude-fw` exits 0 (syntax check per L-408)'
+  - 'bats test at `tests/integration/claude_fw_startup_banner.bats` (4/4 PASS)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/claude-fw'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0615-2228.md'
+  - '.tasks/active/T-2411-claude-fw-startup-banner-show-project--b.md'
+  - 'tests/integration/claude_fw_startup_banner.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-15T22:59:14"
+    action: "T-2411: claude-fw startup banner — project / branch / focus / arc"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 1426
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2411-claude-fw-startup-banner-show-project--b.md
+generated_by: context-agent-hybrid

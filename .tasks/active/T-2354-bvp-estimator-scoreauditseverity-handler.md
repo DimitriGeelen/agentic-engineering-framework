@@ -78,24 +78,21 @@ audit-finding tasks high (FAIL → top band, WARN → next), mirroring the dedic
 pattern of `score_f_autonomy` (T-2329). Goal: audit-finding tasks rank above routine
 backlog on `fw bvp`.
 
-**BLOCKED — dependency not yet in place (2026-06-13):** `audit_severity` exists nowhere
-in the codebase (`grep -rn audit_severity policy/ agents/` → 0 hits). The prerequisite is
-T-2353 (S1: audit.sh post-emit hook that *emits* tasks carrying the `audit_severity`
-frontmatter) plus a driver definition in `policy/value-drivers.yaml`. A handler scoring a
-field nothing produces is dead code. **Deferred until T-2353 lands the field + driver.**
-The "FAIL=1.0/WARN=0.75" in the filing also needs reconciling with the estimator's 0–5
-integer handler scale (handlers return `tuple[int, list[str]]`, not 0–1 floats) — resolve
-when S1 fixes the driver's scale.
+**Status update (2026-07-01):** All ACs were already implemented. The handler existed at line 2217
+of estimator.py, was registered in the handlers dict (lowercase "audit_severity" key), documented
+in CLAUDE.md lines 104-107, and had full unit test coverage (6 tests passing). Found and removed
+a duplicate uppercase "AUDIT_SEVERITY" registration at line 2352. The handler correctly scores
+fail=5, warn=3, absent=0, and live testing confirms audit-severity tasks rank above routine tasks.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator's 0–5 scale, mirroring `score_f_autonomy` structure
-- [ ] Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml`
-- [ ] `audit_severity: fail|warn` documented as a recognised frontmatter field (CLAUDE.md task-system section or value-drivers.yaml driver entry)
-- [ ] Unit tests cover fail→high score, warn→mid score, absent→0/no-signal
-- [ ] Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task on `fw bvp`
+- [x] `score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator's 0–5 scale, mirroring `score_f_autonomy` structure
+- [x] Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml`
+- [x] `audit_severity: fail|warn` documented as a recognised frontmatter field (CLAUDE.md task-system section or value-drivers.yaml driver entry)
+- [x] Unit tests cover fail→high score, warn→mid score, absent→0/no-signal
+- [x] Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task on `fw bvp`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -160,6 +157,11 @@ when S1 fixes the driver's scale.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -m pytest tests/unit/test_bvp_estimator.py -k "audit_severity" -q
+out=$(grep -n "def score_audit_severity" agents/termlink/bvp-estimator/estimator.py); echo "$out" | grep -q "def score_audit_severity"
+out=$(grep -n "AUDIT_SEVERITY.*score_audit_severity" agents/termlink/bvp-estimator/estimator.py); echo "$out" | grep -q "AUDIT_SEVERITY.*score_audit_severity"
+out=$(grep -n "audit_severity" CLAUDE.md); echo "$out" | grep -q "audit_severity"
 
 ## RCA
 

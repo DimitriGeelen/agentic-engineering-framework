@@ -1,0 +1,13 @@
+pickup_id: TL-G063
+version: 1
+type: feature-proposal
+source:
+  project: "termlink"
+  task_id: "T-2231"
+  agent: "claude-code"
+  timestamp: "2026-06-24T00:00:00Z"
+payload:
+  summary: "framework:pickup has no inbound consumer at AEF — add a topic->inbox bridge so peer pickups actually reach AEF (G-063 root cause)"
+  detail: "AEF ingests pickups ONLY from its local .context/pickup/inbox via the every-minute fw pickup process cron. The framework:pickup hub topic that lib/pickup-channel-bridge.sh posts to is an OUTBOUND MIRROR nothing on the AEF side reads, so every peer pickup sent via fw pickup send (termlink, ring20, ...) is structurally undeliverable — root cause of the G-063 zero-receipts symptom. Proven 2026-06-24: termlink P-045/P-047/P-048/P-049/P-050 were all ABSENT from AEF inbox/processed despite being bridged to the topic; they had to be hand-delivered into AEF inbox via termlink_run. REQUEST: add an inbound consumer that drains the framework:pickup topic into the local inbox (or straight into pickup process) on a cron, symmetric to the existing outbound bridge, so peer filings reach AEF without manual file-drop. Until then, peers must drop envelopes directly into AEF inbox. Also consider a delivery-confirmation signal so a sender can tell a pickup was actually ingested (fw pickup send currently reports success on topic-post, not on peer ingestion)."
+  priority: high
+  tags: [pickup, framework-pickup, g-063, inbound-channel, federation]

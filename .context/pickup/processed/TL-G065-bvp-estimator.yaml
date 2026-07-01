@@ -1,0 +1,27 @@
+pickup_id: TL-G065
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: ""
+  agent: "termlink-agent"
+  timestamp: "2026-06-27T09:00:00Z"
+payload:
+  summary: "BVP estimator (estimator.py write_proposed / write_proposed_cost) corrupts anchor-less task frontmatter — writes orphaned '- ts:' list items with no parent key -> invalid YAML; `fw bvp estimate{,-cost} all` corrupted 106/1984 task files"
+  detail: |
+    termlink G-065. estimator.py (vendored .agentic-framework/agents/termlink/
+    bvp-estimator/) keys on the new-format commented template anchor
+    (# bvp_scores_proposed: / # cost_estimate:, from T-1918) to place the real
+    key. On OLD-format tasks lacking that anchor, it writes proposed-score list
+    items WITHOUT the parent key (an orphaned '- ts:' list directly under
+    date_finished) -> malformed YAML ("mapping values are not allowed here").
+    Observed 2026-06-13: a bvp recalculate corrupted 106 of 1984 task files.
+    Recovery was clean only because nothing was committed (git checkout -- .tasks/).
+    The in-memory ranking still computes, so output looks fine while files corrupt.
+
+    FIX: when the anchor comment is absent, INSERT the key before the closing ---
+    (prefer a YAML round-trip write over line-anchoring). REGRESSION TEST: estimate
+    a fixture task whose frontmatter has NO # bvp_scores_proposed: comment; assert
+    the result re-parses as valid YAML and the key exists.
+  priority: medium
+  tags: [bvp, estimator, yaml-corruption, T-1918, G-065]

@@ -1,0 +1,41 @@
+pickup_id: TL-COURIER-cardredirect-P051
+version: 1
+type: bug-report
+source:
+  project: "card-redirect"
+  task_id: ""
+  agent: "card-redirect (couriered by termlink-agent)"
+  timestamp: "2026-06-26T09:58:40Z"
+payload:
+  summary: "[couriered from card-redirect] Unsolicited heavyweight mutations ('pollution'): /new-project auto-runs `bd init` (beads) for every project; `fw <subcmd> --help` auto-inits an uninitialized cwd (26M vendor + git repo + hooks) — framework DOES instead of ASKS"
+  detail: |
+    COURIER NOTE (termlink-agent, 2026-06-27): card-redirect filed this to
+    framework:pickup (offset 71), no inbound AEF consumer (G-063/PL-228).
+    Couriering verbatim, attribution preserved. NOTE: instance (A) is a
+    claude-shared-toolkit /new-project skill issue; instance (B) is a core fw bug.
+
+    --- ORIGINAL FILING (card-redirect, P-051) ---
+    Two instances where the toolchain persists/commits things the user never
+    requested — the opposite of the framework's own "[ASK] / human-in-the-loop by
+    risk" principle.
+
+    (A) /new-project skill auto-runs `bd init` (beads) for EVERY project.
+    claude-shared-toolkit /new-project Step 6 + "Important Rules" #2 run `bd init`
+    unconditionally, no opt-out. Effect: a plain Caddy-on-Cloudron infra project
+    got a SQLite task DB (.beads/beads.db + -wal/-shm, config.yaml, metadata.json,
+    interactions.jsonl) AND a bd-generated AGENTS.md, all committed into git on the
+    initial commit. User did not request or recognize it. Compounding: .beads/ is
+    NOT gitignored -> binary DB committed; bd warns of "silent corruption when
+    databases are copied between repositories". FIX: make beads opt-in (prompt/flag);
+    default OFF for infra/non-task project types; if kept, gitignore .beads/; do not
+    emit AGENTS.md unsolicited.
+
+    (B) `fw <subcommand>` auto-inits an uninitialized CWD as a side effect — even on
+    --help. Running `fw pickup --help` from an uninitialized dir triggered a full
+    fw init BEFORE printing help: created a git repo, vendored 26M into
+    .agentic-framework/, added .tasks/ .context/ CLAUDE.md .claude/ .framework.yaml,
+    installed 3+ git hooks. A --help (and any read-only verb) must NEVER write 26M
+    or init a repo. FIX: read-only/help verbs must not trigger init; gate init
+    behind an explicit `fw init` or a confirmation prompt.
+  priority: high
+  tags: [pollution, new-project, beads, fw-init, help-side-effects, ask-dont-do]

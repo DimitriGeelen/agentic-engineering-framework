@@ -1047,3 +1047,13 @@ overrides:
   expires_at: '2026-09-14T10:07:29Z'
   added_by: root
   added_at: '2026-06-16T10:07:29Z'
+- id: OV-274d0d35
+  task_id: T-2423
+  pattern_id: AC-verify-mismatch
+  ac_index: 4
+  reason: "AC text references .context/inbox.yaml as the audit-trail location for\
+    \ OBS-076 (status=promoted, promoted_to=task); the file exists and contains the\
+    \ entry \u2014 scanner heuristic flags any path-like string in AC text"
+  expires_at: '2026-09-14T14:52:18Z'
+  added_by: root
+  added_at: '2026-06-16T14:52:18Z'

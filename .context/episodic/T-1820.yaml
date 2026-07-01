@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1820: joint smoke-test slice — v2 peer-consult end-to-end after TermLink T-1636 ships
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-06-26T10:23:26Z
+# ============================================================================
+
+task_id: T-1820
+task_name: "joint smoke-test slice — v2 peer-consult end-to-end after TermLink T-1636 ships"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-13T23:05:51Z
+completed: 2026-06-26T10:23:13Z
+duration_days: 44
+updates_count: 2
+first_commit: 2026-05-14T01:14:56+02:00
+last_commit: 2026-06-15T21:45:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  joint smoke-test ACs + dispatch T-1636 build worker. capture coord dispatch + timeout lesson in Evolution while worker builds. scaffold joint-smoke demo artefact (build-independent sections). strengthen Verification gates + suppress mock-only-integration FP. build landed (worker exit 0) — stop at deploy boundary, surface HOLD. L-373 — TERMLINK_WORKER_TIMEOUT default kills real Rust builds. deploy landed, headline mechanic not observed in CLI smoke — PARTIAL-SHIP. investigation outcome — handler is test-only; file T-1821 follow-up. deliver pickup envelope P-041 to /opt/termlink inbox. rerun against fix-shipped hub 0.9.2110 — emit still not session-poll observable. handover S-2026-0615-2142
+
+# Key outcomes
+outcomes:
+  - 'TermLink T-1636 implementation dispatched via `bin/fw termlink dispatch --project /opt/termlink --task T-1820 --timeout 5400 --model sonnet` with prompt enumerating the 5 locked constraints. Worker `t1636-build` running (started 2026-05-14T01:14:33+02:00). Initial dispatch at 10-min default timeout was killed mid-read — redispatched with 90-min timeout + sonnet for the Rust build.'
+  - 'T-1636 build landed in /opt/termlink: cross-repo commit(s) reference T-1636, event class constant defined in events.rs, emit call inserted in deliver_pending, integration test added and passing (≤50 LOC total diff). **Evidence (worker exit 2026-05-13T23:36Z, code 0):** 3 files / 50 LOC (within budget); commits `f3927611` (impl) + `13a11741` (task update); architecture — emit lands inside `mirror_inbox_deposit_with` (no-consumer branch) via new `aggregator().inject()`; integration tests `inbox_queued_fires_for_no_consumer` + `inbox_queued_not_emitted_without_deposit` both pass; release build clean; zero deviations from the 5 locked constraints. Full report at `docs/reports/T-1820-joint-smoke-demo.md` §Worker report.'
+  - 'Live joint smoke executed: framework spawns a tagged TermLink consumer session, posts a DM into a `dm:design-*` channel addressed to that session, runs `fw peer subscribe --once`, observes (a) `inbox.queued` event polled, (b) addressee resolved to `design-consult` workflow, (c) responder spawn invoked. Captured as console transcript + cursor state. **PARTIAL-COMPLETE:** Substrate operational (binary `termlink 0.9.2104` deployed, hub PID 4091515 running, framework subscriber polls cleanly with cursor advance, topic recognized); CLI trigger investigation completed and documented (two user-facing trigger attempts + three `channel post inbox:*` attempts post-fix did NOT fire observable events on session buses); rerun against fix-shipped `0.9.2110 ebe05294` confirms emit asymmetry (hub-internal aggregator vs per-session poll); full investigation trail captured in demo artifact with open question to termlink-agent re: subscription path. T-1821 filed for headline-mechanic observation when TermLink resolves aggregator-vs-session-bus routing.'
+  - 'Demo artefact written to `docs/reports/T-1820-joint-smoke-demo.md` containing: dispatch envelope, T-1636 build commit hashes, smoke transcript (timestamps + events seen + responder dispatch line), cursor advance evidence. **Complete:** dispatch envelope, commit hashes, worker report, coord transcript, harness plan, deploy log, trigger investigation, rerun against fix-shipped hub 0.9.2110, and Recommendation (PARTIAL-SHIP with investigation outcome + open question to termlink-agent) all landed.'
+  - 'No regression in framework-side peer tests: `python3 -m pytest tests/unit/test_peer_subscribe.py` 12/12 PASS.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'rerun against fix-shipped hub 0.9.2110 — emit still not session-poll observable'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0615-2142.md'
+  - '.context/project/learnings.yaml'
+  - '.context/working/reviewer-overrides.yaml'
+  - 'docs/reports/T-1820-joint-smoke-demo.md'
+  - '.tasks/active/T-1820-joint-smoke-test-slice--v2-peer-consult-.md'
+  - '.tasks/active/T-1821-t-1820-follow-up-live-joint-smoke-demo-w.md'
+  - '.tasks/completed/T-1819-seed-peer-consult-promptsyaml--framework.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-14T01:14:56"
+    action: "T-1820: joint smoke-test ACs + dispatch T-1636 build worker"
+  - time: "2026-05-14T01:16:46"
+    action: "T-1820: capture coord dispatch + timeout lesson in Evolution while worker builds"
+  - time: "2026-05-14T01:23:42"
+    action: "T-1820: scaffold joint-smoke demo artefact (build-independent sections)"
+  - time: "2026-05-14T01:25:42"
+    action: "T-1820: strengthen Verification gates + suppress mock-only-integration FP"
+  - time: "2026-05-14T01:41:26"
+    action: "T-1820: build landed (worker exit 0) — stop at deploy boundary, surface HOLD"
+  - time: "2026-05-14T01:42:48"
+    action: "T-1820: L-373 — TERMLINK_WORKER_TIMEOUT default kills real Rust builds"
+  - time: "2026-05-14T07:30:04"
+    action: "T-1820: deploy landed, headline mechanic not observed in CLI smoke — PARTIAL-SHIP"
+  - time: "2026-05-14T07:50:21"
+    action: "T-1820: investigation outcome — handler is test-only; file T-1821 follow-up"
+  - time: "2026-05-14T07:55:05"
+    action: "T-1820: deliver pickup envelope P-041 to /opt/termlink inbox"
+  - time: "2026-05-16T08:53:06"
+    action: "T-1820: rerun against fix-shipped hub 0.9.2110 — emit still not session-poll observable"
+  - time: "2026-06-15T21:45:55"
+    action: "T-1820: handover S-2026-0615-2142"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 13 commit(s), 62597 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [termlink, peer-consult, cross-repo, joint-smoke]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 62597
+  commits: 13
+  files_changed: 2312
+  lines_added: 52555
+  lines_removed: 6528
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1820-joint-smoke-test-slice--v2-peer-consult-.md
+generated_by: context-agent-hybrid

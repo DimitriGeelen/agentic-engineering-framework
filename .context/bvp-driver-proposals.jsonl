@@ -8,3 +8,8 @@
 {"id": "P-ae109eda", "ts": "2026-06-11T16:01:54Z", "state": "approved", "actor": "operator-watchtower"}
 {"id": "P-1c684628", "ts": "2026-06-11T16:01:58Z", "state": "approved", "actor": "operator-watchtower"}
 {"id": "P-eb0ffce2", "ts": "2026-06-11T16:02:10Z", "state": "rejected", "actor": "operator-watchtower", "rationale_decision": "test testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest"}
+{"id": "P-4a214e53", "ts": "2026-06-28T22:42:12Z", "state": "pending", "name": "V_TEST_DRIVER", "weight": 5, "rationale": "Test driver for the T-2331 bats suite \u226530 chars.", "drop": null, "task": null, "author": "agent:unknown"}
+{"id": "P-0794925a", "ts": "2026-06-28T22:42:13Z", "state": "pending", "name": "V_AGENT_PROPOSED", "weight": 3, "rationale": "Agent proposes under CLAUDECODE=1, no Sovereign refusal.", "drop": null, "task": null, "author": "agent:unknown"}
+{"id": "P-0921913c", "ts": "2026-06-28T22:42:14Z", "state": "pending", "name": "V_RACEY", "weight": 4, "rationale": "Agent A proposes weight 4; race-free append test.", "drop": null, "task": null, "author": "agent:unknown"}
+{"id": "P-0883a968", "ts": "2026-06-28T22:42:14Z", "state": "pending", "name": "V_RACEY", "weight": 6, "rationale": "Agent B proposes weight 6; same name, different rationale + weight.", "drop": null, "task": null, "author": "agent:unknown"}
+{"id": "P-1f80ddf8", "ts": "2026-06-28T22:42:15Z", "state": "pending", "name": "V_TASK_REF", "weight": 5, "rationale": "Proposal references a task \u2014 round-trip the task id.", "drop": null, "task": "T-2331", "author": "agent:unknown"}

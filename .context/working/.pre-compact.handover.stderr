@@ -1,2 +1,6 @@
-/opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.agentic-framework/agents/handover/handover.sh: line 1014: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.agentic-framework/agents/git/git.sh: Permission denied
+
+NOTE: Inception task T-2485 — no decision yet (commit 1/2 before gate)
+  After exploration:
+    cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-2485 go --rationale '...'
+
   WARNING: Push to origin failed (non-blocking)

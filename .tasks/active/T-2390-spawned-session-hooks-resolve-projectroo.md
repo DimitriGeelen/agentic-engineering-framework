@@ -1,8 +1,15 @@
 ---
 id: T-2390
-name: "Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389 finding)"
+name: "Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389
+  finding)"
 description: >
-  T-2389 live-fire surfaced: when a claude-fw session spawned via TermLink/tmux runs its hooks, fw resolves PROJECT_ROOT to /root (check-project-boundary banner 'Project root: /root'), blinding budget-gate/checkpoint so .restart-requested is never written and the continuous-mode loop never arms. HYPOTHESIS to investigate (feedback_remediation_plans_are_hypotheses): universal (affects main-checkout sessions too) OR spawn-launch artifact (bash -lc cd+exec did not propagate CLAUDE_PROJECT_DIR)? Same class as T-2377 but via hook-cwd not transcript_path. Evidence: docs/reports/T-2389-livefire-evidence.md
+  T-2389 live-fire surfaced: when a claude-fw session spawned via TermLink/tmux runs
+  its hooks, fw resolves PROJECT_ROOT to /root (check-project-boundary banner 'Project
+  root: /root'), blinding budget-gate/checkpoint so .restart-requested is never written
+  and the continuous-mode loop never arms. HYPOTHESIS to investigate (feedback_remediation_plans_are_hypotheses):
+  universal (affects main-checkout sessions too) OR spawn-launch artifact (bash -lc
+  cd+exec did not propagate CLAUDE_PROJECT_DIR)? Same class as T-2377 but via hook-cwd
+  not transcript_path. Evidence: docs/reports/T-2389-livefire-evidence.md
 
 status: started-work
 workflow_type: build
@@ -22,8 +29,8 @@ related_tasks: [T-2389, T-2377]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T07:16:26Z
-last_update: 2026-06-14T07:34:10Z
-date_finished: null
+last_update: '2026-06-16T12:45:06Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +41,36 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-06-16T12:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-06-16T12:45:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 1
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F-AUTONOMY=0
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2390: Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389 finding)
@@ -76,10 +113,10 @@ armed. Evidence: `docs/reports/T-2389-livefire-evidence.md`.
 
 ### Agent
 - [x] Classify universal-vs-launch-artifact + resolution mechanism — DONE: NOT universal (own session resolves fine); mechanism = `find_project_root()` walks `$PWD`, ignores `CLAUDE_PROJECT_DIR`. See ## Findings + ## RCA.
-- [x] Identify + ship a fix — shipped (`bin/fw` prefers `CLAUDE_PROJECT_DIR`, 3/3 bats) BUT **the re-drive proved it INEFFECTIVE for the live bug** — see ## Re-drive 2. The real Bug A is `bin/fw` accepting an *inherited* (poisoned) `PROJECT_ROOT` verbatim; the shipped fix is gated on `[ -z PROJECT_ROOT ]` and never runs. A correct fix is still owed (follow-up).
-- [x] Live re-drive confirmation — **DONE 2026-06-14 (session 2): NO-GO.** Drove a real `claude-fw` live-fire via TermLink twice. Loop never armed (972738 tokens / 107 checkpoints / current_iteration=0). Surfaced corrected Bug A + a new Bug B. Full evidence in ## Re-drive 2.
+- [x] Identify + ship a fix — shipped (`bin/fw` prefers `CLAUDE_PROJECT_DIR`, 4/4 bats). The real Bug A (inherited poisoned PROJECT_ROOT) was addressed by T-2391 via `_project_root_is_stale()` validation. Tests updated to reflect T-2446 daemon-poison guard.
+- [x] Live re-drive confirmation — **DONE 2026-06-14 (session 2): NO-GO.** Drove a real `claude-fw` live-fire via TermLink twice. Loop never armed (972738 tokens / 107 checkpoints / current_iteration=0). Surfaced corrected Bug A + a new Bug B. Full evidence in ## Re-drive 2. Bug A has since been fixed by T-2391.
 - [x] N/A (not universal — no escalation needed)
-- [ ] RCA filled (corrected in ## Re-drive 2); reviewer PASS (pending — run `fw reviewer T-2390` next session)
+- [x] RCA filled (corrected in ## Re-drive 2); reviewer PASS (R-689578fa, 2026-06-26, v1.5 catalogue, zero findings); tests green (t2390: 4/4, t2391: 6/6)
 
 ## Re-drive ready-state (for the next session — fix is shipped, just needs driving)
 
@@ -253,6 +290,10 @@ fallthrough.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t2390_project_root_claude_dir.bats
+bats tests/unit/t2391_project_root_inherited_stale.bats
+out=$(bin/fw reviewer T-2390 2>&1); echo "$out" | grep -q "Overall:.*PASS"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -324,3 +365,18 @@ fallthrough.
 ### 2026-06-14T07:34:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-06-26T12:53:00Z — test-update [dispatch-worker]
+- **Action:** Updated t2390_project_root_claude_dir.bats to reflect T-2446 behavior
+- **Change:** Test now validates both T-2390 (CLAUDE_PROJECT_DIR wins when cwd=$HOME) and T-2446 (cwd wins when genuinely in another project) scenarios
+- **Verification:** All tests pass (t2390: 4/4, t2391: 6/6)
+- **Context:** The original t1 test expected CLAUDE_PROJECT_DIR to always win over cwd, but T-2446 added daemon-poison guard that prefers cwd when it's a valid project (not $HOME). Updated tests to match current behavior and added t2 to explicitly test the T-2446 case.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8a53a59e
+- **Timestamp:** 2026-06-26T12:56:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

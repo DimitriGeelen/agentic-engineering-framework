@@ -19,3 +19,25 @@
 2026-04-30T21:07:05Z channel.post-failed envelope=P-045-from-ntb-atc-bug-report.yaml — falling back to event.broadcast
 2026-04-30T21:07:05Z posted via=event.broadcast topic=framework:pickup msg_type=pickup-bug-report sha=fdb2583beb3e785914178ac7b783cef377c5922aa6e8a7ceb556f0ce93ef60e3
 2026-06-10T19:48:08Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=8712933248eedfbb3cd4dbfe6abd3842668d9001cada5d9a6fa2b7ddc21fca09
+2026-06-23T22:42:23Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=f4563fc2b4a8cb9982e9d0766dc760783fef74c864b85a810e2a1905e929907c
+2026-06-23T22:47:04Z dedup envelope=P-termlink-T2256-worktree-aware-fw-feature-proposal.yaml sha=f4563fc2b4a8cb9982e9d0766dc760783fef74c864b85a810e2a1905e929907c
+2026-06-23T22:47:12Z dedup envelope=P-termlink-T2256-worktree-aware-fw-feature-proposal.yaml sha=f4563fc2b4a8cb9982e9d0766dc760783fef74c864b85a810e2a1905e929907c
+2026-06-23T23:22:59Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=e6eee3cb1fa0b97c420c443dcb542a878e15353046b9c1b478956f741c728708
+2026-06-23T23:23:08Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=a1e7ae078fd0ee866a337ffc044d7f6d46b3ccd48b09a8fd27e8e2822fd191a3
+2026-06-23T23:23:16Z dedup envelope=P-termlink-P045-inception-close-crash-bug-report.yaml sha=a1e7ae078fd0ee866a337ffc044d7f6d46b3ccd48b09a8fd27e8e2822fd191a3
+2026-06-23T23:23:25Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=486778eb10792c01a1e0312d50db0d89e5c75db896cdeb412ab4365b190be686
+2026-06-23T23:23:33Z dedup envelope=P-termlink-P048-no-federation-framework-md-feature-proposal.yaml sha=486778eb10792c01a1e0312d50db0d89e5c75db896cdeb412ab4365b190be686
+2026-06-23T23:23:41Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=363b79d0676f8c15e1f1503cdcf73885c9180c1f6b9db4d8f5151ceed7f04b97
+2026-06-23T23:23:50Z dedup envelope=P-termlink-P049-watchtower-500-bug-report.yaml sha=363b79d0676f8c15e1f1503cdcf73885c9180c1f6b9db4d8f5151ceed7f04b97
+2026-06-23T23:23:58Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=4e52fb114e5c5085269322628ceaa50037586b223787402cfc20140c7fd53c0d
+2026-06-23T23:24:06Z dedup envelope=P-termlink-P050-observer-self-echo-bug-report.yaml sha=4e52fb114e5c5085269322628ceaa50037586b223787402cfc20140c7fd53c0d
+2026-06-23T23:48:24Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=cd6ae3de7380ddf96d6d2a6532fe80d49e3f55ea333e5ae0900eff94391be01a
+2026-06-23T23:48:33Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=3ede472f9d3dff6f82c64bc153f29ea83d93c934d1fc639e864b9afa79afbbac
+2026-06-24T12:01:12Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=5b07d857a156573a9b17ebd4ce229ba6864d1d947cbfc43fefcd172f4e2e97c7
+2026-06-24T12:01:22Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=103aff01ff49981065dc40c6e02161c7834211c0f15e20a3fb564faa6391395a
+2026-06-25T14:04:10Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=b0331fec6dd35b255f216acaa2bc254aed2cbdd2e485a9b4982376d7a02afa15
+2026-06-27T08:05:10Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=7322a400f3c806e40d2c35d8123361e6fbeede0a209c5db2b3788a64ef8cd211
+2026-06-27T08:05:19Z posted via=channel.post topic=framework:pickup msg_type=pickup-feature-proposal sha=cb871ef6262291af3d1c5da09616ad8a2697733e99059174eb01d7bd14ceb61c
+2026-06-27T08:05:29Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=cbbbfcf54cd9add5b6cfad336d0dcd99afcac0dae04a5ca6edf422cfdb962fe2
+2026-06-27T08:06:10Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=2efcb5583e2590fa75531864f27016658955c15826358f1d1c4346281b14d7c9
+2026-06-27T08:06:19Z posted via=channel.post topic=framework:pickup msg_type=pickup-bug-report sha=1da5eed223fd42240fffd72070945092f60c2e68eb487ba804869354fbf19fac

@@ -1,0 +1,54 @@
+pickup_id: P-049
+version: 1
+type: bug-report
+source:
+  project: "termlink"
+  task_id: "T-2262"
+  agent: "claude-code"
+  timestamp: "2026-06-23T20:49:08Z"
+payload:
+  summary: "RCA: Watchtower /review + /approvals 500 in vendored mode — blueprints insert PROJECT_ROOT/lib but dispatch_pause lives at FRAMEWORK_ROOT/lib (PL-222 sibling)"
+  detail: "RCA — Watchtower /review/<id> and /approvals return HTTP 500 in vendored (consumer) installs.
+
+SYMPTOM: Every GET /review/<task-id> and the Tier-0 /approvals page return 500.
+ModuleNotFoundError: No module named 'dispatch_pause' at
+web/blueprints/review.py:25 (and approvals.py:25, identical). Independent of task
+state — the import fails before any task logic, so it is a TOTAL outage of the
+human-review + Tier-0-approval UI on every consumer host (framework != project).
+
+ROOT CAUSE: web/blueprints/review.py:21 and approvals.py do
+    sys.path.insert(0, str(PROJECT_ROOT / "lib"))   # comment cites T-1810
+then `from dispatch_pause import ...`. But dispatch_pause.py ships at
+FRAMEWORK_ROOT/lib/dispatch_pause.py, NOT PROJECT_ROOT/lib. In the framework's
+OWN repo FRAMEWORK_ROOT == PROJECT_ROOT so the wrong path happens to resolve and
+the bug is invisible in framework-dev. In a vendored install PROJECT_ROOT/lib
+(e.g. /opt/termlink/lib) does not exist, so the module is never importable.
+
+WHY THE FRAMEWORK WAS BLIND: same class as PL-222 (termlink) — framework code
+computes a lib/helper path that is correct only when framework==project. No test
+exercises the web blueprints in a vendored layout (framework dir != project root),
+so the consumer-mode path divergence ships undetected. The framework's own CI runs
+where the two roots coincide.
+
+FIX (one line, both files): web/shared.py already exports
+    FRAMEWORK_ROOT = APP_DIR.parent   (shared.py:22)
+so replace the insert with:
+    from web.shared import FRAMEWORK_ROOT
+    sys.path.insert(0, str(FRAMEWORK_ROOT / "lib"))
+Apply in BOTH review.py:21 and approvals.py (grep: `PROJECT_ROOT / "lib"`).
+
+PREVENTION (distinct from the fix): add a smoke test that boots the web app with
+PROJECT_ROOT set to a temp dir DISTINCT from FRAMEWORK_ROOT and asserts
+GET /review/<seed-task> returns 200 (not 500). This catches the entire
+"correct-only-when-framework==project" path-resolution class — the same blind
+spot that produced PL-222. Consider an audit/grep gate flagging
+`PROJECT_ROOT / "lib"` in web/ (helpers live under FRAMEWORK_ROOT/lib).
+
+WORKAROUND for operators until the fix lands (no patch — vendored is clobbered by
+fw upgrade per PL-022): start Watchtower with
+    PYTHONPATH=<project>/.agentic-framework/lib fw serve
+Verified: flips all /review/<id> + /approvals from 500 to 200.
+
+Filed by termlink under T-2262. Sibling of termlink PL-222 (P-045 upstream)."
+  priority: high
+  tags: [watchtower, vendored-mode, sys-path, pl-222-class, rca]

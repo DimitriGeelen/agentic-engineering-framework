@@ -2060,3 +2060,10 @@ decisions:
     date: 2026-06-14
     task: T-2396
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-297
+    decision: "Bash `case` patterns (`\"## \"*`, `\"### Human\"*`, `\"- [ ]\"*`) on `$line` for the heading and checkbox detection."
+    scope: project
+    date: 2026-06-16
+    task: T-2422
+    rationale: "Auto-captured from task file on completion"

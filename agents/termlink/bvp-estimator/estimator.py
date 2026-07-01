@@ -2214,6 +2214,41 @@ def score_estimator_fidelity(fm: dict, body: str, tags: list[str]) -> tuple[int,
     return 0, ev + ["→0 (no estimator-fidelity signal)"]
 
 
+def score_audit_severity(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """audit_severity — audit-finding urgency escalation (T-2354 / arc-006).
+
+    T-2354 (S2 of T-2352 audit→bugfix arc). Reads `audit_severity: fail|warn`
+    frontmatter field (populated by `fw audit --emit-tasks`, T-2353 S1) and
+    scores audit-finding tasks high, validating that audit-finding tasks rank
+    above routine backlog on `fw bvp`.
+
+    Handler stays LATENT until two events: (1) T-2353 lands the `audit_severity:`
+    field emission in audit.sh post-emit hook, AND (2) a corresponding driver
+    definition lands in `policy/value-drivers.yaml` with `id: audit_severity` or
+    `name: audit_severity`. Until then, the handler is in the dict but
+    estimate_task() won't dispatch to it (no driver in `drivers:` map).
+
+    Rubric (T-2354 specification, aligned with 0-5 integer handler pattern):
+      0: No audit_severity field (not an audit-finding task).
+      3: audit_severity=warn (audit WARN finding — next-tier urgency).
+      5: audit_severity=fail (audit FAIL finding — top-tier urgency).
+
+    Pattern mirrors score_f_autonomy (T-2329) structure: reads a frontmatter
+    enum field and returns discrete integer levels with evidence list.
+    """
+    ev: list[str] = []
+    severity = fm.get("audit_severity", "").lower()
+
+    if severity == "fail":
+        ev.append("audit_severity=fail")
+        return 5, ev + ["→5 (audit FAIL finding — top urgency)"]
+    elif severity == "warn":
+        ev.append("audit_severity=warn")
+        return 3, ev + ["→3 (audit WARN finding — elevated urgency)"]
+    else:
+        return 0, ev + ["→0 (no audit_severity field)"]
+
+
 def score_free_driver(driver_id: str, fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """Heuristic fallback for free drivers without a dedicated scorer — keyword-
     on-driver-id only.
@@ -2334,6 +2369,12 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # the score_free_driver keyword fallback for rubric-anchored scoring.
         "feedback-loop-completeness": score_feedback_loop_completeness,
         "estimator-fidelity": score_estimator_fidelity,
+        # T-2354 — audit_severity handler (S2 of T-2352 audit→bugfix arc).
+        # Reads audit_severity:fail|warn frontmatter field (populated by
+        # fw audit --emit-tasks, T-2353 S1) and scores audit-finding tasks
+        # high (fail=5, warn=3). LATENT until T-2353 lands field emission
+        # AND a driver definition lands in policy/value-drivers.yaml.
+        "audit_severity": score_audit_severity,
     }
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).

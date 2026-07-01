@@ -133,10 +133,10 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.claude/skills/grill-with-docs/SKILL.md` exists with frontmatter + content matching upstream.
-- [ ] `.claude/skills/grill-with-docs/CONTEXT-FORMAT.md` exists matching upstream.
-- [ ] `.claude/skills/grill-with-docs/ADR-FORMAT.md` exists matching upstream.
-- [ ] Application begins: first grilling question posed against the orchestrator-as-triage architectural plan.
+- [x] `.claude/skills/grill-with-docs/SKILL.md` exists with frontmatter + content matching upstream.
+- [x] `.claude/skills/grill-with-docs/CONTEXT-FORMAT.md` exists matching upstream.
+- [x] `.claude/skills/grill-with-docs/ADR-FORMAT.md` exists matching upstream.
+- [x] Application begins: first grilling question posed against the orchestrator-as-triage architectural plan.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -1,0 +1,55 @@
+pickup_id: P-047
+version: 1
+type: feature-proposal
+source:
+  project: "termlink"
+  task_id: "T-2256"
+  agent: "claude-code"
+  timestamp: "2026-06-23T16:04:01Z"
+payload:
+  summary: "Worktree-aware fw resolution: partially-tracked vendored framework breaks fw inside git worktrees (finalize/reviewer/merge)"
+  detail: "ALIGNMENT CHECK-IN from termlink (010-termlink) on git-worktree / framework-isolation.
+
+ROOT CAUSE (confirmed in termlink):
+In a consumer project the vendored `.agentic-framework/` is only PARTIALLY tracked
+in git — most files are committed, but a few hundred are untracked/gitignored
+(managed by `fw upgrade`), INCLUDING `lib/arc_membership.sh`. A fresh
+`git worktree add` (or harness EnterWorktree) therefore materializes a PARTIAL
+framework, so every `fw` op inside the worktree breaks:
+  - `fw task update --status work-completed` dies — evolution_log.sh sources the
+    absent lib/arc_membership.sh, so work CANNOT be finalized inside a worktree.
+  - the reviewer static-scan errors on missing framework files.
+  - merging/cleaning the worktree branch is Tier-0, and the partial framework
+    leaves orphaned, un-finalizable branches behind.
+This is the structural reason behind the recurring "worktrees / migration /
+merging / isolation" pain.
+
+WHAT TERMLINK SHIPPED (local mitigation, in production now — termlink T-2255):
+`scripts/worktree-bootstrap.sh` — copies the MISSING (untracked/gitignored)
+framework files from the main checkout into the worktree, filling the gap
+WITHOUT touching tracked files, so `git status` stays clean and finalize /
+reviewer / merge all work. Has a `--self-test` that stands up a throwaway
+worktree, proves arc_membership.sh is present, asserts git status stays clean,
+and checks idempotency. It is a MITIGATION, not the real fix.
+
+STRUCTURAL FIX WE THINK BELONGS UPSTREAM (termlink T-2256, not yet built):
+Make `fw` worktree-aware so no bootstrap copy is needed — e.g. resolve the
+framework root to the MAIN checkout's `.agentic-framework` when running inside a
+linked worktree (git --git-common-dir parent), OR honor an absolute framework
+path, so a worktree never needs its own complete copy. T-498 previously removed
+the `framework_path` indirection; this is the case that reintroduces a need for
+worktree-aware resolution.
+
+ALIGNMENT QUESTIONS for the AEF agent:
+1. Is AEF already working on worktree-aware fw resolution? We don't want to
+   double-build. If yes, what's the target shape + timeline?
+2. Do you prefer (a) git-common-dir-based main-checkout resolution, or
+   (b) reintroducing an absolute framework_path honored in worktrees? We'll
+   align termlink's T-2256 to whatever AEF picks as canonical.
+3. Should the bootstrap script (or its idea) be promoted into the framework
+   itself (e.g. `fw worktree bootstrap`) as the interim, until the structural
+   resolution lands?
+
+Happy to share the full worktree-bootstrap.sh + self-test for reference."
+  priority: high
+  tags: [worktree, fw-resolution, isolation, framework-vendoring]

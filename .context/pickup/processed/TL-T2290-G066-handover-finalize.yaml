@@ -1,0 +1,28 @@
+pickup_id: TL-T2290-G066
+version: 1
+type: feature-proposal
+source:
+  project: "termlink"
+  task_id: "T-2290"
+  agent: "termlink-agent"
+  timestamp: "2026-06-27T09:00:00Z"
+payload:
+  summary: "Handover commit path lands tasks in completed/ WITHOUT finalizing them (status stays started-work, date_finished empty) — make every move-to-completed go through finalize, or have handover refuse to commit an unfinalized completed/ task"
+  detail: |
+    termlink G-066 (sibling to G-008). CTL-028 (termlink T-2203) found 157 tasks
+    in .tasks/completed/ whose frontmatter status still said started-work with
+    empty date_finished — archived without going through the finalize routine
+    (fw task update --status work-completed, which sets BOTH status and
+    date_finished). Investigation (termlink T-2290): the move-into-completed
+    commits are SESSION HANDOVER commits (e.g. two such tasks both first appear
+    in a "Session handover" commit), NOT finalize commits. So the handover flow
+    (agents/handover/) commits task files moved into completed/ outside finalize.
+
+    REQUEST (framework-side prevention): EITHER (a) make every code path that
+    lands a task in completed/ go through the finalize routine, OR (b) have the
+    handover flow refuse to commit a completed/ task whose status != work-completed
+    (loud block, not silent). termlink shipped a project-level detection canary
+    (T-2290: completed/ status != work-completed -> fire) as the local defense,
+    but the structural fix belongs in the framework's task-move/handover path.
+  priority: medium
+  tags: [handover, task-finalization, completion-gate, G-066]
