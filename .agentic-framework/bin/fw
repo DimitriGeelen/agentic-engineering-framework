@@ -14,7 +14,15 @@ set -euo pipefail
 # Version: derived from git tags (major.minor = human tag, patch = commits since tag)
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {
-    local fw_dir="${BASH_SOURCE[0]%/*}/.."
+    # T-2450/F3: resolve symlinks before deriving fw_dir. fw is invoked via the
+    # global ~/.local/bin/fw symlink; the unresolved BASH_SOURCE[0] makes fw_dir
+    # point at the SYMLINK's parent (~/.local — no .git, no VERSION), so both the
+    # git-describe and VERSION-file branches miss and it falls through to "dev"
+    # → `fw vdev`. Resolve to the real bin/fw (same readlink chain as FW_REAL_PATH
+    # below) so fw_dir is the actual framework dir, then use it for BOTH branches.
+    local _src="${BASH_SOURCE[0]}" _real
+    _real="$(readlink -f "$_src" 2>/dev/null || realpath "$_src" 2>/dev/null || echo "$_src")"
+    local fw_dir="${_real%/*}/.."
     local desc=""
     # G-049: only call `git describe` when $fw_dir has its own .git.
     # In vendored mode, $fw_dir/.git is absent and walking up would
@@ -35,8 +43,8 @@ _derive_version() {
         else
             echo "$desc"
         fi
-    elif [ -f "${BASH_SOURCE[0]%/*}/../VERSION" ]; then
-        cat "${BASH_SOURCE[0]%/*}/../VERSION"
+    elif [ -f "$fw_dir/VERSION" ]; then
+        cat "$fw_dir/VERSION"
     else
         echo "dev"
     fi
@@ -194,7 +202,34 @@ if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; the
     # unaffected (CLAUDE_PROJECT_DIR unset → identical to pre-T-2390 behavior).
     if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && \
        { [ -f "$CLAUDE_PROJECT_DIR/.framework.yaml" ] || [ -d "$CLAUDE_PROJECT_DIR/.tasks" ]; }; then
-        PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+        # T-2446: CLAUDE_PROJECT_DIR is trusted ONLY when the cwd is not genuinely
+        # inside a *different* real project. A long-lived CC-spawned daemon (TermLink,
+        # cron) propagates CLAUDE_PROJECT_DIR to every descendant shell; running fw
+        # from inside another project then mis-resolves to the daemon's project
+        # (origin: F10 / T-2441 dogfood — a TermLink shell rooted in /opt/505 inherited
+        # CLAUDE_PROJECT_DIR=/opt/999 and resolved /opt/999's Watchtower). This is the
+        # same daemon-poison class T-2391 fixed for inherited PROJECT_ROOT; extend its
+        # discriminator to CLAUDE_PROJECT_DIR by consulting the cwd-ancestry walk first.
+        # If it finds a real project root (marker present, != $HOME — i.e. NOT stale)
+        # that differs from CLAUDE_PROJECT_DIR, the shell is genuinely inside another
+        # project → cwd wins. Otherwise (cwd=$HOME, a stray $HOME/.tasks, or no marker
+        # above — the canonical CC-hook case from T-2389/T-2390) → CLAUDE_PROJECT_DIR
+        # wins. _project_root_is_stale encodes the =$HOME / no-marker test, so reusing
+        # it keeps the two daemon-poison guards in lockstep.
+        _cwd_root=$(find_project_root) || _cwd_root=""
+        if [ -n "$_cwd_root" ] && ! _project_root_is_stale "$_cwd_root"; then
+            _cwd_canon=$(cd "$_cwd_root" 2>/dev/null && pwd -P) || _cwd_canon="$_cwd_root"
+            _cpd_canon=$(cd "$CLAUDE_PROJECT_DIR" 2>/dev/null && pwd -P) || _cpd_canon="$CLAUDE_PROJECT_DIR"
+            if [ "$_cwd_canon" != "$_cpd_canon" ]; then
+                PROJECT_ROOT="$_cwd_root"        # genuinely inside another project
+            else
+                PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+            fi
+            unset _cwd_canon _cpd_canon
+        else
+            PROJECT_ROOT="$CLAUDE_PROJECT_DIR"   # CC-hook / $HOME-poison case (T-2390)
+        fi
+        unset _cwd_root
     else
         PROJECT_ROOT=$(find_project_root) || true
     fi
@@ -691,7 +726,7 @@ show_help() {
     echo -e "  ${GREEN}traceability${NC} baseline Set traceability baseline (imported projects)"
     echo -e "  ${GREEN}preflight${NC}            Check OS dependencies (interactive install)"
     echo -e "  ${GREEN}validate-init${NC}        Verify fw init output is correct and complete"
-    echo -e "  ${GREEN}doctor${NC}               Check framework health and configuration"
+    echo -e "  ${GREEN}doctor${NC} ${CYAN}[--quick]${NC}     Check framework health (--quick: project-only, skip host/network probes)"
     echo -e "  ${GREEN}verify-acs${NC}           Automated Human AC evidence collection"
     echo -e "  ${GREEN}metrics${NC}              Show project metrics dashboard"
     echo -e "  ${GREEN}metrics predict${NC}      Estimate effort from episodic history"
@@ -746,12 +781,51 @@ show_version() {
 # --- Doctor Command ---
 
 do_doctor() {
+    # T-2452/F6: --quick — project-only fast mode. Skips the slow host/network
+    # probes (mirror divergence ls-remote, litellm/ollama/watchtower curls,
+    # global-install du scan) so the onboarding fix-and-rerun loop isn't paying
+    # ~150s per run (T-2441 dogfood: 3 calls timed out a 120s budget). Project
+    # checks are unaffected; full `fw doctor` (no flag) is unchanged.
+    local quick_mode=0
+    local _arg
+    for _arg in "$@"; do
+        case "$_arg" in
+            --quick) quick_mode=1 ;;
+            --help|-h)
+                echo "Usage: fw doctor [--quick]"
+                echo ""
+                echo "  Framework + project health check."
+                echo ""
+                echo "  --quick   Project-only fast mode: skip the slow host/network probes"
+                echo "            (mirror divergence ls-remote, litellm/ollama/watchtower"
+                echo "            curls). For the onboarding fix-and-rerun loop. Project"
+                echo "            checks are unaffected; the project-health verdict still renders."
+                return 0
+                ;;
+        esac
+    done
+
     echo -e "${BOLD}fw doctor${NC} - Framework Health Check"
+    if [ "$quick_mode" = "1" ]; then
+        echo -e "  ${CYAN}--quick${NC}: project-only mode — host/network probes skipped"
+    fi
     echo ""
 
     local issues=0
     local warnings=0
     local host_warnings=0
+
+    # T-2452/F6: returns 0 (true) when a slow host/network probe block should be
+    # skipped under --quick, emitting a one-line SKIP marker. Returns 1 (proceed)
+    # in full mode. Centralises the skip decision so the guarded blocks stay
+    # readable and the SKIP wording is consistent.
+    _doctor_quick_skip() {
+        if [ "$quick_mode" = "1" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  $1 (--quick)"
+            return 0
+        fi
+        return 1
+    }
 
     # T-1707: host-scope findings can't be fixed from this project session —
     # they live at the machine level (system installs, ~/.gitconfig,
@@ -1299,8 +1373,15 @@ else:
     fi
 
     # Check: framework MCP manifest (T-2265, arc-010 Slice 2)
-    local _mcp_mf="$PROJECT_ROOT/agents/mcp/framework-mcp-manifest.json"
-    local _mcp_ts="$PROJECT_ROOT/policy/capability-overlay/tool-set.yaml"
+    # T-2461: framework ASSETS (manifest, tool-set, manifest.py) live under
+    # FRAMEWORK_ROOT — which equals PROJECT_ROOT in the framework repo, but is
+    # the vendored .agentic-framework/ in a consumer. Using PROJECT_ROOT made
+    # doctor SKIP misleadingly on every consumer (manifest IS present, vendored;
+    # and "fw mcp emit-manifest" can't run there — no tool-set.yaml). The pid
+    # file below is RUNTIME state → stays on PROJECT_ROOT.
+    local _fw_root="${FRAMEWORK_ROOT:-$PROJECT_ROOT}"
+    local _mcp_mf="$_fw_root/agents/mcp/framework-mcp-manifest.json"
+    local _mcp_ts="$_fw_root/policy/capability-overlay/tool-set.yaml"
     if [ -f "$_mcp_mf" ]; then
         local _mcp_tools _mcp_gated _mcp_msg
         _mcp_tools=$(python3 -c "import json; m=json.load(open('$_mcp_mf')); print(len(m.get('tools',[])))" 2>/dev/null || echo "?")
@@ -1318,7 +1399,7 @@ else:
         # against the on-disk file — content match → still OK, content diff → WARN.
         if [ -f "$_mcp_ts" ] && [ "$_mcp_ts" -nt "$_mcp_mf" ]; then
             local _mcp_emitted_md5 _mcp_ondisk_md5
-            _mcp_emitted_md5=$(python3 "$PROJECT_ROOT/agents/mcp/manifest.py" show 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
+            _mcp_emitted_md5=$(python3 "$_fw_root/agents/mcp/manifest.py" show 2>/dev/null | md5sum 2>/dev/null | cut -d' ' -f1)
             _mcp_ondisk_md5=$(md5sum "$_mcp_mf" 2>/dev/null | cut -d' ' -f1)
             if [ -n "$_mcp_emitted_md5" ] && [ "$_mcp_emitted_md5" = "$_mcp_ondisk_md5" ]; then
                 echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
@@ -1331,7 +1412,31 @@ else:
             echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
         fi
     else
-        echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
+        # Genuinely absent. In the framework repo: emit it. In a consumer
+        # (FRAMEWORK_ROOT vendored under .agentic-framework) the manifest ships
+        # vendored, so absence means a broken/stale vendor → re-vendor via upgrade.
+        if [ "$_fw_root" != "$PROJECT_ROOT" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent in vendored framework — run: fw upgrade"
+        else
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
+        fi
+    fi
+
+    # Check: proxy-policy emitted-but-not-installed drift (T-2432, arc-013)
+    # Sibling of the MCP manifest + cron registry→generated drift classes. Compares the
+    # in-repo SOURCE policy against the DEPLOYED copy by CONTENT (sha256, never mtime).
+    local _pp_src="$PROJECT_ROOT/policy/proxy-policy.yaml"
+    if [ -f "$_pp_src" ]; then
+        local _pp_state
+        _pp_state=$(PYTHONPATH="$PROJECT_ROOT" python3 -c "import lib.govd_policy as p; print(p.drift_status('$_pp_src')['state'])" 2>/dev/null || echo "err")
+        case "$_pp_state" in
+            ok)            echo -e "  ${GREEN}OK${NC}  proxy-policy deployed copy matches source" ;;
+            drift)         echo -e "  ${YELLOW}WARN${NC}  proxy-policy.yaml edited but not installed"
+                           echo -e "         Run: sudo fw policy install   (Lock-1 Part 1, root)"
+                           warnings=$((warnings + 1)) ;;
+            not_installed) echo -e "  ${CYAN}SKIP${NC}  proxy-policy not installed (install is human/root — fw policy emit)" ;;
+            *)             echo -e "  ${CYAN}SKIP${NC}  proxy-policy drift check unavailable" ;;
+        esac
     fi
 
     # Check: Watchtower discovery triple (T-1292 / T-1284 B4)
@@ -1359,6 +1464,60 @@ else:
         fi
     else
         echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
+    fi
+
+    # Check: Session supervision (T-2499) — is the auto-restart loop armed?
+    # The arc-012 continuous-run loop (budget-critical → auto-handover →
+    # .restart-requested → claude-fw restart → directive re-injection) only fires
+    # when the session runs under the `claude-fw` wrapper, which exports
+    # FW_CLAUDE_FW_SUPERVISED=1. Plain `claude` writes the restart signal into the
+    # void — no consumer. This surfaces the unsupervised state OUTSIDE the hook path
+    # so it's visible even on a budget-quiet (all-text, no-tool-call) overrun.
+    # Only meaningful inside a Claude Code session (CLAUDECODE=1); a human running
+    # `fw doctor` in a plain terminal is not under any supervisor and need not care.
+    if [ "${CLAUDECODE:-0}" = "1" ]; then
+        if [ "${FW_CLAUDE_FW_SUPERVISED:-0}" = "1" ]; then
+            echo -e "  ${GREEN}OK${NC}  Session supervised by claude-fw — budget auto-restart armed"
+        else
+            local _bs_tokens=""
+            local _bs_f="$PROJECT_ROOT/.context/working/.budget-status"
+            [ -f "$_bs_f" ] && _bs_tokens=$(grep -o '"tokens"[[:space:]]*:[[:space:]]*[0-9]*' "$_bs_f" 2>/dev/null | grep -o '[0-9]*$' || true)
+            echo -e "  ${YELLOW}WARN${NC}  Unsupervised session (not under claude-fw) — budget auto-restart will NOT fire"
+            if [ -n "$_bs_tokens" ]; then
+                echo -e "         Current budget: ${_bs_tokens} tokens"
+            fi
+            echo -e "         Relaunch via 'claude-fw' for hands-off recovery, or run '/compact' before critical."
+            warnings=$((warnings + 1))
+        fi
+    else
+        echo -e "  ${CYAN}SKIP${NC}  Session supervision (not inside a Claude Code session)"
+    fi
+
+    # Check: on-PATH claude-fw drift (T-2501) — does the wrapper the operator
+    # actually runs match repo source? The supervision check above tells you THIS
+    # session is unsupervised; this tells you WHY — the installed claude-fw can be
+    # a stale clone/copy missing the FW_CLAUDE_FW_SUPERVISED export. claude-fw
+    # lives in up to four places (repo bin/, host clone ~/.agentic-framework,
+    # in-repo vendor, ~/.local/bin symlink) and no other check covers it: the
+    # audit self-vendor find-filter skips no-extension names, CTL-019 checks
+    # existence only, and `fw vendor self` excludes claude-fw. We compare the file
+    # actually on PATH (symlink resolved) against this checkout's bin/claude-fw.
+    # WARN-only; SKIP when claude-fw is not installed (humans who never use it).
+    local _cfw_path _cfw_real _cfw_src="$FRAMEWORK_ROOT/bin/claude-fw"
+    _cfw_path=$(command -v claude-fw 2>/dev/null || true)
+    if [ -n "$_cfw_path" ] && [ -f "$_cfw_src" ]; then
+        _cfw_real=$(readlink -f "$_cfw_path" 2>/dev/null || echo "$_cfw_path")
+        if cmp -s "$_cfw_real" "$_cfw_src"; then
+            echo -e "  ${GREEN}OK${NC}  Installed claude-fw matches repo source"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw drifted from repo source — supervision export may be stale"
+            echo -e "         on PATH: $_cfw_real"
+            echo -e "         repo:    $_cfw_src"
+            echo -e "         Refresh: bash ~/.agentic-framework/install.sh   # git reset --hard origin/master + relink, then relaunch claude-fw"
+            warnings=$((warnings + 1))
+        fi
+    elif [ -z "$_cfw_path" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  claude-fw not on PATH (no auto-restart wrapper installed)"
     fi
 
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
@@ -1484,11 +1643,19 @@ else:
 
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
+    if _doctor_quick_skip "Watchtower smoke test (HTTP probes)"; then :; else
     source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
     local _doctor_wt_url _doctor_wt_port
-    _doctor_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:${FW_PORT:-3000}")
+    # F9 (T-2445): gate the smoke verdict on the identity-verified resolver. A bare
+    # `|| echo http://localhost:PORT` fallback re-points at a FOREIGN service holding
+    # the default port and curls its /health (any server answers 200) → false "healthy".
+    # _watchtower_url returns non-zero when no Watchtower of OURS is reachable (T-1803);
+    # honor that contract instead of guessing a URL.
+    if ! _doctor_wt_url=$(_watchtower_url 2>/dev/null); then
+        _doctor_wt_url=""
+    fi
     _doctor_wt_port=$(echo "$_doctor_wt_url" | grep -oP ':\K\d+$' || echo "${FW_PORT:-3000}")
-    if curl -sf "${_doctor_wt_url}/health" >/dev/null 2>&1; then
+    if [ -n "$_doctor_wt_url" ] && curl -sf "${_doctor_wt_url}/health" >/dev/null 2>&1; then
         local smoke_result
         smoke_result=$(python3 "$FRAMEWORK_ROOT/web/smoke_test.py" --port "$_doctor_wt_port" --json 2>/dev/null || echo '{"failed":0,"passed":0,"total":0,"error":"script failed"}')
         local smoke_passed smoke_failed smoke_total
@@ -1510,6 +1677,7 @@ for e in d.get('errors',[])[:3]:
             warnings=$((warnings + 1))
         fi
     fi
+    fi  # T-2452/F6: end --quick guard for Watchtower smoke test
 
     # Check: TermLink (optional cross-terminal session communication)
     if command -v termlink >/dev/null 2>&1; then
@@ -1542,14 +1710,21 @@ for e in d.get('errors',[])[:3]:
     # Skip-if-no-consumer: only fires when a workflow declares
     # ANTHROPIC_BASE_URL: http://localhost:4000 (the litellm proxy port).
     # Mirrors T-1694 pi pattern.
+    #
+    # T-2490/OBS-089: use /health/liveliness, NOT /health. litellm serves /health
+    # as an AUTH-REQUIRED endpoint (HTTP 401 without a key), so `curl -sf /health`
+    # exits non-zero (-f fails on 4xx) even when the proxy is fully up — a false
+    # WARN. /health/liveliness is the unauthenticated liveness probe (HTTP 200).
     local _wf_dir="$PROJECT_ROOT/.context/project/workflows"
+    local _litellm_port="${FW_LITELLM_PORT:-4000}"
+    if _doctor_quick_skip "litellm/ollama reachability curls"; then :; else
     if [ -d "$_wf_dir" ] && \
        grep -lE "ANTHROPIC_BASE_URL:\s*http://localhost:4000" "$_wf_dir"/*.yaml >/dev/null 2>&1; then
-        if curl -sf --max-time 2 http://localhost:4000/health >/dev/null 2>&1; then
-            echo -e "  ${GREEN}OK${NC}  litellm-proxy reachable (http://localhost:4000)"
+        if curl -sf --max-time 2 "http://localhost:${_litellm_port}/health/liveliness" >/dev/null 2>&1; then
+            echo -e "  ${GREEN}OK${NC}  litellm-proxy reachable (http://localhost:${_litellm_port})"
         else
-            _doctor_warn_host "litellm-proxy not reachable on http://localhost:4000; workflow(s) declaring ANTHROPIC_BASE_URL will fail"
-            echo -e "         Start: pipx run litellm --config .context/litellm-config.yaml --port 4000  (or systemd unit)"
+            _doctor_warn_host "litellm-proxy not reachable on http://localhost:${_litellm_port}; workflow(s) declaring ANTHROPIC_BASE_URL will fail"
+            echo -e "         Start: setsid nohup litellm --config .context/litellm-config.yaml --port ${_litellm_port} >.context/working/litellm/proxy.log 2>&1 & (persist: sudo systemctl enable --now litellm-proxy — see deploy/litellm-proxy.service)"
         fi
     fi
 
@@ -1566,6 +1741,7 @@ for e in d.get('errors',[])[:3]:
             _doctor_warn_host "ollama not reachable on http://192.168.10.107:11434; ollama-loop workflows will fail"
         fi
     fi
+    fi  # T-2452/F6: end --quick guard for litellm/ollama curls
 
     # Check: TypeScript build health (optional)
     if [ -d "$FRAMEWORK_ROOT/lib/ts/src" ]; then
@@ -1858,7 +2034,29 @@ else:
     # installed /etc/cron.d/ file are out of sync — the root cause of
     # T-1112 (pickup-process missing for 5 consumer projects).
     local cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-    if [ -f "$cron_registry" ]; then
+    # T-2435 (OBS-077): cron is host-level (installed once from the canonical main
+    # checkout). In a linked worktree the derived target is worktree-named and never
+    # installed, so the drift checks below are pure worktree artifacts. Detect a linked
+    # worktree inline (bin/fw does not source lib/paths.sh) — git-dir != git-common-dir.
+    local _fw_gd _fw_gcd _fw_is_wt=0
+    _fw_gd=$(git -C "$PROJECT_ROOT" rev-parse --git-dir 2>/dev/null || echo .git)
+    _fw_gcd=$(git -C "$PROJECT_ROOT" rev-parse --git-common-dir 2>/dev/null || echo .git)
+    case "$_fw_gd"  in /*) ;; *) _fw_gd="$PROJECT_ROOT/$_fw_gd" ;; esac
+    case "$_fw_gcd" in /*) ;; *) _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;; esac
+    [ "$_fw_gd" != "$_fw_gcd" ] && _fw_is_wt=1
+    if [ "$_fw_is_wt" = "1" ]; then
+        # T-2466: surface worktree topology so a session knows whether its branch is
+        # live on this host (hooks run MAIN's bin/fw; merge-to-master ≠ live until
+        # MAIN's branch contains the fix). Reuses lib/worktree.sh (self-contained, git-only).
+        if . "$FRAMEWORK_ROOT/lib/worktree.sh" 2>/dev/null; then
+            local _wt_line
+            _wt_line=$( cd "$PROJECT_ROOT" && do_worktree_doctor_line 2>/dev/null )
+            [ -n "$_wt_line" ] && echo -e "  ${CYAN}INFO${NC}  $_wt_line"
+        fi
+    fi
+    if [ -f "$cron_registry" ] && [ "$_fw_is_wt" = "1" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+    elif [ -f "$cron_registry" ]; then
         local cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
         local cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
         local cron_slug
@@ -1983,6 +2181,7 @@ else:
     # mirror push is rejected as non-fast-forward and AEF stops reaching GitHub
     # silently. T-1591 root cause was annotated-vs-lightweight tag mismatch
     # going undetected for 50+ failed mirror builds (~22h).
+    if _doctor_quick_skip "Mirror divergence (origin↔mirror ls-remote)"; then :; else
     set +e  # tolerate ls-remote / comm / wc pipe failures (network, empty refs)
     local _all_remotes _has_origin
     _all_remotes=$(git -C "$PROJECT_ROOT" remote 2>/dev/null)
@@ -2033,6 +2232,7 @@ else:
         rm -f "$_origin_dump"
     fi
     set -e
+    fi  # T-2452/F6: end --quick guard for mirror divergence
 
     # Check: Workflow file schema linter (T-1694 / Q14)
     # Lints all .context/project/workflows/*.yaml against ADR-0003 schema:
@@ -2131,6 +2331,24 @@ except Exception as e:
         _scope_breakdown=" ($host_warnings host-level)"
     fi
     echo ""
+    # T-2451/F7: project-health verdict, surfaced FIRST. A fresh consumer (e.g.
+    # /opt/505) needs to read THEIR project's health at a glance, independent of
+    # host-level noise (mirror divergence, global-install size, ~/.local/bin
+    # shims) that is not about their project. project_warnings excludes the
+    # [host]-tagged findings counted via _doctor_warn_host; failures are all
+    # project-scope (no host FAIL category exists). The total summary below is
+    # unchanged.
+    local project_warnings=$((warnings - host_warnings))
+    local _proj_label="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    if [ "$issues" -eq 0 ] && [ "$project_warnings" -eq 0 ]; then
+        echo -e "${GREEN}Project ${_proj_label}: healthy${NC} — 0 project warning(s), 0 failure(s)"
+    else
+        echo -e "${BOLD}Project ${_proj_label}:${NC} ${project_warnings} project warning(s), ${issues} failure(s)"
+    fi
+    if [ "$host_warnings" -gt 0 ]; then
+        echo -e "  ${CYAN}↳ ${host_warnings} host-level finding(s) excluded${NC} (not about this project — handle from a session at that root)"
+    fi
+    echo ""
     if [ $issues -eq 0 ] && [ $warnings -eq 0 ]; then
         echo -e "${GREEN}All checks passed${NC}"
     elif [ $issues -eq 0 ]; then
@@ -2139,6 +2357,48 @@ except Exception as e:
         echo -e "${RED}$issues failure(s), $warnings warning(s)$_scope_breakdown${NC}"
         exit 2
     fi
+}
+
+# --- Proxy-policy emit / install / drift (T-2432, arc-013) ---
+# emit (agent-safe) + status (drift) run anywhere; install is human/root (Lock-1 Part 1)
+# and REFUSES under the agent. Sibling of `fw mcp emit-manifest` (emit/deploy split).
+do_policy() {
+    local action="${1:-}"; shift || true
+    local _src="${AEF_PROXY_POLICY:-$PROJECT_ROOT/policy/proxy-policy.yaml}"
+    case "$action" in
+        emit)
+            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" emit --source "$_src" "$@"
+            ;;
+        status)
+            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" status --source "$_src" "$@"
+            ;;
+        install)
+            # Lock-1 Part 1 boundary: the agent must NOT deploy its own governance policy.
+            if [ "${CLAUDECODE:-}" = "1" ]; then
+                echo -e "${RED}ERROR: 'fw policy install' is Lock-1 Part 1 (human/root) — the agent must not install its own governance policy.${NC}" >&2
+                echo "  The agent emits the spec; the human/root deploys it RO. Run:" >&2
+                echo "    fw policy emit        # review the install spec (agent-safe)" >&2
+                echo "    sudo fw policy install   # human/root only" >&2
+                return 3
+            fi
+            if [ "$(id -u)" != "0" ]; then
+                echo -e "${RED}ERROR: 'fw policy install' must run as root (it deploys the policy RO to the agent uid).${NC}" >&2
+                echo "  Run: sudo fw policy install" >&2
+                return 3
+            fi
+            PYTHONPATH="$PROJECT_ROOT" python3 "$PROJECT_ROOT/lib/govd_policy.py" install --source "$_src" "$@"
+            ;;
+        ""|-h|--help|help)
+            echo "Usage: fw policy {emit|status|install}"
+            echo "  emit      Print the install spec (agent-safe — runs nothing)"
+            echo "  status    Drift: deployed copy vs in-repo source (sha256)"
+            echo "  install   Deploy policy RO — human/root only (Lock-1 Part 1)"
+            ;;
+        *)
+            echo "Unknown: fw policy $action (try: emit|status|install)" >&2
+            return 2
+            ;;
+    esac
 }
 
 # --- Task Subcommand Routing ---
@@ -3357,6 +3617,66 @@ EOF
                 ;;
         esac
         ;;
+    worktree)
+        # T-2466 (slice 2): worktree topology observability — `status` reports which
+        # branch MAIN is on (live-on-host implication), master-lock holder, per-worktree
+        # merged?/live? state. T-2469 adds `create` (one-step isolated-worktree bootstrap).
+        # merge-back routes to `fw integrate run` (arc-011 / T-2471), not a subcommand here.
+        wt_subcmd="${1:-}"
+        shift || true
+        case "$wt_subcmd" in
+            status)
+                # shellcheck source=lib/worktree.sh
+                . "$FRAMEWORK_ROOT/lib/worktree.sh"
+                ( cd "$PROJECT_ROOT" && do_worktree_status "$@" )
+                exit $?
+                ;;
+            create)
+                # shellcheck source=lib/worktree.sh
+                . "$FRAMEWORK_ROOT/lib/worktree.sh"
+                ( cd "$PROJECT_ROOT" && do_worktree_create "$@" )
+                exit $?
+                ;;
+            ""|--help|-h|help)
+                cat <<'EOF'
+fw worktree status [--json]            topology of the framework checkout (read-only)
+fw worktree create <name> [--from R]   spin up an isolated worktree in one safe step
+
+Reports the git-worktree topology so parallel work + merge-back is legible:
+  - which branch the MAIN checkout is on, and whether merging to master goes LIVE
+    on this host (it does NOT while main sits on a session branch — hooks run
+    MAIN's bin/fw, so a fix is live only once MAIN's branch contains it)
+  - which worktree (if any) holds `master` checked out (the master-lock that makes
+    `git checkout master` in main fail → use `git push origin <branch>:master`)
+  - per-worktree merged-into-master? and live-on-this-host? state
+
+create (T-2469) spins up an isolated worktree in one safe step:
+  - creates <main>/.claude/worktrees/<name> on branch `worktree-<name>`
+  - branches from master/main by default (clean divergence -> clean merge-back);
+    override with --from <ref> to branch from somewhere else
+  - vendor-syncs the new worktree's .agentic-framework/ (idempotent confirm)
+  - does NOT touch the +x bit: bin/fw dispatches hooks via `bash` (T-2467), so
+    hook wrappers work without it
+  Folds termlink's worktree-bootstrap.sh prior art (P-047 Q3).
+
+merge-back is `fw integrate run` (T-2471, run from inside the worktree) — not a
+worktree subcommand, to avoid duplicating the arc-011 integrate surface.
+
+Examples:
+  fw worktree status
+  fw worktree status --json
+  fw worktree create my-feature
+  fw worktree create hotfix --from origin/master
+EOF
+                exit 0
+                ;;
+            *)
+                echo "ERROR: unknown worktree subcommand: $wt_subcmd" >&2
+                echo "Run 'fw worktree --help' for usage." >&2
+                exit 64
+                ;;
+        esac
+        ;;
     integrate)
         # T-2399 (arc parallel-exec, T-2397 L2 slice 1, G2): serialized-integration
         # preflight. Read-only — classifies how a worktree branch would integrate
@@ -3378,9 +3698,22 @@ EOF
                 fi
                 exec env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/integrate.py" classify "$@"
                 ;;
+            run)
+                # T-2471: mutating merge-back (T-2397 §3). Integrates TARGET's divergence
+                # into the current worktree branch, auto-resolving governance/generated
+                # conflicts via the taxonomy, around regenerable churn. The focus/active-task
+                # gate exemption is VERB-SCOPED in lib/safe-commands.sh (`fw integrate`), not
+                # env-based — an FW_INTEGRATION_IN_PROGRESS gate-honor would reintroduce the
+                # T-2446 inherited-env poison class this arc eliminates. The env below only
+                # marks the python subprocess's own internal git calls (vendor-self etc.).
+                exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                    FW_INTEGRATION_IN_PROGRESS=1 \
+                    python3 "$FRAMEWORK_ROOT/lib/integrate.py" run "$@"
+                ;;
             ""|--help|-h|help)
                 cat <<'EOF'
 fw integrate check [target]        (default target: master)
+fw integrate run [target] [--dry-run] [--push]
 fw integrate classify <path>...
 
 Layer-2 serialized-integration PREFLIGHT (read-only). Reports how the current
@@ -3404,9 +3737,19 @@ Examples:
   fw integrate check                 # preflight this branch vs master
   fw integrate classify .context/working/feedback-stream.yaml lib/foo.sh
 
+run (T-2471) is the MUTATING verb: integrates TARGET's divergence INTO the current
+worktree branch, auto-resolving governance/generated conflicts via the §3.2 taxonomy
+(regenerate/union/take-existing), quiescing regenerable working-tree churn around the
+merge, then refreshing vendored .agentic-framework/. After run, the branch ⊇ target so
+target FFs cleanly (reported, or done server-side with --push). Refuses (clean abort,
+target untouched) on a real both-sided code conflict or uncommitted real code. --dry-run
+prints the plan + check verdict without mutating. The run is exempt from the focus/active-
+task gate via a verb-scoped safe-command entry (lib/safe-commands.sh), not an env honor.
+Deferred: true field/append/id UNION at both-sided conflicts (MVP keeps branch-side "ours"
+for the auto classes).
+
 Part of the T-2394 structural-remediation (G2). Sibling: fw write-set check (G4,
-arc-011), the master-merge-only guard (G1, T-2396). The mutating verb
-(fw integrate run) is a later slice; this preflight is its read-only foundation.
+arc-011), the master-merge-only guard (G1, T-2396).
 EOF
                 exit 0
                 ;;
@@ -6383,7 +6726,12 @@ PYSEARCH
             if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
                 echo "fw vendor self - Refresh framework's vendored copies from FRAMEWORK_ROOT/"
                 echo ""
-                echo "Usage: fw vendor self [--dry-run]"
+                echo "Usage: fw vendor self [--dry-run | --check]"
+                echo ""
+                echo "  (no flag)   sync vendored copies from source (mutating)"
+                echo "  --dry-run   print what WOULD sync; never mutates; always exits 0"
+                echo "  --check     read-only drift verifier; never mutates; exits 1 if any"
+                echo "              class is out of sync (CI / pre-push form) — T-2436"
                 echo ""
                 echo "Refreshes vendored classes from \$FRAMEWORK_ROOT:"
                 echo "  - .agentic-framework/lib/                 ← lib/*.sh           (T-2095 V1-D)"
@@ -6402,21 +6750,50 @@ PYSEARCH
                 echo "only touches files that diff."
                 exit 0
             fi
+            # T-2436 (OBS-076): `--check` is a READ-ONLY drift verifier — it runs
+            # every helper in dry-run mode (never mutates) and EXITS NON-ZERO when
+            # any class is out of sync. This is the CI/pre-push-friendly form and
+            # the one that AGREES with audit's check_self_vendor_drift.
+            #
+            # Before T-2436 `--check` was silently accepted but matched neither
+            # `--dry-run` nor a real flag → it fell through to _vs_dry=false → a
+            # REAL mutating sync that exited 0. Callers running `vendor self --check`
+            # expecting verification actually mutated the vendored tree and saw a
+            # misleading "clean" (exit 0) — the drift was just made clean, never
+            # committed. That silent-mutation trap is the OBS-076 "they disagree".
+            # `--dry-run` keeps its prior semantics (prints "would sync", exit 0).
             _vs_dry=false
-            [ "${1:-}" = "--dry-run" ] && _vs_dry=true
-            _self_vendor_libs "$_vs_dry"
-            # T-2241: sibling — templates drift class. T-2240 pre-push gate
-            # greps for "would sync" across all four helpers' output with one regex.
-            _self_vendor_templates "$_vs_dry"
-            # T-2263: sibling — BVP-policy drift class (arc-006 Slice 2C).
-            _self_vendor_policy "$_vs_dry"
-            # T-2264: sibling — bin/fw shim drift class.
-            _self_vendor_shim "$_vs_dry"
-            # T-2266: sibling — agents/ drift class (5th class).
-            _self_vendor_agents "$_vs_dry"
-            # T-2267: sibling — web/ drift class (6th class).
-            _self_vendor_web "$_vs_dry"
-            exit $?
+            _vs_check=false
+            case "${1:-}" in
+                --dry-run) _vs_dry=true ;;
+                --check)   _vs_dry=true; _vs_check=true ;;
+            esac
+            # Run all six classes; capture combined output so --check can inspect
+            # it for the dry-run "would sync" marker without re-running.
+            _vs_out=$(
+                _self_vendor_libs "$_vs_dry"
+                # T-2241: templates drift class. T-2240 pre-push gate greps for
+                # "would sync" across all helpers' output with one regex.
+                _self_vendor_templates "$_vs_dry"
+                # T-2263: BVP-policy drift class (arc-006 Slice 2C).
+                _self_vendor_policy "$_vs_dry"
+                # T-2264: bin/fw shim drift class.
+                _self_vendor_shim "$_vs_dry"
+                # T-2266: agents/ drift class (5th class).
+                _self_vendor_agents "$_vs_dry"
+                # T-2267: web/ drift class (6th class).
+                _self_vendor_web "$_vs_dry"
+            )
+            [ -n "$_vs_out" ] && printf '%s\n' "$_vs_out"
+            if [ "$_vs_check" = true ]; then
+                if printf '%s' "$_vs_out" | grep -q "would sync"; then
+                    echo "Self-vendor: DRIFT — vendored .agentic-framework/ is out of sync. Run 'fw vendor self' to sync." >&2
+                    exit 1
+                fi
+                echo "Self-vendor: vendored .agentic-framework/ in sync with source."
+                exit 0
+            fi
+            exit 0
         fi
         do_vendor "$@"
         ;;
@@ -6494,6 +6871,9 @@ PYSEARCH
         ;;
     doctor)
         do_doctor "$@"
+        ;;
+    policy)
+        do_policy "$@"
         ;;
     verify-acs)
         source "$FW_LIB_DIR/verify-acs.sh"
@@ -7032,6 +7412,16 @@ PYPREDICT
             fi
             echo -e "  Config:     $_notify_config"
             echo -e "  Dispatcher: $dispatcher ($dispatcher_ok)"
+            # T-2439: show the RESOLVED ntfy server so the target is visible
+            # before any push — a configured URL forces that instance; an unset
+            # one falls back to the dispatcher's own (possibly host-local) default.
+            local _ntfy_url=""
+            [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ] && { source "$FRAMEWORK_ROOT/lib/notify.sh"; _ntfy_url=$(fw_notify_url 2>/dev/null); }
+            if [ -n "$_ntfy_url" ]; then
+                echo -e "  Server:     ${BOLD}${_ntfy_url}${NC} ${GREEN}(configured: NTFY_URL)${NC}"
+            else
+                echo -e "  Server:     ${YELLOW}<dispatcher default>${NC} — set explicitly: ${CYAN}fw config set NTFY_URL <url>${NC}"
+            fi
             echo ""
             if [ "$enabled" != "true" ]; then
                 echo -e "  Run ${CYAN}fw notify enable${NC} to activate notifications"
@@ -7094,6 +7484,13 @@ YAMLEOF
             fi
 
             source "$FRAMEWORK_ROOT/lib/notify.sh"
+            # T-2439: name the target server up front — no silent host-local push
+            local _test_url; _test_url=$(fw_notify_url 2>/dev/null)
+            if [ -n "$_test_url" ]; then
+                echo -e "Target ntfy server: ${BOLD}${_test_url}${NC}"
+            else
+                echo -e "Target ntfy server: ${YELLOW}<dispatcher default>${NC} (set with: ${CYAN}fw config set NTFY_URL <url>${NC})"
+            fi
             echo -e "Sending test notification..."
             NTFY_ENABLED=true fw_notify \
                 "Framework Test" \

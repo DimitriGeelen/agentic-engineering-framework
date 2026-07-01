@@ -334,6 +334,10 @@ def _spawn_termlink(
             env=envelope.get("env") or {},
             allowed_tools=envelope.get("allowed_tools") or [],
             task_type=envelope.get("task_type"),
+            # T-2488/OBS-088: default strict so a bare worker does not inherit
+            # the parent .mcp.json (~175K tokens of tool schemas → context blowout).
+            strict_mcp_config=bool(envelope.get("strict_mcp_config", True)),
+            mcp_config=envelope.get("mcp_config"),
         )
         try:
             for event in worker.prompt(envelope["prompt"]):

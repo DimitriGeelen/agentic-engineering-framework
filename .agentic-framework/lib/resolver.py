@@ -527,6 +527,12 @@ def capture_dispatch(
         "effort": workflow.get("effort"),
         "prompt": rendered_prompt,
         "allowed_tools": workflow.get("allowed_tools", []),
+        # T-2488/OBS-088: strict-mcp defaults ON so resolver-dispatched
+        # claude -p workers stay lean (no inherited .mcp.json schema injection,
+        # ~175K tokens). A workflow that needs MCP sets strict_mcp_config: false
+        # and supplies mcp_config: <path>.
+        "strict_mcp_config": workflow.get("strict_mcp_config", True),
+        "mcp_config": workflow.get("mcp_config"),
         "cost_cap_usd": workflow.get("cost_cap_usd"),
         "cwd": cwd_resolved,
         "env": workflow.get("env", {}),
@@ -855,6 +861,578 @@ def cmd_list_workflows(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Autonomous task selection (T-2489) — fw resolver pick
+#
+# The picker is the "selection" lever off single-agent execution (T-2484 IW-4):
+# enumerate active tasks, keep only those SAFE for autonomous dispatch, rank, and
+# surface the top pick (dry-run by default; --dispatch fires it through the same
+# resolve()+spawn path as `run`). Authority model: selection is initiative (the
+# default dry-run only *proposes*); execution stays explicit (--dispatch). The
+# eligibility filter is the structural guard — the picker can only ever fire
+# agent-owned, scoped, non-inception work.
+# ---------------------------------------------------------------------------
+_DISPATCHABLE_TYPES = {"build", "test", "refactor", "decommission"}
+_NON_DISPATCHABLE_TYPES = {"inception", "specification", "design"}
+_ELIGIBLE_STATUS = {"started-work", "captured"}
+
+
+# ---------------------------------------------------------------- BVP ranking
+# T-2497: value-aware picker. The live resolver loop (resolver-loop.timer)
+# dispatches the picker's top pick every tick; ranking by BVP quadrant makes the
+# loop clear the HV/LC backlog by value instead of in id-order — the enabler for
+# autonomous HV/LC clearance.
+#
+# These formulas REPLICATE lib/bvp.sh's python engine (F8-stable, documented in
+# CLAUDE.md §BVP). bvp.sh embeds its math in a `python3 - <<PYEOF` heredoc and so
+# is not importable; the math is mirrored here and pinned to `fw bvp` output by a
+# parity test (tests/unit/t2497_resolver_bvp_rank.bats). If the F8 cost formula or
+# the driver-weight model changes in bvp.sh, update here too — the parity test is
+# the tripwire.
+_BVP_POLICY = PROJECT_ROOT / "policy" / "value-drivers.yaml"
+_TSHIRT_COST = {"S": 2, "M": 4, "L": 6, "XL": 8}
+# Quadrant priority for the picker: HV-LC first, then value-leaning (HV-HC before
+# LV-LC), LV-HC last. Tasks with no usable BVP signal get the neutral no-data
+# bucket so ranking falls back to FIFO.
+_QUADRANT_RANK = {"hv-lc": 0, "hv-hc": 1, "lv-lc": 2, "lv-hc": 3}
+_NO_BVP_RANK = 4
+_COST_SENTINEL = 1e9
+
+
+def _bvp_driver_weights() -> Dict[str, int]:
+    """{driver_id: weight} from policy/value-drivers.yaml (protected + free).
+    Empty when the policy file is absent/unreadable — ranking then degrades to
+    FIFO (fail-open; the picker must never crash on a missing policy)."""
+    if not _BVP_POLICY.is_file():
+        return {}
+    try:
+        policy = yaml.safe_load(_BVP_POLICY.read_text()) or {}
+    except yaml.YAMLError:
+        return {}
+    out: Dict[str, int] = {}
+    for group in ("protected_drivers", "free_drivers"):
+        for d in (policy.get(group) or []):
+            try:
+                out[d["id"]] = int(d["weight"])
+            except (KeyError, TypeError, ValueError):
+                continue
+    return out
+
+
+def _bvp_norm(scores: Any, weights: Dict[str, int]) -> Optional[float]:
+    """Normalised BVP in [0,1] against 5×sum(weights-in-use). None when no driver
+    overlaps (mirrors bvp.sh compute_bvp; None means 'no value signal')."""
+    if not isinstance(scores, dict) or not weights:
+        return None
+    raw = 0
+    weight_sum = 0
+    for driver_id, weight in weights.items():
+        if driver_id in scores:
+            try:
+                raw += int(scores[driver_id]) * weight
+                weight_sum += weight
+            except (TypeError, ValueError):
+                continue
+    if weight_sum == 0:
+        return None
+    return raw / (5 * weight_sum)
+
+
+def _bvp_cost(cost_estimate: Any) -> Optional[float]:
+    """F8 composite 0.6×br+0.3×tier+0.1×effort, or the T-shirt fallback. None
+    when absent (mirrors bvp.sh compute_cost)."""
+    if not isinstance(cost_estimate, dict):
+        return None
+    br, tier, effort = (cost_estimate.get(k) for k in ("blast_radius", "tier", "effort"))
+    if br is not None and tier is not None and effort is not None:
+        try:
+            return 0.6 * float(br) + 0.3 * float(tier) + 0.1 * float(effort)
+        except (TypeError, ValueError):
+            pass
+    size = cost_estimate.get("size")
+    if size and str(size).upper() in _TSHIRT_COST:
+        return float(_TSHIRT_COST[str(size).upper()])
+    return None
+
+
+def _bvp_latest_proposed(fm: Dict[str, Any], key: str, inner: str) -> Optional[dict]:
+    """Newest entry's `inner` dict from a list-of-timestamped-entries field
+    (bvp_scores_proposed / cost_estimate_proposed)."""
+    lst = fm.get(key)
+    if not isinstance(lst, list) or not lst:
+        return None
+    latest = lst[-1] if isinstance(lst[-1], dict) else None
+    if not latest:
+        return None
+    val = latest.get(inner)
+    return val if isinstance(val, dict) else None
+
+
+def _bvp_value_cost(fm: Dict[str, Any], weights: Dict[str, int]) -> Tuple[Optional[float], Optional[float]]:
+    """(bvp_norm, cost) for a task's frontmatter. Confirmed `bvp_scores:` first;
+    falls back to the latest estimator-proposed scores/cost (advisory — matches
+    `fw bvp --include-proposed`, the realistic corpus state). This is
+    ordering-only and never writes, so consuming advisory inputs does not cross
+    the `bvp_scores:` sovereignty boundary (T-1924)."""
+    scores = fm.get("bvp_scores") or _bvp_latest_proposed(fm, "bvp_scores_proposed", "scores")
+    norm = _bvp_norm(scores, weights)
+    cost = _bvp_cost(fm.get("cost_estimate"))
+    if cost is None:
+        cost = _bvp_cost(_bvp_latest_proposed(fm, "cost_estimate_proposed", "cost_estimate"))
+    return norm, cost
+
+
+def _annotate_bvp_rank(metas: List[Dict[str, Any]]) -> None:
+    """T-2497: attach bvp_norm / bvp_cost / _quadrant / _quadrant_rank in place.
+
+    Quadrant boundaries use the median value/cost over the SCORED eligible tasks
+    (mirroring bvp.sh cmd_rank, including its 0.5/4.0 empty-set fallbacks). Off
+    when FW_RESOLVER_BVP_RANK=0 or policy/value-drivers.yaml is absent — every
+    task then sits in the neutral no-data bucket and ranking is pure FIFO."""
+    for m in metas:
+        m["bvp_norm"] = None
+        m["bvp_cost"] = None
+        m["_quadrant"] = "-"
+        m["_quadrant_rank"] = _NO_BVP_RANK
+    if os.environ.get("FW_RESOLVER_BVP_RANK", "1") == "0":
+        return
+    weights = _bvp_driver_weights()
+    if not weights:
+        return
+    scored: List[Dict[str, Any]] = []
+    for m in metas:
+        norm, cost = _bvp_value_cost(m.get("fm") or {}, weights)
+        m["bvp_norm"] = norm
+        m["bvp_cost"] = cost
+        if norm is not None:
+            scored.append(m)
+    if not scored:
+        return
+    import statistics  # noqa: PLC0415
+
+    norms = [m["bvp_norm"] for m in scored]
+    costs = [m["bvp_cost"] for m in scored if m["bvp_cost"] is not None]
+    bvp_median = statistics.median(norms) if norms else 0.5
+    cost_median = statistics.median(costs) if costs else 4.0
+    for m in scored:
+        # A scored task with no cost signal can't claim to be cheap — place it on
+        # the cost median (neutral) so it still lands in a defined quadrant.
+        cost = m["bvp_cost"] if m["bvp_cost"] is not None else cost_median
+        quad = ("hv" if m["bvp_norm"] >= bvp_median else "lv") + "-" + (
+            "lc" if cost <= cost_median else "hc"
+        )
+        m["_quadrant"] = quad
+        m["_quadrant_rank"] = _QUADRANT_RANK[quad]
+
+
+def _bvp_summary(meta: Dict[str, Any]) -> Dict[str, Any]:
+    """T-2497: observability payload for a pick — value/cost/quadrant as ranked.
+    null fields mean the task carried no BVP signal (ranked FIFO)."""
+    norm = meta.get("bvp_norm")
+    cost = meta.get("bvp_cost")
+    return {
+        "bvp_norm": round(norm, 4) if isinstance(norm, (int, float)) else None,
+        "cost": round(cost, 2) if isinstance(cost, (int, float)) else None,
+        "quadrant": meta.get("_quadrant", "-"),
+    }
+
+
+def _read_task_meta(path: Path) -> Dict[str, Any]:
+    """Parse a task .md → eligibility-relevant fields."""
+    text = path.read_text()
+    fm: Dict[str, Any] = {}
+    body = text
+    if text.startswith("---\n"):
+        end = text.find("\n---\n", 4)
+        if end > 0:
+            try:
+                fm = yaml.safe_load(text[4:end]) or {}
+            except yaml.YAMLError:
+                fm = {}
+            body = text[end + 5 :]
+    m = re.match(r"(T-\d+)", path.name)
+    tid = str(fm.get("id") or (m.group(1) if m else path.stem))
+    return {
+        "id": tid,
+        "name": str(fm.get("name", "")),
+        "workflow_type": str(fm.get("workflow_type", "")).strip().lower(),
+        "owner": str(fm.get("owner", "")).strip().lower(),
+        "horizon": str(fm.get("horizon", "now")).strip().lower(),
+        "status": str(fm.get("status", "")).strip().lower(),
+        "ac_block": _extract_section(body, "Acceptance Criteria"),
+        "path": str(path),
+        "fm": fm if isinstance(fm, dict) else {},  # T-2497: BVP ranking source
+    }
+
+
+def _inflight_task_ids() -> set:
+    """Task IDs whose most-recent dispatch row has no terminal_event — a worker
+    may still be running, so the picker must not double-dispatch them."""
+    if not DISPATCHES_LOG.exists():
+        return set()
+    latest: Dict[str, tuple] = {}  # task_id -> (ts, terminal_event)
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            tid = row.get("task_id")
+            if not tid:
+                continue
+            ts = str(row.get("ts", ""))
+            if tid not in latest or ts >= latest[tid][0]:
+                latest[tid] = (ts, row.get("terminal_event"))
+    return {tid for tid, (_ts, te) in latest.items() if not te}
+
+
+def _recently_dispatched_ids(cooldown_min: int) -> set:
+    """Task IDs whose most-recent dispatch ts is within `cooldown_min` minutes.
+
+    Anti-thrash guard for the loop/cron (T-2491): a dispatched worker does not
+    auto-advance the task's frontmatter status, and a *completed* dispatch row
+    carries a terminal_event (so it is NOT in-flight). Without a cooldown the
+    cron would re-dispatch the same non-advancing task every tick. Parse
+    failures are skipped (fail-open — never wrongly exclude)."""
+    if cooldown_min <= 0 or not DISPATCHES_LOG.exists():
+        return set()
+    import datetime as _dt  # noqa: PLC0415
+
+    latest: Dict[str, str] = {}  # task_id -> max ts seen
+    with DISPATCHES_LOG.open() as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            tid = row.get("task_id")
+            ts = str(row.get("ts", ""))
+            if not tid or not ts:
+                continue
+            if tid not in latest or ts > latest[tid]:
+                latest[tid] = ts
+
+    now = _dt.datetime.now(_dt.timezone.utc)
+    cooling: set = set()
+    for tid, ts in latest.items():
+        try:
+            parsed = _dt.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=_dt.timezone.utc)
+        except (ValueError, TypeError):
+            continue
+        if (now - parsed).total_seconds() < cooldown_min * 60:
+            cooling.add(tid)
+    return cooling
+
+
+def _focused_task_id() -> str:
+    """The task currently in focus.yaml — excluded from picking so the picker
+    never dispatches the task the main agent is actively working."""
+    focus = PROJECT_ROOT / ".context" / "working" / "focus.yaml"
+    if not focus.exists():
+        return ""
+    try:
+        data = yaml.safe_load(focus.read_text()) or {}
+    except yaml.YAMLError:
+        return ""
+    return str(data.get("current_task") or "").strip()
+
+
+def _ac_is_placeholder(ac_block: str) -> bool:
+    """True when the Acceptance Criteria block is template-only / unscoped —
+    mirrors the G-020 readiness gate's intent (don't dispatch unscoped work)."""
+    s = ac_block.strip()
+    if not s:
+        return True
+    if "[First criterion]" in s or "[Second criterion]" in s:
+        return True
+    # Must have at least one real unchecked item to be worth dispatching.
+    if not re.search(r"-\s*\[\s*\]\s+\S", s):
+        return True
+    return False
+
+
+def _pick_eligibility(meta: Dict[str, Any], inflight: set, focused: str = "") -> Optional[str]:
+    """Return None if the task is eligible for autonomous dispatch, else a
+    one-line exclusion reason."""
+    if focused and meta["id"] == focused:
+        return "in focus (main agent working it)"
+    wt = meta["workflow_type"]
+    if wt in _NON_DISPATCHABLE_TYPES:
+        return f"workflow_type={wt} (needs human decision)"
+    if not wt:
+        return "no workflow_type"
+    if wt not in _DISPATCHABLE_TYPES:
+        return f"workflow_type={wt} (not auto-dispatchable)"
+    if meta["owner"] == "human":
+        return "owner=human"
+    if meta["horizon"] == "later":
+        return "horizon=later"
+    if meta["status"] not in _ELIGIBLE_STATUS:
+        return f"status={meta['status']}"
+    if _ac_is_placeholder(meta["ac_block"]):
+        return "placeholder/unscoped ACs"
+    if meta["id"] in inflight:
+        return "in-flight dispatch"
+    return None
+
+
+def _pick_rank_key(meta: Dict[str, Any]) -> tuple:
+    """Deterministic ranking (T-2497 BVP-aware).
+
+    WIP-reduction and horizon lead — finish started-work, prefer horizon=now —
+    so the picker never abandons in-flight work for a shinier new task. WITHIN a
+    (status, horizon) tier it ranks by BVP quadrant (HV-LC first), then value
+    descending and cost ascending, so the live loop grinds the HV/LC backlog by
+    value. FIFO oldest-id is the final tiebreak. When no BVP data is present every
+    task shares the neutral no-data bucket and value/cost are constant, so this
+    reduces exactly to the original status→horizon→id FIFO order."""
+    status_rank = 0 if meta["status"] == "started-work" else 1
+    horizon_rank = 0 if meta["horizon"] == "now" else 1
+    quad_rank = meta.get("_quadrant_rank", _NO_BVP_RANK)
+    norm = meta.get("bvp_norm")
+    value_key = -norm if norm is not None else 0.0  # higher value first
+    cost = meta.get("bvp_cost")
+    cost_key = cost if cost is not None else _COST_SENTINEL  # lower cost first
+    m = re.search(r"T-(\d+)", meta["id"])
+    idnum = int(m.group(1)) if m else 0
+    return (status_rank, horizon_rank, quad_rank, value_key, cost_key, idnum)
+
+
+def _select_eligible(claimed: Optional[set] = None, cooldown_min: int = 0) -> tuple:
+    """Return (eligible_sorted, excluded) — excluded is list of (id, reason).
+
+    `claimed` (T-2491): task ids already picked earlier in the SAME loop run —
+    excluded so a single invocation never re-picks the same task (a completed
+    dispatch leaves frontmatter status unchanged, so the eligibility filter
+    alone would re-select it). `cooldown_min` (T-2491): exclude tasks dispatched
+    within the window — cross-tick anti-thrash. Both default off, so the
+    single-shot `cmd_pick` caller is unchanged."""
+    inflight = _inflight_task_ids()
+    if claimed:
+        inflight = inflight | set(claimed)
+    focused = _focused_task_id()
+    cooling = _recently_dispatched_ids(cooldown_min) if cooldown_min > 0 else set()
+    eligible: List[Dict[str, Any]] = []
+    excluded: List[tuple] = []
+    for path in sorted(TASKS_ACTIVE.glob("T-*.md")):
+        meta = _read_task_meta(path)
+        reason = _pick_eligibility(meta, inflight, focused)
+        if reason is None and meta["id"] in cooling:
+            reason = f"cooldown (<{cooldown_min}m since last dispatch)"
+        if reason is None:
+            eligible.append(meta)
+        else:
+            excluded.append((meta["id"], reason))
+    _annotate_bvp_rank(eligible)  # T-2497: attach bvp_norm/cost/quadrant in place
+    eligible.sort(key=_pick_rank_key)
+    return eligible, excluded
+
+
+def _pick_workflow_type(meta: Dict[str, Any]) -> str:
+    """Use a per-type workflow file if one exists, else the default workflow."""
+    wt = meta["workflow_type"]
+    if wt and (WORKFLOWS_DIR / f"{wt}.yaml").exists():
+        return wt
+    return "default"
+
+
+def cmd_pick(args: argparse.Namespace) -> int:
+    """fw resolver pick [--dispatch] [--json] — autonomous task selection."""
+    if not TASKS_ACTIVE.is_dir():
+        print(f"resolver pick: no active tasks dir at {TASKS_ACTIVE}", file=sys.stderr)
+        return 1
+    eligible, excluded = _select_eligible()
+    pick = eligible[0] if eligible else None
+    chosen_type = _pick_workflow_type(pick) if pick else None
+
+    if not pick:
+        if args.json:
+            print(json.dumps({
+                "eligible": [], "pick": None, "reason": "no eligible tasks",
+                "excluded": dict(excluded), "dispatched": False,
+            }, indent=2))
+        else:
+            print("resolver pick: no eligible tasks for autonomous dispatch")
+            if excluded:
+                print(f"  ({len(excluded)} active task(s) excluded — --json for reasons)")
+        return 0
+
+    if not args.dispatch:
+        if args.json:
+            print(json.dumps({
+                "eligible": [m["id"] for m in eligible],
+                "pick": pick["id"], "workflow": chosen_type,
+                "reason": f"status={pick['status']}, horizon={pick['horizon']}, "
+                          f"quadrant={pick.get('_quadrant', '-')}",
+                "bvp": _bvp_summary(pick),
+                "excluded": dict(excluded), "dispatched": False,
+            }, indent=2))
+        else:
+            print(f"Eligible for autonomous dispatch ({len(eligible)}):")
+            for m in eligible:
+                marker = "→" if m["id"] == pick["id"] else " "
+                quad = m.get("_quadrant", "-")
+                print(f"  {marker} {m['id']:8s} [{m['status']}/{m['horizon']}] "
+                      f"{quad:>5s} {m['name'][:54]}")
+            print()
+            print(f"Top pick:  {pick['id']}  →  workflow '{chosen_type}'")
+            print(f"Dispatch:  bin/fw resolver pick --dispatch")
+        return 0
+
+    # --dispatch: fire the top pick via resolve + spawn (parity with cmd_run).
+    task_id, task_type = pick["id"], chosen_type
+    task_context = load_task_frontmatter(task_id)
+    task_context.setdefault("TASK_ID", task_id)
+    task_context.setdefault("TASK_TYPE", task_type)
+    task_context.setdefault("TASK_NAME", "")
+    task_context.setdefault("TASK_DESCRIPTION", "")
+    task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
+    try:
+        envelope, _row = resolve(task_id, task_type, task_context, dry_run=False)
+    except ResolverError as e:
+        print(f"resolver pick: error: {e}", file=sys.stderr)
+        return 1
+    try:
+        import spawn  # noqa: PLC0415
+    except ImportError as e:
+        print(f"resolver pick: cannot import lib/spawn.py: {e}", file=sys.stderr)
+        return 1
+    try:
+        outcome = spawn.spawn_dispatch(envelope)
+    except NotImplementedError as e:
+        print(f"resolver pick: {e}", file=sys.stderr)
+        return 1
+    except spawn.SpawnError as e:
+        print(f"resolver pick: spawn error: {e}", file=sys.stderr)
+        return 1
+
+    if args.json:
+        print(json.dumps({
+            "eligible": [m["id"] for m in eligible],
+            "pick": task_id, "workflow": task_type,
+            "bvp": _bvp_summary(pick),
+            "excluded": dict(excluded), "dispatched": True, "outcome": outcome,
+        }, indent=2, default=str))
+    else:
+        print(f"Picked + dispatched: {task_id} (workflow '{task_type}')")
+        print(f"dispatch_id:    {envelope['dispatch_id']}")
+        print(f"status:         {outcome['status']}")
+        print(f"events_count:   {outcome['events_count']}")
+        if outcome.get("terminal_event"):
+            te = outcome["terminal_event"]
+            print(f"terminal:       {te.get('type')}")
+            if te.get("type") == "result" and "is_error" in te:
+                print(f"is_error:       {te['is_error']}")
+    return 2 if outcome["status"] == "error" else 0
+
+
+def _dispatch_one(pick: Dict[str, Any], chosen_type: str) -> tuple:
+    """Resolve + spawn a single pick. Returns (envelope, outcome). Raises
+    ResolverError / spawn.SpawnError / NotImplementedError / ImportError on
+    failure — caller decides whether to stop the loop. Mirrors cmd_pick's
+    --dispatch path so loop and single-shot share one dispatch contract."""
+    task_id, task_type = pick["id"], chosen_type
+    task_context = load_task_frontmatter(task_id)
+    task_context.setdefault("TASK_ID", task_id)
+    task_context.setdefault("TASK_TYPE", task_type)
+    task_context.setdefault("TASK_NAME", "")
+    task_context.setdefault("TASK_DESCRIPTION", "")
+    task_context.setdefault("ACCEPTANCE_CRITERIA", "(none)")
+    envelope, _row = resolve(task_id, task_type, task_context, dry_run=False)
+    import spawn  # noqa: PLC0415
+
+    outcome = spawn.spawn_dispatch(envelope)
+    return envelope, outcome
+
+
+def cmd_loop(args: argparse.Namespace) -> int:
+    """fw resolver loop — bounded autonomous dispatch driver (T-2491).
+
+    Calls the picker up to --max times. Dry-run by default (surfaces the plan);
+    --dispatch fires each pick through resolve+spawn. An in-run `claimed` set
+    keeps a single invocation from re-picking the same task; --cooldown-min
+    blocks cross-tick re-dispatch of a non-advancing task. Stops early on no
+    eligible work or a dispatch error."""
+    if not TASKS_ACTIVE.is_dir():
+        print(f"resolver loop: no active tasks dir at {TASKS_ACTIVE}", file=sys.stderr)
+        return 1
+    max_iter = max(1, int(args.max))
+    cooldown = max(0, int(args.cooldown_min))
+    claimed: set = set()
+    results: List[Dict[str, Any]] = []
+    stop_reason = f"reached --max ({max_iter})"
+
+    for i in range(max_iter):
+        eligible, _excluded = _select_eligible(claimed=claimed, cooldown_min=cooldown)
+        pick = eligible[0] if eligible else None
+        if not pick:
+            stop_reason = "no eligible tasks" if i == 0 else "no more eligible tasks"
+            break
+        chosen_type = _pick_workflow_type(pick)
+        claimed.add(pick["id"])  # never re-pick within this run, dispatched or not
+
+        if not args.dispatch:
+            results.append({"id": pick["id"], "workflow": chosen_type, "dispatched": False})
+            continue
+
+        try:
+            envelope, outcome = _dispatch_one(pick, chosen_type)
+        except ResolverError as e:
+            results.append({"id": pick["id"], "dispatched": False, "error": f"resolve: {e}"})
+            stop_reason = "resolve error (stopping loop)"
+            break
+        except NotImplementedError as e:
+            results.append({"id": pick["id"], "dispatched": False, "error": str(e)})
+            stop_reason = "spawn not implemented (stopping loop)"
+            break
+        except Exception as e:  # spawn.SpawnError / ImportError / unexpected
+            results.append({"id": pick["id"], "dispatched": False, "error": f"spawn: {e}"})
+            stop_reason = "spawn error (stopping loop)"
+            break
+
+        results.append({
+            "id": pick["id"], "workflow": chosen_type,
+            "dispatch_id": envelope["dispatch_id"],
+            "dispatched": True, "status": outcome["status"],
+        })
+        if outcome["status"] == "error":
+            stop_reason = "dispatch returned error (stopping loop)"
+            break
+
+    dispatched_n = sum(1 for r in results if r.get("dispatched"))
+    had_error = any(r.get("status") == "error" or "error" in r for r in results)
+
+    if args.json:
+        print(json.dumps({
+            "max": max_iter, "dispatch": bool(args.dispatch), "cooldown_min": cooldown,
+            "picked": results, "dispatched_count": dispatched_n,
+            "stop_reason": stop_reason,
+        }, indent=2, default=str))
+    else:
+        mode = "DISPATCH" if args.dispatch else "DRY-RUN"
+        print(f"resolver loop [{mode}]  max={max_iter}  cooldown={cooldown}m")
+        if not results:
+            print(f"  nothing to do — {stop_reason}")
+        for r in results:
+            if r.get("dispatched"):
+                did = str(r.get("dispatch_id", ""))[:12]
+                print(f"  ✓ {r['id']:8s} → {r['workflow']:10s} dispatch={did} status={r.get('status')}")
+            elif "error" in r:
+                print(f"  ✗ {r['id']:8s} error: {r['error']}")
+            else:
+                print(f"  • {r['id']:8s} → {r['workflow']:10s} (would dispatch)")
+        print(f"  stop: {stop_reason}; dispatched {dispatched_n}")
+    return 2 if had_error else 0
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="fw resolver",
@@ -902,6 +1480,38 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     sp_w = sub.add_parser("workflows", help="List configured workflows")
     sp_w.set_defaults(func=cmd_list_workflows)
+
+    sp_p = sub.add_parser(
+        "pick",
+        help="Autonomously select an eligible task; dry-run surface or --dispatch (T-2489)",
+    )
+    sp_p.add_argument(
+        "--dispatch",
+        action="store_true",
+        help="Fire the top pick through resolve+spawn (default: dry-run surface only)",
+    )
+    sp_p.add_argument("--json", action="store_true", help="Emit selection (and outcome) as JSON")
+    sp_p.set_defaults(func=cmd_pick)
+
+    sp_l = sub.add_parser(
+        "loop",
+        help="Bounded autonomous dispatch driver — pick up to --max times (T-2491)",
+    )
+    sp_l.add_argument("--max", type=int, default=3, help="Max distinct tasks to pick/dispatch (default 3)")
+    sp_l.add_argument(
+        "--dispatch",
+        action="store_true",
+        help="Fire each pick through resolve+spawn (default: dry-run plan only)",
+    )
+    sp_l.add_argument(
+        "--cooldown-min",
+        type=int,
+        default=30,
+        dest="cooldown_min",
+        help="Exclude tasks dispatched within N minutes — cross-tick anti-thrash (default 30)",
+    )
+    sp_l.add_argument("--json", action="store_true", help="Emit loop plan/outcome as JSON")
+    sp_l.set_defaults(func=cmd_loop)
 
     args = parser.parse_args(argv)
     return args.func(args)

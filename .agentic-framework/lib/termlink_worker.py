@@ -83,6 +83,8 @@ class TermLinkWorker:
         timeout: int = 1800,
         fw_bin: Optional[str] = None,
         name: Optional[str] = None,
+        strict_mcp_config: bool = False,
+        mcp_config: Optional[str] = None,
     ) -> None:
         self.model = model
         self.cwd = cwd
@@ -90,6 +92,16 @@ class TermLinkWorker:
         self._env_overlay = env or {}
         self.allowed_tools = allowed_tools or []
         self.task_type = task_type
+        # T-2488/OBS-088: when strict_mcp_config is set, the worker's `claude -p`
+        # is dispatched with --strict-mcp-config so it does NOT inherit the
+        # parent session's .mcp.json. A bare task worker that needs only
+        # Read/Edit/Bash/Grep otherwise loads ~175K tokens of MCP tool schemas
+        # (termlink ~300 tools, skills ~150, …) and blows the 200K context
+        # window before doing any work ("Prompt is too long"). mcp_config is an
+        # optional explicit .mcp.json path for workers that DO need specific
+        # MCP servers (composes with strict to allow only those).
+        self.strict_mcp_config = strict_mcp_config
+        self.mcp_config = mcp_config
         self.timeout = timeout
         self.fw_bin = fw_bin or os.environ.get("FW_BIN") or self._default_fw_bin()
         self.name = name or f"tl-{uuid.uuid4().hex[:8]}"
@@ -122,6 +134,14 @@ class TermLinkWorker:
             argv.extend(["--task-type", self.task_type])
         if self.allowed_tools:
             argv.extend(["--tools", ",".join(self.allowed_tools)])
+        # T-2488/OBS-088: keep the worker's context lean. --mcp-config must
+        # precede --strict-mcp-config so `claude -p` honours the explicit set;
+        # strict with no mcp-config means "no MCP servers at all" (the lean
+        # default for bare task workers).
+        if self.mcp_config:
+            argv.extend(["--mcp-config", self.mcp_config])
+        if self.strict_mcp_config:
+            argv.append("--strict-mcp-config")
         for k, v in self._env_overlay.items():
             argv.extend(["--env", f"{k}={v}"])
         return argv

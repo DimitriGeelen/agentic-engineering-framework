@@ -54,6 +54,26 @@ is_bash_safe_command() {
                 add)
                     return 0
                     ;;
+                # T-2462: `git push` / `git fetch` are task-agnostic. Push only
+                # PUBLISHES commits that already passed the commit-msg T-XXX gate
+                # (P-002) — it creates no work artifact, mutates no working tree,
+                # and is not inspected by the focus-drift detector (T-1730 only
+                # looks at fw task update / fw context add / git commit -m T-X:).
+                # Fetch is pure network read. Gating either on an active task adds
+                # zero governance and manufactures a deadlock that fires whenever
+                # focus is null: (1) post-completion — `--status work-completed`
+                # nulls focus, but "never end a session with unpushed commits"
+                # still requires the push (T-2054 exempted commit+add but stopped
+                # before push — this closes that 3rd leg of the commit→push
+                # pipeline, L-399 producer/consumer parity); (2) worktree sessions
+                # where the Bash hook resolves PROJECT_ROOT to the main repo (null
+                # focus). This does NOT weaken the pre-push hooks (self-vendor
+                # drift, secret scan) — those run inside git, independently of this
+                # active-task gate. `pull` is deliberately EXCLUDED: it merges into
+                # the working tree (a write), so it stays gated.
+                push|fetch)
+                    return 0
+                    ;;
             esac
             ;;
 
@@ -116,6 +136,23 @@ is_bash_safe_command() {
                     ;;
                 hook)
                     # fw hook * — hooks calling hooks, always allowed
+                    return 0
+                    ;;
+                integrate)
+                    # T-2471: `fw integrate {check,classify}` are read-only; `fw
+                    # integrate run` is the mutating merge-back verb. All three are
+                    # task-agnostic meta-operations on git history: the merge
+                    # commits run creates are --no-ff --no-edit (no T-XXX work
+                    # artifact — the commit-msg hook already exempts MERGE_HEAD),
+                    # and gating them on an active task manufactures a deadlock —
+                    # integration runs from a worktree whose Bash-hook PROJECT_ROOT
+                    # resolves to the main repo (null focus). This verb-scoped
+                    # exemption is the EFFECTIVE focus-gate bypass; it deliberately
+                    # does NOT use an FW_INTEGRATION_IN_PROGRESS env honor, which
+                    # would reintroduce the T-2446 inherited-env poison class this
+                    # arc exists to eliminate. Same category as git push/add/commit
+                    # (T-2054/T-2462). run sets FW_INTEGRATION_IN_PROGRESS=1 only
+                    # for the python subprocess's own internal git calls.
                     return 0
                     ;;
             esac

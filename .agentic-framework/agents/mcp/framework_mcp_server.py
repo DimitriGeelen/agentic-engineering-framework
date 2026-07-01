@@ -26,10 +26,12 @@ if str(_HERE) not in sys.path:
     sys.path.insert(0, str(_HERE))
 
 from manifest import (  # noqa: E402
-    _project_root,
-    build_manifest,
     emit_manifest,
+    framework_root,
+    load_catalogue,
     load_tool_set,
+    project_root,
+    tool_set_path,
 )
 
 from mcp.server.lowlevel import Server  # noqa: E402
@@ -115,13 +117,19 @@ def _index_by_name(tool_set: dict[str, Any]) -> dict[str, tuple[str, dict[str, A
     return out
 
 
-def _run_fw(root: Path, fw_command: str, extra_args: list[str]) -> tuple[int, str, str]:
-    cmd = [str(_fw_bin(root))]
+def _run_fw(
+    fw_root: Path, proj_root: Path, fw_command: str, extra_args: list[str]
+) -> tuple[int, str, str]:
+    # T-2459: bin/fw resolves against framework_root (the assets live with the
+    # framework — in a consumer that's .agentic-framework/bin/fw), but cwd is
+    # project_root (the consumer checkout) so `fw` operates on the right project.
+    # In the framework repo the two roots coincide (no behaviour change).
+    cmd = [str(_fw_bin(fw_root))]
     cmd.extend(shlex.split(fw_command))
     cmd.extend(extra_args)
     proc = subprocess.run(
         cmd,
-        cwd=root,
+        cwd=proj_root,
         capture_output=True,
         text=True,
         timeout=120,
@@ -130,8 +138,8 @@ def _run_fw(root: Path, fw_command: str, extra_args: list[str]) -> tuple[int, st
     return proc.returncode, proc.stdout, proc.stderr
 
 
-def _set_focus(root: Path, task_id: str) -> tuple[int, str, str]:
-    return _run_fw(root, "context focus", [task_id])
+def _set_focus(fw_root: Path, proj_root: Path, task_id: str) -> tuple[int, str, str]:
+    return _run_fw(fw_root, proj_root, "context focus", [task_id])
 
 
 def _format_result(rc: int, stdout: str, stderr: str) -> str:
@@ -145,8 +153,9 @@ def _format_result(rc: int, stdout: str, stderr: str) -> str:
 
 
 def build_server(tool_set: dict[str, Any] | None = None) -> Server:
-    ts = tool_set if tool_set is not None else load_tool_set()
-    root = _project_root()
+    ts = tool_set if tool_set is not None else load_catalogue()
+    fw_root = framework_root()
+    proj_root = project_root()
     index = _index_by_name(ts)
     tools = _build_tools(ts)
 
@@ -175,7 +184,7 @@ def build_server(tool_set: dict[str, Any] | None = None) -> Server:
                         text=f"ERROR: tool {name!r} requires task_id (agent-authority class)",
                     )
                 ]
-            rc_f, out_f, err_f = _set_focus(root, task_id)
+            rc_f, out_f, err_f = _set_focus(fw_root, proj_root, task_id)
             if rc_f != 0:
                 return [
                     TextContent(
@@ -186,16 +195,24 @@ def build_server(tool_set: dict[str, Any] | None = None) -> Server:
                         ),
                     )
                 ]
-        rc, out, err = _run_fw(root, entry["fw_command"], extra)
+        rc, out, err = _run_fw(fw_root, proj_root, entry["fw_command"], extra)
         return [TextContent(type="text", text=_format_result(rc, out, err))]
 
     return server
 
 
 async def _serve() -> None:
-    ts = load_tool_set()
-    emit_manifest(tool_set=ts)
-    server = build_server(ts)
+    # T-2459: only re-emit the manifest when the source (tool-set.yaml) is
+    # present — i.e. the framework repo / dev checkout. In a consumer the source
+    # is not vendored, so we serve from the vendored manifest and must NOT crash
+    # trying to emit from a file that isn't there.
+    if tool_set_path().is_file():
+        try:
+            emit_manifest(tool_set=load_tool_set())
+        except (FileNotFoundError, ValueError) as exc:
+            sys.stderr.write(f"WARN: manifest emit skipped ({exc})\n")
+    cat = load_catalogue()
+    server = build_server(cat)
     init_opts = server.create_initialization_options()
     async with stdio_server() as (read, write):
         await server.run(read, write, init_opts)

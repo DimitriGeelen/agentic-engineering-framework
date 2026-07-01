@@ -33,6 +33,12 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # Read stdin JSON from Claude Code
 INPUT=$(cat)
 
+# T-2465 (OBS-080): re-anchor PROJECT_ROOT to the per-call stdin `cwd` so a
+# worktree session reads the worktree's focus/tasks, not main's. Shared resolver
+# in lib/paths.sh; no-op for non-worktree sessions. FOCUS_FILE is recomputed from
+# PROJECT_ROOT further below, after this re-anchor takes effect.
+fw_reanchor_from_hook_stdin "$INPUT"
+
 # Extract tool_name and command
 TOOL_NAME=$(echo "$INPUT" | python3 -c "
 import sys, json

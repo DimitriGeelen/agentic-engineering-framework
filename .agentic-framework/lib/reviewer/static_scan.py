@@ -1559,6 +1559,15 @@ def detect_disposition_completeness(
     if not oq_section:
         return findings
 
+    # T-2449/OBS-081: strip `<!-- … -->` before slicing IW-N entries. The Open
+    # Questions template (.tasks/templates/inception.md) ships a documentation
+    # example `- **IW-1: <question text>** … disposition: … rationale: <one-line>`
+    # inside an HTML comment. Without stripping, the slicer parses that placeholder
+    # as a real entry and emits a spurious answered-without-citation CONCERN
+    # (origin T-2447). Sibling-parity with the AC parser, which already strips via
+    # the same helper (L-414).
+    oq_section = _strip_html_comments(oq_section)
+
     # Find IW-N entries and slice each entry's lines
     entries: list[tuple[int, str, int]] = []  # (iw_n, entry_text, start_line)
     lines = oq_section.splitlines()

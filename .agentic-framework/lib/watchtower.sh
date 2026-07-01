@@ -147,6 +147,48 @@ _watchtower_url() {
     return 1
 }
 
+# fw_task_review_url TASK_ID [TASK_FILE]
+#
+# T-2438: single source of the class-correct Watchtower review URL. Mirrors the
+# routing emit_review applies inline (lib/review.sh) so the two paths can't
+# diverge (the t2247-class staleness lesson):
+#   workflow_type == inception → <base>/inception/<id>
+#   otherwise (build/refactor/test/…) → <base>/review/<id>
+#
+# Echoes the full URL on success. When the Watchtower base can't be resolved
+# (down / unidentifiable), echoes nothing and returns 1 — callers then pass no
+# click_url rather than a broken link. TASK_FILE is a hint; falls back to
+# active/ then completed/ discovery (same as emit_review).
+fw_task_review_url() {
+    local task_id="${1:-}"
+    local task_file="${2:-}"
+    [ -n "$task_id" ] || return 1
+
+    local base_url
+    base_url=$(_watchtower_url "$task_id" 2>/dev/null) || return 1
+    [ -n "$base_url" ] || return 1
+
+    if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+        task_file=""
+        local f
+        for f in "$PROJECT_ROOT/.tasks/active/$task_id"*.md "$PROJECT_ROOT/.tasks/completed/$task_id"*.md; do
+            [ -f "$f" ] && { task_file="$f"; break; }
+        done
+    fi
+
+    local workflow_type=""
+    if [ -n "$task_file" ] && [ -f "$task_file" ]; then
+        workflow_type=$(grep -m1 'workflow_type:' "$task_file" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
+    fi
+
+    if [ "$workflow_type" = "inception" ]; then
+        echo "${base_url}/inception/${task_id}"
+    else
+        echo "${base_url}/review/${task_id}"
+    fi
+    return 0
+}
+
 # _watchtower_open URL
 #
 # Opens a URL in the default browser. When running as root (agent context),

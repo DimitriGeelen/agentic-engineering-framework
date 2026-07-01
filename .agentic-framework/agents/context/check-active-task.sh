@@ -46,6 +46,16 @@ except:
     print('')
 " 2>/dev/null)
 
+# T-2463/T-2465 (OBS-080): re-anchor PROJECT_ROOT to the per-call stdin `cwd` so a
+# worktree session reads the worktree's focus, not main's. In a worktree session
+# this gate is invoked as <main>/bin/fw hook and bin/fw resolves PROJECT_ROOT to
+# the MAIN repo; the shared resolver re-anchors to the project the tool actually
+# ran in. Logic now lives in lib/paths.sh:fw_reanchor_from_cwd (generalized from
+# the original inline block so every hook shares one implementation). No-op for
+# non-worktree sessions. Recompute FOCUS_FILE after, since it caches PROJECT_ROOT.
+fw_reanchor_from_hook_stdin "$INPUT"
+FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
+
 # --- Bash tool: safe-command fast path (T-650) ---
 if [ "$TOOL_NAME" = "Bash" ]; then
     BASH_CMD=$(echo "$INPUT" | python3 -c "

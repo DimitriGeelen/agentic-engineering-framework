@@ -269,6 +269,8 @@ fi
 SECTIONS=""       # Comma-separated section names (empty = all)
 OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
 QUIET=false       # Suppress terminal output
+EMIT_TASKS=false  # T-2353: Convert WARN/FAIL to bugfix tasks
+DRY_RUN=false     # T-2353: Show would-create without writing tasks
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -276,6 +278,8 @@ while [[ $# -gt 0 ]]; do
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --quiet) QUIET=true; shift ;;
         --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; shift ;;
+        --emit-tasks) EMIT_TASKS=true; shift ;;
+        --dry-run) DRY_RUN=true; shift ;;
         -h|--help)
             echo "Usage: audit.sh [options]"
             echo ""
@@ -284,6 +288,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --output DIR      Write YAML report to custom directory"
             echo "  --quiet           Suppress terminal output (for cron)"
             echo "  --cron            Shorthand for --output .context/audits/cron --quiet"
+            echo "  --emit-tasks      Convert WARN/FAIL findings into bugfix tasks (T-2353)"
+            echo "  --dry-run         Show would-create tasks without writing files"
             echo ""
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
             echo "          learning, episodic, observations, gaps, handover, graduation,"
@@ -596,6 +602,37 @@ except yaml.YAMLError as e:
         fi
     done
 done
+# T-2456 (OBS-084): .context/inbox.yaml is a single top-level file (not under
+# .context/project or .context/arcs), so the per-dir loop above never validated
+# it. A note body with a backslash (e.g. a regex '\d+') written via `fw note`
+# corrupted it as a YAML double-quoted-scalar escape error — and it sat unreadable
+# for ~a day because no gate parsed it (`fw note list/triage` crashed, the audit
+# was blind). Validate it explicitly with the same logic + counters so the
+# pass-count message covers it and a future corruption FAILs the audit.
+inbox_yaml="$PROJECT_ROOT/.context/inbox.yaml"
+if [ -f "$inbox_yaml" ]; then
+    parse_err=$(python3 -c "
+import yaml, sys
+try:
+    with open('$inbox_yaml') as f:
+        data = yaml.safe_load(f)
+    if data is None:
+        print('empty-file'); sys.exit(1)
+    elif not isinstance(data, dict):
+        print('not-a-mapping'); sys.exit(1)
+except yaml.YAMLError as e:
+    print(str(e).split(chr(10))[0]); sys.exit(1)
+" 2>&1)
+    # shellcheck disable=SC2181 # $? needed: parse_err captures output, exit code checked separately
+    if [ $? -eq 0 ]; then
+        yaml_pass_count=$((yaml_pass_count + 1))
+    else
+        yaml_fail_count=$((yaml_fail_count + 1))
+        fail "YAML parse error: inbox.yaml" \
+             "$parse_err" \
+             "Fix .context/inbox.yaml — a note body with a backslash/quote corrupts it (T-2456); fw note now escapes new entries"
+    fi
+fi
 if [ "$yaml_fail_count" -eq 0 ] && [ "$yaml_pass_count" -gt 0 ]; then
     pass "All $yaml_pass_count project YAML files parse correctly"
 fi
@@ -1445,7 +1482,14 @@ fi
 # task closed work-completed while drift made the new job a no-op for
 # 3 days). G-064 closure path.
 _cron_registry="$PROJECT_ROOT/.context/cron-registry.yaml"
-if [ -f "$_cron_registry" ]; then
+if [ -f "$_cron_registry" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+    # T-2435 (OBS-077): cron is a HOST-level concern installed once from the canonical
+    # main checkout. A linked worktree derives a worktree-named target that is never
+    # generated/installed (and must not be), so every cron drift check below is a pure
+    # worktree artifact, not content drift. Skip with INFO (counts as PASS; never blocks
+    # a worktree push). The real registry→generated→deployed chain is gated on main.
+    info "Cron drift checks skipped — linked worktree (cron is host-level, managed from the main checkout)"
+elif [ -f "$_cron_registry" ]; then
     _cron_source="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     _cron_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
     _cron_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
@@ -1500,7 +1544,23 @@ fi
 # agentic-audit.crontab; this loop covers every other .context/cron/*.crontab
 # (release-mirror-canary, heartbeat, project-specific ad-hoc files, ...).
 _cron_lint_dir="$PROJECT_ROOT/.context/cron"
-if [ -d "$_cron_lint_dir" ]; then
+if [ -d "$_cron_lint_dir" ] && fw_is_linked_worktree "$PROJECT_ROOT"; then
+    # T-2437 (OBS-077 keystone): sibling of the registry-block worktree-skip
+    # (T-2435). This lint reads /etc/cron.d/ for an install under the WORKTREE
+    # slug that never exists — cron is installed once from the main checkout
+    # under the MAIN slug — so every dormant-crontab FAIL here is a pure worktree
+    # artifact. Cron install state is HOST-ENVIRONMENT, not content, so it is
+    # owned by the main checkout and skipped in a linked worktree.
+    #
+    # The content-vs-environment classification (the keystone): a pre-push /
+    # audit check may FAIL in a linked worktree ONLY when it measures committed
+    # CONTENT drift (self-vendor T-2436, fabric, task YAML, secrets, hook
+    # threshold). Checks that measure HOST/working-copy ENVIRONMENT state
+    # (cron install at /etc/cron.d/, both legs here and at the registry block)
+    # are INFO-skipped — they are managed from main and their absence in a
+    # transient worktree is expected, not a regression. See L-486.
+    info "Cron-misload lint skipped — linked worktree (cron install is host-level, managed from the main checkout)"
+elif [ -d "$_cron_lint_dir" ]; then
     _cron_lint_target_dir="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
     _cron_lint_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
     for _cf in "$_cron_lint_dir"/*.crontab; do
@@ -1664,12 +1724,16 @@ check_self_vendor_drift() {
     fi
 
     if [ "$_sv_libs" -gt 0 ]; then
-        # T-2247: 'fw vendor self' only syncs .agentic-framework/lib/ — libs class
-        # scans bin+lib+agents+web. Use full 'fw vendor' as the always-works
-        # superset; 'fw vendor self' would no-op for bin/agents/web drift.
+        # T-2436 (OBS-076): the T-2247 comment claimed `fw vendor self` only syncs
+        # .agentic-framework/lib/, so this recommended full `fw vendor`. That is
+        # STALE — since T-2264/T-2266/T-2267 `fw vendor self` runs all six helpers
+        # (libs+templates+policy+shim+agents+web) = bin+lib+agents+web, the exact
+        # scope this libs-class check scans. Recommend `fw vendor self` so the
+        # FAIL's fix command AGREES with the canonical sync verb (and with
+        # `fw vendor self --check`, the read-only verifier added in T-2436).
         fail "Self-vendor drift: libs class — $_sv_libs file(s) out of sync (T-2244)" \
              "First $([ $_sv_libs -gt 5 ] && echo 5 || echo $_sv_libs):$_sv_libs_list" \
-             "Run: fw vendor  (sync all vendored .agentic-framework/ classes with source)"
+             "Run: fw vendor self  (syncs all vendored .agentic-framework/ classes — verify with: fw vendor self --check)"
     fi
     if [ "$_sv_tpl" -gt 0 ]; then
         # Templates class is correctly scoped to 'fw vendor self' — it syncs
@@ -4473,9 +4537,15 @@ for deploy_file in Dockerfile deploy/docker-compose.swarm.yml deploy/traefik-rou
 done
 
 # Check health endpoint responds (if server is running)
-_wt_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:$(fw_config "PORT" 3000)")
+# F9 (T-2445): gate the health pass on the identity-verified resolver. A bare
+# `|| echo http://localhost:PORT` fallback re-points at a FOREIGN service holding
+# the default port and curls its /health (any server answers 200) → false pass.
+# _watchtower_url returns non-zero when no Watchtower of OURS is reachable (T-1803).
+if ! _wt_url=$(_watchtower_url 2>/dev/null); then
+    _wt_url=""
+fi
 _wt_port=$(echo "$_wt_url" | grep -oP ':\K\d+$' || echo "3000")
-if curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
+if [ -n "$_wt_url" ] && curl -sf --max-time 3 "${_wt_url}/health" >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :${_wt_port}"
 elif curl -sf --max-time 3 http://localhost:5050/health >/dev/null 2>&1; then
     pass "Deploy gate: Health endpoint responds on :5050"
@@ -5101,6 +5171,141 @@ echo "=== END AUDIT ==="
 # Restore stdout if quiet mode was active
 if [ "$QUIET" = true ]; then
     exec 1>&3
+fi
+
+# T-2353: Emit findings as bugfix tasks (S1)
+_emit_findings_as_tasks() {
+    local dry_run="$1"
+    local created_count=0
+    local skipped_count=0
+
+    # Parse FINDINGS array (format: "LEVEL|CHECK|MITIGATION")
+    for finding in "${FINDINGS[@]}"; do
+        # Extract severity, check name, and mitigation
+        local severity=$(echo "$finding" | cut -d'|' -f1)
+        local check=$(echo "$finding" | cut -d'|' -f2)
+        local mitigation=$(echo "$finding" | cut -d'|' -f3)
+
+        # Skip PASS/INFO entries — only emit WARN/FAIL
+        if [ "$severity" != "WARN" ] && [ "$severity" != "FAIL" ]; then
+            continue
+        fi
+
+        # Normalize finding text for hashing (strip line references, dedupe-stable)
+        # Format: "SEVERITY: CHECK_NAME"
+        local normalized="${severity}: ${check}"
+        local finding_hash=$(echo -n "$normalized" | sha1sum | cut -d' ' -f1)
+
+        # Dedupe scan: check if this finding hash already exists in tasks
+        if grep -r "audit_finding_hash: $finding_hash" "$PROJECT_ROOT/.tasks/active/" "$PROJECT_ROOT/.tasks/completed/" 2>/dev/null | grep -q .; then
+            skipped_count=$((skipped_count + 1))
+            if [ "$dry_run" = true ]; then
+                echo "[DRY-RUN] SKIP (already filed): $normalized"
+            fi
+            continue
+        fi
+
+        # Determine section from check text (best effort)
+        local section="general"
+        if echo "$check" | grep -qi "fabric"; then section="fabric"; fi
+        if echo "$check" | grep -qi "cron\|schedule"; then section="cron"; fi
+        if echo "$check" | grep -qi "task\|compliance"; then section="tasks"; fi
+        if echo "$check" | grep -qi "git\|traceability"; then section="git"; fi
+        if echo "$check" | grep -qi "vendor\|self-vendor"; then section="vendor"; fi
+
+        # Build task body
+        local task_body="## Context
+
+Audit finding from run at $AUDIT_TIMESTAMP
+
+**Severity:** $severity
+**Check:** $check
+**Section:** $section
+
+## Finding
+
+\`\`\`
+$check
+\`\`\`
+
+## Mitigation
+
+$mitigation
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Mitigation steps completed
+- [ ] Re-run \`bin/fw audit\` and verify this finding no longer appears
+- [ ] Root cause addressed (not just symptom suppressed)
+
+## Verification
+
+\`\`\`bash
+# Verify finding is resolved
+bin/fw audit 2>&1 | grep -qv \"$check\" || { echo \"Finding still present\"; exit 1; }
+\`\`\`
+"
+
+        # Generate task title
+        local task_title="Audit $severity: $(echo "$check" | head -c 60)"
+
+        if [ "$dry_run" = true ]; then
+            local severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
+            echo "[DRY-RUN] would create: $task_title"
+            echo "  severity:$severity_lower, section:$section"
+            created_count=$((created_count + 1))
+        else
+            # Create the task via fw task create, then inject metadata
+            local severity_lower=$(echo "$severity" | tr '[:upper:]' '[:lower:]')
+            local task_output
+            task_output=$("$FRAMEWORK_ROOT/bin/fw" task create \
+                --name "$task_title" \
+                --type bugfix \
+                --horizon now \
+                --tags "audit-finding,severity:$severity_lower,section:$section" \
+                2>&1)
+
+            if [ $? -eq 0 ]; then
+                # Extract task ID from output (format: "Created task T-XXX ...")
+                local task_id=$(echo "$task_output" | grep -oE 'T-[0-9]+' | head -1)
+                if [ -n "$task_id" ]; then
+                    # Find the task file
+                    local task_file=$(find "$PROJECT_ROOT/.tasks/active/" -name "${task_id}-*.md" 2>/dev/null | head -1)
+                    if [ -n "$task_file" ]; then
+                        # Inject metadata fields into frontmatter (after tags line)
+                        sed -i "/^tags:/a\\audit_finding_hash: $finding_hash\\naudit_severity: $severity_lower" "$task_file"
+
+                        # Append body to task file
+                        echo "$task_body" >> "$task_file"
+
+                        created_count=$((created_count + 1))
+                        echo "Created task: $task_id - $task_title"
+                    fi
+                fi
+            fi
+        fi
+    done
+
+    # Summary
+    if [ "$dry_run" = true ]; then
+        echo ""
+        echo "=== EMIT TASKS (DRY RUN) ==="
+        echo "Would create: $created_count"
+        echo "Would skip (already filed): $skipped_count"
+    else
+        if [ $created_count -gt 0 ] || [ $skipped_count -gt 0 ]; then
+            echo ""
+            echo "=== EMIT TASKS ==="
+            echo "Created: $created_count"
+            echo "Skipped (already filed): $skipped_count"
+        fi
+    fi
+}
+
+# Call emit function if --emit-tasks is set
+if [ "$EMIT_TASKS" = true ]; then
+    _emit_findings_as_tasks "$DRY_RUN"
 fi
 
 # T-709: Push notification on audit failures

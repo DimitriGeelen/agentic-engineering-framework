@@ -74,6 +74,59 @@ CONTEXT_DIR="${CONTEXT_DIR:-$PROJECT_ROOT/.context}"
 _FW_PATHS_DERIVED_BY="$PROJECT_ROOT"
 export _FW_PATHS_DERIVED_BY
 
+# fw_reanchor_from_cwd <cwd> — re-anchor PROJECT_ROOT + path vars to the project
+# root that <cwd> resolves to (walking up for .framework.yaml / .tasks), when it
+# differs from the current PROJECT_ROOT. Always returns 0 (no-op cases included).
+#
+# T-2465 (generalizes T-2463 / OBS-080): every framework hook is wired into
+# Claude Code settings.json by MAIN's absolute path (`<main>/bin/fw hook …`). When
+# that hook fires inside a git-worktree (or spawned) session, bin/fw resolves
+# PROJECT_ROOT from the hook's process cwd / inherited env — the MAIN repo — so the
+# hook reads main's focus.yaml / tasks / context, NOT the worktree the tool ran in.
+# Claude Code passes the authoritative per-call working dir as top-level `cwd` on
+# the hook's stdin JSON ("working directory when the event fired"); this re-anchors
+# to it. Per-call stdin cwd is FRESH (not inherited), so it is immune to the
+# T-2446 daemon-poison class that limits CLAUDE_PROJECT_DIR trust.
+#
+# No-op when <cwd> is empty, not a dir, resolves to no project root, or already
+# == PROJECT_ROOT — so normal (non-worktree) sessions are unaffected. Keeps
+# _FW_PATHS_DERIVED_BY consistent (T-2289). Callers that cache their own
+# PROJECT_ROOT-derived paths (FOCUS_FILE, STATUS_FILE, …) must recompute after.
+fw_reanchor_from_cwd() {
+    local cwd="$1"
+    [ -n "$cwd" ] && [ -d "$cwd" ] || return 0
+    local root="" d
+    d="$(cd "$cwd" 2>/dev/null && pwd -P)" || return 0
+    while [ -n "$d" ] && [ "$d" != "/" ]; do
+        if [ -f "$d/.framework.yaml" ] || [ -d "$d/.tasks" ]; then
+            root="$d"; break
+        fi
+        d="$(dirname "$d")"
+    done
+    [ -n "$root" ] && [ "$root" != "${PROJECT_ROOT:-}" ] || return 0
+    PROJECT_ROOT="$root"
+    TASKS_DIR="$PROJECT_ROOT/.tasks"
+    CONTEXT_DIR="$PROJECT_ROOT/.context"
+    _FW_PATHS_DERIVED_BY="$PROJECT_ROOT"
+    export PROJECT_ROOT TASKS_DIR CONTEXT_DIR _FW_PATHS_DERIVED_BY
+    return 0
+}
+
+# fw_reanchor_from_hook_stdin <input_json> — convenience wrapper for hooks:
+# extract the top-level `cwd` from a Claude Code hook stdin payload and re-anchor
+# via fw_reanchor_from_cwd. One call replaces the per-hook inline block. (T-2465)
+fw_reanchor_from_hook_stdin() {
+    local cwd
+    cwd=$(printf '%s' "$1" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('cwd', '') or '')
+except Exception:
+    print('')
+" 2>/dev/null)
+    fw_reanchor_from_cwd "$cwd"
+}
+
 # T-2375: Claude Code transcript project-dir-name sanitizer.
 # Claude Code encodes a session's cwd into ~/.claude/projects/<name> by replacing
 # EVERY non-alphanumeric character with '-' (so both '/' and '.' become '-').
@@ -132,6 +185,24 @@ fw_claude_project_dirs() {
         seen="$seen|$dir|"
         [ -d "$dir" ] && printf '%s\n' "$dir"
     done
+}
+
+# fw_is_linked_worktree [dir] — exit 0 if DIR (default PROJECT_ROOT/$PWD) is a *linked*
+# git worktree (created via `git worktree add`), exit 1 if it's the main checkout or not a
+# git repo. Discriminator: a linked worktree's git-dir (<main>/.git/worktrees/<name>)
+# differs from its git-common-dir (<main>/.git); in the main checkout the two collapse to
+# the same path. Used to suppress HOST-level drift checks (cron install state, self-vendor
+# host snapshot) that are owned by the main checkout and false-FAIL in a transient worktree.
+# Origin: T-2435 (OBS-077) — the pre-push audit false-FAILed on every worktree push.
+fw_is_linked_worktree() {
+    local dir="${1:-${PROJECT_ROOT:-$PWD}}"
+    local gd gcd
+    gd=$(git -C "$dir" rev-parse --git-dir 2>/dev/null) || return 1
+    gcd=$(git -C "$dir" rev-parse --git-common-dir 2>/dev/null) || return 1
+    # Absolute-ize relative forms (the main checkout returns ".git" for both → equal).
+    case "$gd" in /*) ;; *) gd="$dir/$gd" ;; esac
+    case "$gcd" in /*) ;; *) gcd="$dir/$gcd" ;; esac
+    [ "$gd" != "$gcd" ]
 }
 
 # Context-aware fw command path (T-1102/T-1143)

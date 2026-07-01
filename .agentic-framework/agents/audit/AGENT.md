@@ -168,6 +168,36 @@ findings:
     mitigation: "Commit changes with task reference or stash"
 ```
 
+## Emit Tasks Mode (T-2353)
+
+The audit can automatically convert WARN and FAIL findings into bugfix tasks:
+
+```bash
+# Dry-run: see what would be created
+bin/fw audit --emit-tasks --dry-run
+
+# Actually create tasks
+bin/fw audit --emit-tasks
+```
+
+**How it works:**
+- Each WARN/FAIL finding is hashed (normalized finding text)
+- Deduplication: skips findings already filed in `.tasks/{active,completed}/`
+- Creates bugfix task with:
+  - `workflow_type: bugfix`
+  - `audit_finding_hash: <sha1>` for deduplication
+  - `audit_severity: warn|fail`
+  - Tags: `audit-finding`, `severity:<warn|fail>`, `section:<section-name>`
+  - Body includes finding text, mitigation steps, verification command
+
+**Deduplication:**
+- Hash is computed from `"SEVERITY: CHECK_NAME"`
+- Stable across audit runs (same finding = same hash)
+- Re-running audit after a finding is fixed does NOT create duplicate tasks
+- Hash stored in task frontmatter: `audit_finding_hash: <sha1>`
+
+**Default: OFF** — v1 is opt-in until calibration complete (S3 digest-mode work)
+
 ## Anti-Gaming Features
 
 The audit detects common gaming attempts:

@@ -30,10 +30,23 @@ def load_card(path):
 
 
 def save_card(path, data):
-    """Write card YAML preserving readable formatting."""
-    with open(path, "w") as f:
+    """Write card YAML preserving readable formatting.
+
+    Atomic write (T-2457 / OBS-080): serialize to a temp file in the SAME
+    directory, then os.replace() — an atomic rename on POSIX. A non-atomic
+    ``open(path, "w")`` truncates the card first and streams the new content,
+    so a concurrent reader (e.g. ``fw fabric drift`` doing
+    ``grep "^location:" *.yaml`` to build its registered set) can observe the
+    card after truncation but before ``location:`` is written → the card's
+    source path drops out of the registered set → spurious "unregistered"
+    drift FP that clears on re-run once the write completes. os.replace keeps
+    readers seeing either the complete old card or the complete new one.
+    """
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
         yaml.dump(data, f, default_flow_style=False, sort_keys=False,
                   allow_unicode=True, width=120)
+    os.replace(tmp, path)
 
 
 # ---------------------------------------------------------------------------
