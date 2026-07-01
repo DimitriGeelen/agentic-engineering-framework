@@ -56,6 +56,28 @@ Surfaced while taking the host live for T-2502 (deferred per operator, option A)
 
 Related: T-2502 (host go-live blocked on this), T-2505 (worktree usage/lifecycle inception — this is difficulty #2 in the flesh).
 
+## Investigation (2026-07-01) — audit.sh is a genuine 3-way divergence, NOT a stray duplicate
+
+Live-verified the forensic hypothesis. The `agents/audit/audit.sh` piece is the crux and it is **two different implementations** of T-2353's emit feature, not a duplicate to discard:
+
+| Ref | audit.sh lines | emit-refs | emit fn | note |
+|-----|---------------:|----------:|---------|------|
+| `origin/master` | (no emit) | 0 | — | committed base; MAIN's HEAD == this ±7 lines |
+| `t2353-audit-emit-tasks` (branch, committed) | 5157 | **10** | uses `section()` helper | cleaner/refactored lineage; MEMORY: T-2353 **+ T-2354 + T-2335** all shipped on this branch stack, "awaiting merge-back" |
+| MAIN working tree (`t2417-fw-sessions`, **uncommitted**) | 5324 | **5** | `_emit_findings_as_tasks()` | different/earlier lineage + ~160 unrelated audit.sh lines; committed nowhere |
+
+**Key findings:**
+- MAIN's committed audit.sh ≈ origin/master (7-line diff) → **all** of MAIN's emit work is working-tree-only, committed nowhere.
+- The branch and MAIN implement emit-tasks **differently** (branch has `section()` + 10 refs; MAIN has `_emit_findings_as_tasks()` + 5 refs). They are not superset/subset — this is a real fork.
+- MAIN's uncommitted audit.sh also bundles ~160 lines of **unrelated** audit changes → a blind `git checkout` to adopt the branch would risk losing that non-emit work.
+
+**Reconciliation is an OPERATOR decision, not mechanical:**
+1. **Which T-2353 `audit.sh` lineage is canonical** — the committed `t2353-audit-emit-tasks` branch (recommended: MEMORY says T-2353/T-2354/T-2335 all shipped here) OR MAIN's uncommitted `_emit_findings_as_tasks()` copy. Different implementations; picking one supersedes the other.
+2. **Preserve MAIN's ~160 unrelated audit.sh lines** before discarding its emit copy (extract to a labeled branch/stash — no work lost).
+3. **Merge `t2353-audit-emit-tasks` → master** (operator-gated: landing to master) — this single merge unblocks **3 HV/LC tasks** (T-2353, T-2354, T-2335) at once, plus the deferred T-2502 host go-live.
+
+**Not executed autonomously** (work-loss risk + scope decision + terminates in operator-gated merge). Handed to operator decision-ready.
+
 ## Acceptance Criteria
 
 ### Agent
