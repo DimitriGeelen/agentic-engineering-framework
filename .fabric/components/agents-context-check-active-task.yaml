@@ -43,10 +43,14 @@ depended_by:
   type: called_by
 - target: tests/unit/test_safe_commands_git_commit.bats
   type: tests_by
+- target: tests/unit/check_active_task_cwd_resolution.bats
+  type: called_by
+- target: tests/unit/check_active_task_cwd_resolution.bats
+  type: tests_by
 last_verified: 2026-03-01
 created_by: unknown
 docs:
 - path: docs/articles/deep-dives/01-task-gate.md
   title: 'Deep Dive: The Task Gate'
   type: deep-dive
-last_enriched: '2026-05-27'
+last_enriched: '2026-07-01'

@@ -103,7 +103,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-22'
+last_enriched: '2026-07-01'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -600,4 +600,10 @@ depended_by:
 - target: tests/unit/t2461_doctor_mcp_consumer_path.bats
   type: tests_by
 - target: tests/unit/watchtower_health_verdict_identity.bats
+  type: tests_by
+- target: lib/integrate.py
+  type: called_by
+- target: tests/unit/check_active_task_cwd_resolution.bats
+  type: tests_by
+- target: tests/unit/t2465_reanchor_from_cwd.bats
   type: tests_by

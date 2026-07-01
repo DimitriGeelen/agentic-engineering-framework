@@ -1,0 +1,20 @@
+id: lib/hook_paths.py
+name: hook_paths
+type: script
+subsystem: framework-core
+location: lib/hook_paths.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-07-01
+created_by: unknown

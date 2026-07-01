@@ -5,10 +5,16 @@ subsystem: framework-core
 location: lib/integrate.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: bin/fw
+  type: calls
 depended_by:
 - target: tests/unit/t2399_integrate_check.bats
   type: tests_by
+- target: tests/unit/t2473_union_resolve.bats
+  type: called_by
+- target: tests/unit/t2473_union_resolve.bats
+  type: tests_by
 last_verified: 2026-06-14
 created_by: unknown
-last_enriched: '2026-06-16'
+last_enriched: '2026-07-01'

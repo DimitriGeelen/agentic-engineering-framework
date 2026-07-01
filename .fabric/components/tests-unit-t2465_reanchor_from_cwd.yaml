@@ -4,17 +4,15 @@ type: script
 subsystem: unknown
 location: tests/unit/t2465_reanchor_from_cwd.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/paths.sh
+  type: calls
+- target: lib/paths.sh
+  type: tests
+- target: bin/fw
+  type: tests
+depended_by: []
 last_verified: 2026-06-23
 created_by: unknown
+last_enriched: '2026-07-01'

@@ -12,6 +12,8 @@ depends_on:
   type: calls
 - target: lib/spawn.py
   type: calls
+- target: lib/bvp.sh
+  type: calls
 depended_by:
 - target: lib/resolver.sh
   type: called_by
@@ -29,4 +31,4 @@ depended_by:
   type: uses_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-07-01'

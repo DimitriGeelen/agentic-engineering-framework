@@ -4,17 +4,13 @@ type: script
 subsystem: unknown
 location: tests/unit/t2473_union_resolve.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/integrate.py
+  type: calls
+- target: lib/integrate.py
+  type: tests
+depended_by: []
 last_verified: 2026-06-24
 created_by: unknown
+last_enriched: '2026-07-01'
