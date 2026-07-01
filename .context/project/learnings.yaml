@@ -3700,3 +3700,10 @@ X'` returning empty group."
   date: 2026-06-16
   context: Added via context agent
   application: TBD
+- id: L-486
+  learning: "PreToolUse hook grandfather pattern: compare old vs new malformation count, block only when new_count > old_count. Allows zero-friction rollout of structural validators on large corpuses with existing violations. Example: T-2420 check-task-ac-structure counted malformed ### Human headings in old and new content, blocked only on increase."
+  source: P-structural-validation
+  task: T-2420
+  date: 2026-07-01
+  context: Added via context agent
+  application: TBD

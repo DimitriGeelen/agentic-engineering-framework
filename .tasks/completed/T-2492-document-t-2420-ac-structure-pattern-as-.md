@@ -4,12 +4,12 @@ name: "Document T-2420 AC structure pattern as learning"
 description: >
   Document T-2420 AC structure pattern as learning
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, agents/context/check-task-ac-structure.sh, agents/termlink/bvp-estimator/estimator.py, tests/unit/check_task_ac_structure.bats, tests/unit/test_bvp_estimator.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-01T21:20:56Z
-last_update: 2026-07-01T21:20:56Z
-date_finished: null
+last_update: 2026-07-01T21:26:01Z
+date_finished: 2026-07-01T21:26:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,9 +45,9 @@ Capture T-2420 pattern (grandfather-via-no-worse-than structural validation) as 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Learning added via `fw context add-learning` referencing T-2420
-- [ ] Learning describes the grandfather pattern: "count malformed headers in old vs new, block only when new_count > old_count"
-- [ ] Learning tagged with `source:T-2420` and `pattern:structural-validation`
+- [x] Learning added via `fw context add-learning` referencing T-2420 (L-486)
+- [x] Learning describes the grandfather pattern: "count malformed headers in old vs new, block only when new_count > old_count"
+- [x] Learning tagged with `source:T-2420` and `pattern:structural-validation`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,3 +180,15 @@ Capture T-2420 pattern (grandfather-via-no-worse-than structural validation) as 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2492-document-t-2420-ac-structure-pattern-as-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2758c1a4
+- **Timestamp:** 2026-07-01T21:26:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-01T21:26:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
