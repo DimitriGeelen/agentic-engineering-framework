@@ -3700,3 +3700,10 @@ X'` returning empty group."
   date: 2026-06-16
   context: Added via context agent
   application: TBD
+- id: L-486
+  learning: "Worktree teardown strands unpushed commits: git worktree remove / session-exit cleanup has NO unpushed-commit guard (handover.sh:1016 T-1144 pushes only on the handover path; WorktreeRemove hook unconfigured). A branch's commits can be stranded local-only when its worktree is reaped. TWO practical rules: (1) push before teardown; (2) any copy-pasteable handoff command that outlives the session (push, tier0 approve, review) must target the DURABLE main-repo path + explicit branch ref (cd /opt/PROJECT && git push --no-verify origin BRANCH), NEVER the ephemeral .claude/worktrees/<name> cwd — that cd fails once the worktree is gone. Origin: t2353-audit-emit-tasks, 6 commits stranded 2026-06-27→07-01. Gaps G-071/G-072, RCA T-2428."
+  source: P-002
+  task: T-2428
+  date: 2026-07-01
+  context: Added via context agent
+  application: TBD
