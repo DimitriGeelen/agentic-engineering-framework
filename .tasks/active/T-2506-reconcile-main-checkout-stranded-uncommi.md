@@ -4,7 +4,7 @@ name: "Reconcile MAIN checkout stranded uncommitted work (T-2353 + AC-structure 
 description: >
   MAIN checkout (/opt/999... on t2417-fw-sessions) has 267 uncommitted changes incl. stranded, committed-nowhere source work from >=3 tasks; blocks host go-live for T-2502. Attribute + land each piece, bring MAIN clean.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,10 +22,10 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-01T11:38:17Z
-last_update: 2026-07-01T11:38:17Z
+last_update: 2026-07-01T16:48:42Z
 date_finished: null
-# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
-# revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+revisit_at: 2026-07-08            # held per operator (option c); daily G-053 scan surfaces it. Bump if held longer.
+revisit_evidence_needed: "Operator picks reconcile approach (a deliverables-only / b full) OR T-2505 C3 detector ships; then run the cherry-pick-onto-master + host go-live for T-2502."
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
 # bvp_scores:                     # confirmed per-driver scores 0-5, set by `fw bvp confirm` (T-1924).
 #                                 # Sovereignty boundary — only set after human or agent confirmation.
@@ -218,3 +218,6 @@ Live-verified the forensic hypothesis. The `agents/audit/audit.sh` piece is the 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2506-reconcile-main-checkout-stranded-uncommi.md
 - **Context:** Initial task creation
+
+### 2026-07-01T16:48:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

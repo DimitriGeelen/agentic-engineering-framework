@@ -2267,3 +2267,41 @@ concerns:
     (14 dropped as data-artifact deps, 6 dropped as writes-targets). Real future
     drift (a card pointing at a deleted source) now surfaces unambiguously.
     Regression test: tests/unit/fabric_drift_data_artifact.bats (6/6 PASS).
+
+- id: G-083
+  type: gap
+  title: No detector for MAIN-checkout ↔ worktree stranded-source divergence — silently blocks host go-live
+  description: 'The framework has no doctor/audit check for the case where the MAIN
+    checkout accumulates uncommitted source that diverges from BOTH origin/master
+    AND a feature branch. Hit live in T-2506: MAIN (t2417-fw-sessions) held 267
+    uncommitted changes incl. a divergent audit.sh emit-tasks fork (5-ref
+    _emit_findings_as_tasks()) forking from the committed t2353-audit-emit-tasks
+    branch (10-ref, section() helper) AND from origin/master — committed nowhere.
+    Sat undetected for days; blocked host go-live for T-2502 and left 3 HV/LC tasks
+    (T-2353/T-2354/T-2335) stuck on a 248-behind branch. Discovered only by a manual
+    go-live attempt, not by any gate.
+
+    '
+  spec_reference: CLAUDE.md §Post-Fix Root Cause Escalation (G-019); T-2505 difficulty #2
+  severity: high
+  decision_trigger: 'A host go-live or merge-back is attempted and the MAIN checkout
+    is found carrying stranded source diverging from origin/master + a feature branch,
+    with no prior warning from fw doctor / fw audit.
+
+    '
+  trigger_check:
+    type: manual
+    hint: 'Until T-2505 C3 ships, run `git -C <MAIN> status --porcelain -- lib agents bin web`
+      before any go-live; non-empty real source = stranded divergence.'
+  status: watching
+  created: 2026-07-01
+  related_task: T-2506
+  what_remains: 'PREVENTION NOT YET SHIPPED. T-2505 C3 (doctor/audit advisory flagging
+    long-lived worktrees holding >N task IDs / >D days AND MAIN↔worktree divergence
+    with stranded uncommitted source) is a held inception awaiting operator dialogue.
+    One-off reconciliation carried by T-2506 (held per operator, option c). This gap
+    stays OPEN until the detector exists — tasks archive, this keeps the detection
+    blindness visible (G-019 discipline). Related: T-2506, T-2505, T-2502, T-2353,
+    T-2354, T-2335.
+
+    '
