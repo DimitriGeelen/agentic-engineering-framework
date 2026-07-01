@@ -24,6 +24,14 @@ AUTO_RESTART=true
 TERMLINK_ENABLED="${TL_CLAUDE_ENABLED:-0}"
 CLAUDE_ARGS=()
 
+# T-2499: supervisor marker. Exported here so `command claude` and every hook
+# subprocess it spawns (budget-gate, doctor) inherit it. Its presence = "this
+# session is supervised by claude-fw, so the arc-012 budget-critical auto-restart
+# loop can actually fire". A plain `claude` launch leaves it unset → the budget
+# hook surfaces a loud "auto-restart will NOT fire" notice instead of silently
+# writing a .restart-requested signal nobody consumes (the 300K→350K overrun bug).
+export FW_CLAUDE_FW_SUPERVISED=1
+
 for arg in "$@"; do
     case "$arg" in
         --no-restart)

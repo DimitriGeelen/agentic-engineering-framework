@@ -1695,7 +1695,12 @@ check_self_vendor_drift() {
     # both have tracked .md siblings and both helpers now sync them recursively
     # via `bin/fw vendor self`. Net: audit FAIL → helper SYNC closure, no
     # `fw vendor` full-mode fallback needed.
-    done < <(find "$FRAMEWORK_ROOT/.agentic-framework/bin" "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "*.md" \) 2>/dev/null)
+    # T-2502: `-name "claude-fw"` added — the extensionless operator auto-restart
+    # wrapper (bin/claude-fw) matches neither `*.sh`/`*.py`/`*.md` nor `fw`, so the
+    # vendored copy drifted undetected (sibling of T-2501's on-PATH drift). Parity:
+    # `_self_vendor_shim` (lib/upgrade.sh) now syncs claude-fw too, so this FAIL is
+    # clearable via `fw vendor self` (L-399 producer/consumer parity).
+    done < <(find "$FRAMEWORK_ROOT/.agentic-framework/bin" "$FRAMEWORK_ROOT/.agentic-framework/lib" "$FRAMEWORK_ROOT/.agentic-framework/agents" "$FRAMEWORK_ROOT/.agentic-framework/web" -type f \( -name "*.sh" -o -name "*.py" -o -name "fw" -o -name "claude-fw" -o -name "*.md" \) 2>/dev/null)
 
     # templates class: .agentic-framework/.tasks/templates/*.md vs source
     if [ -d "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" ]; then

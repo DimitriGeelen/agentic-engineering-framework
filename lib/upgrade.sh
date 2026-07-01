@@ -331,17 +331,27 @@ _self_vendor_shim() {
     if [ ! -d "$_self_vendor/bin" ]; then
         return 0
     fi
-    local _svs_src="$FRAMEWORK_ROOT/bin/fw"
-    local _svs_dst="$_self_vendor/bin/fw"
-    [ -f "$_svs_src" ] || return 0
+    # T-2502: sync BOTH bin shims (fw + claude-fw). Pre-T-2502 this synced
+    # bin/fw only, so the vendored claude-fw (operator auto-restart wrapper)
+    # drifted undetected — the in-repo sibling of the on-PATH wrapper drift
+    # T-2501 caught in `fw doctor`. audit.sh check_self_vendor_drift now scans
+    # `claude-fw` in its find filter too, so filter+helper parity holds (L-399:
+    # widening the audit filter without extending this helper would FAIL with
+    # nothing to clear via `fw vendor self`).
     local _svs_updated=0
-    if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1; then
-        if [ "$dry_run" != true ]; then
-            cp "$_svs_src" "$_svs_dst"
-            [ -x "$_svs_src" ] && chmod +x "$_svs_dst"
+    local _shim _svs_src _svs_dst
+    for _shim in fw claude-fw; do
+        _svs_src="$FRAMEWORK_ROOT/bin/$_shim"
+        _svs_dst="$_self_vendor/bin/$_shim"
+        [ -f "$_svs_src" ] || continue
+        if [ ! -f "$_svs_dst" ] || ! diff -q "$_svs_src" "$_svs_dst" > /dev/null 2>&1; then
+            if [ "$dry_run" != true ]; then
+                cp "$_svs_src" "$_svs_dst"
+                [ -x "$_svs_src" ] && chmod +x "$_svs_dst"
+            fi
+            _svs_updated=$((_svs_updated + 1))
         fi
-        _svs_updated=1
-    fi
+    done
     if [ "$_svs_updated" -gt 0 ]; then
         if [ "$dry_run" = true ]; then
             echo -e "  ${GREEN}Self-vendor:${NC} would sync 1 file(s) to .agentic-framework/bin/"
