@@ -4,12 +4,12 @@ name: "Vendored claude-fw drift uncovered — audit filter + vendor-self helper 
 description: >
   Sibling of T-2501. In-repo vendored .agentic-framework/bin/claude-fw drifts undetected: check_self_vendor_drift (audit.sh:1698) filter excludes claude-fw, and fw vendor self _self_vendor_shim (lib/upgrade.sh) syncs bin/fw only. Ship filter widen + helper extend TOGETHER (L-399 parity, L-491 unresolvable-block avoidance).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, lib/upgrade.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-25T13:06:11Z
-last_update: 2026-07-01T09:42:19Z
-date_finished: null
+last_update: 2026-07-01T10:09:38Z
+date_finished: 2026-07-01T10:09:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -87,7 +87,9 @@ Sibling of T-2501. T-2501 shipped on-PATH wrapper drift detection in `fw doctor`
 bash -n lib/upgrade.sh
 bash -n agents/audit/audit.sh
 bin/fw vendor self >/dev/null 2>&1; cmp -s bin/claude-fw .agentic-framework/bin/claude-fw
-out=$(bin/fw audit 2>&1); echo "$out" | grep -q "Self-vendor drift: vendored .agentic-framework/ in sync"
+# here-string (not `echo|grep`) — audit output is large; grep -q matches early and
+# SIGPIPEs the writer under set -eo pipefail (L-387/T-2090, exit 141). No pipe = no SIGPIPE.
+out=$(bin/fw audit 2>&1); grep -q "Self-vendor drift: vendored .agentic-framework/ in sync" <<<"$out"
 grep -q 'name "claude-fw"' agents/audit/audit.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -188,3 +190,15 @@ grep -q 'name "claude-fw"' agents/audit/audit.sh
 ### 2026-07-01T09:42:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-396198cd
+- **Timestamp:** 2026-07-01T10:17:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-01T10:09:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

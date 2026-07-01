@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2502: Vendored claude-fw drift uncovered — audit filter + vendor-self helper parity (sibling of T-2501)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-01T10:17:13Z
+# ============================================================================
+
+task_id: T-2502
+task_name: "Vendored claude-fw drift uncovered — audit filter + vendor-self helper parity (sibling of T-2501)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-25T13:06:11Z
+completed: 2026-07-01T10:09:38Z
+duration_days: 6
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_self_vendor_shim` (lib/upgrade.sh) syncs `claude-fw` in addition to `fw` — both bin shims mirror source, with dry-run/real-run parity and an accurate file count in the `would sync`/`synced` message'
+  - '`check_self_vendor_drift` find filter (agents/audit/audit.sh) includes `-name "claude-fw"` so vendored `.agentic-framework/bin/claude-fw` drift is detected (parity with the helper that now syncs it)'
+  - 'After `bin/fw vendor self`, `.agentic-framework/bin/claude-fw` is byte-identical to `bin/claude-fw` (`cmp -s`)'
+  - '`bin/fw audit` self-vendor drift check PASSES (no FAIL) after sync — filter+helper parity holds end-to-end; negative test (re-inject drift) now produces a FAIL that pre-fix was invisible'
+  - '`bash -n lib/upgrade.sh && bash -n agents/audit/audit.sh` clean (no syntax regression)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 8463 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8463
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/completed/T-2502-vendored-claude-fw-drift-uncovered--audi.md
+generated_by: context-agent-hybrid
