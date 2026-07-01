@@ -1,6 +1,15 @@
 
-NOTE: Inception task T-2485 — no decision yet (commit 1/2 before gate)
+NOTE: Inception task T-2485 — no decision yet (commit 2/2 before gate)
   After exploration:
     cd /opt/999-Agentic-Engineering-Framework && bin/fw inception decide T-2485 go --rationale '...'
 
-  WARNING: Push to origin failed (non-blocking)
+
+BLOCKED: inception commit for T-2485 — no research artifact (C-001/G-009)
+
+Inception tasks require a research artifact in docs/reports/
+Create the artifact BEFORE conducting research:
+  docs/reports/T-2485-<topic>.md
+
+The thinking trail IS the artifact — conversations are ephemeral, files are permanent.
+
+Emergency bypass: git commit --no-verify

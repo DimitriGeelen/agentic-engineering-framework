@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2493: Session wrap-up: autonomous HV/LC sweep
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-01T21:29:21Z
+# ============================================================================
+
+task_id: T-2493
+task_name: "Session wrap-up: autonomous HV/LC sweep"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-01T21:26:35Z
+completed: 2026-07-01T21:29:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-24T22:22:53+02:00
+last_commit: 2026-06-24T22:25:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-vendor .agentic-framework libs for T-2488/2490/2491 source edits. full .agentic-framework re-vendor sync (fw vendor self). complete — orchestrator autonomy work landed to origin/master
+
+# Key outcomes
+outcomes:
+  - 'Final handover generated'
+  - 'All work committed and pushed to origin'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/mcp/framework-mcp-manifest.json'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/integrate-go-live.sh'
+  - '.agentic-framework/docs/reports/T-2397-layer2-integration-queue-spec.md'
+  - '.agentic-framework/docs/reports/T-2428-payload-mediation-design.md'
+  - '.agentic-framework/docs/reports/T-2428-payload-mediation-spike.md'
+  - '.agentic-framework/docs/reports/T-2441-aef-onboarding-dogfooding.md'
+  - '.agentic-framework/docs/reports/T-2447-f8-shim-routing.md'
+  - '.agentic-framework/docs/reports/T-2458-aef-mcp-adoption-strategy.md'
+  - '.agentic-framework/docs/reports/T-2464-worktree-reliability-rca.md'
+  - '.agentic-framework/docs/reports/T-2484-orchestrator-spine.md'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/lib/spawn.py'
+  - '.agentic-framework/lib/termlink_worker.py'
+  - '.agentic-framework/lib/ts/dist/loop-detect.js'
+  - '.agentic-framework/VERSION'
+  - '.tasks/active/T-2493-land-orchestrator-autonomy-work-to-maste.md'
+  - '.tasks/completed/T-2492-dogfood-the-autonomous-pickerloop-live-p.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-24T22:22:53"
+    action: "T-2493: re-vendor .agentic-framework libs for T-2488/2490/2491 source edits"
+  - time: "2026-06-24T22:23:26"
+    action: "T-2493: full .agentic-framework re-vendor sync (fw vendor self)"
+  - time: "2026-06-24T22:25:36"
+    action: "T-2493: complete — orchestrator autonomy work landed to origin/master"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 3
+  files_changed: 18
+  lines_added: 2614
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2493-session-wrap-up-autonomous-hvlc-sweep.md
+generated_by: context-agent-hybrid
