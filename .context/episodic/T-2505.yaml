@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2505: Investigate duplicate T-2502 (active + completed)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T22:40:43Z
+# ============================================================================
+
+task_id: T-2505
+task_name: "Investigate duplicate T-2502 (active + completed)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T21:33:13Z
+completed: 2026-07-02T22:40:34Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-01T13:34:11+02:00
+last_commit: 2026-07-01T13:34:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — worktree usage/lifecycle policy (refine per-task default)
+
+# Key outcomes
+outcomes:
+  - 'Understand how the duplicate arose (branch divergence)'
+  - 'Verify T-2502 exists on master but not on current branch'
+  - 'Decision: No fix needed - audit-created T-2502 is meta-noise, will be superseded on merge'
+  - 'Add learning about cross-branch ID conflicts'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-02 — No fix for cross-branch T-2502 duplicate'
+    chose: 'Leave both T-2502s as-is, resolve on merge'
+    rationale: 'The audit-created T-2502 on this branch is meta-noise ("Task T-2469 missing Updates"). It''s part of a recursive audit cascade (55+ tasks about tasks missing Updates sections). When this branch merges with master, the master T-2502 (real work: vendored claude-fw drift) will win, and the audit-noise T-2502 will be discarded.'
+    alternatives_rejected: ['Renaming this branch''s T-2502 to T-2509 would preserve the meta-noise task unnecessarily.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-2505-worktree-usage-policy.md'
+  - '.tasks/active/T-2505-worktree-usage-policy--refine-per-task-d.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-01T13:34:11"
+    action: "T-2505: file inception — worktree usage/lifecycle policy (refine per-task default)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 67 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 67
+  commits: 1
+  files_changed: 2
+  lines_added: 208
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2505-investigate-duplicate-t-2502-active--com.md
+generated_by: context-agent-hybrid
