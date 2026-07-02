@@ -22,7 +22,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T17:49:00Z
-last_update: '2026-07-02T18:00:07Z'
+last_update: 2026-07-02T19:45:37Z
 date_finished:
 target_blast_radius: 0
 voi_score: 0.3
@@ -96,8 +96,9 @@ Inbox now empty, actionable items promoted to appropriate tasks.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] All 4 observations (OBS-075 through OBS-078) triaged with disposition (promote/dismiss)
+- [x] Promoted observations converted to tasks (T-2426, T-2427 created)
+- [x] Inbox confirmed empty via `bin/fw note list`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
