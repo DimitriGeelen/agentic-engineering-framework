@@ -575,9 +575,13 @@ check_inception_scope_trace() {
     # Run reachability check via Python helper
     # Returns: "OK" or one failure per line prefixed with "FAIL:"
     local py_output failures
-    py_output=$(python3 - "$TASK_FILE" "$PROJECT_ROOT" <<'PYEOF'
+    py_output=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 - "$TASK_FILE" "$PROJECT_ROOT" <<'PYEOF'
 import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+# T-2495: when this runs via `python3 -` (stdin heredoc), __file__ == "<stdin>",
+# so the abspath/dirname chain climbs to "/" and `lib.inception_decisions` never
+# lands on sys.path (ModuleNotFoundError). Prefer the explicit FRAMEWORK_ROOT env
+# (which contains lib/); fall back to the __file__ chain only when run as a real file.
+sys.path.insert(0, os.environ.get("FRAMEWORK_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 # argv[0] = "-" (stdin), argv[1] = task_file, argv[2] = project_root
 # But when called via bash heredoc, sys.argv may differ. Use env instead.
 import os
