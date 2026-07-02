@@ -1,3 +1,15 @@
+# RESOLVED by T-2495 (2026-07-02)
+
+**Original issue:** update-task.sh derives sys.path from __file__ inside stdin heredoc, causing ModuleNotFoundError in `fw inception decide` finalization.
+
+**Resolution:** T-2495 applied the exact fix recommended in this pickup - prefer FRAMEWORK_ROOT env over __file__ chain in the Python heredoc at agents/task-create/update-task.sh line ~578.
+
+**Verified:** Fix is in place and working as of 2026-07-02.
+
+---
+
+# Original pickup content:
+
 # BUG + FIX: update-task.sh derives sys.path from __file__ inside a `python3 -` stdin heredoc
 
 **Source:** /opt/termlink (vendored AEF consumer), T-2304 | **Priority:** P1 (breaks `fw inception decide` finalization) | **Date:** 2026-07-02
