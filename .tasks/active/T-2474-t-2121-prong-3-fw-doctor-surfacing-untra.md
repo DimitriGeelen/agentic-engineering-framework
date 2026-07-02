@@ -1,20 +1,12 @@
 ---
-id: T-2121
-name: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id
-  collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md
-  that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time
-  block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/
-  before mutating any .tasks/active/ file (prevents masking by metadata churn); (3)
-  bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently
-  doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing
-  as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention
-  are independent."
+id: T-2474
+name: "T-2121 Prong 3: fw doctor surfacing untracked files in .tasks/{active,completed}/"
 description: >
-  Promoted from observation OBS-035
+  bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible, enabling T-2091 class drift)
 
 status: started-work
-workflow_type: inception
-owner: human
+workflow_type: build
+owner: agent
 horizon: now
 tags: []
 components: []
@@ -23,11 +15,15 @@ related_tasks: []
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
 #                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
-target_blast_radius: 3
-voi_score: 0.4
-created: 2026-05-30T20:16:09Z
-last_update: 2026-07-02T19:49:22Z
-date_finished:
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
+created: 2026-07-02T19:48:39Z
+last_update: 2026-07-02T19:48:39Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,139 +34,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-06-05T18:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-10T09:30:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 4
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-11T09:45:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 4
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-12T10:15:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 7
-    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-06-05T18:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-ORCH: 4
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=4 (body:rubric-routable)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-10T09:30:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-11T16:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F1=2 
-      (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-11T22:23:32Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F3=2 
-      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-06-13T18:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F-AUTONOMY: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
-      (no-signal); F3=2 (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-02T16:15:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F-AUTONOMY: 2
-      audit_severity: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
-      (no-signal); audit_severity=2 (no-signal); F3=2 (no-signal); F1=2 
-      (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2121: T-2091 RCA prevention follow-up: structural detector for active↔completed task-id collisions. Three prongs surfaced: (1) PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block); (2) BVP estimator + last_update bumper worker — cross-check .tasks/completed/ before mutating any .tasks/active/ file (prevents masking by metadata churn); (3) bin/fw doctor — surface untracked files in .tasks/{active,completed}/ (currently doctor doesn't look here, so 7-day-orphaned completion content was invisible). Filing as separate task per 'one bug = one task' since the cleanup (T-2091) and the prevention are independent.
+# T-2474: T-2121 Prong 3: fw doctor surfacing untracked files in .tasks/{active,completed}/
 
 ## Context
 
@@ -180,8 +46,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Inception decision recorded (GO / NO-GO / DEFER) on whether to ship any of the three prongs from the task body — (1) PreToolUse hook on Write|Edit refusing same-id duplicates between `.tasks/active/` and `.tasks/completed/`, (2) BVP estimator + last_update bumper cross-check before mutating `.tasks/active/` files, (3) `bin/fw doctor` surfacing untracked files in `.tasks/{active,completed}/`.
-- [x] If GO: each prong filed as its own build task (per "one bug = one task") with `unlocks_inception_decision: [T-2121:<decision-id>]` traceability. If NO-GO or DEFER: rationale recorded in `## Recommendation` block citing why the T-2091 cleanup pattern is sufficient without structural prevention, or what evidence would push the next revisit toward GO.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -300,66 +166,17 @@ bvp_scores_proposed:
 
 ## Decision
 
-**Decision**: GO
+<!-- Filled at completion of inception tasks via:
+     fw inception decide T-XXX go|no-go|defer --rationale "..."
 
-**Rationale**: Recommendation: DEFER
-
-Rationale:
-
-Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
-
-Evidence:
-
-
-
-
-### 2026-06-12T10:13:47Z — status-update [task-update-agent]
-- Change: status: captured → started-work
-- Change: horizon: later → now (auto-sync)
-
-**Date**: 2026-07-02T19:44:43Z
+     For non-inception tasks this section is ignored. Kept in template
+     so `fw inception decide` (lib/inception.sh) finds the anchor heading
+     without auto-creating; T-1832 added auto-create as fallback for
+     legacy tasks lacking this section. -->
 
 ## Updates
 
-### 2026-05-30T20:16:09Z — task-created [task-create-agent]
+### 2026-07-02T19:48:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2121-t-2091-rca-prevention-follow-up-structur.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2474-t-2121-prong-3-fw-doctor-surfacing-untra.md
 - **Context:** Initial task creation
-
-### 2026-06-10T09:17:42Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-## Recommendation
-
-**Recommendation:** DEFER
-
-**Rationale:**
-
-Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
-
-**Evidence:**
-
-<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
-
-
-### 2026-06-12T10:13:47Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: later → now (auto-sync)
-
-### 2026-07-02T19:44:43Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: DEFER
-
-Rationale:
-
-Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
-
-Evidence:
-
-
-
-
-### 2026-06-12T10:13:47Z — status-update [task-update-agent]
-- Change: status: captured → started-work
-- Change: horizon: later → now (auto-sync)
