@@ -25,6 +25,8 @@ REPORT = ROOT / "docs" / "reports" / "T-1549-escalation-scan-v0.md"
 # T-1555 Layer B v1: stable machine-readable summary for cron consumers.
 # Watchtower / metrics / drift dashboards read this; the .md remains for humans.
 LATEST_YAML = ROOT / ".context" / "working" / "escalation-drift-LATEST.yaml"
+# T-2495: exclusion rules for auto-tuning (T-1687 feedback loop)
+EXCLUSION_RULES = ROOT / ".context" / "working" / "escalation-exclusion-rules.yaml"
 
 BUG_TITLE_RE = re.compile(
     r"\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b", re.I
@@ -81,6 +83,84 @@ def has_learning_capture(body: str) -> bool:
     return bool(LEARNING_REF_RE.search(body))
 
 
+def load_exclusion_rules() -> list[dict]:
+    """
+    Load active exclusion rules from YAML file.
+
+    Returns only rules with status='active'. Gracefully returns empty list
+    if file doesn't exist (T-2495 requirement).
+    """
+    if not EXCLUSION_RULES.exists():
+        return []
+
+    try:
+        import yaml
+        with EXCLUSION_RULES.open() as f:
+            data = yaml.safe_load(f)
+
+        rules = data.get('rules', [])
+        # Filter to active rules only (skip dry-run and expired)
+        active_rules = [r for r in rules if r.get('status') == 'active']
+        return active_rules
+    except Exception:
+        # Graceful fallback on parse error
+        return []
+
+
+def matches_any_exclusion_rule(title: str, body: str, rationale: str, rules: list[dict]) -> bool:
+    """
+    Check if a task matches any active exclusion rule.
+
+    Args:
+        title: Task title/name
+        body: Task body text
+        rationale: Rationale text (for v0.5 integration; not used in v0)
+        rules: List of active exclusion rules from load_exclusion_rules()
+
+    Returns:
+        True if task matches any rule, False otherwise
+    """
+    for rule in rules:
+        attrs = rule.get('attributes', {})
+
+        # Check each attribute in the rule
+        matches = True
+        for attr_name, attr_value in attrs.items():
+            if attr_name == 'title':
+                # Title attribute: check if pattern is in title
+                if attr_value.lower() not in title.lower():
+                    matches = False
+                    break
+            elif attr_name == 'body':
+                # Body attribute: check if pattern is in body
+                # Map pattern names to body content checks
+                if attr_value == 'no-code-changes' and 'no code changes' not in body.lower():
+                    matches = False
+                    break
+                elif attr_value == 'doc-edit' and 'doc edit' not in body.lower():
+                    matches = False
+                    break
+                elif attr_value == 'existing-rca' and 'existing rca' not in body.lower():
+                    matches = False
+                    break
+                elif attr_value == 'refactor' and 'refactor' not in body.lower():
+                    matches = False
+                    break
+                elif attr_value == 'explanatory':
+                    # Explanatory is a catch-all - always matches if other attrs match
+                    pass
+                else:
+                    # Unknown body pattern - skip this rule
+                    matches = False
+                    break
+
+        if matches and len(attrs) >= 2:
+            # Rule matched and has required specificity
+            return True
+
+    return False
+
+
 def parse_finished_date(fm: dict) -> datetime | None:
     s = fm.get("date_finished") or fm.get("last_update")
     if not s or s == "null":
@@ -95,6 +175,9 @@ def main() -> None:
     bug_class_tasks: list[tuple[str, dict, str]] = []
     all_tasks: list[tuple[str, dict, str]] = []
     learning_to_tasks: dict[str, list[str]] = defaultdict(list)
+
+    # T-2495: Load active exclusion rules for auto-tuning
+    exclusion_rules = load_exclusion_rules()
 
     for path in sorted(COMPLETED.glob("T-*.md")):
         try:
@@ -111,9 +194,18 @@ def main() -> None:
         for lid in LEARNING_REF_RE.findall(body):
             learning_to_tasks[lid].append(path.stem)
 
-    h1_flagged = [
+    # H1 base: bug-class tasks without RCA
+    h1_candidates = [
         (tid, fm, body) for tid, fm, body in bug_class_tasks if not has_rca(body)
     ]
+
+    # T-2495: Filter out candidates matching active exclusion rules
+    h1_flagged = []
+    for tid, fm, body in h1_candidates:
+        title = fm.get('name', tid)
+        # For v0, we don't have rationale - pass empty string
+        if not matches_any_exclusion_rule(title, body, "", exclusion_rules):
+            h1_flagged.append((tid, fm, body))
 
     # H2: learning IDs in ≥3 tasks within 30 days
     fm_by_tid = {tid: fm for tid, fm, _ in all_tasks}
