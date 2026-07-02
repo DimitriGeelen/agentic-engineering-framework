@@ -5107,17 +5107,18 @@ _emit_findings_as_tasks() {
     [ "$EMIT_TASKS" = false ] && return 0
 
     # Read the YAML output we just wrote
-    local yaml_file="$AUDIT_OUTPUT_FILE"
+    local yaml_file="$AUDIT_FILE"
     [ ! -f "$yaml_file" ] && { echo "[emit-tasks] No audit YAML found: $yaml_file" >&2; return 1; }
 
     echo ""
     echo "=== EMIT FINDINGS AS TASKS ==="
 
     # Parse YAML for WARN/FAIL findings
-    local findings=$(python3 << 'PYEOF'
-import yaml, sys, hashlib
+    export YAML_FILE="$yaml_file"
+    local findings=$(python3 << PYEOF
+import yaml, sys, hashlib, os
 
-yaml_path = sys.argv[1]
+yaml_path = os.environ.get("YAML_FILE")
 with open(yaml_path) as f:
     data = yaml.safe_load(f)
 
@@ -5139,7 +5140,7 @@ for finding in findings:
     # Output: LEVEL|HASH|CHECK|MITIGATION
     print(f"{level}|{hash_val}|{check}|{mitigation}")
 PYEOF
-    "$yaml_file")
+)
 
     if [ -z "$findings" ]; then
         echo "No WARN/FAIL findings to emit"
@@ -5214,7 +5215,9 @@ bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
             # Use fw task create with custom fields
             local task_id=$("$FRAMEWORK_ROOT/bin/fw" task create \
                 --name "$title" \
-                --type bugfix \
+                --description "$title" \
+                --type build \
+                --owner agent \
                 --horizon now \
                 --start \
                 2>&1 | grep "^ID:" | awk '{print $2}')
@@ -5225,7 +5228,7 @@ bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
                 if ls $task_file 1>/dev/null 2>&1; then
                     task_file=$(ls $task_file | head -1)
                     # Insert custom fields after workflow_type line
-                    sed -i "/^workflow_type: bugfix/a\\
+                    sed -i "/^workflow_type: build/a\\
 audit_severity: $severity\\
 audit_finding_hash: $hash\\
 tags: [audit-finding, severity:$severity, section:$section]" "$task_file"

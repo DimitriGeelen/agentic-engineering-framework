@@ -19,20 +19,20 @@ jobs:
   - id: structural-30m
     name: "Structural audits (30 min)"
     schedule: "*/30 * * * *"
-    command: "flock -n /var/lock/agentic-cron-structural-30m.lock -c 'fw audit --section structure,compliance,quality,discovery --cron'"
+    command: "flock -n /var/lock/agentic-cron-structural-30m.lock -c 'fw audit --section structure,compliance,quality,discovery --cron --emit-tasks'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
-    description: "Checks task quality, project structure integrity, compliance, and discovery patterns every 30 minutes."
+    description: "Checks task quality, project structure integrity, compliance, and discovery patterns every 30 minutes. Emits WARN/FAIL findings as bugfix tasks (T-2417, T-2352 autotuning feedback loop)."
 
   - id: traceability-hourly
     name: "Git traceability + episodic (hourly)"
     schedule: "0 * * * *"
-    command: "flock -n /var/lock/agentic-cron-traceability-hourly.lock -c 'fw audit --section traceability,episodic,discovery-trends --cron'"
+    command: "flock -n /var/lock/agentic-cron-traceability-hourly.lock -c 'fw audit --section traceability,episodic,discovery-trends --cron --emit-tasks'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
-    description: "Verifies git commit traceability, episodic memory completeness, and discovers trends hourly."
+    description: "Verifies git commit traceability, episodic memory completeness, and discovers trends hourly. Emits WARN/FAIL findings as bugfix tasks (T-2417, T-2352 autotuning feedback loop)."
 
   - id: observations-6h
     name: "Observations + gaps (6 hourly)"
@@ -82,11 +82,11 @@ jobs:
   - id: full-daily
     name: "Full audit (daily)"
     schedule: "0 8 * * *"
-    command: "flock -n /var/lock/agentic-cron-full-daily.lock -c 'fw audit --cron'"
+    command: "flock -n /var/lock/agentic-cron-full-daily.lock -c 'fw audit --cron --emit-tasks'"
     source_file: agentic-audit.crontab
     origin_task: T-184
     status: active
-    description: "Complete audit of all sections, runs daily at 8am."
+    description: "Complete audit of all sections, runs daily at 8am. Emits WARN/FAIL findings as bugfix tasks (T-2417, T-2352 autotuning feedback loop)."
 
   - id: docs-daily
     name: "Component docs regeneration (daily)"

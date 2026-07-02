@@ -1,0 +1,123 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2417: Wire audit cron to emit-tasks - close feedback loop
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T17:06:55Z
+# ============================================================================
+
+task_id: T-2417
+task_name: "Wire audit cron to emit-tasks - close feedback loop"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T16:28:58Z
+completed: 2026-07-02T17:06:45Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-16T11:23:46+02:00
+last_commit: 2026-06-27T08:48:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sessions — partial (schema + CC adapter + renderer; dispatcher + tests TODO). self-vendor sync (schema + CC adapter + renderer). fw sessions — dispatcher + 18 bats tests + fabric register (9/10 Agent ACs). reviewer PASS — all 10 Agent ACs ticked, only Human live-fire remains. self-vendor sync — bin/fw sessions + adapter/renderer refactor. restructure — Human AC inside ## Acceptance Criteria + ## Recommendation block (3 close-out defects fixed). route fw ask through litellm proxy + OpenRouter fallback routes. complete — proxy routing + openrouter fallback shipped, all 5 ACs green. episodic + final task state
+
+# Key outcomes
+outcomes:
+  - 'structural-30m cron command updated to include `--emit-tasks` flag in .context/cron-registry.yaml'
+  - 'traceability-hourly cron command updated to include `--emit-tasks` flag'
+  - 'full-daily cron command updated to include `--emit-tasks` flag (if it exists)'
+  - 'Cron registry regenerated: `fw cron generate && fw cron install`'
+  - 'Dry-run test: `fw audit --emit-tasks --dry-run --section structure` shows would-create output'
+  - 'Live test: `fw audit --emit-tasks --section structure` created T-2418, T-2419, T-2420 successfully'
+  - 'Documentation: cron-registry.yaml descriptions updated with "Emits WARN/FAIL findings as bugfix tasks"'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'restructure — Human AC inside ## Acceptance Criteria + ## Recommendation block (3 close-out defects fixed)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/sessions/claude-code/list.sh'
+  - '.agentic-framework/agents/sessions/render.py'
+  - '.agentic-framework/agents/sessions/SCHEMA.md'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/VERSION'
+  - 'agents/sessions/claude-code/list.sh'
+  - 'agents/sessions/render.py'
+  - 'agents/sessions/SCHEMA.md'
+  - 'bin/fw'
+  - '.context/episodic/T-2413.yaml'
+  - '.context/episodic/T-2416.yaml'
+  - '.context/episodic/T-2417.yaml'
+  - '.context/litellm-config.yaml'
+  - '.context/working/reviewer-overrides.yaml'
+  - '.fabric/components/agents-sessions-claude-code-list.yaml'
+  - '.fabric/components/agents-sessions-render.yaml'
+  - '.fabric/components/agents-sessions-SCHEMA.yaml'
+  - '.fabric/components/tests-unit-sessions_claude_code_adapter.yaml'
+  - '.fabric/components/tests-unit-sessions_render.yaml'
+  - 'lib/ask.py'
+  - '.tasks/active/T-2417-fw-sessions--portable-per-project-sessio.md'
+  - '.tasks/active/T-2417-remediate-llm-integration-openrouter-fal.md'
+  - '.tasks/completed/T-2413-investigate-cc-picker-description-influe.md'
+  - '.tasks/completed/T-2416-fw-sessions--portable-per-project-sessio.md'
+  - '.tasks/completed/T-2417-remediate-llm-integration-openrouter-fal.md'
+  - 'tests/unit/sessions_claude_code_adapter.bats'
+  - 'tests/unit/sessions_render.bats'
+  - 'tests/unit/test_ask_proxy_routing.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T11:23:46"
+    action: "T-2417: fw sessions — partial (schema + CC adapter + renderer; dispatcher + tests TODO)"
+  - time: "2026-06-16T11:59:28"
+    action: "T-2417: self-vendor sync (schema + CC adapter + renderer)"
+  - time: "2026-06-16T12:07:05"
+    action: "T-2417: fw sessions — dispatcher + 18 bats tests + fabric register (9/10 Agent ACs)"
+  - time: "2026-06-16T12:08:06"
+    action: "T-2417: reviewer PASS — all 10 Agent ACs ticked, only Human live-fire remains"
+  - time: "2026-06-16T12:08:24"
+    action: "T-2417: self-vendor sync — bin/fw sessions + adapter/renderer refactor"
+  - time: "2026-06-16T12:26:11"
+    action: "T-2417: restructure — Human AC inside ## Acceptance Criteria + ## Recommendation block (3 close-out defects fixed)"
+  - time: "2026-06-27T08:47:00"
+    action: "T-2417: route fw ask through litellm proxy + OpenRouter fallback routes"
+  - time: "2026-06-27T08:47:37"
+    action: "T-2417: complete — proxy routing + openrouter fallback shipped, all 5 ACs green"
+  - time: "2026-06-27T08:48:02"
+    action: "T-2417: episodic + final task state"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 37
+  commits: 9
+  files_changed: 28
+  lines_added: 2867
+  lines_removed: 258
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2417-wire-audit-cron-to-emit-tasks---close-fe.md
+generated_by: context-agent-hybrid
