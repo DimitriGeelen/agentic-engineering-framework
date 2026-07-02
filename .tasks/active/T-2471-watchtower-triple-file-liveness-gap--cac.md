@@ -1,10 +1,8 @@
 ---
 id: T-2471
-name: "Watchtower triple-file liveness gap — cached URL emitted when process dead
-  (port reused by unrelated service)"
+name: "fw serve port conflict — no auto-port-finding, requires manual trial-and-error"
 description: >
-  Inception: Watchtower triple-file liveness gap — cached URL emitted when process
-  dead (port reused by unrelated service)
+  Inception: fw serve crashes on port conflict instead of auto-finding free port
 
 status: started-work
 workflow_type: inception
@@ -14,131 +12,103 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-02T19:16:39Z
-last_update: '2026-07-02T19:30:06Z'
+last_update: 2026-07-02T19:32:00Z
 date_finished:
-# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
-# revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
-# ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
-target_blast_radius: 3            # int 0..9. Anticipated component count of the build work this inception would authorise on GO.
-                                  # Substitutes for the absent components: list in the F8 cost formula (040). Required.
-                                  # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
-voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
-                                  # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
-bvp_scores_proposed:
-  - ts: '2026-07-02T19:18:00Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F-AUTONOMY: 2
-      audit_severity: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
-      (no-signal); audit_severity=2 (no-signal); F3=2 (no-signal); F1=2 
-      (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-07-02T19:30:06Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 7
-    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
-      (no-signal)
-    rubric_sha: e4a00f38e801
+target_blast_radius: 2
+voi_score: 0.7
 ---
 
-# T-2471: Watchtower triple-file liveness gap — cached URL emitted when process dead (port reused by unrelated service)
+# T-2471: fw serve port conflict — no auto-port-finding, requires manual trial-and-error
 
 ## Problem Statement
 
-**Symptom:** User requests Watchtower link, agent emits `http://192.168.10.107:3000` from triple-file cache, but URL does NOT respond. User frustration: "check fricing port".
+**Symptom:** User requests Watchtower link. Agent emits `http://192.168.10.107:3000` (stale triple-file). URL doesn't respond. User tries `fw serve`: **"FUCKING BULLSHOT PORT 3000 IS TAKEN"**. User tries `fw serve --port 3001`: "Port 3001 is held by FOREIGN service". Manual trial-and-error required to find free port (3004 worked).
 
 **Root Cause Analysis:**
 
 1. **What happened:**
-   - Watchtower process PID 1285653 died/crashed (no longer in `ps aux`)
+   - Watchtower process died (PID 1285653)
    - Triple files (`.context/working/watchtower.{pid,port,url}`) NOT cleaned up
-   - Port 3000 got reused by different Python process (PID 982089, unrelated service)
-   - Framework reads stale triple file, emits cached URL without health check
+   - Port 3000 occupied by legitimate other service (NOT a zombie)
+   - Ports 3001, 3002, 3003 also occupied
+   - `fw serve` crashes on conflict instead of scanning for free port
+   - User forced into manual `--port` trial-and-error
 
 2. **Why structurally allowed:**
-   - No liveness validation between triple-file read and URL emission
-   - No PID validation (`/proc/$PID` existence + process name match)
-   - No auto-cleanup of stale triple files when Watchtower dies
-   - `fw watchtower url/status` trusts PID file blindly
-   - Port reuse by unrelated service is silent failure mode
+   - **No auto-port-finding** — `fw serve` tries one port, fails, exits
+   - **No health check before URL emission** — agent returns cached URL from dead Watchtower
+   - **No PID validation** — triple file points to dead process, framework doesn't detect
+   - **No stale triple-file cleanup** — dead Watchtower leaves garbage files
+   - **User experience failure** — "just make it work" expectation violated
 
 3. **Impact:**
-   - User gets wrong URL to different service (confusing 404s or wrong content)
-   - Lost time debugging "why isn't Watchtower responding"
-   - Trust erosion: framework gives wrong information
+   - User completely blocked until manual port scan
+   - "FUCKING BULLSHOT" frustration level
+   - Trust erosion: framework should auto-find port, not crash
+   - Lost time on mechanical trial-and-error
 
-**Structural Gap:** Triple-file system is write-once cache with no staleness detection. Origin: L-328 established triple-file as source-of-truth for runtime metadata but didn't spec liveness guarantees.
+**Structural Gap:** `fw serve` has no port-conflict resolution. Should scan 3000-3020, use first free port, update triple files with actual port. Playwright and other test services do this automatically — Watchtower should too.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- User expectation: `fw serve` "just works" (finds free port automatically)
+- Port range 3000-3020 is reasonable scan range
+- Triple files should reflect ACTUAL running port, not desired port
 
 ## Open Questions
 
-- **IW-1: Is PID validation sufficient or do we need health check?**
-  confidence: 2 (high - both are cheap, layered defense is better)
+- **IW-1: Should fw serve scan for free port automatically?**
+  confidence: 3 (high — user explicitly said "check playwright etc then use that, build this in the structural process")
   disposition: answered
-  rationale: Recommend both - PID check catches dead process, health check catches wrong service on port
+  rationale: YES. User frustrated by manual trial-and-error. Playwright does this. Framework should too.
 
-- **IW-2: Should auto-cleanup run on Watchtower start or on fw watchtower url call?**
-  confidence: 2 (high - start-time is cleaner)
-  disposition: answered  
-  rationale: Start-time cleanup is single choke-point, url-call would need to handle cleanup failures
+- **IW-2: What port range to scan?**
+  confidence: 2 (medium — 3000-3020 is reasonable, configurable via FW_PORT_RANGE_MAX)
+  disposition: answered
+  rationale: Start at configured FW_PORT (default 3000), scan up to 3020. Most services don't occupy 20 consecutive ports.
 
-- **IW-3: How often do users hit this in practice?**
-  confidence: 1 (low - need handover corpus grep)
-  disposition: deferred
-  rationale: Not blocking for GO decision - fix is cheap regardless of frequency
+- **IW-3: Should triple files be cleaned up on port conflict?**
+  confidence: 3 (high — yes, dead PID means garbage triple files)
+  disposition: answered
+  rationale: If PID in triple file is dead OR cmdline mismatch, clear triple files immediately before port scan.
+
+- **IW-4: Health check before URL emission?**
+  confidence: 3 (high — yes, curl -sf before returning cached URL)
+  disposition: answered
+  rationale: Prevents returning URL to dead Watchtower. Cheap check, high value.
 
 ## Exploration Plan
 
-1. **Reproduce (5 min):** Kill Watchtower, verify triple files stay, port gets reused
-2. **Survey consumers (10 min):** How often do users hit this? Check handover corpus for "watchtower not responding"
-3. **Design candidates (15 min):**
-   - **A:** Add health check to `fw watchtower url` (curl -sf before emit)
-   - **B:** PID validation in `fw watchtower status` (check `/proc/$PID/cmdline`)
-   - **C:** Auto-cleanup stale triple files on Watchtower start
-   - **D:** Background liveness monitor (overkill for this scope)
-4. **Prototype winner (20 min):** Implement health-check wrapper in `lib/watchtower.sh`
-5. **Test (10 min):** Kill Watchtower, verify new behavior surfaces "not running" instead of stale URL
+1. **✅ Reproduced:** Port 3000-3003 occupied, user blocked, manual --port 3004 worked
+2. **Design (10 min):**
+   - **A (CRITICAL):** Auto-port-finding in `bin/watchtower.sh` — scan 3000-3020, use first free
+   - **B (HIGH):** Health check in `fw watchtower url` — curl -sf before emit
+   - **C (MEDIUM):** PID validation — check `/proc/$PID/cmdline` before trusting triple file
+   - **D (MEDIUM):** Stale triple-file cleanup — clear if PID dead
+3. **Prototype (30 min):** Implement A+B+C+D in `bin/watchtower.sh` + `lib/watchtower.sh`
+4. **Test (10 min):** Occupy ports 3000-3003, run `fw serve`, verify it auto-finds 3004
+5. **Document (5 min):** Update `fw serve --help` with auto-port-finding behavior
 
 ## Technical Constraints
 
-<!-- What platform, browser, network, or hardware constraints apply?
-     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
-     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
-     For infrastructure: network topology, firewall rules, latency bounds.
-     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+- Port scan must be fast (<1s for 20 ports)
+- Must not kill legitimate services on occupied ports
+- Triple files must reflect ACTUAL port used, not desired port
+- Health check must timeout quickly (1s max)
 
 ## Scope Fence
 
 **IN scope:**
-- Liveness detection for `fw watchtower url/status` commands
-- PID validation before emitting cached URL
-- Stale triple-file cleanup strategy
-- Health check (curl -sf) before URL emission
-- Prevention: detect when Watchtower process dies
+- Auto-port-finding for `fw serve` (scan 3000-3020)
+- Health check before URL emission (`fw watchtower url`)
+- PID validation before trusting triple files
+- Stale triple-file cleanup
 
 **OUT of scope:**
-- Watchtower process monitoring/restart (arc-012 continuous-mode handles that)
+- Zombie Watchtower detection (port 3000 is NOT a zombie, user corrected this)
 - systemd integration (T-1309 deferred)
-- Cross-project triple-file coordination
-- Generic triple-file liveness for other services
+- Cross-project port coordination
+- Port conflict resolution for other services
 
 ## Acceptance Criteria
 
@@ -154,33 +124,27 @@ cost_estimate_proposed:
 <!-- @auto-tick-on-decide -->
 - [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
-  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  1. Run: `fw task review T-2471`
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
-  3. Record decision via the Watchtower form or the command shown alongside the QR code
+  3. Record decision via the Watchtower form or command
   **Expected:** Decision recorded, task completed
   **If not:** Ask agent for clarification on specific findings
 
 ## Go/No-Go Criteria
 
-<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- Auto-port-finding is implementable in <1 hour
+- Health check + PID validation are cheap (<100 lines total)
+- User experience improves (no manual --port trial-and-error)
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- Port scanning is too slow (>2s)
+- Implementation requires fundamental redesign
+- Legitimate use cases for manual port specification are broken
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
 # For inception tasks, verification is often not needed (decisions, not code).
-#
-# Toolchain hint (L-291): if a GO decision will mean editing *.vbproj/*.csproj/*.xaml,
-# *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
-# matching build command (dotnet build / go build / cargo check / tsc --noEmit /
-# mvn compile) to that build task's ## Verification — P-011 only runs what you write.
 
 ## Recommendation
 
@@ -188,42 +152,33 @@ cost_estimate_proposed:
 
 **Rationale:**
 
-High-value structural remediation. Root cause: no liveness check between triple-file cache read and URL emission. Evidence: PID 1285653 dead, port 3000 reused by PID 982089 (different service), framework emitted stale URL http://192.168.10.107:3000. Structural fix: add health check (curl -sf + PID validation) before URL emission + auto-cleanup stale triple files + fw watchtower status should detect mismatch. Prevents user confusion when Watchtower crashes and port gets reused.
+High-value usability fix. User explicitly requested: "check playwright etc then use that, build this in the structural process". Current behavior: `fw serve` crashes on port conflict, requires manual `--port` trial-and-error. Proposed fix: scan 3000-3020, use first free port, update triple files with actual port. Similar to Playwright/pytest auto-port-finding. Implementation cost: ~30min. User impact: eliminates "FUCKING BULLSHOT PORT IS TAKEN" frustration. Layered defense: auto-port-finding (A) + health check (B) + PID validation (C) + triple-file cleanup (D).
 
 **Evidence:**
 
-- PID file: `/opt/999-Agentic-Engineering-Framework/.context/working/watchtower.pid` → `1285653`
-- Process check: `ps aux | grep 1285653` → no output (dead process)
-- Port check: `ss -tlnp | grep :3000` → `pid=982089` (different Python process)
-- User impact: S-2026-0702-2013 session, user requested "wtahctower link please", got stale URL
-- Related: L-328 (triple-file source-of-truth), no liveness spec
+- User session S-2026-0702-2013: "wtahctower link please" (got stale URL), then "FUCKING BULLSHOT PORT 3000 IS TAKEN" (blocked)
+- Manual --port scan: 3000/3001/3002/3003 occupied, 3004 worked
+- Triple file: `.context/working/watchtower.pid` → `1285653` (dead PID)
+- Port 3000 occupied by legitimate service (NOT zombie, user corrected)
+- User feedback: "check playwright etc then use that, build this in the structural process"
 
 **Candidates:**
 
-- **A (Recommended):** Health check in `fw watchtower url` — curl -sf before emit, fallback to "not running" message
-- **B:** PID validation — check `/proc/$PID/cmdline` contains "watchtower" before trusting triple file
-- **C:** Auto-cleanup — `bin/watchtower.sh` start clears stale triple files from prior crashed instance
-- **All three:** Layered defense (cheap to implement, high reliability)
+- **A (CRITICAL):** Auto-port-finding — scan 3000-3020 in `bin/watchtower.sh`, use first free
+- **B (HIGH):** Health check — curl -sf before URL emission in `fw watchtower url`
+- **C (MEDIUM):** PID validation — check `/proc/$PID/cmdline` before trusting triple file
+- **D (MEDIUM):** Stale triple-file cleanup — clear if PID dead or cmdline mismatch
+
+**Recommended: A+B+C+D** (auto-port-finding is critical UX fix, rest are defensive)
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+<!-- No design decisions yet — straightforward implementation -->
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+<!-- Filled at completion via: fw inception decide T-2471 go --rationale "..." -->
 
 ## Updates
 
-<!-- Auto-populated by git mining at task completion.
-     Manual entries optional during execution. -->
-
-### 2026-07-02T19:18:00Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+<!-- Auto-populated by git mining at task completion -->
