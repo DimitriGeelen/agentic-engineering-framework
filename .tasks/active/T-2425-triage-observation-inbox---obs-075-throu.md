@@ -1,11 +1,11 @@
 ---
-id: T-2411
-name: "claude-fw startup banner: show project / branch / focus / arc"
+id: T-2425
+name: "Triage observation inbox - OBS-075 through OBS-078"
 description: >
-  claude-fw startup banner: show project / branch / focus / arc
+  Triage observation inbox - OBS-075 through OBS-078
 
 status: started-work
-workflow_type: build
+workflow_type: inception
 owner: agent
 horizon: now
 tags: []
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-15T20:55:28Z
-last_update: '2026-07-02T13:45:10Z'
-date_finished:
+created: 2026-07-02T17:49:00Z
+last_update: 2026-07-02T17:49:00Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,47 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-02T13:45:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2411: claude-fw startup banner: show project / branch / focus / arc
+# T-2425: Triage observation inbox - OBS-075 through OBS-078
 
 ## Context
 
-`claude-fw` (the wrapper at `bin/claude-fw`) launches `command claude` silently — no
-indication of which project context the session is about to enter. The operator asked
-for a small one-time overview at startup so the project is visible before claude
-takes the screen. Scope: cosmetic banner only; no behavior change to restart/TermLink
-paths.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `bin/claude-fw` emits a one-shot banner before launching `command claude` showing:
-      project name (basename of git root or `FW_PROJECT_NAME` if set), branch, current
-      focus task (from `.context/working/focus.yaml` `current_task:`), current arc
-      (from `.context/working/arc-focus.yaml` if present, else "(none)") —
-      `_print_startup_banner` in `bin/claude-fw`
-- [x] Banner is emitted exactly once per wrapper invocation (not on each auto-restart
-      iteration) — function called before the `while true` main loop, not inside it
-- [x] Banner failures are non-fatal: missing focus file / missing arc / not in a git
-      repo all degrade to "(unknown)" or "(none)" without aborting the wrapper —
-      proven by the `GRACEFUL` bats case
-- [x] `--no-restart` continues to work (banner does not interact with restart flag)
-- [x] `bash -n bin/claude-fw` exits 0 (syntax check per L-408)
-- [x] bats test at `tests/integration/claude_fw_startup_banner.bats` (4/4 PASS)
-      asserts the banner fires once on first launch and does NOT re-fire on the
-      restart iteration (CONTROL: count of "╭─ claude-fw" lines = 1 across full
-      multi-restart run)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,27 +113,6 @@ paths.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n bin/claude-fw
-bats tests/integration/claude_fw_startup_banner.bats
-
-## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** Cosmetic banner only — no behavior change to restart/TermLink paths.
-Operator asked for project visibility on startup; we add four lines (project,
-branch, focus, arc) once per wrapper invocation. Failures degrade silently to
-"(none)" / "(unknown)". Banner-not-on-restart pinned by bats so future edits
-can't reintroduce per-iteration noise. Opt-out via `FW_NO_STARTUP_BANNER=1`.
-
-**Evidence:**
-- `_print_startup_banner` in `bin/claude-fw:158-191`, called once at line 200
-  (outside the `while true` main loop)
-- `bash -n bin/claude-fw` → exit 0
-- `bats tests/integration/claude_fw_startup_banner.bats` → 4/4 PASS
-- Live render (from this session): project=999-Agentic-Engineering-Framework,
-  branch=t2411-claude-fw-startup-banner, focus=T-2411, arc=watchtower-redesign
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -224,16 +176,7 @@ can't reintroduce per-iteration noise. Opt-out via `FW_NO_STARTUP_BANNER=1`.
 
 ## Updates
 
-### 2026-06-15T20:55:28Z — task-created [task-create-agent]
+### 2026-07-02T17:49:00Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2411-claude-fw-startup-banner-show-project--b.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2425-triage-observation-inbox---obs-075-throu.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-dca15a1a
-- **Timestamp:** 2026-06-15T20:58:54Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none

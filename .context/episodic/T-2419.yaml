@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2419: Audit WARN — Fabric: 107/836 cards have no edges
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T17:43:18Z
+# ============================================================================
+
+task_id: T-2419
+task_name: "Audit WARN — Fabric: 107/836 cards have no edges"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T16:58:08Z
+completed: 2026-07-02T17:43:07Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-06-16T13:15:33+02:00
+last_commit: 2026-06-27T19:27:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2418 + T-2419: file inceptions for T-2417 close-cascade structural learnings. inception decision GO (via Watchtower). complete — document fw integrate in CLAUDE.md Quick Reference
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'CLAUDE.md'
+  - '.context/episodic/T-2419.yaml'
+  - '.tasks/active/T-2418-structural-validator--human-outside--acc.md'
+  - '.tasks/active/T-2419-recommendation-gate-for-partial-complete.md'
+  - '.tasks/completed/T-2419-add-fw-integrate-to-claudemd-quick-refer.md'
+  - '.tasks/completed/T-2419-recommendation-gate-for-partial-complete.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T13:15:33"
+    action: "T-2418 + T-2419: file inceptions for T-2417 close-cascade structural learnings"
+  - time: "2026-06-16T13:20:57"
+    action: "T-2419: inception decision GO (via Watchtower)"
+  - time: "2026-06-27T19:27:36"
+    action: "T-2419: complete — document fw integrate in CLAUDE.md Quick Reference"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 4
+  files_changed: 8
+  lines_added: 1054
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2419-audit-warn--fabric-107836-cards-have-no-.md
+generated_by: context-agent-hybrid

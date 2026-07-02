@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2424: Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) ...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T17:47:58Z
+# ============================================================================
+
+task_id: T-2424
+task_name: "Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) ..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T17:03:32Z
+completed: 2026-07-02T17:47:48Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-06-16T16:56:33+02:00
+last_commit: 2026-06-16T16:56:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close as duplicate of T-2382 (OBS-075 runbook precondition already shipped). close move + episodic (duplicate-of-T-2382)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2424.yaml'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2424-arc-012-live-fire-precondition-continuou.md'
+  - '.tasks/completed/T-2424-arc-012-live-fire-precondition-continuou.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T16:56:33"
+    action: "T-2424: close as duplicate of T-2382 (OBS-075 runbook precondition already shipped)"
+  - time: "2026-06-16T16:56:57"
+    action: "T-2424: close move + episodic (duplicate-of-T-2382)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 44
+  commits: 2
+  files_changed: 4
+  lines_added: 331
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2424-audit-warn--d13-inception-limbo--5-tasks.md
+generated_by: context-agent-hybrid

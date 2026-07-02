@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2418: Audit WARN — free driver F-ORCH: retire_when condition appears met (T-1643
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T17:44:51Z
+# ============================================================================
+
+task_id: T-2418
+task_name: "Audit WARN — free driver F-ORCH: retire_when condition appears met (T-1643"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T16:57:44Z
+completed: 2026-07-02T17:44:42Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-06-16T13:15:33+02:00
+last_commit: 2026-06-27T18:05:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2418 + T-2419: file inceptions for T-2417 close-cascade structural learnings. inception decision GO (via Watchtower). hand off OpenRouter-Ring20 key request to ring20-manager. fix retired OpenRouter slugs (claude-3.5-* -> 4.x). OpenRouter leg verified live; reclassify AC, add config gate. complete — OpenRouter fallback leg live, episodic captured. episodic + final completed-task state
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix retired OpenRouter slugs (claude-3.5-* -> 4.x)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2418.yaml'
+  - '.context/litellm-config.yaml'
+  - '.tasks/active/T-2418-structural-validator--human-outside--acc.md'
+  - '.tasks/active/T-2418-wire-openrouter-ring20-key-from-infisica.md'
+  - '.tasks/active/T-2419-recommendation-gate-for-partial-complete.md'
+  - '.tasks/completed/T-2418-structural-validator--human-outside--acc.md'
+  - '.tasks/completed/T-2418-wire-openrouter-ring20-key-from-infisica.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T13:15:33"
+    action: "T-2418 + T-2419: file inceptions for T-2417 close-cascade structural learnings"
+  - time: "2026-06-16T13:20:42"
+    action: "T-2418: inception decision GO (via Watchtower)"
+  - time: "2026-06-27T14:13:45"
+    action: "T-2418: hand off OpenRouter-Ring20 key request to ring20-manager"
+  - time: "2026-06-27T17:21:35"
+    action: "T-2418: fix retired OpenRouter slugs (claude-3.5-* -> 4.x)"
+  - time: "2026-06-27T18:04:49"
+    action: "T-2418: OpenRouter leg verified live; reclassify AC, add config gate"
+  - time: "2026-06-27T18:05:29"
+    action: "T-2418: complete — OpenRouter fallback leg live, episodic captured"
+  - time: "2026-06-27T18:05:44"
+    action: "T-2418: episodic + final completed-task state"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 46
+  commits: 8
+  files_changed: 9
+  lines_added: 1144
+  lines_removed: 42
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2418-audit-warn--free-driver-f-orch-retirewhe.md
+generated_by: context-agent-hybrid

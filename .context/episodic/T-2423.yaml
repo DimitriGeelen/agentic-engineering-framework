@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2423: Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(85d-active) T-1274(77d-acti...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T17:46:38Z
+# ============================================================================
+
+task_id: T-2423
+task_name: "Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(85d-active) T-1274(77d-acti..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T17:03:07Z
+completed: 2026-07-02T17:46:28Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-06-16T16:52:42+02:00
+last_commit: 2026-06-16T16:53:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close as duplicate of T-2398 (OBS-076 fix already shipped 2026-06-14). close move + episodic (duplicate-of-T-2398)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'close as duplicate of T-2398 (OBS-076 fix already shipped 2026-06-14)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/reviewer/2026-06-16.yaml'
+  - '.context/episodic/T-2423.yaml'
+  - '.context/inbox.yaml'
+  - '.tasks/active/T-2423-selfvendorlibs-libupgradesh-find-does-no.md'
+  - '.tasks/completed/T-2423-selfvendorlibs-libupgradesh-find-does-no.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T16:52:42"
+    action: "T-2423: close as duplicate of T-2398 (OBS-076 fix already shipped 2026-06-14)"
+  - time: "2026-06-16T16:53:14"
+    action: "T-2423: close move + episodic (duplicate-of-T-2398)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 2
+  files_changed: 5
+  lines_added: 423
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2423-audit-warn--d5-task-lifecycle--29-anomal.md
+generated_by: context-agent-hybrid
