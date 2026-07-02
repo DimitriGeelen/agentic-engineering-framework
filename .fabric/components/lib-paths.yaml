@@ -131,6 +131,12 @@ depended_by:
   type: called_by
 - target: tests/unit/review_link_blocking_gate.bats
   type: tests_by
+- target: agents/handover/discard-manifest.sh
+  type: called_by
+- target: capture-reader
+  type: called_by
+- target: tests/unit/t2380_transcript_dir_encoding.bats
+  type: tests_by
 last_verified: 2026-03-10
 created_by: T-412
-last_enriched: '2026-06-02'
+last_enriched: '2026-07-02'

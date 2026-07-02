@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2497: Close 4 CTL-030 audit tasks - all resolved by T-2435 migration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T20:25:05Z
+# ============================================================================
+
+task_id: T-2497
+task_name: "Close 4 CTL-030 audit tasks - all resolved by T-2435 migration"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T20:23:20Z
+completed: 2026-07-02T20:24:54Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-25T08:58:21+02:00
+last_commit: 2026-07-02T11:29:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP-aware picker — _pick_rank_key ranks HV/LC quadrant by value. complete — BVP-aware picker verified live (top pick T-2171 hv-lc). episodic summary. commit vendored resolver.py (BVP picker) — self-vendor sync. Watchtower /escalation/rules page. refresh vendored copies (web/ files)
+
+# Key outcomes
+outcomes:
+  - 'Verify T-2401, T-2405, T-2411, T-2412 in completed/ all have `horizon: null` (verified: all 4 have null)'
+  - 'Complete audit tasks T-2436, T-2437, T-2438, T-2439 (findings resolved by T-2435 migration, tasks can be archived)'
+  - 'Audit confirms all 4 CTL-030 findings resolved (audit output: "PASS CTL-030: All completed/ tasks have null/absent stored horizon")'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/web/blueprints/escalation.py'
+  - '.agentic-framework/web/templates/escalation_rules.html'
+  - '.context/episodic/T-2497.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0702-1000.md'
+  - '.fabric/components/web-templates-escalation_rules.yaml'
+  - 'lib/resolver.py'
+  - '.tasks/active/T-2497-watchtower-escalationrules-page---viewve.md'
+  - '.tasks/active/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md'
+  - '.tasks/completed/T-2497-wire-bvp-ranking-into-resolver-pickrankk.md'
+  - 'tests/unit/t2497_resolver_bvp_rank.bats'
+  - 'web/blueprints/escalation.py'
+  - 'web/templates/escalation_rules.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-25T08:58:21"
+    action: "T-2497: BVP-aware picker — _pick_rank_key ranks HV/LC quadrant by value"
+  - time: "2026-06-25T08:59:08"
+    action: "T-2497: complete — BVP-aware picker verified live (top pick T-2171 hv-lc)"
+  - time: "2026-06-25T08:59:54"
+    action: "T-2497: episodic summary"
+  - time: "2026-06-25T11:41:49"
+    action: "T-2497: commit vendored resolver.py (BVP picker) — self-vendor sync"
+  - time: "2026-07-02T10:12:48"
+    action: "T-2497: Watchtower /escalation/rules page"
+  - time: "2026-07-02T11:29:25"
+    action: "T-2497: refresh vendored copies (web/ files)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1
+  commits: 7
+  files_changed: 23
+  lines_added: 4172
+  lines_removed: 51
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2497-close-4-ctl-030-audit-tasks---all-resolv.md
+generated_by: context-agent-hybrid

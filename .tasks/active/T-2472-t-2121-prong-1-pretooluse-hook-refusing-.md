@@ -1,8 +1,10 @@
 ---
 id: T-2472
-name: "T-2121 Prong 1: PreToolUse hook refusing same-id duplicates between active/ and completed/"
+name: "T-2121 Prong 1: PreToolUse hook refusing same-id duplicates between active/
+  and completed/"
 description: >
-  PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md and refuses if same id present (write-time block preventing T-2091 class collisions)
+  PreToolUse hook on Write|Edit to .tasks/active/T-*.md that checks .tasks/completed/T-NNNN-*.md
+  and refuses if same id present (write-time block preventing T-2091 class collisions)
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T19:47:16Z
-last_update: 2026-07-02T19:47:16Z
-date_finished: null
+last_update: '2026-07-02T20:00:06Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,37 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-07-02T20:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-02T20:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2472: T-2121 Prong 1: PreToolUse hook refusing same-id duplicates between active/ and completed/

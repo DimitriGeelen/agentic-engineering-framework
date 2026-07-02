@@ -27,6 +27,10 @@ depended_by:
   type: tests_by
 - target: web/terminal/adapters/claude_code.py
   type: called_by
+- target: tests/unit/t2380_transcript_dir_encoding.bats
+  type: called_by
+- target: tests/unit/t2380_transcript_dir_encoding.bats
+  type: tests_by
 last_verified: 2026-04-03
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-02'

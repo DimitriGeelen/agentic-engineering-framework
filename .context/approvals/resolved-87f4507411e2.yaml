@@ -1,0 +1,13 @@
+command_hash: 87f4507411e2c77e70834f70f8d9f89d15e99cbfbb944b7b02b47e1977673022
+command_preview: "git commit --no-verify -m \"T-2425: Fill placeholder ACs with actual\
+  \ triage work completed\n\nReplaced template [First criterion]/[Second criterion]\
+  \ with real ACs:\n- All 4 observations triaged (OBS-075\u2192T"
+risk: 'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'
+status: approved
+timestamp: '2026-07-02T19:46:10Z'
+type: tier0
+response:
+  decision: approved
+  feedback: null
+  responded_at: '2026-07-02T19:59:06Z'
+  mechanism: watchtower

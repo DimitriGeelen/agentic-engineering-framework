@@ -18895,3 +18895,309 @@ scan_id: R-e8f7d5e0
 task_id: T-2370
 payload:
   task_file: .tasks/completed/T-2370-fix-obs-072--arc-012-s2s3-t-2364t-2365-s.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T14:30:47Z'
+scan_id: R-d5d515ca
+task_id: T-2416
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T14:30:47Z'
+scan_id: R-d5d515ca
+task_id: T-2416
+payload:
+  task_file: .tasks/active/T-2416-git-merge-blocked-by-pretooluse-hook-tim.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T16:00:53Z'
+scan_id: R-c812f431
+task_id: T-2353
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T16:00:53Z'
+scan_id: R-c812f431
+task_id: T-2353
+payload:
+  task_file: .tasks/active/T-2353-auditsh-post-emit-hook--convert-warnfail.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T16:07:40Z'
+scan_id: R-6e430d2c
+task_id: T-2354
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T16:07:40Z'
+scan_id: R-6e430d2c
+task_id: T-2354
+payload:
+  task_file: .tasks/active/T-2354-bvp-estimator-scoreauditseverity-handler.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:06:46Z'
+scan_id: R-978b44d9
+task_id: T-2417
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:06:46Z'
+scan_id: R-978b44d9
+task_id: T-2417
+payload:
+  task_file: .tasks/active/T-2417-wire-audit-cron-to-emit-tasks---close-fe.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:15:04Z'
+scan_id: R-e55a7fc1
+task_id: T-2421
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:15:04Z'
+scan_id: R-e55a7fc1
+task_id: T-2421
+payload:
+  task_file: .tasks/active/T-2421-audit-warn--uncommitted-changes-present.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:20:58Z'
+scan_id: R-3525362b
+task_id: T-2420
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:20:58Z'
+scan_id: R-3525362b
+task_id: T-2420
+payload:
+  task_file: .tasks/active/T-2420-audit-fail--self-vendor-drift-libs-class.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:43:09Z'
+scan_id: R-cde06f76
+task_id: T-2419
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:43:09Z'
+scan_id: R-cde06f76
+task_id: T-2419
+payload:
+  task_file: .tasks/active/T-2419-audit-warn--fabric-107836-cards-have-no-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:44:43Z'
+scan_id: R-b0a61197
+task_id: T-2418
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:44:43Z'
+scan_id: R-b0a61197
+task_id: T-2418
+payload:
+  task_file: .tasks/active/T-2418-audit-warn--free-driver-f-orch-retirewhe.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:45:44Z'
+scan_id: R-01110c8d
+task_id: T-2422
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:45:44Z'
+scan_id: R-01110c8d
+task_id: T-2422
+payload:
+  task_file: .tasks/active/T-2422-audit-warn--completed-task-t-2411-has-no.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:46:30Z'
+scan_id: R-d7f3bd7d
+task_id: T-2423
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:46:30Z'
+scan_id: R-d7f3bd7d
+task_id: T-2423
+payload:
+  task_file: .tasks/active/T-2423-audit-warn--d5-task-lifecycle--29-anomal.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T17:47:49Z'
+scan_id: R-10eecfb0
+task_id: T-2424
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T17:47:49Z'
+scan_id: R-10eecfb0
+task_id: T-2424
+payload:
+  task_file: .tasks/active/T-2424-audit-warn--d13-inception-limbo--5-tasks.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T19:34:26Z'
+scan_id: R-8373d0a1
+task_id: T-2471
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T19:34:26Z'
+scan_id: R-8373d0a1
+task_id: T-2471
+payload:
+  task_file: .tasks/active/T-2471-watchtower-triple-file-liveness-gap--cac.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T19:44:14Z'
+scan_id: R-3d5281fd
+task_id: T-2413
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T19:44:14Z'
+scan_id: R-3d5281fd
+task_id: T-2413
+payload:
+  task_file: .tasks/active/T-2413-investigate-cc-picker-description-influe.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T19:59:13Z'
+scan_id: R-8a4095cb
+task_id: T-2425
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T19:59:13Z'
+scan_id: R-8a4095cb
+task_id: T-2425
+payload:
+  task_file: .tasks/active/T-2425-triage-observation-inbox---obs-075-throu.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T20:11:42Z'
+scan_id: R-2a0791b6
+task_id: T-2495
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T20:11:42Z'
+scan_id: R-2a0791b6
+task_id: T-2495
+payload:
+  task_file: .tasks/active/T-2495-fix-update-tasksh-syspath-derivation-in-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T20:18:39Z'
+scan_id: R-882b23d7
+task_id: T-2435
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T20:18:39Z'
+scan_id: R-882b23d7
+task_id: T-2435
+payload:
+  task_file: .tasks/active/T-2435-audit-fail--ctl-030-t-1700-is-in-tasksco.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T20:24:55Z'
+scan_id: R-08ad7cd2
+task_id: T-2497
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T20:24:55Z'
+scan_id: R-08ad7cd2
+task_id: T-2497
+payload:
+  task_file: .tasks/active/T-2497-close-4-ctl-030-audit-tasks---all-resolv.md

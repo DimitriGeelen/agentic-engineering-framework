@@ -22,9 +22,11 @@ depends_on:
   type: calls
 - target: agents/mcp/manifest.py
   type: calls
+- target: agents/git/lib/master-guard.sh
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-10'
+last_enriched: '2026-07-02'
 depended_by:
 - target: agents/git/git.sh
   type: called_by

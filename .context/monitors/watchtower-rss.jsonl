@@ -2165,3 +2165,87 @@
 {"timestamp":"2026-06-12T12:40:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":13391,"rss_kb":180596,"vsz_kb":4711056,"pcpu":17.4,"state":"up"}
 {"timestamp":"2026-06-12T12:45:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":13691,"rss_kb":180596,"vsz_kb":4711056,"pcpu":17.3,"state":"up"}
 {"timestamp":"2026-06-12T12:50:01+02:00","host":"dimitrimintdev","pid":1285653,"etime_sec":13990,"rss_kb":180636,"vsz_kb":4711056,"pcpu":17.2,"state":"up"}
+{"timestamp":"2026-07-02T15:45:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T15:50:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T15:55:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:00:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:05:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:10:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:15:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:20:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:25:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:30:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:35:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:40:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:45:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:50:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T16:55:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:00:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:05:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:10:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:15:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:20:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:25:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:30:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:35:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:40:02+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:45:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:50:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T17:55:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:00:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:05:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:10:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:15:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:20:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:25:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:30:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:35:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:40:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:45:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:50:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T18:55:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:00:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:05:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:10:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:15:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:20:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:25:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:30:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:35:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:40:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:45:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:50:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T19:55:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:00:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:05:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:10:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:15:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:20:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:25:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:30:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:35:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:40:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:45:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:50:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T20:55:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:00:02+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:05:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:10:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:15:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:20:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:25:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:30:01+02:00","host":"dimitrimintdev","state":"down","detail":"pid file missing or process dead"}
+{"timestamp":"2026-07-02T21:35:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":201,"rss_kb":2108396,"vsz_kb":2636624,"pcpu":39.7,"state":"up"}
+{"timestamp":"2026-07-02T21:40:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":501,"rss_kb":2108440,"vsz_kb":2636624,"pcpu":30.0,"state":"up"}
+{"timestamp":"2026-07-02T21:45:02+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":801,"rss_kb":2113464,"vsz_kb":2768736,"pcpu":33.7,"state":"up"}
+{"timestamp":"2026-07-02T21:50:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":1101,"rss_kb":2129392,"vsz_kb":2778960,"pcpu":38.0,"state":"up"}
+{"timestamp":"2026-07-02T21:55:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":1400,"rss_kb":2129916,"vsz_kb":2778960,"pcpu":36.7,"state":"up"}
+{"timestamp":"2026-07-02T22:00:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":1701,"rss_kb":2130628,"vsz_kb":2778976,"pcpu":38.1,"state":"up"}
+{"timestamp":"2026-07-02T22:05:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":2001,"rss_kb":2130720,"vsz_kb":2778960,"pcpu":40.0,"state":"up"}
+{"timestamp":"2026-07-02T22:10:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":2301,"rss_kb":2131116,"vsz_kb":2778960,"pcpu":38.9,"state":"up"}
+{"timestamp":"2026-07-02T22:15:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":2601,"rss_kb":2131788,"vsz_kb":2778960,"pcpu":38.2,"state":"up"}
+{"timestamp":"2026-07-02T22:20:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":2901,"rss_kb":2131824,"vsz_kb":2778960,"pcpu":37.5,"state":"up"}
+{"timestamp":"2026-07-02T22:25:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":3201,"rss_kb":992424,"vsz_kb":2778976,"pcpu":37.5,"state":"up"}
+{"timestamp":"2026-07-02T22:30:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":3501,"rss_kb":911280,"vsz_kb":2778960,"pcpu":38.6,"state":"up"}
+{"timestamp":"2026-07-02T22:35:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":3801,"rss_kb":882968,"vsz_kb":2778960,"pcpu":38.2,"state":"up"}
+{"timestamp":"2026-07-02T22:40:01+02:00","host":"dimitrimintdev","pid":1144147,"etime_sec":4101,"rss_kb":882960,"vsz_kb":2778960,"pcpu":37.7,"state":"up"}

@@ -21,7 +21,7 @@ components: [docs/articles/deep-dives/02-tier0-protection.md,
       docs/articles/deep-dives/06-authority-model.md]
 related_tasks: [T-450, T-338, T-446]
 created: 2026-03-12T06:37:40Z
-last_update: '2026-06-13T18:00:05Z'
+last_update: '2026-07-02T16:15:08Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -117,6 +117,25 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
       F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-02T16:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); audit_severity=0 (no-signal); F3=0 (no-signal); 
+      F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-05-19T21:45:02Z'

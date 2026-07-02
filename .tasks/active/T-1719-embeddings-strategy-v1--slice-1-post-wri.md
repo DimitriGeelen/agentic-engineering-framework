@@ -25,7 +25,7 @@ related_tasks: [T-1717, T-1718, T-1715, T-1716, T-263, T-269, T-1696, T-1697,
       T-1698, T-1700, T-1443, T-679]
 arc_id: embeddings-strategy
 created: 2026-05-04T15:26:17Z
-last_update: '2026-06-13T18:00:02Z'
+last_update: '2026-07-02T16:15:03Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -128,6 +128,27 @@ bvp_scores_proposed:
       F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); 
       F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-02T16:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 1
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-ORCH=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); audit_severity=0 (no-signal); F3=0 (no-signal); 
+      F1=1 (body/components:context-fabric-incidental); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:

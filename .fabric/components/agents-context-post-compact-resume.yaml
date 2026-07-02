@@ -12,9 +12,11 @@ depends_on:
   type: calls
 - target: lib/doctor-hook-exercise.py
   type: calls
+- target: agents/context/inject-next-directive.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-02'
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -25,4 +27,8 @@ depended_by:
 - target: tests/unit/session_start_hook_warning.bats
   type: called_by
 - target: tests/unit/session_start_hook_warning.bats
+  type: tests_by
+- target: tests/integration/continuous_loop.bats
+  type: called_by
+- target: tests/integration/continuous_loop.bats
   type: tests_by

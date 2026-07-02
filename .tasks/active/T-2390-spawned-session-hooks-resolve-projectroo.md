@@ -1,8 +1,15 @@
 ---
 id: T-2390
-name: "Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389 finding)"
+name: "Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389
+  finding)"
 description: >
-  T-2389 live-fire surfaced: when a claude-fw session spawned via TermLink/tmux runs its hooks, fw resolves PROJECT_ROOT to /root (check-project-boundary banner 'Project root: /root'), blinding budget-gate/checkpoint so .restart-requested is never written and the continuous-mode loop never arms. HYPOTHESIS to investigate (feedback_remediation_plans_are_hypotheses): universal (affects main-checkout sessions too) OR spawn-launch artifact (bash -lc cd+exec did not propagate CLAUDE_PROJECT_DIR)? Same class as T-2377 but via hook-cwd not transcript_path. Evidence: docs/reports/T-2389-livefire-evidence.md
+  T-2389 live-fire surfaced: when a claude-fw session spawned via TermLink/tmux runs
+  its hooks, fw resolves PROJECT_ROOT to /root (check-project-boundary banner 'Project
+  root: /root'), blinding budget-gate/checkpoint so .restart-requested is never written
+  and the continuous-mode loop never arms. HYPOTHESIS to investigate (feedback_remediation_plans_are_hypotheses):
+  universal (affects main-checkout sessions too) OR spawn-launch artifact (bash -lc
+  cd+exec did not propagate CLAUDE_PROJECT_DIR)? Same class as T-2377 but via hook-cwd
+  not transcript_path. Evidence: docs/reports/T-2389-livefire-evidence.md
 
 status: started-work
 workflow_type: build
@@ -22,8 +29,8 @@ related_tasks: [T-2389, T-2377]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T07:16:26Z
-last_update: 2026-06-14T07:34:10Z
-date_finished: null
+last_update: '2026-07-02T13:45:07Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +41,36 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-02T13:45:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-02T13:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 3
+      F-RECALL: 2
+      F-ORCH: 1
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=1 (body:hand-wired-dispatch); F-AUTONOMY=0
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2390: Spawned-session hooks resolve PROJECT_ROOT to /root — blinds budget gauge (T-2389 finding)

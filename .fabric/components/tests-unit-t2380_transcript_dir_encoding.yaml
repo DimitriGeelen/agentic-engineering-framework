@@ -4,17 +4,23 @@ type: script
 subsystem: unknown
 location: tests/unit/t2380_transcript_dir_encoding.bats
 tags: []
-
-purpose: "TODO: describe what this component does"
-
+purpose: 'TODO: describe what this component does'
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: lib/colors.sh
+  type: calls
+- target: lib/costs.sh
+  type: calls
+- target: lib/paths.sh
+  type: tests
+- target: lib/costs.sh
+  type: tests
+- target: capture-reader
+  type: tests
+- target: lib/colors.sh
+  type: tests
+- target: agents/handover/discard-manifest.sh
+  type: tests
+depended_by: []
 last_verified: 2026-06-13
 created_by: unknown
+last_enriched: '2026-07-02'

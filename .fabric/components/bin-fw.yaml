@@ -103,7 +103,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-11'
+last_enriched: '2026-07-02'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'
@@ -579,3 +579,11 @@ depended_by:
   type: tests_by
 - target: tests/unit/test_write_set.bats
   type: tests_by
+- target: agents/context/inject-next-directive.py
+  type: called_by
+- target: agents/termlink/bvp-estimator/estimator.py
+  type: called_by
+- target: tests/unit/t2391_project_root_inherited_stale.bats
+  type: tests_by
+- target: tests/unit/test_inject_next_directive.py
+  type: called_by

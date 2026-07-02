@@ -51,6 +51,10 @@ depended_by:
   type: called_by
 - target: tests/unit/arc_set_scoped_weight.bats
   type: tests_by
+- target: agents/termlink/bvp-estimator/estimator.py
+  type: called_by
+- target: tests/unit/test_bvp_estimator.py
+  type: called_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-05-22'
+last_enriched: '2026-07-02'
