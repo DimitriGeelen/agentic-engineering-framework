@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2500: Audit WARN — D5: Task lifecycle — 28 anomaly(s): T-1062(85d-active) T-1274(77d-acti...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T22:47:44Z
+# ============================================================================
+
+task_id: T-2500
+task_name: "Audit WARN — D5: Task lifecycle — 28 anomaly(s): T-1062(85d-active) T-1274(77d-acti..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T21:02:23Z
+completed: 2026-07-02T22:47:35Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-06-25T12:06:03+02:00
+last_commit: 2026-07-02T11:29:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  governance/working churn before merge-back land (episodics, audits, session state, handover). complete — landed T-2497/2499 to master + host go-live (supervision loudness live). RCA — systemic self-vendor drift (66 syncs/month, 70% overhead)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-06-21.yaml'
+  - '.context/audits/2026-06-22.yaml'
+  - '.context/audits/2026-06-23.yaml'
+  - '.context/audits/2026-06-24.yaml'
+  - '.context/audits/2026-06-25.yaml'
+  - '.context/episodic/T-2486.yaml'
+  - '.context/episodic/T-2487.yaml'
+  - '.context/episodic/T-2488.yaml'
+  - '.context/episodic/T-2491.yaml'
+  - '.context/episodic/T-2492.yaml'
+  - '.context/episodic/T-2493.yaml'
+  - '.context/episodic/T-2494.yaml'
+  - '.context/episodic/T-2495.yaml'
+  - '.context/episodic/T-2499.yaml'
+  - '.context/episodic/T-2500.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0625-0845.md'
+  - '.context/handovers/S-2026-0702-1113.md'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.tasks/active/T-2496-deploy-doctor-slice-1-declare-policydepl.md'
+  - '.tasks/active/T-2500-land-t-24972499-to-master-and-host-go-li.md'
+  - '.tasks/completed/T-2499-fix-budget-auto-restart-silently-no-ops-.md'
+  - '.tasks/completed/T-2500-land-t-24972499-to-master-and-host-go-li.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-25T12:06:03"
+    action: "T-2500: governance/working churn before merge-back land (episodics, audits, session state, handover)"
+  - time: "2026-06-25T12:09:16"
+    action: "T-2500: complete — landed T-2497/2499 to master + host go-live (supervision loudness live)"
+  - time: "2026-07-02T11:29:22"
+    action: "T-2500: RCA — systemic self-vendor drift (66 syncs/month, 70% overhead)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 105 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 105
+  commits: 3
+  files_changed: 34
+  lines_added: 4015
+  lines_removed: 247
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2500-audit-warn--d5-task-lifecycle--28-anomal.md
+generated_by: context-agent-hybrid
