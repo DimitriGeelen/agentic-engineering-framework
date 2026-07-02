@@ -4,16 +4,16 @@ name: "fw serve port conflict — no auto-port-finding, requires manual trial-an
 description: >
   Inception: fw serve crashes on port conflict instead of auto-finding free port
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh, bin/fw, lib/integrate.py]
 related_tasks: []
 created: 2026-07-02T19:16:39Z
-last_update: 2026-07-02T19:32:00Z
-date_finished:
+last_update: 2026-07-02T19:34:25Z
+date_finished: 2026-07-02T19:34:25Z
 target_blast_radius: 2
 voi_score: 0.7
 ---
@@ -114,15 +114,15 @@ voi_score: 0.7
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-2471`
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -177,8 +177,41 @@ High-value usability fix. User explicitly requested: "check playwright etc then 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-2471 go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: High-value usability fix. User explicitly requested: "check playwright etc then use that, build this in the structural process". Current behavior: `fw serve` crashes on port conflict, requires manual `--port` trial-and-error. Proposed fix: scan 3000-3020, use first free port, update triple files with actual port. Similar to Playwright/pytest auto-port-finding. Implementation cost: ~30min. User impact: eliminates "FUCKING BULLSHOT PORT IS TAKEN" frustration. Layered defense: auto-port-finding (A) + health check (B) + PID validation (C) + triple-file cleanup (D).
+
+**Date**: 2026-07-02T19:34:24Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion -->
+
+### 2026-07-02T19:34:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** High-value usability fix. User explicitly requested: "check playwright etc then use that, build this in the structural process". Current behavior: `fw serve` crashes on port conflict, requires manual `--port` trial-and-error. Proposed fix: scan 3000-3020, use first free port, update triple files with actual port. Similar to Playwright/pytest auto-port-finding. Implementation cost: ~30min. User impact: eliminates "FUCKING BULLSHOT PORT IS TAKEN" frustration. Layered defense: auto-port-finding (A) + health check (B) + PID validation (C) + triple-file cleanup (D).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8373d0a1
+- **Timestamp:** 2026-07-02T19:34:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-07-02T19:34:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

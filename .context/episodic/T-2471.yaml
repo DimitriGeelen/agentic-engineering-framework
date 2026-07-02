@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2471: fw serve port conflict — no auto-port-finding, requires manual trial-and-error
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T19:34:34Z
+# ============================================================================
+
+task_id: T-2471
+task_name: "fw serve port conflict — no auto-port-finding, requires manual trial-and-error"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T19:16:39Z
+completed: 2026-07-02T19:34:25Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-23T22:21:14+02:00
+last_commit: 2026-07-02T21:33:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  WIP fw integrate run MVP (cmd_run + bin/fw wiring) — UNVERIFIED. complete fw integrate run MVP — verb-scoped gate exemption + AC7 fixture + _dirty_files porcelain fix. refresh vendored copies (integrate.py, bin/fw, safe-commands.sh). file post-MVP follow-ups T-2472 (taxonomy completeness) + T-2473 (union resolution). RCA + structural remediation inception for Watchtower triple-file liveness gap. REAL RCA — zombie Watchtower + port conflict (not just stale triple-file). CORRECTED RCA — auto-port-finding gap (not zombie detection)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'complete fw integrate run MVP — verb-scoped gate exemption + AC7 fixture + _dirty_files porcelain fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/integrate.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'bin/fw'
+  - 'lib/integrate.py'
+  - '.tasks/active/T-2471-implement-fw-integrate-run--smooth-workt.md'
+  - '.tasks/active/T-2471-watchtower-triple-file-liveness-gap--cac.md'
+  - '.tasks/active/T-2472-fw-integrate-run--broaden-taxonomy-to-li.md'
+  - '.tasks/active/T-2473-fw-integrate-run--true-appendidfield-uni.md'
+  - '.tasks/completed/T-2471-implement-fw-integrate-run--smooth-workt.md'
+  - 'tests/unit/t2471_integrate_run.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-23T22:21:14"
+    action: "T-2471: WIP fw integrate run MVP (cmd_run + bin/fw wiring) — UNVERIFIED"
+  - time: "2026-06-23T22:45:40"
+    action: "T-2471: complete fw integrate run MVP — verb-scoped gate exemption + AC7 fixture + _dirty_files porcelain fix"
+  - time: "2026-06-23T22:46:13"
+    action: "T-2471: refresh vendored copies (integrate.py, bin/fw, safe-commands.sh)"
+  - time: "2026-06-23T22:57:08"
+    action: "T-2471: file post-MVP follow-ups T-2472 (taxonomy completeness) + T-2473 (union resolution)"
+  - time: "2026-07-02T21:18:13"
+    action: "T-2471: RCA + structural remediation inception for Watchtower triple-file liveness gap"
+  - time: "2026-07-02T21:31:12"
+    action: "T-2471: REAL RCA — zombie Watchtower + port conflict (not just stale triple-file)"
+  - time: "2026-07-02T21:33:42"
+    action: "T-2471: CORRECTED RCA — auto-port-finding gap (not zombie detection)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 7
+  files_changed: 12
+  lines_added: 1634
+  lines_removed: 151
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2471-watchtower-triple-file-liveness-gap--cac.md
+generated_by: context-agent-hybrid
