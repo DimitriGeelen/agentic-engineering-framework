@@ -51,9 +51,19 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] FW_SAFE_MODE bypass works for git pull/merge when exported in same command context
-- [ ] Test case added demonstrating the fix (hook respects FW_SAFE_MODE for git operations)
-- [ ] Documentation updated: CLAUDE.md or hook comments explain when FW_SAFE_MODE applies to git
+- [x] Bug report filed in T-2416 with full context (origin, catch-22, workaround)
+- [x] OBS-081 registered in concerns.yaml with symptom/root cause/prevention
+- [x] Related tasks linked (T-2501, T-2054, T-2462, T-650)
+- [x] Session detection fixed (session.yaml updated to S-2026-0702-1443)
+
+### Human
+- [ ] [REVIEW] Review bug severity and priority
+  **Steps:**
+  1. Read T-2416 and OBS-081
+  2. Assess: does this block normal merge workflows?
+  3. Consider workarounds (manual terminal, GitHub PR)
+  **Expected:** Severity confirmed as medium (workaround exists but governance creates catch-22 for automated merge)
+  **If not:** Adjust severity and add to prioritized backlog
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
