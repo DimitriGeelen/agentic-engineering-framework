@@ -1819,5 +1819,102 @@ def test_estimator_fidelity_latent_without_arc(tmp_path):
     assert "estimator-fidelity" not in result["scores"]
 
 
+# --------------------------------------------------------------------- audit_severity
+
+def test_audit_severity_fail_scores_five():
+    """T-2354: audit_severity:fail → scores 5 (structural failure)."""
+    fm = {"audit_severity": "fail", "workflow_type": "bugfix", "tags": []}
+    score, ev = estimator.score_audit_severity(fm, "", [])
+    assert score == 5
+    assert "fm:audit_severity=fail" in ev
+    assert any("→5" in e for e in ev)
+
+
+def test_audit_severity_warn_scores_four():
+    """T-2354: audit_severity:warn → scores 4 (drift/quality decay)."""
+    fm = {"audit_severity": "warn", "workflow_type": "bugfix", "tags": []}
+    score, ev = estimator.score_audit_severity(fm, "", [])
+    assert score == 4
+    assert "fm:audit_severity=warn" in ev
+    assert any("→4" in e for e in ev)
+
+
+def test_audit_severity_absent_scores_zero():
+    """T-2354: missing audit_severity field → scores 0 (no signal)."""
+    fm = {"workflow_type": "build", "tags": []}
+    score, ev = estimator.score_audit_severity(fm, "", [])
+    assert score == 0
+    assert any("→0" in e for e in ev)
+
+
+def test_audit_severity_unrecognised_value_scores_zero():
+    """T-2354: audit_severity with unrecognised value → scores 0."""
+    fm = {"audit_severity": "info", "workflow_type": "bugfix", "tags": []}
+    score, ev = estimator.score_audit_severity(fm, "", [])
+    assert score == 0
+    assert any("→0" in e for e in ev)
+
+
+def test_audit_severity_case_insensitive():
+    """T-2354: audit_severity field is case-insensitive."""
+    for val in ["FAIL", "Fail", "fAiL"]:
+        fm = {"audit_severity": val, "workflow_type": "bugfix", "tags": []}
+        score, _ = estimator.score_audit_severity(fm, "", [])
+        assert score == 5, f"Expected 5 for {val}"
+
+    for val in ["WARN", "Warn", "wArN"]:
+        fm = {"audit_severity": val, "workflow_type": "bugfix", "tags": []}
+        score, _ = estimator.score_audit_severity(fm, "", [])
+        assert score == 4, f"Expected 4 for {val}"
+
+
+def test_audit_severity_registered_in_handlers_dict():
+    """T-2354: audit_severity handler registered in handlers dict."""
+    # Read the handlers dict from estimate_task function
+    # (handlers dict is local to estimate_task, but we can check via dispatch)
+    fm = {"audit_severity": "fail", "workflow_type": "bugfix", "tags": []}
+    score, ev = estimator.score_audit_severity(fm, "", [])
+    assert score == 5  # Confirms handler is callable
+    assert "audit_severity" in str(estimator.estimate_task.__code__.co_consts)
+
+
+def test_audit_severity_integration_with_estimate_task(tmp_path):
+    """T-2354: audit_severity driver active in estimate_task dispatch."""
+    body = "Audit finding bugfix task."
+    task = _make_task(tmp_path, body, {"audit_severity": "fail"})
+    drivers = {"audit_severity": 1}  # weight doesn't matter for this handler
+    result = estimator.estimate_task(task, drivers)
+
+    # Should have audit_severity in scores with score=5
+    assert "audit_severity" in result["scores"]
+    assert result["scores"]["audit_severity"]["score"] == 5
+    assert "fm:audit_severity=fail" in result["scores"]["audit_severity"]["evidence"]
+
+
+def test_audit_severity_ranking_above_routine(tmp_path):
+    """T-2354 AC#5: audit_severity:fail task ranks above routine task."""
+    # Create two synthetic tasks - one with audit_severity:fail, one routine
+    body_audit = "Fix critical audit failure."
+    task_audit = _make_task(tmp_path / "audit", body_audit, {"audit_severity": "fail"})
+
+    body_routine = "Regular build task with similar D1-D4 scores."
+    task_routine = _make_task(tmp_path / "routine", body_routine)
+
+    drivers = {"audit_severity": 1, "D1": 9, "D2": 7, "D3": 5, "D4": 3}
+    result_audit = estimator.estimate_task(task_audit, drivers)
+    result_routine = estimator.estimate_task(task_routine, drivers)
+
+    # Audit task should have higher total value due to audit_severity:5
+    # (assuming audit_severity driver weight contributes to total)
+    audit_total = result_audit["value"]
+    routine_total = result_routine["value"]
+
+    # Audit task value should be higher
+    assert audit_total > routine_total, (
+        f"Audit task (value={audit_total}) should rank above "
+        f"routine task (value={routine_total})"
+    )
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

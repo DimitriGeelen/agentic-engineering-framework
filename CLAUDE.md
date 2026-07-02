@@ -100,6 +100,7 @@ Tasks are Markdown with YAML frontmatter. Use `default.md` as template.
   - `bvp_scores:` (map) — confirmed per-driver scores 0-5, set only by `fw bvp confirm` (T-1924). Sovereignty boundary. Shape `{D1: <0-5>, D2: <0-5>, D3: <0-5>, D4: <0-5>, [<free-driver-id>: <0-5>]…}`.
   - `bvp_scores_proposed:` (list of timestamped entries) — estimator-proposed scores written by the TermLink BVP estimator worker (T-1922). Persists only when the proposal differs from `bvp_scores:` by ≥2 on any driver (M3 v2-delta semantics).
   - `cost_estimate:` (map) — F8 composite `0.6×blast_radius + 0.3×tier + 0.1×effort`. Q2 fallback: T-shirt `S/M/L/XL` mapped to `2/4/6/8` when `blast_radius` is not computable yet. Read by auto-promote (T-1931) and `fw bvp rank` (T-1919).
+  - `audit_severity: fail|warn` (optional, T-2353/T-2354) — Emitted by `fw audit --emit-tasks` for bugfix tasks created from audit WARN/FAIL findings. The BVP estimator handler scores fail→5, warn→4 to prioritize audit findings above routine backlog. Not user-editable; set only by audit emission.
   - Audit (`fw audit`) treats unknown frontmatter fields as silent additions (A2). Documented in `policy/value-drivers.yaml` and `docs/reports/T-1915-bvp-inception.md`.
 
 ### Horizon (Priority Scheduling)

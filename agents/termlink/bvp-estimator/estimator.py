@@ -1071,6 +1071,43 @@ def score_f_autonomy(fm: dict, body: str, tags: list[str]) -> tuple[int, list[st
     return 0, ev + ["→0 (no autonomy signal)"]
 
 
+def score_audit_severity(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
+    """audit_severity — Audit Finding Priority.
+
+    T-2354 (Slice 2 of T-2352 audit→bugfix autotuning arc). Reads the
+    `audit_severity: fail|warn` frontmatter field emitted by T-2353's
+    `fw audit --emit-tasks` feature. Scores audit-finding tasks high
+    to ensure they rank above routine backlog on `fw bvp rank`.
+
+    This is NOT a value driver in the D1-D4 sense (no operator-configured
+    weight, no rubric) — it's a task attribute that affects priority.
+    Audit FIALs indicate structural failures (gates/enforcement broken);
+    WARNs indicate drift or quality decay. Both warrant prioritization.
+
+    Rubric (0-5 scale):
+      5: audit_severity: fail   (structural failure — audit emits FAIL)
+      4: audit_severity: warn   (drift / quality decay — audit emits WARN)
+      0: Field absent or unrecognised value
+
+    Handler is LATENT until policy/value-drivers.yaml includes the
+    audit_severity driver (carved/commented by default; Sovereign activates
+    when the autotuning arc is complete and the feedback loop validated).
+    """
+    ev: list[str] = []
+
+    severity = fm.get("audit_severity", "").strip().lower()
+
+    if severity == "fail":
+        ev.append("fm:audit_severity=fail")
+        return 5, ev + ["→5 (audit FAIL — structural failure)"]
+
+    if severity == "warn":
+        ev.append("fm:audit_severity=warn")
+        return 4, ev + ["→4 (audit WARN — drift/quality decay)"]
+
+    return 0, ev + ["→0 (no audit_severity or unrecognised value)"]
+
+
 def score_d_disjoint(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
     """D-DISJOINT — Disjoint Write-Set Discipline (arc-011 scoped).
 
@@ -2292,6 +2329,11 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         # the Sovereignty refuse-rule (level 0 on Tier-0 / safety-critical
         # gate removal without at-least-as-safe replacement).
         "F-AUTONOMY": score_f_autonomy,
+        # T-2354 — audit→bugfix autotuning arc (Slice 2 of T-2352). Reads
+        # audit_severity:fail|warn frontmatter emitted by T-2353's audit.sh
+        # --emit-tasks feature. Scores FAIL→5, WARN→4 to prioritize audit
+        # findings above routine backlog. Latent until policy adds driver.
+        "audit_severity": score_audit_severity,
         # T-2356 — arc-011 scoped drivers (proposed via T-2344 batch_propose).
         # Latent in two ways: (1) _load_drivers() reads only global policy, so
         # arc-scoped drivers never reach `drivers:` here today; (2) even after
