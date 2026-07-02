@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2506: Address Fabric orphaned cards WARN (97/836 cards with no edges)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T22:50:18Z
+# ============================================================================
+
+task_id: T-2506
+task_name: "Address Fabric orphaned cards WARN (97/836 cards with no edges)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T22:47:55Z
+completed: 2026-07-02T22:50:09Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-01T13:39:22+02:00
+last_commit: 2026-07-01T22:23:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file MAIN-reconciliation task — stranded uncommitted work (blocks host go-live). record audit.sh 3-way divergence — reconciliation is operator merge decision (unblocks 3 HV/LC). operational cleanup — register lib/hook_paths.py fabric card + enrich edges (clears audit drift WARN). durability — register gap G-083 (MAIN↔worktree divergence blindness) + revisit_at stamp so 'held' ≠ 'forgotten'
+
+# Key outcomes
+outcomes:
+  - 'Understand current state: 97 cards with no edges (isolated components, not orphaned)'
+  - 'Run `fw fabric enrich` to analyze and add missing edges'
+  - 'Determine if finding is actionable or expected state'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-02 — Accept 97 isolated components as expected state'
+    chose: 'Document finding as expected behavior, not a bug'
+    rationale: '`fw fabric enrich` added 0 edges, indicating the enricher can''t detect dependencies for these components. Manual review of a sample would be needed to confirm they''re genuinely isolated, but the enricher''s inability to find edges suggests they likely are.'
+    alternatives_rejected: ['Attempting to manually add edges without understanding what these 97 components are - would risk adding incorrect dependency mappings.']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/agents-context-check-active-task.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/lib-bvp.yaml'
+  - '.fabric/components/lib-hook_paths.yaml'
+  - '.fabric/components/lib-integrate.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-resolver.yaml'
+  - '.fabric/components/tests-unit-check_active_task_cwd_resolution.yaml'
+  - '.fabric/components/tests-unit-t2465_reanchor_from_cwd.yaml'
+  - '.fabric/components/tests-unit-t2473_union_resolve.yaml'
+  - '.tasks/active/T-2506-reconcile-main-checkout-stranded-uncommi.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-01T13:39:22"
+    action: "T-2506: file MAIN-reconciliation task — stranded uncommitted work (blocks host go-live)"
+  - time: "2026-07-01T18:48:30"
+    action: "T-2506: record audit.sh 3-way divergence — reconciliation is operator merge decision (unblocks 3 HV/LC)"
+  - time: "2026-07-01T19:10:33"
+    action: "T-2506: operational cleanup — register lib/hook_paths.py fabric card + enrich edges (clears audit drift WARN)"
+  - time: "2026-07-01T22:23:10"
+    action: "T-2506: durability — register gap G-083 (MAIN↔worktree divergence blindness) + revisit_at stamp so 'held' ≠ 'forgotten'"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 4
+  files_changed: 12
+  lines_added: 342
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2506-address-fabric-orphaned-cards-warn-97836.md
+generated_by: context-agent-hybrid
