@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T07:00:37Z
-last_update: 2026-07-02T07:00:37Z
-date_finished: null
+last_update: 2026-07-02T07:34:14Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +34,36 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-02T07:15:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-02T07:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=2 (body:lightly-promoted); F-ORCH=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2494: escalation-scan auto-tuning: pattern detector and rule proposal engine
@@ -45,14 +75,14 @@ Implement the pattern detector for escalation-scan feedback loop (T-1687 grillin
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `tools/escalation-rule-generator.py` exists and is executable
-- [ ] Script reads `escalation-drift-LATEST-v0.5.yaml` as input
-- [ ] Groups verdicts by attribute combinations (workflow_type, title_pattern, body characteristics)
-- [ ] Applies safeguard gates: confidence ≥0.95, sample size ≥5, specificity ≥2 attributes
-- [ ] Outputs proposed rules to `.context/working/escalation-exclusion-rules.yaml`
-- [ ] Dry-run mode: `--dry-run` flag shows what rules would be proposed without writing
-- [ ] Per-rule evidence includes: sample_size, min_confidence, task_ids list
-- [ ] Rule status set to `dry-run` with `activates` timestamp = now + 7 days
+- [x] `tools/escalation-rule-generator.py` exists and is executable
+- [x] Script reads `escalation-drift-LATEST-v0.5.yaml` as input
+- [x] Groups verdicts by attribute combinations (workflow_type, title_pattern, body characteristics)
+- [x] Applies safeguard gates: confidence ≥0.95, sample size ≥5, specificity ≥2 attributes
+- [x] Outputs proposed rules to `.context/working/escalation-exclusion-rules.yaml`
+- [x] Dry-run mode: `--dry-run` flag shows what rules would be proposed without writing
+- [x] Per-rule evidence includes: sample_size, min_confidence, task_ids list
+- [x] Rule status set to `dry-run` with `activates` timestamp = now + 7 days
 
 ### Human
 - [ ] [REVIEW] Output YAML structure is clear and human-readable
@@ -62,40 +92,6 @@ Implement the pattern detector for escalation-scan feedback loop (T-1687 grillin
   3. Verify rule patterns make sense (not over-broad)
   **Expected:** YAML has clear structure, patterns are specific (≥2 attributes each)
   **If not:** Adjust pattern detection logic or output format
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
 
 ## Verification
 
