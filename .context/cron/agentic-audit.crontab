@@ -76,3 +76,6 @@ PATH=/usr/local/bin:/usr/bin:/bin
 
 # Inception Recommendation retrofit (hourly, T-2204 Slice D)
 19 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-inception-retrofit-rec.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" inception retrofit-recommendations --apply' 2>&1 | logger -t agentic-cron
+
+# Escalation rule lifecycle (daily, T-2496)
+0 6 * * * root cd "/opt/999-Agentic-Engineering-Framework" && python3 tools/escalation-rule-lifecycle.py 2>&1 | logger -t agentic-cron

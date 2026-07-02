@@ -1,0 +1,20 @@
+id: tools/escalation-rule-lifecycle.py
+name: escalation-rule-lifecycle
+type: script
+subsystem: unknown
+location: tools/escalation-rule-lifecycle.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-07-02
+created_by: unknown

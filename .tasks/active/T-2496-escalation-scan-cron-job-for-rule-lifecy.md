@@ -1,8 +1,10 @@
 ---
 id: T-2496
-name: "escalation-scan: cron job for rule lifecycle (activate dry-run after 7d, expire after 30d)"
+name: "escalation-scan: cron job for rule lifecycle (activate dry-run after 7d, expire
+  after 30d)"
 description: >
-  escalation-scan: cron job for rule lifecycle (activate dry-run after 7d, expire after 30d)
+  escalation-scan: cron job for rule lifecycle (activate dry-run after 7d, expire
+  after 30d)
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T07:02:36Z
-last_update: 2026-07-02T07:02:36Z
-date_finished: null
+last_update: 2026-07-02T07:43:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,53 +36,62 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-02T07:15:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-02T07:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2496: escalation-scan: cron job for rule lifecycle (activate dry-run after 7d, expire after 30d)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Cron job manages rule lifecycle: activates dry-run rules after 7d, extends expiry on reconfirmation (≥3 new FPs), expires rules after 30d. Part of T-1687 auto-tuning feedback loop.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [x] `tools/escalation-rule-lifecycle.py` script created
+- [x] Script loads `escalation-exclusion-rules.yaml`
+- [x] Activates `dry-run` rules when `activates` timestamp ≤ now (status: dry-run → active)
+- [x] Checks reconfirmation: ≥3 new FPs matching pattern extend `expires` by 30 days
+- [x] Expires `active` rules when `expires` timestamp ≤ now (status: active → expired)
+- [x] Sends ntfy notification on activation (via `bin/fw notify`)
+- [x] Cron entry added to `.context/cron-registry.yaml` (daily at 06:00)
+- [x] Script executable and runs without error
 
 ## Verification
+
+test -f tools/escalation-rule-lifecycle.py
+test -x tools/escalation-rule-lifecycle.py
+python3 tools/escalation-rule-lifecycle.py --help > /dev/null
+grep -q "escalation-rule-lifecycle" .context/cron-registry.yaml
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

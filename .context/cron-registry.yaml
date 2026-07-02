@@ -228,3 +228,12 @@ jobs:
     origin_task: T-2208
     status: active
     description: "T-2204 Slice D — preventive backstop for the recommendation-completeness gate. Producer surfaces (T-2205 Write/Edit hook, T-2207 create-task.sh CLI, T-1716 do_inception_start) catch agent-initiated inception filings, and T-2206 emit_review/batch refuses agent handoff of empty-Recommendation inceptions. This cron catches the remaining paths the producer gates cannot reach: direct YAML writes that bypass tools, post-hoc `fw task update --workflow-type inception` flips, and the window before an operator wires the T-2205 hook into .claude/settings.json. Calls `fw inception retrofit-recommendations --apply` (lib/inception.sh do_inception_retrofit_recommendations, T-1716 Stream C) — idempotent and side-effect-free on already-clean state; injects DEFER stubs with self-retrofit attribution when an active inception's ## Recommendation block is empty or template-only AND no `**Recommendation:**` line exists."
+
+  - id: escalation-rule-lifecycle-daily
+    name: "Escalation rule lifecycle (daily, T-2496)"
+    schedule: "0 6 * * *"
+    command: "python3 tools/escalation-rule-lifecycle.py 2>&1 | logger -t agentic-cron"
+    source_file: agentic-audit.crontab
+    origin_task: T-2496
+    status: active
+    description: "T-2496 (T-1687 auto-tuning feedback loop). Manages exclusion rule lifecycle: activates dry-run rules after 7 days (when activates timestamp passes), checks reconfirmation (≥3 new FPs matching pattern extend expires by 30d), expires active rules after 30d. Sends ntfy notifications on activation. Part of escalation-scan auto-tuning system that reduces false-positive rate by learning from v0.5 LLM verdicts."
