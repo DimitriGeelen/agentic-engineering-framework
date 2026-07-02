@@ -160,7 +160,7 @@ fail=5, warn=3, absent=0, and live testing confirms audit-severity tasks rank ab
 
 python3 -m pytest tests/unit/test_bvp_estimator.py -k "audit_severity" -q
 out=$(grep -n "def score_audit_severity" agents/termlink/bvp-estimator/estimator.py); echo "$out" | grep -q "def score_audit_severity"
-out=$(grep -n "AUDIT_SEVERITY.*score_audit_severity" agents/termlink/bvp-estimator/estimator.py); echo "$out" | grep -q "AUDIT_SEVERITY.*score_audit_severity"
+out=$(grep -n '"audit_severity".*score_audit_severity' agents/termlink/bvp-estimator/estimator.py); echo "$out" | grep -q '"audit_severity".*score_audit_severity'
 out=$(grep -n "audit_severity" CLAUDE.md); echo "$out" | grep -q "audit_severity"
 
 ## RCA

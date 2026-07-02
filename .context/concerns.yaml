@@ -13,3 +13,15 @@
   observed: 2026-06-16
   fixed_in: T-2422
   fixed_date: 2026-06-16
+
+# T-2500 RCA — systemic self-vendor drift generates 70% commit overhead
+- id: OBS-080
+  type: structural-gap
+  severity: medium
+  surface: .git/hooks/post-commit (missing auto-sync)
+  detected_in: T-2500 RCA (S-2026-0702-1113 6th recurrence in 2 weeks)
+  symptom: "Push fails with 'Self-vendor: would sync N file(s)' error every 2-3 commits. Requires manual `fw vendor self && git add .agentic-framework/ && git commit -m 'refresh vendored'` before push succeeds. Pattern: 66 vendor sync commits in last 30 days (70% of all commits are just 'refresh vendored copies'). Generates 2.4× commit overhead (66 syncs / 28 substantive commits)."
+  root_cause: "Framework self-vendors (bin/, lib/, agents/, web/ → .agentic-framework/) but post-commit hook does NOT auto-sync. T-2240 added pre-push CHECK (blocks push on drift) but did NOT add post-commit AUTO-SYNC (prevention). Design explicitly chose 'block and remind' over 'auto-fix', creating a MANUAL PROCEDURE that gets forgotten. Agent memory doesn't persist across compaction; operator discipline fails after 20+ reminders."
+  prevention: "T-2501 (proposed): Add post-commit auto-sync. When commit touches vendored paths (bin/, lib/, agents/, web/), run `fw vendor self` immediately and amend commit to include vendored changes. Makes sync STRUCTURAL (automatic), not PROCEDURAL (manual step). Alternative: pre-commit check (too late - commit already made) or better agent memory (insufficient - doesn't survive compaction)."
+  blast_radius: framework-wide (affects every framework developer)
+  observed: 2026-07-02

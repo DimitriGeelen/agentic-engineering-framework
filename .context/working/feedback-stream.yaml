@@ -20858,3 +20858,120 @@ scan_id: R-eddfee4e
 task_id: T-2493
 payload:
   task_file: .tasks/active/T-2493-session-wrap-up-autonomous-hvlc-sweep.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T07:33:34Z'
+scan_id: R-30c2782b
+task_id: T-1687
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T07:33:34Z'
+scan_id: R-30c2782b
+task_id: T-1687
+payload:
+  task_file: .tasks/active/T-1687-install--apply-grill-with-docs-skill--gr.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T08:13:17Z'
+scan_id: R-af3d0005
+task_id: T-2497
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T08:13:17Z'
+scan_id: R-af3d0005
+task_id: T-2497
+payload:
+  task_file: .tasks/active/T-2497-watchtower-escalationrules-page---viewve.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T08:15:18Z'
+scan_id: R-b32017d4
+task_id: T-2498
+payload:
+  overall: FAIL
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T08:15:18Z'
+scan_id: R-b32017d4
+task_id: T-2498
+payload:
+  task_file: .tasks/active/T-2498-escalation-scan-auto-narrowing-logic-det.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T08:17:14Z'
+scan_id: R-97ec6a77
+task_id: T-2499
+payload:
+  overall: FAIL
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T08:17:14Z'
+scan_id: R-97ec6a77
+task_id: T-2499
+payload:
+  task_file: .tasks/active/T-2499-escalation-scan-auto-retirement-expire-r.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T08:21:18Z'
+scan_id: R-363ca7bc
+task_id: T-2171
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 1
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T08:21:18Z'
+scan_id: R-363ca7bc
+task_id: T-2171
+payload:
+  task_file: .tasks/active/T-2171-bvp-t-new-e-f-autonomy-activation-gate--.md
+---
+kind: override_applied
+timestamp: '2026-07-02T08:21:18Z'
+scan_id: R-363ca7bc
+task_id: T-2171
+payload:
+  pattern_id: AC-verify-mismatch
+  ac_index: 5
+  ac_subhead: Agent
+---
+kind: scan_emitted
+timestamp: '2026-07-02T09:29:03Z'
+scan_id: R-60a0c943
+task_id: T-2500
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T09:29:03Z'
+scan_id: R-60a0c943
+task_id: T-2500
+payload:
+  task_file: .tasks/active/T-2500-t-2500-rca--systemic-self-vendor-drift-6.md

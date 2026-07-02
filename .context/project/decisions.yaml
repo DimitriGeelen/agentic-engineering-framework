@@ -2067,3 +2067,10 @@ decisions:
     date: 2026-06-16
     task: T-2422
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-298
+    decision: "Post-commit auto-sync (amend commit if vendored paths touched)"
+    scope: project
+    date: 2026-07-02
+    task: T-2500
+    rationale: "Auto-captured from task file on completion"

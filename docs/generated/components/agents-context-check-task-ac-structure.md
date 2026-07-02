@@ -8,8 +8,8 @@
 
 ## What It Does
 
-T-2420: Task AC structure validation hook (bash wrapper).
-The fw hook dispatcher (bin/fw:5639) loads .sh files; actual logic in check-task-ac-structure.py.
+T-2420: task AC structure validation hook (bash wrapper).
+The fw hook dispatcher (bin/fw) loads .sh files; actual logic in check-task-ac-structure.py.
 
 ## Used By (2)
 

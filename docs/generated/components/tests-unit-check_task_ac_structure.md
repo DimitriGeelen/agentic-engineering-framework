@@ -6,7 +6,15 @@
 
 ## What It Does
 
-T-2420: tests for agents/context/check-task-ac-structure.{sh,py}
+T-2420: check-task-ac-structure PreToolUse hook — unit tests.
+Covers:
+- ### Human outside ## Acceptance Criteria blocks (new malformation)
+- Grandfather logic (no-worse-than: existing malformation passes)
+- Correct structure passes
+- Override via FW_ALLOW_AC_STRUCTURE_DRIFT=1
+- Agent-vs-human control (CLAUDECODE=1 blocks, unset is advisory)
+- Pass-through for non-task files, non-matching tools
+- Edit and MultiEdit synthetic paths
 
 ## Dependencies (2)
 

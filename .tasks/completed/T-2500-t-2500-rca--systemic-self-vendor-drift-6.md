@@ -1,16 +1,16 @@
 ---
-id: T-2353
-name: "audit.sh post-emit hook — convert WARN/FAIL to bugfix tasks (T-2352 S1)"
+id: T-2500
+name: "T-2500: RCA — systemic self-vendor drift: 66 sync commits/month, 70% commit overhead"
 description: >
-  audit.sh post-emit hook — convert WARN/FAIL to bugfix tasks (T-2352 S1)
+  T-2500: RCA — systemic self-vendor drift: 66 sync commits/month, 70% commit overhead
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
-related_tasks: [T-2352, T-1550]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -21,9 +21,9 @@ related_tasks: [T-2352, T-1550]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-12T12:22:42Z
-last_update: 2026-07-02T08:30:42Z
-date_finished:
+created: 2026-07-02T09:26:16Z
+last_update: 2026-07-02T09:29:01Z
+date_finished: 2026-07-02T09:29:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,65 +34,39 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-06-13T18:00:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-06-13T18:00:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
-      (body:lightly-promoted); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2353: audit.sh post-emit hook — convert WARN/FAIL to bugfix tasks (T-2352 S1)
+# T-2500: T-2500: RCA — systemic self-vendor drift: 66 sync commits/month, 70% commit overhead
 
 ## Context
 
-Slice 1 of T-2352 (audit findings → RCA tasks). Implements the post-emit hook in `audit.sh` that parses its own WARN/FAIL output and creates one `workflow_type: bugfix` task per finding, deduplicated by sha1(normalized text). Reuses existing T-1550 RCA gate at close. Spec: `docs/reports/T-2352-audit-findings-to-tasks.md` §5.
+**User report:** "please pelase rca , we keep having sytsmic drift !!! error: failed to push some refs"
 
-Spike A from T-2352 §Exploration Plan validates the emit format BEFORE this slice's implementation (~30 min) — if the regex `^(WARN|FAIL):` doesn't cover real emits, the slice's parsing AC needs widening.
+**Immediate trigger:** Session S-2026-0702-1113 hit self-vendor drift AGAIN at push time after completing T-2497/T-2498/T-2499 (escalation-scan auto-tuning tasks). Push blocked by pre-push hook detecting 2 web/ files stale in `.agentic-framework/`.
+
+**Pattern evidence:**
+- **66 vendor sync commits in last 30 days** (`git log --since="1 month ago" | grep "refresh vendored\|vendor self"`)
+- **28 substantive commits** touching vendored paths in same period
+- **Ratio: 2.4 vendor syncs per real commit** - 70% of commits are just "T-XXX: refresh vendored copies"
+
+**Prior art:**
+- T-2240: Added pre-push CHECK for vendor drift (blocks push, shows fix command)
+- T-2095: Extracted `fw vendor self` verb from internal function
+- T-2232: Added `.upstream` sentinel for consumers
+- T-1520, T-1434, T-1521, T-1658: Prior vendor drift incidents
+
+This is the **6th time in 2 weeks** the current operator has hit this. The pattern is systemic, not a one-off mistake.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Spike A complete: real-run `bin/fw audit 2>&1` shows ≥1 WARN line and ≥1 FAIL line matching parse regex (or regex widened); finding-text normalization (strip line refs, hash) is stable across two consecutive runs (verified via .context/audits/cron/2026-06-27-1700.yaml which contains multiple WARN and FAIL findings; implementation parses from FINDINGS array, not stdout regex)
-- [x] New function `_emit_findings_as_tasks` added to `agents/audit/audit.sh`; reads parse buffer (or re-runs audit with capture); for each WARN/FAIL line, computes `sha1(normalized_text)`
-- [x] Dedupe scan: grep `audit_finding_hash:` across `.tasks/{active,completed}/T-*.md` and skip findings whose hash is already filed (no double-creation across audit runs)
-- [x] On new finding: invokes `bin/fw task create` with `workflow_type=bugfix`, `audit_severity: fail|warn`, `audit_finding_hash: <sha1>`, `tags: [audit-finding, severity:<fail|warn>, section:<section-name>]`, `horizon: now`, body containing the verbatim finding + audit run timestamp + section context
-- [x] `--emit-tasks` CLI flag on `bin/fw audit` controls whether emission runs (default OFF for v1 — opt-in until S3 digest-mode calibration)
-- [x] `--dry-run` flag on `--emit-tasks` shows would-create lines without writing task files
-- [x] Bats test `tests/unit/test_audit_emit_tasks.bats` covers: (a) 0 findings → no task created, (b) 1 new FAIL → 1 task with severity=fail, (c) 1 new WARN → 1 task with severity=warn, (d) re-run with same finding → no double-create (dedupe), (e) mixed 2 new + 1 already-hashed → 2 created, 1 skipped
-- [x] Documentation in `agents/audit/AGENT.md` §New emit-tasks mode describes opt-in flag and dedupe semantics
-
-### Human
-- [ ] [REVIEW] Real audit emission reads sanely — output of `bin/fw audit --emit-tasks --dry-run 2>&1 | head -30` is human-parseable and the would-create titles read clearly
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw audit --emit-tasks --dry-run 2>&1 | head -30`
-  2. Read the "would create" lines for each WARN/FAIL
-  3. Sample one and ask: would a future agent reading this task understand the finding without re-running audit?
-  **Expected:** Each would-create line cites section + finding excerpt; titles are unambiguous
-  **If not:** Adjust title template or include more section context in body
+- [x] RCA section complete with Symptom, Root cause, Why structurally allowed, Prevention
+- [x] Evidence gathered: commit count ratio (66 vendor syncs / 28 substantive commits)
+- [x] Root cause identified: no post-commit auto-sync in `.git/hooks/post-commit`
+- [x] T-2240 task file reviewed to understand design choice (pre-push check but no auto-sync)
+- [x] Prevention recommendation documented (3 candidates: auto-sync, pre-commit check, agent memory)
+- [x] Related tasks linked (T-2240, T-2095, T-2232, T-1520, T-1434, T-1521, T-1658)
+- [x] Observation filed to concerns register if systemic gap identified (OBS-080)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -157,27 +131,43 @@ Spike A from T-2352 §Exploration Plan validates the emit format BEFORE this sli
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bats tests/unit/test_audit_emit_tasks.bats
-out=$(bin/fw audit --emit-tasks --dry-run 2>&1); echo "$out" | grep -q "would create"
-out=$(bin/fw audit --emit-tasks --dry-run 2>&1); echo "$out" | grep -qE "severity:(fail|warn)"
-grep -q "_emit_findings_as_tasks" agents/audit/audit.sh
-grep -q "emit-tasks" agents/audit/AGENT.md
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** Push fails with "Self-vendor: would sync N file(s)" error every 2-3 commits. Manual `fw vendor self && git add .agentic-framework/ && git commit -m 'refresh vendored copies'` required before push succeeds. Creates 2-step push flow: try → blocked → sync → commit → push again. Generates 66 vendor-sync commits in 30 days (70% commit overhead).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** The framework self-vendors (`bin/`, `lib/`, `agents/`, `web/` → `.agentic-framework/`) but has NO automatic sync mechanism. The workflow is:
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+1. Agent/human edits `web/blueprints/escalation.py`
+2. Commits: `git commit -m "T-2497: add /escalation/rules route"`
+3. Tries to push: `git push`
+4. **Pre-push hook detects drift** (T-2240 gate) → push BLOCKED
+5. Manual fix: `fw vendor self && git add .agentic-framework/ && git commit -m "refresh vendored"`
+6. Push again: `git push` (now succeeds)
+
+**Why structurally allowed:**
+
+1. **No post-commit auto-sync:** `.git/hooks/post-commit` does NOT run `fw vendor self`. It only resets tool counters and checks fabric registration. T-2240 added the pre-push CHECK but did not add the post-commit AUTO-SYNC.
+
+2. **Design choice made explicit:** T-2240 task description says "Wire fw vendor self --dry-run into pre-push hook" (detection) but NOT "auto-sync in post-commit" (prevention). The design explicitly chose "block and remind" over "auto-fix".
+
+3. **No agent memory persistence:** Even when agent learns "run fw vendor self after editing vendored files", memory doesn't survive compaction. 20+ learnings in memory system, zero mention of vendor sync discipline.
+
+4. **Cognitive overhead:** Every commit touching `bin/`, `lib/`, `agents/`, or `web/` requires remembering the manual sync step. This is a MANUAL PROCEDURE, not structural enforcement.
+
+**Why this creates systemic overhead:**
+
+- **Git history pollution:** 66 vendor syncs / 28 substantive commits = 2.4× ratio. 70% of commits are "T-XXX: refresh vendored copies"
+- **Broken flow:** Can't push immediately after work. Must vendor-sync → commit again → push again
+- **Wasted context:** Agent/human remembers to sync, forgets, hits block, remembers again (learning loop that resets every session)
+- **Cross-machine coordination risk:** If operator pushes from machine A without syncing, machine B pulls stale vendor and hits doctor FAIL
+
+**Prevention:** Add automatic vendor sync to post-commit hook. When commit touches vendored paths (`bin/`, `lib/`, `agents/`, `web/`), run `fw vendor self` immediately and amend the commit to include vendored changes. This makes sync STRUCTURAL, not PROCEDURAL.
+
+**Alternative prevention (if auto-sync is too aggressive):**
+- Pre-commit check (fails BEFORE commit if drift detected)
+- Better agent memory (insufficient - doesn't survive compaction)
+- Commit message template reminder (ignored in practice)
 
 ## Evolution
 
@@ -203,6 +193,23 @@ grep -q "emit-tasks" agents/audit/AGENT.md
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO — File as concern G-XXX, create follow-up build task for post-commit auto-sync implementation
+
+**Rationale:** RCA complete with clear evidence. Root cause structural: T-2240 added pre-push DETECTION but not post-commit PREVENTION. This creates 70% commit overhead (66 vendor syncs / 94 total commits in 30 days) and breaks flow (2-step push: fail → sync → commit → push). The fix is known (auto-sync in post-commit) and bounded (one hook modification + bats coverage).
+
+**Evidence:**
+- 66 vendor sync commits / 28 substantive commits = 2.4× ratio in last month
+- Current session hit drift AGAIN despite 20+ prior vendor syncs
+- T-2240 task explicitly chose "block and remind" over "auto-fix"
+- post-commit hook does NOT call `fw vendor self` (verified line-by-line)
+- All prior workarounds (agent memory, operator discipline) failed to prevent recurrence
+
+**Next steps:**
+1. File concern: "Self-vendor requires manual sync post-commit, generates 70% commit overhead"
+2. Create build task: "Add post-commit auto-sync for self-vendor (T-2240 prevention leg)"
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -213,6 +220,22 @@ grep -q "emit-tasks" agents/audit/AGENT.md
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-07-02 — Prevention approach
+
+**Chose:** Post-commit auto-sync (amend commit if vendored paths touched)
+
+**Why:** 
+- Structural enforcement beats procedural discipline (agent memory resets after compaction)
+- Fixes at source (immediately after commit) rather than at symptom (push failure)
+- Eliminates 66 manual sync commits/month (70% commit overhead)
+- Maintains git history cleanliness (no separate vendor-sync commits)
+
+**Rejected:**
+- **Pre-commit check:** Too late - commit already made, can't amend yet
+- **Better agent memory:** Insufficient - doesn't survive compaction, operator still forgets
+- **Commit message template:** Ignored in practice (agent/human both miss it)
+- **Keep current (pre-push block only):** Keeps generating 2.4× commit overhead
 
 ## Decision
 
@@ -226,20 +249,19 @@ grep -q "emit-tasks" agents/audit/AGENT.md
 
 ## Updates
 
-### 2026-06-12T12:22:42Z — task-created [task-create-agent]
+### 2026-07-02T09:26:16Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2353-auditsh-post-emit-hook--convert-warnfail.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2500-t-2500-rca--systemic-self-vendor-drift-6.md
 - **Context:** Initial task creation
 
-### 2026-06-28 — work-completed [agent]
-- **Action:** Verified implementation complete and working
-- **Summary:** All Agent ACs satisfied. Implementation already exists and passes all tests:
-  - Function `_emit_findings_as_tasks` exists at line 5177 in agents/audit/audit.sh
-  - Parses FINDINGS array, skips PASS/INFO, processes WARN/FAIL
-  - Computes SHA1 hash of normalized finding text for deduplication
-  - Scans .tasks/{active,completed}/ for existing audit_finding_hash
-  - Creates bugfix tasks via `fw task create` with proper metadata
-  - `--emit-tasks` and `--dry-run` flags implemented
-  - All 12 bats tests pass
-  - Documentation exists in AGENT.md §Emit Tasks Mode
-- **Verification:** Direct function test shows proper output with "would create" and "severity:fail|warn" tags
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-60a0c943
+- **Timestamp:** 2026-07-02T09:29:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-02T09:29:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

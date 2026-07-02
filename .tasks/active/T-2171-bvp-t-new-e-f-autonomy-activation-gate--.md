@@ -10,9 +10,9 @@ description: >
   uncomments the carve, sets weight=4, and validates the rubric ZERO-NEGATIVE guardrail
   (autonomy that removes Tier-0 gates scores ≤0).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [v3-followup-E, f-autonomy-activation, arc:value-prioritisation, 
       blocked-on-T-2158]
@@ -20,8 +20,8 @@ components: []
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: '2026-06-13T18:00:04Z'
-date_finished:
+last_update: 2026-07-02T08:20:53Z
+date_finished: 2026-07-02T08:20:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -231,27 +231,26 @@ bin/fw bvp T-2158 >/dev/null 2>&1
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-06-25 — Work Completed Before Task Pickup
+- **What changed:** Discovered T-2362 (arc-012 S0 slice, 2026-06-13) had already activated F-AUTONOMY and satisfied all Agent ACs. This task was filed 2026-06-01 as a gate-check task, but the activation happened organically during arc-012 continuous-run bringup without explicit task reference.
+- **Plan impact:** Original plan assumed activation would happen via this task. Actual flow: T-2362 activated F-AUTONOMY as part of arc-012 launch (commit e88113973). This task now serves as verification + Human review gate rather than implementation.
+- **Triggered:** No new tasks — work already complete. Task transitions to partial-complete (Human AC [REVIEW] for final confirmation of preconditions)
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+## Recommendation
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+**Recommendation:** GO
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+**Rationale:** All Agent ACs verified complete. F-AUTONOMY activated in policy/value-drivers.yaml (T-2362 commit e88113973, 2026-06-13). Preconditions met: T-2158 continuous-run arc completed, L5 autonomy milestone operational (arc-012 demonstrates compact→resume autonomy). Level-0 sovereignty guardrail present, smoke tests pass. Human AC [REVIEW] remains for final activation confirmation.
+
+**Evidence:**
+- Activation commit: T-2362 e88113973 (2026-06-13)
+- F-AUTONOMY in free_drivers: lines 176-200 in policy/value-drivers.yaml
+- Sovereignty guardrail: line 184 "that is a Sovereignty violation -- scores ZERO"
+- Tier-0 prohibition: line 195 "Tier 0, irreversible, high-blast-radius"
+- Preconditions: T-2158 work-completed 2026-06-13, arc-012 L5 autonomy operational
+- Estimator scorer: score_f_autonomy at estimator.py:975, handlers line 2310
+- Smoke tests: all 3 pass (fw bvp, fw bvp --include-proposed, fw bvp T-2158)
+- Verification commands: all pass per 2026-06-26 verification
 
 ## Decisions
 
@@ -323,12 +322,24 @@ This task's work was completed during T-2362 (arc-012 continuous-run S0 slice). 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-8378e6d8
-- **Timestamp:** 2026-06-11T23:08:00Z
+- **Scan ID:** R-363ca7bc
+- **Timestamp:** 2026-07-02T08:21:18Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 42
+     - evidence: `bin/fw bvp >/dev/null 2>&1`
+  2. **empty-output-success** (partial, heuristic) @ Verification:line 43
+     - evidence: `bin/fw bvp --include-proposed >/dev/null 2>&1`
+  3. **empty-output-success** (partial, heuristic) @ Verification:line 44
+     - evidence: `bin/fw bvp T-2158 >/dev/null 2>&1`
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#5 (Agent)
+
+### 2026-07-02T08:20:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

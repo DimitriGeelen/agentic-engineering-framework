@@ -4,9 +4,9 @@ name: "Watchtower /escalation/rules page - view/veto exclusion rules"
 description: >
   Watchtower /escalation/rules page - view/veto exclusion rules
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T07:03:05Z
-last_update: 2026-07-02T07:48:30Z
-date_finished:
+last_update: 2026-07-02T08:13:15Z
+date_finished: 2026-07-02T08:13:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -167,6 +167,20 @@ WURL=$(bin/fw watchtower url); curl -sf "$WURL/escalation/rules" > /dev/null || 
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All Agent ACs verified. Route `/escalation/rules` added to escalation.py blueprint, template created with three status-grouped sections (dry-run, active, expired), evidence display implemented (confidence %, sample size, task IDs), graceful empty-state handling for missing rules file. Verification commands pass. Human AC [REVIEW] remains for visual layout confirmation once Watchtower is started.
+
+**Evidence:**
+- Route exists: `web/blueprints/escalation.py:99-145` (escalation_rules function)
+- Template created: `web/templates/escalation_rules.html` (141 lines, registered in fabric)
+- Verification passed: grep found route, curl handles stopped Watchtower gracefully
+- Grouped display: dry_run_rules, active_rules, expired_rules separated by status
+- Evidence columns: confidence (%), sample_size, task_ids per rule
+- Empty state: "No rules yet" message with generation instructions when file missing
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -194,3 +208,15 @@ WURL=$(bin/fw watchtower url); curl -sf "$WURL/escalation/rules" > /dev/null || 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2497-watchtower-escalationrules-page---viewve.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-af3d0005
+- **Timestamp:** 2026-07-02T08:13:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-02T08:13:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
