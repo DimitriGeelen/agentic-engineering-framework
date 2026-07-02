@@ -4,12 +4,12 @@ name: "Triage observation inbox - OBS-075 through OBS-078"
 description: >
   Triage observation inbox - OBS-075 through OBS-078
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/costs.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T17:49:00Z
-last_update: 2026-07-02T19:45:37Z
-date_finished:
+last_update: 2026-07-02T19:59:12Z
+date_finished: 2026-07-02T19:59:12Z
 target_blast_radius: 0
 voi_score: 0.3
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
@@ -217,13 +217,25 @@ Inbox now empty, actionable items promoted to appropriate tasks.
 
 ## Decision
 
-<!-- Filled at completion of inception tasks via:
-     fw inception decide T-XXX go|no-go|defer --rationale "..."
+**Decision**: GO
 
-     For non-inception tasks this section is ignored. Kept in template
-     so `fw inception decide` (lib/inception.sh) finds the anchor heading
-     without auto-creating; T-1832 added auto-create as fallback for
-     legacy tasks lacking this section. -->
+**Rationale**: Recommendation: GO
+
+Rationale: Triage completed successfully. All 4 observations processed:
+- OBS-075: Promoted to T-2427 (arc-012 live-fire precondition documentation)
+- OBS-076: Promoted to T-2426 (vendor check node_modules FP - blocking bug)
+- OBS-077: Dismissed (incomplete - text was just "add")
+- OBS-078: Dismissed (incomplete - text was just "add")
+
+Inbox now empty, actionable items promoted to appropriate tasks.
+
+Evidence:
+- T-2426 created: Vendor check FP (blocking issue)
+- T-2427 created: Arc-012 documentation task
+- OBS-077/078 dismissed with rationale
+- `bin/fw note list` confirms empty inbox
+
+**Date**: 2026-07-02T19:59:12Z
 
 ## Updates
 
@@ -249,3 +261,35 @@ Inbox now empty, actionable items promoted to appropriate tasks.
 - T-2427 created: Arc-012 documentation task
 - OBS-077/078 dismissed with rationale
 - `bin/fw note list` confirms empty inbox
+
+### 2026-07-02T19:59:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Triage completed successfully. All 4 observations processed:
+- OBS-075: Promoted to T-2427 (arc-012 live-fire precondition documentation)
+- OBS-076: Promoted to T-2426 (vendor check node_modules FP - blocking bug)
+- OBS-077: Dismissed (incomplete - text was just "add")
+- OBS-078: Dismissed (incomplete - text was just "add")
+
+Inbox now empty, actionable items promoted to appropriate tasks.
+
+Evidence:
+- T-2426 created: Vendor check FP (blocking issue)
+- T-2427 created: Arc-012 documentation task
+- OBS-077/078 dismissed with rationale
+- `bin/fw note list` confirms empty inbox
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8a4095cb
+- **Timestamp:** 2026-07-02T19:59:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-02T19:59:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

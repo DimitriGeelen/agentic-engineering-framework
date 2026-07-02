@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2425: Triage observation inbox - OBS-075 through OBS-078
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T19:59:21Z
+# ============================================================================
+
+task_id: T-2425
+task_name: "Triage observation inbox - OBS-075 through OBS-078"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T17:49:00Z
+completed: 2026-07-02T19:59:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-16T17:29:19+02:00
+last_commit: 2026-07-02T21:46:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lib/costs.sh union-leg — worktree-aware JSONL discovery (T-2392/T-2400 finish). close + episodic (lib/costs.sh union-leg shipped). Create inbox triage inception (autotuning feedback loop validated - 5 tasks completed). Fill placeholder ACs + research artifact
+
+# Key outcomes
+outcomes:
+  - 'All 4 observations (OBS-075 through OBS-078) triaged with disposition (promote/dismiss)'
+  - 'Promoted observations converted to tasks (T-2426, T-2427 created)'
+  - 'Inbox confirmed empty via `bin/fw note list`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/costs.sh'
+  - '.context/episodic/T-2411.yaml'
+  - '.context/episodic/T-2418.yaml'
+  - '.context/episodic/T-2419.yaml'
+  - '.context/episodic/T-2422.yaml'
+  - '.context/episodic/T-2423.yaml'
+  - '.context/episodic/T-2424.yaml'
+  - '.context/episodic/T-2425.yaml'
+  - 'docs/reports/T-2425-inbox-triage.md'
+  - 'lib/costs.sh'
+  - '.tasks/active/T-2425-fix-libcostssh-union-leg--fw-costs-blind.md'
+  - '.tasks/active/T-2425-triage-observation-inbox---obs-075-throu.md'
+  - '.tasks/completed/T-2401-refresh-continuous-run-directive-for-arc.md'
+  - '.tasks/completed/T-2411-claude-fw-startup-banner-show-project--b.md'
+  - '.tasks/completed/T-2418-audit-warn--free-driver-f-orch-retirewhe.md'
+  - '.tasks/completed/T-2419-audit-warn--fabric-107836-cards-have-no-.md'
+  - '.tasks/completed/T-2422-audit-warn--completed-task-t-2411-has-no.md'
+  - '.tasks/completed/T-2423-audit-warn--d5-task-lifecycle--29-anomal.md'
+  - '.tasks/completed/T-2424-audit-warn--d13-inception-limbo--5-tasks.md'
+  - '.tasks/completed/T-2425-fix-libcostssh-union-leg--fw-costs-blind.md'
+  - 'tests/unit/costs_union_leg.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T17:29:19"
+    action: "T-2425: lib/costs.sh union-leg — worktree-aware JSONL discovery (T-2392/T-2400 finish)"
+  - time: "2026-06-16T17:30:03"
+    action: "T-2425: close + episodic (lib/costs.sh union-leg shipped)"
+  - time: "2026-07-02T19:50:27"
+    action: "T-2425: Create inbox triage inception (autotuning feedback loop validated - 5 tasks completed)"
+  - time: "2026-07-02T21:46:28"
+    action: "T-2425: Fill placeholder ACs + research artifact"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 130 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 130
+  commits: 4
+  files_changed: 21
+  lines_added: 1588
+  lines_removed: 66
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2425-triage-observation-inbox---obs-075-throu.md
+generated_by: context-agent-hybrid
