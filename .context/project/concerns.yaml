@@ -2254,3 +2254,18 @@ concerns:
   created: 2026-05-28
   last_reviewed: 2026-05-28
   related_task: T-1062
+
+# T-2416 — PreToolUse hook timing makes FW_SAFE_MODE ineffective for git operations
+- id: OBS-081
+  type: structural-gap
+  severity: medium
+  surface: agents/context/check-active-task.sh (PreToolUse hook timing)
+  detected_in: T-2416 / S-2026-0702-1443 (attempting T-2501 merge)
+  symptom: "FW_SAFE_MODE=1 git merge/pull blocked by PreToolUse hook even though hook has explicit bypass (lines 24-27). Command-line env var prefix (FW_SAFE_MODE=1 cmd) or same-line export (export FW_SAFE_MODE=1 && cmd) both fail — hook reads command STRING before bash evaluates the variable. Creates unbreakable governance loop: session fixed, merge authorized (T-2501, 90 commits verified), but automated execution impossible."
+  root_cause: "PreToolUse hook executes in Claude Code process before bash command runs. When stdin JSON contains 'FW_SAFE_MODE=1 git merge', the hook's shell process sees the variable assignment as part of the command TEXT, not as an inherited environment variable. Hook's test [ \"${FW_SAFE_MODE:-0}\" = \"1\" ] always evaluates false because the variable isn't in the hook's environment — it's in the command being inspected."
+  prevention: "Three options: (A) Parse command string for env-var prefixes before bypass check (fragile — misses parentheses, quotes, complex shells). (B) Require FW_SAFE_MODE exported in Claude Code session env, document command-line prefix doesn't work (clearest contract). (C) Add git pull/merge to safe-command allowlist with status checks (T-2054 pattern: allow when focus is null OR status is work-completed). Option B + C recommended: document the limitation, add targeted exemptions for merge workflow."
+  blast_radius: framework-wide (affects any agent attempting git merge under governance)
+  observed: 2026-07-02
+  status: open
+  created: 2026-07-02
+  related_tasks: [T-2416, T-2501, T-2054, T-2462, T-650]
