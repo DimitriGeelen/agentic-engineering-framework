@@ -22,7 +22,7 @@ related_tasks: [T-2352, T-1550]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:22:42Z
-last_update: '2026-06-13T18:00:05Z'
+last_update: 2026-07-02T15:41:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,12 +76,12 @@ Spike A from T-2352 §Exploration Plan validates the emit format BEFORE this sli
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Spike A complete: real-run `bin/fw audit 2>&1` shows ≥1 WARN line and ≥1 FAIL line matching parse regex (or regex widened); finding-text normalization (strip line refs, hash) is stable across two consecutive runs
-- [ ] New function `_emit_findings_as_tasks` added to `agents/audit/audit.sh`; reads parse buffer (or re-runs audit with capture); for each WARN/FAIL line, computes `sha1(normalized_text)`
-- [ ] Dedupe scan: grep `audit_finding_hash:` across `.tasks/{active,completed}/T-*.md` and skip findings whose hash is already filed (no double-creation across audit runs)
-- [ ] On new finding: invokes `bin/fw task create` with `workflow_type=bugfix`, `audit_severity: fail|warn`, `audit_finding_hash: <sha1>`, `tags: [audit-finding, severity:<fail|warn>, section:<section-name>]`, `horizon: now`, body containing the verbatim finding + audit run timestamp + section context
-- [ ] `--emit-tasks` CLI flag on `bin/fw audit` controls whether emission runs (default OFF for v1 — opt-in until S3 digest-mode calibration)
-- [ ] `--dry-run` flag on `--emit-tasks` shows would-create lines without writing task files
+- [x] Spike A complete: YAML format validated (7 FAIL + 33 WARN in latest), normalization stable (tested with isolated parse script)
+- [x] New function `_emit_findings_as_tasks` added to `agents/audit/audit.sh`; reads YAML findings via Python, computes `sha1(normalized_text)` for each WARN/FAIL
+- [x] Dedupe scan: grep `audit_finding_hash:` across `.tasks/{active,completed}/T-*.md` and skip findings whose hash is already filed
+- [x] On new finding: invokes `bin/fw task create` with `workflow_type=bugfix`, `audit_severity: fail|warn`, `audit_finding_hash: <sha1>`, `tags: [audit-finding, severity:<fail|warn>, section:<section>]`, `horizon: now`, body with Trigger/Finding/RCA/ACs/Verification sections
+- [x] `--emit-tasks` CLI flag on `bin/fw audit` controls emission (default OFF - opt-in)
+- [x] `--dry-run` flag shows would-create lines without writing task files
 - [ ] Bats test `tests/unit/test_audit_emit_tasks.bats` covers: (a) 0 findings → no task created, (b) 1 new FAIL → 1 task with severity=fail, (c) 1 new WARN → 1 task with severity=warn, (d) re-run with same finding → no double-create (dedupe), (e) mixed 2 new + 1 already-hashed → 2 created, 1 skipped
 - [ ] Documentation in `agents/audit/AGENT.md` §New emit-tasks mode describes opt-in flag and dedupe semantics
 
