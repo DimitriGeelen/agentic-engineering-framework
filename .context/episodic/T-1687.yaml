@@ -1,0 +1,1964 @@
+# ============================================================================
+# EPISODIC MEMORY - T-1687: install + apply grill-with-docs skill — grilling session on orchestrator-as-triage
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T07:33:47Z
+# ============================================================================
+
+task_id: T-1687
+task_name: "install + apply grill-with-docs skill — grilling session on orchestrator-as-triage"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-02T19:15:25Z
+completed: 2026-07-02T07:33:32Z
+duration_days: 61
+updates_count: 3
+first_commit: 2026-05-02T22:14:50+02:00
+last_commit: 2026-07-02T09:05:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install grill-with-docs skill (mattpocock/skills). CONTEXT.md seeded — Orchestrator term resolved (Q1: configurable model, default opus). CONTEXT.md collapses Orchestrator → Agent (Q2 user pushback). handover pickup pointer for paused grill-with-docs session. ADR-0001 orchestration model pin enforcement (Q3+Q3.5 resolved). CONTEXT.md — Agent narrowed to task lifecycle + interactive work; introduce Workflow term (Q5). ADR-0002 Agent role — three slices (task lifecycle + interactive + dispatch). CONTEXT.md — Workflow v1 schema (6 fields + inline) and Delegation envelope expansion (Q6). CONTEXT.md — Worker definition flags envelope-fidelity asymmetry (Q7). CONTEXT.md — wire provider:ollama in v1 (Q7 amendment). CONTEXT.md — record dispatches.jsonl + route_cache split (Q8). CONTEXT.md — workflows live one-file-per-entity (Q9 corrected). CONTEXT.md — three Worker flavours hybrid (Q11 corrected by user). handover pickup pointer — grilling session paused mid-tree (13 Qs resolved). CONTEXT.md — Q12 resolved (default.yaml fallback + shipped baseline). Q10 resolved + ADR-0003 — three-tier prompt strategy + v2-ready telemetry wiring. Q13 + Q14 resolved — fw doctor warns missing pi, lints workflow schemas. file 7 v1 implementation tasks for orchestrator-rethink (T-1689..T-1695). file v1 build follow-ups for T-1691 (litellm) + T-1692 (pi). housekeeping — vendor sync + auto-generated state. T-1747 governance close — capture L-357 + close G-069. T-1748 governance close — capture L-358 (defensive parsing for advisory pipelines). T-1748 validation — 0/20 PARSE-FAIL on live re-run vs 5.9% baseline. T-1749 governance close — substrate outcome quality view shipped. T-1750 governance close — capture L-359 (gap-text substrate-path decay). T-1751 governance close — gitignore ephemeral working-state. T-1752 governance close — fw gaps closure-check generic substrate. T-1758 episodic + completion artefacts (arc:orchestrator-rethink). T-1759 episodic + completion (arc:orchestrator-rethink). T-1760 episodic + completion (arc:orchestrator-rethink). complete adjacent inception T-1710 (arc-hygiene). T-1710 episodic + final body (Updates entry + Reviewer Verdict). T-1720 cron generator fix (cwd + stderr) — closes 9-day silent non-firing. capture L-365 — cron 'deployed' is not 'executable' (T-1720 finding). regen — fabric edge tables + episodic enrichments. registry cleanup — strip workaround leading-cd from escalation-scan entries. T-1769 work-completed — bats fixture green (6/6), auto-episodic. T-1770 work-completed + L-366 captured (clientWidth race pattern). T-1771 + T-1772 work-completed (cron drift visibility + watchdog fd hygiene). L-367 captured — subshell watchdogs leak ALL inherited fds (not just stdio). housekeeping — auto-generated audits/monitors/working state. fabric scan/enrich — coverage 572 cards, edges +49. Q15 — Worker uncertainty handling (pause, severity×likelihood, peer-consult deferred via T-1804). dispatch-safety arc demo evidence — wire-level proof of headline mechanic for G-062 closure. review-queue triage report — live DOM evidence for 13/33 fresh tasks. dispatch-safety arc demo — live CLI+web smoke appendix. L-369 status update — T-1815 codified the precision exemption (corpus 23→11). CLAUDE.md — add fw pause to Quick Reference (dispatch-safety arc slice 5 doc drift). L-370 — generated YAML safety pattern (T-1816 origin). L-371 — denormalised registry-cache drift class (T-1813 + T-1817 second-instance codification). L-372 — set -e + var=$(cmd) silent-halt class (origin T-1762 own-dogfood). defer T-1818 peer-subscribe cron entry to joint-deploy slice. post-completion learning capture — L-384 from T-1860 (forensic logs must append + scope per actor). capture L-385 — YAML single-quoted scalars need '' escape (from T-1861 RCA). capture L-386 (audit-aggregator drift on new event class) + L-387 (SIGPIPE in verification pipelines) — from T-1862. remove orphan active/T-1859 — completed/ is canonical (resolves G-052 audit FAIL). capture L-388 — audit-detector vs sweep-recoverer must agree on eligible class (from T-1865). append L-388 file change (was missed by prior commit's add). close T-1828 — github mirror autonomously healed (dispatch-safety arc anchor housekeeping). capture T-1828 resolution updates + episodic (was missed by prior rename-only commit). fill T-1833 Recommendation block (D14 audit warning clearance). close T-1867 (MCP baseline 154→168 — audit drift cleared, dispatch-safety arc housekeeping). register revisit-due-scan.sh fabric card (fabric drift unregistered clearance). re-baseline enforcement hash after T-1730/T-1731 legitimate hook additions. sync watchtower.pid to running process (stale-triple WARN clearance). resolve stale U-006 pending entry (ct301 onedev migration completed 13d ago). close T-1868 + capture L-389 (G-063 shape-assumption in scripts). fw vendor sync — refresh .agentic-framework/ vendored copy. fabric enrich — close audit edgeless-cards WARN. archive orphan handover S-2026-0515-2203. backfill T-1819 episodic — peer-consult prompts seed. backfill T-1548 auto-tick-on-decide Agent ACs. resolve U-001 as stale (G-059 mitigated in-framework via T-1425). housekeeping — episodic backfill + stale approval/counter cleanup. capture L-390 + file T-1870 (completed-dir status desync class). G-063 — add T-1868 evidence + refresh last_reviewed. T-1870 CTL-028 — completed/ frontmatter status consistency check (L-390 prevention). L-390 — mark prevention deployed via T-1870 CTL-028 + fabric register. T-1870 verification fix — avoid SIGPIPE under pipefail (L-387 captured). backfill 7 agent-owned completed/ status desyncs (CTL-028 baseline cleanup). fabric enrich — 12 edges added (4 cards), incl. CTL-028 test wiring. T-1847 verification fix — nested-audit chicken-and-egg (CTL-013 false-pos). L-391 — audit-inside-audit verification anti-pattern (CTL-013 chicken-and-egg). CTL-013 — skip verification lines that invoke bin/fw audit (L-391). CTL-013 — bats isolation retry for OBS-022 env-contam false positives. CLAUDE.md — document fw peer subscribe (Quick Reference doc-drift fix). vendor sync — .agentic-framework/ caught up to source. close render-surface trio T-1763/T-1764/T-1765 (work-completed). T-1872 — exclude inline:true workflows from staleness audit. T-1873 closure artefact — episodic + completed/ move (L-392 closure). T-1766 partial-complete transition (owner→human, [REVIEW] AC awaits). arc-grooming slice 1 — close T-1848 to partial-complete + L-393. L-394 — META-LEARNING on immediate L-393 recurrence. ship T-1851 — deprecate constituent_tasks: field (T-NEW-4). ship T-1855 — stale-arc audit warning (T-NEW-7). ship T-1852 — arc lifecycle state machine (T-NEW-5a). ship T-1854 — fw arc abandon CLI verb (T-NEW-6). ship T-1853 — Watchtower /arcs lifecycle filter tabs + stale badge (T-NEW-5b). ship T-1857 — 012-ArcSystem.md + FRAMEWORK.md updates (T-NEW-9). L-395 — bash arithmetic octal parse of leading-zero strings (origin T-1877). L-396 + L-397 — brace-pipe output drop + silent-corpus migration pattern (origin T-1879). T-1879 closure record (status=work-completed, reviewer verdict R-2e07807f). T-1880 closure record (status=work-completed, partial-complete via P-013). T-1846 status drift fix (CTL-028 recovery, L-390). L-390 — record T-1882 detection-window closure + meta-lesson. bank post-ship evidence for T-1879/T-1880 Human [REVIEW]. L-390 — record T-1883 CTL-012 promotion + remaining sweep candidates. close T-1884 — CTL-026 promotion shipped, L-390 sweep exhausted. close T-1885 — fabric drift unregistered count now 0. close T-1886 — baseline refreshed, doctor FAIL cleared. close T-1887 — Candidate A deployed, L-398 in template. ship T-1888 — PostToolUse nudge on .claude/settings.json edits (L-398 Candidate B). register T-1888 fabric cards — check-settings-edit hook + bats test. update L-398 — Candidate B deployed (T-1888 PostToolUse hook). ship T-1889 — D10 audit HTML-comment-blindness fix (arc-grooming hygiene). register T-1889 fabric card — D10 HTML-comment-blindness test. amend L-288 — D10 audit application of strip-comments pattern (T-1889). reclassify T-1854/T-1855 Human ACs to Agent [REVIEWER] + close. T-1854/T-1855 AC reclassification content (split from rename). reclassify 6 arc-grooming render-surface Human ACs → Agent + Playwright. register fabric cards for 2 new Playwright tests (L-349). L-401 — use 'bin/fw reviewer' first when bucketing Human ACs. close 6 arc-grooming partial-completes via Watchtower ticks. archive T-1890 (partial-complete recheck — all ACs already ticked). archive T-1903 (audit CTL-029 + fw task archive-eligible sweep ships). T-1902 governance metadata — tags + related_tasks (L-349 post-grill closure). arc-005 demo — add closure-precondition status table (2026-05-18). T-1904 transitioned to partial-complete (Rec GO; 2 [REVIEW] pending). refresh arc-005 closure-preconditions tracker — T-1902 GO + 5 sibling shipped. revert T-1906/T-1907 fake-prevention chain. cross-link 040-ValueDrivers.md from 010-TaskSystem.md + 012-ArcSystem.md. fabric housekeeping — register arc_close.html, remove stale tabs card, enrich 48 cards. close 5 arc-005 build slices — T-1909/10/11 partial-complete, T-1913/14 done. close 6 BVP arc tasks to partial-complete (arc-006 grooming). close T-1922/T-1923/T-1935 (arc-006 BVP estimator slices). close T-1936 (arc-level BVP rollup) to partial-complete. correct L-414 root cause (sed range, not section scoping) + cross-link T-1967. file T-1969 (arc id+slug unified) + T-1970 (badge contrast sweep). L-448 capture — extractor protocol grep-zero AC. L-449 capture + OBS-035 promoted (T-2121), OBS-041 dismissed. OBS-043 — CTL-029 chain on T-1702/T-1707/G-065 (orchestrator-arc pre-close). OBS-044 — prod Watchtower deployment lag (3 URLs in T-1990/T-1994 404 on prod). iw-slice-worker.md companion template for MCP arc Slice 1-4 dispatch. T-2209 artifact §16 — cross-link iw-slice-worker.md to Path C plan. capture L-461 — stale partial-complete detection + recovery ritual. fw inception sweep — finalize 4 GO inceptions + 1 DEFER park. generate 4 missing episodic summaries (T-2201/T-2203/T-2204/T-2248). file T-2254 — Watchtower /arcs/new form gap (captured/later). housekeeping — sync vendored agents/audit/ + backfill 12 episodics. promote 4 captured+later tasks to horizon:next (T-2265/T-2171/T-2266/T-2267). batch-regenerate 21 missing episodic summaries. fabric enrich pass (+2 edges, 6 cards refreshed). fabric enrich — +2 edges across 2 cards. fabric enrich — +14 edges across 6 cards (WARN 91→85). L-461 stale-PC sweep — close 4 tasks where status drifted from completed/ filesystem location. backfill 7 missing episodic summaries (audit WARN class). L-472 — L-461 scan regex must handle '### Human (parenthetical)' headings. file T-2300 (T-2163 leg-gap RCA — horizon-null skipped on re-close path). Grilling session findings — telemetry gaps and truncation analysis. Grilling session complete — file auto-tuning build tasks
+
+# Key outcomes
+outcomes:
+  - '`.claude/skills/grill-with-docs/SKILL.md` exists with frontmatter + content matching upstream.'
+  - '`.claude/skills/grill-with-docs/CONTEXT-FORMAT.md` exists matching upstream.'
+  - '`.claude/skills/grill-with-docs/ADR-FORMAT.md` exists matching upstream.'
+  - 'Application begins: first grilling question posed against the orchestrator-as-triage architectural plan.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'revert T-1906/T-1907 fake-prevention chain'
+    source: git-mined
+  - description: 'ship T-1889 — D10 audit HTML-comment-blindness fix (arc-grooming hygiene)'
+    source: git-mined
+  - description: 'T-1846 status drift fix (CTL-028 recovery, L-390)'
+    source: git-mined
+  - description: 'CLAUDE.md — document `fw peer subscribe` (Quick Reference doc-drift fix)'
+    source: git-mined
+  - description: 'T-1847 verification fix — nested-audit chicken-and-egg (CTL-013 false-pos)'
+    source: git-mined
+  - description: 'T-1870 verification fix — avoid SIGPIPE under pipefail (L-387 captured)'
+    source: git-mined
+  - description: 'T-1769 work-completed — bats fixture green (6/6), auto-episodic'
+    source: git-mined
+  - description: 'T-1720 cron generator fix (cwd + stderr) — closes 9-day silent non-firing'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '010-TaskSystem.md'
+  - '012-ArcSystem.md'
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/completed-task-scan.py'
+  - '.agentic-framework/agents/audit/orchestrator-mcp-scan.sh'
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/agents/context/check-human-ac-tick.sh'
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/agents/context/lib/episodic.sh'
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/agents/context/revisit-due-scan.sh'
+  - '.agentic-framework/agents/context/tests/fw-task-revisit-due-test.sh'
+  - '.agentic-framework/agents/context/tests/revisit-due-scan-test.sh'
+  - '.agentic-framework/agents/dispatch/preamble.md'
+  - '.agentic-framework/agents/fabric/lib/drift.sh'
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - '.agentic-framework/agents/fabric/lib/expand_patterns.py'
+  - '.agentic-framework/agents/fabric/lib/register.sh'
+  - '.agentic-framework/agents/git/lib/dup-task-scan.sh'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/agents/git/lib/large-file-scan.sh'
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/agents/metrics/api-usage.sh'
+  - '.agentic-framework/agents/monitor/watchtower-rss-sample.sh'
+  - '.agentic-framework/agents/task-create/tests/revisit-at-preservation-test.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/docs/adr/0001-orchestration-model-pin-enforcement.md'
+  - '.agentic-framework/docs/adr/0002-agent-role-three-slices.md'
+  - '.agentic-framework/docs/adr/0003-dispatch-substrate-three-tier-prompt-strategy-and-v2-ready-telemetry.md'
+  - '.agentic-framework/docs/adr/0004-worker-uncertainty-handling-pause-not-timeout-severity-times-likelihood-trigger-peer-consult-deferred.md'
+  - '.agentic-framework/docs/generated/components/add-learning.md'
+  - '.agentic-framework/docs/generated/components/agents-audit-active-task-scan.md'
+  - '.agentic-framework/docs/generated/components/agents-audit-completed-task-scan.md'
+  - '.agentic-framework/docs/generated/components/agents-audit-orchestrator-mcp-scan.md'
+  - '.agentic-framework/docs/generated/components/agents-context-audit-task-tools.md'
+  - '.agentic-framework/docs/generated/components/agents-context-block-task-tools.md'
+  - '.agentic-framework/docs/generated/components/agents-context-check-active-task.md'
+  - '.agentic-framework/docs/generated/components/agents-context-check-agent-dispatch.md'
+  - '.agentic-framework/docs/generated/components/agents-context-check-human-ac-tick.md'
+  - '.agentic-framework/docs/generated/components/agents-context-check-project-boundary.md'
+  - '.agentic-framework/docs/generated/components/agents-context-check-tier0.md'
+  - '.agentic-framework/docs/generated/components/agents-context-lib-decision.md'
+  - '.agentic-framework/docs/generated/components/agents-context-lib-episodic.md'
+  - '.agentic-framework/docs/generated/components/agents-context-lib-focus.md'
+  - '.agentic-framework/docs/generated/components/agents-context-lib-init.md'
+  - '.agentic-framework/docs/generated/components/agents-context-lib-pattern.md'
+  - '.agentic-framework/docs/generated/components/agents-context-lib-safe-commands.md'
+  - '.agentic-framework/docs/generated/components/agents-context-lib-status.md'
+  - '.agentic-framework/docs/generated/components/agents-context-post-compact-resume.md'
+  - '.agentic-framework/docs/generated/components/agents-context-pre-compact.md'
+  - '.agentic-framework/docs/generated/components/agents-docgen-generate-article.md'
+  - '.agentic-framework/docs/generated/components/agents-docgen-generate-component.md'
+  - '.agentic-framework/docs/generated/components/agents-fabric-fabric.md'
+  - '.agentic-framework/docs/generated/components/agents-fabric-lib-expand_patterns.md'
+  - '.agentic-framework/docs/generated/components/agents-git-lib-common.md'
+  - '.agentic-framework/docs/generated/components/agents-git-lib-hooks.md'
+  - '.agentic-framework/docs/generated/components/agents-git-lib-log.md'
+  - '.agentic-framework/docs/generated/components/agents-handover-handover.md'
+  - '.agentic-framework/docs/generated/components/agents-healing-lib-diagnose.md'
+  - '.agentic-framework/docs/generated/components/agents-healing-lib-suggest.md'
+  - '.agentic-framework/docs/generated/components/agents-monitor-watchtower-rss-sample.md'
+  - '.agentic-framework/docs/generated/components/agents-observe-observe.md'
+  - '.agentic-framework/docs/generated/components/agents-resume-resume.md'
+  - '.agentic-framework/docs/generated/components/agents-task-create-create-task.md'
+  - '.agentic-framework/docs/generated/components/agents-task-create-update-task.md'
+  - '.agentic-framework/docs/generated/components/agents-termlink-termlink.md'
+  - '.agentic-framework/docs/generated/components/audit-yaml-validator.md'
+  - '.agentic-framework/docs/generated/components/bin-fw.md'
+  - '.agentic-framework/docs/generated/components/bin-hook-enable.md'
+  - '.agentic-framework/docs/generated/components/bin-watchtower.md'
+  - '.agentic-framework/docs/generated/components/budget-gate.md'
+  - '.agentic-framework/docs/generated/components/checkpoint.md'
+  - '.agentic-framework/docs/generated/components/context-dispatcher.md'
+  - '.agentic-framework/docs/generated/components/context-project-assumptions.md'
+  - '.agentic-framework/docs/generated/components/context-project-controls.md'
+  - '.agentic-framework/docs/generated/components/cross-repo-termlink-bypass.md'
+  - '.agentic-framework/docs/generated/components/cross-repo-termlink-circuit-breaker.md'
+  - '.agentic-framework/docs/generated/components/cross-repo-termlink-governance-frame.md'
+  - '.agentic-framework/docs/generated/components/cross-repo-termlink-governance-subscriber.md'
+  - '.agentic-framework/docs/generated/components/cross-repo-termlink-route-cache.md'
+  - '.agentic-framework/docs/generated/components/cross-repo-termlink-router.md'
+  - '.agentic-framework/docs/generated/components/docs-reports-T-1688-candidate-consumer-survey.md'
+  - '.agentic-framework/docs/generated/components/hook-config.md'
+  - '.agentic-framework/docs/generated/components/learnings-route.md'
+  - '.agentic-framework/docs/generated/components/lib-arc.md'
+  - '.agentic-framework/docs/generated/components/lib-ask.md'
+  - '.agentic-framework/docs/generated/components/lib-ask-py.md'
+  - '.agentic-framework/docs/generated/components/lib-assumption.md'
+  - '.agentic-framework/docs/generated/components/lib-build.md'
+  - '.agentic-framework/docs/generated/components/lib-bus.md'
+  - '.agentic-framework/docs/generated/components/lib-colors.md'
+  - '.agentic-framework/docs/generated/components/lib-compat.md'
+  - '.agentic-framework/docs/generated/components/lib-config-file.md'
+  - '.agentic-framework/docs/generated/components/lib-config.md'
+  - '.agentic-framework/docs/generated/components/lib-costs.md'
+  - '.agentic-framework/docs/generated/components/lib-dispatch.md'
+  - '.agentic-framework/docs/generated/components/lib-dispatch_pause.md'
+  - '.agentic-framework/docs/generated/components/lib-doctor-hook-exercise.md'
+  - '.agentic-framework/docs/generated/components/lib-enums.md'
+  - '.agentic-framework/docs/generated/components/lib-errors.md'
+  - '.agentic-framework/docs/generated/components/lib-evolution_log.md'
+  - '.agentic-framework/docs/generated/components/lib-firewall.md'
+  - '.agentic-framework/docs/generated/components/lib-first-run.md'
+  - '.agentic-framework/docs/generated/components/lib-harvest.md'
+  - '.agentic-framework/docs/generated/components/lib-hook-telemetry.md'
+  - '.agentic-framework/docs/generated/components/lib-hook-threshold.md'
+  - '.agentic-framework/docs/generated/components/lib-inception.md'
+  - '.agentic-framework/docs/generated/components/lib-inception_recommendation.md'
+  - '.agentic-framework/docs/generated/components/lib-init.md'
+  - '.agentic-framework/docs/generated/components/lib-keylock.md'
+  - '.agentic-framework/docs/generated/components/lib-mirror.md'
+  - '.agentic-framework/docs/generated/components/lib-notify.md'
+  - '.agentic-framework/docs/generated/components/lib-ollama_loop.md'
+  - '.agentic-framework/docs/generated/components/lib-outcome.md'
+  - '.agentic-framework/docs/generated/components/lib-outcome-sh.md'
+  - '.agentic-framework/docs/generated/components/lib-paths.md'
+  - '.agentic-framework/docs/generated/components/lib-pause_cli.md'
+  - '.agentic-framework/docs/generated/components/lib-pause.md'
+  - '.agentic-framework/docs/generated/components/lib-pause_resolve.md'
+  - '.agentic-framework/docs/generated/components/lib-peer.md'
+  - '.agentic-framework/docs/generated/components/lib-pickup.md'
+  - '.agentic-framework/docs/generated/components/lib-pi_worker.md'
+  - '.agentic-framework/docs/generated/components/lib-preflight.md'
+  - '.agentic-framework/docs/generated/components/lib-promote.md'
+  - '.agentic-framework/docs/generated/components/lib-render_surface.md'
+  - '.agentic-framework/docs/generated/components/lib-resolver.md'
+  - '.agentic-framework/docs/generated/components/lib-resolver-sh.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-audit.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-classifier.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-drift_cli.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-drift.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-__init__.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-override_cli.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-overrides.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-reverify_cli.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-reverify.md'
+  - '.agentic-framework/docs/generated/components/lib-reviewer-static_scan.md'
+  - '.agentic-framework/docs/generated/components/lib-review.md'
+  - '.agentic-framework/docs/generated/components/lib-runtime.md'
+  - '.agentic-framework/docs/generated/components/lib-setup.md'
+  - '.agentic-framework/docs/generated/components/lib-spawn.md'
+  - '.agentic-framework/docs/generated/components/lib-task-audit.md'
+  - '.agentic-framework/docs/generated/components/lib-task_pair_acd.md'
+  - '.agentic-framework/docs/generated/components/lib-task_pair_acd-py.md'
+  - '.agentic-framework/docs/generated/components/lib-tasks.md'
+  - '.agentic-framework/docs/generated/components/lib-termlink_worker.md'
+  - '.agentic-framework/docs/generated/components/lib-update.md'
+  - '.agentic-framework/docs/generated/components/lib-upgrade.md'
+  - '.agentic-framework/docs/generated/components/lib-upstream.md'
+  - '.agentic-framework/docs/generated/components/lib-validate-init.md'
+  - '.agentic-framework/docs/generated/components/lib-verify-acs.md'
+  - '.agentic-framework/docs/generated/components/lib-version.md'
+  - '.agentic-framework/docs/generated/components/lib-workflow_coverage.md'
+  - '.agentic-framework/docs/generated/components/lib-workflow_lint.md'
+  - '.agentic-framework/docs/generated/components/lib-yaml.md'
+  - '.agentic-framework/docs/generated/components/patterns-data.md'
+  - '.agentic-framework/docs/generated/components/prompts-default.md'
+  - '.agentic-framework/docs/generated/components/prompts-escalation-triage.md'
+  - '.agentic-framework/docs/generated/components/tests-fixtures-termlink-list-schema.md'
+  - '.agentic-framework/docs/generated/components/tests-fixtures-termlink-protocol-frame-types.md'
+  - '.agentic-framework/docs/generated/components/tests-fixtures-termlink-route-cache-schema.md'
+  - '.agentic-framework/docs/generated/components/tests-governance-test_git_hooks.md'
+  - '.agentic-framework/docs/generated/components/tests-governance-test_pretooluse_gates.md'
+  - '.agentic-framework/docs/generated/components/tests-governance-test_task_lifecycle_gates.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-audit_blocks_review_and_decide.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-cron_install.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_approvals.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_assumption.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_audit.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_bus.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_config.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_context.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_costs.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_cron.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_decisions.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_doctor.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_fabric.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_fix_learned.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_gaps.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_git.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_handover.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_harvest.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_healing.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_help.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_hook.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_inception.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_init.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_learnings.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_metrics.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_notify.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_onboarding.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_patterns.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_pickup.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_practices.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_preflight.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_promote.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_resume.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_search.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_self_test.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_task.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_tier0.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_timeline.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_traceability.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_upstream.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_validate_init.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_vendor.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_version.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-fw_work_on.md'
+  - '.agentic-framework/docs/generated/components/tests-lint-inception-decision-exact-match.md'
+  - '.agentic-framework/docs/generated/components/tests-lint-no-bare-fw-in-gate-scripts.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_approvals.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_ask_stream.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_context_capture.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_cron_jobs.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_fabric_source.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_healing.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_inception.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_index.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_quality.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_scan_actions.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_scan.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_search.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_session_init.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_task_complete.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_task_inline.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_task_mutations.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_termlink.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_api_timeline_detail.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_ask.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_docs_detail.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_escalation_v05.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_fabric_detail.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_fabric_graph_cold_load.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_file_viewer.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_hooks_page.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_review_acs.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_review_code_inline.md'
+  - '.agentic-framework/docs/generated/components/tests-playwright-test_settings_models.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-add_learning_id_allocator.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-audit_flock.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-audit.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-audit_null_timestamp.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-audit_scan.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-audit_task_tools.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-block_task_tools.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-checkpoint.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_decision.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_episodic.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_focus.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_init.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_learning.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_pattern.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_safe_commands.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-context_status.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-create_task.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-cron_flock_parity.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-docgen_article.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-docgen_component.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-doctor_duplicate_hook_detection.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-doctor_hook_exercise.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-escalation_scan_v05.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-evolution_log_gate.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-fabric.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-focus_drift_gate.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-git_common.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-git_log.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-handover.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-handover_push_no_origin.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-handover_push_timeout.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-handover_t012_active_only.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-healing_diagnose.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-healing_suggest.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-hook_absolute_paths.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-hook_enable_absolute_path.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-hook_telemetry.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-hook_threshold.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-inception_decide_ac_tick.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-inception_decide_atomicity.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-inception_tick_decision_recorded.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-inception_tick_marker.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-keylock_subshell_close.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_ask.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_assumption.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_build.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_bus.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_colors.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_compat.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_config_file.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_config.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_costs.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_dispatch.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_enums.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_errors.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_firewall.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_first_run.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_harvest.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_inception.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_init.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_keylock.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_notify.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_paths.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_pickup.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_preflight.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_promote.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_review.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_runtime.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_setup.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_task_audit.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_tasks.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_update.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_upgrade.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_upstream.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_validate_init.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_version.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-lib_yaml.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-observe.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-pickup_send_remote_session.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-pickup_type_routing.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-pre_compact_flock.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-pre_compact_timewindow_dedup.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-resume.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-session_start_hook_warning.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-skip_ac_partial_complete.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-task_id_race.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-task_reid.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-termlink.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_ac_body_html_comment.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_arc_parent_review_gate.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_arcs_routes.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_arc_system.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_audit_arc_completion.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_boundary_hook_arguments.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_cron_generate_shape.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_dispatch_pause.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_doctor_consumer_version_ahead.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_doctor_litellm_ollama.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_doctor_scope_tags.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_enrich_bats_parser.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_escalation_v05_parser.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_fabric_drift_absolute_paths.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_fabric_drift_performance.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_fabric_exclude.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_file_route_extensions.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_fw_gaps_closure_check.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_g064_readiness.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_gaps_missing_title_defaults.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_mirror_stderr_capture.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_mirror_sync.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_ollama_loop.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_orchestrator_outcome_dedup.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_orchestrator_routes.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_orchestrator_status_outcomes.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_orchestrator_status_synthetic_filter.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_orchestrator_status_terminal_events.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_orchestrator_workflow_coverage.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_outcome.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_pause_resolve.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_peer_subscribe.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_pi_worker.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_pre_push_monotonic_ancestor.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_project_root_discovery.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_resolver.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_resolver_run.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_reviewer_audit_pass_a.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_reviewer_audit_pass_b.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_reviewer_overrides.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_review_paused_resolve.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_spawn.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_task_pair_acd_gate.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_task_pair_acd_parser.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_termlink_dispatch_task_type.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_termlink_governance_frame_contract.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_termlink_list_contract.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_termlink_route_cache_schema.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_termlink_worker.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_upgrade_downgrade_guard.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_worker_kind_drift.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_workflow_coverage.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_workflow_env_isolation.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_workflow_schema_pause_lint.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-tier0_hash_normalization.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-update_task_episodic_gen.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-update_task.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-update_task_yaml_components_emit.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-upgrade_dedupe_user_hooks.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-upgrade_duplicate_hook_detection.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-upgrade_fresh_machine_simulation.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-verify_acs.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-watchtower_url_refresh.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-yaml_pipefail.md'
+  - '.agentic-framework/docs/generated/components/tools-audit-swallowed-errors.md'
+  - '.agentic-framework/docs/generated/components/tools-escalation-scan-v0-5.md'
+  - '.agentic-framework/docs/generated/components/tools-escalation-scan-v0.md'
+  - '.agentic-framework/docs/generated/components/tools-g064-readiness.md'
+  - '.agentic-framework/docs/generated/components/tools-ollama-tool-loop.md'
+  - '.agentic-framework/docs/generated/components/tools-reparse-historical-parsefails.md'
+  - '.agentic-framework/docs/generated/components/tools-t1700-ollama-harness.md'
+  - '.agentic-framework/docs/generated/components/tools-t1703-probe-matrix.md'
+  - '.agentic-framework/docs/generated/components/tools-t1704-hermes3-probe.md'
+  - '.agentic-framework/docs/generated/components/tools-t1706-tool-loop-probe.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-api.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-approvals.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-arcs.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-cockpit.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-config.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-cron.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-discovery.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-docs.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-enforcement.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-escalation.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-fabric.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-hooks.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-inception.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-__init__.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-orchestrator.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-quality.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-reviewer.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-review.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-risks.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-session.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-settings.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-tasks.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-terminal.md'
+  - '.agentic-framework/docs/generated/components/web-blueprints-timeline.md'
+  - '.agentic-framework/docs/generated/components/web-embeddings.md'
+  - '.agentic-framework/docs/generated/components/web-search.md'
+  - '.agentic-framework/docs/generated/components/web-search_utils.md'
+  - '.agentic-framework/docs/generated/components/web-shared.md'
+  - '.agentic-framework/docs/generated/components/web-templates-arc_detail.md'
+  - '.agentic-framework/docs/generated/components/web-templates-arcs_index.md'
+  - '.agentic-framework/docs/generated/components/web-templates-base.md'
+  - '.agentic-framework/docs/generated/components/web-templates-escalation_drift.md'
+  - '.agentic-framework/docs/generated/components/web-templates-hooks.md'
+  - '.agentic-framework/docs/generated/components/web-templates-orchestrator.md'
+  - '.agentic-framework/docs/generated/components/web-terminal-adapters-base.md'
+  - '.agentic-framework/docs/generated/components/web-terminal-adapters-claude_code.md'
+  - '.agentic-framework/docs/generated/components/web-terminal-adapters-local_shell.md'
+  - '.agentic-framework/docs/generated/components/web-terminal-__init__.md'
+  - '.agentic-framework/docs/generated/components/web-terminal-profiles.md'
+  - '.agentic-framework/docs/generated/components/web-terminal-registry.md'
+  - '.agentic-framework/docs/generated/components/web-terminal-session.md'
+  - '.agentic-framework/docs/proposals/T-1804-cross-agent-conversation-substrate.md'
+  - '.agentic-framework/docs/reports/dispatch-safety-arc-demo.md'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-closure-readiness.md'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-00-baseline.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-01-after-build-seed.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-02-after-multi-task-type-seed.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-03-after-real-dispatches.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-04-2026-05-02-1100Z-still-firing.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-05-2026-05-02-1241Z-live-test.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-06-2026-05-02-1432Z-failure-path.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/cache-final.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/meta-01-build-dispatch.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/meta-01-design-dispatch.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/meta-01-inception-dispatch.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/meta-02-build-repeat.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/meta-02-inception-repeat.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/meta-T1681-postpatch-evidence.json'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/README.md'
+  - '.agentic-framework/docs/reports/orchestrator-rethink-demo/resolver-trace.txt'
+  - '.agentic-framework/docs/reports/T-1061-arc-integration-2026-05-01.md'
+  - '.agentic-framework/docs/reports/T-1542-project-shape-resilience-arc-demo.md'
+  - '.agentic-framework/docs/reports/T-1549-escalation-scan-v0.md'
+  - '.agentic-framework/docs/reports/T-1597-blind-review-SUMMARY.md'
+  - '.agentic-framework/docs/reports/T-1597-blind-review-W1.md'
+  - '.agentic-framework/docs/reports/T-1597-blind-review-W2.md'
+  - '.agentic-framework/docs/reports/T-1597-blind-review-W3.md'
+  - '.agentic-framework/docs/reports/T-1597-blind-review-W4.md'
+  - '.agentic-framework/docs/reports/T-1597-blind-review-W5.md'
+  - '.agentic-framework/docs/reports/T-1601-redteam-design.md'
+  - '.agentic-framework/docs/reports/T-1602-consumer-SUMMARY.md'
+  - '.agentic-framework/docs/reports/T-1602-consumer-W1.md'
+  - '.agentic-framework/docs/reports/T-1602-consumer-W2.md'
+  - '.agentic-framework/docs/reports/T-1602-consumer-W3.md'
+  - '.agentic-framework/docs/reports/T-1602-consumer-W4.md'
+  - '.agentic-framework/docs/reports/T-1602-consumer-W5.md'
+  - '.agentic-framework/docs/reports/T-1610-yaml-validation-gate.md'
+  - '.agentic-framework/docs/reports/T-1611-werkzeug-vs-gunicorn-local.md'
+  - '.agentic-framework/docs/reports/T-1633-fw-upgrade-no-local-path.md'
+  - '.agentic-framework/docs/reports/T-1641-orchestrator-arc-reconsideration.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-01-inception-coverage.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-02-review-feedback-mining.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-03-termlink-current-state.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-04-framework-usage.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-05-gap-movement.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-06-directive-evidence.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-07-cross-arc.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-08-policy-questions.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-09-e2e-smoke.md'
+  - '.agentic-framework/docs/reports/T-1641-worker-10-defenses.md'
+  - '.agentic-framework/docs/reports/T-1643-Q1-wire-evidence.md'
+  - '.agentic-framework/docs/reports/T-1653-arcs-as-first-class.md'
+  - '.agentic-framework/docs/reports/T-1660-g-015-option-b-pretooluse-hook.md'
+  - '.agentic-framework/docs/reports/T-1666-fw-config-plumbing-routing-policy.md'
+  - '.agentic-framework/docs/reports/T-1667-angle-1-structural-enforcement.md'
+  - '.agentic-framework/docs/reports/T-1667-angle-2-claudemd-compression.md'
+  - '.agentic-framework/docs/reports/T-1667-angle-3-cognitive-forcing-function.md'
+  - '.agentic-framework/docs/reports/T-1670-default-to-open-gate-gap.md'
+  - '.agentic-framework/docs/reports/T-1675-project-shape-resilience-umbrella.md'
+  - '.agentic-framework/docs/reports/T-1685-audit-refactor.md'
+  - '.agentic-framework/docs/reports/T-1686-workflow-management-page.md'
+  - '.agentic-framework/docs/reports/T-1688-candidate-consumer-survey.md'
+  - '.agentic-framework/docs/reports/T-1689-resolver-inception.md'
+  - '.agentic-framework/docs/reports/T-1689-spikes/backprop_spike.py'
+  - '.agentic-framework/docs/reports/T-1689-spikes/resolver_spike.py'
+  - '.agentic-framework/docs/reports/T-1690-spikes/eval_backprop_spike.py'
+  - '.agentic-framework/docs/reports/T-1691-proxy-comparison.md'
+  - '.agentic-framework/docs/reports/T-1692-pi-rpc-integration.md'
+  - '.agentic-framework/docs/reports/T-1700-harness-results.md'
+  - '.agentic-framework/docs/reports/T-1701-pi-rpc-build.md'
+  - '.agentic-framework/docs/reports/T-1703-curated-catalogue-probe.md'
+  - '.agentic-framework/docs/reports/T-1704-hermes3-probe.md'
+  - '.agentic-framework/docs/reports/T-1706-tool-loop-probe.md'
+  - '.agentic-framework/docs/reports/T-1709-aef-review-instance.md'
+  - '.agentic-framework/docs/reports/T-1714-substrate-bypass.md'
+  - '.agentic-framework/docs/reports/T-1715-meta-rca-inception-recommendation-decay.md'
+  - '.agentic-framework/docs/reports/T-1717-embeddings-strategy-grill.md'
+  - '.agentic-framework/docs/reports/T-1727-v0-5-disagreement-rate.md'
+  - '.agentic-framework/docs/reports/T-1729-meta-rca.md'
+  - '.agentic-framework/docs/reports/T-1736-spike-b.md'
+  - '.agentic-framework/docs/reports/T-1740-spike-c.md'
+  - '.agentic-framework/docs/reports/T-1741-spike-d.md'
+  - '.agentic-framework/docs/reports/T-1743-binary-rescore.md'
+  - '.agentic-framework/docs/reports/T-1744-promotion-decision.md'
+  - '.agentic-framework/docs/reports/T-1745-rca-watchtower-decision-silent-failure.md'
+  - '.agentic-framework/docs/reports/T-1761-auto-classify-heuristic.md'
+  - '.agentic-framework/docs/reports/T-1768-cron-drift-surfacing.md'
+  - '.agentic-framework/docs/reports/T-1773-spawn-driver.md'
+  - '.agentic-framework/docs/reports/T-1775-ollama-loop-build.md'
+  - '.agentic-framework/docs/reports/T-1776-default-workflow-termlink-gap.md'
+  - '.agentic-framework/docs/reports/T-1804-v2-peer-consult-termlink-response-summary.md'
+  - '.agentic-framework/docs/reports/T-1820-joint-smoke-demo.md'
+  - '.agentic-framework/docs/reports/T-1830-fw-upgrade-incident-meta-rca.md'
+  - '.agentic-framework/docs/reports/T-1834-cross-repo-purge-prompt.md'
+  - '.agentic-framework/docs/reports/T-1834-dispatch-message.txt'
+  - '.agentic-framework/docs/reports/T-1846-arc-grooming-inception.md'
+  - '.agentic-framework/docs/reports/triage-2026-05-13-review-queue.md'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/dispatch_pause.py'
+  - '.agentic-framework/lib/doctor-hook-exercise.py'
+  - '.agentic-framework/lib/hook-threshold.py'
+  - '.agentic-framework/lib/inception_recommendation.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/mirror.sh'
+  - '.agentic-framework/lib/ollama_loop.py'
+  - '.agentic-framework/lib/outcome.py'
+  - '.agentic-framework/lib/outcome.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/lib/pause_cli.py'
+  - '.agentic-framework/lib/pause_resolve.py'
+  - '.agentic-framework/lib/pause.sh'
+  - '.agentic-framework/lib/peer.py'
+  - '.agentic-framework/lib/pickup-channel-bridge.sh'
+  - '.agentic-framework/lib/pi_worker.py'
+  - '.agentic-framework/lib/publish-learning-to-bus.sh'
+  - '.agentic-framework/lib/render_surface.sh'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/lib/resolver.sh'
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/lib/spawn.py'
+  - '.agentic-framework/lib/task-audit.sh'
+  - '.agentic-framework/lib/task_pair_acd.py'
+  - '.agentic-framework/lib/task_pair_acd.sh'
+  - '.agentic-framework/lib/termlink_worker.py'
+  - '.agentic-framework/lib/update.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/verify-acs.sh'
+  - '.agentic-framework/lib/workflow_coverage.py'
+  - '.agentic-framework/lib/workflow_lint.py'
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/.tasks/templates/inception.md'
+  - '.agentic-framework/VERSION'
+  - '.agentic-framework/web/app.py'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/blueprints/core.py'
+  - '.agentic-framework/web/blueprints/docs.py'
+  - '.agentic-framework/web/blueprints/escalation.py'
+  - '.agentic-framework/web/blueprints/hooks.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/blueprints/__init__.py'
+  - '.agentic-framework/web/blueprints/orchestrator.py'
+  - '.agentic-framework/web/blueprints/review.py'
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - '.agentic-framework/web/conftest.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.agentic-framework/web/templates/arc_detail.html'
+  - '.agentic-framework/web/templates/arcs_index.html'
+  - '.agentic-framework/web/templates/base.html'
+  - '.agentic-framework/web/templates/cockpit.html'
+  - '.agentic-framework/web/templates/escalation_drift.html'
+  - '.agentic-framework/web/templates/fabric_explorer.html'
+  - '.agentic-framework/web/templates/hooks.html'
+  - '.agentic-framework/web/templates/inception_detail.html'
+  - '.agentic-framework/web/templates/index.html'
+  - '.agentic-framework/web/templates/orchestrator.html'
+  - '.agentic-framework/web/templates/prompt_detail.html'
+  - '.agentic-framework/web/templates/review.html'
+  - '.agentic-framework/web/templates/tasks.html'
+  - '.agentic-framework/web/test_app.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/completed-task-scan.py'
+  - 'agents/context/check-settings-edit.sh'
+  - 'agents/task-create/create-task.sh'
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - '.claude/settings.json'
+  - '.claude/skills/grill-with-docs/ADR-FORMAT.md'
+  - '.claude/skills/grill-with-docs/CONTEXT-FORMAT.md'
+  - '.claude/skills/grill-with-docs/SKILL.md'
+  - '.context/approvals/pending-b2c0ede13638.yaml'
+  - '.context/approvals/resolved-5c94ec16fbc7.yaml'
+  - '.context/approvals/resolved-77ff3e12cadf.yaml'
+  - '.context/approvals/resolved-c201ef773646.yaml'
+  - '.context/audits/2026-05-03.yaml'
+  - '.context/audits/2026-05-05.yaml'
+  - '.context/audits/2026-05-06.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/audits/orchestrator-LATEST.yaml'
+  - '.context/audits/reviewer/2026-05-06.yaml'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.context/episodic/T-1696.yaml'
+  - '.context/episodic/T-1697.yaml'
+  - '.context/episodic/T-1698.yaml'
+  - '.context/episodic/T-1699.yaml'
+  - '.context/episodic/T-1710.yaml'
+  - '.context/episodic/T-1720.yaml'
+  - '.context/episodic/T-1727.yaml'
+  - '.context/episodic/T-1739.yaml'
+  - '.context/episodic/T-1741.yaml'
+  - '.context/episodic/T-1743.yaml'
+  - '.context/episodic/T-1744.yaml'
+  - '.context/episodic/T-1745.yaml'
+  - '.context/episodic/T-1746.yaml'
+  - '.context/episodic/T-1747.yaml'
+  - '.context/episodic/T-1748.yaml'
+  - '.context/episodic/T-1749.yaml'
+  - '.context/episodic/T-1750.yaml'
+  - '.context/episodic/T-1751.yaml'
+  - '.context/episodic/T-1752.yaml'
+  - '.context/episodic/T-1753.yaml'
+  - '.context/episodic/T-1754.yaml'
+  - '.context/episodic/T-1755.yaml'
+  - '.context/episodic/T-1756.yaml'
+  - '.context/episodic/T-1757.yaml'
+  - '.context/episodic/T-1758.yaml'
+  - '.context/episodic/T-1759.yaml'
+  - '.context/episodic/T-1760.yaml'
+  - '.context/episodic/T-1763.yaml'
+  - '.context/episodic/T-1764.yaml'
+  - '.context/episodic/T-1765.yaml'
+  - '.context/episodic/T-1766.yaml'
+  - '.context/episodic/T-1768.yaml'
+  - '.context/episodic/T-1769.yaml'
+  - '.context/episodic/T-1770.yaml'
+  - '.context/episodic/T-1771.yaml'
+  - '.context/episodic/T-1772.yaml'
+  - '.context/episodic/T-1819.yaml'
+  - '.context/episodic/T-1828.yaml'
+  - '.context/episodic/T-1833.yaml'
+  - '.context/episodic/T-1848.yaml'
+  - '.context/episodic/T-1849.yaml'
+  - '.context/episodic/T-1850.yaml'
+  - '.context/episodic/T-1851.yaml'
+  - '.context/episodic/T-1853.yaml'
+  - '.context/episodic/T-1854.yaml'
+  - '.context/episodic/T-1855.yaml'
+  - '.context/episodic/T-1856.yaml'
+  - '.context/episodic/T-1857.yaml'
+  - '.context/episodic/T-1865.yaml'
+  - '.context/episodic/T-1866.yaml'
+  - '.context/episodic/T-1867.yaml'
+  - '.context/episodic/T-1868.yaml'
+  - '.context/episodic/T-1870.yaml'
+  - '.context/episodic/T-1872.yaml'
+  - '.context/episodic/T-1873.yaml'
+  - '.context/episodic/T-1874.yaml'
+  - '.context/episodic/T-1875.yaml'
+  - '.context/episodic/T-1876.yaml'
+  - '.context/episodic/T-1877.yaml'
+  - '.context/episodic/T-1879.yaml'
+  - '.context/episodic/T-1880.yaml'
+  - '.context/episodic/T-1881.yaml'
+  - '.context/episodic/T-1882.yaml'
+  - '.context/episodic/T-1883.yaml'
+  - '.context/episodic/T-1884.yaml'
+  - '.context/episodic/T-1885.yaml'
+  - '.context/episodic/T-1886.yaml'
+  - '.context/episodic/T-1887.yaml'
+  - '.context/episodic/T-1888.yaml'
+  - '.context/episodic/T-1889.yaml'
+  - '.context/episodic/T-1890.yaml'
+  - '.context/episodic/T-1892.yaml'
+  - '.context/episodic/T-1894.yaml'
+  - '.context/episodic/T-1895.yaml'
+  - '.context/episodic/T-1896.yaml'
+  - '.context/episodic/T-1898.yaml'
+  - '.context/episodic/T-1899.yaml'
+  - '.context/episodic/T-1901.yaml'
+  - '.context/episodic/T-1902.yaml'
+  - '.context/episodic/T-1903.yaml'
+  - '.context/episodic/T-1906.yaml'
+  - '.context/episodic/T-1913.yaml'
+  - '.context/episodic/T-1914.yaml'
+  - '.context/episodic/T-1922.yaml'
+  - '.context/episodic/T-1923.yaml'
+  - '.context/episodic/T-1931.yaml'
+  - '.context/episodic/T-1932.yaml'
+  - '.context/episodic/T-1937.yaml'
+  - '.context/episodic/T-1943.yaml'
+  - '.context/episodic/T-1945.yaml'
+  - '.context/episodic/T-1946.yaml'
+  - '.context/episodic/T-1950.yaml'
+  - '.context/episodic/T-1952.yaml'
+  - '.context/episodic/T-1956.yaml'
+  - '.context/episodic/T-1958.yaml'
+  - '.context/episodic/T-1959.yaml'
+  - '.context/episodic/T-1972.yaml'
+  - '.context/episodic/T-1973.yaml'
+  - '.context/episodic/T-1974.yaml'
+  - '.context/episodic/T-1981.yaml'
+  - '.context/episodic/T-1983.yaml'
+  - '.context/episodic/T-1987.yaml'
+  - '.context/episodic/T-1995.yaml'
+  - '.context/episodic/T-1996.yaml'
+  - '.context/episodic/T-1997.yaml'
+  - '.context/episodic/T-2000.yaml'
+  - '.context/episodic/T-2005.yaml'
+  - '.context/episodic/T-2007.yaml'
+  - '.context/episodic/T-2032.yaml'
+  - '.context/episodic/T-2037.yaml'
+  - '.context/episodic/T-2060.yaml'
+  - '.context/episodic/T-2068.yaml'
+  - '.context/episodic/T-2079.yaml'
+  - '.context/episodic/T-2098.yaml'
+  - '.context/episodic/T-2168.yaml'
+  - '.context/episodic/T-2177.yaml'
+  - '.context/episodic/T-2178.yaml'
+  - '.context/episodic/T-2180.yaml'
+  - '.context/episodic/T-2196.yaml'
+  - '.context/episodic/T-2201.yaml'
+  - '.context/episodic/T-2203.yaml'
+  - '.context/episodic/T-2204.yaml'
+  - '.context/episodic/T-2248.yaml'
+  - '.context/episodic/T-2262.yaml'
+  - '.context/episodic/T-2263.yaml'
+  - '.context/episodic/T-2264.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0502-2248.md'
+  - '.context/handovers/S-2026-0503-0019.md'
+  - '.context/handovers/S-2026-0506-1957.md'
+  - '.context/handovers/S-2026-0515-2203.md'
+  - '.context/inbox.yaml'
+  - 'CONTEXT.md'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/concerns.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/enforcement-baseline.sha256'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/escalation-drift-LATEST-v0.5.yaml'
+  - '.context/working/escalation-drift-LATEST.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/focus.yaml.bak'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/pending-updates.yaml'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.publish-learning-bus.log'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - '.context/working/watchtower.port'
+  - '.context/working/watchtower.url'
+  - 'docs/adr/0001-orchestration-model-pin-enforcement.md'
+  - 'docs/adr/0002-agent-role-three-slices.md'
+  - 'docs/adr/0003-dispatch-substrate-three-tier-prompt-strategy-and-v2-ready-telemetry.md'
+  - 'docs/adr/0004-worker-uncertainty-handling-pause-not-timeout-severity-times-likelihood-trigger-peer-consult-deferred.md'
+  - 'docs/dispatch-templates/iw-slice-worker.md'
+  - 'docs/generated/components/add-learning.md'
+  - 'docs/generated/components/agents-audit-active-task-scan.md'
+  - 'docs/generated/components/agents-audit-completed-task-scan.md'
+  - 'docs/generated/components/agents-audit-orchestrator-mcp-scan.md'
+  - 'docs/generated/components/agents-context-audit-task-tools.md'
+  - 'docs/generated/components/agents-context-block-task-tools.md'
+  - 'docs/generated/components/agents-context-check-active-task.md'
+  - 'docs/generated/components/agents-context-check-agent-dispatch.md'
+  - 'docs/generated/components/agents-context-check-human-ac-tick.md'
+  - 'docs/generated/components/agents-context-check-project-boundary.md'
+  - 'docs/generated/components/agents-context-check-tier0.md'
+  - 'docs/generated/components/agents-context-lib-decision.md'
+  - 'docs/generated/components/agents-context-lib-episodic.md'
+  - 'docs/generated/components/agents-context-lib-focus.md'
+  - 'docs/generated/components/agents-context-lib-init.md'
+  - 'docs/generated/components/agents-context-lib-pattern.md'
+  - 'docs/generated/components/agents-context-lib-safe-commands.md'
+  - 'docs/generated/components/agents-context-lib-status.md'
+  - 'docs/generated/components/agents-context-post-compact-resume.md'
+  - 'docs/generated/components/agents-context-pre-compact.md'
+  - 'docs/generated/components/agents-docgen-generate-article.md'
+  - 'docs/generated/components/agents-docgen-generate-component.md'
+  - 'docs/generated/components/agents-fabric-fabric.md'
+  - 'docs/generated/components/agents-git-lib-common.md'
+  - 'docs/generated/components/agents-git-lib-hooks.md'
+  - 'docs/generated/components/agents-git-lib-log.md'
+  - 'docs/generated/components/agents-handover-handover.md'
+  - 'docs/generated/components/agents-healing-lib-diagnose.md'
+  - 'docs/generated/components/agents-healing-lib-suggest.md'
+  - 'docs/generated/components/agents-observe-observe.md'
+  - 'docs/generated/components/agents-resume-resume.md'
+  - 'docs/generated/components/agents-task-create-create-task.md'
+  - 'docs/generated/components/agents-termlink-termlink.md'
+  - 'docs/generated/components/audit-yaml-validator.md'
+  - 'docs/generated/components/bin-fw.md'
+  - 'docs/generated/components/bin-hook-enable.md'
+  - 'docs/generated/components/bin-watchtower.md'
+  - 'docs/generated/components/budget-gate.md'
+  - 'docs/generated/components/checkpoint.md'
+  - 'docs/generated/components/context-dispatcher.md'
+  - 'docs/generated/components/context-project-assumptions.md'
+  - 'docs/generated/components/context-project-controls.md'
+  - 'docs/generated/components/cross-repo-termlink-governance-frame.md'
+  - 'docs/generated/components/hook-config.md'
+  - 'docs/generated/components/learnings-route.md'
+  - 'docs/generated/components/lib-arc.md'
+  - 'docs/generated/components/lib-ask.md'
+  - 'docs/generated/components/lib-ask-py.md'
+  - 'docs/generated/components/lib-assumption.md'
+  - 'docs/generated/components/lib-build.md'
+  - 'docs/generated/components/lib-bus.md'
+  - 'docs/generated/components/lib-colors.md'
+  - 'docs/generated/components/lib-compat.md'
+  - 'docs/generated/components/lib-config-file.md'
+  - 'docs/generated/components/lib-config.md'
+  - 'docs/generated/components/lib-costs.md'
+  - 'docs/generated/components/lib-dispatch.md'
+  - 'docs/generated/components/lib-doctor-hook-exercise.md'
+  - 'docs/generated/components/lib-enums.md'
+  - 'docs/generated/components/lib-errors.md'
+  - 'docs/generated/components/lib-evolution_log.md'
+  - 'docs/generated/components/lib-firewall.md'
+  - 'docs/generated/components/lib-first-run.md'
+  - 'docs/generated/components/lib-harvest.md'
+  - 'docs/generated/components/lib-hook-telemetry.md'
+  - 'docs/generated/components/lib-hook-threshold.md'
+  - 'docs/generated/components/lib-inception.md'
+  - 'docs/generated/components/lib-inception_recommendation.md'
+  - 'docs/generated/components/lib-init.md'
+  - 'docs/generated/components/lib-keylock.md'
+  - 'docs/generated/components/lib-mirror.md'
+  - 'docs/generated/components/lib-notify.md'
+  - 'docs/generated/components/lib-outcome.md'
+  - 'docs/generated/components/lib-paths.md'
+  - 'docs/generated/components/lib-pickup.md'
+  - 'docs/generated/components/lib-preflight.md'
+  - 'docs/generated/components/lib-promote.md'
+  - 'docs/generated/components/lib-resolver.md'
+  - 'docs/generated/components/lib-reviewer-audit.md'
+  - 'docs/generated/components/lib-reviewer-classifier.md'
+  - 'docs/generated/components/lib-reviewer-drift_cli.md'
+  - 'docs/generated/components/lib-reviewer-drift.md'
+  - 'docs/generated/components/lib-reviewer-__init__.md'
+  - 'docs/generated/components/lib-reviewer-override_cli.md'
+  - 'docs/generated/components/lib-reviewer-overrides.md'
+  - 'docs/generated/components/lib-reviewer-reverify_cli.md'
+  - 'docs/generated/components/lib-reviewer-reverify.md'
+  - 'docs/generated/components/lib-reviewer-static_scan.md'
+  - 'docs/generated/components/lib-review.md'
+  - 'docs/generated/components/lib-runtime.md'
+  - 'docs/generated/components/lib-setup.md'
+  - 'docs/generated/components/lib-task-audit.md'
+  - 'docs/generated/components/lib-tasks.md'
+  - 'docs/generated/components/lib-update.md'
+  - 'docs/generated/components/lib-upgrade.md'
+  - 'docs/generated/components/lib-upstream.md'
+  - 'docs/generated/components/lib-validate-init.md'
+  - 'docs/generated/components/lib-verify-acs.md'
+  - 'docs/generated/components/lib-version.md'
+  - 'docs/generated/components/lib-yaml.md'
+  - 'docs/generated/components/patterns-data.md'
+  - 'docs/generated/components/prompts-escalation-triage.md'
+  - 'docs/generated/components/tests-fixtures-termlink-list-schema.md'
+  - 'docs/generated/components/tests-fixtures-termlink-protocol-frame-types.md'
+  - 'docs/generated/components/tests-fixtures-termlink-route-cache-schema.md'
+  - 'docs/generated/components/tests-governance-test_git_hooks.md'
+  - 'docs/generated/components/tests-governance-test_pretooluse_gates.md'
+  - 'docs/generated/components/tests-governance-test_task_lifecycle_gates.md'
+  - 'docs/generated/components/tests-integration-audit_blocks_review_and_decide.md'
+  - 'docs/generated/components/tests-integration-cron_install.md'
+  - 'docs/generated/components/tests-integration-fw_approvals.md'
+  - 'docs/generated/components/tests-integration-fw_assumption.md'
+  - 'docs/generated/components/tests-integration-fw_audit.md'
+  - 'docs/generated/components/tests-integration-fw_bus.md'
+  - 'docs/generated/components/tests-integration-fw_config.md'
+  - 'docs/generated/components/tests-integration-fw_context.md'
+  - 'docs/generated/components/tests-integration-fw_costs.md'
+  - 'docs/generated/components/tests-integration-fw_cron.md'
+  - 'docs/generated/components/tests-integration-fw_decisions.md'
+  - 'docs/generated/components/tests-integration-fw_doctor.md'
+  - 'docs/generated/components/tests-integration-fw_fabric.md'
+  - 'docs/generated/components/tests-integration-fw_fix_learned.md'
+  - 'docs/generated/components/tests-integration-fw_gaps.md'
+  - 'docs/generated/components/tests-integration-fw_git.md'
+  - 'docs/generated/components/tests-integration-fw_handover.md'
+  - 'docs/generated/components/tests-integration-fw_harvest.md'
+  - 'docs/generated/components/tests-integration-fw_healing.md'
+  - 'docs/generated/components/tests-integration-fw_help.md'
+  - 'docs/generated/components/tests-integration-fw_hook.md'
+  - 'docs/generated/components/tests-integration-fw_inception.md'
+  - 'docs/generated/components/tests-integration-fw_init.md'
+  - 'docs/generated/components/tests-integration-fw_learnings.md'
+  - 'docs/generated/components/tests-integration-fw_metrics.md'
+  - 'docs/generated/components/tests-integration-fw_notify.md'
+  - 'docs/generated/components/tests-integration-fw_onboarding.md'
+  - 'docs/generated/components/tests-integration-fw_patterns.md'
+  - 'docs/generated/components/tests-integration-fw_pickup.md'
+  - 'docs/generated/components/tests-integration-fw_practices.md'
+  - 'docs/generated/components/tests-integration-fw_preflight.md'
+  - 'docs/generated/components/tests-integration-fw_promote.md'
+  - 'docs/generated/components/tests-integration-fw_resume.md'
+  - 'docs/generated/components/tests-integration-fw_search.md'
+  - 'docs/generated/components/tests-integration-fw_self_test.md'
+  - 'docs/generated/components/tests-integration-fw_task.md'
+  - 'docs/generated/components/tests-integration-fw_tier0.md'
+  - 'docs/generated/components/tests-integration-fw_timeline.md'
+  - 'docs/generated/components/tests-integration-fw_traceability.md'
+  - 'docs/generated/components/tests-integration-fw_upstream.md'
+  - 'docs/generated/components/tests-integration-fw_validate_init.md'
+  - 'docs/generated/components/tests-integration-fw_vendor.md'
+  - 'docs/generated/components/tests-integration-fw_version.md'
+  - 'docs/generated/components/tests-integration-fw_work_on.md'
+  - 'docs/generated/components/tests-lint-inception-decision-exact-match.md'
+  - 'docs/generated/components/tests-lint-no-bare-fw-in-gate-scripts.md'
+  - 'docs/generated/components/tests-playwright-test_api_approvals.md'
+  - 'docs/generated/components/tests-playwright-test_api_ask_stream.md'
+  - 'docs/generated/components/tests-playwright-test_api_context_capture.md'
+  - 'docs/generated/components/tests-playwright-test_api_cron_jobs.md'
+  - 'docs/generated/components/tests-playwright-test_api_fabric_source.md'
+  - 'docs/generated/components/tests-playwright-test_api_healing.md'
+  - 'docs/generated/components/tests-playwright-test_api_inception.md'
+  - 'docs/generated/components/tests-playwright-test_api_index.md'
+  - 'docs/generated/components/tests-playwright-test_api_quality.md'
+  - 'docs/generated/components/tests-playwright-test_api_scan_actions.md'
+  - 'docs/generated/components/tests-playwright-test_api_scan.md'
+  - 'docs/generated/components/tests-playwright-test_api_search.md'
+  - 'docs/generated/components/tests-playwright-test_api_session_init.md'
+  - 'docs/generated/components/tests-playwright-test_api_task_complete.md'
+  - 'docs/generated/components/tests-playwright-test_api_task_inline.md'
+  - 'docs/generated/components/tests-playwright-test_api_task_mutations.md'
+  - 'docs/generated/components/tests-playwright-test_api_termlink.md'
+  - 'docs/generated/components/tests-playwright-test_api_timeline_detail.md'
+  - 'docs/generated/components/tests-playwright-test_ask.md'
+  - 'docs/generated/components/tests-playwright-test_docs_detail.md'
+  - 'docs/generated/components/tests-playwright-test_escalation_v05.md'
+  - 'docs/generated/components/tests-playwright-test_fabric_detail.md'
+  - 'docs/generated/components/tests-playwright-test_file_viewer.md'
+  - 'docs/generated/components/tests-playwright-test_review_acs.md'
+  - 'docs/generated/components/tests-playwright-test_settings_models.md'
+  - 'docs/generated/components/tests-unit-add_learning_id_allocator.md'
+  - 'docs/generated/components/tests-unit-audit_flock.md'
+  - 'docs/generated/components/tests-unit-audit.md'
+  - 'docs/generated/components/tests-unit-audit_null_timestamp.md'
+  - 'docs/generated/components/tests-unit-audit_scan.md'
+  - 'docs/generated/components/tests-unit-audit_task_tools.md'
+  - 'docs/generated/components/tests-unit-block_task_tools.md'
+  - 'docs/generated/components/tests-unit-checkpoint.md'
+  - 'docs/generated/components/tests-unit-context_decision.md'
+  - 'docs/generated/components/tests-unit-context_episodic.md'
+  - 'docs/generated/components/tests-unit-context_focus.md'
+  - 'docs/generated/components/tests-unit-context_init.md'
+  - 'docs/generated/components/tests-unit-context_learning.md'
+  - 'docs/generated/components/tests-unit-context_pattern.md'
+  - 'docs/generated/components/tests-unit-context_safe_commands.md'
+  - 'docs/generated/components/tests-unit-context_status.md'
+  - 'docs/generated/components/tests-unit-create_task.md'
+  - 'docs/generated/components/tests-unit-cron_flock_parity.md'
+  - 'docs/generated/components/tests-unit-docgen_article.md'
+  - 'docs/generated/components/tests-unit-docgen_component.md'
+  - 'docs/generated/components/tests-unit-doctor_duplicate_hook_detection.md'
+  - 'docs/generated/components/tests-unit-doctor_hook_exercise.md'
+  - 'docs/generated/components/tests-unit-escalation_scan_v05.md'
+  - 'docs/generated/components/tests-unit-evolution_log_gate.md'
+  - 'docs/generated/components/tests-unit-fabric.md'
+  - 'docs/generated/components/tests-unit-focus_drift_gate.md'
+  - 'docs/generated/components/tests-unit-git_common.md'
+  - 'docs/generated/components/tests-unit-git_log.md'
+  - 'docs/generated/components/tests-unit-handover.md'
+  - 'docs/generated/components/tests-unit-handover_push_no_origin.md'
+  - 'docs/generated/components/tests-unit-handover_push_timeout.md'
+  - 'docs/generated/components/tests-unit-handover_t012_active_only.md'
+  - 'docs/generated/components/tests-unit-healing_diagnose.md'
+  - 'docs/generated/components/tests-unit-healing_suggest.md'
+  - 'docs/generated/components/tests-unit-hook_absolute_paths.md'
+  - 'docs/generated/components/tests-unit-hook_enable_absolute_path.md'
+  - 'docs/generated/components/tests-unit-hook_telemetry.md'
+  - 'docs/generated/components/tests-unit-hook_threshold.md'
+  - 'docs/generated/components/tests-unit-inception_decide_ac_tick.md'
+  - 'docs/generated/components/tests-unit-inception_decide_atomicity.md'
+  - 'docs/generated/components/tests-unit-inception_tick_decision_recorded.md'
+  - 'docs/generated/components/tests-unit-inception_tick_marker.md'
+  - 'docs/generated/components/tests-unit-keylock_subshell_close.md'
+  - 'docs/generated/components/tests-unit-lib_ask.md'
+  - 'docs/generated/components/tests-unit-lib_assumption.md'
+  - 'docs/generated/components/tests-unit-lib_build.md'
+  - 'docs/generated/components/tests-unit-lib_bus.md'
+  - 'docs/generated/components/tests-unit-lib_colors.md'
+  - 'docs/generated/components/tests-unit-lib_compat.md'
+  - 'docs/generated/components/tests-unit-lib_config_file.md'
+  - 'docs/generated/components/tests-unit-lib_config.md'
+  - 'docs/generated/components/tests-unit-lib_costs.md'
+  - 'docs/generated/components/tests-unit-lib_dispatch.md'
+  - 'docs/generated/components/tests-unit-lib_enums.md'
+  - 'docs/generated/components/tests-unit-lib_errors.md'
+  - 'docs/generated/components/tests-unit-lib_firewall.md'
+  - 'docs/generated/components/tests-unit-lib_first_run.md'
+  - 'docs/generated/components/tests-unit-lib_harvest.md'
+  - 'docs/generated/components/tests-unit-lib_inception.md'
+  - 'docs/generated/components/tests-unit-lib_init.md'
+  - 'docs/generated/components/tests-unit-lib_keylock.md'
+  - 'docs/generated/components/tests-unit-lib_notify.md'
+  - 'docs/generated/components/tests-unit-lib_paths.md'
+  - 'docs/generated/components/tests-unit-lib_pickup.md'
+  - 'docs/generated/components/tests-unit-lib_preflight.md'
+  - 'docs/generated/components/tests-unit-lib_promote.md'
+  - 'docs/generated/components/tests-unit-lib_review.md'
+  - 'docs/generated/components/tests-unit-lib_runtime.md'
+  - 'docs/generated/components/tests-unit-lib_setup.md'
+  - 'docs/generated/components/tests-unit-lib_task_audit.md'
+  - 'docs/generated/components/tests-unit-lib_tasks.md'
+  - 'docs/generated/components/tests-unit-lib_update.md'
+  - 'docs/generated/components/tests-unit-lib_upgrade.md'
+  - 'docs/generated/components/tests-unit-lib_upstream.md'
+  - 'docs/generated/components/tests-unit-lib_validate_init.md'
+  - 'docs/generated/components/tests-unit-lib_version.md'
+  - 'docs/generated/components/tests-unit-lib_yaml.md'
+  - 'docs/generated/components/tests-unit-observe.md'
+  - 'docs/generated/components/tests-unit-pickup_send_remote_session.md'
+  - 'docs/generated/components/tests-unit-pickup_type_routing.md'
+  - 'docs/generated/components/tests-unit-pre_compact_flock.md'
+  - 'docs/generated/components/tests-unit-pre_compact_timewindow_dedup.md'
+  - 'docs/generated/components/tests-unit-resume.md'
+  - 'docs/generated/components/tests-unit-session_start_hook_warning.md'
+  - 'docs/generated/components/tests-unit-skip_ac_partial_complete.md'
+  - 'docs/generated/components/tests-unit-task_id_race.md'
+  - 'docs/generated/components/tests-unit-task_reid.md'
+  - 'docs/generated/components/tests-unit-termlink.md'
+  - 'docs/generated/components/tests-unit-test_arc_parent_review_gate.md'
+  - 'docs/generated/components/tests-unit-test_arc_system.md'
+  - 'docs/generated/components/tests-unit-test_audit_arc_completion.md'
+  - 'docs/generated/components/tests-unit-test_boundary_hook_arguments.md'
+  - 'docs/generated/components/tests-unit-test_doctor_litellm_ollama.md'
+  - 'docs/generated/components/tests-unit-test_doctor_scope_tags.md'
+  - 'docs/generated/components/tests-unit-test_enrich_bats_parser.md'
+  - 'docs/generated/components/tests-unit-test_escalation_v05_parser.md'
+  - 'docs/generated/components/tests-unit-test_fabric_drift_absolute_paths.md'
+  - 'docs/generated/components/tests-unit-test_fabric_drift_performance.md'
+  - 'docs/generated/components/tests-unit-test_fw_gaps_closure_check.md'
+  - 'docs/generated/components/tests-unit-test_g064_readiness.md'
+  - 'docs/generated/components/tests-unit-test_mirror_sync.md'
+  - 'docs/generated/components/tests-unit-test_orchestrator_outcome_dedup.md'
+  - 'docs/generated/components/tests-unit-test_orchestrator_status_outcomes.md'
+  - 'docs/generated/components/tests-unit-test_orchestrator_status_synthetic_filter.md'
+  - 'docs/generated/components/tests-unit-test_outcome.md'
+  - 'docs/generated/components/tests-unit-test_project_root_discovery.md'
+  - 'docs/generated/components/tests-unit-test_resolver.md'
+  - 'docs/generated/components/tests-unit-test_reviewer_audit_pass_a.md'
+  - 'docs/generated/components/tests-unit-test_reviewer_audit_pass_b.md'
+  - 'docs/generated/components/tests-unit-test_reviewer_overrides.md'
+  - 'docs/generated/components/tests-unit-test_termlink_dispatch_task_type.md'
+  - 'docs/generated/components/tests-unit-test_termlink_governance_frame_contract.md'
+  - 'docs/generated/components/tests-unit-test_termlink_list_contract.md'
+  - 'docs/generated/components/tests-unit-test_termlink_route_cache_schema.md'
+  - 'docs/generated/components/tests-unit-test_worker_kind_drift.md'
+  - 'docs/generated/components/tests-unit-test_workflow_env_isolation.md'
+  - 'docs/generated/components/tests-unit-tier0_hash_normalization.md'
+  - 'docs/generated/components/tests-unit-update_task_episodic_gen.md'
+  - 'docs/generated/components/tests-unit-update_task.md'
+  - 'docs/generated/components/tests-unit-update_task_yaml_components_emit.md'
+  - 'docs/generated/components/tests-unit-upgrade_dedupe_user_hooks.md'
+  - 'docs/generated/components/tests-unit-upgrade_duplicate_hook_detection.md'
+  - 'docs/generated/components/tests-unit-verify_acs.md'
+  - 'docs/generated/components/tests-unit-watchtower_url_refresh.md'
+  - 'docs/generated/components/tests-unit-yaml_pipefail.md'
+  - 'docs/generated/components/tools-escalation-scan-v0-5.md'
+  - 'docs/generated/components/tools-escalation-scan-v0.md'
+  - 'docs/generated/components/tools-g064-readiness.md'
+  - 'docs/generated/components/tools-ollama-tool-loop.md'
+  - 'docs/generated/components/tools-reparse-historical-parsefails.md'
+  - 'docs/generated/components/web-blueprints-api.md'
+  - 'docs/generated/components/web-blueprints-approvals.md'
+  - 'docs/generated/components/web-blueprints-arcs.md'
+  - 'docs/generated/components/web-blueprints-cockpit.md'
+  - 'docs/generated/components/web-blueprints-config.md'
+  - 'docs/generated/components/web-blueprints-cron.md'
+  - 'docs/generated/components/web-blueprints-discovery.md'
+  - 'docs/generated/components/web-blueprints-docs.md'
+  - 'docs/generated/components/web-blueprints-enforcement.md'
+  - 'docs/generated/components/web-blueprints-fabric.md'
+  - 'docs/generated/components/web-blueprints-hooks.md'
+  - 'docs/generated/components/web-blueprints-inception.md'
+  - 'docs/generated/components/web-blueprints-__init__.md'
+  - 'docs/generated/components/web-blueprints-orchestrator.md'
+  - 'docs/generated/components/web-blueprints-quality.md'
+  - 'docs/generated/components/web-blueprints-reviewer.md'
+  - 'docs/generated/components/web-blueprints-review.md'
+  - 'docs/generated/components/web-blueprints-risks.md'
+  - 'docs/generated/components/web-blueprints-session.md'
+  - 'docs/generated/components/web-blueprints-settings.md'
+  - 'docs/generated/components/web-blueprints-tasks.md'
+  - 'docs/generated/components/web-blueprints-terminal.md'
+  - 'docs/generated/components/web-blueprints-timeline.md'
+  - 'docs/generated/components/web-embeddings.md'
+  - 'docs/generated/components/web-search.md'
+  - 'docs/generated/components/web-search_utils.md'
+  - 'docs/generated/components/web-shared.md'
+  - 'docs/generated/components/web-templates-arc_detail.md'
+  - 'docs/generated/components/web-templates-arcs_index.md'
+  - 'docs/generated/components/web-templates-base.md'
+  - 'docs/generated/components/web-templates-hooks.md'
+  - 'docs/generated/components/web-templates-orchestrator.md'
+  - 'docs/generated/components/web-terminal-adapters-claude_code.md'
+  - 'docs/proposals/T-1804-cross-agent-conversation-substrate.md'
+  - 'docs/reports/arc-005-headline-mechanic-demo.md'
+  - 'docs/reports/dispatch-safety-arc-demo.md'
+  - 'docs/reports/T-1549-escalation-scan-v0.md'
+  - 'docs/reports/T-1653-arcs-as-first-class.md'
+  - 'docs/reports/T-1687-grilling-findings-telemetry-truncation.md'
+  - 'docs/reports/T-1687-worker-01-heuristic-rules.md'
+  - 'docs/reports/T-1687-worker-02-orchestrator-integration.md'
+  - 'docs/reports/T-1687-worker-03-feedback-loop.md'
+  - 'docs/reports/T-1687-worker-04-false-positives.md'
+  - 'docs/reports/T-1727-v0-5-disagreement-rate.md'
+  - 'docs/reports/T-1907-backfill-skeleton-docsreports-artefacts-.md'
+  - 'docs/reports/T-2209-cli-mcp-overlay-inception.md'
+  - 'docs/reports/triage-2026-05-13-review-queue.md'
+  - '.fabric/components/012-ArcSystem.yaml'
+  - '.fabric/components/agents-audit-active-task-scan.yaml'
+  - '.fabric/components/agents-audit-completed-task-scan.yaml'
+  - '.fabric/components/agents-audit-orchestrator-mcp-scan.yaml'
+  - '.fabric/components/agents-context-check-heredoc-cmd-sub.yaml'
+  - '.fabric/components/agents-context-check-project-boundary.yaml'
+  - '.fabric/components/agents-context-check-settings-edit.yaml'
+  - '.fabric/components/agents-context-lib-focus.yaml'
+  - '.fabric/components/agents-context-lib-safe-commands.yaml'
+  - '.fabric/components/agents-context-revisit-due-scan.yaml'
+  - '.fabric/components/agents-git-lib-dup-task-scan.yaml'
+  - '.fabric/components/agents-git-lib-hooks.yaml'
+  - '.fabric/components/agents-git-lib-large-file-scan.yaml'
+  - '.fabric/components/agents-git-lib-secret-scan.yaml'
+  - '.fabric/components/agents-handover-handover.yaml'
+  - '.fabric/components/agents-healing-lib-diagnose.yaml'
+  - '.fabric/components/agents-mcp-framework_mcp_server.yaml'
+  - '.fabric/components/agents-mcp-manifest.yaml'
+  - '.fabric/components/agents-resume-resume.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-bvp-estimator.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
+  - '.fabric/components/agents-termlink-termlink.yaml'
+  - '.fabric/components/audit-yaml-validator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/context-project-assumptions.yaml'
+  - '.fabric/components/context-project-controls.yaml'
+  - '.fabric/components/hook-config.yaml'
+  - '.fabric/components/learnings-route.yaml'
+  - '.fabric/components/lib-arc_membership-sh.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-ask.yaml'
+  - '.fabric/components/lib-bvp.yaml'
+  - '.fabric/components/lib-colors.yaml'
+  - '.fabric/components/lib-config.yaml'
+  - '.fabric/components/lib-costs.yaml'
+  - '.fabric/components/lib-cron_dry_run.yaml'
+  - '.fabric/components/lib-dispatch_pause.yaml'
+  - '.fabric/components/lib-doctor-hook-exercise.yaml'
+  - '.fabric/components/lib-heredoc_guard.yaml'
+  - '.fabric/components/lib-hook-telemetry.yaml'
+  - '.fabric/components/lib-hook-threshold.yaml'
+  - '.fabric/components/lib-inception.yaml'
+  - '.fabric/components/lib-mirror.yaml'
+  - '.fabric/components/lib-ollama_loop.yaml'
+  - '.fabric/components/lib-outcome.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-pause_cli.yaml'
+  - '.fabric/components/lib-pause_resolve.yaml'
+  - '.fabric/components/lib-peer.yaml'
+  - '.fabric/components/lib-pi_worker.yaml'
+  - '.fabric/components/lib-render_surface.yaml'
+  - '.fabric/components/lib-resolver.yaml'
+  - '.fabric/components/lib-reviewer-__init__.yaml'
+  - '.fabric/components/lib-reviewer-static_scan.yaml'
+  - '.fabric/components/lib-review.yaml'
+  - '.fabric/components/lib-spawn.yaml'
+  - '.fabric/components/lib-task_pair_acd-py.yaml'
+  - '.fabric/components/lib-task_pair_acd.yaml'
+  - '.fabric/components/lib-termlink_worker.yaml'
+  - '.fabric/components/lib-upgrade.yaml'
+  - '.fabric/components/lib-worker_kinds_parity.yaml'
+  - '.fabric/components/lib-workflow_coverage.yaml'
+  - '.fabric/components/lib-workflow_lint.yaml'
+  - '.fabric/components/patterns-data.yaml'
+  - '.fabric/components/tests-fixtures-termlink-list-schema.yaml'
+  - '.fabric/components/tests-fixtures-termlink-protocol-frame-types.yaml'
+  - '.fabric/components/tests-fixtures-termlink-route-cache-schema.yaml'
+  - '.fabric/components/tests-integration-test_arc010_hm_a_demo_evidence.yaml'
+  - '.fabric/components/tests-integration-test_framework_mcp_server.yaml'
+  - '.fabric/components/tests-playwright-test_api_approvals.yaml'
+  - '.fabric/components/tests-playwright-test_api_ask_stream.yaml'
+  - '.fabric/components/tests-playwright-test_api_context_capture.yaml'
+  - '.fabric/components/tests-playwright-test_api_cron_jobs.yaml'
+  - '.fabric/components/tests-playwright-test_api_fabric_source.yaml'
+  - '.fabric/components/tests-playwright-test_api_healing.yaml'
+  - '.fabric/components/tests-playwright-test_api_inception.yaml'
+  - '.fabric/components/tests-playwright-test_api_index.yaml'
+  - '.fabric/components/tests-playwright-test_api_quality.yaml'
+  - '.fabric/components/tests-playwright-test_api_scan_actions.yaml'
+  - '.fabric/components/tests-playwright-test_api_scan.yaml'
+  - '.fabric/components/tests-playwright-test_api_search.yaml'
+  - '.fabric/components/tests-playwright-test_api_session_init.yaml'
+  - '.fabric/components/tests-playwright-test_api_task_complete.yaml'
+  - '.fabric/components/tests-playwright-test_api_task_inline.yaml'
+  - '.fabric/components/tests-playwright-test_api_task_mutations.yaml'
+  - '.fabric/components/tests-playwright-test_api_termlink.yaml'
+  - '.fabric/components/tests-playwright-test_api_timeline_detail.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_kanban.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_lifecycle_tabs.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_renders_without_constituent_field.yaml'
+  - '.fabric/components/tests-playwright-test_ask.yaml'
+  - '.fabric/components/tests-playwright-test_docs_detail.yaml'
+  - '.fabric/components/tests-playwright-test_fabric_detail.yaml'
+  - '.fabric/components/tests-playwright-test_file_viewer.yaml'
+  - '.fabric/components/tests-playwright-test_landing_arc_cards.yaml'
+  - '.fabric/components/tests-playwright-test_review_acs.yaml'
+  - '.fabric/components/tests-playwright-test_review_code_inline.yaml'
+  - '.fabric/components/tests-playwright-test_settings_models.yaml'
+  - '.fabric/components/tests-unit-arc_abandon.yaml'
+  - '.fabric/components/tests-unit-arc_create_start_flag.yaml'
+  - '.fabric/components/tests-unit-arc_membership_dual_id.yaml'
+  - '.fabric/components/tests-unit-audit_anchor_task_existence.yaml'
+  - '.fabric/components/tests-unit-audit_ctl013_skip_nested_audit.yaml'
+  - '.fabric/components/tests-unit-audit_ctl028_completed_status_consistency.yaml'
+  - '.fabric/components/tests-unit-audit_ctl_arc_tag_only_pattern.yaml'
+  - '.fabric/components/tests-unit-audit_d10_html_comment_blindness.yaml'
+  - '.fabric/components/tests-unit-check_active_task_switch_focus.yaml'
+  - '.fabric/components/tests-unit-check_render_surface_human_ac_sigpipe.yaml'
+  - '.fabric/components/tests-unit-g065_readiness.yaml'
+  - '.fabric/components/tests-unit-hook_check_settings_edit.yaml'
+  - '.fabric/components/tests-unit-inception_defer_park.yaml'
+  - '.fabric/components/tests-unit-inception_skeleton.yaml'
+  - '.fabric/components/tests-unit-reviewer_human_ac_mechanical_signal.yaml'
+  - '.fabric/components/tests-unit-safe_commands_env_prefix.yaml'
+  - '.fabric/components/tests-unit-task_archive_eligible.yaml'
+  - '.fabric/components/tests-unit-template_reviewer_prefix_example.yaml'
+  - '.fabric/components/tests-unit-test_ac_body_html_comment.yaml'
+  - '.fabric/components/tests-unit-test_arc_parent_review_gate.yaml'
+  - '.fabric/components/tests-unit-test_arcs_routes.yaml'
+  - '.fabric/components/tests-unit-test_arc_system.yaml'
+  - '.fabric/components/tests-unit-test_audit_arc_completion.yaml'
+  - '.fabric/components/tests-unit-test_audit_cron_registry_generated_drift.yaml'
+  - '.fabric/components/tests-unit-test_bin_fw_no_heredoc_cmd_sub.yaml'
+  - '.fabric/components/tests-unit-test_bvp_blueprint_cost.yaml'
+  - '.fabric/components/tests-unit-test_bvp_scatter_arc_mode.yaml'
+  - '.fabric/components/tests-unit-test_cron_generate_shape.yaml'
+  - '.fabric/components/tests-unit-test_cron_registry_generated_drift.yaml'
+  - '.fabric/components/tests-unit-test_dispatch_pause.yaml'
+  - '.fabric/components/tests-unit-test_doctor_consumer_version_ahead.yaml'
+  - '.fabric/components/tests-unit-test_enrich_bats_parser.yaml'
+  - '.fabric/components/tests-unit-test_fabric_drift_absolute_paths.yaml'
+  - '.fabric/components/tests-unit-test_fabric_drift_performance.yaml'
+  - '.fabric/components/tests-unit-test_file_route_extensions.yaml'
+  - '.fabric/components/tests-unit-test_fw_gaps_closure_check.yaml'
+  - '.fabric/components/tests-unit-test_g064_readiness.yaml'
+  - '.fabric/components/tests-unit-test_gaps_missing_title_defaults.yaml'
+  - '.fabric/components/tests-unit-test_heredoc_cmd_sub_guard.yaml'
+  - '.fabric/components/tests-unit-test_mcp_wire_fragment.yaml'
+  - '.fabric/components/tests-unit-test_mirror_stderr_capture.yaml'
+  - '.fabric/components/tests-unit-test_orchestrator_outcome_dedup.yaml'
+  - '.fabric/components/tests-unit-test_orchestrator_status_outcomes.yaml'
+  - '.fabric/components/tests-unit-test_orchestrator_workflow_coverage.yaml'
+  - '.fabric/components/tests-unit-test_outcome.yaml'
+  - '.fabric/components/tests-unit-test_pause_resolve.yaml'
+  - '.fabric/components/tests-unit-test_peer_subscribe.yaml'
+  - '.fabric/components/tests-unit-test_pre_push_monotonic_ancestor.yaml'
+  - '.fabric/components/tests-unit-test_render_page_guard.yaml'
+  - '.fabric/components/tests-unit-test_resolver.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_audit_pass_a.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_audit_pass_b.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_human_ac_mechanical_signal.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_overrides.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_prose_mismatch.yaml'
+  - '.fabric/components/tests-unit-test_review_paused_resolve.yaml'
+  - '.fabric/components/tests-unit-test_secret_scan.yaml'
+  - '.fabric/components/tests-unit-test_spawn.yaml'
+  - '.fabric/components/tests-unit-test_task_pair_acd_gate.yaml'
+  - '.fabric/components/tests-unit-test_task_pair_acd_parser.yaml'
+  - '.fabric/components/tests-unit-test_termlink_dispatch_task_type.yaml'
+  - '.fabric/components/tests-unit-test_termlink_governance_frame_contract.yaml'
+  - '.fabric/components/tests-unit-test_termlink_list_contract.yaml'
+  - '.fabric/components/tests-unit-test_termlink_route_cache_schema.yaml'
+  - '.fabric/components/tests-unit-test_termlink_worker.yaml'
+  - '.fabric/components/tests-unit-test_upgrade_downgrade_guard.yaml'
+  - '.fabric/components/tests-unit-test_workflow_coverage.yaml'
+  - '.fabric/components/tests-unit-test_workflow_schema_pause_lint.yaml'
+  - '.fabric/components/tests-unit-update_task_orphan_guard.yaml'
+  - '.fabric/components/tests-unit-upgrade_fresh_machine_simulation.yaml'
+  - '.fabric/components/tools-audit-swallowed-errors.yaml'
+  - '.fabric/components/tools-escalation-scan-v0-5.yaml'
+  - '.fabric/components/tools-g064-readiness.yaml'
+  - '.fabric/components/tools-g065-readiness.yaml'
+  - '.fabric/components/tools-reparse-historical-parsefails.yaml'
+  - '.fabric/components/web-app.yaml'
+  - '.fabric/components/web-blueprints-api.yaml'
+  - '.fabric/components/web-blueprints-approvals.yaml'
+  - '.fabric/components/web-blueprints-arcs.yaml'
+  - '.fabric/components/web-blueprints-bvp.yaml'
+  - '.fabric/components/web-blueprints-cockpit.yaml'
+  - '.fabric/components/web-blueprints-config.yaml'
+  - '.fabric/components/web-blueprints-cron.yaml'
+  - '.fabric/components/web-blueprints-discovery.yaml'
+  - '.fabric/components/web-blueprints-docs.yaml'
+  - '.fabric/components/web-blueprints-enforcement.yaml'
+  - '.fabric/components/web-blueprints-fabric.yaml'
+  - '.fabric/components/web-blueprints-hooks.yaml'
+  - '.fabric/components/web-blueprints-inception.yaml'
+  - '.fabric/components/web-blueprints-__init__.yaml'
+  - '.fabric/components/web-blueprints-orchestrator.yaml'
+  - '.fabric/components/web-blueprints-quality.yaml'
+  - '.fabric/components/web-blueprints-reviewer.yaml'
+  - '.fabric/components/web-blueprints-review.yaml'
+  - '.fabric/components/web-blueprints-risks.yaml'
+  - '.fabric/components/web-blueprints-session.yaml'
+  - '.fabric/components/web-blueprints-settings.yaml'
+  - '.fabric/components/web-blueprints-tasks.yaml'
+  - '.fabric/components/web-blueprints-terminal.yaml'
+  - '.fabric/components/web-blueprints-timeline.yaml'
+  - '.fabric/components/web-embeddings.yaml'
+  - '.fabric/components/web-search_utils.yaml'
+  - '.fabric/components/web-search.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.fabric/components/web-templates-arc_close.yaml'
+  - '.fabric/components/web-templates-base.yaml'
+  - '.fabric/components/web-templates-bvp.yaml'
+  - '.fabric/components/web-terminal-adapters-claude_code.yaml'
+  - 'FRAMEWORK.md'
+  - 'lib/arc.sh'
+  - 'lib/workflow_coverage.py'
+  - '.tasks/active/T-1687-install--apply-grill-with-docs-skill--gr.md'
+  - '.tasks/active/T-1689-v1-resolver--workflow-lookup--context-as.md'
+  - '.tasks/active/T-1690-v1-outcome-enrichment-hook--task-complet.md'
+  - '.tasks/active/T-1691-v1-ollama-proxy-adapter--pick-proxy-lite.md'
+  - '.tasks/active/T-1692-v1-pi-backend-integration--rpc-mode-wrap.md'
+  - '.tasks/active/T-1693-ship-baseline-workflow-files-default--in.md'
+  - '.tasks/active/T-1694-fw-doctor-extensions--pi-installed-check.md'
+  - '.tasks/active/T-1695-fw-orchestrator-improve-cli-stub--reserv.md'
+  - '.tasks/active/T-1700-v1-build-install--integrate-litellm-prox.md'
+  - '.tasks/active/T-1701-v1-build-install--integrate-pi-rpc-backe.md'
+  - '.tasks/active/T-1720-reviewer-audit-cron-silent-failure-5-day.md'
+  - '.tasks/active/T-1730-bash-matcher--focus-drift-gate-on-check-.md'
+  - '.tasks/active/T-1731-human-ac-tick-guard--block-agent-from-ch.md'
+  - '.tasks/active/T-1762-task-pair-acd-gate-p-012-wire-g-066-pron.md'
+  - '.tasks/active/T-1766-render-surface-human-ac-gate--block-work.md'
+  - '.tasks/active/T-1773-spawn-side-dispatch-driver-read-resolver.md'
+  - '.tasks/active/T-1774-fw-resolver-run-cli-integration-of-spawn.md'
+  - '.tasks/active/T-1775-libollamalooppy--claude--p-worker-primit.md'
+  - '.tasks/active/T-1792-watchtower-orchestrator-add-dispatch-sub.md'
+  - '.tasks/active/T-1794-watchtower-orchestrator-extend-dispatch-.md'
+  - '.tasks/active/T-1795-watchtower-orchestrator-extend-dispatch-.md'
+  - '.tasks/active/T-1796-watchtower-orchestrator-add-outcome-qual.md'
+  - '.tasks/active/T-1797-termlink-worker-primitive--libtermlinkwo.md'
+  - '.tasks/active/T-1799-watchtower-orchestrator-add-workflow-cov.md'
+  - '.tasks/active/T-1801-extend-workflow-coverage-panel-with-miss.md'
+  - '.tasks/active/T-1802-workflow-coverage-panel-per-workflow-las.md'
+  - '.tasks/active/T-1803-workflow-coverage-audit-stale-workflow-w.md'
+  - '.tasks/active/T-1804-cross-agent-conversation-arc--joint-aef-.md'
+  - '.tasks/active/T-1805-pauserequested-terminalevent-class--subs.md'
+  - '.tasks/active/T-1806-resolver-risk-policy-preamble-injection-.md'
+  - '.tasks/active/T-1807-workflow-schema-lint--pausethreshold-all.md'
+  - '.tasks/active/T-1808-paused-dispatch-surface--fw-review-queue.md'
+  - '.tasks/active/T-1810-watchtower-paused-dispatch-resolve-form-.md'
+  - '.tasks/active/T-1811-ac-classification-gap--reviewer-prefix-f.md'
+  - '.tasks/active/T-1818-v2-peer-consult-slice-1-framework-half--.md'
+  - '.tasks/active/T-1833-t-1736-spike-harvest-read-session-jsonls.md'
+  - '.tasks/active/T-1834-purge-msoauth-client-secret-from-framewo.md'
+  - '.tasks/active/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md'
+  - '.tasks/active/T-1851-deprecate-constituenttasks-field-t-new-4.md'
+  - '.tasks/active/T-1852-lifecycle-state-machine-add-draft--aband.md'
+  - '.tasks/active/T-1853-watchtower-arcs-lifecycle-filter-tabs-t-.md'
+  - '.tasks/active/T-1854-fw-arc-abandon-cli-verb-t-new-6.md'
+  - '.tasks/active/T-1855-stale-arc-audit-warning-30d-t-new-7.md'
+  - '.tasks/active/T-1857-012-arcsystemmd--frameworkmd-updates-t-n.md'
+  - '.tasks/active/T-1859-backfill-3-missing-episodic-summaries-fl.md'
+  - '.tasks/active/T-1870-audit-check--completed-task-with-status-.md'
+  - '.tasks/active/T-1874-fw-arc-show-task-membership-reads-arcid-.md'
+  - '.tasks/active/T-1876-watchtower-arcsslug-reads-arcid-frontmat.md'
+  - '.tasks/active/T-1879-t-new-14-migration-blindness-2-sweep--5-.md'
+  - '.tasks/active/T-1880-extract-shared-libarcmembership-helper--.md'
+  - '.tasks/active/T-1891-claudemd-governance-rule--producerconsum.md'
+  - '.tasks/active/T-1893-arc-005-closure-demo-evidence-capture-g-.md'
+  - '.tasks/active/T-1902-watchtower-arcsslugclose-review-surface-.md'
+  - '.tasks/active/T-1904-watchtower-arcs-kanban--4-columns-draft-.md'
+  - '.tasks/active/T-1907-backfill-skeleton-docsreports-artefacts-.md'
+  - '.tasks/active/T-1909-render-arcid-badge-on-task-surfaces--fin.md'
+  - '.tasks/active/T-1910-arc-page-parity--read-only-enrichment--i.md'
+  - '.tasks/active/T-1911-watchtower-arcsslugclose-build--review-s.md'
+  - '.tasks/active/T-1935-bvp-t-new-7c-bvp-cost-estimator--propose.md'
+  - '.tasks/active/T-1936-bvp-t-new-7d-arc-level-bvpcost-rollup--r.md'
+  - '.tasks/active/T-1969-arc-badge-unified-form-render-arc-nnn--s.md'
+  - '.tasks/active/T-1970-badge-contrast-sweep-fix-badge-info-invi.md'
+  - '.tasks/active/T-2121-t-2091-rca-prevention-follow-up-structur.md'
+  - '.tasks/active/T-2137-multi-option-ac-pattern--choice-spawns-c.md'
+  - '.tasks/active/T-2171-bvp-t-new-e-f-autonomy-activation-gate--.md'
+  - '.tasks/active/T-2254-watchtower-arcsnew--arc-create-form-sibl.md'
+  - '.tasks/active/T-2265-arc-010-slice-2--framework-mcp-server-em.md'
+  - '.tasks/active/T-2266-close-agents-drift-class--selfvendoragen.md'
+  - '.tasks/active/T-2267-close-web-drift-class--selfvendorweb-sib.md'
+  - '.tasks/active/T-2300-t-2163-leg-gap--update-tasksh-nulls-hori.md'
+  - '.tasks/active/T-2494-escalation-scan-auto-tuning-pattern-dete.md'
+  - '.tasks/active/T-2495-escalation-scan-update-v0-heuristic-to-c.md'
+  - '.tasks/active/T-2496-escalation-scan-cron-job-for-rule-lifecy.md'
+  - '.tasks/active/T-2497-watchtower-escalationrules-page---viewve.md'
+  - '.tasks/active/T-2498-escalation-scan-auto-narrowing-logic-det.md'
+  - '.tasks/active/T-2499-escalation-scan-auto-retirement-expire-r.md'
+  - '.tasks/completed/T-1116-t-1115-phase-1-taskcreate-hook-probe-scr.md'
+  - '.tasks/completed/T-1372-g-054-diag-trace-where-update-tasksh-abo.md'
+  - '.tasks/completed/T-1501-pickup-extend-verification-gatesh-when-t.md'
+  - '.tasks/completed/T-1548-rca--structural-fix-reviewt-xxx-page-sen.md'
+  - '.tasks/completed/T-1689-v1-resolver--workflow-lookup--context-as.md'
+  - '.tasks/completed/T-1690-v1-outcome-enrichment-hook--task-complet.md'
+  - '.tasks/completed/T-1691-v1-ollama-proxy-adapter--pick-proxy-lite.md'
+  - '.tasks/completed/T-1692-v1-pi-backend-integration--rpc-mode-wrap.md'
+  - '.tasks/completed/T-1696-v1-resolver-port--spike-to-libresolverpy.md'
+  - '.tasks/completed/T-1697-v1-outcome-enrichment--default-evaluator.md'
+  - '.tasks/completed/T-1698-t-1697-hook-fires-only-on-partial-comple.md'
+  - '.tasks/completed/T-1699-fw-orchestrator-status--substrate-observ.md'
+  - '.tasks/completed/T-1710-failure-mode-discrimination-in-disposabl.md'
+  - '.tasks/completed/T-1720-reviewer-audit-cron-silent-failure-5-day.md'
+  - '.tasks/completed/T-1727-v05-build--escalation-scan-with-llm-augm.md'
+  - '.tasks/completed/T-1747-harden-webdiscoverprojectroot--remove-st.md'
+  - '.tasks/completed/T-1748-harden-v05-parseverdictenvelope--regex-f.md'
+  - '.tasks/completed/T-1749-fw-orchestrator-status---outcomes--surfa.md'
+  - '.tasks/completed/T-1750-g-064-closure-readiness-mechanical-gauge.md'
+  - '.tasks/completed/T-1751-gitignore-ephemeral-working-state-files-.md'
+  - '.tasks/completed/T-1752-fw-gaps-surfaces-closurecheckcommand-ver.md'
+  - '.tasks/completed/T-1753-fabric-enrich--close-audit-warn-on-10054.md'
+  - '.tasks/completed/T-1754-fabric-enrich--add-bats-parser--standalo.md'
+  - '.tasks/completed/T-1755-classify-59-new-termlinkagent-mcp-tools-.md'
+  - '.tasks/completed/T-1756-re-parse-historical-parse-fail-outcomes-.md'
+  - '.tasks/completed/T-1757-fw-orchestrator-status-outcomes--dedupe-.md'
+  - '.tasks/completed/T-1758-fabric-enrich--python-pathlibliteral-pat.md'
+  - '.tasks/completed/T-1759-extend-fabric-watch-patterns--add-libpy-.md'
+  - '.tasks/completed/T-1760-classify-18-new-termlinkagent-analytics-.md'
+  - '.tasks/completed/T-1763-fix-ac-body-parser--html-comment-example.md'
+  - '.tasks/completed/T-1764-fix-file-route--404s-for-non-md-paths-de.md'
+  - '.tasks/completed/T-1765-fix-code-element-inline-block-dropping-l.md'
+  - '.tasks/completed/T-1768-structural-drift-detection-between-cron-.md'
+  - '.tasks/completed/T-1769-cron-generate-shape--bats-fixture-pinnin.md'
+  - '.tasks/completed/T-1770-fix-fabricgraph-cold-load-empty-render--.md'
+  - '.tasks/completed/T-1771-make-cron-drift-actionable-audit-summary.md'
+  - '.tasks/completed/T-1772-auditsh-watchdog-leaks-flock-fd-200--orp.md'
+  - '.tasks/completed/T-1828-github-mirror-stalled--version-tag-reset.md'
+  - '.tasks/completed/T-1833-t-1736-spike-harvest-read-session-jsonls.md'
+  - '.tasks/completed/T-1845-pre-commit-large-file-gate--untrack-acci.md'
+  - '.tasks/completed/T-1846-arc-grooming--resolve-q1q2q3--plan-t-new.md'
+  - '.tasks/completed/T-1847-scaffold-arc-grooming-workspace--file-10.md'
+  - '.tasks/completed/T-1848-sequential-arc-nnn-immutable-ids-t-new-1.md'
+  - '.tasks/completed/T-1850-tagsarc--arcid-one-shot-migration-t-new-.md'
+  - '.tasks/completed/T-1851-deprecate-constituenttasks-field-t-new-4.md'
+  - '.tasks/completed/T-1853-watchtower-arcs-lifecycle-filter-tabs-t-.md'
+  - '.tasks/completed/T-1854-fw-arc-abandon-cli-verb-t-new-6.md'
+  - '.tasks/completed/T-1855-stale-arc-audit-warning-30d-t-new-7.md'
+  - '.tasks/completed/T-1856-anchor-task-existence-audit-check-t-new-.md'
+  - '.tasks/completed/T-1857-012-arcsystemmd--frameworkmd-updates-t-n.md'
+  - '.tasks/completed/T-1858-check-active-task-null-currenttask-colla.md'
+  - '.tasks/completed/T-1860-episodic-gen-forensic-log-overwrites-prev.md'
+  - '.tasks/completed/T-1861-fix-gate-bypass-log-writer--unescaped-si.md'
+  - '.tasks/completed/T-1862-audit-gate-bypass-warn-conflates---switc.md'
+  - '.tasks/completed/T-1865-defer-inception-decisions-dont-park-the-.md'
+  - '.tasks/completed/T-1866-backfill-8-missing-episodic-summaries-fl.md'
+  - '.tasks/completed/T-1867-classify-14-new-termlinkagent-analytics-.md'
+  - '.tasks/completed/T-1868-fix-revisit-due-scansh-path-resolution-t.md'
+  - '.tasks/completed/T-1869-backfill-5-missing-episodic-summaries-t-.md'
+  - '.tasks/completed/T-1870-audit-check--completed-task-with-status-.md'
+  - '.tasks/completed/T-1872-stale-workflow-audit-exclude-inlinetrue-.md'
+  - '.tasks/completed/T-1873-fix-episodic-generator-yaml-escape--exte.md'
+  - '.tasks/completed/T-1874-fw-arc-show-task-membership-reads-arcid-.md'
+  - '.tasks/completed/T-1876-watchtower-arcsslug-reads-arcid-frontmat.md'
+  - '.tasks/completed/T-1877-libarcsh-arcnextnumericid-octal-parse-la.md'
+  - '.tasks/completed/T-1879-t-new-14-migration-blindness-2-sweep--5-.md'
+  - '.tasks/completed/T-1880-extract-shared-libarcmembership-helper--.md'
+  - '.tasks/completed/T-1881-audit-time-lint-fail-on-grep-arcslug-pat.md'
+  - '.tasks/completed/T-1882-promote-ctl-028-status-drift-check-to-co.md'
+  - '.tasks/completed/T-1883-promote-ctl-012-unchecked-ac-check-to-co.md'
+  - '.tasks/completed/T-1884-promote-ctl-026-sovereignty-gate-check-t.md'
+  - '.tasks/completed/T-1885-register-fabric-card-for-libarcmembershi.md'
+  - '.tasks/completed/T-1886-refresh-enforcement-baseline-after-t-184.md'
+  - '.tasks/completed/T-1887-ship-t-1886-rca-candidate-a--task-templa.md'
+  - '.tasks/completed/T-1888-ship-t-1886-rca-candidate-b--posttooluse.md'
+  - '.tasks/completed/T-1889-d10-audit-html-comment-blindness--strip-.md'
+  - '.tasks/completed/T-1890-focus-drift-bypass-flag-mismatch--hook-r.md'
+  - '.tasks/completed/T-1892-fabric-enrichment-sweep--auto-resolve-47.md'
+  - '.tasks/completed/T-1894-re-class-mis-classified-human-acs-on-4-a.md'
+  - '.tasks/completed/T-1895-template--claudemd-reviewer-example-for-.md'
+  - '.tasks/completed/T-1896-reviewer-pattern-human-ac-mechanical-sig.md'
+  - '.tasks/completed/T-1903-audit-warn--fw-task-archive-eligible-swe.md'
+  - '.tasks/completed/T-1906-auto-skeleton-docsreportst-xxx-slugmd-re.md'
+  - '.tasks/completed/T-1913-arcmembership-slugnnn-union--fw-arc-show.md'
+  - '.tasks/completed/T-1914-libarcsh-consolidate-arctasks-to-delegat.md'
+  - '.tasks/completed/T-1922-bvp-termlink-bvp-estimator-worker-harness-r.md'
+  - '.tasks/completed/T-1923-bvp-bvp-estimator-scheduled-sweep-fw-resume.md'
+  - '.tasks/completed/T-1937-bvp-t-1936-follow-up--fw-bvp-arcs-cli-pa.md'
+  - '.tasks/completed/T-1938-bvp-t-1937-sibling--fw-bvp--fw-bvp-t-xxx.md'
+  - '.tasks/completed/T-1940-bvp-t-1939-sibling--playwright-pin-for-a.md'
+  - '.tasks/completed/T-1941-bvp-t-1940-sibling--emit-bvpmode-in-bvp-.md'
+  - '.tasks/completed/T-2120-t-2074t-2119-follow-up-playwright-regres.md'
+  - '.tasks/completed/T-2168-bvp-estimator-extension-for-f-recall--f-.md'
+  - '.tasks/completed/T-2180-reviewer-fail-floor--classifyroute-10-re.md'
+  - '.tasks/completed/T-2182-t-2181-slice-1-fw-task-review-batch-help.md'
+  - '.tasks/completed/T-2196-audit-cleanup-fabric-enrich-85-unedged-c.md'
+  - '.tasks/completed/T-2201-aef-pre-flight-claude-cli-config-before-.md'
+  - '.tasks/completed/T-2203-aef-lacks-a-structural-observation-harve.md'
+  - '.tasks/completed/T-2204-recommendation-completeness-gate-has-byp.md'
+  - '.tasks/completed/T-2248-t-2240-pre-push-block-scope-mismatch--fw.md'
+  - 'tests/playwright/test_arcs_lifecycle_tabs.py'
+  - 'tests/playwright/test_arcs_renders_without_constituent_field.py'
+  - 'tests/playwright/test_landing_arc_cards.py'
+  - 'tests/unit/arc_abandon.bats'
+  - 'tests/unit/arc_create_no_constituent_tasks.bats'
+  - 'tests/unit/arc_lifecycle_state_machine.bats'
+  - 'tests/unit/audit_ctl013_skip_nested_audit.bats'
+  - 'tests/unit/audit_ctl028_completed_status_consistency.bats'
+  - 'tests/unit/audit_d10_html_comment_blindness.bats'
+  - 'tests/unit/audit_stale_arc_warning.bats'
+  - 'tests/unit/hook_check_settings_edit.bats'
+  - 'tests/unit/inception_skeleton.bats'
+  - 'tests/unit/test_workflow_coverage.py'
+  - 'VERSION'
+  - 'web/blueprints/arcs.py'
+  - 'web/templates/arcs_index.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-05-02T22:14:50"
+    action: "T-1687: install grill-with-docs skill (mattpocock/skills)"
+  - time: "2026-05-02T22:38:11"
+    action: "T-1687: CONTEXT.md seeded — Orchestrator term resolved (Q1: configurable model, default opus)"
+  - time: "2026-05-02T22:48:42"
+    action: "T-1687: CONTEXT.md collapses Orchestrator → Agent (Q2 user pushback)"
+  - time: "2026-05-02T22:51:15"
+    action: "T-1687: handover pickup pointer for paused grill-with-docs session"
+  - time: "2026-05-02T23:23:26"
+    action: "T-1687: ADR-0001 orchestration model pin enforcement (Q3+Q3.5 resolved)"
+  - time: "2026-05-02T23:40:12"
+    action: "T-1687: CONTEXT.md — Agent narrowed to task lifecycle + interactive work; introduce Workflow term (Q5)"
+  - time: "2026-05-02T23:44:26"
+    action: "T-1687: ADR-0002 Agent role — three slices (task lifecycle + interactive + dispatch)"
+  - time: "2026-05-02T23:47:54"
+    action: "T-1687: CONTEXT.md — Workflow v1 schema (6 fields + inline) and Delegation envelope expansion (Q6)"
+  - time: "2026-05-02T23:51:51"
+    action: "T-1687: CONTEXT.md — Worker definition flags envelope-fidelity asymmetry (Q7)"
+  - time: "2026-05-02T23:53:01"
+    action: "T-1687: CONTEXT.md — wire provider:ollama in v1 (Q7 amendment)"
+  - time: "2026-05-03T00:00:34"
+    action: "T-1687: CONTEXT.md — record dispatches.jsonl + route_cache split (Q8)"
+  - time: "2026-05-03T00:03:18"
+    action: "T-1687: CONTEXT.md — workflows live one-file-per-entity (Q9 corrected)"
+  - time: "2026-05-03T00:17:45"
+    action: "T-1687: CONTEXT.md — three Worker flavours hybrid (Q11 corrected by user)"
+  - time: "2026-05-03T00:20:49"
+    action: "T-1687: handover pickup pointer — grilling session paused mid-tree (13 Qs resolved)"
+  - time: "2026-05-03T00:28:55"
+    action: "T-1687: CONTEXT.md — Q12 resolved (default.yaml fallback + shipped baseline)"
+  - time: "2026-05-03T00:52:48"
+    action: "T-1687: Q10 resolved + ADR-0003 — three-tier prompt strategy + v2-ready telemetry wiring"
+  - time: "2026-05-03T00:54:13"
+    action: "T-1687: Q13 + Q14 resolved — fw doctor warns missing pi, lints workflow schemas"
+  - time: "2026-05-03T01:04:14"
+    action: "T-1687: file 7 v1 implementation tasks for orchestrator-rethink (T-1689..T-1695)"
+  - time: "2026-05-03T17:47:33"
+    action: "T-1687: file v1 build follow-ups for T-1691 (litellm) + T-1692 (pi)"
+  - time: "2026-05-03T20:02:27"
+    action: "T-1687: housekeeping — vendor sync + auto-generated state"
+  - time: "2026-05-05T20:07:37"
+    action: "T-1687: T-1747 governance close — capture L-357 + close G-069"
+  - time: "2026-05-05T20:29:29"
+    action: "T-1687: T-1748 governance close — capture L-358 (defensive parsing for advisory pipelines)"
+  - time: "2026-05-05T20:31:42"
+    action: "T-1687: T-1748 validation — 0/20 PARSE-FAIL on live re-run vs 5.9% baseline"
+  - time: "2026-05-05T20:38:11"
+    action: "T-1687: T-1749 governance close — substrate outcome quality view shipped"
+  - time: "2026-05-05T21:22:46"
+    action: "T-1687: T-1750 governance close — capture L-359 (gap-text substrate-path decay)"
+  - time: "2026-05-05T23:21:36"
+    action: "T-1687: T-1751 governance close — gitignore ephemeral working-state"
+  - time: "2026-05-05T23:40:45"
+    action: "T-1687: T-1752 governance close — fw gaps closure-check generic substrate"
+  - time: "2026-05-06T07:43:45"
+    action: "T-1687: T-1758 episodic + completion artefacts (arc:orchestrator-rethink)"
+  - time: "2026-05-06T08:02:53"
+    action: "T-1687: T-1759 episodic + completion (arc:orchestrator-rethink)"
+  - time: "2026-05-06T08:07:30"
+    action: "T-1687: T-1760 episodic + completion (arc:orchestrator-rethink)"
+  - time: "2026-05-06T15:35:02"
+    action: "T-1687: complete adjacent inception T-1710 (arc-hygiene)"
+  - time: "2026-05-06T15:35:19"
+    action: "T-1687: T-1710 episodic + final body (Updates entry + Reviewer Verdict)"
+  - time: "2026-05-06T15:47:31"
+    action: "T-1687: T-1720 cron generator fix (cwd + stderr) — closes 9-day silent non-firing"
+  - time: "2026-05-06T15:48:52"
+    action: "T-1687: capture L-365 — cron 'deployed' is not 'executable' (T-1720 finding)"
+  - time: "2026-05-06T18:17:30"
+    action: "T-1687: regen — fabric edge tables + episodic enrichments"
+  - time: "2026-05-06T18:19:24"
+    action: "T-1687: registry cleanup — strip workaround leading-cd from escalation-scan entries"
+  - time: "2026-05-06T18:24:26"
+    action: "T-1687: T-1769 work-completed — bats fixture green (6/6), auto-episodic"
+  - time: "2026-05-06T18:53:36"
+    action: "T-1687: T-1770 work-completed + L-366 captured (clientWidth race pattern)"
+  - time: "2026-05-06T19:54:28"
+    action: "T-1687: T-1771 + T-1772 work-completed (cron drift visibility + watchdog fd hygiene)"
+  - time: "2026-05-06T19:55:21"
+    action: "T-1687: L-367 captured — subshell watchdogs leak ALL inherited fds (not just stdio)"
+  - time: "2026-05-06T20:38:44"
+    action: "T-1687: housekeeping — auto-generated audits/monitors/working state"
+  - time: "2026-05-09T23:25:14"
+    action: "T-1687: fabric scan/enrich — coverage 572 cards, edges +49"
+  - time: "2026-05-13T16:42:17"
+    action: "T-1687: Q15 — Worker uncertainty handling (pause, severity×likelihood, peer-consult deferred via T-1804)"
+  - time: "2026-05-13T19:49:15"
+    action: "T-1687: dispatch-safety arc demo evidence — wire-level proof of headline mechanic for G-062 closure"
+  - time: "2026-05-13T20:04:12"
+    action: "T-1687: review-queue triage report — live DOM evidence for 13/33 fresh tasks"
+  - time: "2026-05-13T20:42:23"
+    action: "T-1687: dispatch-safety arc demo — live CLI+web smoke appendix"
+  - time: "2026-05-13T22:00:41"
+    action: "T-1687: L-369 status update — T-1815 codified the precision exemption (corpus 23→11)"
+  - time: "2026-05-13T22:09:18"
+    action: "T-1687: CLAUDE.md — add fw pause to Quick Reference (dispatch-safety arc slice 5 doc drift)"
+  - time: "2026-05-13T22:30:38"
+    action: "T-1687: L-370 — generated YAML safety pattern (T-1816 origin)"
+  - time: "2026-05-13T22:54:36"
+    action: "T-1687: L-371 — denormalised registry-cache drift class (T-1813 + T-1817 second-instance codification)"
+  - time: "2026-05-14T00:35:14"
+    action: "T-1687: L-372 — set -e + var=$(cmd) silent-halt class (origin T-1762 own-dogfood)"
+  - time: "2026-05-14T00:42:23"
+    action: "T-1687: defer T-1818 peer-subscribe cron entry to joint-deploy slice"
+  - time: "2026-05-15T20:31:14"
+    action: "T-1687: post-completion learning capture — L-384 from T-1860 (forensic logs must append + scope per actor)"
+  - time: "2026-05-15T20:37:05"
+    action: "T-1687: capture L-385 — YAML single-quoted scalars need '' escape (from T-1861 RCA)"
+  - time: "2026-05-15T20:45:18"
+    action: "T-1687: capture L-386 (audit-aggregator drift on new event class) + L-387 (SIGPIPE in verification pipelines) — from T-1862"
+  - time: "2026-05-15T21:35:24"
+    action: "T-1687: remove orphan active/T-1859 — completed/ is canonical (resolves G-052 audit FAIL)"
+  - time: "2026-05-15T22:00:45"
+    action: "T-1687: capture L-388 — audit-detector vs sweep-recoverer must agree on eligible class (from T-1865)"
+  - time: "2026-05-15T22:00:55"
+    action: "T-1687: append L-388 file change (was missed by prior commit's add)"
+  - time: "2026-05-15T22:20:39"
+    action: "T-1687: close T-1828 — github mirror autonomously healed (dispatch-safety arc anchor housekeeping)"
+  - time: "2026-05-15T22:20:58"
+    action: "T-1687: capture T-1828 resolution updates + episodic (was missed by prior rename-only commit)"
+  - time: "2026-05-15T22:24:52"
+    action: "T-1687: fill T-1833 Recommendation block (D14 audit warning clearance)"
+  - time: "2026-05-15T22:28:57"
+    action: "T-1687: close T-1867 (MCP baseline 154→168 — audit drift cleared, dispatch-safety arc housekeeping)"
+  - time: "2026-05-15T22:30:26"
+    action: "T-1687: register revisit-due-scan.sh fabric card (fabric drift unregistered clearance)"
+  - time: "2026-05-15T22:37:22"
+    action: "T-1687: re-baseline enforcement hash after T-1730/T-1731 legitimate hook additions"
+  - time: "2026-05-15T22:40:44"
+    action: "T-1687: sync watchtower.pid to running process (stale-triple WARN clearance)"
+  - time: "2026-05-15T22:42:26"
+    action: "T-1687: resolve stale U-006 pending entry (ct301 onedev migration completed 13d ago)"
+  - time: "2026-05-15T22:48:14"
+    action: "T-1687: close T-1868 + capture L-389 (G-063 shape-assumption in scripts)"
+  - time: "2026-05-15T22:53:13"
+    action: "T-1687: fw vendor sync — refresh .agentic-framework/ vendored copy"
+  - time: "2026-05-15T23:20:10"
+    action: "T-1687: fabric enrich — close audit edgeless-cards WARN"
+  - time: "2026-05-15T23:25:28"
+    action: "T-1687: archive orphan handover S-2026-0515-2203"
+  - time: "2026-05-15T23:26:57"
+    action: "T-1687: backfill T-1819 episodic — peer-consult prompts seed"
+  - time: "2026-05-15T23:35:11"
+    action: "T-1687: backfill T-1548 auto-tick-on-decide Agent ACs"
+  - time: "2026-05-15T23:37:52"
+    action: "T-1687: resolve U-001 as stale (G-059 mitigated in-framework via T-1425)"
+  - time: "2026-05-15T23:40:44"
+    action: "T-1687: housekeeping — episodic backfill + stale approval/counter cleanup"
+  - time: "2026-05-15T23:45:00"
+    action: "T-1687: capture L-390 + file T-1870 (completed-dir status desync class)"
+  - time: "2026-05-15T23:46:26"
+    action: "T-1687: G-063 — add T-1868 evidence + refresh last_reviewed"
+  - time: "2026-05-16T00:14:56"
+    action: "T-1687: T-1870 CTL-028 — completed/ frontmatter status consistency check (L-390 prevention)"
+  - time: "2026-05-16T00:15:36"
+    action: "T-1687: L-390 — mark prevention deployed via T-1870 CTL-028 + fabric register"
+  - time: "2026-05-16T00:18:37"
+    action: "T-1687: T-1870 verification fix — avoid SIGPIPE under pipefail (L-387 captured)"
+  - time: "2026-05-16T00:19:27"
+    action: "T-1687: backfill 7 agent-owned completed/ status desyncs (CTL-028 baseline cleanup)"
+  - time: "2026-05-16T00:21:18"
+    action: "T-1687: fabric enrich — 12 edges added (4 cards), incl. CTL-028 test wiring"
+  - time: "2026-05-16T00:29:39"
+    action: "T-1687: T-1847 verification fix — nested-audit chicken-and-egg (CTL-013 false-pos)"
+  - time: "2026-05-16T00:30:08"
+    action: "T-1687: L-391 — audit-inside-audit verification anti-pattern (CTL-013 chicken-and-egg)"
+  - time: "2026-05-16T00:31:33"
+    action: "T-1687: CTL-013 — skip verification lines that invoke `bin/fw audit` (L-391)"
+  - time: "2026-05-16T00:38:03"
+    action: "T-1687: CTL-013 — bats isolation retry for OBS-022 env-contam false positives"
+  - time: "2026-05-16T00:47:06"
+    action: "T-1687: CLAUDE.md — document `fw peer subscribe` (Quick Reference doc-drift fix)"
+  - time: "2026-05-16T00:56:56"
+    action: "T-1687: vendor sync — .agentic-framework/ caught up to source"
+  - time: "2026-05-16T09:11:05"
+    action: "T-1687: close render-surface trio T-1763/T-1764/T-1765 (work-completed)"
+  - time: "2026-05-16T09:31:55"
+    action: "T-1687: T-1872 — exclude inline:true workflows from staleness audit"
+  - time: "2026-05-16T09:56:10"
+    action: "T-1687: T-1873 closure artefact — episodic + completed/ move (L-392 closure)"
+  - time: "2026-05-16T10:16:18"
+    action: "T-1687: T-1766 partial-complete transition (owner→human, [REVIEW] AC awaits)"
+  - time: "2026-05-16T11:12:28"
+    action: "T-1687: arc-grooming slice 1 — close T-1848 to partial-complete + L-393"
+  - time: "2026-05-16T11:39:14"
+    action: "T-1687: L-394 — META-LEARNING on immediate L-393 recurrence"
+  - time: "2026-05-16T23:26:20"
+    action: "T-1687: ship T-1851 — deprecate constituent_tasks: field (T-NEW-4)"
+  - time: "2026-05-16T23:38:31"
+    action: "T-1687: ship T-1855 — stale-arc audit warning (T-NEW-7)"
+  - time: "2026-05-16T23:46:55"
+    action: "T-1687: ship T-1852 — arc lifecycle state machine (T-NEW-5a)"
+  - time: "2026-05-17T00:03:09"
+    action: "T-1687: ship T-1854 — fw arc abandon CLI verb (T-NEW-6)"
+  - time: "2026-05-17T00:27:37"
+    action: "T-1687: ship T-1853 — Watchtower /arcs lifecycle filter tabs + stale badge (T-NEW-5b)"
+  - time: "2026-05-17T00:35:24"
+    action: "T-1687: ship T-1857 — 012-ArcSystem.md + FRAMEWORK.md updates (T-NEW-9)"
+  - time: "2026-05-17T09:07:36"
+    action: "T-1687: L-395 — bash arithmetic octal parse of leading-zero strings (origin T-1877)"
+  - time: "2026-05-17T16:15:22"
+    action: "T-1687: L-396 + L-397 — brace-pipe output drop + silent-corpus migration pattern (origin T-1879)"
+  - time: "2026-05-17T17:22:39"
+    action: "T-1687: T-1879 closure record (status=work-completed, reviewer verdict R-2e07807f)"
+  - time: "2026-05-17T17:40:20"
+    action: "T-1687: T-1880 closure record (status=work-completed, partial-complete via P-013)"
+  - time: "2026-05-17T20:24:21"
+    action: "T-1687: T-1846 status drift fix (CTL-028 recovery, L-390)"
+  - time: "2026-05-17T20:38:43"
+    action: "T-1687: L-390 — record T-1882 detection-window closure + meta-lesson"
+  - time: "2026-05-17T21:02:20"
+    action: "T-1687: bank post-ship evidence for T-1879/T-1880 Human [REVIEW]"
+  - time: "2026-05-17T21:14:13"
+    action: "T-1687: L-390 — record T-1883 CTL-012 promotion + remaining sweep candidates"
+  - time: "2026-05-17T21:51:27"
+    action: "T-1687: close T-1884 — CTL-026 promotion shipped, L-390 sweep exhausted"
+  - time: "2026-05-17T21:57:57"
+    action: "T-1687: close T-1885 — fabric drift unregistered count now 0"
+  - time: "2026-05-17T22:13:54"
+    action: "T-1687: close T-1886 — baseline refreshed, doctor FAIL cleared"
+  - time: "2026-05-17T22:38:28"
+    action: "T-1687: close T-1887 — Candidate A deployed, L-398 in template"
+  - time: "2026-05-17T23:00:59"
+    action: "T-1687: ship T-1888 — PostToolUse nudge on .claude/settings.json edits (L-398 Candidate B)"
+  - time: "2026-05-17T23:02:00"
+    action: "T-1687: register T-1888 fabric cards — check-settings-edit hook + bats test"
+  - time: "2026-05-17T23:15:09"
+    action: "T-1687: update L-398 — Candidate B deployed (T-1888 PostToolUse hook)"
+  - time: "2026-05-17T23:38:13"
+    action: "T-1687: ship T-1889 — D10 audit HTML-comment-blindness fix (arc-grooming hygiene)"
+  - time: "2026-05-17T23:38:38"
+    action: "T-1687: register T-1889 fabric card — D10 HTML-comment-blindness test"
+  - time: "2026-05-17T23:40:42"
+    action: "T-1687: amend L-288 — D10 audit application of strip-comments pattern (T-1889)"
+  - time: "2026-05-18T00:28:06"
+    action: "T-1687: reclassify T-1854/T-1855 Human ACs to Agent [REVIEWER] + close"
+  - time: "2026-05-18T00:29:27"
+    action: "T-1687: T-1854/T-1855 AC reclassification content (split from rename)"
+  - time: "2026-05-18T00:40:45"
+    action: "T-1687: reclassify 6 arc-grooming render-surface Human ACs → Agent + Playwright"
+  - time: "2026-05-18T00:41:37"
+    action: "T-1687: register fabric cards for 2 new Playwright tests (L-349)"
+  - time: "2026-05-18T11:32:16"
+    action: "T-1687: L-401 — use 'bin/fw reviewer' first when bucketing Human ACs"
+  - time: "2026-05-18T11:42:16"
+    action: "T-1687: close 6 arc-grooming partial-completes via Watchtower ticks"
+  - time: "2026-05-18T20:38:17"
+    action: "T-1687: archive T-1890 (partial-complete recheck — all ACs already ticked)"
+  - time: "2026-05-18T21:03:10"
+    action: "T-1687: archive T-1903 (audit CTL-029 + fw task archive-eligible sweep ships)"
+  - time: "2026-05-18T21:05:17"
+    action: "T-1687: T-1902 governance metadata — tags + related_tasks (L-349 post-grill closure)"
+  - time: "2026-05-18T21:08:37"
+    action: "T-1687: arc-005 demo — add closure-precondition status table (2026-05-18)"
+  - time: "2026-05-18T21:26:24"
+    action: "T-1687: T-1904 transitioned to partial-complete (Rec GO; 2 [REVIEW] pending)"
+  - time: "2026-05-18T22:16:52"
+    action: "T-1687: refresh arc-005 closure-preconditions tracker — T-1902 GO + 5 sibling shipped"
+  - time: "2026-05-18T22:32:40"
+    action: "T-1687: revert T-1906/T-1907 fake-prevention chain"
+  - time: "2026-05-19T16:23:15"
+    action: "T-1687: cross-link 040-ValueDrivers.md from 010-TaskSystem.md + 012-ArcSystem.md"
+  - time: "2026-05-20T16:07:35"
+    action: "T-1687: fabric housekeeping — register arc_close.html, remove stale tabs card, enrich 48 cards"
+  - time: "2026-05-20T16:44:59"
+    action: "T-1687: close 5 arc-005 build slices — T-1909/10/11 partial-complete, T-1913/14 done"
+  - time: "2026-05-20T20:29:43"
+    action: "T-1687: close 6 BVP arc tasks to partial-complete (arc-006 grooming)"
+  - time: "2026-05-20T21:07:24"
+    action: "T-1687: close T-1922/T-1923/T-1935 (arc-006 BVP estimator slices)"
+  - time: "2026-05-20T21:09:56"
+    action: "T-1687: close T-1936 (arc-level BVP rollup) to partial-complete"
+  - time: "2026-05-20T21:33:16"
+    action: "T-1687: correct L-414 root cause (sed range, not section scoping) + cross-link T-1967"
+  - time: "2026-05-20T23:26:42"
+    action: "T-1687: file T-1969 (arc id+slug unified) + T-1970 (badge contrast sweep)"
+  - time: "2026-05-30T22:08:07"
+    action: "T-1687: L-448 capture — extractor protocol grep-zero AC"
+  - time: "2026-05-30T22:16:45"
+    action: "T-1687: L-449 capture + OBS-035 promoted (T-2121), OBS-041 dismissed"
+  - time: "2026-05-31T11:36:50"
+    action: "T-1687: OBS-043 — CTL-029 chain on T-1702/T-1707/G-065 (orchestrator-arc pre-close)"
+  - time: "2026-05-31T12:04:01"
+    action: "T-1687: OBS-044 — prod Watchtower deployment lag (3 URLs in T-1990/T-1994 404 on prod)"
+  - time: "2026-06-06T00:34:46"
+    action: "T-1687: iw-slice-worker.md companion template for MCP arc Slice 1-4 dispatch"
+  - time: "2026-06-06T00:47:01"
+    action: "T-1687: T-2209 artifact §16 — cross-link iw-slice-worker.md to Path C plan"
+  - time: "2026-06-06T08:32:58"
+    action: "T-1687: capture L-461 — stale partial-complete detection + recovery ritual"
+  - time: "2026-06-08T09:45:51"
+    action: "T-1687: fw inception sweep — finalize 4 GO inceptions + 1 DEFER park"
+  - time: "2026-06-08T12:13:06"
+    action: "T-1687: generate 4 missing episodic summaries (T-2201/T-2203/T-2204/T-2248)"
+  - time: "2026-06-08T12:47:48"
+    action: "T-1687: file T-2254 — Watchtower /arcs/new form gap (captured/later)"
+  - time: "2026-06-08T17:18:20"
+    action: "T-1687: housekeeping — sync vendored agents/audit/ + backfill 12 episodics"
+  - time: "2026-06-08T17:59:51"
+    action: "T-1687: promote 4 captured+later tasks to horizon:next (T-2265/T-2171/T-2266/T-2267)"
+  - time: "2026-06-09T00:28:47"
+    action: "T-1687: batch-regenerate 21 missing episodic summaries"
+  - time: "2026-06-09T00:56:29"
+    action: "T-1687: fabric enrich pass (+2 edges, 6 cards refreshed)"
+  - time: "2026-06-09T01:27:01"
+    action: "T-1687: fabric enrich — +2 edges across 2 cards"
+  - time: "2026-06-10T00:44:54"
+    action: "T-1687: fabric enrich — +14 edges across 6 cards (WARN 91→85)"
+  - time: "2026-06-10T00:52:46"
+    action: "T-1687: L-461 stale-PC sweep — close 4 tasks where status drifted from completed/ filesystem location"
+  - time: "2026-06-10T01:01:02"
+    action: "T-1687: backfill 7 missing episodic summaries (audit WARN class)"
+  - time: "2026-06-10T01:05:13"
+    action: "T-1687: L-472 — L-461 scan regex must handle '### Human (parenthetical)' headings"
+  - time: "2026-06-10T01:14:00"
+    action: "T-1687: file T-2300 (T-2163 leg-gap RCA — horizon-null skipped on re-close path)"
+  - time: "2026-07-01T23:53:20"
+    action: "T-1687: Grilling session findings — telemetry gaps and truncation analysis"
+  - time: "2026-07-02T09:05:16"
+    action: "T-1687: Grilling session complete — file auto-tuning build tasks"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 161 commit(s), 87138 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 87138
+  commits: 161
+  files_changed: 1508
+  lines_added: 71667
+  lines_removed: 19084
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-1687-install--apply-grill-with-docs-skill--gr.md
+generated_by: context-agent-hybrid
