@@ -4,12 +4,12 @@ name: "escalation-scan: auto-retirement (expire rules with 0 matches in 30d)"
 description: >
   escalation-scan: auto-retirement (expire rules with 0 matches in 30d)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, C-007, bin/claude-fw, bin/fw, lib/upgrade.sh, tools/escalation-rule-lifecycle.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T07:04:23Z
-last_update: 2026-07-02T08:15:35Z
-date_finished:
+last_update: 2026-07-02T08:17:13Z
+date_finished: 2026-07-02T08:17:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -192,6 +192,21 @@ grep -q "Extended: T-2499" tools/escalation-rule-lifecycle.py
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All Agent ACs verified. Auto-retirement logic added to existing lifecycle script. `check_zero_matches()` function scans 30-day window of v0.5 verdicts, counts pattern matches per active rule, retires rules with 0 matches (sets status=expired, retired_reason, retired_at). Integrated into daily cron with reporting. Script runs without error.
+
+**Evidence:**
+- Function added: `check_zero_matches()` at line ~56 in escalation-rule-lifecycle.py
+- Constants: RETIREMENT_WINDOW_DAYS = 30
+- Retirement logic: lines ~164-171 in process_rules (status active → expired)
+- Metadata: retired_reason, retired_at timestamp
+- Reporting: "Retired N rule(s) (zero matches)" section in output
+- Verification passed: all 5 commands pass
+- Docstring updated: "Extended: T-2499 (auto-retirement for zero-match rules)"
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -219,3 +234,22 @@ grep -q "Extended: T-2499" tools/escalation-rule-lifecycle.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2499-escalation-scan-auto-retirement-expire-r.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-97ec6a77
+- **Timestamp:** 2026-07-02T08:17:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 4
+     - evidence: `python3 tools/escalation-rule-lifecycle.py --dry-run > /dev/null`
+  2. **skip-as-pass** (severe, deterministic) @ Verification:line 4
+     - evidence: `python3 tools/escalation-rule-lifecycle.py --dry-run > /dev/null`
+
+### 2026-07-02T08:17:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

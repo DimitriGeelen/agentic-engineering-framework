@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2498: escalation-scan: auto-narrowing logic (detect false negatives, propose stricter
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T08:15:27Z
+# ============================================================================
+
+task_id: T-2498
+task_name: "escalation-scan: auto-narrowing logic (detect false negatives, propose stricter"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T07:03:46Z
+completed: 2026-07-02T08:15:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-25T09:09:15+02:00
+last_commit: 2026-07-02T10:15:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fix bin/*.sh exec bit (OBS-090, OBS-087 sibling). complete — bin/*.sh exec-bit fix verified (OBS-090 resolved). episodic summary. auto-narrowing detector for false negatives
+
+# Key outcomes
+outcomes:
+  - 'Script `tools/escalation_narrowing_detector.py` created'
+  - 'Loads v0.5 verdicts and H1 candidates from LATEST files'
+  - 'Detects false negatives: `should_escalate: true` verdicts not in H1'
+  - 'Groups false negatives by pattern attributes (title, body markers)'
+  - 'Applies safeguard gates (confidence ≥0.95, sample ≥3, specificity ≥2)'
+  - 'Proposes v2 heuristics with stricter attribute combinations'
+  - 'Outputs to `.context/working/escalation-narrowing-proposals.yaml`'
+  - 'Script runs without error'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'complete — bin/*.sh exec-bit fix verified (OBS-090 resolved)'
+    source: git-mined
+  - description: 'fix bin/*.sh exec bit (OBS-090, OBS-087 sibling)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/hook-enable.sh'
+  - 'bin/integrate-go-live.sh'
+  - 'bin/migrate-horizon-null-completed.sh'
+  - '.context/concerns.yaml'
+  - '.context/episodic/T-2498.yaml'
+  - '.fabric/components/tools-escalation_narrowing_detector.yaml'
+  - '.tasks/active/T-2498-escalation-scan-auto-narrowing-logic-det.md'
+  - '.tasks/active/T-2498-fix-integrate-go-livesh-missing-exec-bit.md'
+  - '.tasks/completed/T-2498-fix-integrate-go-livesh-missing-exec-bit.md'
+  - 'tests/unit/t2498_bin_scripts_executable.bats'
+  - 'tools/escalation_narrowing_detector.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-25T09:09:15"
+    action: "T-2498: fix bin/*.sh exec bit (OBS-090, OBS-087 sibling)"
+  - time: "2026-06-25T09:10:05"
+    action: "T-2498: complete — bin/*.sh exec-bit fix verified (OBS-090 resolved)"
+  - time: "2026-06-25T09:11:11"
+    action: "T-2498: episodic summary"
+  - time: "2026-07-02T10:15:09"
+    action: "T-2498: auto-narrowing detector for false negatives"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 71
+  commits: 7
+  files_changed: 35
+  lines_added: 4599
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2498-escalation-scan-auto-narrowing-logic-det.md
+generated_by: context-agent-hybrid

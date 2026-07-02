@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2499: escalation-scan: auto-retirement (expire rules with 0 matches in 30d)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T08:17:22Z
+# ============================================================================
+
+task_id: T-2499
+task_name: "escalation-scan: auto-retirement (expire rules with 0 matches in 30d)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T07:04:23Z
+completed: 2026-07-02T08:17:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-06-25T10:35:45+02:00
+last_commit: 2026-07-02T10:17:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — budget auto-restart inert under plain claude; auto path doesn't compact. correct RCA — arc-012 auto-restart loop IS the designed mechanism. loud unsupervised-session notice (AC2/AC3 core). fw doctor supervision check + regression test (AC4/AC5) — complete. auto-retirement for zero-match rules
+
+# Key outcomes
+outcomes:
+  - '`check_zero_matches()` function added to escalation-rule-lifecycle.py'
+  - 'Function scans recent v0.5 verdicts (30-day window)'
+  - 'Counts matches per active rule (tasks matching rule''s pattern)'
+  - 'Rules with 0 matches in 30d marked for retirement'
+  - 'Retirement: status active → expired, set retired_reason'
+  - 'Report includes retired rule count with patterns'
+  - 'Script runs without error'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/bin/fw'
+  - 'agents/context/budget-gate.sh'
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - '.tasks/active/T-2499-escalation-scan-auto-retirement-expire-r.md'
+  - '.tasks/active/T-2499-fix-budget-auto-restart-silently-no-ops-.md'
+  - '.tasks/completed/T-2498-escalation-scan-auto-narrowing-logic-det.md'
+  - 'tests/integration/t2499_supervision_notice.bats'
+  - 'tools/escalation-rule-lifecycle.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-25T10:35:45"
+    action: "T-2499: RCA — budget auto-restart inert under plain claude; auto path doesn't compact"
+  - time: "2026-06-25T10:41:06"
+    action: "T-2499: correct RCA — arc-012 auto-restart loop IS the designed mechanism"
+  - time: "2026-06-25T11:14:24"
+    action: "T-2499: loud unsupervised-session notice (AC2/AC3 core)"
+  - time: "2026-06-25T11:41:05"
+    action: "T-2499: fw doctor supervision check + regression test (AC4/AC5) — complete"
+  - time: "2026-07-02T10:17:05"
+    action: "T-2499: auto-retirement for zero-match rules"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 72 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 72
+  commits: 6
+  files_changed: 19
+  lines_added: 2303
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2499-escalation-scan-auto-retirement-expire-r.md
+generated_by: context-agent-hybrid
