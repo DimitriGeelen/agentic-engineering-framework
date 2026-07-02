@@ -1,0 +1,6 @@
+command_hash: 721b0f0bd321bbe0970d6c36e24589d67408b478ad3bfb7d3c0932096b320a60
+command_preview: git reset --hard HEAD 2>&1
+risk: 'HARD RESET: Permanently discards all uncommitted changes'
+status: pending
+timestamp: '2026-07-02T12:32:12Z'
+type: tier0
