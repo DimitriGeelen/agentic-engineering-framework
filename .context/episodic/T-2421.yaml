@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2421: Audit WARN — Uncommitted changes present
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T17:15:12Z
+# ============================================================================
+
+task_id: T-2421
+task_name: "Audit WARN — Uncommitted changes present"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T17:02:25Z
+completed: 2026-07-02T17:15:03Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-06-16T14:43:14+02:00
+last_commit: 2026-06-16T14:45:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Recommendation gate for partial-complete build tasks (T-2419 GO). self-vendor sync + register fabric card. close + episodic (full-complete, no Human ACs)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified: transient warning during active session, resolved by committing'
+  - 'Determination: transient, working as intended - commit cadence reminder'
+  - 'Committed T-2420/T-2421 RCA work (e1755ef3e) - significant uncommitted changes now committed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/review.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.context/concerns.yaml'
+  - '.fabric/components/tests-unit-recommendation_gate_build_partial.yaml'
+  - 'lib/review.sh'
+  - '.tasks/active/T-2421-update-tasksh--fw-task-review-recommenda.md'
+  - '.tasks/completed/T-2421-update-tasksh--fw-task-review-recommenda.md'
+  - 'tests/unit/recommendation_gate_build_partial.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T14:43:14"
+    action: "T-2421: Recommendation gate for partial-complete build tasks (T-2419 GO)"
+  - time: "2026-06-16T14:43:27"
+    action: "T-2421: self-vendor sync + register fabric card"
+  - time: "2026-06-16T14:45:41"
+    action: "T-2421: close + episodic (full-complete, no Human ACs)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 5
+  files_changed: 12
+  lines_added: 842
+  lines_removed: 57
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2421-audit-warn--uncommitted-changes-present.md
+generated_by: context-agent-hybrid
