@@ -4,16 +4,16 @@ name: "investigate CC picker description influence — claude-fw project prefix"
 description: >
   Inception: investigate CC picker description influence — claude-fw project prefix
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw]
 related_tasks: []
 created: 2026-06-15T22:13:50Z
-last_update: 2026-06-15T22:15:05Z
-date_finished:
+last_update: 2026-07-02T19:44:13Z
+date_finished: 2026-07-02T19:44:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -49,6 +49,25 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
       (no-signal); F3=2 (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-02T16:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F-AUTONOMY: 2
+      audit_severity: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
+      (no-signal); audit_severity=2 (no-signal); F3=2 (no-signal); F1=2 
+      (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -99,15 +118,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -189,7 +208,46 @@ Net: project visibility WINS across the cross-project picker view; the within-pr
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+CC has a first-class `claude -n/--name <name>` flag that sets the session picker's display name (and terminal title). This means `claude-fw` can stamp a project prefix into the picker by passing `-n` when invoking `claude`. One-liner sketch:
+
+```bash
+# In bin/claude-fw, before `exec claude "$@"`:
+_args_have_name() { for a in "$@"; do case "$a" in -n|--name) return 0;; esac; done; return 1; }
+if [ "${FW_NO_PICKER_NAME:-0}" != "1" ] && ! _args_have_name "$@"; then
+    PICKER_NAME="${FW_PROJECT_NAME:-$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")}"
+    set -- -n "$PICKER_NAME" "$@"
+fi
+```
+
+Operator overrides:
+- Explicit `claude-fw --name "<custom>"` wins (we honour the user's flag)
+- `FW_PROJECT_NAME=AEF claude-fw` for a short alias
+- `FW_NO_PICKER_NAME=1` to opt out entirely
+- Bare invocation defaults to project basename (`999-Agentic-Engineering-Framework`, etc.)
+
+Tradeoff: setting `--name` REPLACES CC's auto-summary; we lose the auto-derived "what is this session doing" text in the picker's left column. Mitigations:
+1. CC still shows `detail`/`needs` in the right-side description column (e.g. "What would you like to work on?"), which carries the auto-summary semantic content.
+2. The T-2411 startup banner I shipped still fires post-attach to show focus + arc once the operator picks a session.
+3. Operator can rename ad-hoc per session via `--name` if they want session-specific labels.
+
+Net: project visibility WINS across the cross-project picker view; the within-project session distinction shifts from "left column auto-summary" to "right column detail + post-attach banner". Aligns with operator's 2026-06-16 ask (project visible in overview).
+
+Evidence:
+
+- `claude --help` line 84-86: `-n, --name <name>  Set a display name for this session picker, and terminal title`
+- `/root/.claude/sessions/1447696.json`: `name: "workshop"`, `cwd: "/opt/025-WokrshopDesigner"` — proves user-set names work and persist.
+- `/root/.claude/jobs/<id>/state.json` distribution: 15 `auto` / 1 `user` (`for d in jobs/; do jq -r .nameSource state.json; done | sort | uniq -c`) — name override path is rarely used but functional.
+- `claude agents --help`: no display-column flag; only `--cwd <path>` filter — confirms no cleaner alternative.
+
+Build scope: one-file edit to `bin/claude-fw` (~10 LOC), 1 bats test (real wrapper + stub `claude` asserting `-n <project>` is present in argv when not user-provided), self-vendor sync.
+
+**Date**: 2026-07-02T19:44:13Z
 
 ## Updates
 
@@ -198,3 +256,65 @@ Net: project visibility WINS across the cross-project picker view; the within-pr
 
 ### 2026-06-15T22:15:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-02T19:44:13Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+CC has a first-class `claude -n/--name <name>` flag that sets the session picker's display name (and terminal title). This means `claude-fw` can stamp a project prefix into the picker by passing `-n` when invoking `claude`. One-liner sketch:
+
+```bash
+# In bin/claude-fw, before `exec claude "$@"`:
+_args_have_name() { for a in "$@"; do case "$a" in -n|--name) return 0;; esac; done; return 1; }
+if [ "${FW_NO_PICKER_NAME:-0}" != "1" ] && ! _args_have_name "$@"; then
+    PICKER_NAME="${FW_PROJECT_NAME:-$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")}"
+    set -- -n "$PICKER_NAME" "$@"
+fi
+```
+
+Operator overrides:
+- Explicit `claude-fw --name "<custom>"` wins (we honour the user's flag)
+- `FW_PROJECT_NAME=AEF claude-fw` for a short alias
+- `FW_NO_PICKER_NAME=1` to opt out entirely
+- Bare invocation defaults to project basename (`999-Agentic-Engineering-Framework`, etc.)
+
+Tradeoff: setting `--name` REPLACES CC's auto-summary; we lose the auto-derived "what is this session doing" text in the picker's left column. Mitigations:
+1. CC still shows `detail`/`needs` in the right-side description column (e.g. "What would you like to work on?"), which carries the auto-summary semantic content.
+2. The T-2411 startup banner I shipped still fires post-attach to show focus + arc once the operator picks a session.
+3. Operator can rename ad-hoc per session via `--name` if they want session-specific labels.
+
+Net: project visibility WINS across the cross-project picker view; the within-project session distinction shifts from "left column auto-summary" to "right column detail + post-attach banner". Aligns with operator's 2026-06-16 ask (project visible in overview).
+
+Evidence:
+
+- `claude --help` line 84-86: `-n, --name <name>  Set a display name for this session picker, and terminal title`
+- `/root/.claude/sessions/1447696.json`: `name: "workshop"`, `cwd: "/opt/025-WokrshopDesigner"` — proves user-set names work and persist.
+- `/root/.claude/jobs/<id>/state.json` distribution: 15 `auto` / 1 `user` (`for d in jobs/; do jq -r .nameSource state.json; done | sort | uniq -c`) — name override path is rarely used but functional.
+- `claude agents --help`: no display-column flag; only `--cwd <path>` filter — confirms no cleaner alternative.
+
+Build scope: one-file edit to `bin/claude-fw` (~10 LOC), 1 bats test (real wrapper + stub `claude` asserting `-n <project>` is present in argv when not user-provided), self-vendor sync.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d5281fd
+- **Timestamp:** 2026-07-02T19:44:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-07-02T19:44:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
