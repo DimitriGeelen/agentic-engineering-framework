@@ -7,12 +7,12 @@ description: >
   WARN=0.75) mirroring T-2329 F-AUTONOMY pattern. Add audit_severity:fail|warn frontmatter
   field. Validates that audit-finding tasks rank above routine backlog.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/bvp-estimator/estimator.py, tests/unit/test_bvp_estimator.py]
 related_tasks: [T-2352, T-2353, T-2329]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: [T-2352, T-2353, T-2329]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T12:24:41Z
-last_update: '2026-06-13T18:00:05Z'
-date_finished:
+last_update: 2026-07-02T16:07:37Z
+date_finished: 2026-07-02T16:07:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -91,11 +91,11 @@ when S1 fixes the driver's scale.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator's 0–5 scale, mirroring `score_f_autonomy` structure
-- [ ] Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml`
-- [ ] `audit_severity: fail|warn` documented as a recognised frontmatter field (CLAUDE.md task-system section or value-drivers.yaml driver entry)
-- [ ] Unit tests cover fail→high score, warn→mid score, absent→0/no-signal
-- [ ] Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task on `fw bvp`
+- [x] `score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator's 0–5 scale, mirroring `score_f_autonomy` structure
+- [x] Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml`
+- [x] `audit_severity: fail|warn` documented as a recognised frontmatter field (CLAUDE.md task-system section or value-drivers.yaml driver entry)
+- [x] Unit tests cover fail→high score, warn→mid score, absent→0/no-signal
+- [x] Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task on `fw bvp`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -160,6 +160,11 @@ when S1 fixes the driver's scale.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q "def score_audit_severity" agents/termlink/bvp-estimator/estimator.py
+grep -q '"audit_severity": score_audit_severity' agents/termlink/bvp-estimator/estimator.py
+grep -q "audit_severity:" policy/value-drivers.yaml
+grep -q "audit_severity:" CLAUDE.md
+python3 -m pytest tests/unit/test_bvp_estimator.py -k "audit_severity" -v
 
 ## RCA
 
@@ -240,3 +245,15 @@ when S1 fixes the driver's scale.
 ### 2026-06-13T11:23:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e430d2c
+- **Timestamp:** 2026-07-02T16:07:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-02T16:07:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2354: BVP estimator score_audit_severity handler + audit_severity frontmatter (T-2352
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T16:07:48Z
+# ============================================================================
+
+task_id: T-2354
+task_name: "BVP estimator score_audit_severity handler + audit_severity frontmatter (T-2352"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-06-12T12:24:41Z
+completed: 2026-07-02T16:07:37Z
+duration_days: 20
+updates_count: 4
+first_commit: 2026-06-13T13:22:07+02:00
+last_commit: 2026-07-02T18:06:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs + dependency-blocker note (deferred on T-2353). mark in-progress, blocked on T-2353 dependency. file OBS-072 — arc-012 S2/S3 status-vs-directory drift. BVP estimator score_audit_severity handler + carved driver. close — score_audit_severity shipped, all 5 Agent ACs green. Add score_audit_severity handler + driver definition + tests. Fix audit_severity unit tests - verify score values correctly
+
+# Key outcomes
+outcomes:
+  - '`score_audit_severity(fm, body, tags) -> tuple[int, list[str]]` handler added to `agents/termlink/bvp-estimator/estimator.py`, reading `fm["audit_severity"]` (fail→top band, warn→next band) on the estimator''s 0–5 scale, mirroring `score_f_autonomy` structure'
+  - 'Handler registered in the handlers dict and dispatched by `estimate_task()` when the `audit_severity` driver is active in `policy/value-drivers.yaml`'
+  - '`audit_severity: fail|warn` documented as a recognised frontmatter field (CLAUDE.md task-system section or value-drivers.yaml driver entry)'
+  - 'Unit tests cover fail→high score, warn→mid score, absent→0/no-signal'
+  - 'Live check: a task with `audit_severity: fail` ranks above an otherwise-equal routine task on `fw bvp`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'Fix audit_severity unit tests - verify score values correctly'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - 'CLAUDE.md'
+  - '.context/episodic/T-2354.yaml'
+  - '.context/inbox.yaml'
+  - '.context/project/decisions.yaml'
+  - 'policy/value-drivers.yaml'
+  - '.tasks/active/T-2354-bvp-estimator-scoreauditseverity-handler.md'
+  - '.tasks/completed/T-2354-bvp-estimator-scoreauditseverity-handler.md'
+  - 'tests/unit/test_bvp_estimator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-13T13:22:07"
+    action: "T-2354: real ACs + dependency-blocker note (deferred on T-2353)"
+  - time: "2026-06-13T13:24:30"
+    action: "T-2354: mark in-progress, blocked on T-2353 dependency"
+  - time: "2026-06-13T13:26:51"
+    action: "T-2354: file OBS-072 — arc-012 S2/S3 status-vs-directory drift"
+  - time: "2026-06-26T01:01:42"
+    action: "T-2354: BVP estimator score_audit_severity handler + carved driver"
+  - time: "2026-06-26T01:15:04"
+    action: "T-2354: close — score_audit_severity shipped, all 5 Agent ACs green"
+  - time: "2026-07-02T18:05:20"
+    action: "T-2354: Add score_audit_severity handler + driver definition + tests"
+  - time: "2026-07-02T18:06:49"
+    action: "T-2354: Fix audit_severity unit tests - verify score values correctly"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 29022 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 29022
+  commits: 7
+  files_changed: 9
+  lines_added: 542
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2354-bvp-estimator-scoreauditseverity-handler.md
+generated_by: context-agent-hybrid
