@@ -199,6 +199,40 @@ free_drivers:
       L5/L6 autonomy criteria (auto-issue gen, auto-merge, closed
       production-feedback loop) are green.
 
+  # -------------------------------------------------------------------------
+  # T-2354 (Slice 2 of T-2352 audit→bugfix autotuning arc). audit_severity is
+  # a TASK ATTRIBUTE (not a value driver in the D1-D4 sense) that affects
+  # priority. Audit-finding tasks (emitted by T-2353's `fw audit --emit-tasks`)
+  # carry `audit_severity: fail|warn` frontmatter. The estimator handler
+  # scores FAIL→5, WARN→4 to prioritize audit findings above routine backlog.
+  #
+  # This is NOT operator-configured (no weight/rubric) — it's a hard-coded
+  # priority boost for structural failures (FAIL) and quality drift (WARN).
+  # Included in free_drivers for completeness; handler is always active.
+  # -------------------------------------------------------------------------
+  - id: audit_severity
+    name: Audit Finding Priority
+    weight: 0                       # not used — handler ignores this, returns 5 or 4
+    protected: false
+    rationale: >
+      Task attribute (not value driver) indicating audit emission. Scores
+      audit-finding tasks high to ensure structural failures (FAIL) and
+      quality drift (WARN) rank above routine backlog. Handler reads
+      audit_severity:fail|warn frontmatter emitted by T-2353.
+    polarity: positive
+    rubric:
+      5: audit_severity:fail   (structural failure — audit FAIL)
+      4: audit_severity:warn   (drift / quality decay — audit WARN)
+      0: Field absent or unrecognised value
+    guardrails: >
+      This is a hard-coded priority boost, not an operator-configurable
+      driver. Audit findings warrant immediate attention regardless of
+      weight configuration.
+    retire_when: >
+      Never — audit findings always warrant prioritization. May evolve
+      into a more sophisticated triage system but the basic mechanism
+      stays permanent.
+
 # ---------------------------------------------------------------------------
 # AUTO-PROMOTION  -- ships OFF. This is the autonomy-IN-OPERATION dial, distinct
 # from any driver (drivers rank autonomy-ENABLING work; this governs whether HV/LC

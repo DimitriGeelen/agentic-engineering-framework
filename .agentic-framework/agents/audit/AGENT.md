@@ -180,6 +180,62 @@ The audit detects common gaming attempts:
 | Practice origin fabrication | Origins to non-existent tasks trigger WARN |
 | Tier 0 bypass attempts | Any Tier 0 pattern without task ref triggers FAIL |
 
+## Automated Task Emission (T-2353)
+
+The audit agent can automatically convert WARN/FAIL findings into bugfix tasks, enabling a feedback loop where audit findings become tracked work items.
+
+### Usage
+
+```bash
+# Dry-run mode: show what would be created without writing files
+./agents/audit/audit.sh --emit-tasks --dry-run
+
+# Live mode: create bugfix tasks for all new findings
+./agents/audit/audit.sh --emit-tasks
+```
+
+### Behavior
+
+**Opt-in:** The `--emit-tasks` flag is required; emission is OFF by default.
+
+**Deduplication:** Each finding's text is normalized and hashed (sha1). The system greps for `audit_finding_hash:` across `.tasks/{active,completed}/` and skips findings already filed. Re-running audit with the same findings will not create duplicate tasks.
+
+**Task Structure:** Each emitted task has:
+- `workflow_type: bugfix`
+- `audit_severity: fail|warn` (from finding level)
+- `audit_finding_hash: <sha1>` (for deduplication)
+- `tags: [audit-finding, severity:<level>, section:<section>]`
+- `horizon: now` (ready to work on)
+- Body sections: Trigger, Finding, RCA, Acceptance Criteria, Verification
+
+**Integration:** Tasks created via emission integrate with:
+- T-1550 RCA gate (bugfix tasks require substantive `## RCA` section at close)
+- Standard task lifecycle (captured → started-work → work-completed)
+- BVP scoring (T-2354 adds `score_audit_severity` handler for fail→5, warn→4)
+
+### Example Output
+
+```
+=== AUDIT FINDINGS EMISSION (T-2353) ===
+Parsing 40 findings (7 FAIL, 33 WARN)...
+  - FAIL: Cron drift detected → hash abc123... (new)
+    Would create: T-XXXX bugfix task
+  - WARN: Fabric cards without edges → hash def456... (already filed as T-YYYY)
+    Skipping (duplicate)
+  
+Summary: 2 new findings → 2 tasks created, 38 skipped (already filed)
+```
+
+### Dry-Run Mode
+
+Use `--dry-run` to preview what would be created without writing task files. Output shows:
+- Finding text excerpt
+- Computed hash
+- Whether the finding is new or already filed
+- Task ID that would be assigned
+
+This allows validating the emission logic before committing to task creation.
+
 ## Limitations
 
 This agent performs **mechanical checks**. For intelligent analysis:
