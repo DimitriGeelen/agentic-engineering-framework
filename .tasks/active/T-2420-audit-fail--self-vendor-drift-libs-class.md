@@ -82,20 +82,20 @@ Mitigation: Run: fw vendor  (sync all vendored .agentic-framework/ classes with 
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** Audit FAIL on "Self-vendor drift: libs class — 3 file(s) out of sync"
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** T-2353, T-2354, and T-2417 modified source files (agents/audit/*, agents/termlink/bvp-estimator/*, policy/value-drivers.yaml) but didn't run `fw vendor self` to sync the vendored copies to `.agentic-framework/` before committing.
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** The pre-push hook catches this drift (T-2240), but only at push time. Between commit and push, the drift exists. The audit emission mechanism (T-2353) automatically created this task to track the fix.
 
-**Prevention:** (TBD)
+**Prevention:** This is working as designed - the pre-push gate blocked the push, audit emitted a task, and now it's being resolved. The autotuning feedback loop (T-2352) is functioning correctly.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Root cause identified and documented in RCA section
-- [ ] Fix implemented (or determination that finding is false positive / transient)
-- [ ] Re-run audit shows finding absent
+- [x] Root cause identified and documented in RCA section
+- [x] Fix implemented: ran `fw vendor self` and committed sync (commit 8509f9bdb)
+- [x] Re-run audit shows finding absent: audit structure section now shows PASS
 
 ## Verification
 
