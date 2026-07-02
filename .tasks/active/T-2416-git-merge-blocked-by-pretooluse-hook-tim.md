@@ -168,6 +168,19 @@ bvp_scores_proposed:
 
 **Prevention:** Integration test that simulates PreToolUse hook flow: stdin JSON with command containing `FW_SAFE_MODE=1 git ...`, verify hook exits 0. Alternative: document that FW_SAFE_MODE must be set in Claude Code session environment, not command-line prefix.
 
+## Recommendation
+
+**Recommendation:** GO - Accept bug report and add to backlog
+
+**Rationale:** Bug is real and documented (OBS-081). Creates catch-22 for automated git merge workflows under governance. Workaround exists (manual terminal or GitHub PR) so severity is medium not critical. Fix options identified: document env-var limitation + add git merge to safe-command allowlist with status checks (T-2054 pattern).
+
+**Evidence:**
+- OBS-081 filed with full RCA (symptom/root cause/prevention)
+- Reproducible: S-2026-0702-1443 hit this attempting T-2501 merge
+- Session detection fixed but FW_SAFE_MODE bypass ineffective
+- 3 fix options documented in OBS-081 prevention field
+- Related work: T-2054 (post-completion commit exemption), T-2462 (push/fetch safe-listing)
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
