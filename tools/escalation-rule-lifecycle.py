@@ -5,6 +5,7 @@ Escalation-scan auto-tuning: rule lifecycle management cron job.
 Manages exclusion rule lifecycle:
 - Activates dry-run rules after 7 days (when activates timestamp passes)
 - Checks reconfirmation: ≥3 new FPs matching pattern extend expires by 30d
+- Retires active rules with 0 matches in last 30 days (T-2499)
 - Expires active rules after 30 days (or longer if reconfirmed)
 - Sends ntfy notifications on activation
 
@@ -14,6 +15,7 @@ Usage:
 Designed to run daily via cron.
 
 Origin: T-2496 (escalation-scan auto-tuning feedback loop, T-1687 grilling session)
+Extended: T-2499 (auto-retirement for zero-match rules)
 """
 
 import argparse
@@ -31,6 +33,8 @@ VERDICTS_FILE = ROOT / ".context" / "working" / "escalation-drift-LATEST-v0.5.ya
 RECONFIRM_THRESHOLD = 3
 # Expiry extension: 30 days
 EXPIRY_EXTENSION_DAYS = 30
+# Retirement window: rules with 0 matches in this many days are retired
+RETIREMENT_WINDOW_DAYS = 30
 
 
 def load_rules():
@@ -51,6 +55,57 @@ def load_verdicts():
     with VERDICTS_FILE.open() as f:
         data = yaml.safe_load(f)
     return data.get('candidates', [])
+
+
+def check_zero_matches(rule, verdicts):
+    """
+    Check if rule has zero matches in recent verdicts (30-day window).
+
+    Returns: number of matches found
+    """
+    pattern_attrs = rule.get('attributes', {})
+    now = datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=RETIREMENT_WINDOW_DAYS)
+
+    matches = 0
+    for verdict in verdicts:
+        # Check timestamp - only count recent verdicts
+        try:
+            verdict_ts = datetime.fromisoformat(verdict.get('ts', '').replace('Z', '+00:00'))
+            if verdict_ts < cutoff:
+                continue
+        except:
+            continue
+
+        # Check if verdict matches rule pattern (same logic as check_reconfirmation)
+        name = verdict.get('name', '')
+        rationale = verdict.get('rationale', '')
+
+        matches_pattern = True
+        for attr_name, attr_value in pattern_attrs.items():
+            if attr_name == 'title':
+                if attr_value.lower() not in name.lower():
+                    matches_pattern = False
+                    break
+            elif attr_name == 'body':
+                # Check rationale for body patterns
+                if attr_value == 'no-code-changes' and 'no code changes' not in rationale.lower():
+                    matches_pattern = False
+                    break
+                elif attr_value == 'doc-edit' and 'doc edit' not in rationale.lower():
+                    matches_pattern = False
+                    break
+                elif attr_value == 'existing-rca' and 'existing rca' not in rationale.lower():
+                    matches_pattern = False
+                    break
+                elif attr_value == 'refactor' and 'refactor' not in rationale.lower():
+                    matches_pattern = False
+                    break
+
+        if matches_pattern:
+            matches += 1
+
+    return matches
 
 
 def check_reconfirmation(rule, verdicts):
@@ -128,6 +183,7 @@ def process_rules(data, verdicts, dry_run=False):
         'activated': [],
         'reconfirmed': [],
         'expired': [],
+        'retired': [],
     }
 
     rules = data.get('rules', [])
@@ -152,6 +208,16 @@ def process_rules(data, verdicts, dry_run=False):
 
         # Reconfirmation: check for new FPs matching pattern
         elif status == 'active':
+            # Check for zero matches (auto-retirement, T-2499)
+            match_count = check_zero_matches(rule, verdicts)
+            if match_count == 0:
+                # Retire rule: no matches in last 30 days
+                if not dry_run:
+                    rule['status'] = 'expired'
+                    rule['retired_reason'] = f'No matches in last {RETIREMENT_WINDOW_DAYS} days'
+                    rule['retired_at'] = now.isoformat()
+                actions['retired'].append((pattern, RETIREMENT_WINDOW_DAYS))
+
             reconfirm_count = check_reconfirmation(rule, verdicts)
             if reconfirm_count >= RECONFIRM_THRESHOLD:
                 if not dry_run:
@@ -244,6 +310,11 @@ def main():
         print(f"Expired {len(actions['expired'])} rule(s):")
         for pattern in actions['expired']:
             print(f"  - {pattern}")
+
+    if actions['retired']:
+        print(f"Retired {len(actions['retired'])} rule(s) (zero matches):")
+        for pattern, days in actions['retired']:
+            print(f"  - {pattern} (0 matches in {days}d)")
 
     if not any(actions.values()):
         print("No lifecycle transitions")
