@@ -4,12 +4,12 @@ name: "Audit FAIL — Self-vendor drift: libs class — 3 file(s) out of sync (T
 description: >
   Audit FAIL — Self-vendor drift: libs class — 3 file(s) out of sync (T-2244)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, agents/task-create/update-task.sh, agents/termlink/bvp-estimator/estimator.py, lib/review.sh, tests/unit/test_bvp_estimator.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T16:58:33Z
-last_update: '2026-07-02T17:00:06Z'
-date_finished:
+last_update: 2026-07-02T17:10:56Z
+date_finished: 2026-07-02T17:10:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,3 +102,20 @@ Mitigation: Run: fw vendor  (sync all vendored .agentic-framework/ classes with 
 # Re-run audit - finding should be absent
 bin/fw audit 2>&1 | grep -q "Self-vendor drift: libs class — 3 file(s) out of sync (T-2244)" && exit 1 || exit 0
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3525362b
+- **Timestamp:** 2026-07-02T17:20:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "Self-vendor drift: libs class — 3 file(s) out of sync (T-2244)" && exit 1 || exit 0`
+
+### 2026-07-02T17:10:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

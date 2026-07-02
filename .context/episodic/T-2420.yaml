@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2420: Audit FAIL — Self-vendor drift: libs class — 3 file(s) out of sync (T-2244)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-02T17:21:07Z
+# ============================================================================
+
+task_id: T-2420
+task_name: "Audit FAIL — Self-vendor drift: libs class — 3 file(s) out of sync (T-2244)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T16:58:33Z
+completed: 2026-07-02T17:10:56Z
+duration_days: 0
+updates_count: 0
+first_commit: 2026-06-16T14:26:51+02:00
+last_commit: 2026-06-16T14:28:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  PreToolUse hook for ### Human AC placement (T-2418 GO). self-vendor sync — propagate AC structure hook to .agentic-framework/
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented: ran `fw vendor self` and committed sync (commit 8509f9bdb)'
+  - 'Re-run audit shows finding absent: audit structure section now shows PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-task-ac-structure.py'
+  - '.agentic-framework/agents/context/check-task-ac-structure.sh'
+  - 'agents/context/check-task-ac-structure.py'
+  - 'agents/context/check-task-ac-structure.sh'
+  - '.fabric/components/agents-context-check-task-ac-structure.yaml'
+  - '.tasks/active/T-2420-pretooluse-hook-detect--human-outside--a.md'
+  - 'tests/unit/check_task_ac_structure.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-16T14:26:51"
+    action: "T-2420: PreToolUse hook for ### Human AC placement (T-2418 GO)"
+  - time: "2026-06-16T14:28:28"
+    action: "T-2420: self-vendor sync — propagate AC structure hook to .agentic-framework/"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 2
+  files_changed: 7
+  lines_added: 849
+  lines_removed: 46
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2420-audit-fail--self-vendor-drift-libs-class.md
+generated_by: context-agent-hybrid
