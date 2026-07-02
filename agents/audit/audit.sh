@@ -269,6 +269,8 @@ fi
 SECTIONS=""       # Comma-separated section names (empty = all)
 OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
 QUIET=false       # Suppress terminal output
+EMIT_TASKS=false  # T-2353: Create bugfix tasks from WARN/FAIL findings
+DRY_RUN=false     # T-2353: Show would-create without actually creating tasks
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -276,6 +278,8 @@ while [[ $# -gt 0 ]]; do
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --quiet) QUIET=true; shift ;;
         --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; shift ;;
+        --emit-tasks) EMIT_TASKS=true; shift ;;
+        --dry-run) DRY_RUN=true; shift ;;
         -h|--help)
             echo "Usage: audit.sh [options]"
             echo ""
@@ -284,6 +288,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --output DIR      Write YAML report to custom directory"
             echo "  --quiet           Suppress terminal output (for cron)"
             echo "  --cron            Shorthand for --output .context/audits/cron --quiet"
+            echo "  --emit-tasks      Create bugfix tasks from WARN/FAIL findings (T-2353)"
+            echo "  --dry-run         Show would-create tasks without creating (requires --emit-tasks)"
             echo ""
             echo "Sections: structure, compliance, quality, traceability, enforcement,"
             echo "          learning, episodic, observations, gaps, handover, graduation,"
@@ -5094,6 +5100,161 @@ with open(METRICS_FILE, "w") as f:
     yaml.dump({"entries": pruned}, f, default_flow_style=False, sort_keys=False)
 METRICS_EOF
 fi
+
+# T-2353: Emit audit findings as bugfix tasks
+_emit_findings_as_tasks() {
+    # Only run if --emit-tasks flag set
+    [ "$EMIT_TASKS" = false ] && return 0
+
+    # Read the YAML output we just wrote
+    local yaml_file="$AUDIT_OUTPUT_FILE"
+    [ ! -f "$yaml_file" ] && { echo "[emit-tasks] No audit YAML found: $yaml_file" >&2; return 1; }
+
+    echo ""
+    echo "=== EMIT FINDINGS AS TASKS ==="
+
+    # Parse YAML for WARN/FAIL findings
+    local findings=$(python3 << 'PYEOF'
+import yaml, sys, hashlib
+
+yaml_path = sys.argv[1]
+with open(yaml_path) as f:
+    data = yaml.safe_load(f)
+
+findings = data.get("findings", [])
+for finding in findings:
+    level = finding.get("level", "")
+    if level not in ["WARN", "FAIL"]:
+        continue
+
+    check = finding.get("check", "")
+    mitigation = finding.get("mitigation", "")
+
+    # Normalize: strip extra whitespace
+    normalized = " ".join(check.split())
+
+    # Compute hash
+    hash_val = hashlib.sha1(normalized.encode()).hexdigest()
+
+    # Output: LEVEL|HASH|CHECK|MITIGATION
+    print(f"{level}|{hash_val}|{check}|{mitigation}")
+PYEOF
+    "$yaml_file")
+
+    if [ -z "$findings" ]; then
+        echo "No WARN/FAIL findings to emit"
+        return 0
+    fi
+
+    local created=0 skipped=0
+
+    while IFS='|' read -r level hash check_text mitigation; do
+        # Check if this hash already exists in tasks
+        if grep -rq "audit_finding_hash: $hash" "$TASKS_DIR/active/" "$TASKS_DIR/completed/" 2>/dev/null; then
+            ((skipped++))
+            [ "$DRY_RUN" = true ] && echo "[SKIP] $level (hash exists): ${check_text:0:60}..."
+            continue
+        fi
+
+        # Truncate check text for title (max 80 chars)
+        local title="Audit $level — ${check_text:0:70}"
+        [ ${#check_text} -gt 70 ] && title="${title}..."
+
+        # Determine section from check text (heuristic: CTL-NNN prefix)
+        local section="audit"
+        if [[ "$check_text" =~ ^(CTL-[0-9]+) ]]; then
+            section="${BASH_REMATCH[1]}"
+        elif [[ "$check_text" =~ ^([A-Za-z-]+): ]]; then
+            section="${BASH_REMATCH[1]}"
+        fi
+
+        local severity=$(echo "$level" | tr '[:upper:]' '[:lower:]')  # warn or fail
+
+        if [ "$DRY_RUN" = true ]; then
+            echo "[WOULD CREATE] $title"
+            echo "               severity=$severity section=$section hash=$hash"
+        else
+            # Create the task
+            local task_body="## Trigger
+
+Audit run: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+Finding: $check_text
+
+## Finding
+
+\`\`\`
+$check_text
+\`\`\`
+
+Mitigation: $mitigation
+
+## RCA
+
+**Symptom:** (TBD — fill during investigation)
+
+**Root cause:** (TBD — structural? env? config? transient?)
+
+**Why structurally allowed:** (TBD)
+
+**Prevention:** (TBD)
+
+## Acceptance Criteria
+
+### Agent
+- [ ] Root cause identified and documented in RCA section
+- [ ] Fix implemented (or determination that finding is false positive / transient)
+- [ ] Re-run audit shows finding absent
+
+## Verification
+
+# Re-run audit - finding should be absent
+bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
+"
+
+            # Use fw task create with custom fields
+            local task_id=$("$FRAMEWORK_ROOT/bin/fw" task create \
+                --name "$title" \
+                --type bugfix \
+                --horizon now \
+                --start \
+                2>&1 | grep "^ID:" | awk '{print $2}')
+
+            if [ -n "$task_id" ]; then
+                # Append custom frontmatter fields
+                local task_file="$TASKS_DIR/active/${task_id}-"*.md
+                if ls $task_file 1>/dev/null 2>&1; then
+                    task_file=$(ls $task_file | head -1)
+                    # Insert custom fields after workflow_type line
+                    sed -i "/^workflow_type: bugfix/a\\
+audit_severity: $severity\\
+audit_finding_hash: $hash\\
+tags: [audit-finding, severity:$severity, section:$section]" "$task_file"
+
+                    # Replace body
+                    # Find line number of first ## heading after frontmatter
+                    local body_start=$(grep -n "^---$" "$task_file" | tail -1 | cut -d: -f1)
+                    ((body_start+=2))
+
+                    # Create temp file with frontmatter + new body
+                    head -n $body_start "$task_file" > "${task_file}.tmp"
+                    echo "$task_body" >> "${task_file}.tmp"
+                    mv "${task_file}.tmp" "$task_file"
+
+                    ((created++))
+                    echo "[CREATED] $task_id: $title"
+                fi
+            else
+                echo "[ERROR] Failed to create task for: $title" >&2
+            fi
+        fi
+    done <<< "$findings"
+
+    echo ""
+    echo "Summary: $created created, $skipped skipped (hash exists)"
+}
+
+# Run emit if requested
+_emit_findings_as_tasks
 
 echo ""
 echo "=== END AUDIT ==="
