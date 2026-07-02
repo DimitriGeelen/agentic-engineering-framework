@@ -1,12 +1,12 @@
 ---
-id: T-2425
-name: "Triage observation inbox - OBS-075 through OBS-078"
+id: T-2426
+name: "_self_vendor_libs (lib/upgrade.sh) find does not prune node_modules/__pycache__ — reports phantom pre-push drift ('would sync N file(s) to .agentic-framework/lib/') for untracked lib/ts/node_modules/**/*.md (argparse/esbuild/typescript READMEs etc). Blocks ALL master pushes whenever npm install has populated lib/ts/node_modules (true on main, false on fresh worktrees → silent until you push from main). Verified 2026-06-14: gate said 11, find lib -path '*/node_modules/*' -name '*.md'|wc -l = 11, diff -rq lib .agentic-framework/lib byte-identical. Fix: add -not -path '*/node_modules/*' -not -path '*/__pycache__/*' -not -path '*/.git/*' to the find in _self_vendor_libs AND check siblings _self_vendor_agents/_self_vendor_web (recurse **/*.{sh,py} — same gap likely). Workaround used: FW_SKIP_SELF_VENDOR_CHECK=1 git push (Tier-2). One bug=one task; needs bats + sibling sweep."
 description: >
-  Triage observation inbox - OBS-075 through OBS-078
+  Promoted from observation OBS-076
 
-status: started-work
-workflow_type: inception
-owner: agent
+status: captured
+workflow_type: build
+owner: human
 horizon: now
 tags: []
 components: []
@@ -21,11 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-02T17:49:00Z
-last_update: '2026-07-02T18:00:07Z'
-date_finished:
-target_blast_radius: 0
-voi_score: 0.3
+created: 2026-07-02T18:04:54Z
+last_update: 2026-07-02T18:04:54Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,61 +34,13 @@ voi_score: 0.3
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-07-02T18:00:04Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-ORCH: 2
-      F-AUTONOMY: 2
-      audit_severity: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
-      (no-signal); audit_severity=2 (no-signal); F3=2 (no-signal); F1=2 
-      (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-07-02T18:00:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 4
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2425: Triage observation inbox - OBS-075 through OBS-078
+# T-2426: _self_vendor_libs (lib/upgrade.sh) find does not prune node_modules/__pycache__ — reports phantom pre-push drift ('would sync N file(s) to .agentic-framework/lib/') for untracked lib/ts/node_modules/**/*.md (argparse/esbuild/typescript READMEs etc). Blocks ALL master pushes whenever npm install has populated lib/ts/node_modules (true on main, false on fresh worktrees → silent until you push from main). Verified 2026-06-14: gate said 11, find lib -path '*/node_modules/*' -name '*.md'|wc -l = 11, diff -rq lib .agentic-framework/lib byte-identical. Fix: add -not -path '*/node_modules/*' -not -path '*/__pycache__/*' -not -path '*/.git/*' to the find in _self_vendor_libs AND check siblings _self_vendor_agents/_self_vendor_web (recurse **/*.{sh,py} — same gap likely). Workaround used: FW_SKIP_SELF_VENDOR_CHECK=1 git push (Tier-2). One bug=one task; needs bats + sibling sweep.
 
 ## Context
 
-Triage 4 pending observations (OBS-075 through OBS-078) from the observation inbox to determine which should be promoted to tasks, dismissed, or require further investigation.
-
-## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** Triage completed successfully. All 4 observations processed:
-- OBS-075: Promoted to T-2427 (arc-012 live-fire precondition documentation)
-- OBS-076: Promoted to T-2426 (vendor check node_modules FP - blocking bug)
-- OBS-077: Dismissed (incomplete - text was just "add")
-- OBS-078: Dismissed (incomplete - text was just "add")
-
-Inbox now empty, actionable items promoted to appropriate tasks.
-
-**Evidence:**
-- T-2426 created: Vendor check FP (blocking issue)
-- T-2427 created: Arc-012 documentation task
-- OBS-077/078 dismissed with rationale
-- `bin/fw note list` confirms empty inbox
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
@@ -226,25 +176,7 @@ Inbox now empty, actionable items promoted to appropriate tasks.
 
 ## Updates
 
-### 2026-07-02T17:49:00Z — task-created [task-create-agent]
+### 2026-07-02T18:04:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2425-triage-observation-inbox---obs-075-throu.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2426-selfvendorlibs-libupgradesh-find-does-no.md
 - **Context:** Initial task creation
-
-## Recommendation
-
-**Recommendation:** GO
-
-**Rationale:** Triage completed successfully. All 4 observations processed:
-- OBS-075: Promoted to T-2427 (arc-012 live-fire precondition documentation)
-- OBS-076: Promoted to T-2426 (vendor check node_modules FP - blocking bug)
-- OBS-077: Dismissed (incomplete - text was just "add")
-- OBS-078: Dismissed (incomplete - text was just "add")
-
-Inbox now empty, actionable items promoted to appropriate tasks.
-
-**Evidence:**
-- T-2426 created: Vendor check FP (blocking issue)
-- T-2427 created: Arc-012 documentation task
-- OBS-077/078 dismissed with rationale
-- `bin/fw note list` confirms empty inbox
