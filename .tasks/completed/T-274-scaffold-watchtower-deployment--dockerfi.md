@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [deployment, infrastructure, docker, traefik]
+horizon: null
 components: [bin/fw, Dockerfile, deploy/docker-compose.swarm.yml, 
       deploy/traefik-routes.yml]
 related_tasks: [T-272, T-273, T-277, T-077]

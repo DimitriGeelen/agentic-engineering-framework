@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_approvals.py]
 related_tasks: []
 created: 2026-04-13T10:40:58Z

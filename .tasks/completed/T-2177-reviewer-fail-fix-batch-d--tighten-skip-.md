@@ -21,8 +21,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [reviewer-quality, detector-fp, fail-fix, T-2173-child]
+horizon: null
 components: [lib/reviewer/static_scan.py]
 related_tasks: [T-2173, T-2174, T-2175, T-2176, T-1443]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: [lib/pickup.sh, tests/unit/pickup_send_remote_session.bats]
 related_tasks: []
 created: 2026-04-26T11:09:01Z

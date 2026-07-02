@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_review_page.py, web/templates/review.html]
 related_tasks: []
 created: 2026-04-28T13:31:04Z

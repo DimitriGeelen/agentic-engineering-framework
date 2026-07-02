@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [inception, migration, T-2186-slice]
+horizon: null
 components: [tools/migrate-inception-schema.py]
 related_tasks: [T-2186, T-2188]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, fw-upgrade-incident-2026-05-14, mirror, version-monotonicity]
+horizon: null
 components: [C-004, agents/git/lib/hooks.sh, agents/git/lib/secret-scan.sh, 
       bin/fw, lib/inception.sh, lib/mirror.sh, lib/upgrade.sh, 
       tests/unit/test_doctor_consumer_version_ahead.bats, 

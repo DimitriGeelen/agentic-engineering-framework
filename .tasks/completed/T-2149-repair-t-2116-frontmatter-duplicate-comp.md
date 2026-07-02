@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [frontmatter-repair, bvp-estimator, arc-006]
+horizon: null
 components: [.tasks/active/T-2116-arcsslugclose-headline-mechanic-box-cont.md]
 related_tasks: [T-2116, T-2069, T-1918, T-1922]
 arc_id: value-prioritisation

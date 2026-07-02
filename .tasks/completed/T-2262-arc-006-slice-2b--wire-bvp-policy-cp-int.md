@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc:value-prioritisation]
+horizon: null
 components: [lib-upgrade]
 related_tasks: [T-2229, T-2230, T-2259, T-2261]
 arc_id: arc-006

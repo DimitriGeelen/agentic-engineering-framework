@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-17T23:24:22Z

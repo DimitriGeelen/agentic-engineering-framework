@@ -6,8 +6,7 @@ description: >
   on" from "backlog/deferred" tasks. Handover agent filters by horizon so deferred
   tasks don't appear as suggested actions.
 status: work-completed
-horizon:
-workflow_type: build
+horizon: null
 owner: agent
 tags: []
 related_tasks: []

@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc:capability-overlay, audit, mcp-drift]
+horizon: null
 arc_id: arc-010
 components: []
 related_tasks: [T-2293, T-2294, T-2290]

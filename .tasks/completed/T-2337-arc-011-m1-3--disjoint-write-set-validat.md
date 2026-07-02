@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, lib/write_set.py, tests/unit/test_write_set.bats]
 related_tasks: []
 arc_id: parallel-execution-aef

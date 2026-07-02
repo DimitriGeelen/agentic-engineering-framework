@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-9, docs]
+horizon: null
 components: [CLAUDE.md, AGENTS.md]
 related_tasks: [T-1915, T-1916, T-1918]
 arc_id: value-prioritisation

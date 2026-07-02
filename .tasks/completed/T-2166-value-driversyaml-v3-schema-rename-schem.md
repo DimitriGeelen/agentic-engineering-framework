@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc:value-prioritisation, value-drivers, bvp, schema]
+horizon: null
 components: [policy/value-drivers.yaml]
 related_tasks: [T-2157, T-2165, T-1915, T-1921]
 arc_id: value-prioritisation

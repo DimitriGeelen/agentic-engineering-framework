@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-326, T-332, T-334]
 created: 2026-03-05T01:12:29Z

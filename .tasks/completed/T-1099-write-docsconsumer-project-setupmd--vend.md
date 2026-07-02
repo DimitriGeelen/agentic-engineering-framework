@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-1093, T-1094, T-1098]
 created: 2026-04-11T12:16:03Z

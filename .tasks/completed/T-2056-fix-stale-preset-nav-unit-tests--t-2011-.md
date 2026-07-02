@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [watchtower, redesign, ui, nav, test-drift]
+horizon: null
 components: [C-004, lib/render_surface.sh, 
       tests/unit/test_audit_completable_not_completed.bats, 
       tests/unit/test_nav_layouts.py, tests/unit/test_render_surface_gate.bats]

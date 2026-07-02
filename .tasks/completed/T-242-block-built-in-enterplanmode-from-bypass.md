@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [C-009]
 related_tasks: []
 created: 2026-02-22T07:39:09Z

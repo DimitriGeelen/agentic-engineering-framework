@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-004]
 related_tasks: [T-294]
 created: 2026-03-04T16:17:08Z

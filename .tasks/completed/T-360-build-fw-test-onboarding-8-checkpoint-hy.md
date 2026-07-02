@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [testing, onboarding, cli]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-08T20:41:29Z

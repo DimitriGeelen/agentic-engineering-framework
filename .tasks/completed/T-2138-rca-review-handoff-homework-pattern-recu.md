@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [arc-008, review-handoff, author-time-gate, rca, watchtower, ctl-027]
+horizon: null
 components: [lib/review_link_validator.py, lib/review.sh, 
       agents/audit/reviewer/static_scan.py, .tasks/templates/zzz-default.md]
 related_tasks: [T-2030, T-2050, T-2109, T-2113, T-2137, T-2101, T-2055]

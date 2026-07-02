@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [inception, cross-repo]
+horizon: null
 components: []
 related_tasks: []
 arc_id: orchestrator-rethink

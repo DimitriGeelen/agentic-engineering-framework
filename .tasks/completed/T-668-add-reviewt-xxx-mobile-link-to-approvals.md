@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [web/templates/approvals.html]
 related_tasks: []
 created: 2026-03-28T17:56:55Z

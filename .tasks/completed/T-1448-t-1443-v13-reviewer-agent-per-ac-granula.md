@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [reviewer-agent, ac-validation, granular-verdicts, v1.3]
+horizon: null
 components: []
 related_tasks: [T-1443, T-1445, T-1446, T-1447]
 created: 2026-04-25T11:07:41Z

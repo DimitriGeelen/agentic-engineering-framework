@@ -8,8 +8,7 @@ description: >
   Research: docs/reports/2026-02-17-agent-communication-bus-research.md Part 4.
 
 status: work-completed
-horizon:
-workflow_type: inception
+horizon: null
 owner: human
 tags: []
 related_tasks: []

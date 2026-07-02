@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/cron.py]
 related_tasks: []
 created: 2026-04-23T16:46:40Z

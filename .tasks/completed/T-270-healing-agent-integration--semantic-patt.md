@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [qa, framework, healing, agents]
+horizon: null
 components: [agents/context/lib/focus.sh, agents/healing/lib/diagnose.sh]
 related_tasks: []
 created: 2026-02-24T08:38:16Z

@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [spike]
+horizon: null
 components: []
 related_tasks: [T-1733, T-1737]
 arc_id: orchestrator-rethink

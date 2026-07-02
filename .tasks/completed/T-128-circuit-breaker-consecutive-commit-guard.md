@@ -6,8 +6,7 @@ description: >
   input. Warns after N.
 status: work-completed
 workflow_type: build
-horizon:
-owner: agent
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-17T20:03:13Z

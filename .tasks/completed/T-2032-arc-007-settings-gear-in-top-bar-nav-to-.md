@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-arc_id: watchtower-redesign
+horizon: null
 tags: [arc:watchtower-redesign, ui, watchtower, nav, bug]
 components: []
 related_tasks: [T-1987, T-1988, T-2008]

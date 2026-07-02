@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [reviewer-quality, fail-sweep, completed-corpus-hygiene]
+horizon: null
 components: []
 related_tasks: [T-1443, T-1947, T-2147]
 created: 2026-06-02T08:35:27Z

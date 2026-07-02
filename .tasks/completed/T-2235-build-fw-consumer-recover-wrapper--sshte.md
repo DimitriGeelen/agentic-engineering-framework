@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, lib/consumer-recover.sh, 
       tests/unit/test_consumer_recover.bats]
 related_tasks: []

@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [bugfix, budget, enforcement]
+horizon: null
 components: [C-007]
 related_tasks: [T-138, T-139, T-228]
 created: 2026-02-25T06:34:08Z

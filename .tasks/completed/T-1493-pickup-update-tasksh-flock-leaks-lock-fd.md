@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: [agents/task-create/update-task.sh, lib/keylock.sh, 
       tests/unit/keylock_subshell_close.bats]
 related_tasks: []

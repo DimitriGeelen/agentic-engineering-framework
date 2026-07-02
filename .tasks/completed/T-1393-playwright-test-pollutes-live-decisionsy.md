@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_api_context_capture.py]
 related_tasks: []
 created: 2026-04-23T12:14:00Z

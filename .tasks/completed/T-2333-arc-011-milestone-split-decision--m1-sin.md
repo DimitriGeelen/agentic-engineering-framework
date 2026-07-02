@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-2303, T-2325, T-2326, T-2323, T-2324]
 arc_id: arc-011

@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [docs, onboarding, ux]
+horizon: null
 components: [README.md]
 related_tasks: [T-300, T-312]
 created: 2026-03-05T00:24:42Z

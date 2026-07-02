@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [component-fabric, architecture, enforcement, topology, universal]
+horizon: null
 related_tasks: [T-120, T-130, T-190]
 created: 2026-02-19T09:56:36Z
 last_update: '2026-06-11T22:24:03Z'

@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [consumer-fleet, fw-upgrade]
+horizon: null
 components: [lib/upgrade.sh]
 related_tasks: [T-1838, T-1828, T-1542]
 arc_id: project-shape-resilience

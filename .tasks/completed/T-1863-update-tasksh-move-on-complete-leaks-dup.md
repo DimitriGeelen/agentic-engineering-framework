@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, audit, integrity]
+horizon: null
 components: [agents/git/lib/dup-task-scan.sh, agents/git/lib/hooks.sh, 
       agents/task-create/update-task.sh, 
       tests/unit/update_task_orphan_guard.bats]

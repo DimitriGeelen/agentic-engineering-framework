@@ -11,8 +11,7 @@ Replaces static Choose your path menu with auto-detection: existing projects get
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [onedev, pr]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T10:15:01Z

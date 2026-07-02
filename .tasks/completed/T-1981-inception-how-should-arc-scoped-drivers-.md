@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 created: 2026-05-21T14:56:35Z

@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/healing/lib/suggest.sh]
 related_tasks: []
 created: 2026-04-04T22:42:18Z

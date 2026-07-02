@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, tests/playwright/conftest.py]
 related_tasks: []
 created: 2026-04-20T07:50:36Z

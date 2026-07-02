@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [fabric, audit]
+horizon: null
 components: [C-004]
 related_tasks: []
 created: 2026-03-08T22:27:38Z

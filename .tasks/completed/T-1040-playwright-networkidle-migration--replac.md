@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_approvals.py, 
       tests/playwright/test_assumptions.py, tests/playwright/test_cockpit.py, 
       tests/playwright/test_config.py, tests/playwright/test_core.py, 

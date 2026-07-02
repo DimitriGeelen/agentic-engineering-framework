@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, mcp-classifier]
+horizon: null
 components: [agents/audit/orchestrator-mcp-scan.sh, 
       tests/unit/test_orchestrator_mcp_classify.py]
 related_tasks: [T-1761, T-2154, T-2150, T-2073]

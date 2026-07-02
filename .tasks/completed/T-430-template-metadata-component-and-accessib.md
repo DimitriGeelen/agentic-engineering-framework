@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: [refactoring, html, watchtower, usability, accessibility]
+horizon: null
 components: [web/templates/_partials/chat_tab.html, 
       web/templates/task_detail.html]
 related_tasks: [T-411]

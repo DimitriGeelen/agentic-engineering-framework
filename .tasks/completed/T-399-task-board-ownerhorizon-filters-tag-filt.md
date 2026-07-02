@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/tasks.py, web/templates/tasks.html]
 related_tasks: []
 created: 2026-03-10T09:43:58Z

@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, fix, forensic-logging, silent-failure, follow-up]
+horizon: null
 components: [agents/task-create/update-task.sh]
 related_tasks: [T-1859, T-1371]
 created: 2026-05-15T18:25:00Z

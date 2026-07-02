@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [termlink, integration, phase-0]
+horizon: null
 components: [bin/fw]
 related_tasks: [T-502]
 created: 2026-03-15T23:58:50Z

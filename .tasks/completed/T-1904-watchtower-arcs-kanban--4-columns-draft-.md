@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_arcs_kanban.py, 
       tests/playwright/test_arcs_lifecycle_tabs.py, web/blueprints/arcs.py, 
       web/shared.py, web/templates/arcs_index.html]

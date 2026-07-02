@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: [lib/task-audit.sh, tests/unit/lib_task_audit.bats]
 related_tasks: [T-1113, T-1298, T-1327]
 created: 2026-04-20T14:15:01Z

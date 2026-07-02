@@ -18,8 +18,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [content, deep-dives]
+horizon: null
 components: [docs/articles/deep-dives/08-watchtower.md, 
       docs/articles/deep-dives/09-context-fabric.md, 
       docs/articles/deep-dives/10-framework-core.md, 

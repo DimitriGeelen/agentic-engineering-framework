@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [pickup, feature-proposal]
+horizon: null
 components: [bin/fw, lib/review.sh, web/blueprints/cockpit.py, 
       web/templates/_approvals_content.html, web/templates/cockpit.html]
 related_tasks: []

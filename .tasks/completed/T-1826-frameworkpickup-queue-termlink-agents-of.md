@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [fw-upgrade-incident-2026-05-14, pickup, termlink-relay, bug]
+horizon: null
 components: []
 related_tasks: [T-1822]
 created: 2026-05-14T07:31:02Z

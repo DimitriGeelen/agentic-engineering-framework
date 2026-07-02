@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [observability, substrate]
+horizon: null
 components: [bin/fw, tests/unit/test_orchestrator_status_outcomes.py]
 related_tasks: [T-1727, T-1748, T-1699]
 arc_id: orchestrator-rethink

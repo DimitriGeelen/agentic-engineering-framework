@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [prompt-library, fw-upgrade, reliability, T-2078-cluster]
+horizon: null
 components: [bin/fw, lib/upgrade.sh]
 related_tasks: [T-2078, T-2099, T-2097, T-2098]
 created: 2026-05-29T14:22:31Z

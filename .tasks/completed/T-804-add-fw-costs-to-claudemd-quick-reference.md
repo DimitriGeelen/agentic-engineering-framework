@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [docs, tokens]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-04-03T19:21:28Z

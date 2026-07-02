@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: [test, a11y, css, arc-007, prevention]
+horizon: null
 components: []
 related_tasks: [T-2006, T-2005, T-2002, T-1991]
 arc_id: watchtower-redesign

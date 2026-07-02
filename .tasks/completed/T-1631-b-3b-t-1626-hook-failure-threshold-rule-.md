@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [from-T-1626, B-3b, concerns, escalation]
+horizon: null
 components: [C-004, agents/context/post-compact-resume.sh, bin/fw, 
       lib/doctor-hook-exercise.py, lib/hook-threshold.py, 
       tests/unit/doctor_hook_exercise.bats, tests/unit/hook_threshold.bats, 

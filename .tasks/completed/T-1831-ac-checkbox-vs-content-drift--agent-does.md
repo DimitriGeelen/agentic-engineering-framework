@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, antifragility,
+horizon: null
   user-reported-error]
 components: [agents-task-create-update-task, lib-inception]
 related_tasks: [T-1828, T-1829, T-1830, T-1603, T-1503]

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/context/check-active-task.sh, 
       tests/lint/no-bare-fw-in-gate-scripts.bats]
 related_tasks: []

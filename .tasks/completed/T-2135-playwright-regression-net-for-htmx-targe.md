@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-007, regression-net, htmx, playwright, prevention, T-2134-followup]
+horizon: null
 components: [tests/playwright/test_review_htmx_target_inheritance.py]
 related_tasks: [T-2112, T-2113, T-2114, T-2134]
 arc_id: watchtower-redesign

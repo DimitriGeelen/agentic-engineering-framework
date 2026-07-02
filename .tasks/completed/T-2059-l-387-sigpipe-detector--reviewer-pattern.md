@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [reviewer, detector, l387, sigpipe, antifragility]
+horizon: null
 components: [agents/task-create/update-task.sh, lib/reviewer/static_scan.py, 
       policy/anti-patterns.yaml]
 related_tasks: [T-2057, T-1716, T-1838, T-1862, T-1863, T-2036]

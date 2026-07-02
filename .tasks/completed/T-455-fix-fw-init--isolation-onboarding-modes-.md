@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T16:03:33Z

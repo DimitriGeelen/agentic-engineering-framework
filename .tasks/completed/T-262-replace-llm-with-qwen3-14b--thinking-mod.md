@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [qa, llm, model]
+horizon: null
 components: [web/templates/search.html]
 related_tasks: []
 created: 2026-02-24T08:36:31Z

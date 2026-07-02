@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [hooks, resilience, from-T-1626, B-1]
+horizon: null
 components: []
 related_tasks: [T-1626]
 created: 2026-04-30T21:19:21Z

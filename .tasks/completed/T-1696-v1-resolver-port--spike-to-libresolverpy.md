@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, lib/resolver.py, tests/unit/test_resolver.py]
 related_tasks: []
 created: 2026-05-03T12:49:43Z

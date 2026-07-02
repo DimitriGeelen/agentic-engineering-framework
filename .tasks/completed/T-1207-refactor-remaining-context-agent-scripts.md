@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-007, agents/context/check-agent-dispatch.sh, C-008, 
       agents/context/check-project-boundary.sh, 
       tests/lint/no-bare-fw-in-gate-scripts.bats]

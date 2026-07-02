@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/orchestrator/orchestrator-graph.py, bin/fw, 
       tests/unit/test_orchestrator_graph.bats]
 related_tasks: []

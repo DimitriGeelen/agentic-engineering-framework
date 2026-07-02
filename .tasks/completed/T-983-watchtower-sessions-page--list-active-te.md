@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_sessions.py, web/blueprints/__init__.py, 
       web/blueprints/sessions.py, web/templates/sessions.html]
 related_tasks: []

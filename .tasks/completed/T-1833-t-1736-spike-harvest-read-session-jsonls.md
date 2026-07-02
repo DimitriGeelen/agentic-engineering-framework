@@ -17,8 +17,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [bug, fw-upgrade-incident-2026-05-14, path-isolation, spike-harvest, 
+horizon: null
       security]
 components: []
 related_tasks: []

@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [termlink, dispatch, observability]
+horizon: null
 components: [agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-05-02T14:30:23Z

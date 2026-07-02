@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [inception, schema, T-2186-slice, frontmatter]
+horizon: null
 components: [agents/context/check-inception-schema.sh, 
       agents/termlink/bvp-estimator/estimator.py, C-009, 
       tests/unit/check_inception_schema.bats, tools/migrate-inception-schema.py]

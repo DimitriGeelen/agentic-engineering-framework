@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: decommission
 owner: human
-horizon:
-tags: [deployment, decommission, swarm]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-02-25T17:48:42Z

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [reviewer-agent, drift-detection, v1.5c, build, audit, cron]
+horizon: null
 components: [bin/fw, tests/unit/test_reviewer_audit_pass_a.py]
 related_tasks: [T-1442, T-1443, T-1483, T-1484]
 created: 2026-04-26T07:17:23Z

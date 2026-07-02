@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [audit, housekeeping]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-10T16:59:57Z

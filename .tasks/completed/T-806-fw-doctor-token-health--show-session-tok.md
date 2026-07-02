@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [tokens, doctor, observability]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-04-03T19:42:49Z

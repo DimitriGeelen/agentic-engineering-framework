@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [governance, enforcement, architecture]
+horizon: null
 components: []
 related_tasks: [T-061, T-139, T-193]
 created: 2026-03-14T11:20:55Z

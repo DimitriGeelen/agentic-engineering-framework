@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: ["fabric", "drift-defense"]
+horizon: null
 components: [".fabric/watch-patterns.yaml"]
 related_tasks: ["T-1758"]
 arc_id: orchestrator-rethink

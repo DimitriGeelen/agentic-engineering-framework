@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, ac-routing, governance, T-1878-A]
+horizon: null
 components: [.tasks/templates/default.md, CLAUDE.md]
 related_tasks: [T-1878, T-1811, T-954, T-1894]
 arc_id: arc-grooming

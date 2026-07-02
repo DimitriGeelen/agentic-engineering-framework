@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [docs, install]
+horizon: null
 components: [README.md]
 related_tasks: [T-329, T-330]
 created: 2026-03-06T22:12:20Z

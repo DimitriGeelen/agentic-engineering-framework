@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: []
 created: 2026-04-07T11:24:01Z

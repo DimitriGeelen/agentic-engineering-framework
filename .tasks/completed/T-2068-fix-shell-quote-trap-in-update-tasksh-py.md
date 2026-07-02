@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, framework-tooling, shell-quoting, immediate-followup]
+horizon: null
 components: [agents/task-create/update-task.sh]
 related_tasks: [T-2067, T-1879]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [portability, isolation]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T14:01:20Z

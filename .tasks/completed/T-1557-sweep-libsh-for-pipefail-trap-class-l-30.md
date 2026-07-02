@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/config.sh, lib/inception.sh, lib/yaml.sh, 
       tests/unit/yaml_pipefail.bats]
 related_tasks: []

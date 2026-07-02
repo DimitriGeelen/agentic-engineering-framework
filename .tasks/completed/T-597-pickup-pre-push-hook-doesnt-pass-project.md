@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [pickup, termlink]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-24T08:22:01Z

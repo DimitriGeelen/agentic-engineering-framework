@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-008, review-handoff, T-2138-followup]
+horizon: null
 components: []
 related_tasks: [T-2138, T-2139]
 arc_id: inception-review-loop

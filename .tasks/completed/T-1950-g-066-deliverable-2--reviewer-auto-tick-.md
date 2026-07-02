@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-1985, T-1443, T-1811, T-1947]
 inception_decisions:

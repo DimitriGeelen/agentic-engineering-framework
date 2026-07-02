@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [cost, tokens, observability]
+horizon: null
 components: [budget-gate, checkpoint]
 related_tasks: [T-800, T-699, T-596]
 created: 2026-03-31T19:05:13Z

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: claude
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-05T01:03:59Z

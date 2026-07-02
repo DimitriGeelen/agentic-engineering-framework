@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [governance, hooks, deadlock]
+horizon: null
 components: [lib/upgrade.sh]
 related_tasks: [T-622, T-614, T-481]
 created: 2026-03-26T13:41:33Z

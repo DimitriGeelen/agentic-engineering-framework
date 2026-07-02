@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [corpus-hygiene, ctl-028, silent-drift]
+horizon: null
 components: [.tasks/completed/]
 related_tasks: [T-2055, T-2091, T-2121]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

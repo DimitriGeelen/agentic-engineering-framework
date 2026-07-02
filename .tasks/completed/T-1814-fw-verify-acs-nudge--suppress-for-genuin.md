@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, ac-classification, reviewer, polish]
+horizon: null
 components: [lib/verify-acs.sh]
 related_tasks: [T-1811, T-1812]
 created: 2026-05-13T19:03:07Z

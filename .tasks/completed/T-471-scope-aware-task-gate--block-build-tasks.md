@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, enforcement, G-020]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T20:50:50Z

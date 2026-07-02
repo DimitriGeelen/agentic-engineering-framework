@@ -19,8 +19,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [governance, handoff, watchtower, inception, ux, antifragility]
+horizon: null
 components: [agents/task-create/update-task.sh, lib/task.sh, CLAUDE.md, 
       docs/reports/]
 related_tasks: [T-2112, T-2113, T-2114, T-2115, T-2116, T-2117, T-679, T-1257, 

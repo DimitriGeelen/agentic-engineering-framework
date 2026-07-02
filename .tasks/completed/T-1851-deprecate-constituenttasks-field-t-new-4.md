@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, cleanup, deprecation, T-NEW-4]
+horizon: null
 components: []
 related_tasks: [T-1846, T-1847, T-1653]
 arc_id: arc-grooming

@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [enforcement, budget, context]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-14T11:54:22Z

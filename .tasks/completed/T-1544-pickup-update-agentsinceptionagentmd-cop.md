@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [pickup, feature-proposal]
+horizon: null
 components: [bin/fw, lib/review.sh, tests/unit/cron_flock_parity.bats]
 related_tasks: []
 created: 2026-04-27T15:06:01Z

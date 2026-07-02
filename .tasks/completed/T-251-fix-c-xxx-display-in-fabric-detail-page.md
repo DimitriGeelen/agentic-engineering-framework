@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/fabric.py, web/templates/fabric_detail.html]
 related_tasks: []
 created: 2026-02-22T15:41:44Z

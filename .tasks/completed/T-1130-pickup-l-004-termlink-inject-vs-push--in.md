@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [pickup, learning]
+horizon: null
 components: [agents/fabric/lib/drift.sh, agents/fabric/lib/register.sh, 
       agents/git/lib/hooks.sh, bin/fw, lib/upgrade.sh]
 related_tasks: []

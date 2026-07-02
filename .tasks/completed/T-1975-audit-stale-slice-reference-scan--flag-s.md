@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc:arc-grooming]
+horizon: null
 components: [agents/audit/audit.sh, tests/unit/audit_stale_slice_reference.bats]
 related_tasks: [T-1971, T-1972, T-1973, T-1974]
 arc_id: arc-grooming

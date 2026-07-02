@@ -12,8 +12,7 @@ description: >
   visible.
 status: work-completed
 workflow_type: build
-horizon:
-owner: human
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-17T23:49:42Z

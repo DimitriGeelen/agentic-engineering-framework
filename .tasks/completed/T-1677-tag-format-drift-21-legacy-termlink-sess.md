@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [cross-repo, termlink]
+horizon: null
 components: []
 related_tasks: []
 arc_id: orchestrator-rethink

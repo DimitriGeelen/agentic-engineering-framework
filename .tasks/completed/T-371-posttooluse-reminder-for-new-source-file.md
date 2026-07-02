@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [fabric, hooks]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-08T22:28:11Z

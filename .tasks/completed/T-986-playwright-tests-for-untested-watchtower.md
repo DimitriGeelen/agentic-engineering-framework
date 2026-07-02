@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_core.py, tests/playwright/test_cron.py, 
       tests/playwright/test_discovery.py, tests/playwright/test_enforcement.py, 
       tests/playwright/test_metrics.py, tests/playwright/test_quality.py, 

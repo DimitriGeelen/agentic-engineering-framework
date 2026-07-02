@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [ntfy, notifications]
+horizon: null
 components: [lib/notify.sh]
 related_tasks: []
 created: 2026-03-29T11:14:11Z

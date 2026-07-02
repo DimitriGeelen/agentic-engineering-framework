@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [termlink, routing, orchestrator]
+horizon: null
 components: [agents/task-create/update-task.sh, agents/termlink/termlink.sh, 
       tests/unit/test_termlink_dispatch_task_type.py, 
       tests/unit/update_task.bats]

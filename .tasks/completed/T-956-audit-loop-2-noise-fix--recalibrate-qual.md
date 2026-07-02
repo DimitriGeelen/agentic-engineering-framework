@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/audit/active-task-scan.py]
 related_tasks: []
 created: 2026-04-06T11:50:13Z

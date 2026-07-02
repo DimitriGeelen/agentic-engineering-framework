@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [termlink, peer-consult, cross-repo]
+horizon: null
 components: [tests/unit/test_peer_subscribe.py]
 related_tasks: [T-1818, T-1804, T-1797]
 arc_id: orchestrator-rethink

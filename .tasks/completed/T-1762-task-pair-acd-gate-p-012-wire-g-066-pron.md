@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: ["ACD", "G-062-family", "G-066", "governance-gate", "P-012"]
+horizon: null
 components: [agents/task-create/update-task.sh, lib/task_pair_acd.py, 
       lib/task_pair_acd.sh, tests/playwright/test_review_code_inline.py, 
       tests/unit/test_ac_body_html_comment.py, 

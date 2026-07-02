@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: [refactoring, python, watchtower, reliability]
+horizon: null
 components: [web/blueprints/core.py, C-003, web/blueprints/metrics.py, 
       web/blueprints/risks.py, web/context_loader.py]
 related_tasks: [T-404, T-397, T-411]

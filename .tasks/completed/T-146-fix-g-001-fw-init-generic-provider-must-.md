@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 related_tasks: []
 created: 2026-02-18T10:01:46Z
 last_update: '2026-06-11T22:23:49Z'

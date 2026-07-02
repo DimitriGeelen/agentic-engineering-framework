@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, rca, governance-hygiene]
+horizon: null
 components: [agents/task-create/update-task.sh, 
       tests/unit/test_update_task_horizon_null_reclose.bats]
 related_tasks: [T-2160, T-2163, T-2121]

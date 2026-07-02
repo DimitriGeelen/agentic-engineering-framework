@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [build, audit, T-NEW-8]
+horizon: null
 components: [C-004, tests/unit/audit_anchor_task_existence.bats]
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming

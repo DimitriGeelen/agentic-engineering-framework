@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-14b, cli, acd-gate, cron]
+horizon: null
 components: [lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1931]
 arc_id: value-prioritisation

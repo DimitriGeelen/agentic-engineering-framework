@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: [refactoring, shell, reliability, usability]
+horizon: null
 components: [agents/task-create/update-task.sh]
 related_tasks: [T-411]
 created: 2026-03-10T21:03:15Z

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: [agents/context/check-tier0.sh, 
       tests/unit/tier0_hash_normalization.bats]
 related_tasks: []

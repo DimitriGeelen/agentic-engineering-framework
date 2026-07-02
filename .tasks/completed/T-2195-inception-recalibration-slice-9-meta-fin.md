@@ -19,8 +19,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [inception, commit-counter, T-2186-slice, meta-finding, L-class]
+horizon: null
 components: [agents/git/lib/hooks.sh, tests/unit/inception_commit_counter.bats]
 related_tasks: [T-2186]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

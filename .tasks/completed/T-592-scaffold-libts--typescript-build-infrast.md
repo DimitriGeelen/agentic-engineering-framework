@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [architecture, typescript, T-586]
+horizon: null
 components: []
 related_tasks: [T-586, T-593, T-594]
 created: 2026-03-23T22:49:40Z

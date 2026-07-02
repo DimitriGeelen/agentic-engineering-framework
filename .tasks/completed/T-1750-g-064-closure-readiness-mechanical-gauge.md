@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, observability]
+horizon: null
 components: [tests/unit/test_g064_readiness.py, tools/g064-readiness.py]
 related_tasks: [T-1687, T-1727, T-1749, T-1688]
 arc_id: orchestrator-rethink

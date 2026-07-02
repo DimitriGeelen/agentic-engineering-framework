@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, web/blueprints/review.py, web/blueprints/tasks.py, 
       web/shared.py, web/templates/_review_acs.html, web/templates/review.html]
 related_tasks: []

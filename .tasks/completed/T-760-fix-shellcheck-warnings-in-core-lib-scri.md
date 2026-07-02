@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/bus.sh, lib/colors.sh, lib/dispatch.sh]
 related_tasks: []
 created: 2026-03-30T07:30:54Z

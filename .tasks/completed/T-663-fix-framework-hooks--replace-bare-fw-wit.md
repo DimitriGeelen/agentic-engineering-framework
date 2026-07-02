@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [T-662, hooks, isolation]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-28T17:06:45Z

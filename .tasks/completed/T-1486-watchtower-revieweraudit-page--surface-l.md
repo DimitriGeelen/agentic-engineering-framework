@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [reviewer-agent, watchtower, ui, v1.5d]
+horizon: null
 components: [tests/unit/test_reviewer_audit_blueprint.py, 
       web/blueprints/reviewer.py, web/templates/reviewer_audit.html]
 related_tasks: [T-1483, T-1484, T-1485]

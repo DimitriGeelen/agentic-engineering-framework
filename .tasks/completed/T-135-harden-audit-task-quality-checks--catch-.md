@@ -9,8 +9,7 @@ description: >
   agent created 11 stub tasks that all passed audit.
 status: work-completed
 workflow_type: build
-horizon:
-owner: human
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-17T23:39:34Z

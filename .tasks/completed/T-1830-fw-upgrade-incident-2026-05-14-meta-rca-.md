@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [fw-upgrade-incident-2026-05-14, meta-rca, observability, 
+horizon: null
       structural-remediation, umbrella]
 components: [bin-fw, lib-mirror, agents-termlink-termlink, agents-audit, 
       web-blueprints]

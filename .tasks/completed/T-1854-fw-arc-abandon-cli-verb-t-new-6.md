@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, lifecycle, cli, governance-gate, T-NEW-6]
+horizon: null
 components: [lib/arc.sh, tests/unit/arc_lifecycle_state_machine.bats]
 related_tasks: [T-1846, T-1847, T-1668, T-1671]
 arc_id: arc-grooming

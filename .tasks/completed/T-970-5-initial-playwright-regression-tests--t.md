@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: human
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: []
 created: 2026-04-06T19:38:01Z

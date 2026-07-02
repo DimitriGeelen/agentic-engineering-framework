@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [testing, self-test, ci]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-14T17:05:01Z

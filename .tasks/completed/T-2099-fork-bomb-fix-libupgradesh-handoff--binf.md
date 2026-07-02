@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [fw-upgrade, reliability, sev-1, fork-bomb, T-2078-cluster]
+horizon: null
 components: []
 related_tasks: [T-2078, T-2092, T-2093, T-2094, T-2095, T-2097, T-2098]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

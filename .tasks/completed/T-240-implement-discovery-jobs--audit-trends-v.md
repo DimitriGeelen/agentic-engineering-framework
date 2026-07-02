@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [discovery, trends, temporal]
+horizon: null
 components: [C-004]
 related_tasks: [T-200, T-194, T-238]
 created: 2026-02-21T23:38:59Z

@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon:
-tags: []
+horizon: null
 related_tasks: []
 created: 2026-02-18T18:51:31Z
 last_update: '2026-06-11T22:23:58Z'

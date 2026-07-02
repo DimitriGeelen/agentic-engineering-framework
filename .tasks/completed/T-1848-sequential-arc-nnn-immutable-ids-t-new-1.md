@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, schema-migration, arc-system, immutability, T-NEW-1.5]
+horizon: null
 components: [C-004, lib/arc.sh, tests/unit/arc_dual_identity_verbs.bats, 
       web/blueprints/arcs.py, web/blueprints/core.py]
 related_tasks: [T-1846, T-1847, T-1653, T-1661]

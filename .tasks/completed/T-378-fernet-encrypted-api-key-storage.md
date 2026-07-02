@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [security, keys]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-09T09:41:40Z

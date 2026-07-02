@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 related_tasks: [T-159, T-160, T-161, T-162, T-163]
 created: 2026-02-18T12:52:24Z
 last_update: '2026-06-11T22:23:52Z'

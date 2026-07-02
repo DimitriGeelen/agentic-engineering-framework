@@ -10,8 +10,7 @@ description: >
   Decision: T-138 GO — hybrid.
 status: work-completed
 workflow_type: build
-horizon:
-owner: agent
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-18T07:29:16Z

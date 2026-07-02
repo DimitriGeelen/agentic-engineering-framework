@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-003, arc-006, reviewer, governance, t-1761-prevention]
+horizon: null
 components: [lib/reviewer/static_scan.py, 
       tests/unit/test_reviewer_ac_evidence_untick.py]
 related_tasks: [T-1761, T-2145, T-2147, T-2059, T-1985, T-1831]

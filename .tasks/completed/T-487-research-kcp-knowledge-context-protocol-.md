@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [governance, research, external]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-14T16:13:49Z

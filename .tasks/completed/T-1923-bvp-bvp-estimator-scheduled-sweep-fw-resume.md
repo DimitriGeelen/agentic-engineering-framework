@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-7b, termlink, cron]
+horizon: null
 components: [agents/resume/resume.sh, agents/task-create/update-task.sh, 
       agents/termlink/bvp-estimator/AGENT.md, 
       agents/termlink/bvp-estimator/bvp-estimator.sh, 

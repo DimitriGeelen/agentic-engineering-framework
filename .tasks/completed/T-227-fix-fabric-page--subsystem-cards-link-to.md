@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/templates/base.html, web/templates/fabric.html]
 related_tasks: []
 created: 2026-02-21T13:14:36Z

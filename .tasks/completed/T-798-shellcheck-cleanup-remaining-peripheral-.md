@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/docgen/generate-article.sh, agents/mcp/mcp-reaper.sh, 
       agents/onboarding-test/test-onboarding.sh, agents/termlink/termlink.sh]
 related_tasks: []

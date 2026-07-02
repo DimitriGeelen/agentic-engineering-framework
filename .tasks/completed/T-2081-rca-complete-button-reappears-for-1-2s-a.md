@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/review.py, web/templates/_review_acs.html]
 related_tasks: []
 created: 2026-05-28T20:48:44Z

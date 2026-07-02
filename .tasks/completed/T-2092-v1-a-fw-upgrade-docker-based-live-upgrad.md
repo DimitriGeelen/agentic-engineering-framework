@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [fw-upgrade, reliability, v1, T-2078-slice]
+horizon: null
 components: [C-004, bin/fw, lib/upgrade.sh]
 related_tasks: [T-2078, T-1633]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

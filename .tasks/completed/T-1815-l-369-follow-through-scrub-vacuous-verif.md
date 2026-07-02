@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: ["reviewer", "static-scan", "false-positive-precision"]
+horizon: null
 components: [lib/reviewer/static_scan.py, tools/audit-swallowed-errors.py]
 related_tasks: ["T-1812", "T-1809", "T-1443"]
 arc_id: dispatch-safety

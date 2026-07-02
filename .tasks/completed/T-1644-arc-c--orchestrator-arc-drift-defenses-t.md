@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [from-T-1641, t-1061-followup, drift-defense, orchestrator, termlink, 
+horizon: null
       audit, test]
 components: [C-004, agents/audit/orchestrator-mcp-scan.sh, 
       web/blueprints/__init__.py, web/blueprints/orchestrator.py, 

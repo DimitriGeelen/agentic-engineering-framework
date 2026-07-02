@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [arc:value-prioritisation, future-prevention, L-408, L-332, refactor]
+horizon: null
 components: [C-004, bin/fw, lib/cron_dry_run.py]
 related_tasks: [T-1942, T-1943, T-1629]
 arc_id: value-prioritisation

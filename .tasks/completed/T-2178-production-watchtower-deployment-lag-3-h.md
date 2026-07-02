@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [obs-044, partial-complete-url-rot, watchtower-fqdn-rewrite]
+horizon: null
 components: [.tasks/active/T-1990, .tasks/active/T-1994]
 related_tasks: [T-1990, T-1994, T-1687]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

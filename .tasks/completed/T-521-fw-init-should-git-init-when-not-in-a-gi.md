@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [enhancement, install, D3]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-17T22:39:15Z

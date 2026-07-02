@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-007, perf, watchtower, testing, prevention]
+horizon: null
 components: []
 related_tasks: [T-2042, T-2046]
 arc_id: watchtower-redesign

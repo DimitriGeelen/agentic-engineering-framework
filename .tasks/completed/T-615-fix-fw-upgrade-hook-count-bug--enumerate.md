@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, upgrade, bug]
+horizon: null
 components: [lib/init.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-25T20:17:00Z

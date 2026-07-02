@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-6, rubric, docs]
+horizon: null
 components: [policy/bvp-scoring-rubric.md]
 related_tasks: [T-1915, T-1916, T-1922]
 arc_id: value-prioritisation

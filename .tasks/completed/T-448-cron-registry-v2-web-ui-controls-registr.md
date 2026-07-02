@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [watchtower, cron]
+horizon: null
 components: [bin/fw, lib/upgrade.sh, web/blueprints/cron.py, 
       web/templates/cron.html]
 related_tasks: []

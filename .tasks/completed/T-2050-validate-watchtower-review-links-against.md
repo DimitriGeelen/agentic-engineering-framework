@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [watchtower, review]
+horizon: null
 components: [lib/review.sh, lib/review_link_validator.py]
 related_tasks: [T-2030, T-2042]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

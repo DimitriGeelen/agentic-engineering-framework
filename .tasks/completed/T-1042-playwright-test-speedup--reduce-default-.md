@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/conftest.py]
 related_tasks: []
 created: 2026-04-07T15:45:51Z

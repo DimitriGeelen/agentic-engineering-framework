@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/review.sh]
 related_tasks: []
 created: 2026-04-13T09:20:35Z

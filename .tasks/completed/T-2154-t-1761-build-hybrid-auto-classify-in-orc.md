@@ -17,8 +17,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [orchestrator-rethink, orchestrator-mcp-scan, T-1761-build]
+horizon: null
 components: [agents/audit/orchestrator-mcp-scan.sh, 
       tests/unit/test_orchestrator_mcp_classify.py]
 related_tasks: [T-1761, T-1646, T-1755, T-1760, T-1867, T-2073, T-2150]

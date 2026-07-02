@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [init, validation, isolation]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T17:01:01Z

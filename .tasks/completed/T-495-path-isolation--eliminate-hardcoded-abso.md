@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [portability, enforcement, P0]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-14T22:25:26Z

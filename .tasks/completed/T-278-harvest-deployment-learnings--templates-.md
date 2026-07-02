@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: [deployment, learnings, antifragility]
+horizon: null
 components: [.context/project/learnings.yaml, agents/audit/audit.sh, bin/fw]
 related_tasks: [T-272, T-277, T-100]
 created: 2026-02-25T08:09:57Z

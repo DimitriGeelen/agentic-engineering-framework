@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon:
-tags: [arc:capability-overlay, consumer, mcp, vendor-policy, obs-063]
+horizon: null
 components: []
 related_tasks: [T-2265, T-2268, T-2241, T-2095]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

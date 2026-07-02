@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [G-064-closure, prompt-triage, v0.5]
+horizon: null
 components: [bin/fw, lib/resolver.py]
 related_tasks: [T-1732, T-1729, T-1700, T-1689, T-1690, T-1697]
 arc_id: orchestrator-rethink

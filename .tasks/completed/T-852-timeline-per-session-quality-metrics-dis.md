@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/timeline.py, web/templates/timeline.html]
 related_tasks: []
 created: 2026-04-04T18:01:20Z

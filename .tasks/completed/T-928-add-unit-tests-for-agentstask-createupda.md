@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/update_task.bats]
 related_tasks: []
 created: 2026-04-05T16:19:48Z

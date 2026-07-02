@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon:
-tags: [arc:horizon-axis-hardening]
+horizon: null
 components: [agents/context/post-compact-resume.sh, agents/handover/handover.sh, 
       agents/task-create/create-task.sh, agents/task-create/update-task.sh, 
       bin/migrate-horizon-null-completed.sh, web/blueprints/tasks.py, 

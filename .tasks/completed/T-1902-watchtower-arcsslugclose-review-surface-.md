@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [arc-closure-ux, watchtower, governance]
+horizon: null
 components: []
 related_tasks: [T-1671, T-679, T-1626, T-1633, T-1641, T-1667, T-1670]
 created: 2026-05-18T18:33:39Z

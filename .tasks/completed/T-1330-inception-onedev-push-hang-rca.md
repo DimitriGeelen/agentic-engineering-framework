@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [rca, infrastructure, onedev, push-hang]
+horizon: null
 components: []
 related_tasks: [T-1277]
 created: 2026-04-19T12:01:00Z

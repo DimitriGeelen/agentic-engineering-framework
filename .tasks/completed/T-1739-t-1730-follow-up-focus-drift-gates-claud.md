@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [T-1730-followup, hook-env, robustness]
+horizon: null
 components: [agents/context/check-active-task.sh, 
       tests/unit/focus_drift_gate.bats]
 related_tasks: [T-1730, T-1729]

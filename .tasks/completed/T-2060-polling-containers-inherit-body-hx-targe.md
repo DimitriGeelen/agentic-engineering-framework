@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, htmx, polling, watchtower, render-fidelity, arc-007]
+horizon: null
 components: [lib/render_surface.sh, tests/unit/test_render_surface_gate.bats, 
       web/templates/approvals.html, web/templates/review.html, 
       web/templates/base.html]

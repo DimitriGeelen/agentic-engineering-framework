@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: [from-T-1641, t-1061-followup, drift-defense, wezterm, framework, contract]
+horizon: null
 components: [tests/fixtures/termlink-list-schema.json, 
       tests/unit/test_termlink_list_contract.py]
 related_tasks: [T-1641, T-1644, T-1062, T-1647, T-1649]

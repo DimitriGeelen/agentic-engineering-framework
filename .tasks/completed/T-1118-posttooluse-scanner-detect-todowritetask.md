@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/context/audit-task-tools.sh, bin/fw, 
       tests/unit/audit_task_tools.bats]
 related_tasks: []

@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, handover, push, regression]
+horizon: null
 components: [agents/handover/handover.sh, 
       tests/unit/handover_push_no_origin.bats]
 related_tasks: [T-1255, T-1144, T-1277]

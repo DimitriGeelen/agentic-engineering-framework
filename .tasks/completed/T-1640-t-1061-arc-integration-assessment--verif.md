@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: [from-T-1061, termlink, orchestrator, integration, verification]
+horizon: null
 components: []
 related_tasks: [T-1061, T-1641]
 created: 2026-05-01T10:48:05Z

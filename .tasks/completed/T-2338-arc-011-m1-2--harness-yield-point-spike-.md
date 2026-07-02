@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/dispatch/preamble.md, agents/dispatch/yield-point.sh]
 related_tasks: []
 arc_id: parallel-execution-aef

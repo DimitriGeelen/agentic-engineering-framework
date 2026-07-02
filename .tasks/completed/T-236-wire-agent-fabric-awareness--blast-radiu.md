@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/git/lib/hooks.sh, agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-02-21T21:48:24Z

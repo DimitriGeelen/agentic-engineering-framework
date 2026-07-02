@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon:
-tags: [paths-sh, env-leak, framework-bug, class-signal, obs-053]
+horizon: null
 components: []
 related_tasks: [T-2200, T-2202]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

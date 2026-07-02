@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [spawn, observability]
+horizon: null
 components: [bin/fw, lib/outcome.py, lib/resolver.py, lib/spawn.py, 
       tests/unit/test_orchestrator_status_terminal_events.py, 
       tests/unit/test_outcome.py, tests/unit/test_resolver_run.py, 

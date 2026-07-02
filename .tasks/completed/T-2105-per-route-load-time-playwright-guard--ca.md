@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-arc_id: watchtower-redesign
+horizon: null
 tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower]
 components: []
 related_tasks: [T-1954, T-2102, T-2083, T-2104, T-2048, T-2106, T-2107, T-2108]

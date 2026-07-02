@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [termlink, multi-llm, routing]
+horizon: null
 components: [agents/termlink/termlink.sh, 
       tests/unit/test_termlink_dispatch_task_type.py]
 related_tasks: [T-1061, T-1641]

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [audit, bug, framework-blindness]
+horizon: null
 components: [C-004]
 related_tasks: [T-1812, T-1811, T-1805, T-1806, T-1807, T-1808, T-1809, T-1810]
 arc_id: dispatch-safety

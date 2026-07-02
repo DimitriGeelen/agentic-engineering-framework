@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [qa, llm, rag, search, watchtower]
+horizon: null
 components: [web/ask.py, web/embeddings.py, web/blueprints/discovery.py, 
       web/templates/search.html]
 related_tasks: [T-254, T-255, T-256, T-257, T-258, T-259]

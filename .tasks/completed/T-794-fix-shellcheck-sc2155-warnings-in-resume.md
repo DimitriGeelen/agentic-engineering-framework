@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/resume/resume.sh]
 related_tasks: []
 created: 2026-03-30T16:24:36Z

@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [hooks, typescript, T-586]
+horizon: null
 components: []
 related_tasks: [T-586, T-592, T-578]
 created: 2026-03-23T23:00:46Z

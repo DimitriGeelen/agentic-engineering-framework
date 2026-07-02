@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/termlink/termlink.sh]
 related_tasks: []
 arc_id: orchestrator-rethink

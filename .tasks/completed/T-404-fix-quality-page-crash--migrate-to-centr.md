@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [watchtower, bugfix]
+horizon: null
 components: []
 related_tasks: [T-403]
 created: 2026-03-10T13:42:00Z

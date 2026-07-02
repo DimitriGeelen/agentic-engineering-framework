@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [fw-upgrade, reliability, inception, T-2078-cluster, playwright, mcp]
+horizon: null
 components: []
 related_tasks: [T-2078, T-2097]
 created: 2026-05-29T14:02:48Z

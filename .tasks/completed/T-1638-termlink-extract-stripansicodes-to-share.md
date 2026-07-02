@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [from-T-1066, termlink, cleanup, dedup]
+horizon: null
 components: []
 related_tasks: [T-1066]
 created: 2026-05-01T10:45:18Z

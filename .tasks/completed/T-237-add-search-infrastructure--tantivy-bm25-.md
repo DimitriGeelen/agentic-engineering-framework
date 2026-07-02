@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [C-003, web/search.py, web/templates/base.html, 
       web/templates/search.html]
 related_tasks: []

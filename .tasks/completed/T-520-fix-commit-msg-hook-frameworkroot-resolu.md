@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, hooks, install, D2]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-17T22:39:12Z

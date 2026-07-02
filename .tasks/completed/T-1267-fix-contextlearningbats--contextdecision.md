@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/context_decision.bats, tests/unit/context_learning.bats]
 related_tasks: []
 created: 2026-04-15T18:58:11Z

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/approvals.py, web/blueprints/inception.py]
 related_tasks: []
 created: 2026-04-12T11:08:23Z

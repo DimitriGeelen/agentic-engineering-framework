@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: claude-code
-horizon:
-tags: [arc:value-prioritisation, bvp, prompt-bundle, drift]
+horizon: null
 components: []
 related_tasks: [T-2245, T-2246]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [pickup, learning]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-04-12T08:45:07Z

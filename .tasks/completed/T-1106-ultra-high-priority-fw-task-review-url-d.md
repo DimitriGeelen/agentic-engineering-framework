@@ -36,8 +36,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-885, T-1105, T-1100, T-1093]
 created: 2026-04-11T13:30:22Z

@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/integration/fw_fabric.bats]
 related_tasks: []
 created: 2026-03-29T21:06:07Z

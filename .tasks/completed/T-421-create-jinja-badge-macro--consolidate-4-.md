@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: [refactoring, html, watchtower, usability]
+horizon: null
 components: [web/templates/assumptions.html, web/templates/decisions.html, 
       web/templates/gaps.html, web/templates/_partials/badge.html, 
       web/templates/risks.html]

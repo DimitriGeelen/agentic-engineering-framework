@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [fw-upgrade, reliability, inception, T-2078-cluster, seed-files]
+horizon: null
 components: []
 related_tasks: [T-2078, T-2092, T-2093, T-2094, T-2095]
 created: 2026-05-29T14:02:19Z

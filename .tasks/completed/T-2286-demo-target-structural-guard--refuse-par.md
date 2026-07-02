@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon:
-tags: [arc:capability-overlay, governance, demo-guard, obs-057]
+horizon: null
 components: []
 related_tasks: [T-2273, T-2268, T-1731, T-2205]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

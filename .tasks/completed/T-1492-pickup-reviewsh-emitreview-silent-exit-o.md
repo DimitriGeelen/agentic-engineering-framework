@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: [lib/review.sh, tests/unit/lib_review.bats]
 related_tasks: []
 created: 2026-04-26T10:57:02Z

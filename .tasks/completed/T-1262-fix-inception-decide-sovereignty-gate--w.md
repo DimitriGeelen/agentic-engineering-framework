@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bugfix, inception, sovereignty, watchtower]
+horizon: null
 components: [lib/inception.sh, tests/unit/lib_inception.bats, 
       web/blueprints/inception.py, web/subprocess_utils.py]
 related_tasks: [T-1260, T-1259, T-1223]

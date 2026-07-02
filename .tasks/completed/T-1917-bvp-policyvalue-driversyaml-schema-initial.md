@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-2, policy]
+horizon: null
 components: [policy/, policy/value-drivers.yaml]
 related_tasks: [T-1915, T-1916]
 arc_id: value-prioritisation

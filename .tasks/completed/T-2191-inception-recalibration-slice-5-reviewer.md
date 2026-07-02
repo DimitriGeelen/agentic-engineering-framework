@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [inception, reviewer, T-2186-slice, T-2145-extension]
+horizon: null
 components: []
 related_tasks: [T-2186, T-2188, T-2145]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

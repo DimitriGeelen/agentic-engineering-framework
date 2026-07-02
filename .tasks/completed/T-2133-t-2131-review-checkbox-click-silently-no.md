@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [bug, regression, htmx, review-surface, sovereignty-adjacent]
+horizon: null
 components: [web/templates/_review_acs.html, web/templates/review.html]
 related_tasks: [T-2131, T-2114, T-2112, T-2113, T-2119, T-2074, T-1597, T-1600]
 created: 2026-05-31T07:11:38Z

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [arc-008, rca, advisory-model, defer-as-hedge, inception]
+horizon: null
 components: []
 related_tasks: [T-2143, T-2139, T-2138, T-679, T-1878, T-1947]
 arc_id: inception-review-loop

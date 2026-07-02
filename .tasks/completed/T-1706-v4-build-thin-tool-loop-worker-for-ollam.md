@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [ollama, dispatch, v4, spike]
+horizon: null
 components: [agents/termlink/termlink.sh, tools/ollama-tool-loop.py, 
       tools/t1706-tool-loop-probe.sh]
 related_tasks: [T-1705, T-1700, T-1704]

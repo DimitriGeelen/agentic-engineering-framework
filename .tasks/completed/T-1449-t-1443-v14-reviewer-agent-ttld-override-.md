@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [reviewer-agent, override-mechanism, ttl, antifragile, v1.4]
+horizon: null
 components: [bin/fw, lib/reviewer/override_cli.py, lib/reviewer/overrides.py, 
       tests/unit/test_reviewer_overrides.py]
 related_tasks: [T-1443, T-1445, T-1446, T-1447, T-1448]

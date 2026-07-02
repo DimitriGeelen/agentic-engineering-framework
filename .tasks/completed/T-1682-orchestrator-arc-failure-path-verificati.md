@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: [orchestrator-rethink, verification, termlink, failure-path]
+horizon: null
 components: []
 related_tasks: [T-1669, T-1678, T-1680]
 created: 2026-05-02T14:32:04Z

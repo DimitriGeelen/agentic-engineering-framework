@@ -19,8 +19,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [from-T-1641, t-1061-followup, wiring, orchestrator, termlink, 
+horizon: null
       framework-integration]
 components: [agents/dispatch/preamble.md, agents/termlink/termlink.sh, 
       lib/config.sh, tests/unit/test_arcs_routes.py, 

@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [hooks, telemetry, from-T-1626, B-2]
+horizon: null
 components: [lib/upgrade.sh]
 related_tasks: [T-1626, T-1627]
 created: 2026-04-30T21:19:26Z

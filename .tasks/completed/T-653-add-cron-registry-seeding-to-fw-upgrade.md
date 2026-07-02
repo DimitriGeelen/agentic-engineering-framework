@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-28T15:35:55Z

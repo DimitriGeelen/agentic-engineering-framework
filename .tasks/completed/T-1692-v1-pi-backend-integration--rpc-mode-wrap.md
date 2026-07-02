@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [pi, multi-provider]
+horizon: null
 components: []
 related_tasks: [T-1687]
 arc_id: orchestrator-rethink

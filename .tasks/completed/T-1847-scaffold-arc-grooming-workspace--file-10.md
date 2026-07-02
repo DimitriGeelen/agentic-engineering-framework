@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, scaffold, post-decide-go]
+horizon: null
 components: [".context/arcs/"]
 related_tasks: ["T-1846"]
 arc_id: arc-grooming

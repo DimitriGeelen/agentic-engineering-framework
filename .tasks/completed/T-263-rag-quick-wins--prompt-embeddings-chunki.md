@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [qa, rag, embeddings]
+horizon: null
 components: [web/embeddings.py]
 related_tasks: []
 created: 2026-02-24T08:36:46Z

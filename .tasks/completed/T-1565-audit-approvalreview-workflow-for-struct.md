@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-004, agents/task-create/update-task.sh, bin/fw, 
       web/blueprints/approvals.py, web/blueprints/inception.py, 
       web/blueprints/review.py, web/blueprints/tasks.py, web/shared.py, 

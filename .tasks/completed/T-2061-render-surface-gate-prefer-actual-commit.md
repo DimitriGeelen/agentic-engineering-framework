@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, render-surface, governance, false-positive, p-013, l-435]
+horizon: null
 components: [lib/render_surface.sh, tests/unit/test_render_surface_gate.bats]
 related_tasks: [T-1766, T-2056, T-2060, T-1763, T-1764, T-1765]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

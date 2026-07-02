@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [pickup, learning]
+horizon: null
 components: [agents/termlink/termlink.sh]
 related_tasks: []
 created: 2026-03-30T14:51:26Z

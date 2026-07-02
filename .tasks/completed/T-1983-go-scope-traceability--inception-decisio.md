@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-1984, T-1849, T-1890, T-1442, T-1443, T-1950]
 inception_decisions:

@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [governance, reviewer-agent, termlink-dispatch, friction-reduction, 
+horizon: null
       slash-command, orchestrator-routing]
 components: []
 related_tasks: [T-1442, T-1064, T-1065]

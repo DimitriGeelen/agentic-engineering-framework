@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-04-12T09:00:04Z

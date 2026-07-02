@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/termlink.bats]
 related_tasks: []
 created: 2026-04-05T16:24:53Z

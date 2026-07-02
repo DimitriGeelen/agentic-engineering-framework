@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-004, lib/arc.sh, tests/unit/test_arc_system.py, 
       tests/unit/test_audit_arc_completion.py]
 related_tasks: []

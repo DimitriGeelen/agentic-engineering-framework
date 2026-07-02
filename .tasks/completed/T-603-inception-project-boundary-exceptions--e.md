@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [urgent, security]
+horizon: null
 components: []
 related_tasks: [T-559, T-602, T-601]
 created: 2026-03-24T09:44:00Z

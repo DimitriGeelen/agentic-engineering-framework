@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [docs, articles]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-11T08:45:20Z

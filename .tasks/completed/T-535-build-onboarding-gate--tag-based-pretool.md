@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/context/check-active-task.sh, 
       agents/context/post-compact-resume.sh, agents/task-create/update-task.sh, 
       bin/fw]

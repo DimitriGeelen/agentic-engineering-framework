@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: ["bug", "render", "governance-render", "human-review-surface"]
+horizon: null
 components: [lib/render_surface.sh, tests/unit/test_ac_body_html_comment.py, 
       tests/unit/test_file_route_extensions.py, web/blueprints/docs.py, 
       web/blueprints/tasks.py, web/shared.py]

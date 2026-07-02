@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/lib_enums.bats]
 related_tasks: []
 created: 2026-04-12T17:54:20Z

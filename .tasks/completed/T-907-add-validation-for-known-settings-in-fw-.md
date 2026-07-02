@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/config-file.sh, tests/unit/lib_config_file.bats]
 related_tasks: []
 created: 2026-04-05T14:02:14Z

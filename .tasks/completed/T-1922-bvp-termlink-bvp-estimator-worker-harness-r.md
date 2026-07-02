@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-7a, termlink, novel-mechanism]
+horizon: null
 components: [012-ArcSystem.md, agents/resume/resume.sh, 
       agents/task-create/update-task.sh, agents/termlink/bvp-estimator/AGENT.md, 
       agents/termlink/bvp-estimator/bvp-estimator.sh, 

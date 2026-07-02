@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: specification
 owner: claude-code
-horizon:
-tags: [inception-spike, t-2209-children, iw-1-supplemental, cli-error-survey]
+horizon: null
 components: []
 related_tasks: [T-2209, T-2210]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

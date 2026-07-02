@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/context/check-tier0.sh, bin/fw]
 related_tasks: [T-608, T-610, T-611]
 created: 2026-03-25T16:51:32Z

@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [handover, parser, false-positive, governance-noise]
+horizon: null
 components: []
 related_tasks: [T-1274]
 created: 2026-04-30T08:55:00Z

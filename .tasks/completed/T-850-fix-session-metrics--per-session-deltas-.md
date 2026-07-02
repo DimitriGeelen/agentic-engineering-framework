@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/context/lib/init.sh, agents/context/session-metrics.sh, 
       agents/handover/handover.sh]
 related_tasks: []

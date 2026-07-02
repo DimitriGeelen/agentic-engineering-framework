@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, doctor, consumer]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-25T20:17:21Z

@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [termlink, integration, cross-terminal]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-15T23:43:34Z

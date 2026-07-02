@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [fabric, dispatch, auto-registration]
+horizon: null
 components: [agents/dispatch/preamble.md, agents/git/lib/hooks.sh]
 related_tasks: []
 created: 2026-02-22T09:29:59Z

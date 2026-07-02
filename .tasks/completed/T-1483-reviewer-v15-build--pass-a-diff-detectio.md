@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [reviewer-agent, drift-detection, worktree, v1.5, build]
+horizon: null
 components: [bin/fw]
 related_tasks: [T-1442, T-1443, T-1445, T-1450, T-1482]
 created: 2026-04-25T22:22:40Z

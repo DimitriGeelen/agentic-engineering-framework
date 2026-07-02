@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [discovery, assurance, antifragility, temporal-analysis]
+horizon: null
 related_tasks: [T-194]
 components: [docs/reports/T-200-discovery-layer-design.md]
 created: 2026-02-19T19:29:30Z

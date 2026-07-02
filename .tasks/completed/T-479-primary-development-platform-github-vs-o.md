@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [infrastructure, launch, portability]
+horizon: null
 components: []
 related_tasks: [T-334, T-442, T-443, T-476]
 created: 2026-03-14T12:51:19Z

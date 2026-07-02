@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-11T23:45:59Z

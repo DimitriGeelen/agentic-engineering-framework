@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-2240, T-2244, T-2247]
 target_blast_radius: 3

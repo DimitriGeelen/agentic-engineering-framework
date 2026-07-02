@@ -23,8 +23,7 @@ description: >
   are in separate repos with separate task numbering.
 
 status: work-completed
-horizon:
-workflow_type: inception
+horizon: null
 owner: human
 tags: [external-project, pronunciation, german, bridge-task]
 related_tasks: []

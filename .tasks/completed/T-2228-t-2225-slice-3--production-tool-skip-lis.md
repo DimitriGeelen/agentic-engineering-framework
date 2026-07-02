@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-004, agents/docgen/generate_article.py, 
       agents/docgen/generate_component.py, lib/evolution_log.sh, web/shared.py]
 related_tasks: []

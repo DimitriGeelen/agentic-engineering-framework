@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-007, agents/handover/handover.sh, 
       agents/task-create/create-task.sh, agents/task-create/update-task.sh, 
       agents/termlink/termlink.sh]

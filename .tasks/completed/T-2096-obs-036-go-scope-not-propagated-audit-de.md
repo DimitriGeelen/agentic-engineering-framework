@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [audit, prevention, antifragility, l-417-sibling]
+horizon: null
 components: [agents/audit/audit.sh]
 related_tasks: [T-1975, T-2078, T-2091, T-2092, T-2093, T-2094, T-2095]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

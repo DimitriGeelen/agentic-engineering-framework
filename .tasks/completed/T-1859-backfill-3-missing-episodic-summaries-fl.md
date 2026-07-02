@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [housekeeping, episodic, memory-completeness, audit-followup]
+horizon: null
 components: [.context/episodic/]
 related_tasks: [T-1829, T-1830, T-1831, T-017]
 created: 2026-05-15T18:17:12Z

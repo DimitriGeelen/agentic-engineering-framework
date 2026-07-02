@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [bin/claude-fw]
 related_tasks: []
 created: 2026-03-18T08:31:44Z

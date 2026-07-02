@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [bin/watchtower.sh]
 related_tasks: [T-621]
 created: 2026-03-26T12:50:30Z

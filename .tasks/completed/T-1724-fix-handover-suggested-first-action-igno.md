@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, handover, governance]
+horizon: null
 components: [agents/handover/handover.sh]
 related_tasks: [T-1611, T-1068]
 created: 2026-05-04T19:22:36Z

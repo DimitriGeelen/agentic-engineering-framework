@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [v3-prep]
+horizon: null
 components: [tools/t1704-hermes3-probe.sh]
 related_tasks: []
 created: 2026-05-03T19:58:50Z

@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [from-T-1633, simulation, release-gate, outward-guard]
+horizon: null
 components: []
 related_tasks: [T-1633, T-1634]
 arc_id: project-shape-resilience

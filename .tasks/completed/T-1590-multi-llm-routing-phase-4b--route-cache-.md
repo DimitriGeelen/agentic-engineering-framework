@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [termlink, multi-llm, routing]
+horizon: null
 components: []
 related_tasks: [T-1061, T-1065]
 created: 2026-04-28T18:46:58Z

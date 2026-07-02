@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [arc, arc-grooming, watchtower, web, T-NEW-12]
+horizon: null
 components: [tests/playwright/test_arcs_detail_arc_id_membership.py, 
       web/blueprints/arcs.py]
 related_tasks: [T-1687, T-1849, T-1850, T-1874, T-1875]

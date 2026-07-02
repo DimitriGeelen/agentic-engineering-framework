@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-823, T-193, T-325, T-358, T-373]
 created: 2026-04-06T11:49:04Z

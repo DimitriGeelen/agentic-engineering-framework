@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/audit/self-audit.sh, C-008, agents/healing/healing.sh, 
       lib/init.sh]
 related_tasks: []

@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 related_tasks: []
 created: 2026-02-18T13:30:45Z
 last_update: '2026-06-11T22:23:53Z'

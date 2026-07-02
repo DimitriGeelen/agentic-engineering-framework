@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/context/lib/focus.sh]
 related_tasks: []
 created: 2026-03-28T16:19:55Z

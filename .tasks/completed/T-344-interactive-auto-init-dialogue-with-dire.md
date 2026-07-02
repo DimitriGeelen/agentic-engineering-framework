@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [cli, ux, onboarding]
+horizon: null
 components: [bin/fw]
 related_tasks: [T-343, T-294, T-304]
 created: 2026-03-08T11:20:14Z

@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [governance, context-budget, autonomy, session-management]
+horizon: null
 components: [agents/context/checkpoint.sh, agents/context/budget-gate.sh, 
       agents/context/pre-compact.sh, agents/context/post-compact-resume.sh, 
       .claude/settings.json]

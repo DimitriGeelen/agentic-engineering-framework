@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [bug, hooks, handover, performance]
+horizon: null
 components:
   - agents/handover/handover.sh
   - agents/context/checkpoint.sh

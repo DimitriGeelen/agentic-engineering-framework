@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-010, mcp, governance, pre-push-gate]
+horizon: null
 components: [agents/git/lib/hooks.sh]
 arc_id: arc-010
 related_tasks: [T-2240, T-2241, T-2290, T-2293]

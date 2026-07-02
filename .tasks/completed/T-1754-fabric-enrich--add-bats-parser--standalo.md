@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-004, tests/unit/test_enrich_bats_parser.py]
 related_tasks: []
 created: 2026-05-05T22:02:05Z

@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [component-fabric, graph, impact]
+horizon: null
 related_tasks: []
 created: 2026-02-20T07:14:08Z
 last_update: '2026-06-11T22:24:08Z'

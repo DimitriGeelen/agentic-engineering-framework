@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [governance, documentation, claude-code, onboarding]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-10T21:17:44Z

@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [bin/watchtower.sh]
 related_tasks: []
 created: 2026-03-25T21:59:43Z

@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [multi-provider, ollama]
+horizon: null
 components: []
 related_tasks: [T-1687]
 arc_id: orchestrator-rethink

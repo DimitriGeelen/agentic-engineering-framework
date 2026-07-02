@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/lib_costs.bats]
 related_tasks: []
 created: 2026-04-03T20:00:38Z

@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [init, template, T-306]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T18:34:26Z

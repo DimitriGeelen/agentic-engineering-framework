@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [arc-grooming, future-prevention, refactor]
+horizon: null
 components: [agents/handover/handover.sh, lib/arc_membership.py, 
       lib/evolution_log.sh, tests/unit/arc_membership_shared.bats, 
       tests/unit/test_arc_membership_shared.py, web/blueprints/arcs.py, 

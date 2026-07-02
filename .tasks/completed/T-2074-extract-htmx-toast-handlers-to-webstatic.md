@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/static/htmx-toast.js, web/templates/base.html, 
       web/templates/review.html]
 related_tasks: []

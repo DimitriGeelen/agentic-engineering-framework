@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [tokens, handover, observability]
+horizon: null
 components: [agents/handover/handover.sh]
 related_tasks: []
 created: 2026-04-03T19:23:46Z

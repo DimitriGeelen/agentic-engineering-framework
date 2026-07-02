@@ -9,8 +9,7 @@ description: >
   (L-013, L-038).
 status: work-completed
 workflow_type: build
-horizon:
-owner: human
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-17T23:49:33Z

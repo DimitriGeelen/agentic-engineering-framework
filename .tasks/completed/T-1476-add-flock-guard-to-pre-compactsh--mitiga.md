@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/context/pre-compact.sh, tests/unit/pre_compact_flock.bats]
 related_tasks: []
 created: 2026-04-25T21:02:18Z

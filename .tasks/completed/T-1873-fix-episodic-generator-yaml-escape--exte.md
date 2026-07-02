@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/context/lib/episodic.sh, 
       tests/unit/episodic_yaml_decision_escape.bats, 
       tools/episodic-corpus-check.py]

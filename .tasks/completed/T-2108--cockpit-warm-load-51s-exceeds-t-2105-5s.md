@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [arc-007, perf, test-infra, T-1954-cluster, watchtower, cockpit]
+horizon: null
 components: [web/blueprints/cockpit.py, web/blueprints/timeline.py]
 related_tasks: [T-2105, T-1954, T-2102, T-2106, T-2107]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

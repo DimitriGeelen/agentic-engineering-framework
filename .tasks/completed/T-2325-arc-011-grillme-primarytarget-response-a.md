@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-parallel-execution-aef, agent-prep, no-source-change]
+horizon: null
 components: []
 related_tasks: [T-2303, T-2323, T-2324]
 arc_id: parallel-execution-aef

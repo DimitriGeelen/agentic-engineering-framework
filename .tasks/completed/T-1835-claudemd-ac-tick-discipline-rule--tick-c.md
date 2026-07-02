@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [fw-upgrade-incident-2026-05-14, claude-md, governance, ac-discipline]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-05-14T20:52:33Z

@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/handover/handover.sh, bin/fw, web/blueprints/approvals.py, 
       web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []

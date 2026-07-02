@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: ["fabric", "drift-defense"]
+horizon: null
 components: ["agents/fabric/lib/enrich.py"]
 related_tasks: ["T-1753", "T-1754"]
 arc_id: orchestrator-rethink

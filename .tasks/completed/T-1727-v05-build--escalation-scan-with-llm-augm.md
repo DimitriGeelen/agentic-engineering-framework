@@ -17,8 +17,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [T-1726-implementation, G-064-closure-pilot, ready-on-t-1744-go]
+horizon: null
 components: [prompts/default.md, prompts/escalation-triage.md, 
       tests/playwright/test_escalation_v05.py, 
       tests/unit/escalation_scan_v05.bats, tools/escalation-scan-v0.5.py, 

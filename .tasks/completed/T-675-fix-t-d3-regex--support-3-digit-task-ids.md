@@ -6,8 +6,7 @@ description: 'Fix T-\d{3} regex — support 3+ digit task IDs across Watchtower'
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-28T20:14:27Z

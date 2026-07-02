@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-004, agents/audit/plugin-audit.sh, agents/audit/self-audit.sh, 
       C-007, agents/context/check-agent-dispatch.sh, C-008, 
       agents/handover/handover.sh, agents/resume/resume.sh, 

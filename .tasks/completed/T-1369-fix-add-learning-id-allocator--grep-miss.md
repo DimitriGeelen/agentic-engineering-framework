@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-002, tests/unit/add_learning_id_allocator.bats]
 related_tasks: []
 created: 2026-04-20T20:52:00Z

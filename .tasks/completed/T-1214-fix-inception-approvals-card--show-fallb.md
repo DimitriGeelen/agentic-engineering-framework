@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: []
 created: 2026-04-13T09:18:31Z

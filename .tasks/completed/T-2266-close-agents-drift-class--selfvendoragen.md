@@ -18,8 +18,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [closure-arc, self-vendor]
+horizon: null
 components: [lib-upgrade, bin-fw, agents-audit]
 related_tasks: [T-2240, T-2241, T-2242, T-2244, T-2263, T-2264]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

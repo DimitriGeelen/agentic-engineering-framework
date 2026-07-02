@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-007, perf, watchtower, ux-review, tooling, prevention]
+horizon: null
 components: [agents/ux-review/ux-review.py, tests/unit/test_ux_review_routes.py]
 related_tasks: [T-2038, T-2039, T-2040, T-2041, T-2005]
 arc_id: watchtower-redesign

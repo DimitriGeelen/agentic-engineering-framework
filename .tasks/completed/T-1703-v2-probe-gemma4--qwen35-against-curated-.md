@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [v2-prep]
+horizon: null
 components: [agents/termlink/termlink.sh, tools/t1700-ollama-harness.sh, 
       tools/t1703-probe-matrix.sh]
 related_tasks: []

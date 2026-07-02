@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, documentation, canonical, T-NEW-9]
+horizon: null
 components: [tests/playwright/test_arcs_lifecycle_tabs.py, 
       web/blueprints/arcs.py, web/templates/arcs_index.html]
 related_tasks: [T-1846, T-1847, T-1653]

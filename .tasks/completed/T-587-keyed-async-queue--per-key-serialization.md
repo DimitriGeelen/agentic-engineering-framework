@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/task-create/update-task.sh, lib/keylock.sh, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-23T21:35:21Z

@@ -15,8 +15,7 @@ description: "T-1834 force-push surfaced two tracked binaries (os 36MB PostScrip
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, security]
+horizon: null
 components: ["agents/git/lib/secret-scan.sh", "agents/git/lib/hooks.sh"]
 related_tasks: ["T-1844", "T-1828", "T-1834", "T-1716"]
 arc_id: project-shape-resilience

@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/healing/healing.sh]
 related_tasks: []
 created: 2026-04-04T23:10:03Z

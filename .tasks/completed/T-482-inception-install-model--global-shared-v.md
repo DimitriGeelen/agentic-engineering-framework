@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [architecture, portability, installer]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-14T14:49:13Z

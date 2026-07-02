@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [refactoring, quality, audit, governance]
+horizon: null
 components: [web/blueprints/discovery.py, web/static/js/chat.js, 
       agents/task-create/update-task.sh, web/templates/base.html]
 related_tasks: [T-404, T-406, T-409, T-412, T-413, T-414, T-415, T-416, T-417, 

@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [watchtower, ux, bugfix]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-10T14:10:26Z

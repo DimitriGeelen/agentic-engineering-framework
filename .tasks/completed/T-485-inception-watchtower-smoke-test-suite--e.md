@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [watchtower, testing, reliability]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-14T15:22:55Z

@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/upgrade.sh]
 related_tasks: [T-625, T-626]
 created: 2026-03-26T15:59:42Z

@@ -13,8 +13,7 @@ description: >
   session containers, memory provenance tracking.
 
 status: work-completed
-horizon:
-workflow_type: inception
+horizon: null
 owner: human
 tags: []
 related_tasks: []

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-008, claudemd, advisory-model, defer-as-hedge]
+horizon: null
 components: [CLAUDE.md]
 related_tasks: [T-2144, T-2143, T-2145, T-679, T-1811, T-1878]
 arc_id: inception-review-loop

@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, validation-drift, resolver]
+horizon: null
 components: [bin/fw, lib/resolver.py]
 related_tasks: [T-1733, T-1706, T-1689]
 arc_id: orchestrator-rethink

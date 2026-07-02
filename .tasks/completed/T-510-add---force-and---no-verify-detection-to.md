@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [governance, enforcement, D2]
+horizon: null
 components: [agents/context/check-tier0.sh]
 related_tasks: []
 created: 2026-03-17T11:34:10Z

@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude
-horizon:
-tags: [arc, arc-grooming, audit, T-NEW-11]
+horizon: null
 components: [C-004, tests/unit/audit_arc_progress_arc_id.bats]
 related_tasks: [T-1687, T-1813, T-1849, T-1850, T-1874]
 arc_id: arc-grooming

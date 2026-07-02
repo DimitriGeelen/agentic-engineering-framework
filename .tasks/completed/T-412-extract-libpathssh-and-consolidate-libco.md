@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: [refactoring, shell, reliability, portability]
+horizon: null
 components: [C-004, agents/audit/plugin-audit.sh, agents/audit/self-audit.sh, 
       C-007, agents/context/bus-handler.sh, agents/context/check-active-task.sh, 
       C-008, agents/context/check-tier0.sh, C-001, 

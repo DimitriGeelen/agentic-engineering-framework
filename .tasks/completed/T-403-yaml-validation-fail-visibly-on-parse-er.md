@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/core.py, web/blueprints/metrics.py, 
       web/blueprints/risks.py, web/shared.py, web/templates/base.html]
 related_tasks: []

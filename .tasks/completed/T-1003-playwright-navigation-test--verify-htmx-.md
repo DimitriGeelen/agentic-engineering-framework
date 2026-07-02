@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_navigation.py]
 related_tasks: []
 created: 2026-04-07T10:07:34Z

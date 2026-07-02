@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/handover_push_timeout.bats]
 related_tasks: []
 created: 2026-04-23T19:45:11Z

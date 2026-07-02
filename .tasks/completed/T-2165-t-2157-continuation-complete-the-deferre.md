@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc:value-prioritisation, value-drivers, bvp, research]
+horizon: null
 components: [docs/reports/T-2157-value-drivers-v3-redesign.md, 
       policy/value-drivers.yaml, lib/bvp.sh, web/blueprints/bvp.py, 
       web/blueprints/arcs.py, lib/arc.sh, policy/bvp-scoring-rubric.md]

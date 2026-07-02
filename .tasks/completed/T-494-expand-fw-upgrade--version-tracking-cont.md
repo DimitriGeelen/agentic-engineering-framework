@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [upgrade, testing]
+horizon: null
 components: [bin/fw, lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-14T20:05:30Z

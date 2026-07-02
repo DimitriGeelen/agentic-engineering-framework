@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [launch, visibility]
+horizon: null
 components: []
 related_tasks: [T-329, T-334, T-336]
 created: 2026-03-06T23:26:45Z

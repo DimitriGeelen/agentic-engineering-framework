@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, audit, freshness, T-NEW-7]
+horizon: null
 components: []
 related_tasks: [T-1846, T-1847]
 arc_id: arc-grooming

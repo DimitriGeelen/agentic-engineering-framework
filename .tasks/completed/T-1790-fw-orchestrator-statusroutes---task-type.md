@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [cli, observability]
+horizon: null
 components: []
 related_tasks: [T-1784, T-1786, T-1789]
 arc_id: orchestrator-rethink

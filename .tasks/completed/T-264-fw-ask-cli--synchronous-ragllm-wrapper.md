@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [qa, cli, framework]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-02-24T08:37:00Z

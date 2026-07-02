@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, lib/init.sh, lib/validate-init.sh]
 related_tasks: [T-356]
 created: 2026-03-08T18:17:48Z

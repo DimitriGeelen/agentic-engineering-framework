@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: ["structural-fix", "cron", "drift-detection", "T-1767-followup", "G-064-prevention"]
+horizon: null
 components: []
 related_tasks: ["T-1767", "T-1727", "T-1750"]
 arc_id: orchestrator-rethink

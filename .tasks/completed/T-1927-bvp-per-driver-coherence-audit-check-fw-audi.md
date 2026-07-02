@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-11, audit]
+horizon: null
 components: [lib/arc.sh]
 related_tasks: [T-1915, T-1916, T-1924, T-1850]
 arc_id: value-prioritisation

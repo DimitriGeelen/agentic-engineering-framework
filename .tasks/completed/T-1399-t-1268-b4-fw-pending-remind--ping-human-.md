@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/pending.sh]
 related_tasks: []
 created: 2026-04-23T14:06:44Z

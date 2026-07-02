@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, upgrade, version-skew, structural-fix, T-1839-sibling]
+horizon: null
 components: [lib/upgrade.sh]
 related_tasks: [T-1838, T-1839, T-1828, T-1542]
 arc_id: arc-004

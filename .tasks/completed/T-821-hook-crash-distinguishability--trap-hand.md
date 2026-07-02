@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-007, agents/context/check-active-task.sh, 
       agents/context/check-agent-dispatch.sh, C-008, 
       agents/context/check-project-boundary.sh, agents/context/check-tier0.sh, 

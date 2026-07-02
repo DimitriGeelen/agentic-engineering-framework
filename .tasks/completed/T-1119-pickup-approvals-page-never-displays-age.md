@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-04-12T07:45:01Z

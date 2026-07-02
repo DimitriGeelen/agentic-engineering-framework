@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [testing, reliability, D2]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T21:14:17Z

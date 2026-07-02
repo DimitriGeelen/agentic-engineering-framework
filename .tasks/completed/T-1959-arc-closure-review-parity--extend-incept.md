@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [approval-ux, watchtower, arc, T-1911-followup]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-05-20T17:26:11Z

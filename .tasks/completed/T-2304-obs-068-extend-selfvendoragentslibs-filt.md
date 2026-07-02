@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [C-004, lib/upgrade.sh, 
       tests/unit/test_self_vendor_agents_md_filter.bats]
 related_tasks: []

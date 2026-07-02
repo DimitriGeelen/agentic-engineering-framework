@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [.context/arcs/parallel-execution-aef.yaml]
 related_tasks: [T-2303, T-1925, T-1926]
 arc_id: parallel-execution-aef

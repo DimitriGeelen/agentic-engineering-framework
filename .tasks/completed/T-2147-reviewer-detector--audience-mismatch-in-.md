@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-008, reviewer, audience-mismatch, ac-routing]
+horizon: null
 components: [agents/audit/reviewer/static_scan.py]
 related_tasks: [T-2143, T-2139, T-2142, T-2145, T-1947, T-1878, T-1811]
 arc_id: inception-review-loop

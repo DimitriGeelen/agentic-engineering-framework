@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [fw-upgrade-incident-2026-05-14, lint, bug]
+horizon: null
 components: [agents/handover/handover.sh]
 related_tasks: []
 created: 2026-05-14T07:30:58Z

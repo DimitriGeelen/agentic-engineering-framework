@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [observability, kcp-pattern]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-29T08:57:13Z

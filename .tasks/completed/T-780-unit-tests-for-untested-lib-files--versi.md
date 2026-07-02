@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: claude-code
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-30T13:24:27Z

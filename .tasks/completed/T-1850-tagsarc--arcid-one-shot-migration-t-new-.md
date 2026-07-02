@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [build, data-migration, idempotent, T-NEW-3]
+horizon: null
 components: [agents/context/check-arc-id.sh, C-009, 
       lib/migrations/arc-id-migration.sh, 
       tests/unit/arc_id_validation_guard.bats]

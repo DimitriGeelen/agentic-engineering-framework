@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/review.sh]
 related_tasks: []
 created: 2026-03-27T12:18:57Z

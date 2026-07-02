@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, fix, fw-cli, test, arg-passthrough]
+horizon: null
 components: [bin/fw]
 related_tasks: [T-1575, T-1586, T-1587]
 created: 2026-04-28T16:34:35Z

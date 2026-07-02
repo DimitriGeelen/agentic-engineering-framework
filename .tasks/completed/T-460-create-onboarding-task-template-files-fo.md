@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [init, onboarding, templates]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T17:00:54Z

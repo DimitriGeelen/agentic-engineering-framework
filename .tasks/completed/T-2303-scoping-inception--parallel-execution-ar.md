@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [web/app.py, web/templates/_error_csrf.html]
 related_tasks: [T-1641, T-1643, T-2302]
 arc_id: parallel-execution-aef

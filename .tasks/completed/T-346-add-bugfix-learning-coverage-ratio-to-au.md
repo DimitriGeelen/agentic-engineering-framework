@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [meta, audit, learning]
+horizon: null
 components: [C-004, bin/fw]
 related_tasks: []
 created: 2026-03-08T12:34:04Z

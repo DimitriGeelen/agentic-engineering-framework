@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, lib/mirror.sh, tests/unit/test_mirror_sync.bats]
 related_tasks: []
 created: 2026-04-28T22:13:11Z

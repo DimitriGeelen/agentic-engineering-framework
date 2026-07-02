@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon:
-tags: [arc:capability-overlay, termlink, substrate, mcp, allowed-tools, obs-064]
+horizon: null
 components: []
 related_tasks: [T-2268, T-2282, T-2283, T-2284, T-2285, T-2265]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

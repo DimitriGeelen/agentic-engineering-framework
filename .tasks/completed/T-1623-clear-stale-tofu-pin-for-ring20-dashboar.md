@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [termlink, tofu, fleet, security, from-g-060]
+horizon: null
 components: []
 related_tasks: [T-1051, T-1053, T-1054, T-1055, T-1326, T-1332]
 created: 2026-04-30T19:53:10Z

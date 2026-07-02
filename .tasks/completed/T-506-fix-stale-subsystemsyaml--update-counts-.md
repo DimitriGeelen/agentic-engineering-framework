@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/fabric/lib/summary.sh, web/blueprints/fabric.py]
 related_tasks: []
 created: 2026-03-16T06:23:53Z

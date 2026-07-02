@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [bin/fw, tests/playwright/test_review_page.py, 
       web/blueprints/inception.py, web/blueprints/review.py, 
       web/blueprints/tasks.py, web/shared.py, web/templates/_review_acs.html, 

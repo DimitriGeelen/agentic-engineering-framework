@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [lib/init.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:27:33Z

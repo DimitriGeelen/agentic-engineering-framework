@@ -18,8 +18,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [testing, governance, infrastructure]
+horizon: null
 components: []
 related_tasks: [T-954, T-823, T-516, T-158]
 created: 2026-04-06T19:21:20Z

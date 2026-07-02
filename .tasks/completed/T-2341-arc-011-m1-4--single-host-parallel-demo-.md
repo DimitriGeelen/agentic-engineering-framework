@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/dispatch/single-host-parallel-demo.sh]
 related_tasks: [T-2337, T-2338, T-2339, T-2340]
 arc_id: parallel-execution-aef

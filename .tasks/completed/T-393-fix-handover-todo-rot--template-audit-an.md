@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [handover, audit, quality]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-09T17:33:55Z

@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, ac-routing, governance, reviewer, T-1878-C]
+horizon: null
 components: [lib/reviewer/static_scan.py, 
       tests/unit/reviewer_human_ac_mechanical_signal.bats, 
       tests/unit/test_reviewer_human_ac_mechanical_signal.py]

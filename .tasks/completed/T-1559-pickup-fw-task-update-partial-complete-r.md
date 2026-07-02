@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [pickup, bug-report]
+horizon: null
 components: [agents/task-create/update-task.sh]
 related_tasks: []
 created: 2026-04-27T18:38:01Z

@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [assurance, risk-remediation, t-194-go]
+horizon: null
 related_tasks: []
 created: 2026-02-19T19:29:23Z
 last_update: '2026-06-11T22:24:05Z'

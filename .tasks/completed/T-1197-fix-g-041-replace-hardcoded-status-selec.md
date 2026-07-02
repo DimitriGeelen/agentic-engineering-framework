@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/tasks.py, web/templates/tasks.html]
 related_tasks: []
 created: 2026-04-13T06:55:54Z

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [v3-followup-C, audit-advisory]
+horizon: null
 components: [C-004, tests/unit/test_audit_retire_when.bats]
 related_tasks: [T-2157, T-2165, T-2166, T-2168, L-417]
 arc_id: value-prioritisation

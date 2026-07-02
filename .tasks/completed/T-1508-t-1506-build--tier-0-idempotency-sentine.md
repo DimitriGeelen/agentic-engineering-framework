@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/context/check-tier0.sh]
 related_tasks: []
 created: 2026-04-26T11:38:01Z

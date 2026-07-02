@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [dispatch, preamble, governance]
+horizon: null
 components: [agents/dispatch/preamble.md]
 related_tasks: [T-1951, T-1985]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

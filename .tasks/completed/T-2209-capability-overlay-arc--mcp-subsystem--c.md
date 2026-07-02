@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/task-create/update-task.sh, tests/unit/disposition_gate.bats,
   web/blueprints/inception.py]
 related_tasks: []

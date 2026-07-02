@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [termlink, governance, mcp]
+horizon: null
 components: [agents/context/lib/focus.sh, agents/termlink/termlink.sh]
 related_tasks: [T-1061]
 created: 2026-04-08T05:32:10Z

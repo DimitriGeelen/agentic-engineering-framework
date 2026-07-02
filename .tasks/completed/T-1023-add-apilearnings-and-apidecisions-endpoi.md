@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_discovery.py, C-003]
 related_tasks: []
 created: 2026-04-07T11:42:19Z

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/context/check-tier0.sh]
 related_tasks: []
 created: 2026-03-27T08:42:51Z

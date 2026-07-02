@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/fabric/lib/drift.sh, 
       tests/unit/test_fabric_drift_performance.py]
 related_tasks: []

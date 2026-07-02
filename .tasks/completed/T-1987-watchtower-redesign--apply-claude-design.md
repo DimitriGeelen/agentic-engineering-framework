@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 arc_id: watchtower-redesign
 components: []
 related_tasks: []

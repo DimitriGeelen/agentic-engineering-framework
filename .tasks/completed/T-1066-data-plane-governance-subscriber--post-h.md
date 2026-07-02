@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [termlink, data-plane, audit]
+horizon: null
 components: [tests/fixtures/termlink-protocol-frame-types.json, 
       tests/unit/test_termlink_governance_frame_contract.py]
 related_tasks: [T-1061, T-1641]

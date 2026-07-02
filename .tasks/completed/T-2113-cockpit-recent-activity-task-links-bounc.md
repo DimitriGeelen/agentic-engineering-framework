@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [watchtower, cockpit, htmx, ui-bug, arc-007]
+horizon: null
 components: [web/templates/_cockpit_activity.html]
 related_tasks: [T-2112, T-2060, T-669, T-2020]
 arc_id: watchtower-redesign

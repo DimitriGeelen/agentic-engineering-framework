@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [ui, settings]
+horizon: null
 components: [web/app.py, web/templates/base.html]
 related_tasks: []
 created: 2026-03-09T09:41:42Z

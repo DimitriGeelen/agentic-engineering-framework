@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [gap, p-010, verification, cross-project]
+horizon: null
 related_tasks: []
 created: 2026-02-19T13:18:27Z
 last_update: '2026-06-11T22:24:03Z'

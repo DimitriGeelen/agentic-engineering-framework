@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/lib_ask.bats, tests/unit/lib_first_run.bats, 
       tests/unit/lib_validate_init.bats]
 related_tasks: []

@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [hygiene, governance]
+horizon: null
 components: []
 related_tasks: [T-1750, T-1727, T-1749]
 arc_id: orchestrator-rethink

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-grooming, audit, prevention, governance]
+horizon: null
 components: [C-004]
 related_tasks: ["T-1882", "T-1846", "T-1687", "T-1870"]
 arc_id: arc-grooming

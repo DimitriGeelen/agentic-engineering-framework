@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/inception_recommendation.sh, lib/task-audit.sh, 
       web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []

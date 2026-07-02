@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc:horizon-axis-hardening, docs]
+horizon: null
 components: [docs/reports/arc-009-demo-evidence.md, 
       .context/arcs/horizon-axis-hardening.yaml]
 related_tasks: [T-2159, T-2160, T-2161, T-2162, T-2163]

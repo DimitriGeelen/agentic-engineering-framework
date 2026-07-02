@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [build, ac-routing, governance, reviewer, T-1878-B]
+horizon: null
 components: [tests/unit/template_reviewer_prefix_example.bats]
 related_tasks: [T-1878, T-1811, T-1443, T-1894, T-1895]
 arc_id: arc-grooming

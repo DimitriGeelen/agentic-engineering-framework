@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [refactor, consolidation]
+horizon: null
 components: [lib/arc.sh]
 related_tasks: [T-1880, T-1913, T-1874, T-1879]
 arc_id: arc-grooming

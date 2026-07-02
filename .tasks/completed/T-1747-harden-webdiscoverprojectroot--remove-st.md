@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, watchtower, path-discovery]
+horizon: null
 components: [bin/fw, tests/unit/test_project_root_discovery.py, web/shared.py]
 related_tasks: [T-1727, T-1310]
 arc_id: orchestrator-rethink

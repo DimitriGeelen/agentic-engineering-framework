@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude
-horizon:
-tags: [audit, housekeeping, structural-detector]
+horizon: null
 components: [C-004, tests/unit/test_audit_revert_chain.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

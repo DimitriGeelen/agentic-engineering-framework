@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [self-vendor-drift, t2240-closure-arc]
+horizon: null
 components: [lib-upgrade, fw-shim]
 related_tasks: [T-2240, T-2241, T-2242, T-2263]
 created: 2026-06-08T14:19:34Z

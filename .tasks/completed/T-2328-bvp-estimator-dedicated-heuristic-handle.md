@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/termlink/bvp-estimator/estimator.py, 
       tests/unit/test_bvp_estimator.py]
 related_tasks: []

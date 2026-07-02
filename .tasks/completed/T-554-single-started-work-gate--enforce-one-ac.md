@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/task-create/update-task.sh, lib/inception.sh]
 related_tasks: []
 created: 2026-03-23T16:18:04Z

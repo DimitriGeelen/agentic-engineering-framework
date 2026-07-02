@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [enrichment, build, bvp, handoff-followup]
+horizon: null
 components: [docs/reports/T-1915-bvp-inception.md, .tasks/active/]
 related_tasks: [T-1915, T-1846, T-1849, T-1668]
 arc_id: value-prioritisation

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [path-c, termlink, ingestion, process-improvement]
+horizon: null
 components: []
 related_tasks: [T-678, T-677, T-549, T-559]
 created: 2026-03-28T21:30:03Z

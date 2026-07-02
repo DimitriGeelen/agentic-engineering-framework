@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [refactoring, python, watchtower, reliability]
+horizon: null
 components: [web/blueprints/core.py, web/blueprints/metrics.py, 
       web/blueprints/quality.py, web/blueprints/session.py, 
       web/blueprints/tasks.py, web/subprocess_utils.py]

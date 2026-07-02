@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [bug, tooling, race-condition, task-system]
+horizon: null
 components: [C-004, agents/task-create/create-task.sh, 
       tests/unit/task_id_race.bats, lib/keylock.sh]
 related_tasks: [T-1277, T-1278]

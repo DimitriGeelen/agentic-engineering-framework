@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-arc_id: watchtower-redesign
+horizon: null
 tags: [test-infra, playwright, perf-cold-start, OBS-038, arc-007]
 components: [tests/playwright/conftest.py]
 related_tasks: [T-2102, T-2103]

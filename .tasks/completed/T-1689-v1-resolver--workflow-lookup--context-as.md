@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [resolver]
+horizon: null
 components: [prompts/default.md]
 related_tasks: [T-1687, T-1686]
 arc_id: orchestrator-rethink

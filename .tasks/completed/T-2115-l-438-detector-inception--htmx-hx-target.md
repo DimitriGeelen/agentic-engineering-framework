@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [inception, watchtower, htmx, arc-007, detector]
+horizon: null
 components: []
 related_tasks: [T-2112, T-2113, T-2114, T-2060]
 arc_id: watchtower-redesign

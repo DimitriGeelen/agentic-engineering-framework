@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc:capability-overlay, mcp, demo-target, hm-a]
+horizon: null
 components: [tests/integration/test_arc010_hm_a_demo_evidence.bats]
 related_tasks: [T-2268, T-2265, T-2258, T-2209]
 arc_id: capability-overlay

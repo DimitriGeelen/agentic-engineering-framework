@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-arc_id: watchtower-redesign
+horizon: null
 tags: [arc:watchtower-redesign, perf, watchtower, cockpit]
 components: []
 related_tasks: [T-1954, T-1235, T-803, T-2020]

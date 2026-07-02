@@ -18,8 +18,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [inception, workflow, prioritization, bvp, governance]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-06-02T21:18:05Z

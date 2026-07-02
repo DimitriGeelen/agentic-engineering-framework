@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, build, slice-10, cli, arc, acd-gate]
+horizon: null
 components: [012-ArcSystem.md, lib/arc.sh, lib/bvp.sh]
 related_tasks: [T-1915, T-1916, T-1918, T-1925, T-1668, T-1671]
 arc_id: value-prioritisation

@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [drift-defense, mcp-classification, orchestrator-arc]
+horizon: null
 components: [.context/audits/orchestrator-mcp-baseline.yaml]
 related_tasks: [T-1755, T-1760, T-1867, T-2073, T-1761, T-1646]
 arc_id: orchestrator-rethink

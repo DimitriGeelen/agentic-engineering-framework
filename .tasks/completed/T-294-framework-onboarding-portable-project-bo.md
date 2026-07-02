@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [portability, onboarding, dx, parent]
+horizon: null
 components: [lib/init.sh, lib/setup.sh, bin/fw, lib/templates/claude-project.md]
 related_tasks: [T-124, T-108, T-125, T-126, T-127, T-295, T-296, T-297, T-298, 
       T-299, T-300, T-301, T-302, T-303, T-304, T-305, T-306, T-307, T-308, 

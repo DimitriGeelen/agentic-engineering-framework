@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [deployment, skills, governance]
+horizon: null
 components: [.claude/commands/deploy-check.md, .claude/commands/rollback.md, 
       .context/deployments/]
 related_tasks: [T-272, T-275, T-277]

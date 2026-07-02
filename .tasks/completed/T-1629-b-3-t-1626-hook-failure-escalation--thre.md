@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [hooks, escalation, watchtower, doctor, from-T-1626, B-3]
+horizon: null
 components: [bin/fw, lib/hook-telemetry.sh, lib/upgrade.sh, 
       tests/unit/hook_telemetry.bats]
 related_tasks: [T-1626, T-1627, T-1628]

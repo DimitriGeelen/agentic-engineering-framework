@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-010, mcp, governance]
+horizon: null
 components: [bin/fw, agents/mcp/manifest.py]
 arc_id: arc-010
 related_tasks: [T-2265, T-2290, T-2291]

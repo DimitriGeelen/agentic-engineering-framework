@@ -6,8 +6,7 @@ description: >
   Forces agent to enumerate platform/browser/network constraints before building.
 status: work-completed
 workflow_type: build
-horizon:
-owner: agent
+horizon: null
 tags: []
 related_tasks: []
 created: 2026-02-17T20:03:24Z

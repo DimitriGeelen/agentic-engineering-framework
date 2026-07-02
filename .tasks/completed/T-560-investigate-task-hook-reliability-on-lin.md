@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/context/check-active-task.sh, agents/context/lib/focus.sh]
 related_tasks: []
 created: 2026-03-23T17:00:05Z

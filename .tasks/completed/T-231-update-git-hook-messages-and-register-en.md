@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/git/lib/hooks.sh]
 related_tasks: []
 created: 2026-02-21T14:35:37Z

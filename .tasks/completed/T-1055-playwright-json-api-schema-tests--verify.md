@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/playwright/test_api_json_schema.py]
 related_tasks: []
 created: 2026-04-07T17:57:30Z

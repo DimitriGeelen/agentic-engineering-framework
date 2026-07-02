@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [component-fabric, web, watchtower, visualization]
+horizon: null
 related_tasks: []
 created: 2026-02-20T07:14:11Z
 last_update: '2026-06-11T22:24:09Z'

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [path-c, deep-dive, external]
+horizon: null
 components: []
 related_tasks: [T-487, T-477, T-696]
 created: 2026-03-29T08:06:51Z

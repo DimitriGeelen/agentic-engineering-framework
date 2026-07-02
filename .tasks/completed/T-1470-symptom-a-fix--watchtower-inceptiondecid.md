@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/web/test_inception_decide_hardening.py, 
       web/blueprints/inception.py]
 related_tasks: []

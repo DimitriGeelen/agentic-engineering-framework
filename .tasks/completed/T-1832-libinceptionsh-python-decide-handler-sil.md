@@ -17,8 +17,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, fw-upgrade-incident-2026-05-14, gate-vs-content-drift, lib-inception]
+horizon: null
 components: [lib/inception.sh]
 related_tasks: [T-1828, T-1829, T-1830, T-1831]
 created: 2026-05-14T20:13:43Z

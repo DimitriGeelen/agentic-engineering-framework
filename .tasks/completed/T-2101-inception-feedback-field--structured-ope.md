@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-arc_id: inception-review-loop
+horizon: null
 tags: [inception, review-loop, operator-feedback, arc-008]
 components: []
 related_tasks: [T-2097, T-2098, T-2100]

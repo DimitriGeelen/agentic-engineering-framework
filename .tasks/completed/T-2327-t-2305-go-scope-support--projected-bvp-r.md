@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: design
 owner: agent
-horizon:
-tags: [arc-value-prioritisation, agent-prep, bvp-support, advisory-analysis, 
+horizon: null
       no-source-change]
 components: []
 related_tasks: [T-2305, T-2306]

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [lib/task-audit.sh]
 related_tasks: []
 created: 2026-04-27T16:40:54Z

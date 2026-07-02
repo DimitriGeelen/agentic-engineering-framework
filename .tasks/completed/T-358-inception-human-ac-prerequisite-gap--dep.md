@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [governance, quality]
+horizon: null
 components: []
 related_tasks: [T-357, T-325]
 created: 2026-03-08T18:42:46Z

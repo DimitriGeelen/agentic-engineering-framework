@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bvp, estimator, f-autonomy, latent-handler, arc:value-prioritisation]
+horizon: null
 components: [agents/termlink/bvp-estimator/estimator.py, 
       tests/unit/test_bvp_estimator.py, policy/value-drivers.yaml]
 related_tasks: [T-2171, T-2168, T-2305, T-2306, T-2328]

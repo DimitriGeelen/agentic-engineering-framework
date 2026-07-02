@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/task-create/create-task.sh]
 related_tasks: [T-294]
 created: 2026-03-04T16:11:41Z

@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: [hygiene, vendoring, dogfood, framework-self-fix]
+horizon: null
 components: [.agentic-framework/lib/inception.sh, 
       .agentic-framework/lib/upgrade.sh, .agentic-framework/lib/verify-acs.sh, 
       .agentic-framework/lib/hook-telemetry.sh]

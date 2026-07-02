@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/__init__.py, web/blueprints/pending.py, 
       web/templates/pending.html]
 related_tasks: []

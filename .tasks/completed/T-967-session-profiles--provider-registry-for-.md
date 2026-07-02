@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/task-create/update-task.sh, 
       tests/playwright/test_cross_surface_parity.py, 
       tests/playwright/test_session_api.py, tests/unit/update_task.bats, 

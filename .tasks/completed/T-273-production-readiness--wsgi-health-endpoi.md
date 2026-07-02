@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [deployment, web, production]
+horizon: null
 components: [web/app.py, web/embeddings.py]
 related_tasks: [T-272, T-274, T-254, T-262, T-263]
 created: 2026-02-25T08:09:27Z

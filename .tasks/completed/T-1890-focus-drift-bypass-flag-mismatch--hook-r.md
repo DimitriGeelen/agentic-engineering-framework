@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [bug, hook-ux, focus-drift, meta-rca:T-1729, structural-gate, 
+horizon: null
       governance-bypass-prevention]
 components: [agents/context/check-active-task.sh, agents/context/lib/decision.sh,
   C-002, agents/context/lib/pattern.sh, agents/task-create/update-task.sh, 

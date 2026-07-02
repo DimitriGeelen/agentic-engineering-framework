@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-010, docs]
+horizon: null
 components: []
 related_tasks: [T-2290, T-2265, T-2258]
 arc_id: capability-overlay

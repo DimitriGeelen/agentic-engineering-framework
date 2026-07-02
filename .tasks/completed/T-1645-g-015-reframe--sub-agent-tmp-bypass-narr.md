@@ -15,8 +15,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [from-T-1641, from-T-1061, G-015, sub-agent-bypass]
+horizon: null
 components: [web/blueprints/__init__.py, web/blueprints/orchestrator.py, 
       web/templates/orchestrator.html]
 related_tasks: [T-1641, T-1061, T-329]

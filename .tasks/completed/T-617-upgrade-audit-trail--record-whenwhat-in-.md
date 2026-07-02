@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [governance, upgrade, audit]
+horizon: null
 components: [lib/upgrade.sh]
 related_tasks: []
 created: 2026-03-25T20:17:23Z

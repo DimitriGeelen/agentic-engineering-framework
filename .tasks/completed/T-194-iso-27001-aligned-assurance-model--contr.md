@@ -21,8 +21,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [iso27001, assurance, controls, antifragility, cron]
+horizon: null
 related_tasks: [T-151, T-184]
 created: 2026-02-19T15:50:03Z
 last_update: '2026-06-11T22:24:03Z'

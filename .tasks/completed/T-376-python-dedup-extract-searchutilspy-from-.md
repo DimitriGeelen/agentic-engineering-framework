@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: refactor
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [web/app.py, web/embeddings.py, web/search.py, web/search_utils.py]
 related_tasks: []
 created: 2026-03-09T09:41:20Z

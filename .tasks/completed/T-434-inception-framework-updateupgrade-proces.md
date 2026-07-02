@@ -14,8 +14,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [governance, portability, upgrade, risk, architecture]
+horizon: null
 components: [bin/fw, lib/init.sh, CLAUDE.md, FRAMEWORK.md]
 related_tasks: [T-316]
 created: 2026-03-10T21:13:36Z

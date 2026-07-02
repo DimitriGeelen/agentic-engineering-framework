@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [bug, fix, yaml-quoting, audit-data-integrity, hook]
+horizon: null
 components: [agents/task-create/update-task.sh, 
       agents/context/check-active-task.sh, agents/context/check-human-ac-tick.py]
 related_tasks: [T-1142, T-165]

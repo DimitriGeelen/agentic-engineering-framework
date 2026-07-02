@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [build, schema-migration, task-system, validation, T-NEW-2]
+horizon: null
 components: [C-004, agents/context/check-arc-id.sh, C-009, lib/arc.sh, 
       tests/unit/arc_id_validation_guard.bats, web/blueprints/arcs.py, 
       web/blueprints/core.py]

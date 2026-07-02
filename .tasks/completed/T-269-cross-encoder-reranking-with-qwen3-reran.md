@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [qa, rag, reranking]
+horizon: null
 components: [agents/context/lib/focus.sh, web/embeddings.py]
 related_tasks: []
 created: 2026-02-24T08:38:02Z

@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/handover.bats]
 related_tasks: []
 created: 2026-04-06T10:34:28Z

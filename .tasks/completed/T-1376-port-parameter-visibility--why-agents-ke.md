@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-885, T-903, T-1154, T-1284, T-1287, T-1292]
 created: 2026-04-22T08:07:28Z

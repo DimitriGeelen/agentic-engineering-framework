@@ -10,8 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [documentation, fabric, cli]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-08T22:03:34Z

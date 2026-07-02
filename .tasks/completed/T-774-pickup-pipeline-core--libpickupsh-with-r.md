@@ -8,8 +8,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: claude-code
-horizon:
-tags: []
+horizon: null
 components: []
 related_tasks: [T-772, T-775, T-776, T-777, T-778]
 created: 2026-03-30T13:21:32Z

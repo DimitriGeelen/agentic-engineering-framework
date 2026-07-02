@@ -11,8 +11,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [tests/unit/test_worker_kind_drift.bats]
 related_tasks: [T-1706, T-1707]
 arc_id: orchestrator-rethink

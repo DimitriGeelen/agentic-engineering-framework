@@ -13,8 +13,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: []
+horizon: null
 components: [agents/observe/observe.sh, tests/unit/observe.bats]
 related_tasks: []
 created: 2026-04-25T12:20:16Z

@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [governance, enforcement, G-020]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-12T18:41:27Z

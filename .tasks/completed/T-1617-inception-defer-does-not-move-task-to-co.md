@@ -16,8 +16,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: agent
-horizon:
-tags: [inception, lifecycle, semantics, governance-noise]
+horizon: null
 components: []
 related_tasks: [T-1611]
 created: 2026-04-30T08:55:00Z

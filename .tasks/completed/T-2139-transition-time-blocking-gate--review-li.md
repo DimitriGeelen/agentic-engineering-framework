@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [arc-008, review-handoff, watchtower, blocking-gate, T-2138-V1, keystone]
+horizon: null
 components: [bin/fw, lib/review_link_validator.py, lib/review.sh, 
       tests/unit/review_link_blocking_gate.bats, 
       tests/unit/test_review_link_validator.py]

@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [housekeeping, episodic]
+horizon: null
 components: []
 related_tasks: [T-1278, T-1279]
 created: 2026-04-25T20:00:25Z

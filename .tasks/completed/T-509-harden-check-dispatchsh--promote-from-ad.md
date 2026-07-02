@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: human
-horizon:
-tags: [governance, enforcement, D2]
+horizon: null
 components: [bin/fw]
 related_tasks: []
 created: 2026-03-17T11:33:54Z

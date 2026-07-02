@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [arc-008, claudemd, audience-mismatch, ac-routing]
+horizon: null
 components: [CLAUDE.md]
 related_tasks: [T-2143, T-2139, T-2147, T-1811, T-1878, T-1947]
 arc_id: inception-review-loop

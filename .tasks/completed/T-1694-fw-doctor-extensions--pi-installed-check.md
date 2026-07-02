@@ -12,8 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: [doctor]
+horizon: null
 components: [bin/fw]
 related_tasks: [T-1687]
 arc_id: orchestrator-rethink

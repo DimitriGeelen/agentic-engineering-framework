@@ -18,8 +18,7 @@ description: >
 status: work-completed
 workflow_type: inception
 owner: human
-horizon:
-tags: [refactoring, quality, audit]
+horizon: null
 components: []
 related_tasks: []
 created: 2026-03-10T21:04:40Z

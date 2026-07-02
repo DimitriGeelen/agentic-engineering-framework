@@ -7,8 +7,7 @@ description: >
 status: work-completed
 workflow_type: test
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [web/blueprints/inception.py]
 related_tasks: []
 created: 2026-04-26T22:21:57Z

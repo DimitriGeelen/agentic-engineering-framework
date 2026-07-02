@@ -9,8 +9,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon:
-tags: []
+horizon: null
 components: [agents/context/check-tier0.sh, lib/inception.sh, lib/paths.sh, 
       lib/review.sh]
 related_tasks: []
