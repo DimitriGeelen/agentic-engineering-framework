@@ -1,0 +1,101 @@
+---
+id: T-100121
+name: "Audit FAIL — D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(..."
+description: >
+  Audit FAIL — D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(...
+
+status: work-completed
+workflow_type: build
+audit_severity: fail
+audit_finding_hash: 5436ab13c8475624b67b06ca72d3893691e1c8f0
+tags: [audit-finding, severity:fail, section:audit]
+owner: agent
+horizon: null
+tags: []
+components: []
+related_tasks: []
+# arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
+#                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
+#                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
+#                                 # Empty/missing → unassigned (allowed). See CLAUDE.md §Task System.
+# demo_target: true               # T-2286: optional — marks task as reserved for an orchestrated demo
+#                                 # worker (e.g. arc-010 HM-A dispatches via mcp__fw__work_on). When set,
+#                                 # `fw work-on T-XXX` refuses unless --i-am-demo-orchestrator (CLI) or
+#                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
+#                                 # session from consuming the captured→started-work transition the demo
+#                                 # worker expects to drive. Origin OBS-057.
+created: 2026-07-03T22:02:33Z
+last_update: 2026-07-03T22:29:59Z
+date_finished: 2026-07-03T22:29:59Z
+# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
+# revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+# ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
+# bvp_scores:                     # confirmed per-driver scores 0-5, set by `fw bvp confirm` (T-1924).
+#                                 # Sovereignty boundary — only set after human or agent confirmation.
+#                                 # Shape: {D1: <int 0-5>, D2: <int 0-5>, D3: <int 0-5>, D4: <int 0-5>, [<free-driver-id>: <int>]...}
+# bvp_scores_proposed:            # estimator-proposed scores (T-1922 worker). Persists when ≥2 delta
+#                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
+# cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
+#                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+---
+
+# T-100121: Audit FAIL — D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(...
+## Trigger
+
+Audit run: 2026-07-03T22:02:33Z
+Finding: D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(33d) T-1707(37d) T-1718(37d) T-1773(51d) T-1774(51d) T-1775(51d) T-1776(33d) T-1792(52d) T-1794(52d) T-1795(52d) T-1796(52d) T-1797(52d) T-1799(51d) T-1801(51d) T-1802(51d) T-1803(51d) T-1805(51d) T-1806(51d) T-1807(51d) T-1808(51d) T-1810(51d) T-1811(51d) T-1818(50d) T-1827(42d) T-1834(49d) T-1842(42d) T-1843(42d) T-1844(42d) T-1891(46d) T-1909(44d) T-1910(44d) T-1911(44d) T-1928(45d) T-1929(45d) T-1930(45d) T-1933(45d) T-1934(44d) T-1935(44d) T-1936(44d) T-1939(44d) T-1947(44d) T-1951(42d) T-1954(44d) T-1955(44d) T-1957(44d) T-1960(43d) T-1961(43d) T-1963(43d) T-1964(44d) T-1965(44d) T-1968(44d) T-1969(43d) T-1970(43d) T-1971(43d) T-1976(42d) T-1977(43d) T-1978(42d) T-1980(42d) T-1982(43d) T-1984(42d) T-1985(42d) T-1988(42d) T-1989(38d) T-1990(38d) T-1991(42d) T-1992(38d) T-1993(38d) T-1994(38d) T-1999(41d) T-2002(37d) T-2003(38d) T-2004(38d) T-2006(38d) T-2008(38d) T-2009(38d) T-2010(38d) T-2011(38d) T-2012(38d) T-2013(38d) T-2015(38d) T-2016(38d) T-2017(38d) T-2018(38d) T-2019(38d) T-2020(38d) T-2021(38d) T-2022(38d) T-2023(38d) T-2024(38d) T-2025(38d) T-2026(38d) T-2027(38d) T-2028(38d) T-2029(38d) T-2031(38d) T-2033(38d) T-2034(38d) T-2038(38d) T-2039(38d) T-2040(38d) T-2041(38d) T-2043(38d) T-2044(38d) T-2045(38d) T-2046(38d) T-2047(38d) T-2049(38d) T-2051(37d) T-2054(37d) T-2062(36d) T-2063(36d) T-2064(36d) T-2065(36d) T-2066(36d) T-2075(35d) T-2077(35d) T-2080(36d) T-2082(36d) T-2084(35d) T-2085(35d) T-2086(35d) T-2087(35d) T-2088(35d) T-2089(35d) T-2102(34d) T-2103(34d) T-2106(34d) T-2110(34d) T-2111(34d) T-2112(34d) T-2114(34d) T-2116(34d) T-2117(34d) T-2119(27d) T-2136(33d) T-2160(32d) T-2167(32d) T-2174(31d) T-2175(31d) T-2176(27d) T-2179(31d) T-2183(20d) T-2185(29d) T-2192(30d) T-2222(28d) T-2240(26d) T-2265(25d) T-2274(24d) T-2278(24d) T-2281(24d) T-2332(22d) T-2336(22d) T-2342(22d) T-2369(20d) T-2373(20d) T-2376(20d) T-2403(18d) T-2406(18d)
+
+## Finding
+
+```
+D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(33d) T-1707(37d) T-1718(37d) T-1773(51d) T-1774(51d) T-1775(51d) T-1776(33d) T-1792(52d) T-1794(52d) T-1795(52d) T-1796(52d) T-1797(52d) T-1799(51d) T-1801(51d) T-1802(51d) T-1803(51d) T-1805(51d) T-1806(51d) T-1807(51d) T-1808(51d) T-1810(51d) T-1811(51d) T-1818(50d) T-1827(42d) T-1834(49d) T-1842(42d) T-1843(42d) T-1844(42d) T-1891(46d) T-1909(44d) T-1910(44d) T-1911(44d) T-1928(45d) T-1929(45d) T-1930(45d) T-1933(45d) T-1934(44d) T-1935(44d) T-1936(44d) T-1939(44d) T-1947(44d) T-1951(42d) T-1954(44d) T-1955(44d) T-1957(44d) T-1960(43d) T-1961(43d) T-1963(43d) T-1964(44d) T-1965(44d) T-1968(44d) T-1969(43d) T-1970(43d) T-1971(43d) T-1976(42d) T-1977(43d) T-1978(42d) T-1980(42d) T-1982(43d) T-1984(42d) T-1985(42d) T-1988(42d) T-1989(38d) T-1990(38d) T-1991(42d) T-1992(38d) T-1993(38d) T-1994(38d) T-1999(41d) T-2002(37d) T-2003(38d) T-2004(38d) T-2006(38d) T-2008(38d) T-2009(38d) T-2010(38d) T-2011(38d) T-2012(38d) T-2013(38d) T-2015(38d) T-2016(38d) T-2017(38d) T-2018(38d) T-2019(38d) T-2020(38d) T-2021(38d) T-2022(38d) T-2023(38d) T-2024(38d) T-2025(38d) T-2026(38d) T-2027(38d) T-2028(38d) T-2029(38d) T-2031(38d) T-2033(38d) T-2034(38d) T-2038(38d) T-2039(38d) T-2040(38d) T-2041(38d) T-2043(38d) T-2044(38d) T-2045(38d) T-2046(38d) T-2047(38d) T-2049(38d) T-2051(37d) T-2054(37d) T-2062(36d) T-2063(36d) T-2064(36d) T-2065(36d) T-2066(36d) T-2075(35d) T-2077(35d) T-2080(36d) T-2082(36d) T-2084(35d) T-2085(35d) T-2086(35d) T-2087(35d) T-2088(35d) T-2089(35d) T-2102(34d) T-2103(34d) T-2106(34d) T-2110(34d) T-2111(34d) T-2112(34d) T-2114(34d) T-2116(34d) T-2117(34d) T-2119(27d) T-2136(33d) T-2160(32d) T-2167(32d) T-2174(31d) T-2175(31d) T-2176(27d) T-2179(31d) T-2183(20d) T-2185(29d) T-2192(30d) T-2222(28d) T-2240(26d) T-2265(25d) T-2274(24d) T-2278(24d) T-2281(24d) T-2332(22d) T-2336(22d) T-2342(22d) T-2369(20d) T-2373(20d) T-2376(20d) T-2403(18d) T-2406(18d)
+```
+
+Mitigation: Review with: fw task verify (lists unchecked Human ACs)
+
+## RCA
+
+**Symptom:** D2 FAIL flagged 141 tasks in human review queue >30 days.
+
+**Root cause:** DUPLICATE of T-100086. Same 141-task backlog, same finding - organizational capacity issue.
+
+**Why structurally allowed:** Audit runs multiple times and emits duplicate findings with different hashes when the underlying issue persists.
+
+**Prevention:** Not applicable - T-100086 already covers this finding class.
+
+## Acceptance Criteria
+
+### Agent
+- [x] Root cause identified: DUPLICATE of T-100086
+- [x] Documented in RCA section
+- [x] No fix needed - references T-100086 as canonical task
+
+## Verification
+
+# Re-run audit - finding should be absent
+bin/fw audit 2>&1 | grep -q "D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(33d) T-1707(37d) T-1718(37d) T-1773(51d) T-1774(51d) T-1775(51d) T-1776(33d) T-1792(52d) T-1794(52d) T-1795(52d) T-1796(52d) T-1797(52d) T-1799(51d) T-1801(51d) T-1802(51d) T-1803(51d) T-1805(51d) T-1806(51d) T-1807(51d) T-1808(51d) T-1810(51d) T-1811(51d) T-1818(50d) T-1827(42d) T-1834(49d) T-1842(42d) T-1843(42d) T-1844(42d) T-1891(46d) T-1909(44d) T-1910(44d) T-1911(44d) T-1928(45d) T-1929(45d) T-1930(45d) T-1933(45d) T-1934(44d) T-1935(44d) T-1936(44d) T-1939(44d) T-1947(44d) T-1951(42d) T-1954(44d) T-1955(44d) T-1957(44d) T-1960(43d) T-1961(43d) T-1963(43d) T-1964(44d) T-1965(44d) T-1968(44d) T-1969(43d) T-1970(43d) T-1971(43d) T-1976(42d) T-1977(43d) T-1978(42d) T-1980(42d) T-1982(43d) T-1984(42d) T-1985(42d) T-1988(42d) T-1989(38d) T-1990(38d) T-1991(42d) T-1992(38d) T-1993(38d) T-1994(38d) T-1999(41d) T-2002(37d) T-2003(38d) T-2004(38d) T-2006(38d) T-2008(38d) T-2009(38d) T-2010(38d) T-2011(38d) T-2012(38d) T-2013(38d) T-2015(38d) T-2016(38d) T-2017(38d) T-2018(38d) T-2019(38d) T-2020(38d) T-2021(38d) T-2022(38d) T-2023(38d) T-2024(38d) T-2025(38d) T-2026(38d) T-2027(38d) T-2028(38d) T-2029(38d) T-2031(38d) T-2033(38d) T-2034(38d) T-2038(38d) T-2039(38d) T-2040(38d) T-2041(38d) T-2043(38d) T-2044(38d) T-2045(38d) T-2046(38d) T-2047(38d) T-2049(38d) T-2051(37d) T-2054(37d) T-2062(36d) T-2063(36d) T-2064(36d) T-2065(36d) T-2066(36d) T-2075(35d) T-2077(35d) T-2080(36d) T-2082(36d) T-2084(35d) T-2085(35d) T-2086(35d) T-2087(35d) T-2088(35d) T-2089(35d) T-2102(34d) T-2103(34d) T-2106(34d) T-2110(34d) T-2111(34d) T-2112(34d) T-2114(34d) T-2116(34d) T-2117(34d) T-2119(27d) T-2136(33d) T-2160(32d) T-2167(32d) T-2174(31d) T-2175(31d) T-2176(27d) T-2179(31d) T-2183(20d) T-2185(29d) T-2192(30d) T-2222(28d) T-2240(26d) T-2265(25d) T-2274(24d) T-2278(24d) T-2281(24d) T-2332(22d) T-2336(22d) T-2342(22d) T-2369(20d) T-2373(20d) T-2376(20d) T-2403(18d) T-2406(18d)" && exit 1 || exit 0
+
+## Updates
+
+### 2026-07-03T22:02:33Z — audit-emit-task [audit-agent]
+- **Action:** Created by audit --emit-tasks
+- **Finding:** fail: D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(33d) T-1707(37d) T-1718(37d) T
+- **Context:** Auto-generated task for audit finding hash 5436ab13c8475624b67b06ca72d3893691e1c8f0
+
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-91a961fc
+- **Timestamp:** 2026-07-03T22:30:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(33d) T-1707(37d) T-1718(37d) T-1773(51d) T-1774(51d) T-1775(51d) T-1776(33d) T-1792(52d) T-1794(52d) `
+
+### 2026-07-03T22:29:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
