@@ -1,13 +1,13 @@
 ---
-id: T-100101
-name: "Monitor background worker + handle new pickups (P-050/P-051)"
+id: T-100104
+name: "P-072: Reviewer fails-open (rc=0) on catalogue-not-found"
 description: >
-  Monitor background worker + handle new pickups (P-050/P-051)
+  P-072: Reviewer fails-open (rc=0) on catalogue-not-found
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-03T09:40:50Z
-last_update: '2026-07-03T09:45:03Z'
-date_finished:
+created: 2026-07-03T09:45:34Z
+last_update: 2026-07-03T09:46:33Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,52 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-03T09:45:02Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-03T09:45:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      audit_severity: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-100101: Monitor background worker + handle new pickups (P-050/P-051)
+# T-100104: P-072: Reviewer fails-open (rc=0) on catalogue-not-found
 
 ## Context
 
-Background worker (PID 303583) closing T-100067-T-100076 (CTL-029 false positives). Currently on T-100071 (started 11:43:25, 4/10 complete). Three new pickups arrived: P-050 (fw update vendored-vs-git), P-051 (fw --help unsolicited mutations), P-072 (reviewer fails-open rc=0). Related: T-100095 (batch coordinator, 4/11 complete via worker).
+Pickup P-072: `fw reviewer` exits rc=0 on catalogue-not-found error (fails-open). update-task.sh auto-review runs as `|| true` so error is swallowed silently. Fix: static_scan.py should `sys.exit(2)` on catalogue-not-found. Related T-2329 (vendor must ship policy/ dir). See `.pickup/072-reviewer-fails-open-catalogue-missing.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Background worker completes all 10 tasks (T-100067-T-100076)
-- [ ] T-100095 completed after worker finishes
-- [x] All 3 pickups triaged (T-100102/T-100103/T-100104 filed, captured)
-- [ ] Progress committed and pushed
+- [ ] static_scan.py exits non-zero (rc=2) when catalogue not found
+- [ ] `fw reviewer <task>` from consumer without policy/ exits rc=2 (not rc=0)
+- [ ] Bats test: reviewer missing-catalogue returns non-zero
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -208,7 +176,10 @@ Background worker (PID 303583) closing T-100067-T-100076 (CTL-029 false positive
 
 ## Updates
 
-### 2026-07-03T09:40:50Z — task-created [task-create-agent]
+### 2026-07-03T09:45:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100101-monitor-background-worker--handle-new-pi.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100104-p-072-reviewer-fails-open-rc0-on-catalog.md
 - **Context:** Initial task creation
+
+### 2026-07-03T09:46:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
