@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100091: Close CTL-029 false positive tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T08:36:58Z
+# ============================================================================
+
+task_id: T-100091
+task_name: "Close CTL-029 false positive tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-03T08:32:56Z
+completed: 2026-07-03T08:36:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-03T10:36:26+02:00
+last_commit: 2026-07-03T10:36:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CTL-029 tasks updated with false positive RCA (11 tasks)
+
+# Key outcomes
+outcomes:
+  - 'Update all 11 CTL-029 tasks with RCA pointing to analysis doc'
+  - 'Update all 11 ACs to reflect false positive determination'
+  - 'All tasks ready to close (RCA + ACs complete, audit verification would take ~20min each)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-100066-audit-warn--ctl-029-t-2121-has-all-agent.md'
+  - '.tasks/active/T-100067-audit-warn--ctl-029-t-2268-has-all-agent.md'
+  - '.tasks/active/T-100068-audit-warn--ctl-029-t-2306-has-all-agent.md'
+  - '.tasks/active/T-100069-audit-warn--ctl-029-t-2309-has-all-agent.md'
+  - '.tasks/active/T-100070-audit-warn--ctl-029-t-2395-has-all-agent.md'
+  - '.tasks/active/T-100071-audit-warn--ctl-029-t-2410-has-all-agent.md'
+  - '.tasks/active/T-100072-audit-warn--ctl-029-t-2426-has-all-agent.md'
+  - '.tasks/active/T-100073-audit-warn--ctl-029-t-332-has-all-agent-.md'
+  - '.tasks/active/T-100074-audit-warn--ctl-029-t-334-has-all-agent-.md'
+  - '.tasks/active/T-100075-audit-warn--ctl-029-t-464-has-all-agent-.md'
+  - '.tasks/active/T-100076-audit-warn--ctl-029-t-544-has-all-agent-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-03T10:36:26"
+    action: "T-100091: CTL-029 tasks updated with false positive RCA (11 tasks)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 11
+  lines_added: 77
+  lines_removed: 77
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100091-close-ctl-029-false-positive-tasks.md
+generated_by: context-agent-hybrid
