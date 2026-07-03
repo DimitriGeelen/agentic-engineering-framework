@@ -20227,3 +20227,93 @@ scan_id: R-c6f28fc9
 task_id: T-100086
 payload:
   task_file: .tasks/active/T-100086-audit-fail--d2-human-review-queue--141-t.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T14:10:05Z'
+scan_id: R-7dfce100
+task_id: T-100084
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T14:10:05Z'
+scan_id: R-7dfce100
+task_id: T-100084
+payload:
+  task_file: .tasks/active/T-100084-audit-warn--ctl-012-completed-task-t-436.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T16:03:20Z'
+scan_id: R-e2815641
+task_id: T-100106
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T16:03:20Z'
+scan_id: R-e2815641
+task_id: T-100106
+payload:
+  task_file: .tasks/active/T-100106-audit-warn--ctl-012-completed-task-t-100.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T16:04:08Z'
+scan_id: R-99b8d8da
+task_id: T-100107
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T16:04:08Z'
+scan_id: R-99b8d8da
+task_id: T-100107
+payload:
+  task_file: .tasks/active/T-100107-audit-warn--ctl-012-completed-task-t-100.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T16:04:49Z'
+scan_id: R-d578b19a
+task_id: T-100108
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T16:04:49Z'
+scan_id: R-d578b19a
+task_id: T-100108
+payload:
+  task_file: .tasks/active/T-100108-audit-warn--ctl-012-completed-task-t-100.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T16:05:26Z'
+scan_id: R-dd25154f
+task_id: T-100109
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T16:05:26Z'
+scan_id: R-dd25154f
+task_id: T-100109
+payload:
+  task_file: .tasks/active/T-100109-audit-warn--ctl-012-completed-task-t-100.md

@@ -69,12 +69,6 @@ Mitigation: Run: bin/fw task update T-801 --status work-completed
 - [x] Root cause identified: FALSE POSITIVE (partial-complete task)
 - [x] Documented in RCA section
 - [x] No fix needed - target task state is correct
-## Acceptance Criteria
-
-### Agent
-- [ ] Root cause identified and documented in RCA section
-- [ ] Fix implemented (or determination that finding is false positive / transient)
-- [ ] Re-run audit shows finding absent
 
 ## Verification
 

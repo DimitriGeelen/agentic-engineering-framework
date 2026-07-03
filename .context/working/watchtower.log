@@ -9294,3 +9294,218 @@ FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engine
 192.168.10.107 - - [03/Jul/2026 16:07:06] "GET / HTTP/1.1" 200 -
 192.168.10.107 - - [03/Jul/2026 16:08:03] "GET /api/_identity HTTP/1.1" 200 -
 192.168.10.107 - - [03/Jul/2026 16:08:07] "GET / HTTP/1.1" 200 -
+[2026-07-03 16:10:38,598] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100084-audit-warn--ctl-012-completed-task-t-436.md'
+192.168.10.107 - - [03/Jul/2026 16:10:50] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [03/Jul/2026 16:18:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 16:18:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 16:18:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 16:39:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 16:40:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 16:51:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 16:52:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:09:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:10:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:16:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:16:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:17:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:23:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:24:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:30:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:31:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:35:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:35:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:38:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:38:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:40:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:43:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:43:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:44:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:47:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:48:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:51:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:51:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:52:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:52:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:54:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:55:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:57:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:57:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 17:59:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:03:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:03:15] "GET / HTTP/1.1" 200 -
+[2026-07-03 18:03:52,005] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100106-audit-warn--ctl-012-completed-task-t-100.md'
+[2026-07-03 18:03:53,396] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100106-audit-warn--ctl-012-completed-task-t-100.md'
+[2026-07-03 18:03:56,731] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100106-audit-warn--ctl-012-completed-task-t-100.md'
+192.168.10.107 - - [03/Jul/2026 18:04:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:04:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:04:08] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [03/Jul/2026 18:04:11] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [03/Jul/2026 18:04:16] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [03/Jul/2026 18:04:23] "GET / HTTP/1.1" 200 -
+[2026-07-03 18:04:39,747] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100107-audit-warn--ctl-012-completed-task-t-100.md'
+192.168.10.107 - - [03/Jul/2026 18:04:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:04:53] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [03/Jul/2026 18:05:28] "GET / HTTP/1.1" 200 -
+[2026-07-03 18:05:40,094] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100109-audit-warn--ctl-012-completed-task-t-100.md'

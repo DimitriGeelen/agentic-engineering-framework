@@ -69,12 +69,6 @@ Mitigation: Review flagged tasks for process issues
 - [x] Root cause identified: DUPLICATE of T-100062
 - [x] Documented in RCA section
 - [x] No fix needed
-## Acceptance Criteria
-
-### Agent
-- [ ] Root cause identified and documented in RCA section
-- [ ] Fix implemented (or determination that finding is false positive / transient)
-- [ ] Re-run audit shows finding absent
 
 ## Verification
 

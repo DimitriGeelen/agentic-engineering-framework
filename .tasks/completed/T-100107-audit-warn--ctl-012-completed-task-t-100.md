@@ -1,14 +1,14 @@
 ---
-id: T-100079
-name: "Audit WARN — CTL-029: T-803 has all Agent ACs ticked but status='started-work' — co..."
+id: T-100107
+name: "Audit WARN — CTL-012: Completed task T-100078 has unchecked AC"
 description: >
-  Audit WARN — CTL-029: T-803 has all Agent ACs ticked but status='started-work' — co...
+  Audit WARN — CTL-012: Completed task T-100078 has unchecked AC
 
 status: work-completed
 workflow_type: build
 audit_severity: warn
-audit_finding_hash: 6ee5ccf9c1a25e1349bec7d04e4c17220f7b1379
-tags: [audit-finding, severity:warn, section:CTL-029]
+audit_finding_hash: eedde001bf259367cd73c288e1d36f34ec5dc7cc
+tags: [audit-finding, severity:warn, section:CTL-012]
 owner: agent
 horizon: null
 tags: []
@@ -24,9 +24,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-03T07:35:56Z
-last_update: 2026-07-03T09:23:53Z
-date_finished: 2026-07-03T09:23:53Z
+created: 2026-07-03T11:02:44Z
+last_update: 2026-07-03T16:04:06Z
+date_finished: 2026-07-03T16:04:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,54 +39,54 @@ date_finished: 2026-07-03T09:23:53Z
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-100079: Audit WARN — CTL-029: T-803 has all Agent ACs ticked but status='started-work' — co...
+# T-100107: Audit WARN — CTL-012: Completed task T-100078 has unchecked AC
 ## Trigger
 
-Audit run: 2026-07-03T07:35:56Z
-Finding: CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed
+Audit run: 2026-07-03T11:02:44Z
+Finding: CTL-012: Completed task T-100078 has unchecked AC
 
 ## Finding
 
 ```
-CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed
+CTL-012: Completed task T-100078 has unchecked AC
 ```
 
-Mitigation: Run: bin/fw task update T-803 --status work-completed
+Mitigation: Review task completion — AC gate may have been bypassed
 
 ## RCA
 
-**Symptom:** CTL-029 flagged task as "completable but not closed" (all Agent ACs ticked, status=started-work).
+**Symptom:** Audit CTL-012 flagged T-100078 as having unchecked ACs (same batch as T-100106).
 
-**Root cause:** FALSE POSITIVE - target task is partial-complete (owner=human, unchecked Human ACs). CTL-029 detector doesn't check for Human AC presence.
+**Root cause:** Duplicate `## Acceptance Criteria` sections in T-100078. Already fixed in T-100106 batch cleanup.
 
-**Why structurally allowed:** CTL-029 designed to catch genuinely completable tasks. Partial-complete pattern (Agent done, Human pending) mimics this signal but is correct state.
+**Why structurally allowed:** Template AC section appended during edit without removing original.
 
-**Prevention:** Enhance CTL-029 to skip tasks with owner=human or unchecked Human ACs. See T-100066 analysis: `docs/reports/T-100066-ctl-029-false-positive-class.md`
+**Prevention:** Fixed by removing duplicate section in T-100078 (same commit as T-100106).
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Root cause identified: FALSE POSITIVE (partial-complete task)
-- [x] Documented in RCA section
-- [x] No fix needed - target task state is correct
+- [x] Root cause identified: Same as T-100106 (duplicate AC batch)
+- [x] Fixed in T-100106 batch (T-100077/078/079/087 all cleaned)
+- [x] Re-run audit should show finding absent
 
 ## Verification
 
 # Re-run audit - finding should be absent
-bin/fw audit 2>&1 | grep -q "CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0
+bin/fw audit 2>&1 | grep -q "CTL-012: Completed task T-100078 has unchecked AC" && exit 1 || exit 0
 
 ## Updates
 
-### 2026-07-03T07:35:56Z — audit-emit-task [audit-agent]
+### 2026-07-03T11:02:44Z — audit-emit-task [audit-agent]
 - **Action:** Created by audit --emit-tasks
-- **Finding:** warn: CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed
-- **Context:** Auto-generated task for audit finding hash 6ee5ccf9c1a25e1349bec7d04e4c17220f7b1379
+- **Finding:** warn: CTL-012: Completed task T-100078 has unchecked AC
+- **Context:** Auto-generated task for audit finding hash eedde001bf259367cd73c288e1d36f34ec5dc7cc
 
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e169542e
-- **Timestamp:** 2026-07-03T09:23:55Z
+- **Scan ID:** R-99b8d8da
+- **Timestamp:** 2026-07-03T16:04:08Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -95,7 +95,7 @@ bin/fw audit 2>&1 | grep -q "CTL-029: T-803 has all Agent ACs ticked but status=
 **Verification-level findings:**
 
   1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
-     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0`
+     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-012: Completed task T-100078 has unchecked AC" && exit 1 || exit 0`
 
-### 2026-07-03T09:23:53Z — status-update [task-update-agent]
+### 2026-07-03T16:04:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

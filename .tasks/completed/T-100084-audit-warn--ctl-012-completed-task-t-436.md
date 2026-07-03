@@ -4,13 +4,13 @@ name: "Audit WARN — CTL-012: Completed task T-436 has unchecked AC"
 description: >
   Audit WARN — CTL-012: Completed task T-436 has unchecked AC
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: warn
 audit_finding_hash: 6c8e4240350aaaef2811093511e4e4edade8d621
 tags: [audit-finding, severity:warn, section:CTL-012]
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-03T07:37:47Z
-last_update: 2026-07-03T14:01:39Z
-date_finished: null
+last_update: 2026-07-03T14:03:11Z
+date_finished: 2026-07-03T14:03:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -83,3 +83,20 @@ bin/fw audit 2>&1 | grep -q "CTL-012: Completed task T-436 has unchecked AC" && 
 - **Finding:** warn: CTL-012: Completed task T-436 has unchecked AC
 - **Context:** Auto-generated task for audit finding hash 6c8e4240350aaaef2811093511e4e4edade8d621
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7dfce100
+- **Timestamp:** 2026-07-03T14:10:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-012: Completed task T-436 has unchecked AC" && exit 1 || exit 0`
+
+### 2026-07-03T14:03:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
