@@ -1,10 +1,8 @@
 ---
-id: T-99981
-name: "Audit WARN — CTL-029: T-2309 has all Agent ACs ticked but status='started-work'
-  — c..."
+id: T-100025
+name: "Audit cascade cleanup - delete recursive T-999xx/T-100xxx meta-noise tasks"
 description: >
-  Audit WARN — CTL-029: T-2309 has all Agent ACs ticked but status='started-work'
-  — c...
+  Audit cascade cleanup - delete recursive T-999xx/T-100xxx meta-noise tasks
 
 status: started-work
 workflow_type: build
@@ -23,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-02T23:09:55Z
-last_update: '2026-07-02T23:15:08Z'
+created: 2026-07-03T02:13:17Z
+last_update: '2026-07-03T02:15:03Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -37,17 +35,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-02T23:15:08Z'
+  - ts: '2026-07-03T02:15:02Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-02T23:15:08Z'
+  - ts: '2026-07-03T02:15:03Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -69,18 +67,19 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-99981: Audit WARN — CTL-029: T-2309 has all Agent ACs ticked but status='started-work' — c...
+# T-100025: Audit cascade cleanup - delete recursive T-999xx/T-100xxx meta-noise tasks
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Audit --emit-tasks created recursive cascade: tasks about audit WARNs (T-999xx) trigger more audit WARNs, creating more tasks (T-100xxx). Clean up 54 meta-noise tasks. Origin: pre-compaction session discovered this pattern.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Delete all T-999xx tasks from .tasks/active/ (11 files)
+- [ ] Delete all T-100000-T-100024 tasks from .tasks/active/ (43 files)
+- [ ] Verify T-100025 (this task) remains
+- [ ] Commit cleanup
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -209,7 +208,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-07-02T23:09:55Z — task-created [task-create-agent]
+### 2026-07-03T02:13:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-99981-audit-warn--ctl-029-t-2309-has-all-agent.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100025-audit-cascade-cleanup---delete-recursive.md
 - **Context:** Initial task creation
