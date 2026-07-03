@@ -19471,3 +19471,21 @@ scan_id: R-ef8c223a
 task_id: T-2514
 payload:
   task_file: .tasks/active/T-2514-discovery-governance-test-suite-audit-ad.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T02:16:42Z'
+scan_id: R-ceb93ae5
+task_id: T-100025
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T02:16:42Z'
+scan_id: R-ceb93ae5
+task_id: T-100025
+payload:
+  task_file: .tasks/active/T-100025-audit-cascade-cleanup---delete-recursive.md
