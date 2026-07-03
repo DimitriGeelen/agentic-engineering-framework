@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100096: Triage remaining audit findings (T-100077-100090)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T09:17:09Z
+# ============================================================================
+
+task_id: T-100096
+task_name: "Triage remaining audit findings (T-100077-100090)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-03T09:14:57Z
+completed: 2026-07-03T09:16:59Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-03T11:16:07+02:00
+last_commit: 2026-07-03T11:16:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Triage 3 CTL-029 findings (T-801/802/803 false positives)
+
+# Key outcomes
+outcomes:
+  - 'All 12 findings triaged with RCA or disposition (8 done: T-100077-100079 CTL-029 FPs, T-100087 D5 duplicate, T-100080-100083 CTL-012 governance gaps; 4 skipped: T-100084/085 CTL-012-completed, T-100086/090 D2-review-queue organizational)'
+  - 'Closeable findings closed or queued for background worker (3 CTL-029 + 1 D5 ready; 10 CTL-029 in background worker)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-100077-audit-warn--ctl-029-t-801-has-all-agent-.md'
+  - '.tasks/active/T-100078-audit-warn--ctl-029-t-802-has-all-agent-.md'
+  - '.tasks/active/T-100079-audit-warn--ctl-029-t-803-has-all-agent-.md'
+  - '.tasks/active/T-100096-triage-remaining-audit-findings-t-100077.md'
+  - '.tasks/completed/T-100066-audit-warn--ctl-029-t-2121-has-all-agent.md'
+  - '.tasks/completed/T-100093-generate-session-handover.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-03T11:16:07"
+    action: "T-100096: Triage 3 CTL-029 findings (T-801/802/803 false positives)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 5
+  lines_added: 211
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100096-triage-remaining-audit-findings-t-100077.md
+generated_by: context-agent-hybrid

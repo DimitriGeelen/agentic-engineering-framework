@@ -1,13 +1,13 @@
 ---
-id: T-100092
-name: "Session progress commit + push"
+id: T-100095
+name: "Batch-close 11 CTL-029 false positive tasks"
 description: >
-  Session progress commit + push
+  Batch-close 11 CTL-029 false positive tasks
 
-status: work-completed
+status: started-work
 workflow_type: build
 owner: agent
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-03T08:37:06Z
-last_update: 2026-07-03T08:40:35Z
-date_finished: 2026-07-03T08:40:35Z
+created: 2026-07-03T08:52:42Z
+last_update: '2026-07-03T09:00:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +34,50 @@ date_finished: 2026-07-03T08:40:35Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-03T09:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-03T09:00:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-100092: Session progress commit + push
+# T-100095: Batch-close 11 CTL-029 false positive tasks
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Close T-100066 through T-100076 — all are CTL-029 false positives flagging partial-complete tasks (owner=human, unchecked Human ACs). RCAs already documented pointing to `docs/reports/T-100066-ctl-029-false-positive-class.md`.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Commit T-100091 completion
-- [x] Commit session state + 14 new audit findings
-- [x] Push attempted (timing out due to pre-push audit; 4 commits queued)
+- [ ] All 11 tasks (T-100066-T-100076) moved to completed/
+- [ ] Verification confirms no audit finding recurrence
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -176,19 +206,7 @@ date_finished: 2026-07-03T08:40:35Z
 
 ## Updates
 
-### 2026-07-03T08:37:06Z — task-created [task-create-agent]
+### 2026-07-03T08:52:42Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100092-session-progress-commit--push.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100095-batch-close-11-ctl-029-false-positive-ta.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-cc167351
-- **Timestamp:** 2026-07-03T08:40:36Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-07-03T08:40:35Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed

@@ -1,8 +1,8 @@
 ---
-id: T-100092
-name: "Session progress commit + push"
+id: T-100096
+name: "Triage remaining audit findings (T-100077-100090)"
 description: >
-  Session progress commit + push
+  Triage remaining audit findings (T-100077-100090)
 
 status: work-completed
 workflow_type: build
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-03T08:37:06Z
-last_update: 2026-07-03T08:40:35Z
-date_finished: 2026-07-03T08:40:35Z
+created: 2026-07-03T09:14:57Z
+last_update: 2026-07-03T09:16:59Z
+date_finished: 2026-07-03T09:16:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,18 +36,17 @@ date_finished: 2026-07-03T08:40:35Z
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-100092: Session progress commit + push
+# T-100096: Triage remaining audit findings (T-100077-100090)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Triage 12 remaining audit findings: 3 CTL-029 (T-801/802/803), 4 CTL-012-missing-decide, 2 CTL-012-completed, 2 D2-review-queue, 1 D5-stale.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Commit T-100091 completion
-- [x] Commit session state + 14 new audit findings
-- [x] Push attempted (timing out due to pre-push audit; 4 commits queued)
+- [x] All 12 findings triaged with RCA or disposition (8 done: T-100077-100079 CTL-029 FPs, T-100087 D5 duplicate, T-100080-100083 CTL-012 governance gaps; 4 skipped: T-100084/085 CTL-012-completed, T-100086/090 D2-review-queue organizational)
+- [x] Closeable findings closed or queued for background worker (3 CTL-029 + 1 D5 ready; 10 CTL-029 in background worker)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -176,19 +175,19 @@ date_finished: 2026-07-03T08:40:35Z
 
 ## Updates
 
-### 2026-07-03T08:37:06Z — task-created [task-create-agent]
+### 2026-07-03T09:14:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100092-session-progress-commit--push.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100096-triage-remaining-audit-findings-t-100077.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-cc167351
-- **Timestamp:** 2026-07-03T08:40:36Z
+- **Scan ID:** R-8fe8ef6e
+- **Timestamp:** 2026-07-03T09:17:00Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
 
-### 2026-07-03T08:40:35Z — status-update [task-update-agent]
+### 2026-07-03T09:16:59Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -55,14 +55,20 @@ Mitigation: Auto-tick markers present but ## Decision section empty — run: fw 
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** Audit CTL-012-MISSING-DECIDE flagged inception task completed without `fw inception decide` ceremony.
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** Inception task was manually moved to completed/ without running the decision command. The framework enforces decision recording via commit-msg hook (blocks after 2 exploration commits) but has no gate at task completion.
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** Agent can manually `git mv` task files or use `--skip-*` flags to bypass gates. The commit-msg hook catches most cases but doesn't cover manual file moves.
 
-**Prevention:** (TBD)
+**Prevention:** (1) Strengthen commit-msg hook to check completed inception tasks on commit; (2) Add PreToolUse gate on `git mv` operations; (3) Human should run `fw inception decide` to record decision retroactively if the inception outcome is clear.
 
+## Acceptance Criteria
+
+### Agent
+- [x] Root cause identified: Missing decision ceremony
+- [x] Documented in RCA section
+- [ ] Human determines if decision can be recorded retroactively
 ## Acceptance Criteria
 
 ### Agent

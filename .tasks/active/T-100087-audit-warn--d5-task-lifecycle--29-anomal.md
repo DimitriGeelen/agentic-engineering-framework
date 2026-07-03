@@ -55,14 +55,20 @@ Mitigation: Review flagged tasks for process issues
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** 29 tasks flagged as active 25+ days (D5 lifecycle check).
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** DUPLICATE of T-100062. Same 29 tasks, same finding - all are partial-complete tasks (owner=human, unchecked Human ACs) awaiting human review. This is organizational backlog, not a technical defect.
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** Framework correctly moves tasks to owner=human when Agent ACs pass but Human ACs remain. Audit D5 check flags long-idle tasks as WARN (not FAIL) - appropriate for backlog awareness.
 
-**Prevention:** (TBD)
+**Prevention:** Not applicable - working as designed. See T-100062 for full analysis.
 
+## Acceptance Criteria
+
+### Agent
+- [x] Root cause identified: DUPLICATE of T-100062
+- [x] Documented in RCA section
+- [x] No fix needed
 ## Acceptance Criteria
 
 ### Agent
