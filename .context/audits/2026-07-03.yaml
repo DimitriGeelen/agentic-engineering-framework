@@ -1,9 +1,9 @@
-# Audit Results - 2026-07-03-0043
-timestamp: 2026-07-02T22:43:34Z
+# Audit Results - 2026-07-03-0836
+timestamp: 2026-07-03T06:36:30Z
 summary:
-  pass: 601
-  warn: 135
-  fail: 1
+  pass: 600
+  warn: 203
+  fail: 2
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -57,8 +57,171 @@ findings:
     check: "Secret scan: tracked tree clean"
   - level: PASS
     check: "Large-file gate: tracked tree clean"
-  - level: PASS
-    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
+  - level: FAIL
+    check: "Self-vendor drift: libs class — 1 file(s) out of sync (T-2244)"
+    mitigation: "Run: fw vendor  (sync all vendored .agentic-framework/ classes with source)"
+  - level: WARN
+    check: "Task T-100000-audit-warn--task-t-99974-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100000-audit-warn--task-t-99974-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100001-audit-warn--task-t-99975-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100001-audit-warn--task-t-99975-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100002-audit-warn--task-t-99976-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100002-audit-warn--task-t-99976-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100003-audit-warn--task-t-99977-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100003-audit-warn--task-t-99977-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100004-audit-warn--task-t-99978-audit-warn--ctl.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100004-audit-warn--task-t-99978-audit-warn--ctl.md"
+  - level: WARN
+    check: "Task T-100005-audit-warn--task-t-99979-audit-warn--ctl.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100005-audit-warn--task-t-99979-audit-warn--ctl.md"
+  - level: WARN
+    check: "Task T-100007-audit-warn--task-t-100000-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100007-audit-warn--task-t-100000-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100008-audit-warn--task-t-100001-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100008-audit-warn--task-t-100001-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100009-audit-warn--task-t-100002-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100009-audit-warn--task-t-100002-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100010-audit-warn--task-t-100003-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100010-audit-warn--task-t-100003-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100011-audit-warn--task-t-100004-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100011-audit-warn--task-t-100004-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100012-audit-warn--task-t-100005-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100012-audit-warn--task-t-100005-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100013-audit-warn--task-t-99980-audit-warn--ctl.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100013-audit-warn--task-t-99980-audit-warn--ctl.md"
+  - level: WARN
+    check: "Task T-100014-audit-warn--task-t-99982-audit-warn--d5-.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100014-audit-warn--task-t-99982-audit-warn--d5-.md"
+  - level: WARN
+    check: "Task T-100015-audit-warn--task-t-99983-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100015-audit-warn--task-t-99983-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100016-audit-warn--task-t-99984-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100016-audit-warn--task-t-99984-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100017-audit-warn--task-t-99985-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100017-audit-warn--task-t-99985-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100018-audit-warn--task-t-99986-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100018-audit-warn--task-t-99986-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100019-audit-warn--task-t-99987-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100019-audit-warn--task-t-99987-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100020-audit-warn--task-t-99988-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100020-audit-warn--task-t-99988-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100021-audit-warn--task-t-99989-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100021-audit-warn--task-t-99989-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100022-audit-warn--task-t-99990-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100022-audit-warn--task-t-99990-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100023-audit-warn--task-t-99991-audit-warn--tas.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100023-audit-warn--task-t-99991-audit-warn--tas.md"
+  - level: WARN
+    check: "Task T-100026-audit-warn--task-t-100007-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100026-audit-warn--task-t-100007-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100027-audit-warn--task-t-100008-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100027-audit-warn--task-t-100008-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100028-audit-warn--task-t-100009-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100028-audit-warn--task-t-100009-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100029-audit-warn--task-t-100010-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100029-audit-warn--task-t-100010-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100030-audit-warn--task-t-100011-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100030-audit-warn--task-t-100011-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100031-audit-warn--task-t-100012-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100031-audit-warn--task-t-100012-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100032-audit-warn--task-t-100013-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100032-audit-warn--task-t-100013-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100033-audit-warn--task-t-100014-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100033-audit-warn--task-t-100014-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100034-audit-warn--task-t-100015-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100034-audit-warn--task-t-100015-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100035-audit-warn--task-t-100016-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100035-audit-warn--task-t-100016-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100036-audit-warn--task-t-100017-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100036-audit-warn--task-t-100017-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100037-audit-warn--task-t-100018-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100037-audit-warn--task-t-100018-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100038-audit-warn--task-t-100019-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100038-audit-warn--task-t-100019-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100039-audit-warn--task-t-100020-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100039-audit-warn--task-t-100020-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100041-audit-warn--task-t-100021-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100041-audit-warn--task-t-100021-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100042-audit-warn--task-t-100022-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100042-audit-warn--task-t-100022-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100043-audit-warn--task-t-100023-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100043-audit-warn--task-t-100023-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100044-audit-warn--task-t-100026-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100044-audit-warn--task-t-100026-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100045-audit-warn--task-t-100027-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100045-audit-warn--task-t-100027-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100046-audit-warn--task-t-100028-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100046-audit-warn--task-t-100028-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100047-audit-warn--task-t-100029-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100047-audit-warn--task-t-100029-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100048-audit-warn--task-t-100030-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100048-audit-warn--task-t-100030-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100049-audit-warn--task-t-100031-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100049-audit-warn--task-t-100031-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100050-audit-warn--task-t-100032-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100050-audit-warn--task-t-100032-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100051-audit-warn--task-t-100033-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100051-audit-warn--task-t-100033-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100052-audit-warn--task-t-100034-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100052-audit-warn--task-t-100034-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100053-audit-warn--task-t-100035-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100053-audit-warn--task-t-100035-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100054-audit-warn--task-t-100036-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100054-audit-warn--task-t-100036-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100055-audit-warn--task-t-100037-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100055-audit-warn--task-t-100037-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100056-audit-warn--task-t-100038-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100056-audit-warn--task-t-100038-audit-warn--ta.md"
+  - level: WARN
+    check: "Task T-100057-audit-warn--task-t-100039-audit-warn--ta.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-100057-audit-warn--task-t-100039-audit-warn--ta.md"
   - level: WARN
     check: "Task T-2428-audit-warn--free-driver-f-orch-retirewhe.md missing Updates section"
     mitigation: "Fix missing Updates section in T-2428-audit-warn--free-driver-f-orch-retirewhe.md"
@@ -240,12 +403,51 @@ findings:
     check: "Task T-2494-audit-warn--task-t-2468-audit-warn--task.md missing Updates section"
     mitigation: "Fix missing Updates section in T-2494-audit-warn--task-t-2468-audit-warn--task.md"
   - level: WARN
-    check: "Task T-2500-audit-warn--d5-task-lifecycle--28-anomal.md missing Updates section"
-    mitigation: "Fix missing Updates section in T-2500-audit-warn--d5-task-lifecycle--28-anomal.md"
+    check: "Task T-2509-audit-warn--task-t-2469-audit-warn--ctl-.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2509-audit-warn--task-t-2469-audit-warn--ctl-.md"
+  - level: WARN
+    check: "Task T-2510-audit-warn--task-t-2475-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2510-audit-warn--task-t-2475-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2512-audit-warn--task-t-2476-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2512-audit-warn--task-t-2476-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2513-audit-warn--task-t-2477-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2513-audit-warn--task-t-2477-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2515-audit-warn--task-t-2478-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2515-audit-warn--task-t-2478-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2516-audit-warn--task-t-2479-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2516-audit-warn--task-t-2479-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2517-audit-warn--task-t-2480-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2517-audit-warn--task-t-2480-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2518-audit-warn--task-t-2481-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2518-audit-warn--task-t-2481-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2519-audit-warn--task-t-2482-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2519-audit-warn--task-t-2482-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2520-audit-warn--task-t-2483-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2520-audit-warn--task-t-2483-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2521-audit-warn--task-t-2484-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2521-audit-warn--task-t-2484-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2522-audit-warn--task-t-2485-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2522-audit-warn--task-t-2485-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2523-audit-warn--task-t-2486-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2523-audit-warn--task-t-2486-audit-warn--task.md"
+  - level: WARN
+    check: "Task T-2524-audit-warn--task-t-2487-audit-warn--task.md missing Updates section"
+    mitigation: "Fix missing Updates section in T-2524-audit-warn--task-t-2487-audit-warn--task.md"
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 99% (6300/6345 commits reference tasks)"
+    check: "Git traceability: 99% (6314/6359 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -271,7 +473,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 2166 episodic summaries have quality content"
+    check: "All 2171 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -359,24 +561,25 @@ findings:
     check: "C-003: Research checkpoint logic present in checkpoint.sh"
   - level: PASS
     check: "C-006: All active inceptions have a real Recommendation block"
-  - level: PASS
-    check: "CTL-001: Focus file has active task (T-2506)"
+  - level: WARN
+    check: "CTL-001: Focus file empty but 3 commit(s) in last 30min"
+    mitigation: "Check .claude/settings.json hook configuration for check-active-task"
   - level: PASS
     check: "CTL-003: Budget status file fresh (< 5min old)"
   - level: PASS
-    check: "CTL-004: Tool counter at 2 (last commit: 58 seconds ago)"
+    check: "CTL-004: Tool counter at 1 (last commit: 68 seconds ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
-    check: "CTL-008: Task reference traceability 100% (0/20 without T-XXX)"
+    check: "CTL-008: Task reference traceability 95% (1/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 2 cron audit file(s) in last hour"
+    check: "CTL-020: 4 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (1318 handovers, 700 compactions)"
+    check: "CTL-006: Handover coverage for compactions (1323 handovers, 702 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -700,7 +903,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1689 has decision (8 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-168 has decision (203 commits)"
+    check: "CTL-009: Inception T-168 has decision (205 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1690 has decision (4 commits)"
   - level: PASS
@@ -1432,6 +1635,8 @@ findings:
   - level: PASS
     check: "CTL-025: T-2416 partial-complete with owner:human ✓"
   - level: PASS
+    check: "CTL-025: T-2507 partial-complete with owner:human ✓"
+  - level: PASS
     check: "CTL-029: No archive-eligible stuck partial-complete tasks (T-1903/L-403)"
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
@@ -1537,9 +1742,9 @@ findings:
     check: "CTL-012: Completed task T-678 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2166)"
+    check: "D1: Episodic quality — 0% [TODO] (18/2171)"
   - level: FAIL
-    check: "D2: Human review queue — 140 task(s) waiting >30d: T-1701(37d) T-1702(32d) T-1707(36d) T-1718(36d) T-1773(50d) T-1774(50d) T-1775(50d) T-1776(32d) T-1792(51d) T-1794(51d) T-1795(51d) T-1796(51d) T-1797(51d) T-1799(51d) T-1801(50d) T-1802(50d) T-1803(50d) T-1805(50d) T-1806(50d) T-1807(50d) T-1808(50d) T-1810(50d) T-1811(50d) T-1818(50d) T-1827(41d) T-1834(48d) T-1842(41d) T-1843(41d) T-1844(41d) T-1891(45d) T-1909(43d) T-1910(43d) T-1911(43d) T-1928(44d) T-1929(44d) T-1930(44d) T-1933(44d) T-1934(43d) T-1935(43d) T-1936(43d) T-1939(43d) T-1947(43d) T-1951(41d) T-1954(43d) T-1955(43d) T-1957(43d) T-1960(42d) T-1961(42d) T-1963(42d) T-1964(43d) T-1965(43d) T-1968(43d) T-1969(42d) T-1970(42d) T-1971(42d) T-1976(41d) T-1977(42d) T-1978(41d) T-1980(41d) T-1982(42d) T-1984(41d) T-1985(41d) T-1988(41d) T-1989(38d) T-1990(37d) T-1991(41d) T-1992(38d) T-1993(38d) T-1994(37d) T-1999(40d) T-2002(37d) T-2003(37d) T-2004(37d) T-2006(37d) T-2008(37d) T-2009(37d) T-2010(37d) T-2011(37d) T-2012(37d) T-2013(37d) T-2015(37d) T-2016(37d) T-2017(37d) T-2018(37d) T-2019(37d) T-2020(37d) T-2021(37d) T-2022(37d) T-2023(38d) T-2024(38d) T-2025(38d) T-2026(38d) T-2027(37d) T-2028(37d) T-2029(38d) T-2031(37d) T-2033(37d) T-2034(37d) T-2038(37d) T-2039(37d) T-2040(37d) T-2041(37d) T-2043(37d) T-2044(37d) T-2045(37d) T-2046(37d) T-2047(37d) T-2049(37d) T-2051(37d) T-2054(37d) T-2062(35d) T-2063(35d) T-2064(35d) T-2065(35d) T-2066(35d) T-2075(35d) T-2077(35d) T-2080(35d) T-2082(35d) T-2084(34d) T-2085(34d) T-2086(34d) T-2087(34d) T-2088(34d) T-2089(34d) T-2102(33d) T-2103(33d) T-2106(33d) T-2110(33d) T-2111(33d) T-2112(33d) T-2114(33d) T-2116(33d) T-2117(33d) T-2119(26d) T-2136(32d) T-2160(31d) T-2167(31d) T-2174(30d) T-2175(30d) T-2176(26d) T-2179(30d) T-2183(19d) T-2185(28d) T-2192(29d) T-2222(27d) T-2240(25d) T-2265(24d) T-2274(23d) T-2278(23d) T-2281(23d) T-2332(21d) T-2336(21d) T-2342(21d) T-2369(19d) T-2373(19d) T-2376(19d) T-2403(18d) T-2406(17d)"
+    check: "D2: Human review queue — 141 task(s) waiting >30d: T-1701(37d) T-1702(32d) T-1707(37d) T-1718(37d) T-1773(50d) T-1774(50d) T-1775(50d) T-1776(32d) T-1792(51d) T-1794(51d) T-1795(51d) T-1796(51d) T-1797(51d) T-1799(51d) T-1801(51d) T-1802(51d) T-1803(50d) T-1805(50d) T-1806(50d) T-1807(50d) T-1808(50d) T-1810(50d) T-1811(50d) T-1818(50d) T-1827(41d) T-1834(48d) T-1842(41d) T-1843(41d) T-1844(41d) T-1891(46d) T-1909(43d) T-1910(43d) T-1911(43d) T-1928(44d) T-1929(44d) T-1930(44d) T-1933(44d) T-1934(43d) T-1935(43d) T-1936(43d) T-1939(43d) T-1947(43d) T-1951(41d) T-1954(43d) T-1955(43d) T-1957(43d) T-1960(42d) T-1961(42d) T-1963(42d) T-1964(43d) T-1965(43d) T-1968(43d) T-1969(42d) T-1970(42d) T-1971(42d) T-1976(41d) T-1977(42d) T-1978(41d) T-1980(41d) T-1982(42d) T-1984(42d) T-1985(41d) T-1988(41d) T-1989(38d) T-1990(37d) T-1991(41d) T-1992(38d) T-1993(38d) T-1994(37d) T-1999(40d) T-2002(37d) T-2003(37d) T-2004(37d) T-2006(37d) T-2008(37d) T-2009(38d) T-2010(38d) T-2011(38d) T-2012(37d) T-2013(37d) T-2015(37d) T-2016(37d) T-2017(37d) T-2018(37d) T-2019(37d) T-2020(38d) T-2021(38d) T-2022(38d) T-2023(38d) T-2024(38d) T-2025(38d) T-2026(38d) T-2027(37d) T-2028(37d) T-2029(38d) T-2031(37d) T-2033(37d) T-2034(37d) T-2038(37d) T-2039(37d) T-2040(37d) T-2041(37d) T-2043(37d) T-2044(37d) T-2045(37d) T-2046(37d) T-2047(37d) T-2049(37d) T-2051(37d) T-2054(37d) T-2062(35d) T-2063(35d) T-2064(35d) T-2065(35d) T-2066(35d) T-2075(35d) T-2077(35d) T-2080(35d) T-2082(35d) T-2084(34d) T-2085(34d) T-2086(34d) T-2087(34d) T-2088(34d) T-2089(34d) T-2102(33d) T-2103(33d) T-2106(34d) T-2110(33d) T-2111(33d) T-2112(33d) T-2114(33d) T-2116(33d) T-2117(33d) T-2119(27d) T-2136(32d) T-2160(31d) T-2167(31d) T-2174(30d) T-2175(30d) T-2176(27d) T-2179(30d) T-2183(19d) T-2185(29d) T-2192(30d) T-2222(27d) T-2240(25d) T-2265(24d) T-2274(23d) T-2278(23d) T-2281(23d) T-2332(21d) T-2336(21d) T-2342(21d) T-2369(19d) T-2373(19d) T-2376(19d) T-2403(18d) T-2406(17d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -1552,7 +1757,7 @@ findings:
   - level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: WARN
-    check: "D5: Task lifecycle — 28 anomaly(s): T-1062(85d-active) T-1274(77d-active) T-1542(66d-active) T-1624(63d-active) T-2170(31d-active) T-2200(28d-active) T-2202(28d-active) T-2205(28d-active) T-2219(27d-active) T-2221(27d-active) (+18 more)"
+    check: "D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-active) T-1542(66d-active) T-1624(63d-active) T-2170(31d-active) T-2200(28d-active) T-2202(28d-active) T-2205(28d-active) T-2219(27d-active) T-2221(27d-active) (+19 more)"
     mitigation: "Review flagged tasks for process issues"
   - level: WARN
     check: "D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)"
@@ -1560,7 +1765,7 @@ findings:
   - level: PASS
     check: "D3: Commit velocity — insufficient data"
   - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 50_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 65_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS insufficient_data)"
   - level: PASS
