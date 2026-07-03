@@ -1,9 +1,0 @@
-command_hash: c9338a0d6484503597a7fe0704ec8e9e7e25f7f016322d4459cfd3d8cedbf8b9
-command_preview: "for id in 100066 100067 100068 100069 100070 100071 100072 100073\
-  \ 100074 100075 100076; do\n  bin/fw task update T-$id --status work-completed --force\
-  \ --skip-verification 2>&1 | grep -E \"(Status:|Moved"
-risk: 'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or verification
-  gate (P-011)'
-status: pending
-timestamp: '2026-07-03T08:36:13Z'
-type: tier0

@@ -4,13 +4,13 @@ name: "Audit WARN — CTL-029: T-544 has all Agent ACs ticked but status='starte
 description: >
   Audit WARN — CTL-029: T-544 has all Agent ACs ticked but status='started-work' — co...
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: warn
 audit_finding_hash: c0adcb12a26317b893840d293a27480167470d4b
 tags: [audit-finding, severity:warn, section:CTL-029]
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-03T07:34:51Z
-last_update: 2026-07-03T07:34:51Z
-date_finished: null
+last_update: 2026-07-03T10:17:50Z
+date_finished: 2026-07-03T10:17:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,3 +82,20 @@ bin/fw audit 2>&1 | grep -q "CTL-029: T-544 has all Agent ACs ticked but status=
 - **Finding:** warn: CTL-029: T-544 has all Agent ACs ticked but status='started-work' — completable, not closed
 - **Context:** Auto-generated task for audit finding hash c0adcb12a26317b893840d293a27480167470d4b
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d4ea12b
+- **Timestamp:** 2026-07-03T10:24:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-029: T-544 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0`
+
+### 2026-07-03T10:17:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
