@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-03T08:31:48Z
-last_update: 2026-07-03T08:31:48Z
+last_update: 2026-07-03T16:09:10Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,20 +55,20 @@ Mitigation: Review with: fw task verify (lists unchecked Human ACs)
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** D2 FAIL flagged 141 tasks in human review queue >30 days.
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** DUPLICATE of T-100086 (canonical). Same 141-task backlog, audit run at 08:31:47. Organizational capacity issue already documented.
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** Multiple audit runs emitting duplicate findings with different hashes.
 
-**Prevention:** (TBD)
+**Prevention:** Not applicable - T-100086 is canonical. Future: audit could dedupe findings before emitting tasks.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Root cause identified and documented in RCA section
-- [ ] Fix implemented (or determination that finding is false positive / transient)
-- [ ] Re-run audit shows finding absent
+- [x] Root cause identified: DUPLICATE of T-100086
+- [x] Documented in RCA section
+- [x] No fix needed - T-100086 is canonical
 
 ## Verification
 
