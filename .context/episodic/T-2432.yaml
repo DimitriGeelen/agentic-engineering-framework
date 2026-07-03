@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2432: Audit WARN — CTL-028: T-2405 is in .tasks/completed/ but frontmatter status='starte...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T22:43:05Z
+# ============================================================================
+
+task_id: T-2432
+task_name: "Audit WARN — CTL-028: T-2405 is in .tasks/completed/ but frontmatter status='starte..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:33:38Z
+completed: 2026-07-03T22:42:56Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-06-18T16:43:21+02:00
+last_commit: 2026-06-18T16:43:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  proxy-policy emit/install + emitted-but-not-installed drift (arc-013)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified: file location/frontmatter status inconsistency (same class as T-2431)'
+  - 'Fix implemented: hand-edited T-2405 frontmatter (status + date_finished)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/watchtower.log'
+  - '.fabric/components/lib-govd_policy.yaml'
+  - '.fabric/components/tests-unit-test_govd_policy.yaml'
+  - 'lib/govd_policy.py'
+  - '.tasks/active/T-2432-payload-mediation-proxy-policy-emitinsta.md'
+  - 'tests/unit/test_govd_policy.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-18T16:43:21"
+    action: "T-2432: proxy-policy emit/install + emitted-but-not-installed drift (arc-013)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1689 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:CTL-028]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1689
+  commits: 2
+  files_changed: 14
+  lines_added: 757
+  lines_removed: 56
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md
+generated_by: context-agent-hybrid

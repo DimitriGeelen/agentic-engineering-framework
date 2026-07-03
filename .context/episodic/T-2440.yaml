@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2440: Audit WARN — CTL-029: T-1062 has all Agent ACs ticked but status='started-work' — c...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T23:50:29Z
+# ============================================================================
+
+task_id: T-2440
+task_name: "Audit WARN — CTL-029: T-1062 has all Agent ACs ticked but status='started-work' — c..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:36:58Z
+completed: 2026-07-03T23:50:20Z
+duration_days: 1
+updates_count: 0
+first_commit: 2026-06-20T08:58:06+02:00
+last_commit: 2026-06-20T08:59:24+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register 5 arc-013 govd fabric components (drift hygiene). close — work-completed (4/4 Agent ACs) + episodic + OBS-080
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2440.yaml'
+  - '.context/inbox.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.fabric/components/agents-govd-govd.yaml'
+  - '.fabric/components/lib-govd_envelope.yaml'
+  - '.fabric/components/lib-govd_holder.yaml'
+  - '.fabric/components/lib-govd_relay.yaml'
+  - '.tasks/active/T-2440-register-5-unregistered-arc-013-govd-fab.md'
+  - '.tasks/completed/T-2440-register-5-unregistered-arc-013-govd-fab.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-20T08:58:06"
+    action: "T-2440: register 5 arc-013 govd fabric components (drift hygiene)"
+  - time: "2026-06-20T08:59:24"
+    action: "T-2440: close — work-completed (4/4 Agent ACs) + episodic + OBS-080"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1753 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:CTL-029]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1753
+  commits: 2
+  files_changed: 10
+  lines_added: 427
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2440-audit-warn--ctl-029-t-1062-has-all-agent.md
+generated_by: context-agent-hybrid

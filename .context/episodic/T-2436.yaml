@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2436: Audit FAIL — CTL-030: T-2405 is in .tasks/completed/ but stored horizon='now' (expe...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T22:47:04Z
+# ============================================================================
+
+task_id: T-2436
+task_name: "Audit FAIL — CTL-030: T-2405 is in .tasks/completed/ but stored horizon='now' (expe..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:35:18Z
+completed: 2026-07-03T22:46:54Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-06-19T00:41:56+02:00
+last_commit: 2026-06-19T00:44:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  self-vendor drift sync + --check read-only verifier (OBS-076). close — work-completed + episodic (OBS-076 self-vendor fix shipped)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified: TRANSIENT - already fixed by T-2435'
+  - 'Verified: T-2405 horizon is currently ''null'' (correct)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'close — work-completed + episodic (OBS-076 self-vendor fix shipped)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/paths.sh'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - '.context/episodic/T-2436.yaml'
+  - '.tasks/active/T-2436-self-vendor-drift-sync----check-silent-m.md'
+  - '.tasks/completed/T-2436-self-vendor-drift-sync----check-silent-m.md'
+  - 'tests/unit/t2247_audit_self_vendor_mitigation.bats'
+  - 'tests/unit/t2436_vendor_self_check.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-19T00:41:56"
+    action: "T-2436: self-vendor drift sync + --check read-only verifier (OBS-076)"
+  - time: "2026-06-19T00:44:14"
+    action: "T-2436: close — work-completed + episodic (OBS-076 self-vendor fix shipped)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1691 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:fail, section:CTL-030]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1691
+  commits: 2
+  files_changed: 10
+  lines_added: 563
+  lines_removed: 60
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2436-audit-fail--ctl-030-t-2405-is-in-tasksco.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2441: Audit WARN — CTL-029: T-1274 has all Agent ACs ticked but status='started-work' — c...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T23:51:28Z
+# ============================================================================
+
+task_id: T-2441
+task_name: "Audit WARN — CTL-029: T-1274 has all Agent ACs ticked but status='started-work' — c..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:37:24Z
+completed: 2026-07-03T23:51:18Z
+duration_days: 1
+updates_count: 0
+first_commit: 2026-06-21T08:50:54+02:00
+last_commit: 2026-06-21T09:15:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  AEF onboarding dogfooding (/opt/505 live install) — 10 findings + 2 pickup proposals. catalogue dogfood-hardened AEF install+onboarding prompt
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/pickup/inbox/P-048-bug-report.yaml'
+  - '.context/pickup/inbox/P-049-feature-proposal.yaml'
+  - '.context/working/focus.yaml'
+  - 'docs/reports/T-2441-aef-onboarding-dogfooding.md'
+  - 'prompts/aef-fresh-install-onboarding.md'
+  - '.tasks/active/T-2441-onboard-opt505-ring20-site-to-aef--boots.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-21T08:50:54"
+    action: "T-2441: AEF onboarding dogfooding (/opt/505 live install) — 10 findings + 2 pickup proposals"
+  - time: "2026-06-21T09:15:23"
+    action: "T-2441: catalogue dogfood-hardened AEF install+onboarding prompt"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1753 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:CTL-029]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1753
+  commits: 2
+  files_changed: 6
+  lines_added: 504
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2441-audit-warn--ctl-029-t-1274-has-all-agent.md
+generated_by: context-agent-hybrid

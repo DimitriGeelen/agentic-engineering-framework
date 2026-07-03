@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2438: Audit FAIL — CTL-030: T-2401 is in .tasks/completed/ but stored horizon='now' (expe...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T23:48:30Z
+# ============================================================================
+
+task_id: T-2438
+task_name: "Audit FAIL — CTL-030: T-2401 is in .tasks/completed/ but stored horizon='now' (expe..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:36:08Z
+completed: 2026-07-03T23:48:19Z
+duration_days: 1
+updates_count: 0
+first_commit: 2026-06-19T12:17:27+02:00
+last_commit: 2026-06-19T14:35:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope + turnkey design — ntfy approval pushes carry class-correct Watchtower URL (Option B framework-side). ntfy approval pushes carry class-correct Watchtower URL (one-tap review). close — work-completed (6/6 Agent ACs) + episodic + D-298
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/notify.sh'
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - 'agents/task-create/update-task.sh'
+  - '.context/episodic/T-2438.yaml'
+  - 'lib/notify.sh'
+  - 'lib/review.sh'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-2438-ntfy-approval-pushes-carry-class-correct.md'
+  - '.tasks/completed/T-2438-ntfy-approval-pushes-carry-class-correct.md'
+  - 'tests/unit/t2438_notify_review_url.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-19T12:17:27"
+    action: "T-2438: scope + turnkey design — ntfy approval pushes carry class-correct Watchtower URL (Option B framework-side)"
+  - time: "2026-06-19T14:35:11"
+    action: "T-2438: ntfy approval pushes carry class-correct Watchtower URL (one-tap review)"
+  - time: "2026-06-19T14:35:49"
+    action: "T-2438: close — work-completed (6/6 Agent ACs) + episodic + D-298"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1752 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:fail, section:CTL-030]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1752
+  commits: 3
+  files_changed: 12
+  lines_added: 603
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2438-audit-fail--ctl-030-t-2401-is-in-tasksco.md
+generated_by: context-agent-hybrid

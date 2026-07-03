@@ -4,15 +4,15 @@ name: "Audit FAIL — CTL-030: T-2405 is in .tasks/completed/ but stored horizon
 description: >
   Audit FAIL — CTL-030: T-2405 is in .tasks/completed/ but stored horizon='now' (expe...
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: fail
 audit_finding_hash: 3761940e5769451cd7c1df080b155478c1096260
 tags: [audit-finding, severity:fail, section:CTL-030]
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T18:35:18Z
-last_update: 2026-07-02T18:35:18Z
-date_finished: null
+last_update: 2026-07-03T22:46:54Z
+date_finished: 2026-07-03T22:46:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,23 +55,50 @@ Mitigation: Fix: bin/migrate-horizon-null-completed.sh   (idempotent, only touch
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** CTL-030 - T-2405 in .tasks/completed/ had horizon='now' (expected: null).
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** TRANSIENT/ALREADY FIXED. T-2405's horizon is currently 'null' (verified). The finding was emitted on 2026-07-02 but was resolved by T-2435 migration (per handover note: "T-2497: Verify 4 CTL-030 findings resolved by T-2435 migration").
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** CTL-030 detector caught the inconsistency. T-2435 migration fixed horizon values in completed tasks.
 
-**Prevention:** (TBD)
+**Prevention:** Already resolved - T-2405 horizon is now correct (null).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Root cause identified and documented in RCA section
-- [ ] Fix implemented (or determination that finding is false positive / transient)
-- [ ] Re-run audit shows finding absent
+- [x] Root cause identified: TRANSIENT - already fixed by T-2435
+- [x] Verified: T-2405 horizon is currently 'null' (correct)
+- [x] Re-run audit shows finding absent
 
 ## Verification
 
 # Re-run audit - finding should be absent
 bin/fw audit 2>&1 | grep -q "CTL-030: T-2405 is in .tasks/completed/ but stored horizon='now' (expected: null/absent — render derives 'past' from _location, T-2160)" && exit 1 || exit 0
 
+## Updates
+
+### 2026-07-02T18:34:40Z — audit-emit-task
+- **Action:** Created by audit --emit-tasks
+- **Finding:** fail: CTL-030: T-2405 horizon inconsistency
+
+### 2026-07-03T22:50:00Z — verification
+- **Action:** Verified T-2405 horizon is currently 'null' (correct)
+- **Note:** Finding was already resolved by T-2435 migration
+
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-62e80f59
+- **Timestamp:** 2026-07-03T22:46:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-030: T-2405 is in .tasks/completed/ but stored horizon='now' (expected: null/absent — render derives 'past' from _location, T-2160)" && exit 1 || exit 0`
+
+### 2026-07-03T22:46:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
