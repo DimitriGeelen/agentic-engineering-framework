@@ -5157,6 +5157,31 @@ PYEOF
             continue
         fi
 
+        # CASCADE PREVENTION: Skip if check_text references an audit-finding task created <7 days ago
+        # Extract task ID pattern from check_text (e.g., "Task T-12345-..." or "T-12345:")
+        if [[ "$check_text" =~ (T-[0-9]+) ]]; then
+            local referenced_task="${BASH_REMATCH[1]}"
+            local task_file=$(find "$TASKS_DIR/active/" -name "${referenced_task}-*.md" 2>/dev/null | head -1)
+            if [ -f "$task_file" ]; then
+                # Check if it's an audit-finding task (has audit_finding_hash field)
+                if grep -q "^audit_finding_hash:" "$task_file" 2>/dev/null; then
+                    # Check if created within last 7 days
+                    local created_line=$(grep "^created:" "$task_file" | head -1)
+                    if [ -n "$created_line" ]; then
+                        local created_date=$(echo "$created_line" | sed 's/created: //' | sed 's/Z$//')
+                        local created_epoch=$(date -d "$created_date" +%s 2>/dev/null || echo 0)
+                        local now_epoch=$(date +%s)
+                        local age_days=$(( (now_epoch - created_epoch) / 86400 ))
+                        if [ "$age_days" -lt 7 ]; then
+                            ((skipped++))
+                            [ "$DRY_RUN" = true ] && echo "[SKIP] $level (cascade prevention, task age ${age_days}d): ${check_text:0:60}..."
+                            continue
+                        fi
+                    fi
+                fi
+            fi
+        fi
+
         # Truncate check text for title (max 80 chars)
         local title="Audit $level — ${check_text:0:70}"
         [ ${#check_text} -gt 70 ] && title="${title}..."
@@ -5210,6 +5235,13 @@ Mitigation: $mitigation
 
 # Re-run audit - finding should be absent
 bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
+
+## Updates
+
+### $(date -u +%Y-%m-%dT%H:%M:%SZ) — audit-emit-task [audit-agent]
+- **Action:** Created by audit --emit-tasks
+- **Finding:** $severity: ${check_text:0:100}
+- **Context:** Auto-generated task for audit finding hash $hash
 "
 
             # Use fw task create with custom fields
