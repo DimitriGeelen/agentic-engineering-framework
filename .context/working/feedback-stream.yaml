@@ -19201,3 +19201,273 @@ scan_id: R-08ad7cd2
 task_id: T-2497
 payload:
   task_file: .tasks/active/T-2497-close-4-ctl-030-audit-tasks---all-resolv.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T20:43:00Z'
+scan_id: R-58267790
+task_id: T-2498
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T20:43:00Z'
+scan_id: R-58267790
+task_id: T-2498
+payload:
+  task_file: .tasks/active/T-2498-continue-autotuning-work---address-remai.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T20:45:47Z'
+scan_id: R-1ae2e385
+task_id: T-2499
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T20:45:47Z'
+scan_id: R-1ae2e385
+task_id: T-2499
+payload:
+  task_file: .tasks/active/T-2499-session-wrap-up---push-commits-and-gener.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T21:29:47Z'
+scan_id: R-493da423
+task_id: T-2501
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T21:29:47Z'
+scan_id: R-493da423
+task_id: T-2501
+payload:
+  task_file: .tasks/active/T-2501-process-pickup-060---syspath-fix-already.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T22:40:35Z'
+scan_id: R-e2e1285e
+task_id: T-2505
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T22:40:35Z'
+scan_id: R-e2e1285e
+task_id: T-2505
+payload:
+  task_file: .tasks/active/T-2505-investigate-duplicate-t-2502-active--com.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T22:47:36Z'
+scan_id: R-5b0ff488
+task_id: T-2500
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T22:47:36Z'
+scan_id: R-5b0ff488
+task_id: T-2500
+payload:
+  task_file: .tasks/active/T-2500-audit-warn--d5-task-lifecycle--28-anomal.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T22:50:10Z'
+scan_id: R-13a0fd9d
+task_id: T-2506
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T22:50:10Z'
+scan_id: R-13a0fd9d
+task_id: T-2506
+payload:
+  task_file: .tasks/active/T-2506-address-fabric-orphaned-cards-warn-97836.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T22:53:21Z'
+scan_id: R-f20207a8
+task_id: T-2507
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T22:53:21Z'
+scan_id: R-f20207a8
+task_id: T-2507
+payload:
+  task_file: .tasks/active/T-2507-document-f-orch-driver-retirement-eviden.md
+---
+kind: scan_emitted
+timestamp: '2026-07-02T22:57:12Z'
+scan_id: R-19f22f13
+task_id: T-2508
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-02T22:57:12Z'
+scan_id: R-19f22f13
+task_id: T-2508
+payload:
+  task_file: .tasks/active/T-2508-autotuning-session-summary-and-wrap-up.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T00:32:27Z'
+scan_id: R-3eb85472
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T00:32:27Z'
+scan_id: R-3eb85472
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T00:32:27Z'
+scan_id: R-e7ede58c
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T00:32:27Z'
+scan_id: R-e7ede58c
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T00:32:28Z'
+scan_id: R-40cb8c2c
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T00:32:28Z'
+scan_id: R-40cb8c2c
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T00:36:22Z'
+scan_id: R-6add0b46
+task_id: T-9897
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T00:36:22Z'
+scan_id: R-6add0b46
+task_id: T-9897
+payload:
+  task_file: .tasks/active/T-9897-rev-mech-positive-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T00:36:23Z'
+scan_id: R-4c05f1ac
+task_id: T-9898
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T00:36:23Z'
+scan_id: R-4c05f1ac
+task_id: T-9898
+payload:
+  task_file: .tasks/active/T-9898-rev-mech-negative-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T00:36:23Z'
+scan_id: R-54d23761
+task_id: T-9899
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T00:36:23Z'
+scan_id: R-54d23761
+task_id: T-9899
+payload:
+  task_file: .tasks/active/T-9899-rev-mech-conformance-fixture.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T02:12:14Z'
+scan_id: R-ef8c223a
+task_id: T-2514
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T02:12:14Z'
+scan_id: R-ef8c223a
+task_id: T-2514
+payload:
+  task_file: .tasks/active/T-2514-discovery-governance-test-suite-audit-ad.md

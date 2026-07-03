@@ -1,10 +1,10 @@
-# Audit Results - 2026-07-02-2236
-timestamp: 2026-07-02T20:36:16Z
+# Audit Results - 2026-07-02-2325
+timestamp: 2026-07-02T21:25:35Z
 sections: "structure"
 summary:
-  pass: 23
+  pass: 24
   warn: 2
-  fail: 1
+  fail: 0
 findings:
   - level: PASS
     check: "Tasks directory exists"
@@ -58,6 +58,5 @@ findings:
     check: "Secret scan: tracked tree clean"
   - level: PASS
     check: "Large-file gate: tracked tree clean"
-  - level: FAIL
-    check: "Self-vendor drift: libs class — 1 file(s) out of sync (T-2244)"
-    mitigation: "Run: fw vendor  (sync all vendored .agentic-framework/ classes with source)"
+  - level: PASS
+    check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"

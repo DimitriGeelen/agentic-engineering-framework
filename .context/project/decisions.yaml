@@ -2060,3 +2060,17 @@ decisions:
     date: 2026-06-14
     task: T-2396
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-297
+    decision: "Leave both T-2502s as-is, resolve on merge"
+    scope: project
+    date: 2026-07-02
+    task: T-2505
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-298
+    decision: "Document finding as expected behavior, not a bug"
+    scope: project
+    date: 2026-07-02
+    task: T-2506
+    rationale: "Auto-captured from task file on completion"

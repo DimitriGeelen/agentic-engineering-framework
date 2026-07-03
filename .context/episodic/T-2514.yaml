@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2514: DISCOVERY: governance test suite audit (adversarial vs happy-path coverage)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T02:12:25Z
+# ============================================================================
+
+task_id: T-2514
+task_name: "DISCOVERY: governance test suite audit (adversarial vs happy-path coverage)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T23:04:06Z
+completed: 2026-07-03T02:12:12Z
+duration_days: 1
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Step 0: Verify reconstructed surface (test tiers, bats version, gate locations)'
+  - 'F1: Test inventory (counts, tiers, runtime)'
+  - 'F2: Gate→test map (adversarial vs happy-path determination)'
+  - 'F3: Bypass-class gap search (`fw dispatch approve`, focus.yaml direct writes)'
+  - 'F4: Audit-assertion coverage (logging checks)'
+  - 'F5: Producer-not-judge analysis (authorship separation)'
+  - 'F6: bats tooling reality (coverage, parallel, fixtures)'
+  - 'Write discovery report to canonical path'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 188 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 188
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2514-discovery-governance-test-suite-audit-ad.md
+generated_by: context-agent-hybrid
