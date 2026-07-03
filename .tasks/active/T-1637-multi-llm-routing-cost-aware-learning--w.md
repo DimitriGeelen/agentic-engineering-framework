@@ -18,7 +18,7 @@ tags: [from-T-1065, termlink, multi-llm, cost-routing]
 components: []
 related_tasks: [T-1065, T-1641]
 created: 2026-05-01T10:45:13Z
-last_update: 2026-07-03T06:02:08Z
+last_update: '2026-07-03T06:15:03Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -143,6 +143,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 4
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=4 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-03T06:15:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 5
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=5 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
