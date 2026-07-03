@@ -1,18 +1,18 @@
 ---
-id: T-2450
-name: "Audit WARN — Task T-2429-audit-warn--fabric-1-orphaned-cards-file.md missing Update..."
+id: T-2451
+name: "Audit WARN — Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Update..."
 description: >
-  Audit WARN — Task T-2429-audit-warn--fabric-1-orphaned-cards-file.md missing Update...
+  Audit WARN — Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Update...
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: warn
-audit_finding_hash: 91c41ef74ffa8c61bbaa22f00accac4915ba4d05
+audit_finding_hash: 3b0ecf6afa6d9c296c72399935a44e8d43002b38
 tags: [audit-finding, severity:warn, section:audit]
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tests/unit/test_doctor_scope_tags.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,9 +24,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-02T19:02:36Z
-last_update: 2026-07-02T19:02:36Z
-date_finished: null
+created: 2026-07-02T19:02:59Z
+last_update: 2026-07-03T23:58:53Z
+date_finished: 2026-07-03T23:58:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,39 +39,56 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2450: Audit WARN — Task T-2429-audit-warn--fabric-1-orphaned-cards-file.md missing Update...
+# T-2451: Audit WARN — Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Update...
 ## Trigger
 
-Audit run: 2026-07-02T19:02:36Z
-Finding: Task T-2429-audit-warn--fabric-1-orphaned-cards-file.md missing Updates section
+Audit run: 2026-07-02T19:02:59Z
+Finding: Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Updates section
 
 ## Finding
 
 ```
-Task T-2429-audit-warn--fabric-1-orphaned-cards-file.md missing Updates section
+Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Updates section
 ```
 
-Mitigation: Fix missing Updates section in T-2429-audit-warn--fabric-1-orphaned-cards-file.md
+Mitigation: Fix missing Updates section in T-2430-audit-warn--fabric-97836-cards-have-no-e.md
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** Audit detector flagged T-2430 as missing an ## Updates section.
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** TRANSIENT — T-2430 now has an ## Updates section (verified `grep "^## Updates" .tasks/completed/T-2430*.md`). The section was added after this audit finding was filed.
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** Audit runs asynchronously relative to task updates. The missing section was remediated between audit detection and triage.
 
-**Prevention:** (TBD)
+**Prevention:** None needed — finding is stale. The task file now has the required section.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Root cause identified and documented in RCA section
-- [ ] Fix implemented (or determination that finding is false positive / transient)
-- [ ] Re-run audit shows finding absent
+- [x] Root cause identified and documented in RCA section
+- [x] Fix implemented (or determination that finding is false positive / transient)
+- [x] Re-run audit shows finding absent
 
 ## Verification
 
 # Re-run audit - finding should be absent
-bin/fw audit 2>&1 | grep -q "Task T-2429-audit-warn--fabric-1-orphaned-cards-file.md missing Updates section" && exit 1 || exit 0
+bin/fw audit 2>&1 | grep -q "Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Updates section" && exit 1 || exit 0
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a062715a
+- **Timestamp:** 2026-07-03T23:58:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Updates section" && exit 1 || exit 0`
+
+### 2026-07-03T23:58:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
