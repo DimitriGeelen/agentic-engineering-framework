@@ -55,14 +55,20 @@ Mitigation: Run: bin/fw task update T-802 --status work-completed
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** CTL-029 flagged task as "completable but not closed" (all Agent ACs ticked, status=started-work).
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** FALSE POSITIVE - target task is partial-complete (owner=human, unchecked Human ACs). CTL-029 detector doesn't check for Human AC presence.
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** CTL-029 designed to catch genuinely completable tasks. Partial-complete pattern (Agent done, Human pending) mimics this signal but is correct state.
 
-**Prevention:** (TBD)
+**Prevention:** Enhance CTL-029 to skip tasks with owner=human or unchecked Human ACs. See T-100066 analysis: `docs/reports/T-100066-ctl-029-false-positive-class.md`
 
+## Acceptance Criteria
+
+### Agent
+- [x] Root cause identified: FALSE POSITIVE (partial-complete task)
+- [x] Documented in RCA section
+- [x] No fix needed - target task state is correct
 ## Acceptance Criteria
 
 ### Agent
