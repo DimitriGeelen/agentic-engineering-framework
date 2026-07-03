@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2446: Audit WARN — CTL-029: T-2205 has all Agent ACs ticked but status='started-work' — c...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T23:55:53Z
+# ============================================================================
+
+task_id: T-2446
+task_name: "Audit WARN — CTL-029: T-2205 has all Agent ACs ticked but status='started-work' — c..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:39:15Z
+completed: 2026-07-03T23:55:44Z
+duration_days: 1
+updates_count: 0
+first_commit: 2026-06-21T12:10:54+02:00
+last_commit: 2026-06-21T12:36:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file F10 residual (CLAUDE_PROJECT_DIR cwd-consistency) + reframe F10 in dogfood report. F10 fix — gate CLAUDE_PROJECT_DIR trust on cwd-consistency. close — work-completed (4/4 Agent ACs, P-011 green) + episodic + D-302. capture L-487 — daemon-inherited env-var poison is a class (reconcile PROJECT_ROOT + CLAUDE_PROJECT_DIR guards)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'F10 fix — gate CLAUDE_PROJECT_DIR trust on cwd-consistency'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/episodic/T-2446.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/project/metrics-history.yaml'
+  - 'docs/reports/T-2441-aef-onboarding-dogfooding.md'
+  - '.fabric/components/tests-unit-t2446_project_root_cwd_consistency.yaml'
+  - '.tasks/active/T-2446-f10-residual--claudeprojectdir-trusted-w.md'
+  - '.tasks/completed/T-2446-f10-residual--claudeprojectdir-trusted-w.md'
+  - 'tests/unit/t2390_project_root_claude_dir.bats'
+  - 'tests/unit/t2446_project_root_cwd_consistency.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-21T12:10:54"
+    action: "T-2446: file F10 residual (CLAUDE_PROJECT_DIR cwd-consistency) + reframe F10 in dogfood report"
+  - time: "2026-06-21T12:34:43"
+    action: "T-2446: F10 fix — gate CLAUDE_PROJECT_DIR trust on cwd-consistency"
+  - time: "2026-06-21T12:36:00"
+    action: "T-2446: close — work-completed (4/4 Agent ACs, P-011 green) + episodic + D-302"
+  - time: "2026-06-21T12:36:19"
+    action: "T-2446: capture L-487 — daemon-inherited env-var poison is a class (reconcile PROJECT_ROOT + CLAUDE_PROJECT_DIR guards)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1756 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:CTL-029]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1756
+  commits: 4
+  files_changed: 11
+  lines_added: 594
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2446-audit-warn--ctl-029-t-2205-has-all-agent.md
+generated_by: context-agent-hybrid

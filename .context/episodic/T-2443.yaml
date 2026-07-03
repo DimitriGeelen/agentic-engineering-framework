@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2443: Audit WARN — CTL-029: T-1624 has all Agent ACs ticked but status='started-work' — c...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T23:54:06Z
+# ============================================================================
+
+task_id: T-2443
+task_name: "Audit WARN — CTL-029: T-1624 has all Agent ACs ticked but status='started-work' — c..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:38:10Z
+completed: 2026-07-03T23:53:56Z
+duration_days: 1
+updates_count: 0
+first_commit: 2026-06-21T10:41:26+02:00
+last_commit: 2026-06-21T10:48:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file F4 build slice — greenfield value-drivers.yaml init validation. implement F4 — fix greenfield value-drivers.yaml init validation
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'implement F4 — fix greenfield value-drivers.yaml init validation'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/init.sh'
+  - '.tasks/active/T-2443-fix-greenfield-value-driversyaml-init-te.md'
+  - 'tests/unit/init_fresh_value_drivers.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-21T10:41:26"
+    action: "T-2443: file F4 build slice — greenfield value-drivers.yaml init validation"
+  - time: "2026-06-21T10:48:41"
+    action: "T-2443: implement F4 — fix greenfield value-drivers.yaml init validation"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1755 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:CTL-029]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1755
+  commits: 2
+  files_changed: 3
+  lines_added: 293
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2443-audit-warn--ctl-029-t-1624-has-all-agent.md
+generated_by: context-agent-hybrid
