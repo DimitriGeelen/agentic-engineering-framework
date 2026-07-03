@@ -1,8 +1,8 @@
 ---
-id: T-100098
-name: "Commit session progress (audit closures + health check)"
+id: T-100100
+name: "Final session commit + generate handover"
 description: >
-  Commit session progress (audit closures + health check)
+  Final session commit + generate handover
 
 status: started-work
 workflow_type: build
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-03T09:24:56Z
-last_update: 2026-07-03T09:24:56Z
+created: 2026-07-03T09:27:07Z
+last_update: 2026-07-03T09:27:07Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,18 +36,17 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-100098: Commit session progress (audit closures + health check)
+# T-100100: Final session commit + generate handover
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Commit final session progress (T-100099 episodic) and generate handover for next session. Background worker (PID 303583) still running, 9 CTL-029 tasks remaining.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Final progress committed
+- [x] Handover generated (fw handover --commit)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -176,7 +175,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-07-03T09:24:56Z — task-created [task-create-agent]
+### 2026-07-03T09:27:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100098-commit-session-progress-audit-closures--.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100100-final-session-commit--generate-handover.md
 - **Context:** Initial task creation
