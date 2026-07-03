@@ -4137,3 +4137,9 @@ Syncs:
 
 T-2501: Archived .pickup/060 (sys.path heredoc fix already in T-2495)
 T-2505: Analyzed duplicate T-2502 '
+- timestamp: '2026-07-03T07:38:06Z'
+  task: 'T-100084'
+  flag: 'FW_SWITCH_FOCUS=1'
+  caller: 'check-active-task focus-drift'
+  target: 'T-100062'
+  command: 'FW_SWITCH_FOCUS=1 git commit -m "T-100062: Audit artifacts + episodic captures (T-100063/64/65) + 11 CTL-029 tasks"'
