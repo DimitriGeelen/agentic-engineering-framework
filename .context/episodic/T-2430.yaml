@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2430: Audit WARN — Fabric: 97/836 cards have no edges
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T22:39:13Z
+# ============================================================================
+
+task_id: T-2430
+task_name: "Audit WARN — Fabric: 97/836 cards have no edges"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:32:53Z
+completed: 2026-07-03T22:39:03Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-06-18T14:07:18+02:00
+last_commit: 2026-06-18T14:07:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  privileged state-holder / authority broker — first reviewable cut (arc-013)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified: operational backlog (fabric enrichment incomplete)'
+  - 'Documented in RCA section'
+  - 'Determination: operational maintenance, not a bug - warning persists until enrichment work is done'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/govd/govd.sh'
+  - '.context/working/reviewer-overrides.yaml'
+  - 'lib/govd_envelope.py'
+  - 'lib/govd_holder.py'
+  - 'policy/authority-envelope.yaml'
+  - '.tasks/active/T-2430-payload-mediation-privileged-state-holde.md'
+  - 'tests/unit/test_govd_envelope.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-18T14:07:18"
+    action: "T-2430: privileged state-holder / authority broker — first reviewable cut (arc-013)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1686 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:Fabric]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1686
+  commits: 1
+  files_changed: 7
+  lines_added: 693
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2430-audit-warn--fabric-97836-cards-have-no-e.md
+generated_by: context-agent-hybrid

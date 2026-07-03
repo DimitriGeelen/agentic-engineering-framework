@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2431: Audit WARN — CTL-028: T-1700 is in .tasks/completed/ but frontmatter status='starte...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T22:41:01Z
+# ============================================================================
+
+task_id: T-2431
+task_name: "Audit WARN — CTL-028: T-1700 is in .tasks/completed/ but frontmatter status='starte..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:33:13Z
+completed: 2026-07-03T22:40:52Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-06-18T14:22:23+02:00
+last_commit: 2026-06-18T16:35:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  governance mediation relay / proxy brain — first reviewable cut (arc-013). firm up task file — real ACs ticked, verification, Evolution, reviewer PASS (arc-013)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified: file location/frontmatter status inconsistency'
+  - 'Fix implemented: hand-edited T-1700 frontmatter (status + date_finished)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/govd/govd.sh'
+  - '.context/audits/2026-06-18.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/reviewer-overrides.yaml'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.context/working/watchtower.pid'
+  - '.context/working/watchtower.port'
+  - '.context/working/watchtower.url'
+  - '.framework.yaml'
+  - 'lib/govd_relay.py'
+  - 'policy/proxy-policy.yaml'
+  - '.tasks/active/T-2431-payload-mediation-thin-owned-payload-med.md'
+  - 'tests/unit/test_govd_relay.py'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-18T14:22:23"
+    action: "T-2431: governance mediation relay / proxy brain — first reviewable cut (arc-013)"
+  - time: "2026-06-18T16:35:00"
+    action: "T-2431: firm up task file — real ACs ticked, verification, Evolution, reviewer PASS (arc-013)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1687 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:CTL-028]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1687
+  commits: 2
+  files_changed: 18
+  lines_added: 1055
+  lines_removed: 6353
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2431-audit-warn--ctl-028-t-1700-is-in-tasksco.md
+generated_by: context-agent-hybrid
