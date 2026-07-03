@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T19:15:25Z
-last_update: '2026-07-02T16:15:03Z'
+last_update: 2026-07-03T02:17:15Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -152,9 +152,9 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `.claude/skills/grill-with-docs/SKILL.md` exists with frontmatter + content matching upstream.
-- [ ] `.claude/skills/grill-with-docs/CONTEXT-FORMAT.md` exists matching upstream.
-- [ ] `.claude/skills/grill-with-docs/ADR-FORMAT.md` exists matching upstream.
+- [x] `.claude/skills/grill-with-docs/SKILL.md` exists with frontmatter + content matching upstream.
+- [x] `.claude/skills/grill-with-docs/CONTEXT-FORMAT.md` exists matching upstream.
+- [x] `.claude/skills/grill-with-docs/ADR-FORMAT.md` exists matching upstream.
 - [ ] Application begins: first grilling question posed against the orchestrator-as-triage architectural plan.
 
 ### Human
