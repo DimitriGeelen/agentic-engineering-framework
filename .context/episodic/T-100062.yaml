@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100062: Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-acti...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T07:44:20Z
+# ============================================================================
+
+task_id: T-100062
+task_name: "Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-acti..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-03T07:02:47Z
+completed: 2026-07-03T07:39:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-03T09:38:27+02:00
+last_commit: 2026-07-03T09:42:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Audit artifacts + episodic captures (T-100063/64/65) + 11 CTL-029 tasks. RCA complete - D5 stale tasks are human review queue (organizational, not technical)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Determination: Organizational backlog (human review queue), not technical defect'
+  - 'Verified pattern: T-1062 + T-2200 both confirm owner=human with unchecked `### Human` ACs'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-07-03.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/episodic/T-100063.yaml'
+  - '.context/episodic/T-100064.yaml'
+  - '.context/episodic/T-100065.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/active/T-100062-audit-warn--d5-task-lifecycle--29-anomal.md'
+  - '.tasks/active/T-100066-audit-warn--ctl-029-t-2121-has-all-agent.md'
+  - '.tasks/active/T-100067-audit-warn--ctl-029-t-2268-has-all-agent.md'
+  - '.tasks/active/T-100068-audit-warn--ctl-029-t-2306-has-all-agent.md'
+  - '.tasks/active/T-100069-audit-warn--ctl-029-t-2309-has-all-agent.md'
+  - '.tasks/active/T-100070-audit-warn--ctl-029-t-2395-has-all-agent.md'
+  - '.tasks/active/T-100071-audit-warn--ctl-029-t-2410-has-all-agent.md'
+  - '.tasks/active/T-100072-audit-warn--ctl-029-t-2426-has-all-agent.md'
+  - '.tasks/active/T-100073-audit-warn--ctl-029-t-332-has-all-agent-.md'
+  - '.tasks/active/T-100074-audit-warn--ctl-029-t-334-has-all-agent-.md'
+  - '.tasks/active/T-100075-audit-warn--ctl-029-t-464-has-all-agent-.md'
+  - '.tasks/active/T-100076-audit-warn--ctl-029-t-544-has-all-agent-.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-03T09:38:27"
+    action: "T-100062: Audit artifacts + episodic captures (T-100063/64/65) + 11 CTL-029 tasks"
+  - time: "2026-07-03T09:42:40"
+    action: "T-100062: RCA complete - D5 stale tasks are human review queue (organizational, not technical)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 37
+  commits: 2
+  files_changed: 36
+  lines_added: 3129
+  lines_removed: 1906
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100062-audit-warn--d5-task-lifecycle--29-anomal.md
+generated_by: context-agent-hybrid
