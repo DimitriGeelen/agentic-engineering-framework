@@ -4,13 +4,13 @@ name: "Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T
 description: >
   Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-acti...
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: warn
 audit_finding_hash: 5499a44104a223430459c26caf43a8480e41f708
 tags: [audit-finding, severity:warn, section:audit]
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-03T08:01:17Z
-last_update: 2026-07-03T08:01:17Z
-date_finished: null
+last_update: 2026-07-03T09:24:03Z
+date_finished: 2026-07-03T09:24:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -88,3 +88,20 @@ bin/fw audit 2>&1 | grep -q "D5: Task lifecycle — 29 anomaly(s): T-1062(86d-ac
 - **Finding:** warn: D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-active) T-1542(66d-active) T-1624(
 - **Context:** Auto-generated task for audit finding hash 5499a44104a223430459c26caf43a8480e41f708
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d8833130
+- **Timestamp:** 2026-07-03T09:24:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-active) T-1542(66d-active) T-1624(63d-active) T-2170(31d-active) T-2200(29d-active) T-2202(29d-active) T-`
+
+### 2026-07-03T09:24:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

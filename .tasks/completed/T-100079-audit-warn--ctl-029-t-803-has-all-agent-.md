@@ -1,16 +1,16 @@
 ---
-id: T-100077
-name: "Audit WARN — CTL-029: T-801 has all Agent ACs ticked but status='started-work' — co..."
+id: T-100079
+name: "Audit WARN — CTL-029: T-803 has all Agent ACs ticked but status='started-work' — co..."
 description: >
-  Audit WARN — CTL-029: T-801 has all Agent ACs ticked but status='started-work' — co...
+  Audit WARN — CTL-029: T-803 has all Agent ACs ticked but status='started-work' — co...
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: warn
-audit_finding_hash: e6f2a6a0a782e72d5fc54a8da63feddb0a387b7e
+audit_finding_hash: 6ee5ccf9c1a25e1349bec7d04e4c17220f7b1379
 tags: [audit-finding, severity:warn, section:CTL-029]
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,9 +24,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-03T07:35:12Z
-last_update: 2026-07-03T07:35:12Z
-date_finished: null
+created: 2026-07-03T07:35:56Z
+last_update: 2026-07-03T09:23:53Z
+date_finished: 2026-07-03T09:23:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,19 +39,19 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-100077: Audit WARN — CTL-029: T-801 has all Agent ACs ticked but status='started-work' — co...
+# T-100079: Audit WARN — CTL-029: T-803 has all Agent ACs ticked but status='started-work' — co...
 ## Trigger
 
-Audit run: 2026-07-03T07:35:12Z
-Finding: CTL-029: T-801 has all Agent ACs ticked but status='started-work' — completable, not closed
+Audit run: 2026-07-03T07:35:56Z
+Finding: CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed
 
 ## Finding
 
 ```
-CTL-029: T-801 has all Agent ACs ticked but status='started-work' — completable, not closed
+CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed
 ```
 
-Mitigation: Run: bin/fw task update T-801 --status work-completed
+Mitigation: Run: bin/fw task update T-803 --status work-completed
 
 ## RCA
 
@@ -79,12 +79,29 @@ Mitigation: Run: bin/fw task update T-801 --status work-completed
 ## Verification
 
 # Re-run audit - finding should be absent
-bin/fw audit 2>&1 | grep -q "CTL-029: T-801 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0
+bin/fw audit 2>&1 | grep -q "CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0
 
 ## Updates
 
-### 2026-07-03T07:35:12Z — audit-emit-task [audit-agent]
+### 2026-07-03T07:35:56Z — audit-emit-task [audit-agent]
 - **Action:** Created by audit --emit-tasks
-- **Finding:** warn: CTL-029: T-801 has all Agent ACs ticked but status='started-work' — completable, not closed
-- **Context:** Auto-generated task for audit finding hash e6f2a6a0a782e72d5fc54a8da63feddb0a387b7e
+- **Finding:** warn: CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed
+- **Context:** Auto-generated task for audit finding hash 6ee5ccf9c1a25e1349bec7d04e4c17220f7b1379
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e169542e
+- **Timestamp:** 2026-07-03T09:23:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-029: T-803 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0`
+
+### 2026-07-03T09:23:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

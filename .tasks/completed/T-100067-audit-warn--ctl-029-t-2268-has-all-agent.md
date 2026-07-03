@@ -4,13 +4,13 @@ name: "Audit WARN — CTL-029: T-2268 has all Agent ACs ticked but status='start
 description: >
   Audit WARN — CTL-029: T-2268 has all Agent ACs ticked but status='started-work' — c...
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: warn
 audit_finding_hash: 143e0a1fee7a489f8cf108d1e4919fdc987f1fe5
 tags: [audit-finding, severity:warn, section:CTL-029]
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-03T07:31:42Z
-last_update: 2026-07-03T07:31:42Z
-date_finished: null
+last_update: 2026-07-03T09:14:40Z
+date_finished: 2026-07-03T09:14:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,3 +82,20 @@ bin/fw audit 2>&1 | grep -q "CTL-029: T-2268 has all Agent ACs ticked but status
 - **Finding:** warn: CTL-029: T-2268 has all Agent ACs ticked but status='started-work' — completable, not closed
 - **Context:** Auto-generated task for audit finding hash 143e0a1fee7a489f8cf108d1e4919fdc987f1fe5
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d77170ff
+- **Timestamp:** 2026-07-03T09:21:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-029: T-2268 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0`
+
+### 2026-07-03T09:14:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
