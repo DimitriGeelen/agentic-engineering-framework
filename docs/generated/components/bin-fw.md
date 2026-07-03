@@ -74,7 +74,7 @@ When run from inside the framework repo itself, it auto-detects.
 | [worker_kinds_parity](/docs/generated/lib-worker_kinds_parity) | calls | TODO: describe what this component does |
 | [manifest](/docs/generated/agents-mcp-manifest) | calls | TODO: describe what this component does |
 
-## Used By (234)
+## Used By (238)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -311,6 +311,10 @@ When run from inside the framework repo itself, it auto-detects.
 | [t2332_bvp_propose_queue](/docs/generated/tests-unit-t2332_bvp_propose_queue) | tests_by | TODO: describe what this component does |
 | [test_orchestrator_graph](/docs/generated/tests-unit-test_orchestrator_graph) | tests_by | TODO: describe what this component does |
 | [test_write_set](/docs/generated/tests-unit-test_write_set) | tests_by | TODO: describe what this component does |
+| [inject-next-directive](/docs/generated/agents-context-inject-next-directive) | called_by | TODO: describe what this component does |
+| [estimator](/docs/generated/agents-termlink-bvp-estimator-estimator) | called_by | TODO: describe what this component does |
+| [t2391_project_root_inherited_stale](/docs/generated/tests-unit-t2391_project_root_inherited_stale) | tests_by | TODO: describe what this component does |
+| [test_inject_next_directive](/docs/generated/tests-unit-test_inject_next_directive) | called_by | TODO: describe what this component does |
 
 ## Documentation
 

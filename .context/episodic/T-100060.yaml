@@ -1,0 +1,135 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100060: audit cascade prevention — suppress recursive task creation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T06:41:12Z
+# ============================================================================
+
+task_id: T-100060
+task_name: "audit cascade prevention — suppress recursive task creation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-03T06:34:34Z
+completed: 2026-07-03T06:41:02Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-03T08:40:06+02:00
+last_commit: 2026-07-03T08:40:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Audit cascade prevention — Updates section + 7-day grace period
+
+# Key outcomes
+outcomes:
+  - 'Audit emit-tasks logic adds initial `## Updates` entry to created tasks (prevents immediate re-triggering)'
+  - 'Cascade detection: refuse to emit task if target task is itself an audit-finding task created <7 days ago'
+  - 'Delete 59 cascade tasks (T-100000 through T-100059) after fix is in place'
+  - 'Verification: structural fixes prevent cascade (Updates template + 7-day detection); production test is next handover'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-100000-audit-warn--task-t-99974-audit-warn--tas.md'
+  - '.tasks/active/T-100001-audit-warn--task-t-99975-audit-warn--tas.md'
+  - '.tasks/active/T-100002-audit-warn--task-t-99976-audit-warn--tas.md'
+  - '.tasks/active/T-100003-audit-warn--task-t-99977-audit-warn--tas.md'
+  - '.tasks/active/T-100004-audit-warn--task-t-99978-audit-warn--ctl.md'
+  - '.tasks/active/T-100005-audit-warn--task-t-99979-audit-warn--ctl.md'
+  - '.tasks/active/T-100007-audit-warn--task-t-100000-audit-warn--ta.md'
+  - '.tasks/active/T-100008-audit-warn--task-t-100001-audit-warn--ta.md'
+  - '.tasks/active/T-100009-audit-warn--task-t-100002-audit-warn--ta.md'
+  - '.tasks/active/T-100010-audit-warn--task-t-100003-audit-warn--ta.md'
+  - '.tasks/active/T-100011-audit-warn--task-t-100004-audit-warn--ta.md'
+  - '.tasks/active/T-100012-audit-warn--task-t-100005-audit-warn--ta.md'
+  - '.tasks/active/T-100013-audit-warn--task-t-99980-audit-warn--ctl.md'
+  - '.tasks/active/T-100014-audit-warn--task-t-99982-audit-warn--d5-.md'
+  - '.tasks/active/T-100015-audit-warn--task-t-99983-audit-warn--tas.md'
+  - '.tasks/active/T-100016-audit-warn--task-t-99984-audit-warn--tas.md'
+  - '.tasks/active/T-100017-audit-warn--task-t-99985-audit-warn--tas.md'
+  - '.tasks/active/T-100018-audit-warn--task-t-99986-audit-warn--tas.md'
+  - '.tasks/active/T-100019-audit-warn--task-t-99987-audit-warn--tas.md'
+  - '.tasks/active/T-100020-audit-warn--task-t-99988-audit-warn--tas.md'
+  - '.tasks/active/T-100021-audit-warn--task-t-99989-audit-warn--tas.md'
+  - '.tasks/active/T-100022-audit-warn--task-t-99990-audit-warn--tas.md'
+  - '.tasks/active/T-100023-audit-warn--task-t-99991-audit-warn--tas.md'
+  - '.tasks/active/T-100024-audit-warn--task-t-99992-audit-warn--tas.md'
+  - '.tasks/active/T-100026-audit-warn--task-t-100007-audit-warn--ta.md'
+  - '.tasks/active/T-100027-audit-warn--task-t-100008-audit-warn--ta.md'
+  - '.tasks/active/T-100028-audit-warn--task-t-100009-audit-warn--ta.md'
+  - '.tasks/active/T-100029-audit-warn--task-t-100010-audit-warn--ta.md'
+  - '.tasks/active/T-100030-audit-warn--task-t-100011-audit-warn--ta.md'
+  - '.tasks/active/T-100031-audit-warn--task-t-100012-audit-warn--ta.md'
+  - '.tasks/active/T-100032-audit-warn--task-t-100013-audit-warn--ta.md'
+  - '.tasks/active/T-100033-audit-warn--task-t-100014-audit-warn--ta.md'
+  - '.tasks/active/T-100034-audit-warn--task-t-100015-audit-warn--ta.md'
+  - '.tasks/active/T-100035-audit-warn--task-t-100016-audit-warn--ta.md'
+  - '.tasks/active/T-100036-audit-warn--task-t-100017-audit-warn--ta.md'
+  - '.tasks/active/T-100037-audit-warn--task-t-100018-audit-warn--ta.md'
+  - '.tasks/active/T-100038-audit-warn--task-t-100019-audit-warn--ta.md'
+  - '.tasks/active/T-100039-audit-warn--task-t-100020-audit-warn--ta.md'
+  - '.tasks/active/T-100040-audit-warn--task-t-100021-audit-warn--ta.md'
+  - '.tasks/active/T-100041-audit-warn--task-t-100021-audit-warn--ta.md'
+  - '.tasks/active/T-100042-audit-warn--task-t-100022-audit-warn--ta.md'
+  - '.tasks/active/T-100043-audit-warn--task-t-100023-audit-warn--ta.md'
+  - '.tasks/active/T-100044-audit-warn--task-t-100026-audit-warn--ta.md'
+  - '.tasks/active/T-100045-audit-warn--task-t-100027-audit-warn--ta.md'
+  - '.tasks/active/T-100046-audit-warn--task-t-100028-audit-warn--ta.md'
+  - '.tasks/active/T-100047-audit-warn--task-t-100029-audit-warn--ta.md'
+  - '.tasks/active/T-100048-audit-warn--task-t-100030-audit-warn--ta.md'
+  - '.tasks/active/T-100049-audit-warn--task-t-100031-audit-warn--ta.md'
+  - '.tasks/active/T-100050-audit-warn--task-t-100032-audit-warn--ta.md'
+  - '.tasks/active/T-100051-audit-warn--task-t-100033-audit-warn--ta.md'
+  - '.tasks/active/T-100052-audit-warn--task-t-100034-audit-warn--ta.md'
+  - '.tasks/active/T-100053-audit-warn--task-t-100035-audit-warn--ta.md'
+  - '.tasks/active/T-100054-audit-warn--task-t-100036-audit-warn--ta.md'
+  - '.tasks/active/T-100055-audit-warn--task-t-100037-audit-warn--ta.md'
+  - '.tasks/active/T-100056-audit-warn--task-t-100038-audit-warn--ta.md'
+  - '.tasks/active/T-100057-audit-warn--task-t-100039-audit-warn--ta.md'
+  - '.tasks/active/T-100058-audit-warn--task-t-2488-audit-warn--task.md'
+  - '.tasks/active/T-100060-audit-cascade-prevention--suppress-recur.md'
+  - '.tasks/active/T-1637-multi-llm-routing-cost-aware-learning--w.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-03T08:40:06"
+    action: "T-100060: Audit cascade prevention — Updates section + 7-day grace period"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 60
+  lines_added: 56
+  lines_removed: 4846
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100060-audit-cascade-prevention--suppress-recur.md
+generated_by: context-agent-hybrid

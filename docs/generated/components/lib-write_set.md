@@ -8,6 +8,13 @@
 
 Walk up from CWD looking for .tasks/ — the canonical project marker
 
+## Used By (2)
+
+| Component | Relationship | Description |
+|-----------|--------------|-------------|
+| [estimator](/docs/generated/agents-termlink-bvp-estimator-estimator) | called_by | TODO: describe what this component does |
+| [test_bvp_estimator](/docs/generated/tests-unit-test_bvp_estimator) | called_by | TODO: describe what this component does |
+
 ---
 *Auto-generated from Component Fabric. Card: `lib-write_set.yaml`*
 *Last verified: 2026-06-11*

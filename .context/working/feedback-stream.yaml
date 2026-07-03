@@ -19489,3 +19489,21 @@ scan_id: R-ceb93ae5
 task_id: T-100025
 payload:
   task_file: .tasks/active/T-100025-audit-cascade-cleanup---delete-recursive.md
+---
+kind: scan_emitted
+timestamp: '2026-07-03T06:41:03Z'
+scan_id: R-03af72e2
+task_id: T-100060
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-03T06:41:03Z'
+scan_id: R-03af72e2
+task_id: T-100060
+payload:
+  task_file: .tasks/active/T-100060-audit-cascade-prevention--suppress-recur.md
