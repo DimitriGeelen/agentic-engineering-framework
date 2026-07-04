@@ -906,6 +906,47 @@ def extract_reviewer_verdict(body: str) -> dict:
     return out
 
 
+def extract_recommendation_claims_verdict(body: str) -> dict:
+    """Extract the claims-validator verdict from `## Recommendation Verdict (vX.Y)`.
+
+    Returns dict with `overall` (str|None — CONFIRMED/CONTRADICTED/UNVERIFIED),
+    `claims` (list of {raw, kind, status, detail}), `total` (int) and
+    `passed` (int). `overall is None` means no verdict block exists.
+
+    Origin: T-100188 (T-100186 GO slice B). The block is written by
+    lib/reviewer/recommendation_claims.py (T-100187) when `fw reviewer` runs
+    on an inception task.
+    """
+    out = {"overall": None, "claims": [], "total": 0, "passed": 0}
+    if not body:
+        return out
+    m = re_mod.search(
+        r"^## Recommendation Verdict \(v[0-9.]+\)[^\n]*\n(.*?)(?=^#{2,} |\Z)",
+        body, re_mod.MULTILINE | re_mod.DOTALL,
+    )
+    if not m:
+        return out
+    section = m.group(1)
+    overall_m = re_mod.search(r"^- \*\*Overall:\*\*\s*([A-Z]+)", section, re_mod.MULTILINE)
+    if overall_m:
+        out["overall"] = overall_m.group(1).strip()
+    for row in re_mod.finditer(r"^\| `([^`|]+)` \| (\w+) \| ([^|]+) \|", section, re_mod.MULTILINE):
+        cell = row.group(3).strip()
+        if "pass" in cell:
+            status = "pass"
+        elif "fail" in cell:
+            status = "fail"
+        else:
+            status = "unverifiable"
+        detail = cell.split("—", 1)[1].strip() if "—" in cell else ""
+        out["claims"].append(
+            {"raw": row.group(1), "kind": row.group(2), "status": status, "detail": detail}
+        )
+    out["total"] = len(out["claims"])
+    out["passed"] = sum(1 for c in out["claims"] if c["status"] == "pass")
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Task metadata cache (T-1233: avoid re-reading 1200+ files on every request)
 # ---------------------------------------------------------------------------

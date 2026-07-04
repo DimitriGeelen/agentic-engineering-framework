@@ -112,6 +112,16 @@
                 Reviewer: {{ _r.overall }}{% if _r.findings %} · {{ _r.findings }}{% endif %}{% if _r.needs_human %} ⚠{% endif %}
             </span>
             {% endif %}
+            {# T-100188: evidence badge from the claims-validator verdict (T-100187) #}
+            {% set _cv = t.claims %}
+            {% if _cv and _cv.overall %}
+            <span class="claims-badge" data-overall="{{ _cv.overall }}"
+                  style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.65rem; font-weight:600;
+                  {% if _cv.overall == 'CONTRADICTED' %}background:var(--wt-danger); color:#fff;{% elif _cv.overall == 'CONFIRMED' %}background:var(--wt-success); color:#fff;{% else %}background:var(--wt-muted); color:#fff;{% endif %}"
+                  title="Recommendation evidence claims: {{ _cv.passed }}/{{ _cv.total }} confirmed ({{ _cv.overall }})">
+                Evidence: {{ _cv.passed }}/{{ _cv.total }}{% if _cv.overall == 'CONTRADICTED' %} ⚠{% endif %}
+            </span>
+            {% endif %}
             <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>
