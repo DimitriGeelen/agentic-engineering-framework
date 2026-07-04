@@ -23,6 +23,7 @@ NOT in v1.0 (deferred):
 
 from __future__ import annotations
 
+import fnmatch
 import hashlib
 import json
 import os
@@ -2132,6 +2133,188 @@ def detect_ac_evidence_untick(
     return findings
 
 
+# ───────── write-set-underdeclared detector (T-2504, T-2324 IW-4) ─────────
+#
+# Catches tasks that declare `write_set:` but whose body references file paths
+# in known source/governance dirs that are not covered by any declared glob.
+# Under-declaration is the dangerous error for parallel dispatch: two workers
+# dispatched on "disjoint" write-sets may collide if the sets are incomplete.
+# Over-declaration is safe — do NOT flag it.
+#
+# Conservative gates (all must hold before flagging a path):
+#   1. write_set: present and non-empty in frontmatter
+#   2. Path appears in body with write-indicating context (near write verb OR
+#      inside a code-fence block, OR in an AC line that names it directly)
+#   3. Path sits under a known source/governance directory prefix
+#   4. No declared write_set glob covers the path (fnmatch check)
+#
+# Heuristic, partial lie-severity → CONCERN, needs_human=no.
+# False negatives preferred over false positives at v1 — body text is advisory
+# evidence, not an exhaustive write-set; the orchestrator's blast-radius check
+# (v2) is the authoritative gate.
+#
+# Origin: T-2324 GO (2026-06-26) named IW-4 as the single forward gap.
+
+# Known source/governance directory prefixes — paths under these dirs should
+# be declared in write_set: if the task edits them.
+_WRITE_SET_SOURCE_PREFIXES = (
+    "lib/", "agents/", "bin/", "tests/", "web/", "policy/",
+    ".tasks/", ".context/", "scripts/", "deploy/", "tools/", "prompts/",
+    "docs/reports/",
+)
+
+# Glob-extended for write_set: patterns that refer to governance-plane paths.
+# (Tasks can legitimately declare governance-plane paths.)
+
+# Inline path pattern — matches relative file paths containing at least one `/`.
+# Intentionally broad; source-dir and write-context gates narrow the signal.
+_BODY_PATH_RE = re.compile(
+    r"\b((?:[a-zA-Z0-9_.@-]+/)+[a-zA-Z0-9_.-]+\.[a-zA-Z]{1,8})\b"
+)
+
+# Write-indicating verbs. Conservative set — only clear mutation verbs.
+_WRITE_VERB_RE = re.compile(
+    r"\b(writes?|edits?|creates?|updates?|modif(?:y|ies)|implements?|"
+    r"adds?|generates?|emits?|registers?|appends?|inserts?|extends?|"
+    r"replaces?|overwrites?)\b",
+    re.IGNORECASE,
+)
+
+# Sections whose paths are NOT write targets (read-only / query / nav context).
+_READ_ONLY_SECTION_NAMES = {"Verification", "Reviewer Verdict"}
+
+
+def _body_without_read_only_sections(body: str) -> str:
+    """Strip Verification and Reviewer Verdict sections from body.
+
+    Verification lines are shell commands that READ to verify, not writes.
+    Reviewer Verdict is auto-generated and never declared in write_set:.
+    """
+    result_parts: list[str] = []
+    skip = False
+    for line in body.splitlines(keepends=True):
+        if re.match(r"^## ", line):
+            section_name = line.strip().lstrip("# ").strip()
+            # Strip version suffix from Reviewer Verdict heading
+            section_name = re.sub(r"\s*\(v[\d.]+\)\s*$", "", section_name)
+            skip = section_name in _READ_ONLY_SECTION_NAMES
+        if not skip:
+            result_parts.append(line)
+    return "".join(result_parts)
+
+
+def _is_in_source_dir(path: str) -> bool:
+    """Return True if path sits under a known source/governance directory."""
+    return any(path.startswith(prefix) for prefix in _WRITE_SET_SOURCE_PREFIXES)
+
+
+def _covered_by_write_set(path: str, write_set: list[str]) -> bool:
+    """Return True if any write_set glob covers this path.
+
+    Uses fnmatch semantics (not glob): `*` matches any characters including `/`,
+    so `lib/*.py` covers `lib/reviewer/static_scan.py`. This is intentionally
+    permissive — over-coverage is safe.
+    """
+    for pattern in write_set:
+        if fnmatch.fnmatch(path, pattern):
+            return True
+        # Also check if the path is a prefix match for directory globs
+        # e.g. write_set: ["lib/**"] covers "lib/reviewer/foo.py"
+        if pattern.endswith("/**") or pattern.endswith("/*"):
+            prefix = pattern.rstrip("*").rstrip("/")
+            if path.startswith(prefix + "/") or path.startswith(prefix):
+                return True
+    return False
+
+
+def detect_write_set_underdeclared(meta: dict | None, body: str) -> list[Finding]:
+    """write_set: declared but body references paths not covered by any declared glob.
+
+    Fires only when write_set: is present and non-empty in the task frontmatter.
+    A missing or empty write_set: is not flagged — no claim made, no claim to
+    under-declare against.
+
+    Conservative: flags only paths that appear with write-indicating context
+    (on a line with a write verb, or inside a code-fence block) under known
+    source/governance directories. One finding per uncovered path.
+
+    Heuristic, partial lie-severity → CONCERN, needs_human=no.
+    Origin: T-2324 IW-4 (T-2504 build).
+    """
+    findings: list[Finding] = []
+    if not meta:
+        return findings
+
+    write_set = meta.get("write_set")
+    if not write_set or not isinstance(write_set, list):
+        return findings  # Gate 1: must be declared and non-empty
+
+    # Normalise: ensure all entries are strings
+    write_set = [str(p) for p in write_set if isinstance(p, str)]
+    if not write_set:
+        return findings
+
+    # Strip read-only sections to avoid flagging command paths in Verification
+    scan_body = _body_without_read_only_sections(body)
+
+    # Extract candidate write-target paths from body
+    # Strategy: collect paths from (a) lines with write verbs, (b) code-fence blocks
+    candidate_paths: dict[str, str] = {}  # path → evidence snippet
+
+    lines = scan_body.splitlines()
+    in_code_fence = False
+    fence_marker = ""
+
+    for lineno, raw_line in enumerate(lines, start=1):
+        stripped = raw_line.strip()
+
+        # Track code fences
+        if re.match(r"^(`{3,}|~{3,})", stripped):
+            marker = re.match(r"^(`{3,}|~{3,})", stripped).group(0)
+            if not in_code_fence:
+                in_code_fence = True
+                fence_marker = marker
+            elif stripped.startswith(fence_marker):
+                in_code_fence = False
+            continue
+
+        # Gate: only flag paths with write-indicating context
+        has_write_verb = bool(_WRITE_VERB_RE.search(raw_line))
+
+        if not in_code_fence and not has_write_verb:
+            continue  # no write context on this line
+
+        for m in _BODY_PATH_RE.finditer(raw_line):
+            path = m.group(1)
+            # Gate 3: must be under a known source/governance dir
+            if not _is_in_source_dir(path):
+                continue
+            # Deduplicate: first mention wins for evidence
+            if path not in candidate_paths:
+                candidate_paths[path] = raw_line.strip()[:120]
+
+    # For each candidate, check gate 4: covered by any write_set glob
+    seen_paths: set[str] = set()
+    for path, evidence in candidate_paths.items():
+        if path in seen_paths:
+            continue
+        seen_paths.add(path)
+        if _covered_by_write_set(path, write_set):
+            continue  # covered — safe
+        findings.append(
+            Finding(
+                pattern_id="write-set-underdeclared",
+                pattern_name="write_set: declared but body references path not covered by any glob",
+                detection_confidence="heuristic",
+                lie_severity="partial",
+                location="write_set: vs body cross-check",
+                evidence=f"path={path!r} not in write_set={write_set!r}; context={evidence!r}",
+            )
+        )
+
+    return findings
+
+
 # ───────────────────────── Orchestration ─────────────────────────
 
 
@@ -2233,6 +2416,9 @@ def scan_task(
     # v1.6 +4: T-2155 — ac-evidence-untick (T-1761 prevention); Agent AC
     # plainly references an existing artifact but the checkbox is still `[ ]`.
     findings.extend(detect_ac_evidence_untick(ac_section, task_path))
+    # v1.7 +1: T-2504 — write-set-underdeclared (T-2324 IW-4); write_set:
+    # declared but body references source-dir paths not covered by any glob.
+    findings.extend(detect_write_set_underdeclared(meta, body))
 
     task_id = task_path.stem.split("-")[0] + "-" + task_path.stem.split("-")[1]
 
