@@ -9,12 +9,12 @@ description: >
   both heading regexes and merge multiple ### Agent sections; add a bats fixture with
   a suffixed heading. Origin: T-100122 RCA residual.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004]
 related_tasks: [T-100122]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: [T-100122]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T22:42:43Z
-last_update: '2026-07-04T22:45:02Z'
-date_finished:
+last_update: 2026-07-04T23:03:08Z
+date_finished: 2026-07-04T23:03:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -76,14 +76,14 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-100122 residual: `is_partial_complete()` in the D5 audit block requires `### Agent\n`/`### Human\n` exactly, so annotated headings like `### Human (T-1679 split — …)` (T-1062's real shape) escape the exclusion and the task re-flags daily as a lifecycle anomaly despite being a legitimate partial-complete.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] D5 heading regexes tolerate suffix text after `### Agent`/`### Human` and merge multiple `### Agent` sections before counting ticks
+- [x] bats fixture with suffixed headings + dual Agent sections is excluded; suffixed-heading task with an unticked Agent AC still flags
+- [x] Landed D5 block re-run against the live corpus no longer lists T-1062
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -142,28 +142,21 @@ bvp_scores_proposed:
 # stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
 # string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
 #
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# Slice landed via worktree flow — origin-based checks (MAIN branch lags origin/master).
+git show origin/master:agents/audit/audit.sh > /tmp/.t100189-audit.sh && grep -q "T-100189: headings may carry suffixes" /tmp/.t100189-audit.sh
+git show origin/master:tests/unit/audit_d5_task_lifecycle.bats > /tmp/.t100189-bats && grep -q "T-100189: partial-complete with suffixed headings" /tmp/.t100189-bats
+# Landed D5 block re-run: T-1062 (suffixed-heading partial-complete) no longer flagged
+PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework python3 -c "import re,io,contextlib,sys;src=open('/tmp/.t100189-audit.sh').read();m=re.search(\"python3 << 'D5EOF'\\n(.*?)\\nD5EOF\", src, re.S);buf=io.StringIO();ctx=contextlib.redirect_stdout(buf);ctx.__enter__();exec(compile(m.group(1),'d5','exec'));ctx.__exit__(None,None,None);sys.exit(1 if 'T-1062' in buf.getvalue() else 0)"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** T-1062 kept re-flagging in the daily D5 audit as a lifecycle anomaly despite being a legitimate partial-complete (human-owned, all Agent ACs ticked, Human AC pending).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** T-100122's `is_partial_complete()` matched section headings with exact-`\n` regexes (`### Agent\n` / `### Human\n`); T-1062 uses annotated headings from a T-1679 AC split (`### Human (T-1679 split — …)`) plus two `### Agent` sections, so the exclusion never matched and the task fell through to the stale-active flag.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the T-100122 bats fixtures only covered plain headings — the annotated-heading corpus shape (introduced by legitimate AC-split practice) had no fixture, so the regex gap shipped green.
+
+**Prevention:** heading regexes relaxed to `### Agent[^\n]*\n` / `### Human[^\n]*\n` with multi-section merge; two new bats fixtures pin the suffixed-heading shapes (excluded when complete, flagged when an Agent AC is unticked).
 
 ## Evolution
 
@@ -216,3 +209,18 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100189-d5-partial-complete-exclusion-misses--hu.md
 - **Context:** Initial task creation
+
+### 2026-07-04T22:58:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-30d372f7
+- **Timestamp:** 2026-07-04T23:03:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-04T23:03:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
