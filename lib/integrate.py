@@ -631,7 +631,89 @@ def _land(branch, target, pushed):
         print(ln)
 
 
-def cmd_run(target="master", dry_run=False, push=False):
+def _cleanup_branch(branch, target, pushed, keep_branch):
+    """Delete the landed source branch (T-100142, C1 of T-100139 lifecycle GO).
+
+    Landed branches are debris — 29 of 36 local branches were merged-but-undeleted
+    at inception time. Deletion fires only after a VERIFIED landing: the branch tip
+    must be an ancestor of origin/<target> (guaranteed by a successful push, but
+    re-checked explicitly — never force-delete unmerged work). `--keep-branch` opts
+    out. The branch's worktree is removed first (git refuses to delete a checked-out
+    branch); since that worktree is usually our own cwd, every git call after the
+    removal runs with cwd pinned to the MAIN checkout.
+    """
+    print("\nBranch cleanup:")
+    if keep_branch:
+        print(f"  {branch}  kept (--keep-branch)")
+        return
+    if not pushed:
+        print(f"  {branch}  kept — landing not pushed to origin/{target}; "
+              f"re-run with --push, or delete manually once landed")
+        return
+    # The -d semantic, checked against the landed state: tip ⊆ origin/<target>.
+    if _git_rc("merge-base", "--is-ancestor", branch, f"origin/{target}") != 0:
+        print(f"  {branch}  kept — tip not contained in origin/{target} "
+              f"(unmerged work is never force-deleted)")
+        return
+
+    main_path = _main_checkout()
+    rc, cwd_top = _git("rev-parse", "--show-toplevel")
+    cwd_top = os.path.realpath(cwd_top) if rc == 0 else None
+    if not main_path or not cwd_top:
+        print(f"  {branch}  kept — cannot resolve MAIN checkout for safe deletion")
+        return
+    main_path = os.path.realpath(main_path)
+
+    def _git_at_main(*args):
+        # cwd= keeps subprocess spawnable after our own worktree directory dies.
+        try:
+            r = subprocess.run(["git", *args], capture_output=True, text=True,
+                               cwd=main_path)
+            if r.returncode != 0 and r.stderr.strip():
+                print(r.stderr.strip(), file=sys.stderr)
+            return r.returncode
+        except Exception as e:  # pragma: no cover - defensive
+            print(str(e), file=sys.stderr)
+            return 127
+
+    # Remote branch ref, when one exists (we land via branch:target, so a
+    # remote ref only exists if the branch itself was pushed at some point).
+    if _git_rc("show-ref", "--verify", "--quiet",
+               f"refs/remotes/origin/{branch}") == 0:
+        if _git_at_main("push", "origin", "--delete", branch) == 0:
+            print(f"  origin/{branch}  deleted ✓")
+        else:
+            print(f"  origin/{branch}  delete failed (see above) — remove manually: "
+                  f"git push origin --delete {branch}")
+
+    if cwd_top == main_path:
+        # Branch is checked out in MAIN itself (no separate worktree). Switching
+        # MAIN's branch changes which hooks execute — a decision, never auto (T-2474
+        # zone-3 rule). Report the exact commands instead.
+        print(f"  {branch}  checked out in MAIN — switch first, then delete: "
+              f"cd {main_path} && git checkout {target} && git branch -d {branch}")
+        return
+
+    # Remove our own worktree first (git refuses to delete a checked-out branch).
+    # --force: post-landing churn here is regenerable by definition — real code
+    # dirt already aborted the run before the merge.
+    if _git_at_main("worktree", "remove", "--force", cwd_top) != 0:
+        print(f"  {branch}  kept — worktree removal failed; clean up manually: "
+              f"git -C {main_path} worktree remove --force {cwd_top} && "
+              f"git -C {main_path} branch -d {branch}")
+        return
+    print(f"  worktree {cwd_top}  removed ✓")
+    # -D is safe here: containment in origin/<target> was verified above, and -d
+    # would judge merged-ness against MAIN's HEAD (which may be off-target).
+    if _git_at_main("branch", "-D", branch) == 0:
+        print(f"  {branch}  deleted ✓ (contained in origin/{target})")
+    else:
+        print(f"  {branch}  delete failed — remove manually: "
+              f"git -C {main_path} branch -d {branch}")
+    print(f"  NOTE: this worktree directory is gone — cd {main_path}")
+
+
+def cmd_run(target="master", dry_run=False, push=False, keep_branch=False):
     rc, branch = _git("rev-parse", "--abbrev-ref", "HEAD")
     if rc != 0:
         print(f"integrate run: not a git repo or detached HEAD ({branch})", file=sys.stderr)
@@ -679,6 +761,9 @@ def cmd_run(target="master", dry_run=False, push=False):
          else f"report how to FF {target} (no --push given)"),
         ("hybrid land: auto-FF clean master worktree; report MAIN go-live" if push
          else "report landing zones (no --push: mutate no other worktree)"),
+        ("keep source branch (--keep-branch)" if keep_branch
+         else f"delete landed source branch {branch} + its worktree" if push
+         else "keep source branch (not pushed — delete-on-landing needs --push)"),
         "release lock",
     ]
     if dry_run:
@@ -770,6 +855,11 @@ def cmd_run(target="master", dry_run=False, push=False):
         # worktree (mechanical), report-only MAIN go-live (a decision).
         _land(branch, target, pushed)
 
+        # Branch lifecycle (T-100142): landed branches are debris — delete by
+        # default after a verified landing; --keep-branch opts out. Must be the
+        # LAST filesystem-touching step: it removes our own worktree/cwd.
+        _cleanup_branch(branch, target, pushed, keep_branch)
+
         print(f"\n✓ integrate run complete — {branch} ⊇ {target}.")
         return 0
     finally:
@@ -809,9 +899,10 @@ def main(argv):
     if sub == "run":
         dry_run = "--dry-run" in rest
         push = "--push" in rest
+        keep_branch = "--keep-branch" in rest
         positional = [a for a in rest if not a.startswith("-")]
         target = positional[0] if positional else "master"
-        return cmd_run(target, dry_run=dry_run, push=push)
+        return cmd_run(target, dry_run=dry_run, push=push, keep_branch=keep_branch)
     print(f"integrate.py: unknown subcommand: {sub}", file=sys.stderr)
     return 4
 

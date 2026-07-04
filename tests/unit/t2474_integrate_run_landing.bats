@@ -70,7 +70,9 @@ teardown() {
 }
 
 @test "zone 2: --push auto-FFs a CLEAN master-holding worktree to the branch" {
-    run bash -c "cd '$WT_FEAT' && python3 '$INTEGRATE' run master --push"
+    # T-100142: default branch cleanup deletes wt-feat after landing — use
+    # --keep-branch so feat's HEAD is still inspectable post-run.
+    run bash -c "cd '$WT_FEAT' && python3 '$INTEGRATE' run master --push --keep-branch"
     [ "$status" -eq 0 ]
     # wt-master advanced to the integrated feat HEAD
     local feat_head wtm_head
