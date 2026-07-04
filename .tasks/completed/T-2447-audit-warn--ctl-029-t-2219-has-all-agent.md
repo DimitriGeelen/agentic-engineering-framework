@@ -11,7 +11,6 @@ audit_finding_hash: e08d078beb3c5cb6f71dab12699e10f60b514fc1
 tags: [audit-finding, severity:warn, section:CTL-029]
 owner: agent
 horizon: null
-tags: []
 components: [lib/reviewer/static_scan.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

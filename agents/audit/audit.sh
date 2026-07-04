@@ -5313,11 +5313,15 @@ bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
                     task_file=$(ls "$TASKS_DIR/active/${task_id}-"*.md 2>/dev/null | head -1)
                 fi
                 if [ -n "$task_file" ] && [ -f "$task_file" ]; then
-                    # Insert custom fields after workflow_type line
-                    sed -i "/^workflow_type: build/a\\
+                    # Insert custom fields after workflow_type line.
+                    # T-100136: also delete the template's own 'tags: []' line —
+                    # leaving it produces a duplicate YAML key and last-key-wins
+                    # silently discards the audit-finding tags injected here.
+                    sed -i -e "/^workflow_type: build/a\\
 audit_severity: $severity\\
 audit_finding_hash: $hash\\
-tags: [audit-finding, severity:$severity, section:$section]" "$task_file"
+tags: [audit-finding, severity:$severity, section:$section]" \
+                           -e '0,/^tags: \[\]$/{/^tags: \[\]$/d}' "$task_file"
 
                     # Replace body
                     # Find line number of first ## heading after frontmatter

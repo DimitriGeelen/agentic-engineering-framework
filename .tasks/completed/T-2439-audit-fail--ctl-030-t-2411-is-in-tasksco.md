@@ -11,7 +11,6 @@ audit_finding_hash: 893514fe89062be3756b3c5124200907325d2ced
 tags: [audit-finding, severity:fail, section:CTL-030]
 owner: agent
 horizon: null
-tags: []
 components: [bin/fw, lib/config.sh, lib/notify.sh, web/blueprints/config.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

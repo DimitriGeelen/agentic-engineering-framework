@@ -11,7 +11,6 @@ audit_finding_hash: 66d8baecf304228cafe201ab4a6cef711b6407bd
 tags: [audit-finding, severity:fail, section:CTL-030]
 owner: agent
 horizon: null
-tags: []
 components: [agents/task-create/update-task.sh, lib/notify.sh, lib/review.sh, lib/watchtower.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

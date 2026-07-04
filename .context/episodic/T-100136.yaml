@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100136: audit emit-tasks writes duplicate tags: key — emitter tags silently discarded
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T10:09:44Z
+# ============================================================================
+
+task_id: T-100136
+task_name: "audit emit-tasks writes duplicate tags: key — emitter tags silently discarded"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T09:26:30Z
+completed: 2026-07-04T10:09:34Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_emit_findings_as_tasks` frontmatter injection removes the template''s `tags: []` line when inserting its own `tags: [audit-finding, ...]` line — emitted task frontmatter contains exactly one `tags:` key'
+  - 'Existing emitted tasks in active/ AND completed/ migrated (76 files): each has one `tags:` key and `yaml.safe_load` returns the audit-finding tags (not `[]`)'
+  - 'bats regression test pins single-`tags:`-key emission (sed-expression check + corpus-wide duplicate-key scan)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 43
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100136-audit-emit-tasks-writes-duplicate-tags-k.md
+generated_by: context-agent-hybrid

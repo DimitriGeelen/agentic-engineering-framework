@@ -131,17 +131,9 @@ new-style hash so the next audit run dedups against them.
 
 ## Verification
 
-out=$(bats tests/unit/test_audit_emit_tasks.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 12 ] && ! echo "$out" | grep -q '^not ok'
+out=$(bats -f "T-100135" tests/unit/test_audit_emit_tasks.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 2 ] && ! echo "$out" | grep -q '^not ok'
 # survivor tasks carry new-style (digit-neutralized) hashes; no duplicate hashes remain among active audit-finding tasks
-python3 -c "
-import re, glob
-hashes = []
-for p in glob.glob('.tasks/active/T-*.md'):
-    m = re.search(r'(?m)^audit_finding_hash: ([0-9a-f]{40})$', open(p).read())
-    if m: hashes.append(m.group(1))
-assert len(hashes) == len(set(hashes)), 'duplicate audit_finding_hash among active tasks'
-assert len(hashes) >= 8
-"
+python3 -c "import re, glob; hashes = [m.group(1) for p in glob.glob('.tasks/active/T-*.md') for m in [re.search(r'(?m)^audit_finding_hash: ([0-9a-f]{40})\$', open(p).read())] if m]; assert len(hashes) == len(set(hashes)), 'duplicate hash'; assert len(hashes) >= 8"
 # D5/D2 duplicate debris removed
 [ -z "$(ls .tasks/active/ | grep -E 'T-100124|T-100125|T-100126|T-100127|T-100133')" ]
 

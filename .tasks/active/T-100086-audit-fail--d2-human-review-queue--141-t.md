@@ -11,7 +11,6 @@ audit_finding_hash: 7e2a1d21b2bb7047cc98773f872d7a5b02cecdd7
 tags: [audit-finding, severity:fail, section:audit]
 owner: human
 horizon: now
-tags: []
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

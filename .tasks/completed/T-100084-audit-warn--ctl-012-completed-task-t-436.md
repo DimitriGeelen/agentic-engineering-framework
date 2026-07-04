@@ -11,7 +11,6 @@ audit_finding_hash: 6c8e4240350aaaef2811093511e4e4edade8d621
 tags: [audit-finding, severity:warn, section:CTL-012]
 owner: agent
 horizon: null
-tags: []
 components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

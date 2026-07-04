@@ -10,10 +10,10 @@ description: >
   the template tags line instead of inserting a second one. Origin: seen live on T-100133
   during T-100135.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T09:26:30Z
-last_update: '2026-07-04T09:30:02Z'
-date_finished:
+last_update: 2026-07-04T10:09:34Z
+date_finished: 2026-07-04T10:09:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -83,9 +83,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_emit_findings_as_tasks` frontmatter injection removes the template's `tags: []` line when inserting its own `tags: [audit-finding, ...]` line — emitted task frontmatter contains exactly one `tags:` key
-- [ ] Existing emitted tasks in active/ migrated: each has one `tags:` key and `yaml.safe_load` returns the audit-finding tags (not `[]`)
-- [ ] bats regression test pins single-`tags:`-key emission
+- [x] `_emit_findings_as_tasks` frontmatter injection removes the template's `tags: []` line when inserting its own `tags: [audit-finding, ...]` line — emitted task frontmatter contains exactly one `tags:` key
+- [x] Existing emitted tasks in active/ AND completed/ migrated (76 files): each has one `tags:` key and `yaml.safe_load` returns the audit-finding tags (not `[]`)
+- [x] bats regression test pins single-`tags:`-key emission (sed-expression check + corpus-wide duplicate-key scan)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -120,6 +120,10 @@ bvp_scores_proposed:
 
 ## Verification
 
+out=$(bats -f "T-100136" tests/unit/test_audit_emit_tasks.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 2 ] && ! echo "$out" | grep -q '^not ok'
+# a sample migrated task yields audit-finding tags via yaml (last-key-wins now correct)
+python3 -c "import yaml, glob; p = glob.glob('.tasks/active/T-100122-*.md')[0]; fm = open(p).read().split('---')[1]; d = yaml.safe_load(fm); assert 'audit-finding' in d['tags'], d['tags']"
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -152,6 +156,24 @@ bvp_scores_proposed:
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
+
+**Symptom:** Every task emitted by `fw audit --emit-tasks` carried `tags: []` when
+parsed — the audit-finding/severity/section tags the emitter injects were invisible
+to every consumer (BVP estimator severity scoring, tag-based filters, Watchtower).
+
+**Root cause:** The emitter's sed appends a new `tags: [audit-finding, ...]` line
+after `workflow_type:` but leaves the template's own `tags: []` line in place —
+duplicate YAML key, and `yaml.safe_load` takes the last occurrence, so the empty
+template line always won.
+
+**Why structurally allowed:** Duplicate YAML keys are silently legal in PyYAML
+(last-key-wins, no warning), and no test ever parsed an emitted task's frontmatter —
+existing tests grepped for code patterns in audit.sh. 76 files accumulated before
+detection, spotted only by eye while reading T-100133's frontmatter during T-100135.
+
+**Prevention:** Corpus-wide bats test scans every emitted task (active/ + completed/)
+for duplicate `tags:` keys — new emissions with the regression fail the suite, not
+just the specific sed expression check.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -218,3 +240,24 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100136-audit-emit-tasks-writes-duplicate-tags-k.md
 - **Context:** Initial task creation
+
+### 2026-07-04T10:06:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ba431a32
+- **Timestamp:** 2026-07-04T10:09:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `out=$(bats -f "T-100136" tests/unit/test_audit_emit_tasks.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 2 ] && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-07-04T10:09:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

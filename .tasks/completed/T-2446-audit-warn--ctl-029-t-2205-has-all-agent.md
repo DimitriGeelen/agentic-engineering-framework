@@ -11,7 +11,6 @@ audit_finding_hash: b01c578a51440cb688ba3bc7623be427d5f5c6e4
 tags: [audit-finding, severity:warn, section:CTL-029]
 owner: agent
 horizon: null
-tags: []
 components: [agents/context/check-active-task.sh, agents/context/lib/safe-commands.sh, bin/fw, lib/integrate.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")

@@ -6,10 +6,10 @@ description: >
   create-task template substitution: un-anchored replace corrupts frontmatter when
   task name contains a frontmatter key
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T08:43:21Z
-last_update: 2026-07-04T08:52:01Z
-date_finished:
+last_update: 2026-07-04T08:53:12Z
+date_finished: 2026-07-04T08:53:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -227,3 +227,20 @@ out=$(CLAUDECODE= bats tests/unit/create_task.bats 2>&1); [ "$(echo "$out" | gre
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100130-create-task-template-substitution-un-anc.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c38219af
+- **Timestamp:** 2026-07-04T08:53:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 36
+     - evidence: `out=$(CLAUDECODE= bats tests/unit/create_task.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 22 ] && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-07-04T08:53:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -143,3 +143,33 @@ Y
     [ -n "$ha" ]
     [ "$ha" != "$hb" ]
 }
+
+# --- T-100136: single tags: key in emitted frontmatter ---
+
+@test "emit-tasks: injection sed deletes the template tags line (T-100136)" {
+    # The injected 'tags: [audit-finding, ...]' must be the ONLY tags: key —
+    # a surviving template 'tags: []' wins YAML last-key-wins and silently
+    # discards the audit-finding tags.
+    grep -q "0,/\^tags: \\\\\[\\\\\]\$/" "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+}
+
+@test "emit-tasks: no emitted task carries duplicate tags: keys (T-100136 corpus)" {
+    cd "$FRAMEWORK_ROOT"
+    run python3 -c "
+import re, glob, sys
+bad = []
+for p in glob.glob('.tasks/active/T-*.md') + glob.glob('.tasks/completed/T-*.md'):
+    t = open(p).read()
+    fm_end = t.find('\n---', 4)
+    fm = t[:fm_end] if fm_end > 0 else ''
+    if 'audit_finding_hash:' not in fm:
+        continue
+    n = len(re.findall(r'(?m)^tags: ', fm))
+    if n > 1:
+        bad.append(p)
+if bad:
+    print('duplicate tags keys in:', bad[:5])
+    sys.exit(1)
+"
+    [ "$status" -eq 0 ]
+}
