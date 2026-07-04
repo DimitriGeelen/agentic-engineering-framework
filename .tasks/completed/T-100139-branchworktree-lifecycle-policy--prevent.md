@@ -6,16 +6,16 @@ description: >
   Inception: branch/worktree lifecycle policy — prevent merged-debris + divergent-strand
   accumulation
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-04T10:00:54Z
-last_update: '2026-07-04T10:15:02Z'
-date_finished:
+last_update: 2026-07-04T10:45:42Z
+date_finished: 2026-07-04T10:45:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -134,15 +134,15 @@ candidates C1-C3, then slice into build tasks.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -206,7 +206,24 @@ Evidence complete from 2026-07-04 hygiene review: 29/36 local branches were merg
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Evidence complete from 2026-07-04 hygiene review: 29/36 local branches were merged debris (now cleaned, T-100138); 4 divergent strands sit 22-139 ahead / 215-248 behind master; worktrees outlive merged branches with dirty files; zero observability in doctor/audit. Structural gaps identified, candidates concrete (integrate-deletes-on-landing, doctor branch-hygiene section, handover divergence surfacing). Build slices are well-scoped.
+
+Evidence:
+
+- Full findings + candidate matrix: `docs/reports/T-100139-branch-worktree-lifecycle.md`
+- Cleanup executed and verified: T-100138 (28 local + 4 remote merged branches deleted, arc012 worktree torn down, 4 handover records + T-2401 metadata rescued; local branch count 36 → 8)
+- Divergence table (F2): t2416 +139/−248, t2417 +58/−215, rca-strand +37/−215, t2353 +22/−248 vs origin/master — all touching audit.sh / bin/fw / lib/
+- Proposed GO scope: C1 (integrate deletes landed branch, `--keep-branch` opt-out), C2 (doctor/audit branch-hygiene WARNs), C3 (handover prints ahead/behind + merge-back-overdue nudge); C4 merge-back schedule follows as separate tasks; C5 (branch freeze) rejected
+
+Evidence:
+
+**Date**: 2026-07-04T10:45:42Z
 
 ## Updates
 
@@ -215,3 +232,39 @@ Evidence complete from 2026-07-04 hygiene review: 29/36 local branches were merg
 
 ### 2026-07-04T10:02:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-04T10:45:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Evidence complete from 2026-07-04 hygiene review: 29/36 local branches were merged debris (now cleaned, T-100138); 4 divergent strands sit 22-139 ahead / 215-248 behind master; worktrees outlive merged branches with dirty files; zero observability in doctor/audit. Structural gaps identified, candidates concrete (integrate-deletes-on-landing, doctor branch-hygiene section, handover divergence surfacing). Build slices are well-scoped.
+
+Evidence:
+
+- Full findings + candidate matrix: `docs/reports/T-100139-branch-worktree-lifecycle.md`
+- Cleanup executed and verified: T-100138 (28 local + 4 remote merged branches deleted, arc012 worktree torn down, 4 handover records + T-2401 metadata rescued; local branch count 36 → 8)
+- Divergence table (F2): t2416 +139/−248, t2417 +58/−215, rca-strand +37/−215, t2353 +22/−248 vs origin/master — all touching audit.sh / bin/fw / lib/
+- Proposed GO scope: C1 (integrate deletes landed branch, `--keep-branch` opt-out), C2 (doctor/audit branch-hygiene WARNs), C3 (handover prints ahead/behind + merge-back-overdue nudge); C4 merge-back schedule follows as separate tasks; C5 (branch freeze) rejected
+
+Evidence:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-458155af
+- **Timestamp:** 2026-07-04T10:45:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+### 2026-07-04T10:45:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
