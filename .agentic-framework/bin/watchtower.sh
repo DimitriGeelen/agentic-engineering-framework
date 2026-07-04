@@ -257,9 +257,27 @@ do_start() {
 # restart — Stop then start
 # ---------------------------------------------------------------------------
 do_restart() {
+    # T-100140: preserve the running instance's port across a bare restart.
+    # do_stop deletes PORT_FILE and do_start defaults to DEFAULT_PORT, so a
+    # `restart` without --port used to move the instance (or refuse to start
+    # when the default port was held by a foreign service) — which left the
+    # 2026-07-04 watchdog recovery path DOWN instead of restarted.
+    local current_port=""
+    local explicit_port=0
+    local a
+    for a in "$@"; do
+        case "$a" in --port|-p) explicit_port=1 ;; esac
+    done
+    if [ "$explicit_port" -eq 0 ]; then
+        current_port=$(tr -d '[:space:]' < "$PORT_FILE" 2>/dev/null || true)
+    fi
     do_stop
     sleep 1
-    do_start "$@"
+    if [ -n "$current_port" ]; then
+        do_start --port "$current_port" "$@"
+    else
+        do_start "$@"
+    fi
 }
 
 # ---------------------------------------------------------------------------

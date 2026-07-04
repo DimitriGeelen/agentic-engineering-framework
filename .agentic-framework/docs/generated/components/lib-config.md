@@ -33,7 +33,7 @@ Agent-relevant settings:
 |-----------|--------------|-------------|
 | [config](/docs/generated/lib-config) | calls | Resolves framework configuration values using 3-tier precedence — explicit argument, FW_* environment variable, then hardcoded default |
 
-## Used By (27)
+## Used By (28)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -64,6 +64,7 @@ Agent-relevant settings:
 | [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | called_by | TODO: describe what this component does |
 | [yaml_pipefail](/docs/generated/tests-unit-yaml_pipefail) | tests_by | TODO: describe what this component does |
 | [config](/docs/generated/web-blueprints-config) | called_by | Flask blueprint that renders the configuration settings page showing all framework settings with current values and resolution sources |
+| [master-guard](/docs/generated/agents-git-lib-master-guard) | called_by | TODO: describe what this component does |
 
 ## Related
 

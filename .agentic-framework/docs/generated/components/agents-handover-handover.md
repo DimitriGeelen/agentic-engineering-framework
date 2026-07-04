@@ -16,7 +16,7 @@ Creates handover documents for session continuity
 - When generating handover: fill in ALL [TODO] sections immediately in the same operation
 - For mid-session checkpoints: `fw handover --checkpoint`
 
-## Dependencies (9)
+## Dependencies (10)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -29,6 +29,7 @@ Creates handover documents for session continuity
 | [session-metrics](/docs/generated/agents-context-session-metrics) | calls | Extract per-session quality metrics (CPT, error rate, edit bursts) from JSONL transcript |
 | [notify](/docs/generated/lib-notify) | calls | Push notification wrapper — fw_notify() function sends alerts via skills-manager alert dispatcher. Fire-and-forget, opt-in via .context/notify-config.yaml. Used by check-tier0.sh, update-task.sh, audit.sh. |
 | [arc_membership-sh](/docs/generated/lib-arc_membership-sh) | calls | Canonical shell helper for arc-membership scans (T-1880 / T-NEW-15). Consolidates the union-of-`arc_id:`-frontmatter + legacy `arc:<slug>`-tag scan that previously lived inline in three shell consumers: lib/arc.sh, agents/handover/handover.sh, lib/evolution_log.sh. Companion to lib/arc_membership.py (which serves the Python/Flask side).  Public API (PROJECT_ROOT must be set):   arc_tasks_with_arc_id <slug>   → T-IDs whose `arc_id:` matches slug   arc_tasks_with_tag <tag>       → T-IDs whose `tags:` includes tag  Origin: silent-corpus #1 (T-1874/75/76/77) and #2 (T-1879) — captured as L-397. Each inline consumer had to be migrated independently after the T-1850 tags-to-arc_id storage migration; consolidation prevents the next storage-format migration from leaking through nine sites again. |
+| [discard-manifest](/docs/generated/agents-handover-discard-manifest) | calls | TODO: describe what this component does |
 
 ## Used By (20)
 

@@ -20,7 +20,7 @@ Scripts that source lib/paths.sh get colors for free.
 |-----------|--------------|-------------|
 | [colors](/docs/generated/lib-colors) | calls | Terminal color definitions: BOLD, RED, GREEN, YELLOW, CYAN, NC (no color). Sourced by all framework scripts for consistent output. |
 
-## Used By (49)
+## Used By (51)
 
 | Component | Relationship | Description |
 |-----------|--------------|-------------|
@@ -73,6 +73,8 @@ Scripts that source lib/paths.sh get colors for free.
 | [review_link_blocking_gate](/docs/generated/tests-unit-review_link_blocking_gate) | tests_by | TODO: describe what this component does |
 | [test_self_vendor_libs_md_filter](/docs/generated/tests-unit-test_self_vendor_libs_md_filter) | called_by | TODO: describe what this component does |
 | [test_self_vendor_libs_md_filter](/docs/generated/tests-unit-test_self_vendor_libs_md_filter) | tests_by | TODO: describe what this component does |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | called_by | TODO: describe what this component does |
+| [t2380_transcript_dir_encoding](/docs/generated/tests-unit-t2380_transcript_dir_encoding) | tests_by | TODO: describe what this component does |
 
 ## Related
 
