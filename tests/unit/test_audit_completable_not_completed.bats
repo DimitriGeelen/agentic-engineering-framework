@@ -151,6 +151,82 @@ EOF
     [[ "$output" != *"CTL-029: T-7005"* ]]
 }
 
+@test "(f) T-100129: human-owned, unchecked Human ACs → partial-complete, INFO not WARN" {
+    cat > "$TEST_PROJECT/.tasks/active/T-7007-partial-complete.md" <<'EOF'
+---
+id: T-7007
+name: awaiting human review
+status: started-work
+workflow_type: build
+owner: human
+horizon: now
+created: 2026-01-01T00:00:00Z
+last_update: 2026-01-01T00:00:00Z
+---
+
+## Acceptance Criteria
+
+### Agent
+- [x] Did the thing
+- [x] Wrote the test
+
+### Human
+- [ ] [REVIEW] Layout reads clean
+EOF
+    _run_compliance_audit
+    [[ "$output" != *"CTL-029: T-7007"* ]]
+    [[ "$output" == *"partial-complete task(s) awaiting human review"* ]]
+}
+
+@test "(g) T-100129: human-owned, substantive Recommendation, no Human ACs → partial-complete, no WARN" {
+    cat > "$TEST_PROJECT/.tasks/active/T-7008-reco-handoff.md" <<'EOF'
+---
+id: T-7008
+name: handed off with recommendation
+status: started-work
+workflow_type: build
+owner: human
+horizon: now
+created: 2026-01-01T00:00:00Z
+last_update: 2026-01-01T00:00:00Z
+---
+
+## Acceptance Criteria
+
+### Agent
+- [x] Shipped and verified
+
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** All agent verification passed; awaiting operator confirmation of the deploy window.
+EOF
+    _run_compliance_audit
+    [[ "$output" != *"CTL-029: T-7008"* ]]
+}
+
+@test "(h) T-100129: human-owned but nothing actionable (no Human ACs, no Recommendation) → still WARN" {
+    cat > "$TEST_PROJECT/.tasks/active/T-7009-improper-handoff.md" <<'EOF'
+---
+id: T-7009
+name: human-owned dead end
+status: started-work
+workflow_type: build
+owner: human
+horizon: now
+created: 2026-01-01T00:00:00Z
+last_update: 2026-01-01T00:00:00Z
+---
+
+## Acceptance Criteria
+
+### Agent
+- [x] Everything ticked
+EOF
+    _run_compliance_audit
+    [[ "$output" == *"CTL-029: T-7009 has all Agent ACs ticked"* ]]
+}
+
 @test "PASS line appears when there are no completable-not-completed tasks" {
     # Test isolation: only the captured task above is present
     cat > "$TEST_PROJECT/.tasks/active/T-7006-captured.md" <<'EOF'
