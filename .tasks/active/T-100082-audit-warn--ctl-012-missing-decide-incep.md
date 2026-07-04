@@ -7,7 +7,7 @@ description: >
 status: work-completed
 workflow_type: build
 audit_severity: warn
-audit_finding_hash: 4caec6506b466567147b1c597de49bfa2b9feb58
+audit_finding_hash: 941f6824194248d122f6d6db6c2ae07c9d0c830f
 tags: [audit-finding, severity:warn, section:CTL-012]
 owner: human
 horizon: now
