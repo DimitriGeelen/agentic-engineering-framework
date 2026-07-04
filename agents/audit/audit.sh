@@ -4038,10 +4038,20 @@ try:
 
     if avg > 0:
         ratio = today_count / avg
+        # T-100123: "today" is a partial day — compare the drop side against
+        # the prorated expectation (avg * fraction-of-day-elapsed), not the
+        # full-day average. An audit run at 01:02 with avg=55 fired WARN on
+        # 5 commits (ratio 0.09) despite being ~2x ahead of pace. Spike side
+        # keeps the full-day average (a spike only grows as the day goes on).
+        # Skip the drop check in the first 6h — even prorated, commit
+        # patterns are too lumpy for a meaningful drop signal that early.
+        now = datetime.now()
+        day_frac = (now.hour * 3600 + now.minute * 60 + now.second) / 86400.0
+        expected = avg * day_frac
         if ratio > 2:
             print(f"WARN spike today={today_count} avg={avg:.0f} ratio={ratio:.1f}x")
-        elif ratio < 0.3 and today_count > 0:
-            print(f"WARN drop today={today_count} avg={avg:.0f} ratio={ratio:.1f}x")
+        elif day_frac >= 0.25 and expected > 0 and today_count > 0 and (today_count / expected) < 0.3:
+            print(f"WARN drop today={today_count} expected_by_now={expected:.0f} avg={avg:.0f} ratio={today_count / expected:.1f}x")
         else:
             print(f"PASS today={today_count} avg={avg:.0f} ratio={ratio:.1f}x")
     else:
