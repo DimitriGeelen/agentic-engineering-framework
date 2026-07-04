@@ -13,7 +13,7 @@ setup() {
     doctor_start=$(grep -n '^do_doctor()' "$FW" | head -1 | cut -d: -f1)
     [ -n "$doctor_start" ]
     src_line=$(awk -v s="$doctor_start" 'NR>=s && /source "\$FRAMEWORK_ROOT\/lib\/config.sh"/ {print NR; exit}' "$FW")
-    first_call=$(awk -v s="$doctor_start" 'NR>=s && /fw_consumer_yamls/ {print NR; exit}' "$FW")
+    first_call=$(awk -v s="$doctor_start" 'NR>=s && /\$\(fw_consumer_yamls\)/ {print NR; exit}' "$FW")
     [ -n "$src_line" ]
     [ -n "$first_call" ]
     [ "$src_line" -lt "$first_call" ]
