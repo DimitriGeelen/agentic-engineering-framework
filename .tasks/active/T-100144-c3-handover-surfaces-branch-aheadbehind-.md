@@ -72,14 +72,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+C3 slice of T-100139 (branch/worktree lifecycle GO). Strand divergence is
+invisible at session boundaries — all live strands were 215–248 commits behind
+master before the inception measured them. This slice makes divergence visible
+in every handover. NOTE: handover agent code lives on the master lineage —
+build in a worktree off master (see T-100142's episodic for the worked flow:
+worktree + copy task file + set worktree focus, land with
+`fw integrate run master --push`).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Handover document prints the current branch's ahead/behind counts vs origin/master (e.g. "Branch: t2416… +157 / −248 vs origin/master")
+- [ ] When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run`
+- [ ] Silent/neutral when on master or within threshold (no nudge noise)
+- [ ] bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
