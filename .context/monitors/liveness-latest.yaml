@@ -1,11 +1,11 @@
 # Liveness snapshot (T-1269, T-1273)
-timestamp: 2026-07-03T18:11:01+02:00
+timestamp: 2026-07-04T02:20:01+02:00
 host: dimitrimintdev
 boot_marker: 0
 termlink:
   hub: running
   detail: ""
-claude_instances: 25
+claude_instances: 26
 framework_agent:
   session: ready
   id: "tl-mdavv6jn"

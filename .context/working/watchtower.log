@@ -9676,3 +9676,1621 @@ FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engine
 192.168.10.107 - - [03/Jul/2026 18:10:02] "GET / HTTP/1.1" 200 -
 192.168.10.107 - - [03/Jul/2026 18:10:32] "GET / HTTP/1.1" 200 -
 192.168.10.107 - - [03/Jul/2026 18:11:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:12:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:13:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:14:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:14:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:14:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:15:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:16:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:17:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:17:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:17:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:18:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:18:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:19:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:19:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:20:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:20:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:20:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:20:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:21:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:21:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:22:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:22:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:23:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:23:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:23:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:24:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:24:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:24:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:25:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:25:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:25:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:26:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:26:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:26:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:26:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:27:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:27:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:27:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:27:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:28:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:28:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:28:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:29:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:29:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:29:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:30:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:30:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:30:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:31:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:31:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:31:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:31:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:31:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:32:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:32:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:32:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:33:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:33:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:33:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:33:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:33:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:34:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:34:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:34:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:35:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:35:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:35:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:35:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:36:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:36:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:36:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:36:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:36:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:37:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:37:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:37:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:37:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:38:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:38:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:38:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:38:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:38:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:39:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:39:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:39:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:39:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:40:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:40:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:40:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:40:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:40:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:41:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:41:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:41:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:41:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:41:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:42:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:42:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:42:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:42:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:42:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:43:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:43:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:43:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:43:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:43:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:44:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:44:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:44:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:44:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:45:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:45:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:45:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:45:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:45:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:45:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:46:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:46:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:46:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:46:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:47:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:47:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:47:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:47:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:47:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:47:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:48:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:48:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:48:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:49:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:49:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:50:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:55:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 18:55:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:00:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:00:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:06:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:07:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:11:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:12:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:20:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:20:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:23:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:24:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:26:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:26:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:31:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:31:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:33:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:34:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:37:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:37:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:38:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:40:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:40:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:43:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:44:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:44:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:44:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:47:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:47:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:48:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:49:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:51:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:51:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:52:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:53:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:55:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:55:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:56:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:56:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:58:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:58:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:59:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 20:59:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:01:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:01:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:02:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:03:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:04:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:04:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:04:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:05:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:05:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:07:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:07:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:07:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:08:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:09:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:10:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:10:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:12:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:12:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:13:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:14:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:14:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:15:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:16:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:16:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:18:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:18:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:18:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:19:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:20:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:20:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:21:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:21:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:22:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:22:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:22:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:23:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:23:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:24:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:24:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:24:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:25:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:25:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:25:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:26:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:26:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:26:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:27:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:27:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:28:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:28:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:28:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:28:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:29:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:29:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:29:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:30:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:30:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:30:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:31:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:31:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:31:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:31:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:32:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:32:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:32:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:32:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:33:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:33:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:33:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:34:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:34:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:34:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:35:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:35:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:35:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:36:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:36:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:36:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:36:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:36:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:37:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:37:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:37:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:37:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:38:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:38:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:38:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:39:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:39:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:39:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:39:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:40:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:40:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:40:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:40:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:41:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:41:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:41:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:41:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:42:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:42:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:43:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:43:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:43:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:43:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:43:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:44:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:44:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:44:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:45:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:45:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:45:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:46:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:46:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:46:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:46:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:47:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:47:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:47:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:48:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:48:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:48:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:49:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:49:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:49:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:49:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:50:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:50:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:50:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:51:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:51:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:51:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:52:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:52:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:53:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:53:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:54:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:54:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:54:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:55:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:55:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:56:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:56:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:56:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:57:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:58:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 21:58:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:18:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:18:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:23:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:29:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:30:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:35:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:35:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:39:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:39:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:43:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:44:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:47:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:48:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:51:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:52:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:54:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:58:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [03/Jul/2026 23:58:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:01:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:05:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:05:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:09:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:09:59] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:10:00,401] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100115-audit-fail--d2-human-review-queue--141-t.md'
+[2026-07-04 00:10:11,618] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100115-audit-fail--d2-human-review-queue--141-t.md'
+[2026-07-04 00:10:14,310] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100115-audit-fail--d2-human-review-queue--141-t.md'
+192.168.10.107 - - [04/Jul/2026 00:10:23] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:10:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:10:33] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:10:34] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:10:35] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:10:54,060] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100116-audit-fail--d2-human-review-queue--141-t.md'
+[2026-07-04 00:10:58,316] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100116-audit-fail--d2-human-review-queue--141-t.md'
+192.168.10.107 - - [04/Jul/2026 00:11:15] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:11:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:11:20] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:11:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:11:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:12:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:12:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:13:31] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:14:35,843] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100114-audit-warn--d5-task-lifecycle--29-anomal.md'
+[2026-07-04 00:14:41,030] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100114-audit-warn--d5-task-lifecycle--29-anomal.md'
+192.168.10.107 - - [04/Jul/2026 00:14:51] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:14:54] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:15:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:15:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:16:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:16:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:17:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:18:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:18:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:19:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:21:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:21:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:22:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:23:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:24:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:24:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:25:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:26:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:27:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:27:39] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:28:42,666] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100119-audit-fail--d2-human-review-queue--141-t.md'
+192.168.10.107 - - [04/Jul/2026 00:28:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:28:45] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:28:48,801] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100119-audit-fail--d2-human-review-queue--141-t.md'
+192.168.10.107 - - [04/Jul/2026 00:28:55] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:28:59] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:29:19] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:29:34,676] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100120-audit-fail--d2-human-review-queue--141-t.md'
+192.168.10.107 - - [04/Jul/2026 00:29:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:29:45] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:29:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:30:17] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:30:23,796] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-100121-audit-fail--d2-human-review-queue--141-t.md'
+192.168.10.107 - - [04/Jul/2026 00:30:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:30:30] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:31:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:31:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:31:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:31:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:31:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:33:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:33:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:33:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:33:44] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:33:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:34:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:35:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:35:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:36:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:36:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:36:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:37:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:37:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:37:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:38:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:38:39] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:39:19,601] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2430-audit-warn--fabric-97836-cards-have-no-e.md'
+192.168.10.107 - - [04/Jul/2026 00:39:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:39:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:39:27] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:39:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:40:02] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:40:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:40:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:40:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:41:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:41:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:42:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:42:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:42:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:42:58] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:43:05,564] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md'
+192.168.10.107 - - [04/Jul/2026 00:43:13] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:43:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:43:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:43:59] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:44:05,925] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2429-audit-warn--fabric-1-orphaned-cards-file.md'
+192.168.10.107 - - [04/Jul/2026 00:44:11] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:44:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:44:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:44:51] "GET / HTTP/1.1" 200 -
+[2026-07-04 00:45:38,868] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2434-audit-warn--ctl-028-t-2411-is-in-tasksco.md'
+192.168.10.107 - - [04/Jul/2026 00:45:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:45:44] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 00:45:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:46:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:46:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:47:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:47:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:47:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:47:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:48:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:48:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:48:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:49:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:49:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:49:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:50:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:50:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:50:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:51:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:51:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:51:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:51:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:52:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:52:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:52:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:52:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:53:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:53:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:53:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:53:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:54:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:54:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:54:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:54:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:54:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:55:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:55:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:55:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:55:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:56:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:56:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:56:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:56:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:57:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:57:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:57:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:57:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:57:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:57:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:58:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:58:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:59:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:59:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:59:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 00:59:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:00:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:00:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:00:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:00:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:01:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:01:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:01:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:01:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:02:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:02:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:02:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:02:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:02:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:03:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:03:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:03:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:03:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:04:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:04:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:04:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:04:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:05:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:05:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:05:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:06:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:06:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:07:30] "GET / HTTP/1.1" 200 -
+[2026-07-04 01:48:36,236] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2438-audit-fail--ctl-030-t-2401-is-in-tasksco.md'
+192.168.10.107 - - [04/Jul/2026 01:48:50] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 01:49:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:49:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:50:01] "GET / HTTP/1.1" 200 -
+[2026-07-04 01:50:07,960] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2439-audit-fail--ctl-030-t-2411-is-in-tasksco.md'
+192.168.10.107 - - [04/Jul/2026 01:50:22] "GET / HTTP/1.1" 500 -
+[2026-07-04 01:50:28,879] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2440-audit-warn--ctl-029-t-1062-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 01:50:41] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 01:51:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:51:06] "GET / HTTP/1.1" 200 -
+[2026-07-04 01:51:22,337] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2441-audit-warn--ctl-029-t-1274-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 01:51:34] "GET / HTTP/1.1" 500 -
+[2026-07-04 01:51:38,125] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2441-audit-warn--ctl-029-t-1274-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 01:51:46] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 01:51:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:51:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:52:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:53:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:53:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:53:39] "GET / HTTP/1.1" 200 -
+[2026-07-04 01:54:03,499] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2443-audit-warn--ctl-029-t-1624-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 01:54:10] "GET / HTTP/1.1" 500 -
+[2026-07-04 01:54:46,688] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2444-audit-warn--ctl-029-t-2200-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 01:54:50] "GET / HTTP/1.1" 500 -
+[2026-07-04 01:55:29,819] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2445-audit-warn--ctl-029-t-2202-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 01:55:33] "GET / HTTP/1.1" 500 -
+[2026-07-04 01:56:14,570] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2447-audit-warn--ctl-029-t-2219-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 01:56:21] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 01:56:45] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:56:45] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 01:56:47] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:57:16] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:57:18] "GET /cockpit/activity HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:57:27] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:57:41] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:57:44] "GET /decisions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:57:50] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:57:53] "GET /discoveries HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [04/Jul/2026 01:57:58] "GET /escalation-drift HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:04] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:10] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:23] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:23] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:26] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:27] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:41] "GET /hooks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:54] "GET /docs/generated HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:58:54] "GET /learnings HTTP/1.1" 200 -
+[2026-07-04 01:58:57,782] ERROR in app: Exception on /inception [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/inception.py", line 229, in inception_list
+    all_tasks = _load_all_tasks()
+                ^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/inception.py", line 85, in _load_all_tasks
+    all_meta = get_all_task_metadata()
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2451-audit-warn--task-t-2430-audit-warn--fabr.md'
+127.0.0.1 - - [04/Jul/2026 01:59:03] "GET /orchestrator/parallel HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:10] "GET /inception HTTP/1.1" 500 -
+127.0.0.1 - - [04/Jul/2026 01:59:10] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:13] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:15] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:23] "GET /reviewer/audit HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:28] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:32] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:38] "GET /risks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:38] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:43] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [04/Jul/2026 01:59:47] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:53] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:53] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:58] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:59] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 01:59:59] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:00:04] "GET /settings/appearance HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:00:18] "GET /terminal HTTP/1.1" 200 -
+[2026-07-04 02:00:20,248] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2437-audit-fail--ctl-030-t-2412-is-in-tasksco.md'
+[2026-07-04 02:00:27,640] ERROR in app: Exception on /tasks [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/tasks.py", line 653, in tasks
+    all_tasks = [copy.copy(t) for t in get_all_task_metadata()]
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2437-audit-fail--ctl-030-t-2412-is-in-tasksco.md'
+127.0.0.1 - - [04/Jul/2026 02:00:31] "GET /bvp HTTP/1.1" 200 -
+[2026-07-04 02:00:32,734] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2437-audit-fail--ctl-030-t-2412-is-in-tasksco.md'
+127.0.0.1 - - [04/Jul/2026 02:00:35] "GET / HTTP/1.1" 500 -
+127.0.0.1 - - [04/Jul/2026 02:00:42] "GET /tasks HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:00:46] "GET / HTTP/1.1" 500 -
+127.0.0.1 - - [04/Jul/2026 02:00:59] "GET /arcs HTTP/1.1" 200 -
+[2026-07-04 02:01:06,728] ERROR in app: Exception on /timeline [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/timeline.py", line 223, in timeline
+    task_names = _load_task_names()
+                 ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/timeline.py", line 85, in _load_task_names
+    return get_task_names()
+           ^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 958, in get_task_names
+    get_all_task_metadata()  # populate cache
+    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2453-audit-warn--task-t-2432-audit-warn--ctl-.md'
+127.0.0.1 - - [04/Jul/2026 02:01:17] "GET /timeline HTTP/1.1" 500 -
+127.0.0.1 - - [04/Jul/2026 02:01:18] "GET /orchestrator HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:01:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:02:04] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:02:27] "GET /metrics HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:06:53] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:06:53] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:06:57] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:07:28] "GET /cockpit/activity HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:07:32] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:07:39] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:07:53] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:07:58] "GET /decisions HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [04/Jul/2026 02:08:06] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:08] "GET /escalation-drift HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:11] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:21] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:29] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:39] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:41] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:41] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:43] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:08:56] "GET /hooks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:11] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:19] "GET /orchestrator/parallel HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:26] "GET /docs/generated HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:28] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:31] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:34] "GET /reviewer/audit HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:43] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:46] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:50] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:09:55] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [04/Jul/2026 02:09:58] "GET /risks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:04] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:07] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:10] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:13] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:17] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:21] "GET /settings/appearance HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:28] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:10:29] "GET /search HTTP/1.1" 200 -
+[2026-07-04 02:10:32,214] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2449-audit-warn--task-t-2428-audit-warn--free.md'
+127.0.0.1 - - [04/Jul/2026 02:10:35] "GET /terminal HTTP/1.1" 200 -
+[2026-07-04 02:10:35,923] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2449-audit-warn--task-t-2428-audit-warn--free.md'
+[2026-07-04 02:10:45,172] ERROR in app: Exception on /tasks [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/tasks.py", line 653, in tasks
+    all_tasks = [copy.copy(t) for t in get_all_task_metadata()]
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2449-audit-warn--task-t-2428-audit-warn--free.md'
+192.168.10.107 - - [04/Jul/2026 02:10:50] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:10:52] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:10:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:11:05] "GET /tasks HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:11:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:11:59] "GET /bvp HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:12:32] "GET /orchestrator HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:13:01] "GET /arcs HTTP/1.1" 200 -
+[2026-07-04 02:13:52,573] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 396, in index
+    ctx = get_cockpit_context(scan_data)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 246, in get_cockpit_context
+    "action_summary": get_action_summary(human_verify=human_verify),
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/cockpit.py", line 166, in get_action_summary
+    text = fn.read_text(errors="replace")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2457-audit-warn--task-t-2436-audit-fail--ctl-.md'
+[2026-07-04 02:13:57,124] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2457-audit-warn--task-t-2436-audit-fail--ctl-.md'
+127.0.0.1 - - [04/Jul/2026 02:13:58] "GET /project HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:14:08] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:14:14] "GET / HTTP/1.1" 500 -
+127.0.0.1 - - [04/Jul/2026 02:14:34] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:15:44] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:17:46] "GET / HTTP/1.1" 200 -

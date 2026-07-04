@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2454: Audit WARN — Task T-2433-audit-warn--ctl-028-t-2401-is-in-tasksco.md missing Update...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T00:01:43Z
+# ============================================================================
+
+task_id: T-2454
+task_name: "Audit WARN — Task T-2433-audit-warn--ctl-028-t-2401-is-in-tasksco.md missing Update..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T19:04:10Z
+completed: 2026-07-04T00:01:34Z
+duration_days: 2
+updates_count: 0
+first_commit: 2026-06-21T15:32:33+02:00
+last_commit: 2026-06-21T16:53:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  close — work-completed (2/2 Agent ACs, reviewer PASS R-cdd6d70b, RCA) + episodic + L-490. refresh vendored .agentic-framework/ copies (doctor F6/F7 bin/fw + F5/T-2437 init.sh/audit.sh from prior ships)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/lib/init.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/init.sh'
+  - '.context/episodic/T-2454.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - '.tasks/completed/T-2454-obs-083-resolveframeworkbats-non-hermeti.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-21T15:32:33"
+    action: "T-2454: close — work-completed (2/2 Agent ACs, reviewer PASS R-cdd6d70b, RCA) + episodic + L-490"
+  - time: "2026-06-21T16:53:57"
+    action: "T-2454: refresh vendored .agentic-framework/ copies (doctor F6/F7 bin/fw + F5/T-2437 init.sh/audit.sh from prior ships)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1737 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1737
+  commits: 2
+  files_changed: 11
+  lines_added: 485
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2454-audit-warn--task-t-2433-audit-warn--ctl-.md
+generated_by: context-agent-hybrid

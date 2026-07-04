@@ -1,8 +1,8 @@
-# Audit Results - 2026-07-03-1809
-timestamp: 2026-07-03T16:09:40Z
+# Audit Results - 2026-07-04-0044
+timestamp: 2026-07-03T22:44:26Z
 summary:
-  pass: 607
-  warn: 150
+  pass: 609
+  warn: 141
   fail: 1
 findings:
   - level: PASS
@@ -59,24 +59,6 @@ findings:
     check: "Large-file gate: tracked tree clean"
   - level: PASS
     check: "Self-vendor drift: vendored .agentic-framework/ in sync with source (libs + templates)"
-  - level: WARN
-    check: "Task T-2428-audit-warn--free-driver-f-orch-retirewhe.md missing Updates section"
-    mitigation: "Fix missing Updates section in T-2428-audit-warn--free-driver-f-orch-retirewhe.md"
-  - level: WARN
-    check: "Task T-2429-audit-warn--fabric-1-orphaned-cards-file.md missing Updates section"
-    mitigation: "Fix missing Updates section in T-2429-audit-warn--fabric-1-orphaned-cards-file.md"
-  - level: WARN
-    check: "Task T-2430-audit-warn--fabric-97836-cards-have-no-e.md missing Updates section"
-    mitigation: "Fix missing Updates section in T-2430-audit-warn--fabric-97836-cards-have-no-e.md"
-  - level: WARN
-    check: "Task T-2431-audit-warn--ctl-028-t-1700-is-in-tasksco.md missing Updates section"
-    mitigation: "Fix missing Updates section in T-2431-audit-warn--ctl-028-t-1700-is-in-tasksco.md"
-  - level: WARN
-    check: "Task T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md missing Updates section"
-    mitigation: "Fix missing Updates section in T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md"
-  - level: WARN
-    check: "Task T-2433-audit-warn--ctl-028-t-2401-is-in-tasksco.md missing Updates section"
-    mitigation: "Fix missing Updates section in T-2433-audit-warn--ctl-028-t-2401-is-in-tasksco.md"
   - level: WARN
     check: "Task T-2434-audit-warn--ctl-028-t-2411-is-in-tasksco.md missing Updates section"
     mitigation: "Fix missing Updates section in T-2434-audit-warn--ctl-028-t-2411-is-in-tasksco.md"
@@ -284,7 +266,7 @@ findings:
   - level: PASS
     check: "All active tasks meet quality thresholds"
   - level: PASS
-    check: "Git traceability: 99% (6359/6404 commits reference tasks)"
+    check: "Git traceability: 99% (6366/6411 commits reference tasks)"
   - level: WARN
     check: "Uncommitted changes present"
     mitigation: "Commit changes with task reference or stash"
@@ -293,7 +275,7 @@ findings:
   - level: PASS
     check: "Bypass log exists"
   - level: WARN
-    check: "Gate-bypass log: 14 safety bypasses in last 7 days (+ 2 drift overrides)"
+    check: "Gate-bypass log: 16 safety bypasses in last 7 days (+ 2 drift overrides)"
     mitigation: "Review .context/working/.gate-bypass-log.yaml — investigate --skip-* / --scope-reduction-acknowledged callers"
   - level: PASS
     check: "Commit-msg hook installed"
@@ -310,7 +292,7 @@ findings:
   - level: PASS
     check: "All completed tasks have episodic summaries"
   - level: PASS
-    check: "All 2214 episodic summaries have quality content"
+    check: "All 2229 episodic summaries have quality content"
   - level: PASS
     check: "No orphaned episodic files"
   - level: PASS
@@ -399,24 +381,23 @@ findings:
   - level: PASS
     check: "C-006: All active inceptions have a real Recommendation block"
   - level: PASS
-    check: "CTL-001: Focus file has active task (T-100090)"
-  - level: WARN
-    check: "CTL-003: Budget status file stale (6min old)"
-    mitigation: "Check PreToolUse hook wiring for budget-gate.sh"
+    check: "CTL-001: Focus file has active task (T-2437)"
   - level: PASS
-    check: "CTL-004: Tool counter at 2 (last commit: 4 minutes ago)"
+    check: "CTL-003: Budget status file fresh (< 5min old)"
+  - level: PASS
+    check: "CTL-004: Tool counter at 35 (last commit: 8 minutes ago)"
   - level: PASS
     check: "CTL-018: Budget status valid JSON (level: ok)"
   - level: PASS
     check: "CTL-008: Task reference traceability 95% (1/20 without T-XXX)"
   - level: PASS
-    check: "CTL-020: 3 cron audit file(s) in last hour"
+    check: "CTL-020: 2 cron audit file(s) in last hour"
   - level: PASS
     check: "CTL-002: Tier 0 guard installed and wired in settings.json"
   - level: PASS
     check: "CTL-005: Error watchdog installed and wired in settings.json"
   - level: PASS
-    check: "CTL-006: Handover coverage for compactions (1335 handovers, 709 compactions)"
+    check: "CTL-006: Handover coverage for compactions (1337 handovers, 711 compactions)"
   - level: PASS
     check: "CTL-007: Post-compact resume hook configured in settings.json"
   - level: PASS
@@ -720,7 +701,7 @@ findings:
   - level: PASS
     check: "CTL-009: Inception T-1645 has decision (5 commits)"
   - level: PASS
-    check: "CTL-009: Inception T-164 has decision (65 commits)"
+    check: "CTL-009: Inception T-164 has decision (66 commits)"
   - level: PASS
     check: "CTL-009: Inception T-1653 has decision (9 commits)"
   - level: PASS
@@ -1148,6 +1129,8 @@ findings:
   - level: PASS
     check: "CTL-011: pre-push hook installed and executable"
   - level: PASS
+    check: "CTL-013: T-2207 verification re-run: 2/2 pass"
+  - level: PASS
     check: "CTL-019: claude-fw wrapper installed and executable"
   - level: PASS
     check: "CTL-025: T-100080 partial-complete with owner:human ✓"
@@ -1484,28 +1467,18 @@ findings:
   - level: PASS
     check: "CTL-025: T-2416 partial-complete with owner:human ✓"
   - level: PASS
+    check: "CTL-025: T-2428 partial-complete with owner:human ✓"
+  - level: PASS
     check: "CTL-025: T-2507 partial-complete with owner:human ✓"
   - level: PASS
     check: "CTL-029: No archive-eligible stuck partial-complete tasks (T-1903/L-403)"
   - level: PASS
     check: "CTL-026: Human sovereignty gate present (completion + owner protection)"
   - level: WARN
-    check: "CTL-028: T-1700 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)"
-    mitigation: "Fix: bin/fw task update T-1700 --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
-  - level: WARN
-    check: "CTL-028: T-2405 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)"
-    mitigation: "Fix: bin/fw task update T-2405 --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
-  - level: WARN
-    check: "CTL-028: T-2401 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)"
-    mitigation: "Fix: bin/fw task update T-2401 --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
-  - level: WARN
     check: "CTL-028: T-2411 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)"
     mitigation: "Fix: bin/fw task update T-2411 --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished"
   - level: PASS
     check: "CTL-030: All completed/ tasks have null/absent stored horizon (arc-009)"
-  - level: WARN
-    check: "CTL-029: T-100090 has all Agent ACs ticked but status='started-work' — completable, not closed"
-    mitigation: "Run: bin/fw task update T-100090 --status work-completed"
   - level: WARN
     check: "CTL-029: T-1062 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-1062 --status work-completed"
@@ -1555,6 +1528,9 @@ findings:
     check: "CTL-029: T-2426 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-2426 --status work-completed"
   - level: WARN
+    check: "CTL-029: T-2433 has all Agent ACs ticked but status='started-work' — completable, not closed"
+    mitigation: "Run: bin/fw task update T-2433 --status work-completed"
+  - level: WARN
     check: "CTL-029: T-332 has all Agent ACs ticked but status='started-work' — completable, not closed"
     mitigation: "Run: bin/fw task update T-332 --status work-completed"
   - level: WARN
@@ -1594,9 +1570,9 @@ findings:
     check: "CTL-012: Completed task T-678 has unchecked AC"
     mitigation: "Review task completion — AC gate may have been bypassed"
   - level: PASS
-    check: "D1: Episodic quality — 0% [TODO] (18/2214)"
+    check: "D1: Episodic quality — 0% [TODO] (18/2229)"
   - level: FAIL
-    check: "D2: Human review queue — 141 task(s) waiting >30d: T-1701(37d) T-1702(32d) T-1707(37d) T-1718(37d) T-1773(50d) T-1774(50d) T-1775(50d) T-1776(33d) T-1792(51d) T-1794(51d) T-1795(51d) T-1796(51d) T-1797(51d) T-1799(51d) T-1801(51d) T-1802(51d) T-1803(51d) T-1805(51d) T-1806(51d) T-1807(51d) T-1808(50d) T-1810(50d) T-1811(50d) T-1818(50d) T-1827(42d) T-1834(49d) T-1842(42d) T-1843(42d) T-1844(42d) T-1891(46d) T-1909(44d) T-1910(44d) T-1911(44d) T-1928(44d) T-1929(44d) T-1930(44d) T-1933(45d) T-1934(43d) T-1935(43d) T-1936(43d) T-1939(43d) T-1947(44d) T-1951(42d) T-1954(44d) T-1955(44d) T-1957(44d) T-1960(42d) T-1961(42d) T-1963(42d) T-1964(43d) T-1965(43d) T-1968(43d) T-1969(43d) T-1970(43d) T-1971(43d) T-1976(42d) T-1977(43d) T-1978(42d) T-1980(42d) T-1982(43d) T-1984(42d) T-1985(42d) T-1988(41d) T-1989(38d) T-1990(37d) T-1991(41d) T-1992(38d) T-1993(38d) T-1994(37d) T-1999(41d) T-2002(37d) T-2003(38d) T-2004(38d) T-2006(38d) T-2008(38d) T-2009(38d) T-2010(38d) T-2011(38d) T-2012(38d) T-2013(38d) T-2015(38d) T-2016(38d) T-2017(38d) T-2018(38d) T-2019(38d) T-2020(38d) T-2021(38d) T-2022(38d) T-2023(38d) T-2024(38d) T-2025(38d) T-2026(38d) T-2027(38d) T-2028(38d) T-2029(38d) T-2031(38d) T-2033(38d) T-2034(38d) T-2038(38d) T-2039(38d) T-2040(38d) T-2041(38d) T-2043(38d) T-2044(38d) T-2045(38d) T-2046(38d) T-2047(38d) T-2049(38d) T-2051(37d) T-2054(37d) T-2062(35d) T-2063(35d) T-2064(35d) T-2065(35d) T-2066(35d) T-2075(35d) T-2077(35d) T-2080(35d) T-2082(35d) T-2084(35d) T-2085(35d) T-2086(35d) T-2087(35d) T-2088(35d) T-2089(35d) T-2102(34d) T-2103(34d) T-2106(34d) T-2110(34d) T-2111(34d) T-2112(33d) T-2114(33d) T-2116(33d) T-2117(33d) T-2119(27d) T-2136(33d) T-2160(32d) T-2167(31d) T-2174(30d) T-2175(31d) T-2176(27d) T-2179(30d) T-2183(20d) T-2185(29d) T-2192(30d) T-2222(27d) T-2240(25d) T-2265(24d) T-2274(24d) T-2278(24d) T-2281(24d) T-2332(22d) T-2336(21d) T-2342(21d) T-2369(20d) T-2373(20d) T-2376(19d) T-2403(18d) T-2406(17d)"
+    check: "D2: Human review queue — 141 task(s) waiting >30d: T-1701(38d) T-1702(33d) T-1707(37d) T-1718(37d) T-1773(51d) T-1774(51d) T-1775(51d) T-1776(33d) T-1792(52d) T-1794(52d) T-1795(52d) T-1796(52d) T-1797(52d) T-1799(52d) T-1801(51d) T-1802(51d) T-1803(51d) T-1805(51d) T-1806(51d) T-1807(51d) T-1808(51d) T-1810(51d) T-1811(51d) T-1818(51d) T-1827(42d) T-1834(49d) T-1842(42d) T-1843(42d) T-1844(42d) T-1891(46d) T-1909(44d) T-1910(44d) T-1911(44d) T-1928(45d) T-1929(45d) T-1930(45d) T-1933(45d) T-1934(44d) T-1935(44d) T-1936(44d) T-1939(44d) T-1947(44d) T-1951(42d) T-1954(44d) T-1955(44d) T-1957(44d) T-1960(43d) T-1961(43d) T-1963(43d) T-1964(44d) T-1965(44d) T-1968(44d) T-1969(43d) T-1970(43d) T-1971(43d) T-1976(42d) T-1977(43d) T-1978(42d) T-1980(42d) T-1982(43d) T-1984(42d) T-1985(42d) T-1988(42d) T-1989(39d) T-1990(38d) T-1991(42d) T-1992(39d) T-1993(39d) T-1994(38d) T-1999(41d) T-2002(38d) T-2003(38d) T-2004(38d) T-2006(38d) T-2008(38d) T-2009(38d) T-2010(38d) T-2011(38d) T-2012(38d) T-2013(38d) T-2015(38d) T-2016(38d) T-2017(38d) T-2018(38d) T-2019(38d) T-2020(39d) T-2021(39d) T-2022(38d) T-2023(39d) T-2024(39d) T-2025(39d) T-2026(39d) T-2027(38d) T-2028(38d) T-2029(39d) T-2031(38d) T-2033(38d) T-2034(38d) T-2038(38d) T-2039(38d) T-2040(38d) T-2041(38d) T-2043(38d) T-2044(38d) T-2045(38d) T-2046(38d) T-2047(38d) T-2049(38d) T-2051(38d) T-2054(38d) T-2062(36d) T-2063(36d) T-2064(36d) T-2065(36d) T-2066(36d) T-2075(36d) T-2077(36d) T-2080(36d) T-2082(36d) T-2084(35d) T-2085(35d) T-2086(35d) T-2087(35d) T-2088(35d) T-2089(35d) T-2102(34d) T-2103(34d) T-2106(34d) T-2110(34d) T-2111(34d) T-2112(34d) T-2114(34d) T-2116(34d) T-2117(34d) T-2119(27d) T-2136(33d) T-2160(32d) T-2167(32d) T-2174(31d) T-2175(31d) T-2176(27d) T-2179(31d) T-2183(20d) T-2185(29d) T-2192(30d) T-2222(28d) T-2240(26d) T-2265(25d) T-2274(24d) T-2278(24d) T-2281(24d) T-2332(22d) T-2336(22d) T-2342(22d) T-2369(20d) T-2373(20d) T-2376(20d) T-2403(19d) T-2406(18d)"
     mitigation: "Review with: fw task verify (lists unchecked Human ACs)"
   - level: PASS
     check: "D8: Handover quality — no [TODO] in LATEST.md"
@@ -1609,15 +1585,16 @@ findings:
   - level: PASS
     check: "D4: Audit trend — insufficient history (<3 entries)"
   - level: WARN
-    check: "D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-active) T-1542(67d-active) T-1624(63d-active) T-2170(31d-active) T-2200(29d-active) T-2202(29d-active) T-2205(28d-active) T-2219(27d-active) T-2221(27d-active) (+19 more)"
+    check: "D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-active) T-1542(67d-active) T-1624(64d-active) T-2170(32d-active) T-2200(29d-active) T-2202(29d-active) T-2205(29d-active) T-2219(28d-active) T-2221(28d-active) (+19 more)"
     mitigation: "Review flagged tasks for process issues"
   - level: WARN
     check: "D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)"
     mitigation: "Recover both classes with: bin/fw inception sweep (T-1514)"
+  - level: WARN
+    check: "D3: Commit velocity — WARN drop today=5 avg=55 ratio=0.1x"
+    mitigation: "Check if velocity reflects budget pressure or unusual activity"
   - level: PASS
-    check: "D3: Commit velocity — insufficient data"
-  - level: PASS
-    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 95_commits_24h)"
+    check: "D7: Commit bunching — detected (INFO 1_bunch(es) 64_commits_24h)"
   - level: PASS
     check: "D6: Completion velocity — normal (PASS insufficient_data)"
   - level: PASS
@@ -1658,7 +1635,7 @@ findings:
     check: "Arc 'arc-009': 1/1 tasks completed (1.0000) but arc still in-progress"
     mitigation: "Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-009 --demo <path"
   - level: WARN
-    check: "Arc 'arc-003': 29/31 tasks completed (0.9355) but arc still in-progress"
+    check: "Arc 'arc-003': 30/31 tasks completed (0.9677) but arc still in-progress"
     mitigation: "Capture wire-evidence of the arc's headline_mechanic firing, then: fw arc close arc-003 --demo <path"
   - level: WARN
     check: "Arc 'arc-011': 19/21 tasks completed (0.9048) but arc still in-progress"

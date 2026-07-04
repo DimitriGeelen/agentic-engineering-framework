@@ -1,0 +1,7 @@
+command_hash: 5da5ac2a633f9ff1635288e7069cfb42ea695cf063a7d383c1be4cfe015521f8
+command_preview: bin/fw task update T-1700 --status work-completed --force
+risk: 'FW FORCE: Bypasses sovereignty gate (R-033), AC verification (P-010), or verification
+  gate (P-011)'
+status: pending
+timestamp: '2026-07-03T22:40:02Z'
+type: tier0

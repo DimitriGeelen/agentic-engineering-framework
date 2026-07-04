@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2452: Audit WARN — Task T-2431-audit-warn--ctl-028-t-1700-is-in-tasksco.md missing Update...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T00:00:18Z
+# ============================================================================
+
+task_id: T-2452
+task_name: "Audit WARN — Task T-2431-audit-warn--ctl-028-t-1700-is-in-tasksco.md missing Update..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T19:03:24Z
+completed: 2026-07-04T00:00:07Z
+duration_days: 2
+updates_count: 0
+first_commit: 2026-06-21T15:18:51+02:00
+last_commit: 2026-06-21T15:19:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  F6 — fw doctor --quick project-only fast mode (skip mirror/litellm/ollama/watchtower probes; 44s vs 150s). close — work-completed (3/3 Agent ACs, reviewer PASS R-f753c7f2, 5 bats pins) + episodic. register t2452_doctor_quick.bats fabric card (drift hygiene)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.context/episodic/T-2452.yaml'
+  - '.fabric/components/tests-unit-t2452_doctor_quick.yaml'
+  - '.tasks/completed/T-2452-f6-fw-doctor---quick--project-only-fast-.md'
+  - 'tests/unit/t2452_doctor_quick.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-21T15:18:51"
+    action: "T-2452: F6 — fw doctor --quick project-only fast mode (skip mirror/litellm/ollama/watchtower probes; 44s vs 150s)"
+  - time: "2026-06-21T15:18:54"
+    action: "T-2452: close — work-completed (3/3 Agent ACs, reviewer PASS R-f753c7f2, 5 bats pins) + episodic"
+  - time: "2026-06-21T15:19:04"
+    action: "T-2452: register t2452_doctor_quick.bats fabric card (drift hygiene)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1736 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1736
+  commits: 4
+  files_changed: 8
+  lines_added: 660
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2452-audit-warn--task-t-2431-audit-warn--ctl-.md
+generated_by: context-agent-hybrid

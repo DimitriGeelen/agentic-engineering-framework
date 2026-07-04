@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2449: Audit WARN — Task T-2428-audit-warn--free-driver-f-orch-retirewhe.md missing Update...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T00:10:35Z
+# ============================================================================
+
+task_id: T-2449
+task_name: "Audit WARN — Task T-2428-audit-warn--free-driver-f-orch-retirewhe.md missing Update..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T19:02:11Z
+completed: 2026-07-03T23:57:54Z
+duration_days: 1
+updates_count: 0
+first_commit: 2026-06-21T13:43:57+02:00
+last_commit: 2026-06-21T13:44:46+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-081 fix — strip HTML comments in disposition detector before slicing IW-N. close — work-completed (2/2 Agent ACs, reviewer PASS) + episodic. capture L-488 — strip-html-comments sibling-parity for section parsers
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'OBS-081 fix — strip HTML comments in disposition detector before slicing IW-N'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-06-19.yaml'
+  - '.context/audits/2026-06-20.yaml'
+  - '.context/episodic/T-2449.yaml'
+  - '.context/project/learnings.yaml'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'lib/reviewer/static_scan.py'
+  - '.tasks/active/T-2449-obs-081-reviewer-disposition-detector-pa.md'
+  - '.tasks/completed/T-2449-obs-081-reviewer-disposition-detector-pa.md'
+  - 'tests/unit/reviewer_disposition_incomplete.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-06-21T13:43:57"
+    action: "T-2449: OBS-081 fix — strip HTML comments in disposition detector before slicing IW-N"
+  - time: "2026-06-21T13:44:30"
+    action: "T-2449: close — work-completed (2/2 Agent ACs, reviewer PASS) + episodic"
+  - time: "2026-06-21T13:44:46"
+    action: "T-2449: capture L-488 — strip-html-comments sibling-parity for section parsers"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1735 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1735
+  commits: 3
+  files_changed: 13
+  lines_added: 525
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2449-audit-warn--task-t-2428-audit-warn--free.md
+generated_by: context-agent-hybrid

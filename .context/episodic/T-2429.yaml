@@ -1,0 +1,69 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2429: Audit WARN — Fabric: 1 orphaned card(s) (file deleted but card remains)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-03T22:44:06Z
+# ============================================================================
+
+task_id: T-2429
+task_name: "Audit WARN — Fabric: 1 orphaned card(s) (file deleted but card remains)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-02T18:32:32Z
+completed: 2026-07-03T22:35:55Z
+duration_days: 1
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified: TRANSIENT (already cleaned up)'
+  - 'Documented in RCA section'
+  - 'Verified finding absent via `fw fabric drift` (0 orphaned)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1683 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:Fabric]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1683
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2429-audit-warn--fabric-1-orphaned-cards-file.md
+generated_by: context-agent-hybrid
