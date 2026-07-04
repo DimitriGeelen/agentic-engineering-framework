@@ -82,3 +82,55 @@ PYEOF
     [ "$status" -eq 0 ]
     [[ "$output" != *"T-9004"* ]]
 }
+
+@test "T-100189: partial-complete with suffixed headings + dual Agent sections is NOT an anomaly" {
+    cat > "$TEST_DIR/.tasks/active/T-9005-fixture.md" <<TASKEOF
+---
+id: T-9005
+name: "fixture T-9005"
+status: started-work
+workflow_type: build
+owner: human
+created: 2026-01-01T00:00:00Z
+---
+
+## Acceptance Criteria
+
+### Agent
+- [x] built it
+
+### Agent (T-1679 split — mechanical RPC-contract half)
+- [x] contract still satisfied
+
+### Human (T-1679 split — residual visual render)
+- [ ] [REVIEW] visual render looks right
+TASKEOF
+    run run_d5
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"T-9005"* ]]
+}
+
+@test "T-100189: suffixed headings with an UNTICKED agent AC still flag" {
+    cat > "$TEST_DIR/.tasks/active/T-9006-fixture.md" <<TASKEOF
+---
+id: T-9006
+name: "fixture T-9006"
+status: started-work
+workflow_type: build
+owner: human
+created: 2026-01-01T00:00:00Z
+---
+
+## Acceptance Criteria
+
+### Agent (split)
+- [x] built it
+- [ ] tested it
+
+### Human (split)
+- [ ] [REVIEW] looks right
+TASKEOF
+    run run_d5
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"T-9006"* ]]
+}

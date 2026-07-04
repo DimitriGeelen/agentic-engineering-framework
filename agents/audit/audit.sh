@@ -3888,13 +3888,18 @@ def is_partial_complete(path, fm):
     except Exception:
         return False
     body = re.sub(r'^---\n.*?\n---', '', content, count=1, flags=re.DOTALL)
-    agent_m = re.search(r'### Agent\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
-    human_m = re.search(r'### Human\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
-    if not agent_m or not human_m:
+    # T-100189: headings may carry suffixes ("### Human (T-1679 split — ...)")
+    # and tasks may hold multiple ### Agent sections — findall + merge, else
+    # partial-completes with annotated headings re-flag as anomalies (T-1062).
+    agent_blocks = re.findall(r'### Agent[^\n]*\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
+    human_blocks = re.findall(r'### Human[^\n]*\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
+    if not agent_blocks or not human_blocks:
         return False
-    agent_ticked = len(re.findall(r'- \[x\]', agent_m.group(1), re.IGNORECASE))
-    agent_unticked = len(re.findall(r'- \[ \]', agent_m.group(1)))
-    human_unticked = len(re.findall(r'- \[ \]', human_m.group(1)))
+    agent_text = "\n".join(agent_blocks)
+    human_text = "\n".join(human_blocks)
+    agent_ticked = len(re.findall(r'- \[x\]', agent_text, re.IGNORECASE))
+    agent_unticked = len(re.findall(r'- \[ \]', agent_text))
+    human_unticked = len(re.findall(r'- \[ \]', human_text))
     return agent_ticked > 0 and agent_unticked == 0 and human_unticked > 0
 
 # Check active tasks stuck >7 days in started-work (not captured or work-completed)
