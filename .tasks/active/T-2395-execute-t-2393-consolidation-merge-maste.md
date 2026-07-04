@@ -11,10 +11,10 @@ description: >
   FF master to the branch when the 2 live master-checkout sessions are quiesced, then
   push. Plan: docs/reports/T-2393-consolidation-options.md.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [git-hygiene, worktree, consolidation]
 components: []
 related_tasks: []
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T13:46:21Z
-last_update: '2026-07-03T14:00:06Z'
+last_update: 2026-07-04T22:39:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -255,3 +255,7 @@ diff -q bin/fw .agentic-framework/bin/fw        # vendored bin/fw == source (no 
 
 ### 2026-06-14T13:47:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-04T22:39:55Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

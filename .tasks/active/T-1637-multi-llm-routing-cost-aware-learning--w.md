@@ -10,15 +10,15 @@ description: >
   task types. Cross-repo: /opt/termlink crates/termlink-mcp/src/route_cache.rs. Not
   blocking — future feature, captured horizon:later. Origin: T-1065 review notes 2026-04-30.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [from-T-1065, termlink, multi-llm, cost-routing]
 components: []
 related_tasks: [T-1065, T-1641]
 created: 2026-05-01T10:45:13Z
-last_update: '2026-07-03T06:15:03Z'
+last_update: 2026-07-04T22:39:54Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -256,3 +256,7 @@ routing.
 ### 2026-07-03T06:02:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-04T22:39:54Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

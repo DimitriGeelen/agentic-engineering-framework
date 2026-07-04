@@ -6,15 +6,15 @@ description: >
   install + apply grill-with-docs skill — grilling session on orchestrator-as-triage
   architectural plan
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-05-02T19:15:25Z
-last_update: 2026-07-03T02:17:15Z
+last_update: 2026-07-04T22:39:54Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T17:56:35Z'
@@ -230,3 +230,7 @@ grep -q "Interview me relentlessly" .claude/skills/grill-with-docs/SKILL.md
 ### 2026-05-13T15:15:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-04T22:39:54Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

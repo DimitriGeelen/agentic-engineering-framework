@@ -8,16 +8,16 @@ description: >
   fw termlink dispatch. Verifies the full cross-repo wire contract. Blocked on T-1636
   ship (currently unstarted per 2026-05-14 status check, ~1.5-2h estimate).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [termlink, peer-consult, cross-repo, joint-smoke]
 components: []
 related_tasks: [T-1818, T-1819, T-1804, T-1797, T-1821]
 arc_id: orchestrator-rethink
 created: 2026-05-13T23:05:51Z
-last_update: 2026-07-03T06:01:02Z
+last_update: 2026-07-04T22:39:54Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -399,3 +399,7 @@ the next move at the right scope. Operator confirms or overrides.
 
 - **Suppressed:** 1 (by override)
   - mock-only-integration @ AC vs Verification cross-check
+
+### 2026-07-04T22:39:54Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

@@ -10,17 +10,17 @@ description: >
   uncomments the carve, sets weight=4, and validates the rubric ZERO-NEGATIVE guardrail
   (autonomy that removes Tier-0 gates scores ≤0).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [v3-followup-E, f-autonomy-activation, arc:value-prioritisation, 
       blocked-on-T-2158]
 components: []
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: '2026-07-02T16:15:05Z'
+last_update: 2026-07-04T22:39:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -314,3 +314,7 @@ F-AUTONOMY is carved (commented) in `policy/value-drivers.yaml` lines ~171-200 w
 
 - **Suppressed:** 1 (by override)
   - AC-verify-mismatch @ AC#5 (Agent)
+
+### 2026-07-04T22:39:55Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

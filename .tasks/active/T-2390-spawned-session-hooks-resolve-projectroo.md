@@ -11,10 +11,10 @@ description: >
   cd+exec did not propagate CLAUDE_PROJECT_DIR)? Same class as T-2377 but via hook-cwd
   not transcript_path. Evidence: docs/reports/T-2389-livefire-evidence.md
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [arc:continuous-run, bug, gauge, hooks]
 components: []
 related_tasks: [T-2389, T-2377]
@@ -29,7 +29,7 @@ related_tasks: [T-2389, T-2377]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T07:16:26Z
-last_update: '2026-07-03T14:00:06Z'
+last_update: 2026-07-04T22:39:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -382,3 +382,7 @@ fallthrough.
 ### 2026-06-14T07:34:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-07-04T22:39:55Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

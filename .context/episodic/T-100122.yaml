@@ -1,0 +1,117 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100122: Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-acti...
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T22:44:50Z
+# ============================================================================
+
+task_id: T-100122
+task_name: "Audit WARN — D5: Task lifecycle — 29 anomaly(s): T-1062(86d-active) T-1274(78d-acti..."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-03T23:02:31Z
+completed: 2026-07-04T22:44:31Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-07-04T11:02:25+02:00
+last_commit: 2026-07-05T00:13:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refresh vendored copies (audit.sh CTL-029/emit fixes, create-task.sh anchoring). full vendor sync (VERSION + watchtower.sh + generated docs). D5 excludes partial-complete (T-193) tasks from stale-active anomalies. vendor self sync
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'refresh vendored copies (audit.sh CTL-029/emit fixes, create-task.sh anchoring)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/docs/generated/components/agents-context-chat-bare-path-scan.md'
+  - '.agentic-framework/docs/generated/components/agents-context-chat-bare-path-warn.md'
+  - '.agentic-framework/docs/generated/components/agents-context-inject-next-directive.md'
+  - '.agentic-framework/docs/generated/components/agents-context-post-compact-resume.md'
+  - '.agentic-framework/docs/generated/components/agents-git-lib-hooks.md'
+  - '.agentic-framework/docs/generated/components/agents-git-lib-master-guard.md'
+  - '.agentic-framework/docs/generated/components/agents-handover-discard-manifest.md'
+  - '.agentic-framework/docs/generated/components/agents-handover-handover.md'
+  - '.agentic-framework/docs/generated/components/agents-termlink-bvp-estimator-estimator.md'
+  - '.agentic-framework/docs/generated/components/bin-fw.md'
+  - '.agentic-framework/docs/generated/components/capture-reader.md'
+  - '.agentic-framework/docs/generated/components/docs-reports-T-2371-arc-011-wire-evidence-demo.md'
+  - '.agentic-framework/docs/generated/components/docs-runbooks-arc-012-continuous-mode-live-fire.md'
+  - '.agentic-framework/docs/generated/components/lib-arc.md'
+  - '.agentic-framework/docs/generated/components/lib-colors.md'
+  - '.agentic-framework/docs/generated/components/lib-config.md'
+  - '.agentic-framework/docs/generated/components/lib-costs.md'
+  - '.agentic-framework/docs/generated/components/lib-integrate.md'
+  - '.agentic-framework/docs/generated/components/lib-paths.md'
+  - '.agentic-framework/docs/generated/components/lib-write_set.md'
+  - '.agentic-framework/docs/generated/components/tests-integration-continuous_loop.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-t2380_transcript_dir_encoding.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-t2391_project_root_inherited_stale.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-t2399_integrate_check.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_bvp_estimator.md'
+  - '.agentic-framework/docs/generated/components/tests-unit-test_inject_next_directive.md'
+  - '.agentic-framework/docs/reports/DISCOVERY-governance-test-audit-2026-06-21.md'
+  - '.agentic-framework/docs/reports/T-100066-ctl-029-false-positive-class.md'
+  - '.agentic-framework/docs/reports/T-100139-branch-worktree-lifecycle.md'
+  - '.agentic-framework/docs/reports/T-100140-watchtower-livelock-rca.md'
+  - '.agentic-framework/docs/reports/T-1549-escalation-scan-v0.md'
+  - '.agentic-framework/metrics.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-100122-audit-warn--d5-task-lifecycle--29-anomal.md'
+  - 'tests/unit/audit_d5_task_lifecycle.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-04T11:02:25"
+    action: "T-100122: refresh vendored copies (audit.sh CTL-029/emit fixes, create-task.sh anchoring)"
+  - time: "2026-07-04T13:45:26"
+    action: "T-100122: full vendor sync (VERSION + watchtower.sh + generated docs)"
+  - time: "2026-07-05T00:13:20"
+    action: "T-100122: D5 excludes partial-complete (T-193) tasks from stale-active anomalies"
+  - time: "2026-07-05T00:13:54"
+    action: "T-100122: vendor self sync"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1422 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1422
+  commits: 4
+  files_changed: 39
+  lines_added: 1412
+  lines_removed: 89
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100122-audit-warn--d5-task-lifecycle--29-anomal.md
+generated_by: context-agent-hybrid

@@ -1,17 +1,16 @@
 ---
-id: T-2389
-name: "Execute arc-012 continuous-mode live-fire via TermLink + capture demo"
+id: T-100189
+name: "D5 partial-complete exclusion misses '### Human (suffix)' headings (T-1062 FP)"
 description: >
-  Execute arc-012 continuous-mode live-fire via TermLink + capture demo
+  is_partial_complete() in the D5 audit block matches '### Agent\n'/'### Human\n' exactly; headings with parenthetical suffixes (T-1679-split style) escape the exclusion so T-1062 still flags as a lifecycle anomaly despite being partial-complete. Relax both heading regexes and merge multiple ### Agent sections; add a bats fixture with a suffixed heading. Origin: T-100122 RCA residual.
 
 status: captured
-workflow_type: test
+workflow_type: build
 owner: agent
-horizon: later
-tags: [arc:continuous-run, livefire, demo]
+horizon: now
+tags: []
 components: []
-related_tasks: [T-2369, T-2387, T-2158]
-arc_id: continuous-run
+related_tasks: [T-100122]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,9 +21,9 @@ arc_id: continuous-run
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-14T06:56:58Z
-last_update: 2026-07-04T22:39:55Z
-date_finished:
+created: 2026-07-04T22:42:43Z
+last_update: 2026-07-04T22:42:43Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,99 +34,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-02T13:45:04Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 1
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=1 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-02T13:45:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      Discard fidelity: 0
-      Loop closure (conditional): 0
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 3
-      F-RECALL: 2
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=2 
-      (body:lightly-promoted); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      F3=1 (body/components:prompt-incidental); F1=0 (no-signal); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-07-03T14:00:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      Discard fidelity: 0
-      Loop closure (conditional): 0
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 3
-      F-RECALL: 2
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      audit_severity: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: Discard fidelity=0 (no-signal); Loop closure (conditional)=0 
-      (no-signal); D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=3 (body:portability-abstraction); F-RECALL=2 
-      (body:lightly-promoted); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      audit_severity=0 (no-signal); F3=1 (body/components:prompt-incidental); 
-      F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2389: Execute arc-012 continuous-mode live-fire via TermLink + capture demo
+# T-100189: D5 partial-complete exclusion misses '### Human (suffix)' headings (T-1062 FP)
 
 ## Context
 
-Execute the arc-012 continuous-mode live-fire end-to-end (the one un-automatable
-junction: a real `claude-fw` → `claude` restart) and capture wire evidence as the
-G-062 `--demo` artefact for `fw arc close continuous-run`. Procedure:
-`docs/runbooks/arc-012-continuous-mode-live-fire.md`. Driven via TermLink per
-operator instruction.
-
-**Isolation (OBS-075):** two `claude-fw` wrappers are live on this repo's master
-checkout (PIDs 1752988/1753004); the restart signal is keyed per git-toplevel, so
-the live-fire runs in a DEDICATED worktree off master (own toplevel → isolated
-`.restart-requested`; carries master's `startup` matcher T-2376 + the T-2377 gauge
-fix). Worker is a TermLink PTY `claude-fw` session (interactive, not a bg job —
-Prereq 3) with `FW_CONTEXT_WINDOW=20000`.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Isolated live-fire worktree created off master (verified: own git-toplevel, `startup` matcher present in its `.claude/settings.json`, T-2377 gauge fix present)
-- [x] TermLink PTY `claude-fw` worker spawned with `FW_CONTEXT_WINDOW=20000` — spawned + classic session driven (after clearing trust/FleetView/MCP first-run gates). **BUT gauge did NOT read tokens** → see finding; this is the blocker, not a pass.
-- [ ] Self-trigger: `checkpoint.sh` fires the critical auto-handover from budget pressure — **NOT achieved** (gauge blind → critical never detected). Root cause in finding.
-- [ ] Auto-restart + advance — **NOT achieved** (blocked upstream by the gauge).
-- [ ] Bounded — N/A (loop never armed).
-- [x] Wire evidence captured to `docs/reports/T-2389-livefire-evidence.md`; worker torn down (tmux kill + termlink deregister); worktree removed; `~/.claude.json` edits reverted; temp cleaned.
-
-**Outcome: NO-GO for arc-012 closure via this run.** The headline mechanic did
-not fire. The live-fire surfaced a real integration gap invisible to the four
-per-link tests: when the spawned session's hooks run, fw resolves `PROJECT_ROOT`
-to `/root` (proven by `check-project-boundary` blocking a livefire Bash with
-"Project root: /root"), blinding budget-gate/checkpoint → no `.budget-status`, no
-`.restart-requested`, `current_iteration` stays 0. Same class as T-2377 but via
-hook-cwd/`CLAUDE_PROJECT_DIR` rather than transcript path. Full evidence +
-two follow-up recommendations in the report.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,11 +176,7 @@ two follow-up recommendations in the report.
 
 ## Updates
 
-### 2026-06-14T06:56:58Z — task-created [task-create-agent]
+### 2026-07-04T22:42:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2389-execute-arc-012-continuous-mode-live-fir.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100189-d5-partial-complete-exclusion-misses--hu.md
 - **Context:** Initial task creation
-
-### 2026-07-04T22:39:55Z — status-update [task-update-agent]
-- **Change:** horizon: now → later
-- **Change:** status: started-work → captured (auto-sync)

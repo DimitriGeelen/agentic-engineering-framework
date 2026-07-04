@@ -1,6 +1,7 @@
 ---
 id: T-100188
-name: "Recommendation Verdict render on /inception/<id> + /approvals badge (T-100186 GO slice B)"
+name: "Recommendation Verdict render on /inception/<id> + /approvals badge (T-100186
+  GO slice B)"
 description: >
   T-100186 GO slice B: Watchtower renders the "## Recommendation Verdict" block
   (produced by the T-100187 validator) beside the recommendation on the
@@ -16,8 +17,39 @@ tags: []
 components: []
 related_tasks: [T-100186, T-100187]
 created: 2026-07-05T00:30:00Z
-last_update: '2026-07-05T00:30:00Z'
+last_update: '2026-07-04T22:30:02Z'
 date_finished:
+cost_estimate_proposed:
+  - ts: '2026-07-04T22:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 5
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=5 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-04T22:30:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 2
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-100188: Recommendation Verdict Watchtower render (T-100186 GO slice B)

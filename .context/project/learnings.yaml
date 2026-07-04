@@ -3714,3 +3714,10 @@ X'` returning empty group."
   date: 2026-07-04
   context: Added via context agent
   application: TBD
+- id: L-488
+  learning: "Cron-run checks that compare a partial current period against full-period baselines fire spurious anomalies when the cron fires early in the period — prorate the expectation by fraction-of-period elapsed and skip the check below a minimum fraction (D3 velocity: 01:02 run compared 1h of commits vs full-day avg). Pin the time dimension in tests with a clock substitution."
+  source: T-100123
+  task: T-100123
+  date: 2026-07-04
+  context: Added via context agent
+  application: TBD

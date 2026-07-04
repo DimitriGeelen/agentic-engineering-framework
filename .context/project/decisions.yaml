@@ -2095,3 +2095,52 @@ decisions:
     date: 2026-07-04
     task: T-100140
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-302
+    decision: "delete only when `--push` succeeded AND `merge-base --is-ancestor <branch> origin/<target>` confirms containment; without `--push` the branch is always kept."
+    scope: project
+    date: 2026-07-04
+    task: T-100142
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-303
+    decision: "re-check containment ourselves, then `git -C <MAIN> branch -D`."
+    scope: project
+    date: 2026-07-04
+    task: T-100142
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-304
+    decision: "cleanup is the last step of `cmd_run`; worktree removed before branch deletion; all post-removal git calls run with `cwd=` pinned to MAIN."
+    scope: project
+    date: 2026-07-04
+    task: T-100142
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-305
+    decision: "`fw doctor` as the single primary surface; scan lives in `lib/branch-hygiene.sh` as a sourceable function."
+    scope: project
+    date: 2026-07-04
+    task: T-100143
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-306
+    decision: "one doctor WARN counting all findings, listing first 12."
+    scope: project
+    date: 2026-07-04
+    task: T-100143
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-307
+    decision: "`fw_branch_divergence` as a second function in C2's lib, sourced by handover.sh."
+    scope: project
+    date: 2026-07-04
+    task: T-100144
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-308
+    decision: "divergence line first thing in Where We Are; overdue nudge as first line of Suggested First Action."
+    scope: project
+    date: 2026-07-04
+    task: T-100144
+    rationale: "Auto-captured from task file on completion"
