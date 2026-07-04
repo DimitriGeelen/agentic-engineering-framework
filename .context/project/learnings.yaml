@@ -3700,3 +3700,10 @@ X'` returning empty group."
   date: 2026-07-04
   context: Added via context agent
   application: TBD
+- id: L-486
+  learning: "TTL cache over a growing corpus without per-file mtime caching + single-flight lock is a livelock time-bomb: once rebuild time exceeds the TTL, every request pays a full rebuild and concurrent pollers stampede a threaded server into GIL livelock (Watchtower 2026-07-04, 135 threads, 3h outage). Pair every TTL cache with (a) per-file mtime_cached_get for the rebuild and (b) acquire(blocking=False)+serve-stale. Also: monitoring that detects but cannot act is not monitoring — liveness logged 'stopped' every minute for 3h."
+  source: P-001
+  task: T-100140
+  date: 2026-07-04
+  context: Added via context agent
+  application: TBD

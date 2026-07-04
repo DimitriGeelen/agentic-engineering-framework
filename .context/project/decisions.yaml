@@ -2074,3 +2074,24 @@ decisions:
     date: 2026-07-02
     task: T-2506
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-299
+    decision: "libyaml CSafeLoader (via `yaml_safe_load` in web/shared.py) + mtime cache with deepcopy-on-return in `load_yaml`"
+    scope: project
+    date: 2026-07-04
+    task: T-100140
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-300
+    decision: "extend `agents/monitor/liveness-check.sh` (existing 1-min cron) with a consecutive-failure counter + auto-restart; pid-file presence gates it so deliberate stops are respected"
+    scope: project
+    date: 2026-07-04
+    task: T-100140
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-301
+    decision: "keep the gunicorn swap out of this task; this task removed the trigger (per-request corpus parse), T-1611 removes the amplifier (unbounded thread-per-request)"
+    scope: project
+    date: 2026-07-04
+    task: T-100140
+    rationale: "Auto-captured from task file on completion"
