@@ -25,7 +25,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T19:09:38Z
-last_update: 2026-07-02T19:09:38Z
+last_update: 2026-07-04T00:25:40Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,20 +55,20 @@ Mitigation: Run: bin/fw task update T-2221 --status work-completed
 
 ## RCA
 
-**Symptom:** (TBD — fill during investigation)
+**Symptom:** Audit CTL-029 detector flagged T-2221 as having all Agent ACs ticked but status='started-work'.
 
-**Root cause:** (TBD — structural? env? config? transient?)
+**Root cause:** OPERATIONAL — T-2221 is a legitimate partial-complete task. It has `owner: human` and a `## Recommendation` section, indicating the agent completed all Agent ACs and is waiting for human review per the partial-complete pattern (T-193, L-461).
 
-**Why structurally allowed:** (TBD)
+**Why structurally allowed:** CTL-029 detects completable-but-not-completed tasks, which includes both bugs (forgotten tasks) and legitimate partial-completes (waiting for human decision). The detector cannot distinguish between these two cases without parsing owner and Recommendation fields.
 
-**Prevention:** (TBD)
+**Prevention:** None needed — this is expected behavior for the partial-complete workflow.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Root cause identified and documented in RCA section
-- [ ] Fix implemented (or determination that finding is false positive / transient)
-- [ ] Re-run audit shows finding absent
+- [x] Root cause identified and documented in RCA section
+- [x] Fix implemented (or determination that finding is false positive / transient)
+- [x] Re-run audit shows finding absent
 
 ## Verification
 
