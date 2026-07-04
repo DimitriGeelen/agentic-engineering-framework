@@ -114,6 +114,43 @@ _make_task() {
     [[ "$output" == *"no evidence citation"* ]]
 }
 
+@test "T-100159: multi-line rationale with citation on continuation line passes" {
+    # Pickup 074 defect 2: single-line regex truncated wrapped rationales,
+    # losing the citation → false answered-without-citation.
+    file=$(_make_task inception "- **IW-1: Wrapped rationale**
+  confidence: 2
+  disposition: answered
+  rationale: converged after walking the evidence trail in
+    docs/reports/T-9999-test.md and the dialogue log")
+    run python3 "$SCAN_RUNNER" "$file"
+    [ "$status" -eq 0 ]
+    [ "$output" = "[]" ]
+}
+
+@test "T-100159: multi-line rationale with NO citation anywhere still fires" {
+    file=$(_make_task inception "- **IW-1: Wrapped no-citation**
+  confidence: 2
+  disposition: answered
+  rationale: we talked about it at length and
+    everyone agreed it was fine")
+    run python3 "$SCAN_RUNNER" "$file"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"answered"* ]]
+    [[ "$output" == *"no"*"citation"* ]] || [[ "$output" == *"evidence citation"* ]]
+}
+
+@test "T-100159: continuation accumulation stops at the next field line" {
+    # A citation AFTER a following field (e.g. in a note:) must NOT rescue
+    # a citation-less rationale.
+    file=$(_make_task inception "- **IW-1: Field boundary**
+  disposition: answered
+  rationale: agreed in the room
+  note: see T-9998 for unrelated context")
+    run python3 "$SCAN_RUNNER" "$file"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"evidence citation"* ]]
+}
+
 @test "non-inception (build) is exempt" {
     file=$(_make_task build "- **IW-1: question one**
   disposition: maybe")
