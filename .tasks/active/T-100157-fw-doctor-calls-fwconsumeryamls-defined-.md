@@ -160,6 +160,14 @@ git show origin/master:tests/unit/t100157_doctor_config_source.bats > /tmp/.t100
 
 ## RCA
 
+**Symptom:** every `fw doctor` run printed `bin/fw: line 1870: fw_consumer_yamls: command not found` (and again at 1962); the Consumer Projects fleet checks produced no output.
+
+**Root cause:** T-616/T-1195 consumer checks call `fw_consumer_yamls` from `lib/config.sh`, but `do_doctor` never sources that lib — only `do_config` (bin/fw:2002) does. The empty command substitution makes the `for` loop iterate zero times, which is indistinguishable from "no consumers found".
+
+**Why structurally allowed:** the failure is a stderr line inside a command whose overall exit code stays 0 — doctor has no self-check that its own sections executed, and no test asserted doctor output is free of `command not found`. The silent-no-op shape (empty loop == clean state) violates D2 (no silent failures) invisibly.
+
+**Prevention:** tests/unit/t100157_doctor_config_source.bats pins (a) the source line precedes the first call site inside do_doctor, (b) lib/config.sh still defines fw_consumer_yamls (contract pin — fails if the function moves without updating the doctor source).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
