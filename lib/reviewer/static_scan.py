@@ -2780,10 +2780,43 @@ def main(argv: list[str] | None = None) -> int:
                 },
             )
 
+    # T-100187 (T-100186 GO slice A): recommendation-claims validation on
+    # inception tasks — extract evidence claims from ## Recommendation, verify
+    # read-only, write ## Recommendation Verdict. Advisory; never blocks.
+    claims_verdict = None
+    task_meta, _ = parse_task_file(task_file)
+    if (task_meta or {}).get("workflow_type") == "inception":
+        from lib.reviewer.recommendation_claims import (
+            render_claims_verdict_md,
+            validate_task as validate_recommendation_claims,
+            write_claims_verdict_to_task,
+        )
+        claims_verdict = validate_recommendation_claims(task_file, project_root)
+        if not no_write and task_file.parent.name != "completed":
+            write_claims_verdict_to_task(task_file, claims_verdict)
+            append_feedback_event(
+                stream,
+                {
+                    "kind": "recommendation_claims_verdict",
+                    "timestamp": claims_verdict.timestamp,
+                    "scan_id": claims_verdict.scan_id,
+                    "task_id": claims_verdict.task_id,
+                    "payload": {
+                        "overall": claims_verdict.overall,
+                        "claim_count": len(claims_verdict.claims),
+                    },
+                },
+            )
+
     if emit_json:
-        print(json.dumps(verdict.to_dict(), indent=2))
+        payload = verdict.to_dict()
+        if claims_verdict is not None:
+            payload["recommendation_claims"] = claims_verdict.to_dict()
+        print(json.dumps(payload, indent=2))
     else:
         print(render_verdict_md(verdict))
+        if claims_verdict is not None:
+            print(render_claims_verdict_md(claims_verdict))
 
     # exit code semantics: 0 PASS/CONCERN, 1 FAIL (informational; v1.0 is non-blocking)
     return 0 if verdict.overall != "FAIL" else 1
