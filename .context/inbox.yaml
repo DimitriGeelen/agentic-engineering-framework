@@ -711,3 +711,10 @@ observations:
   tags: [bug]
   status: promoted
   promoted_to: task
+- id: OBS-086
+  text: "create-task.sh interactive prompts (owner/name/etc) hang forever in no-tty contexts (background dispatch, cron): read -r blocks on socket stdin. Two fw task create invocations hung >1h today. Fix: guard interactive fallback with [ -t 0 ] and die with 'missing --owner' when non-interactive."
+  captured: 2026-07-04T14:18:41Z
+  context_task: T-100157
+  tags: [bug]
+  status: dismissed
+  promoted_to: null
