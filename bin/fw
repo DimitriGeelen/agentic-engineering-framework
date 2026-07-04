@@ -2296,6 +2296,33 @@ else:
             ;;
     esac
 
+    # T-100143 (C2 of T-100139): branch hygiene — WARN-only advisory rail.
+    # merged-but-undeleted local branches, live branches far behind master,
+    # worktrees parked on merged branches, remote refs fully contained in
+    # origin/master. C1 (fw integrate run, T-100142) deletes branches on
+    # verified landings; this surfaces the remaining debris. Threshold via
+    # FW_BRANCH_BEHIND_WARN (default 50, shared with C3/T-100144). Silent
+    # scan on a tidy repo (OK line only).
+    if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+        . "$FRAMEWORK_ROOT/lib/branch-hygiene.sh"
+        local _bh_out _bh_count
+        _bh_out=$(fw_branch_hygiene "$PROJECT_ROOT" 2>/dev/null || true)
+        if [ -n "$_bh_out" ]; then
+            _bh_count=$(printf '%s\n' "$_bh_out" | grep -c .)
+            echo -e "  ${YELLOW}WARN${NC}  Branch hygiene: $_bh_count finding(s)"
+            while IFS= read -r _bl; do
+                echo -e "         $_bl"
+            done < <(printf '%s\n' "$_bh_out" | head -12)
+            if [ "$_bh_count" -gt 12 ]; then
+                echo -e "         … $((_bh_count - 12)) more (full list: git branch --merged origin/master)"
+            fi
+            echo -e "         Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back)"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  Branch hygiene clean"
+        fi
+    fi
+
     # T-2185: stale gauge-READY gaps — surface operator-procrastination class.
     # WARN when ≥1 gap has closure_check_command + gauge currently READY for
     # ≥7 days (created/last_reviewed). Mirrors OBS-048 (G-064 READY since
