@@ -84,3 +84,28 @@ fw_branch_hygiene() {
 
     return 0
 }
+
+# ── T-100144 (C3 of T-100139): divergence summary for handover ──
+# Prints machine-parseable lines for the current checkout vs origin/master:
+#   divergence <branch> ahead=<n> behind=<n>     (any non-master branch)
+#   nudge behind=<n> threshold=<t>               (only when behind > FW_BRANCH_BEHIND_WARN)
+# Silent (no output, exit 0) on master, detached HEAD, or no origin/master —
+# the handover stays neutral on a tidy checkout. Threshold shared with the
+# fw_branch_hygiene doctor scan above.
+fw_branch_divergence() {
+    local repo="${1:-.}"
+    local br behind ahead warn
+    br=$(git -C "$repo" branch --show-current 2>/dev/null)
+    if [ -z "$br" ] || [ "$br" = "master" ]; then
+        return 0
+    fi
+    git -C "$repo" rev-parse --verify -q origin/master >/dev/null 2>&1 || return 0
+    set -- $(git -C "$repo" rev-list --left-right --count origin/master...HEAD 2>/dev/null)
+    behind="${1:-0}"; ahead="${2:-0}"
+    warn="${FW_BRANCH_BEHIND_WARN:-50}"
+    echo "divergence $br ahead=$ahead behind=$behind"
+    if [ "$behind" -gt "$warn" ]; then
+        echo "nudge behind=$behind threshold=$warn"
+    fi
+    return 0
+}
