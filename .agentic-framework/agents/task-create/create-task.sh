@@ -305,21 +305,26 @@ if [ "$WORKFLOW_TYPE" = "inception" ] && [ -f "$TASKS_DIR/templates/inception.md
     TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" TC_RELATED_YAML="$RELATED_YAML" \
     TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
     python3 -c "
-import sys, os
+import sys, os, re
 e = os.environ
 with open(e['TC_TEMPLATE']) as f:
     t = f.read()
 name, desc = sys.argv[1], sys.argv[2]
-t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
-t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
-t = t.replace('description: >', 'description: >\n  ' + desc, 1)
-t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
-t = t.replace('horizon: now', 'horizon: ' + e['TC_HORIZON'])
-t = t.replace('owner:', 'owner: ' + e['TC_OWNER'], 1)
-t = t.replace('tags: []', 'tags: ' + e['TC_TAGS_YAML'])
-t = t.replace('related_tasks: []', 'related_tasks: ' + e['TC_RELATED_YAML'])
-t = t.replace('created:', 'created: ' + e['TC_TIMESTAMP'], 1)
-t = t.replace('last_update:', 'last_update: ' + e['TC_TIMESTAMP'], 1)
+# T-100130: frontmatter substitutions are line-anchored — un-anchored
+# str.replace let a task NAME containing a key string (e.g. 'owner:')
+# hijack the first-occurrence match after the name was substituted in.
+def sub_line(key, repl, text):
+    return re.sub('(?m)^' + re.escape(key), lambda m: repl, text, count=1)
+t = sub_line('id: T-XXX', 'id: ' + e['TC_TASK_ID'], t)
+t = sub_line('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', t)
+t = sub_line('description: >', 'description: >\n  ' + desc.replace('\n', '\n  '), t)
+t = sub_line('status: captured', 'status: ' + e['TC_STATUS'], t)
+t = sub_line('horizon: now', 'horizon: ' + e['TC_HORIZON'], t)
+t = sub_line('owner:', 'owner: ' + e['TC_OWNER'], t)
+t = sub_line('tags: []', 'tags: ' + e['TC_TAGS_YAML'], t)
+t = sub_line('related_tasks: []', 'related_tasks: ' + e['TC_RELATED_YAML'], t)
+t = sub_line('created:', 'created: ' + e['TC_TIMESTAMP'], t)
+t = sub_line('last_update:', 'last_update: ' + e['TC_TIMESTAMP'], t)
 t = t.replace('# T-XXX: [Inception Name]', '# ' + e['TC_TASK_ID'] + ': ' + name)
 t = t.replace('[Chronological log', '### ' + e['TC_TIMESTAMP'] + ' — task-created [task-create-agent]\n- **Action:** Created inception task\n- **Output:** ' + e['TC_FILEPATH'] + '\n- **Context:** Initial task creation\n\n[Chronological log')
 with open(e['TC_FILEPATH'], 'w') as f:
@@ -331,22 +336,27 @@ elif [ -f "$TASKS_DIR/templates/default.md" ]; then
     TC_HORIZON="$HORIZON" TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" \
     TC_RELATED_YAML="$RELATED_YAML" TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
     python3 -c "
-import sys, os
+import sys, os, re
 e = os.environ
 with open(e['TC_TEMPLATE']) as f:
     t = f.read()
 name, desc = sys.argv[1], sys.argv[2]
-t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
-t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
-t = t.replace('description: >', 'description: >\n  ' + desc, 1)
-t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
-t = t.replace('workflow_type:', 'workflow_type: ' + e['TC_WORKFLOW_TYPE'], 1)
-t = t.replace('owner:', 'owner: ' + e['TC_OWNER'], 1)
-t = t.replace('horizon: now', 'horizon: ' + e['TC_HORIZON'])
-t = t.replace('tags: []', 'tags: ' + e['TC_TAGS_YAML'])
-t = t.replace('related_tasks: []', 'related_tasks: ' + e['TC_RELATED_YAML'])
-t = t.replace('created:', 'created: ' + e['TC_TIMESTAMP'], 1)
-t = t.replace('last_update:', 'last_update: ' + e['TC_TIMESTAMP'], 1)
+# T-100130: frontmatter substitutions are line-anchored — un-anchored
+# str.replace let a task NAME containing a key string (e.g. 'owner:')
+# hijack the first-occurrence match after the name was substituted in.
+def sub_line(key, repl, text):
+    return re.sub('(?m)^' + re.escape(key), lambda m: repl, text, count=1)
+t = sub_line('id: T-XXX', 'id: ' + e['TC_TASK_ID'], t)
+t = sub_line('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', t)
+t = sub_line('description: >', 'description: >\n  ' + desc.replace('\n', '\n  '), t)
+t = sub_line('status: captured', 'status: ' + e['TC_STATUS'], t)
+t = sub_line('workflow_type:', 'workflow_type: ' + e['TC_WORKFLOW_TYPE'], t)
+t = sub_line('owner:', 'owner: ' + e['TC_OWNER'], t)
+t = sub_line('horizon: now', 'horizon: ' + e['TC_HORIZON'], t)
+t = sub_line('tags: []', 'tags: ' + e['TC_TAGS_YAML'], t)
+t = sub_line('related_tasks: []', 'related_tasks: ' + e['TC_RELATED_YAML'], t)
+t = sub_line('created:', 'created: ' + e['TC_TIMESTAMP'], t)
+t = sub_line('last_update:', 'last_update: ' + e['TC_TIMESTAMP'], t)
 t = t.replace('# T-XXX: [Task Name]', '# ' + e['TC_TASK_ID'] + ': ' + name)
 t = t.replace('<!-- Auto-populated by git mining at task completion.\\n     Manual entries optional during execution. -->', '### ' + e['TC_TIMESTAMP'] + ' — task-created [task-create-agent]\n- **Action:** Created task via task-create agent\n- **Output:** ' + e['TC_FILEPATH'] + '\n- **Context:** Initial task creation')
 with open(e['TC_FILEPATH'], 'w') as f:

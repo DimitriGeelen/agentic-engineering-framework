@@ -3226,9 +3226,16 @@ fi
 # ============================================
 if should_run_section "compliance" || should_run_section "oe-daily"; then
     completable_warn=0
+    partial_complete_count=0
     if [ -d "$PROJECT_ROOT/.tasks/active" ]; then
-        while IFS='|' read -r task_id task_status; do
+        while IFS='|' read -r task_id task_status task_kind; do
             [ -z "$task_id" ] && continue
+            # T-100129: partial-completes (human-owned, awaiting review) are
+            # expected state per T-193/L-461 — count, don't WARN.
+            if [ "$task_kind" = "partial" ]; then
+                partial_complete_count=$((partial_complete_count + 1))
+                continue
+            fi
             warn "CTL-029: $task_id has all Agent ACs ticked but status='$task_status' — completable, not closed" \
                  "Agent finished the work; task is shipped-but-unclosed (active/-side mirror of CTL-028)" \
                  "Run: bin/fw task update $task_id --status work-completed"
@@ -3265,6 +3272,8 @@ for fname in sorted(os.listdir(active_dir)):
     status = status_m.group(1).strip()
     if status not in ("started-work", "issues"):
         continue
+    owner_m = re.search(r"^owner:\s*(\S+)", fm, re.MULTILINE)
+    owner = owner_m.group(1).strip() if owner_m else ""
 
     body = text[fm_match.end():]
     ac_start = re.search(r"^## Acceptance Criteria\s*$", body, re.MULTILINE)
@@ -3304,9 +3313,36 @@ for fname in sorted(os.listdir(active_dir)):
     if real_ac_count == 0:
         continue
     if unticked == 0 and ticked > 0:
-        print(f"{task_id}|{status}")
+        # T-100129: legitimate partial-complete (T-193/L-461) — agent ACs done,
+        # human review pending. Shape: owner human AND (unchecked Human ACs OR
+        # a substantive ## Recommendation). Report as 'partial', not WARN.
+        kind = "warn"
+        if owner == "human":
+            human_unticked = 0
+            human_h = re.search(r"^### Human\s*$", ac_block, re.MULTILINE)
+            if human_h:
+                rest_h = ac_block[human_h.end():]
+                next_hh = re.search(r"^### |^## ", rest_h, re.MULTILINE)
+                human_scan = rest_h[: next_hh.start()] if next_hh else rest_h
+                for line in human_scan.splitlines():
+                    m = AC_PAT.match(line)
+                    if m and not PLACEHOLDER_PAT.match(line) and m.group(1) != "x":
+                        human_unticked += 1
+            reco_sub = ""
+            reco_h = re.search(r"^## Recommendation\s*$", body, re.MULTILINE)
+            if reco_h:
+                rest_r = body[reco_h.end():]
+                next_h2r = re.search(r"^## ", rest_r, re.MULTILINE)
+                reco_sub = rest_r[: next_h2r.start()] if next_h2r else rest_r
+                reco_sub = re.sub(r"<!--.*?-->", "", reco_sub, flags=re.DOTALL).strip()
+            if human_unticked > 0 or len(reco_sub) > 50:
+                kind = "partial"
+        print(f"{task_id}|{status}|{kind}")
 PYEOF
 )
+    fi
+    if [ "$partial_complete_count" -gt 0 ]; then
+        info "CTL-029: $partial_complete_count partial-complete task(s) awaiting human review (skipped — T-193/L-461 pattern, not shipped-but-unclosed)"
     fi
     if [ "$completable_warn" -eq 0 ]; then
         pass "CTL-029: No completable-but-not-completed active tasks"
@@ -5245,20 +5281,28 @@ bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
 "
 
             # Use fw task create with custom fields
-            local task_id=$("$FRAMEWORK_ROOT/bin/fw" task create \
+            local create_out
+            create_out=$("$FRAMEWORK_ROOT/bin/fw" task create \
                 --name "$title" \
                 --description "$title" \
                 --type build \
                 --owner agent \
                 --horizon now \
                 --start \
-                2>&1 | grep "^ID:" | awk '{print $2}')
+                2>&1)
+            local task_id=$(echo "$create_out" | grep "^ID:" | awk '{print $2}')
+            # T-100128: resolve the file from create output (File: line) instead of
+            # an active/${task_id}-*.md glob — the glob failed silently for some
+            # emissions (T-2448/T-2470), leaving default-template tasks without
+            # audit_finding_hash, which broke dedup and spawned duplicate findings.
+            local task_file=$(echo "$create_out" | sed -n 's/^File:[[:space:]]*//p' | head -1)
 
             if [ -n "$task_id" ]; then
-                # Append custom frontmatter fields
-                local task_file="$TASKS_DIR/active/${task_id}-"*.md
-                if ls $task_file 1>/dev/null 2>&1; then
-                    task_file=$(ls $task_file | head -1)
+                if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+                    # Fallback: legacy glob resolution
+                    task_file=$(ls "$TASKS_DIR/active/${task_id}-"*.md 2>/dev/null | head -1)
+                fi
+                if [ -n "$task_file" ] && [ -f "$task_file" ]; then
                     # Insert custom fields after workflow_type line
                     sed -i "/^workflow_type: build/a\\
 audit_severity: $severity\\
@@ -5277,9 +5321,14 @@ tags: [audit-finding, severity:$severity, section:$section]" "$task_file"
 
                     ((created++))
                     echo "[CREATED] $task_id: $title"
+                else
+                    # T-100128: previously a silent no-op — the task stayed in
+                    # active/ as a default-template orphan with no finding hash.
+                    echo "[ERROR] $task_id created but task file not resolvable — audit frontmatter/body NOT applied; task left as default template (fix or delete manually)" >&2
                 fi
             else
                 echo "[ERROR] Failed to create task for: $title" >&2
+                echo "$create_out" | head -5 >&2
             fi
         fi
     done <<< "$findings"
