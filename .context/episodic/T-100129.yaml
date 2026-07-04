@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100129: CTL-029 completable-detection: skip legitimate partial-completes (human-owned with Recommendation)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T08:42:55Z
+# ============================================================================
+
+task_id: T-100129
+task_name: "CTL-029 completable-detection: skip legitimate partial-completes (human-owned with Recommendation)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T08:36:26Z
+completed: 2026-07-04T08:42:36Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-04T10:41:44+02:00
+last_commit: 2026-07-04T10:41:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CTL-029 skips legitimate partial-completes (human-owned + actionable handoff)
+
+# Key outcomes
+outcomes:
+  - 'CTL-029 completable-detection skips tasks that are legitimate partial-completes: owner is human AND (unchecked Human ACs exist OR a substantive ## Recommendation section exists) — implemented in the CTL-029 Python classifier (kind=partial|warn third field); bats (f)/(g)/(h) pin the contract'
+  - 'Skipped partial-completes are still visible: CTL-029 emits an info/pass line with the partial-complete count (not silent) — live run: `[INFO] CTL-029: 21 partial-complete task(s) awaiting human review (skipped — T-193/L-461 pattern...)`'
+  - 'Known partial-completes (T-2221/T-2268 subject class, 21 tasks in current corpus) no longer produce CTL-029 WARN on a live run; true positives still WARN — corpus check confirmed T-2395 (agent-owned) and T-2426 (human-owned but zero unchecked Human ACs AND no Recommendation = improper handoff, human has nothing actionable) both correctly remain WARN'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-100129-ctl-029-completable-detection-skip-legit.md'
+  - 'tests/unit/test_audit_completable_not_completed.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-04T10:41:44"
+    action: "T-100129: CTL-029 skips legitimate partial-completes (human-owned + actionable handoff)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 3
+  lines_added: 299
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100129-ctl-029-completable-detection-skip-legit.md
+generated_by: context-agent-hybrid
