@@ -1,0 +1,73 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100138: delete merged branch debris — 29 fully-merged local branches + merged remote
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T10:00:18Z
+# ============================================================================
+
+task_id: T-100138
+task_name: "delete merged branch debris — 29 fully-merged local branches + merged remote"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T09:53:34Z
+completed: 2026-07-04T10:00:05Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'All local branches fully merged into origin/master (ahead:0) deleted via `git branch -d` (refuses unmerged — structural safety); current branch and unmerged strands untouched — 28 deleted (27 + arc012 worktree branch)'
+  - 'arc012-continuous-run-s4s5 worktree: dirty files triaged (rescued: 4 handover .md records absent from MAIN, T-2401 completion metadata + reviewer verdict; confirmed noise: session/state files, discard manifests; T-2402 placeholder skeleton NOT rescued — its fw-metrics bug no longer reproduces on current code), worktree removed, branch deleted'
+  - 'Merged remote refs on origin deleted after per-ref ahead:0 confirmation — 4 deleted (consumer-improvements, fix/project-root-resolution, origin-* dupes); fix/T-002 (+1), fix/T-003 (+1), learning/precompact-cleanup (+1), main (+1) SKIPPED as unmerged — handed to the lifecycle inception'
+  - '`git branch | grep -c ''''` drops to <=8 and `git worktree list` shows only MAIN + the 2 live divergent worktrees'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100138-delete-merged-branch-debris--29-fully-me.md
+generated_by: context-agent-hybrid

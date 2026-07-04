@@ -1,8 +1,10 @@
 ---
-id: T-2401
-name: "Refresh continuous-run directive for arc-012 live-fire"
+id: T-100138
+name: "delete merged branch debris — 29 fully-merged local branches + merged remote
+  refs + arc012 worktree teardown"
 description: >
-  Refresh continuous-run directive for arc-012 live-fire
+  delete merged branch debris — 29 fully-merged local branches + merged remote refs
+  + arc012 worktree teardown
 
 status: work-completed
 workflow_type: build
@@ -21,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-14T18:22:35Z
-last_update: '2026-07-02T13:45:10Z'
-date_finished: 2026-06-14T18:26:50Z
+created: 2026-07-04T09:53:34Z
+last_update: 2026-07-04T10:00:05Z
+date_finished: 2026-07-04T10:00:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,7 +37,7 @@ date_finished: 2026-06-14T18:26:50Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-02T13:45:10Z'
+  - ts: '2026-07-04T10:00:01Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -44,26 +46,49 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-04T10:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2401: Refresh continuous-run directive for arc-012 live-fire
+# T-100138: delete merged branch debris — 29 fully-merged local branches + merged remote refs + arc012 worktree teardown
 
 ## Context
 
-The continuous-run loop (arc-012) is build-complete, but `.context/working/.next-directive.yaml`
-still pointed at S4/S5 build slices that have since SHIPPED. A live-fire against the stale
-directive would re-inject marching orders describing already-done work. This task refreshes the
-directive to reflect reality (arc-012 build scope CLOSED) and to make a live-fire ADVANCE the
-iteration counter cleanly (1→2) for the operator-witnessed G-062 headline-mechanic demo. The
-live-fire itself is the operator's action; this task only refreshes + verifies the directive.
+Mechanical half of the branch/worktree hygiene review (2026-07-04 session dialogue).
+29 of 36 local branches are ahead:0 vs origin/master — pure debris; deleting them
+loses nothing (every commit is contained in origin/master). The policy half
+(lifecycle guards, doctor checks, integrate-deletes-on-landing) is a separate
+inception. Unmerged strands (t2353 +22, worktree-rca +37, t2417 +58, t2416 +139,
+audit-remediation-t2416 +1, learning/precompact-cleanup +1) are NOT touched here —
+they need merge-back decisions, not deletion.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `.next-directive.yaml` reflects arc-012 build scope CLOSED (no stale S4/S5 "remaining slice" text)
-- [x] Directive body contains NO `T-NNNN` reference, so the bounded-autonomy ceiling check (inject-next-directive.py:254-259) is skipped and the counter advances (not freezes)
-- [x] `--source resume` on a temp copy surfaces `## Next Directive (iteration 2/5, tier_ceiling 1)` and advances current_iteration 1→2 with `last_terminated_reason: ''`
-- [x] `expires_at` extended (2026-06-17) so the demo window is not tight; YAML parses
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] All local branches fully merged into origin/master (ahead:0) deleted via `git branch -d` (refuses unmerged — structural safety); current branch and unmerged strands untouched — 28 deleted (27 + arc012 worktree branch)
+- [x] arc012-continuous-run-s4s5 worktree: dirty files triaged (rescued: 4 handover .md records absent from MAIN, T-2401 completion metadata + reviewer verdict; confirmed noise: session/state files, discard manifests; T-2402 placeholder skeleton NOT rescued — its fw-metrics bug no longer reproduces on current code), worktree removed, branch deleted
+- [x] Merged remote refs on origin deleted after per-ref ahead:0 confirmation — 4 deleted (consumer-improvements, fix/project-root-resolution, origin-* dupes); fix/T-002 (+1), fix/T-003 (+1), learning/precompact-cleanup (+1), main (+1) SKIPPED as unmerged — handed to the lifecycle inception
+- [x] `git branch | grep -c ''` drops to <=8 and `git worktree list` shows only MAIN + the 2 live divergent worktrees
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +123,16 @@ live-fire itself is the operator's action; this task only refreshes + verifies t
 
 ## Verification
 
+[ "$(git branch | grep -c '')" -le 8 ]
+[ "$(git worktree list | grep -c '')" -eq 3 ]
+# no fully-merged (ahead:0) local branches remain except master and checked-out/worktree branches
+out=$(git branch --merged origin/master | grep -vE '^\*|^\+|  master$' | grep -c '' || true); [ "$out" -eq 0 ]
+# rescued artifacts present in MAIN
+[ -f .context/handovers/S-2026-0614-1625.md ]
+grep -q '^status: work-completed' .tasks/completed/T-2401-refresh-continuous-run-directive-for-arc.md
+# deleted remote refs are gone
+! git ls-remote --heads origin | grep -qE 'consumer-improvements-from-job-search|origin-fix/project-root-resolution'
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -128,9 +163,6 @@ live-fire itself is the operator's action; this task only refreshes + verifies t
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-python3 -c "import yaml; yaml.safe_load(open('.context/working/.next-directive.yaml'))"
-out=$(python3 -c "import yaml,re; print(re.findall(r'T-[0-9]{3,4}', yaml.safe_load(open('.context/working/.next-directive.yaml'))['directive']))"); [ "$out" = "[]" ]
-T=$(mktemp -d); mkdir -p "$T/.context/working"; cp .context/working/.next-directive.yaml .context/working/.continuous-mode.yaml "$T/.context/working/"; o=$(python3 agents/context/inject-next-directive.py --project-root "$T" --source resume --now 2026-06-14T18:25:00Z 2>&1); echo "$o" | grep -q "iteration 2/5" && grep -q "current_iteration: 2" "$T/.context/working/.continuous-mode.yaml"; rc=$?; rm -rf "$T"; [ $rc -eq 0 ]
 
 ## RCA
 
@@ -174,10 +206,14 @@ T=$(mktemp -d); mkdir -p "$T/.context/working"; cp .context/working/.next-direct
 
 ## Decisions
 
-### 2026-06-14 — Body deliberately T-NNNN-free (clean advance vs ceiling-governed)
-- **Chose:** Write the directive body with no `T-NNNN` reference, so the bounded-autonomy ceiling check is skipped and the counter advances 1→2 cleanly on auto-restart.
-- **Why:** The live-fire's purpose is to WITNESS the loop advancing. A T-NNNN in the body would make the ceiling look up that task's blast_radius; if > tier_ceiling (1), the loop FREEZES and surfaces "TIER CEILING EXCEEDED" instead of advancing — a valid behavior but not the demo we want first.
-- **Rejected:** Setting `next_task: T-NNNN` with a low-blast task — adds a dependency on a real low-blast task existing and on its cost_estimate being populated; T-NNNN-free is simpler and deterministic for the demo. (Real autonomous continuation should use the next_task form so the ceiling governs.)
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -191,23 +227,24 @@ T=$(mktemp -d); mkdir -p "$T/.context/working"; cp .context/working/.next-direct
 
 ## Updates
 
-### 2026-06-14T18:22:35Z — task-created [task-create-agent]
+### 2026-07-04T09:53:34Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2401-refresh-continuous-run-directive-for-arc.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100138-delete-merged-branch-debris--29-fully-me.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-6ab7d9a0
-- **Timestamp:** 2026-06-14T18:26:51Z
+- **Scan ID:** R-5a2a72bc
+- **Timestamp:** 2026-07-04T10:00:08Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** yes
-- **Findings:** none
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
 
-- **Layer-1 escalations:** 1
-  1. **destructive-action** (high) — Destructive operation in verification or AC
-     - matched: `rm -rf`
+**Verification-level findings:**
 
-### 2026-06-14T18:26:50Z — status-update [task-update-agent]
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 9
+     - evidence: `! git ls-remote --heads origin | grep -qE 'consumer-improvements-from-job-search|origin-fix/project-root-resolution'`
+
+### 2026-07-04T10:00:05Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
