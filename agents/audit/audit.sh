@@ -5245,20 +5245,28 @@ bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
 "
 
             # Use fw task create with custom fields
-            local task_id=$("$FRAMEWORK_ROOT/bin/fw" task create \
+            local create_out
+            create_out=$("$FRAMEWORK_ROOT/bin/fw" task create \
                 --name "$title" \
                 --description "$title" \
                 --type build \
                 --owner agent \
                 --horizon now \
                 --start \
-                2>&1 | grep "^ID:" | awk '{print $2}')
+                2>&1)
+            local task_id=$(echo "$create_out" | grep "^ID:" | awk '{print $2}')
+            # T-100128: resolve the file from create output (File: line) instead of
+            # an active/${task_id}-*.md glob — the glob failed silently for some
+            # emissions (T-2448/T-2470), leaving default-template tasks without
+            # audit_finding_hash, which broke dedup and spawned duplicate findings.
+            local task_file=$(echo "$create_out" | sed -n 's/^File:[[:space:]]*//p' | head -1)
 
             if [ -n "$task_id" ]; then
-                # Append custom frontmatter fields
-                local task_file="$TASKS_DIR/active/${task_id}-"*.md
-                if ls $task_file 1>/dev/null 2>&1; then
-                    task_file=$(ls $task_file | head -1)
+                if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+                    # Fallback: legacy glob resolution
+                    task_file=$(ls "$TASKS_DIR/active/${task_id}-"*.md 2>/dev/null | head -1)
+                fi
+                if [ -n "$task_file" ] && [ -f "$task_file" ]; then
                     # Insert custom fields after workflow_type line
                     sed -i "/^workflow_type: build/a\\
 audit_severity: $severity\\
@@ -5277,9 +5285,14 @@ tags: [audit-finding, severity:$severity, section:$section]" "$task_file"
 
                     ((created++))
                     echo "[CREATED] $task_id: $title"
+                else
+                    # T-100128: previously a silent no-op — the task stayed in
+                    # active/ as a default-template orphan with no finding hash.
+                    echo "[ERROR] $task_id created but task file not resolvable — audit frontmatter/body NOT applied; task left as default template (fix or delete manually)" >&2
                 fi
             else
                 echo "[ERROR] Failed to create task for: $title" >&2
+                echo "$create_out" | head -5 >&2
             fi
         fi
     done <<< "$findings"

@@ -1,10 +1,10 @@
 ---
-id: T-2448
-name: "Audit WARN — CTL-029: T-2221 has all Agent ACs ticked but status='started-work'
-  — c..."
+id: T-100128
+name: "Missing-Updates cascade remediation: purge cascade finding-tasks + fix emit
+  body-replacement failure"
 description: >
-  Audit WARN — CTL-029: T-2221 has all Agent ACs ticked but status='started-work'
-  — c...
+  Missing-Updates cascade remediation: purge cascade finding-tasks + fix emit body-replacement
+  failure
 
 status: started-work
 workflow_type: build
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-02T18:39:56Z
-last_update: '2026-07-02T18:45:05Z'
+created: 2026-07-04T07:52:16Z
+last_update: '2026-07-04T08:00:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,8 +36,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-04T08:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-02T18:45:04Z'
+  - ts: '2026-07-04T08:00:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -57,30 +67,24 @@ bvp_scores_proposed:
       audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-07-02T18:45:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2448: Audit WARN — CTL-029: T-2221 has all Agent ACs ticked but status='started-work' — c...
+# T-100128: Missing-Updates cascade remediation: purge cascade finding-tasks + fix emit body-replacement failure
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-100060 (commit 1b21e1dad, 2026-07-03) fixed the audit --emit-tasks cascade root cause (template now includes ## Updates; 7-day cascade grace period) and deleted 59 cascade tasks (T-100000..T-100059). But 46+ cascade finding-tasks from the T-24xx/T-25xx generation created BEFORE the fix still sit in .tasks/active/ — all are "Audit WARN — Task T-XXXX ... missing Updates" findings about other audit-finding tasks. The grace period only suppresses re-emission for 7 days (expires ~2026-07-09 for this batch); the active-task scan will keep flagging these files because they themselves lack ## Updates.
+
+Second defect: T-2448 and T-2470 were created by the emitter with the DEFAULT template body (placeholder ACs, no ## Trigger/## Finding) and no audit_severity/audit_finding_hash frontmatter — the post-create body-replacement step in audit.sh `_emit_findings_as_tasks` silently failed for them. Missing hash breaks dedup → duplicate findings were created (T-2469 duplicates T-2448's finding about T-2221).
+
+Scope: (1) delete pure-cascade finding-tasks in active/ (same class + precedent as T-100060's deletion), (2) investigate + fix the body-replacement failure path so it cannot fail silently, (3) verify audit converges (no missing-Updates findings re-emitted).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] All active/ tasks flagged "missing Updates section" that reference audit-finding tasks are removed (pure-cascade class, T-100060 precedent); no non-cascade task deleted — safety check confirmed all 46 subjects are audit-finding tasks; T-2448/T-2470 malformed duplicates covered by T-2469 (triaged OPERATIONAL) and T-100067
+- [x] Malformed emit path (silent body-replacement failure) root-caused in RCA and hardened: failure now emits an error instead of leaving a default-template task without audit_finding_hash — file resolved from create output `File:` line (glob demoted to fallback), loud [ERROR] on both failure paths; bash -n clean; parsing unit-tested
+- [x] Re-run of active-task scan shows zero "missing Updates section" compliance issues in active/ — post-deletion scan: 0 issues, 258/258 valid (was 260/306)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -146,7 +150,18 @@ cost_estimate_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(python3 agents/audit/active-task-scan.py .tasks .context/audits 2>&1); ! echo "$out" | grep -q "missing Updates section"
+bash -n agents/audit/audit.sh
+
 ## RCA
+
+**Symptom:** 46 active tasks flagged "missing Updates section" by the active-task scan — every one an audit-finding task about another audit-finding task (cascade layers 2-3 of the T-100060 recursion). Separately, T-2448/T-2470 sat in active/ with default-template bodies (placeholder ACs) and no `audit_severity`/`audit_finding_hash` frontmatter.
+
+**Root cause:** Two residues of the pre-T-100060 emitter. (1) The cascade tasks were emitted before commit 1b21e1dad added `## Updates` to the emit template — they are data debris, not a live code bug; the 7-day emission grace period masked them but expires ~2026-07-09. (2) The malformed pair: `_emit_findings_as_tasks` resolved the just-created task file via an `active/${task_id}-*.md` glob inside `if ls ...; then` with **no else branch** — when the glob failed (exact trigger undetermined; 2 of ~90 emissions), the frontmatter-insert and body-replace steps were silently skipped, leaving a default-template orphan. Because the orphan carries no `audit_finding_hash`, dedup could not see it and the next audit run emitted a duplicate finding task (T-2469 duplicates T-2448; T-100067 duplicates T-2470).
+
+**Why structurally allowed:** The emitter's file-resolution failure path was a silent no-op — no [ERROR], no counter, nothing in cron logs. Silent failure + hash-based dedup keyed on a field the failure path never wrote = self-amplifying (each failure spawns duplicates).
+
+**Prevention:** (1) File path now parsed directly from `fw task create` output (`File:` line) with the glob demoted to fallback; (2) resolution failure now emits a loud [ERROR] naming the orphaned task id — visible in cron audit logs; (3) create-failure path now echoes the first 5 lines of create output for diagnosis. Cascade class itself is prevented by T-100060 (template + grace period); this task removes the pre-fix debris so the grace-period expiry cannot re-trigger it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -209,7 +224,7 @@ cost_estimate_proposed:
 
 ## Updates
 
-### 2026-07-02T18:39:56Z — task-created [task-create-agent]
+### 2026-07-04T07:52:16Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2448-audit-warn--ctl-029-t-2221-has-all-agent.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100128-missing-updates-cascade-remediation-purg.md
 - **Context:** Initial task creation
