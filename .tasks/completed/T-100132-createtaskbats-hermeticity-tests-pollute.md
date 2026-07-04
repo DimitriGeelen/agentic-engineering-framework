@@ -4,12 +4,12 @@ name: "create_task.bats hermeticity: tests pollute live focus.yaml and fail unde
 description: >
   create_task.bats hermeticity: tests pollute live focus.yaml and fail under CLAUDECODE=1 agent sessions
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/create_task.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T08:54:45Z
-last_update: 2026-07-04T08:54:45Z
-date_finished: null
+last_update: 2026-07-04T08:58:51Z
+date_finished: 2026-07-04T08:58:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -192,3 +192,22 @@ out=$(bats tests/unit/create_task_inception_recommendation_gate.bats 2>&1); ! ec
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100132-createtaskbats-hermeticity-tests-pollute.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-189d52d0
+- **Timestamp:** 2026-07-04T08:59:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
+     - evidence: `cp .context/working/focus.yaml /tmp/.t100132-focus-before; out=$(bats tests/unit/create_task.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 22 ] && ! echo "$out" | grep -q '^not ok' && diff -q /t`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 34
+     - evidence: `out=$(bats tests/unit/create_task_inception_recommendation_gate.bats 2>&1); ! echo "$out" | grep -q '^not ok'`
+
+### 2026-07-04T08:58:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
