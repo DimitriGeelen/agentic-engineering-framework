@@ -88,7 +88,22 @@ if [ -n "$RECOMMENDATION" ]; then
     esac
 fi
 
-# Interactive mode if required fields missing
+# Interactive mode if required fields missing.
+# T-100160 (OBS-086): prompt ONLY when stdin is a tty. In no-tty contexts
+# (background dispatch, cron, TermLink workers) stdin is a socket/pipe that
+# never delivers — `read -r` blocks forever (two >1h hangs, 2026-07-04).
+# Non-interactive callers get a fail-fast error naming the missing flags.
+if [ ! -t 0 ]; then
+    _missing=""
+    [ -z "$NAME" ] && _missing="$_missing --name"
+    [ -z "$DESCRIPTION" ] && _missing="$_missing --description"
+    [ -z "$WORKFLOW_TYPE" ] && _missing="$_missing --type"
+    [ -z "$OWNER" ] && _missing="$_missing --owner"
+    if [ -n "$_missing" ]; then
+        die "Missing required flag(s):$_missing (stdin is not a tty — interactive prompts disabled; pass all required flags)"
+    fi
+fi
+
 if [ -z "$NAME" ]; then
     echo -e "${YELLOW}Task name:${NC}"
     read -r NAME

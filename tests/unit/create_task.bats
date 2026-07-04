@@ -23,6 +23,35 @@ teardown() {
     rm -rf "$TEST_DIR" 2>/dev/null || true
 }
 
+# --- T-100160 (OBS-086): no-tty fail-fast instead of hanging prompts ---
+
+@test "T-100160: non-tty + missing required flags fails fast naming them (no hang)" {
+    # bats runs with stdin not a tty; before the fix this blocked forever on
+    # the interactive prompt (observed: 2 fw task create hangs >1h, 2026-07-04).
+    run timeout 10 "$CREATE_TASK" --name "No tty probe" --description "d" --type build < /dev/null
+    [ "$status" -ne 0 ]
+    [ "$status" -ne 124 ]  # not the timeout — the script itself refused
+    [[ "$output" == *"--owner"* ]]
+    [[ "$output" == *"not a tty"* ]]
+}
+
+@test "T-100160: non-tty with ALL required flags still creates the task" {
+    run timeout 10 "$CREATE_TASK" --name "No tty full flags" --description "d" --type build --owner agent < /dev/null
+    [ "$status" -eq 0 ]
+    ls "$TEST_DIR/active/" | grep -q "no-tty-full-flags"
+}
+
+@test "T-100160: tty prompt path preserved (guard precedes prompts, is tty-conditioned)" {
+    # A real-pty test is racy under bats; pin the structure instead: the
+    # no-tty guard sits BEFORE the first interactive prompt and fires only
+    # when stdin is not a tty — the tty prompt fallback is untouched.
+    guard_line=$(grep -n '\[ ! -t 0 \]' "$CREATE_TASK" | head -1 | cut -d: -f1)
+    first_prompt=$(grep -n 'read -r NAME' "$CREATE_TASK" | head -1 | cut -d: -f1)
+    [ -n "$guard_line" ] && [ -n "$first_prompt" ]
+    [ "$guard_line" -lt "$first_prompt" ]
+    grep -q 'read -r OWNER' "$CREATE_TASK"
+}
+
 # --- Help ---
 
 @test "create-task --help shows usage" {
