@@ -5,12 +5,12 @@ description: >
   Post-GO slice of T-100139. Handover lists current branch ahead/behind origin/master,
   nudges when merge-back overdue.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh]
 related_tasks: [T-100139]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: [T-100139]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T11:49:49Z
-last_update: 2026-07-04T13:24:17Z
-date_finished:
+last_update: 2026-07-04T13:56:32Z
+date_finished: 2026-07-04T13:56:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -66,6 +66,26 @@ bvp_scores_proposed:
       audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-07-04T13:48:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 1
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-100144: C3: handover surfaces branch ahead/behind + merge-back-overdue nudge
@@ -83,10 +103,10 @@ worktree + copy task file + set worktree focus, land with
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Handover document prints the current branch's ahead/behind counts vs origin/master (e.g. "Branch: t2416… +157 / −248 vs origin/master")
-- [ ] When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run`
-- [ ] Silent/neutral when on master or within threshold (no nudge noise)
-- [ ] bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold
+- [x] Handover document prints the current branch's ahead/behind counts vs origin/master — live-fired: `**Branch:** `t100144-handover-divergence` +1 / −0 vs origin/master` rendered under Where We Are (S-2026-0704-1552)
+- [x] When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run` — live-fired with forced threshold (rendered in S-2026-0704-1553)
+- [x] Silent/neutral when on master or within threshold (no nudge noise) — fw_branch_divergence returns nothing on master/detached/no-origin; nudge only when behind > threshold
+- [x] bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold — tests/unit/t100144_handover_divergence.bats (6 tests incl. master-silence, no-origin silence, handover.sh wiring pins)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -120,6 +140,12 @@ worktree + copy task file + set worktree focus, land with
 -->
 
 ## Verification
+
+# Origin-based (L-387 file-capture): passes from MAIN after `fw integrate run master --push` lands C3.
+git show origin/master:lib/branch-hygiene.sh > /tmp/.t100144-lib 2>/dev/null && grep -q "fw_branch_divergence" /tmp/.t100144-lib
+git show origin/master:agents/handover/handover.sh > /tmp/.t100144-ho 2>/dev/null && grep -q "MERGEBACK_NUDGE" /tmp/.t100144-ho
+grep -q "fw integrate run master --push" /tmp/.t100144-ho
+git show origin/master:tests/unit/t100144_handover_divergence.bats > /tmp/.t100144-tests 2>/dev/null && grep -q "nudge fires when behind exceeds threshold" /tmp/.t100144-tests
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -194,6 +220,16 @@ worktree + copy task file + set worktree focus, land with
 
 ## Decisions
 
+### 2026-07-04 — Divergence computation lives in lib/branch-hygiene.sh (not inline in handover.sh)
+- **Chose:** `fw_branch_divergence` as a second function in C2's lib, sourced by handover.sh.
+- **Why:** shares FW_BRANCH_BEHIND_WARN with the doctor scan (one threshold, one semantics) and is bats-testable against fixture repos without running the full handover pipeline.
+- **Rejected:** inline git calls in handover.sh (untestable, threshold duplication).
+
+### 2026-07-04 — Placement: counts under Where We Are, nudge under Suggested First Action
+- **Chose:** divergence line first thing in Where We Are; overdue nudge as first line of Suggested First Action.
+- **Why:** the counts are state (belongs with situation summary); the nudge is an action and must compete with the suggested-first-action slot, which is what the next session actually reads.
+- **Rejected:** frontmatter-only fields (invisible to a human skimming the handover).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -219,3 +255,19 @@ worktree + copy task file + set worktree focus, land with
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100144-c3-handover-surfaces-branch-aheadbehind-.md
 - **Context:** Initial task creation
+
+### 2026-07-04T13:48:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → started-work
+- **Change:** horizon: now → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-34e7318d
+- **Timestamp:** 2026-07-04T13:56:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-04T13:56:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

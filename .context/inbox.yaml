@@ -681,12 +681,33 @@ observations:
   captured: 2026-07-04T09:59:08Z
   context_task: T-100138
   tags: []
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-082
   text: "Cron audit --emit-tasks stole session focus: hourly audit created T-100141 (status started-work!) and rewrote .context/working/focus.yaml current_task while an interactive session held focus on T-100140. Emitted backlog tasks should be captured+horizon:later and must NOT touch focus.yaml. Blocked the session's next Bash call via G-020 (T-100141 has placeholder ACs)."
   captured: 2026-07-04T11:03:38Z
   context_task: T-100140
   tags: []
-  status: pending
+  status: promoted
+  promoted_to: task
+- id: OBS-083
+  text: "Audit --emit-tasks per-task-ID finding storm: one cron run emitted 6 separate CTL-028 tasks (T-100150..T-100155), one per completed-task status inconsistency, because T-100135 hash dedup keeps T-IDs as identity. Per-task-ID finding classes (CTL-028, D5 lifecycle) should emit ONE sweep task per class per run (or fold task IDs out of identity for corpus-hygiene checks), else every hygiene sweep floods the backlog."
+  captured: 2026-07-04T12:39:30Z
+  context_task: T-100146
+  tags: [bug]
+  status: promoted
+  promoted_to: task
+- id: OBS-084
+  text: "capture"
+  captured: 2026-07-04T13:37:13Z
+  context_task: T-100143
+  tags: []
+  status: dismissed
   promoted_to: null
+- id: OBS-085
+  text: "fw doctor calls fw_consumer_yamls (defined in lib/config.sh) at bin/fw:1870,1962 without sourcing lib/config.sh in that path — 'command not found' twice per doctor run; the consumer-yaml checks silently no-op. Pre-existing on master, verified with T-100143 changes stashed."
+  captured: 2026-07-04T13:37:43Z
+  context_task: T-100143
+  tags: [bug]
+  status: promoted
+  promoted_to: task
