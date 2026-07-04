@@ -226,6 +226,29 @@ ACTIVE_TASKS="${ACTIVE_TASKS%, }"  # Remove trailing comma
 UNCOMMITTED=$(git -C "$PROJECT_ROOT" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
 RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log -5 --pretty=format:"- %h %s" 2>/dev/null)
 
+# T-100144 (C3 of T-100139): branch divergence vs origin/master. Strand
+# divergence is invisible at session boundaries (live strands were 215-248
+# commits behind master before the inception measured them) — surface it in
+# every handover, and nudge toward `fw integrate run` when merge-back is
+# overdue (behind > FW_BRANCH_BEHIND_WARN, default 50, shared with the
+# T-100143 doctor scan). Silent on master / detached / no origin/master.
+BRANCH_DIVERGENCE=""
+MERGEBACK_NUDGE=""
+if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
+    . "$FRAMEWORK_ROOT/lib/branch-hygiene.sh"
+    _bd_out=$(fw_branch_divergence "$PROJECT_ROOT" 2>/dev/null || true)
+    _bd_line=$(printf '%s\n' "$_bd_out" | grep '^divergence ' || true)
+    if [ -n "$_bd_line" ]; then
+        _bd_branch=$(echo "$_bd_line" | awk '{print $2}')
+        _bd_ahead=$(echo "$_bd_line" | awk '{print $3}' | cut -d= -f2)
+        _bd_behind=$(echo "$_bd_line" | awk '{print $4}' | cut -d= -f2)
+        BRANCH_DIVERGENCE="**Branch:** \`$_bd_branch\` +${_bd_ahead} / −${_bd_behind} vs origin/master"
+        if printf '%s\n' "$_bd_out" | grep -q '^nudge '; then
+            MERGEBACK_NUDGE="**Merge-back overdue:** \`$_bd_branch\` is ${_bd_behind} commits behind origin/master (threshold ${FW_BRANCH_BEHIND_WARN:-50}) — land the strand with \`fw integrate run master --push\` before starting new work."
+        fi
+    fi
+fi
+
 # Get tasks touched recently (modified in last day)
 TASKS_TOUCHED=""
 while IFS= read -r f; do
@@ -467,6 +490,8 @@ session_narrative: ""
 # Session Handover: $SESSION_ID
 
 ${DISCARD_MANIFEST_LINE}${RECOVERED_BANNER}## Where We Are
+
+${BRANCH_DIVERGENCE}
 
 $(python3 -c "
 import subprocess, re, collections
@@ -894,6 +919,8 @@ fi)
 See gaps register above.
 
 ## Suggested First Action
+
+${MERGEBACK_NUDGE}
 
 $(python3 -c "
 import glob, re, os

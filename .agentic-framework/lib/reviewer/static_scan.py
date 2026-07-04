@@ -1531,6 +1531,34 @@ def _has_citation(text: str) -> bool:
     return any(p.search(text) for p in _CITATION_PATTERNS)
 
 
+def _extract_rationale(entry_text: str) -> str | None:
+    """Rationale text of one IW-N entry, including wrapped continuation lines.
+
+    T-100159 (pickup 074 defect 2): the old single-line regex truncated a
+    rationale that wraps onto continuation lines, so a citation on line 2+
+    was invisible to _has_citation → false answered-without-citation CONCERN.
+    Accumulate from the `rationale:` line until the next field (`key: …`),
+    the next list bullet, or a blank line. Returns None when no `rationale:`
+    line exists (Check C distinguishes missing from empty).
+    """
+    lines = entry_text.splitlines()
+    for i, ln in enumerate(lines):
+        m = re.match(r"^\s*rationale:\s*(.*)$", ln)
+        if not m:
+            continue
+        parts = [m.group(1).strip()]
+        for cont in lines[i + 1:]:
+            if not cont.strip():
+                break
+            if re.match(r"^\s*[A-Za-z_][\w-]*:\s", cont):  # next field
+                break
+            if re.match(r"^\s*-\s", cont):  # next bullet
+                break
+            parts.append(cont.strip())
+        return " ".join(p for p in parts if p)
+    return None
+
+
 def detect_disposition_completeness(
     meta: dict | None,
     body: str,
@@ -1601,7 +1629,7 @@ def detect_disposition_completeness(
     for iw_n, entry_text, _start in entries:
         # Check A/B: disposition line
         disp_match = re.search(r"^\s*disposition:\s*(\S+)", entry_text, re.MULTILINE)
-        rat_match = re.search(r"^\s*rationale:\s*(.+?)$", entry_text, re.MULTILINE)
+        rationale = _extract_rationale(entry_text)
 
         if not disp_match:
             findings.append(
@@ -1636,7 +1664,7 @@ def detect_disposition_completeness(
             continue
 
         # Check C: rationale present + non-empty
-        if not rat_match or not rat_match.group(1).strip():
+        if not rationale:
             findings.append(
                 Finding(
                     pattern_id="disposition-incomplete",
@@ -1651,7 +1679,6 @@ def detect_disposition_completeness(
             continue
 
         # Check D: answered without citation (sibling to T-2145 decision-without-evidence)
-        rationale = rat_match.group(1).strip()
         if disp_value == "answered" and not _has_citation(rationale):
             findings.append(
                 Finding(

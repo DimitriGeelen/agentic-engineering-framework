@@ -805,6 +805,12 @@ do_doctor() {
         esac
     done
 
+    # T-100157 (OBS-085): the Consumer Projects checks below call
+    # fw_consumer_yamls (lib/config.sh) — source it once here or every doctor
+    # run prints 'command not found' twice and the consumer checks silently
+    # no-op (empty loop is indistinguishable from "no consumers").
+    source "$FRAMEWORK_ROOT/lib/config.sh"
+
     echo -e "${BOLD}fw doctor${NC} - Framework Health Check"
     if [ "$quick_mode" = "1" ]; then
         echo -e "  ${CYAN}--quick${NC}: project-only mode — host/network probes skipped"
@@ -3740,7 +3746,7 @@ EOF
             ""|--help|-h|help)
                 cat <<'EOF'
 fw integrate check [target]        (default target: master)
-fw integrate run [target] [--dry-run] [--push]
+fw integrate run [target] [--dry-run] [--push] [--keep-branch]
 fw integrate classify <path>...
 
 Layer-2 serialized-integration PREFLIGHT (read-only). Reports how the current
@@ -3774,6 +3780,11 @@ prints the plan + check verdict without mutating. The run is exempt from the foc
 task gate via a verb-scoped safe-command entry (lib/safe-commands.sh), not an env honor.
 Deferred: true field/append/id UNION at both-sided conflicts (MVP keeps branch-side "ours"
 for the auto classes).
+
+After a verified landing (--push succeeded, branch tip contained in origin/target),
+run deletes the landed source branch and removes its worktree (T-100142 -- landed
+branches are debris). --keep-branch opts out; unmerged work is never force-deleted;
+without --push the branch is always kept.
 
 Part of the T-2394 structural-remediation (G2). Sibling: fw write-set check (G4,
 arc-011), the master-merge-only guard (G1, T-2396).
