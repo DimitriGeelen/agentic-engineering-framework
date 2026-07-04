@@ -570,13 +570,17 @@ def _main_checkout():
     return os.path.dirname(gcd.rstrip("/"))
 
 
-def _land(branch, target, pushed):
+def _land(branch, target, pushed, keep_branch=False):
     """Hybrid landing (T-2474). Zone 1 (origin) is handled by the caller.
 
     Zone 2 (master-holding worktree): auto-FF to `branch` when clean AND we pushed
     (mechanical — `branch` strictly contains `target` after the merge, so the FF is
     always valid); otherwise report. Zone 3 (MAIN off-master): report-only go-live
     command — never auto, because making a fix live changes which hooks execute.
+    The go-live command must reference a ref that still exists AFTER
+    _cleanup_branch runs (T-100158): the default landing deletes `branch`
+    moments after this summary prints, so the merge ref is origin/<target>
+    unless the branch survives (--keep-branch, or not pushed).
     Prints a "Landing:" summary so the three-zone state is legible.
     """
     trees = _worktrees()
@@ -623,8 +627,12 @@ def _land(branch, target, pushed):
     elif main_path:
         lines.append(f"  host (MAIN)    on {main_branch or 'detached'} — NOT live yet "
                      f"(hooks run MAIN's bin/fw)")
+        # After a pushed landing without --keep-branch, _cleanup_branch deletes
+        # `branch` — a `git merge {branch}` here would fail by the time the
+        # operator runs it. origin/<target> carries the same commits.
+        merge_ref = branch if (keep_branch or not pushed) else f"origin/{target}"
         lines.append(f"                 go live when ready (a decision): "
-                     f"cd {main_path} && git merge {branch}")
+                     f"cd {main_path} && git merge {merge_ref}")
 
     print("\nLanding:")
     for ln in lines:
@@ -853,7 +861,7 @@ def cmd_run(target="master", dry_run=False, push=False, keep_branch=False):
 
         # Zones 2 & 3 — hybrid landing (T-2474): auto-FF a clean master-holding
         # worktree (mechanical), report-only MAIN go-live (a decision).
-        _land(branch, target, pushed)
+        _land(branch, target, pushed, keep_branch=keep_branch)
 
         # Branch lifecycle (T-100142): landed branches are debris — delete by
         # default after a verified landing; --keep-branch opts out. Must be the

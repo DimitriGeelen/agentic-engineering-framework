@@ -97,11 +97,30 @@ teardown() {
     # MAIN still on session at the same commit — not touched
     [ "$(git -C "$MAIN" rev-parse HEAD)" = "$SESSION_HEAD" ]
     [ "$(git -C "$MAIN" rev-parse --abbrev-ref HEAD)" = "session" ]
-    # report names MAIN's path + a merge command, and flags not-live
+    # report names MAIN's path + a merge command, and flags not-live.
+    # T-100158: pushed && !keep-branch → cleanup deletes `feat` right after
+    # this summary, so the go-live ref must be origin/master, not the branch.
     [[ "$output" == *"host (MAIN)"* ]]
     [[ "$output" == *"NOT live"* ]]
     [[ "$output" == *"$MAIN"* ]]
+    [[ "$output" == *"git merge origin/master"* ]]
+    [[ "$output" != *"git merge feat"* ]]
+}
+
+@test "zone 3 (T-100158): --keep-branch go-live command references the surviving branch" {
+    run bash -c "cd '$WT_FEAT' && python3 '$INTEGRATE' run master --push --keep-branch"
+    [ "$status" -eq 0 ]
+    # branch survives → direct merge of the branch is still valid
+    git -C "$MAIN" rev-parse --verify -q feat
     [[ "$output" == *"git merge feat"* ]]
+}
+
+@test "zone 3 (T-100158): no --push keeps the branch, go-live references it (origin lacks the commits)" {
+    run bash -c "cd '$WT_FEAT' && python3 '$INTEGRATE' run master"
+    [ "$status" -eq 0 ]
+    # not pushed → origin/master does NOT carry the fix; branch is the only ref that does
+    [[ "$output" == *"git merge feat"* ]]
+    [[ "$output" != *"git merge origin/master"* ]]
 }
 
 @test "landing summary block prints each zone's state" {
