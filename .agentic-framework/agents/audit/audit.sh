@@ -5152,7 +5152,7 @@ _emit_findings_as_tasks() {
     # Parse YAML for WARN/FAIL findings
     export YAML_FILE="$yaml_file"
     local findings=$(python3 << PYEOF
-import yaml, sys, hashlib, os
+import yaml, sys, hashlib, os, re
 
 yaml_path = os.environ.get("YAML_FILE")
 with open(yaml_path) as f:
@@ -5170,8 +5170,18 @@ for finding in findings:
     # Normalize: strip extra whitespace
     normalized = " ".join(check.split())
 
+    # T-100135: neutralize volatile numeric measurements (day counters like
+    # "86d-active", queue counts like "142 task(s)") so the same finding class
+    # re-observed on a later run hashes identically. Task-ID tokens (T-NNNN)
+    # are structural identity — findings about different tasks stay distinct.
+    hash_input = re.sub(
+        r"(T-\d+)|(\d+)",
+        lambda m: m.group(1) if m.group(1) else "N",
+        normalized,
+    )
+
     # Compute hash
-    hash_val = hashlib.sha1(normalized.encode()).hexdigest()
+    hash_val = hashlib.sha1(hash_input.encode()).hexdigest()
 
     # Output: LEVEL|HASH|CHECK|MITIGATION
     print(f"{level}|{hash_val}|{check}|{mitigation}")
@@ -5303,11 +5313,15 @@ bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
                     task_file=$(ls "$TASKS_DIR/active/${task_id}-"*.md 2>/dev/null | head -1)
                 fi
                 if [ -n "$task_file" ] && [ -f "$task_file" ]; then
-                    # Insert custom fields after workflow_type line
-                    sed -i "/^workflow_type: build/a\\
+                    # Insert custom fields after workflow_type line.
+                    # T-100136: also delete the template's own 'tags: []' line —
+                    # leaving it produces a duplicate YAML key and last-key-wins
+                    # silently discards the audit-finding tags injected here.
+                    sed -i -e "/^workflow_type: build/a\\
 audit_severity: $severity\\
 audit_finding_hash: $hash\\
-tags: [audit-finding, severity:$severity, section:$section]" "$task_file"
+tags: [audit-finding, severity:$severity, section:$section]" \
+                           -e '0,/^tags: \[\]$/{/^tags: \[\]$/d}' "$task_file"
 
                     # Replace body
                     # Find line number of first ## heading after frontmatter
