@@ -6,12 +6,12 @@ description: >
   audit emit-tasks dedup hash volatile-token normalization — daily duplicate finding
   tasks
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T09:15:13Z
-last_update: 2026-07-04T10:13:23Z
-date_finished:
+last_update: 2026-07-04T11:34:57Z
+date_finished: 2026-07-04T11:34:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,7 +96,20 @@ new-style hash so the next audit run dedups against them.
 - [x] Hash computation in `_emit_findings_as_tasks` replaces standalone digit runs with a placeholder before hashing, while `T-\d+` task-ID tokens are preserved verbatim
 - [x] bats regression tests pin the normalization: (a) same finding with different day-counts/counts hashes identically; (b) findings differing only by referenced task ID hash differently
 - [x] Existing duplicate groups collapsed: exactly one active task remains per finding class (D5 lifecycle, D2 review-queue); survivors carry new-style hashes recomputed from the latest audit YAML
-- [ ] `bin/fw audit --emit-tasks --dry-run` reports the D5 and D2 findings as SKIP (hash exists) — no new duplicates would be minted
+- [x] `bin/fw audit --emit-tasks --dry-run` reports the D5 and D2 findings as SKIP (hash exists) — no new duplicates would be minted
+  <!-- Evidence 2026-07-04: `bin/fw audit --section discovery --emit-tasks --dry-run` →
+       "[SKIP] FAIL (hash exists): D2: Human review queue — 142 task(s) waiting >30d: T-1701(38..."
+       "Summary: 0 created, 1 skipped (hash exists)". D2's day-counters differ from the
+       survivor's capture day yet the hash matches — volatile-token normalization proven
+       live end-to-end. D5 emitted no finding this run (only D2 fired in discovery).
+       Bonus: the 12:xx hourly cron emitted T-100141 with a single correct tags: line —
+       T-100136 fix also confirmed in production. -->
+
+## Updates (manual)
+
+### 2026-07-04 — AC4 evidence
+- Full-audit dry-run was SIGTERM'd twice by :00/:30 cron audit lock contention; scoped
+  `--section discovery` run between cron slots produced the SKIP evidence cleanly.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,3 +272,22 @@ adopt as a self-check on emitter output.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100135-audit-emit-tasks-dedup-hash-volatile-tok.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7c981a37
+- **Timestamp:** 2026-07-04T11:34:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `out=$(bats -f "T-100135" tests/unit/test_audit_emit_tasks.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 2 ] && ! echo "$out" | grep -q '^not ok'`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `out=$(bats -f "T-100135" tests/unit/test_audit_emit_tasks.bats 2>&1); [ "$(echo "$out" | grep -c '^ok ')" -eq 2 ] && ! echo "$out" | grep -q '^not ok'`
+
+### 2026-07-04T11:34:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

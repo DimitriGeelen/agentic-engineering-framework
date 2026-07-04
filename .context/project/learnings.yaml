@@ -3707,3 +3707,10 @@ X'` returning empty group."
   date: 2026-07-04
   context: Added via context agent
   application: TBD
+- id: L-487
+  learning: "Audit emit-tasks dedup hashes must distinguish identity tokens from measurement tokens: T-\\d+ IDs are identity (preserve), bare digit runs (day counters, counts) are measurements (neutralize to N before hashing). Volatile digits made sha1 churn daily and mint duplicate finding tasks. Same-class check for any content-addressed dedup over generated text."
+  source: P-001
+  task: T-100135
+  date: 2026-07-04
+  context: Added via context agent
+  application: TBD

@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100130: create-task template substitution: un-anchored replace corrupts frontmatter
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T08:53:45Z
+# ============================================================================
+
+task_id: T-100130
+task_name: "create-task template substitution: un-anchored replace corrupts frontmatter"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T08:43:21Z
+completed: 2026-07-04T08:53:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-04T10:53:12+02:00
+last_commit: 2026-07-04T10:53:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  line-anchor create-task frontmatter substitutions
+
+# Key outcomes
+outcomes:
+  - 'Frontmatter key substitutions in create-task.sh (both default and inception blocks) are line-anchored so name text can never hijack them — sub_line() helper with (?m)^ + re.escape + lambda replacement'
+  - 'Regression proof: creating a task whose name contains "owner:" yields intact frontmatter (owner field set, name verbatim) — pinned by a bats test — two tests added (owner: and workflow_type: in name), both pass'
+  - 'Existing task-creation tests still pass — 22/22 with CLAUDECODE neutralized; the 4 inception-test failures seen under an agent session are the pre-existing T-2207-gate hermeticity gap (fails identically on unmodified HEAD), filed separately'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-100130-create-task-template-substitution-un-anc.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-04T10:53:12"
+    action: "T-100130: line-anchor create-task frontmatter substitutions"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 1
+  lines_added: 229
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100130-create-task-template-substitution-un-anc.md
+generated_by: context-agent-hybrid

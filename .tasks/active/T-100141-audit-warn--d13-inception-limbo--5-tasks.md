@@ -1,14 +1,15 @@
 ---
-id: T-2453
-name: "Audit WARN — Task T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md missing
-  Update..."
+id: T-100141
+name: "Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu)
+  ..."
 description: >
-  Audit WARN — Task T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md missing Update...
+  Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu)
+  ...
 
 status: started-work
 workflow_type: build
 audit_severity: warn
-audit_finding_hash: b30038d18e3866181827feb03aab406bc03b579e
+audit_finding_hash: b40ded23fd14cb53f9d29e0bd3435d30f004fcef
 tags: [audit-finding, severity:warn, section:audit]
 owner: agent
 horizon: now
@@ -24,8 +25,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-02T19:03:49Z
-last_update: '2026-07-04T10:15:13Z'
+created: 2026-07-04T11:02:41Z
+last_update: '2026-07-04T11:15:01Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -38,7 +39,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-04T10:15:13Z'
+  - ts: '2026-07-04T11:15:01Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -47,21 +48,42 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=3 
       (no-signal)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-04T11:15:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 4
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=4 (body:fw-audit-or-doctor);
+      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); audit_severity=4 
+      (fm:audit_severity=warn); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2453: Audit WARN — Task T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md missing Update...
+# T-100141: Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) ...
 ## Trigger
 
-Audit run: 2026-07-02T19:03:49Z
-Finding: Task T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md missing Updates section
+Audit run: 2026-07-04T11:02:41Z
+Finding: D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)
 
 ## Finding
 
 ```
-Task T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md missing Updates section
+D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)
 ```
 
-Mitigation: Fix missing Updates section in T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md
+Mitigation: Recover both classes with: bin/fw inception sweep (T-1514)
 
 ## RCA
 
@@ -83,5 +105,12 @@ Mitigation: Fix missing Updates section in T-2432-audit-warn--ctl-028-t-2405-is-
 ## Verification
 
 # Re-run audit - finding should be absent
-bin/fw audit 2>&1 | grep -q "Task T-2432-audit-warn--ctl-028-t-2405-is-in-tasksco.md missing Updates section" && exit 1 || exit 0
+bin/fw audit 2>&1 | grep -q "D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)" && exit 1 || exit 0
+
+## Updates
+
+### 2026-07-04T11:02:41Z — audit-emit-task [audit-agent]
+- **Action:** Created by audit --emit-tasks
+- **Finding:** warn: D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-
+- **Context:** Auto-generated task for audit finding hash b40ded23fd14cb53f9d29e0bd3435d30f004fcef
 
