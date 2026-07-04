@@ -2,7 +2,8 @@
 id: T-100143
 name: "C2: doctor/audit branch-hygiene WARNs"
 description: >
-  Post-GO slice of T-100139. Branch-hygiene checks: merged-undeleted branches, behind>50 divergence, worktrees on merged branches, dirty-worktree age. WARN-only.
+  Post-GO slice of T-100139. Branch-hygiene checks: merged-undeleted branches, behind>50
+  divergence, worktrees on merged branches, dirty-worktree age. WARN-only.
 
 status: captured
 workflow_type: build
@@ -22,8 +23,8 @@ related_tasks: [T-100139]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T11:49:40Z
-last_update: 2026-07-04T11:49:40Z
-date_finished: null
+last_update: 2026-07-04T12:54:45Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +35,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-04T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-04T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-100143: C2: doctor/audit branch-hygiene WARNs
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+C2 slice of T-100139 (branch/worktree lifecycle GO). Nothing observes branch
+hygiene today — 29 merged-but-undeleted branches sat invisible until the
+inception measured them. C1 (T-100142, shipped 37c1943e2) closes the tap for
+integrate-run landings; this slice makes the remaining debris visible.
+NOTE: doctor/audit code lives on the master lineage — build in a worktree off
+master (see T-100142's episodic for the worked flow: worktree + copy task file
++ set worktree focus, land with `fw integrate run master --push`).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw doctor` (and/or audit structure section — pick one primary surface, WARN-only) reports: merged-but-undeleted local branches (tip ⊆ master)
+- [ ] WARN for live branches > N commits behind master (default 50, configurable `FW_BRANCH_BEHIND_WARN`)
+- [ ] WARN for worktrees whose branch is already merged to master, and remote refs with ahead:0
+- [ ] Silent when hygiene is clean (no noise on a tidy repo)
+- [ ] bats regression tests pin: merged-branch WARN, behind-threshold WARN, clean-repo silence
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -180,3 +220,11 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100143-c2-doctoraudit-branch-hygiene-warns.md
 - **Context:** Initial task creation
+
+### 2026-07-04T12:53:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-07-04T12:54:45Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
