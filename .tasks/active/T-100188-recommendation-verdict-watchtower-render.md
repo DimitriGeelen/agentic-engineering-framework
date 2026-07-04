@@ -61,10 +61,10 @@ Slice B of T-100186 GO (decided 2026-07-05). Renders the claims-verdict produced
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `/inception/<id>` renders the Recommendation Verdict table (per-claim status + overall) beside the recommendation when the block exists; page unchanged when absent
-- [ ] `/approvals` inception rows show a compact evidence badge (confirmed/total or overall verdict); absent block renders no badge
-- [ ] Playwright test covers: verdict table visible on a fixture inception with a verdict block; page 200s cleanly without one (T-971 rule)
-- [ ] No change to the decide form/actions — verdict is display-only
+- [x] `/inception/<id>` renders the Recommendation Verdict table (per-claim status + overall) beside the recommendation when the block exists; page unchanged when absent
+- [x] `/approvals` inception rows show a compact evidence badge (confirmed/total or overall verdict); absent block renders no badge
+- [x] Playwright test covers: verdict table visible on a fixture inception with a verdict block; page 200s cleanly without one (T-971 rule)
+- [x] No change to the decide form/actions — verdict is display-only
 
 ### Human
 - [ ] [REVIEW] Verdict placement and badge read clean on the decide page
@@ -77,13 +77,32 @@ Slice B of T-100186 GO (decided 2026-07-05). Renders the claims-verdict produced
 ## Verification
 
 # Render-surface task (P-013): keep the [REVIEW] Human AC above.
-# Fill concrete curl/playwright commands while building (P-011).
+# Origin-based checks (MAIN's branch lags origin/master where this lands).
+git show origin/master:web/shared.py > /tmp/.t100188-shared.py && grep -q "def extract_recommendation_claims_verdict" /tmp/.t100188-shared.py
+git show origin/master:web/templates/inception_detail.html > /tmp/.t100188-tpl.html && grep -q "data-claims-overall" /tmp/.t100188-tpl.html
+git show origin/master:web/templates/_approvals_content.html > /tmp/.t100188-appr.html && grep -q "claims-badge" /tmp/.t100188-appr.html
+git show origin/master:tests/playwright/test_inception_claims_verdict.py > /tmp/.t100188-pw.py && grep -q "claims-verdict-block" /tmp/.t100188-pw.py
+rm -rf /tmp/.t100188-tree && mkdir -p /tmp/.t100188-tree && git archive origin/master web tests lib | tar -x -C /tmp/.t100188-tree && cd /tmp/.t100188-tree && PYTHONPATH=. python3 -m pytest tests/unit/test_extract_recommendation_claims_verdict.py -q > /dev/null 2>&1
 
 ## RCA
 
 <!-- non-bug build slice — leave empty -->
 
 ## Decisions
+
+- **Parse the on-disk verdict block in `web/shared.py` rather than importing `lib.reviewer.recommendation_claims`** — the markdown block IS the contract (same pattern as `extract_reviewer_verdict`); keeps web decoupled from the reviewer's dataclasses and works on completed/ tasks the reviewer never re-scans.
+- **Badge shows `passed/total` + overall, not overall alone** — "Evidence: 7/9" tells the operator where to look before opening the page; a bare CONTRADICTED chip would force a click to learn severity.
+
+## Recommendation
+
+**Recommendation:** GO — approve the render.
+
+**Rationale:** Both surfaces are display-only additions mirroring the existing Reviewer Verdict block's pattern and palette; the decide form is untouched. All four Agent ACs are ticked with tests pinning the contract both ways (block present → table renders; block absent → clean 200, no artifact).
+
+**Evidence:**
+- `web/shared.py:extract_recommendation_claims_verdict` + 7 unit tests (`tests/unit/test_extract_recommendation_claims_verdict.py`, all pass)
+- `/inception/<id>` claims-verdict table + `/approvals` Evidence badge — 2 Playwright tests (`tests/playwright/test_inception_claims_verdict.py`, both pass)
+- Sibling extractor regression suite green (49 passed)
 
 ## Updates
 
