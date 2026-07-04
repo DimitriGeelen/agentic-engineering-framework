@@ -3874,6 +3874,29 @@ for f in glob.glob(os.path.join(TASKS_DIR, "completed", "T-*.md")):
     # Remaining: human task, fast, 0-1 commits, non-trivial type — flag it
     anomalies.append(f"{tid}({cycle_min:.0f}min,{owner})")
 
+def is_partial_complete(path, fm):
+    """T-100122: partial-complete (T-193) is a VALID long-lived state — a
+    human-owned task whose Agent ACs are all ticked and >=1 Human AC is
+    unticked is awaiting operator review (surfaced via /approvals and
+    fw review-queue), not stuck. Excluding it stops D5 re-flagging the
+    whole review backlog as lifecycle anomalies every day (22 of the 29
+    anomalies in the origin WARN were review-queue entries)."""
+    if fm.get("owner") != "human":
+        return False
+    try:
+        content = open(path).read()
+    except Exception:
+        return False
+    body = re.sub(r'^---\n.*?\n---', '', content, count=1, flags=re.DOTALL)
+    agent_m = re.search(r'### Agent\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
+    human_m = re.search(r'### Human\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
+    if not agent_m or not human_m:
+        return False
+    agent_ticked = len(re.findall(r'- \[x\]', agent_m.group(1), re.IGNORECASE))
+    agent_unticked = len(re.findall(r'- \[ \]', agent_m.group(1)))
+    human_unticked = len(re.findall(r'- \[ \]', human_m.group(1)))
+    return agent_ticked > 0 and agent_unticked == 0 and human_unticked > 0
+
 # Check active tasks stuck >7 days in started-work (not captured or work-completed)
 for f in glob.glob(os.path.join(TASKS_DIR, "active", "T-*.md")):
     fm = parse_frontmatter(f)
@@ -3885,6 +3908,8 @@ for f in glob.glob(os.path.join(TASKS_DIR, "active", "T-*.md")):
         continue
     age_days = (datetime.now(timezone.utc) - created).days
     if age_days > 7:
+        if is_partial_complete(f, fm):
+            continue  # awaiting human review — tracked on /approvals, not an anomaly
         tid = fm.get("id", "?")
         anomalies.append(f"{tid}({age_days}d-active)")
 
