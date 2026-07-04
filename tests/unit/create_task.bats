@@ -17,10 +17,28 @@ setup() {
     # Override TASKS_DIR for testing
     export TASKS_DIR="$TEST_DIR"
     export PROJECT_ROOT="$FRAMEWORK_ROOT"
+
+    # T-100185 hermeticity (L-490 sibling): when this suite runs from inside a
+    # Claude Code session it inherits CLAUDECODE=1, which arms the T-2207
+    # inception recommendation gate in create-task.sh — the inception-filing
+    # tests then fail locally while passing in clean CI. Strip the session env
+    # so the suite exercises create-task.sh's own logic, not the caller's
+    # environment. The T-2207 gate keeps its own dedicated coverage.
+    unset CLAUDECODE FW_ALLOW_EMPTY_RECOMMENDATION FW_INCEPTION_PRE_GATED
 }
 
 teardown() {
     rm -rf "$TEST_DIR" 2>/dev/null || true
+}
+
+# --- T-100185: suite hermeticity vs inherited Claude Code session env ---
+
+@test "T-100185: setup strips inherited CLAUDECODE (hermeticity pin)" {
+    # If setup() ever stops unsetting the session env, an inherited
+    # CLAUDECODE=1 re-arms the T-2207 inception gate and the 4 inception
+    # tests fail locally while passing in clean CI.
+    [ -z "${CLAUDECODE:-}" ]
+    [ -z "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" ]
 }
 
 # --- T-100160 (OBS-086): no-tty fail-fast instead of hanging prompts ---
