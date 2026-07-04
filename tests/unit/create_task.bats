@@ -17,6 +17,18 @@ setup() {
     # Override TASKS_DIR for testing
     export TASKS_DIR="$TEST_DIR"
     export PROJECT_ROOT="$FRAMEWORK_ROOT"
+
+    # T-100132: hermeticity — (1) reroute context writes so the --start
+    # test's focus hook (create-task.sh T-297 → context.sh focus) cannot
+    # clobber the LIVE .context/working/focus.yaml of a running session;
+    # (2) neutralize CLAUDECODE so the T-2207 inception recommendation
+    # gate doesn't refuse the 4 inception tests when this suite runs
+    # inside an agent session. Gate behavior itself is covered by
+    # create_task_inception_recommendation_gate.bats (sets CLAUDECODE=1
+    # explicitly per test).
+    mkdir -p "$TEST_DIR/.context/working"
+    export CONTEXT_DIR="$TEST_DIR/.context"
+    unset CLAUDECODE
 }
 
 teardown() {
