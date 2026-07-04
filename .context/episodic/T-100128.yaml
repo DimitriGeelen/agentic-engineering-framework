@@ -1,0 +1,124 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100128: Missing-Updates cascade remediation: purge cascade finding-tasks + fix emit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T08:34:32Z
+# ============================================================================
+
+task_id: T-100128
+task_name: "Missing-Updates cascade remediation: purge cascade finding-tasks + fix emit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T07:52:16Z
+completed: 2026-07-04T08:34:22Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-04T10:34:11+02:00
+last_commit: 2026-07-04T10:34:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  purge 48 pre-fix cascade finding-tasks + harden audit emit file resolution
+
+# Key outcomes
+outcomes:
+  - 'All active/ tasks flagged "missing Updates section" that reference audit-finding tasks are removed (pure-cascade class, T-100060 precedent); no non-cascade task deleted — safety check confirmed all 46 subjects are audit-finding tasks; T-2448/T-2470 malformed duplicates covered by T-2469 (triaged OPERATIONAL) and T-100067'
+  - 'Malformed emit path (silent body-replacement failure) root-caused in RCA and hardened: failure now emits an error instead of leaving a default-template task without audit_finding_hash — file resolved from create output `File:` line (glob demoted to fallback), loud [ERROR] on both failure paths; bash -n clean; parsing unit-tested'
+  - 'Re-run of active-task scan shows zero "missing Updates section" compliance issues in active/ — post-deletion scan: 0 issues, 258/258 valid (was 260/306)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'purge 48 pre-fix cascade finding-tasks + harden audit emit file resolution'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-100128-missing-updates-cascade-remediation-purg.md'
+  - '.tasks/active/T-2456-audit-warn--task-t-2435-audit-fail--ctl-.md'
+  - '.tasks/active/T-2458-audit-warn--task-t-2437-audit-fail--ctl-.md'
+  - '.tasks/active/T-2459-audit-warn--task-t-2438-audit-fail--ctl-.md'
+  - '.tasks/active/T-2460-audit-warn--task-t-2439-audit-fail--ctl-.md'
+  - '.tasks/active/T-2461-audit-warn--task-t-2440-audit-warn--ctl-.md'
+  - '.tasks/active/T-2462-audit-warn--task-t-2441-audit-warn--ctl-.md'
+  - '.tasks/active/T-2463-audit-warn--task-t-2442-audit-warn--ctl-.md'
+  - '.tasks/active/T-2464-audit-warn--task-t-2443-audit-warn--ctl-.md'
+  - '.tasks/active/T-2465-audit-warn--task-t-2444-audit-warn--ctl-.md'
+  - '.tasks/active/T-2466-audit-warn--task-t-2445-audit-warn--ctl-.md'
+  - '.tasks/active/T-2467-audit-warn--task-t-2446-audit-warn--ctl-.md'
+  - '.tasks/active/T-2468-audit-warn--task-t-2447-audit-warn--ctl-.md'
+  - '.tasks/active/T-2470-audit-warn--ctl-029-t-2268-has-all-agent.md'
+  - '.tasks/active/T-2475-audit-warn--task-t-2449-audit-warn--task.md'
+  - '.tasks/active/T-2476-audit-warn--task-t-2450-audit-warn--task.md'
+  - '.tasks/active/T-2477-audit-warn--task-t-2451-audit-warn--task.md'
+  - '.tasks/active/T-2478-audit-warn--task-t-2452-audit-warn--task.md'
+  - '.tasks/active/T-2479-audit-warn--task-t-2453-audit-warn--task.md'
+  - '.tasks/active/T-2480-audit-warn--task-t-2454-audit-warn--task.md'
+  - '.tasks/active/T-2481-audit-warn--task-t-2455-audit-warn--task.md'
+  - '.tasks/active/T-2482-audit-warn--task-t-2456-audit-warn--task.md'
+  - '.tasks/active/T-2483-audit-warn--task-t-2457-audit-warn--task.md'
+  - '.tasks/active/T-2484-audit-warn--task-t-2458-audit-warn--task.md'
+  - '.tasks/active/T-2485-audit-warn--task-t-2459-audit-warn--task.md'
+  - '.tasks/active/T-2486-audit-warn--task-t-2460-audit-warn--task.md'
+  - '.tasks/active/T-2487-audit-warn--task-t-2461-audit-warn--task.md'
+  - '.tasks/active/T-2488-audit-warn--task-t-2462-audit-warn--task.md'
+  - '.tasks/active/T-2489-audit-warn--task-t-2463-audit-warn--task.md'
+  - '.tasks/active/T-2490-audit-warn--task-t-2464-audit-warn--task.md'
+  - '.tasks/active/T-2491-audit-warn--task-t-2465-audit-warn--task.md'
+  - '.tasks/active/T-2492-audit-warn--task-t-2466-audit-warn--task.md'
+  - '.tasks/active/T-2493-audit-warn--task-t-2467-audit-warn--task.md'
+  - '.tasks/active/T-2494-audit-warn--task-t-2468-audit-warn--task.md'
+  - '.tasks/active/T-2509-audit-warn--task-t-2469-audit-warn--ctl-.md'
+  - '.tasks/active/T-2510-audit-warn--task-t-2475-audit-warn--task.md'
+  - '.tasks/active/T-2512-audit-warn--task-t-2476-audit-warn--task.md'
+  - '.tasks/active/T-2513-audit-warn--task-t-2477-audit-warn--task.md'
+  - '.tasks/active/T-2515-audit-warn--task-t-2478-audit-warn--task.md'
+  - '.tasks/active/T-2516-audit-warn--task-t-2479-audit-warn--task.md'
+  - '.tasks/active/T-2517-audit-warn--task-t-2480-audit-warn--task.md'
+  - '.tasks/active/T-2518-audit-warn--task-t-2481-audit-warn--task.md'
+  - '.tasks/active/T-2519-audit-warn--task-t-2482-audit-warn--task.md'
+  - '.tasks/active/T-2520-audit-warn--task-t-2483-audit-warn--task.md'
+  - '.tasks/active/T-2521-audit-warn--task-t-2484-audit-warn--task.md'
+  - '.tasks/active/T-2522-audit-warn--task-t-2485-audit-warn--task.md'
+  - '.tasks/active/T-2523-audit-warn--task-t-2486-audit-warn--task.md'
+  - '.tasks/active/T-2524-audit-warn--task-t-2487-audit-warn--task.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-04T10:34:11"
+    action: "T-100128: purge 48 pre-fix cascade finding-tasks + harden audit emit file resolution"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 42 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 42
+  commits: 1
+  files_changed: 49
+  lines_added: 59
+  lines_removed: 3788
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100128-missing-updates-cascade-remediation-purg.md
+generated_by: context-agent-hybrid

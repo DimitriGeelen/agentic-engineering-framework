@@ -6,12 +6,12 @@ description: >
   Missing-Updates cascade remediation: purge cascade finding-tasks + fix emit body-replacement
   failure
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T07:52:16Z
-last_update: '2026-07-04T08:00:02Z'
-date_finished:
+last_update: 2026-07-04T08:34:22Z
+date_finished: 2026-07-04T08:34:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -228,3 +228,20 @@ bash -n agents/audit/audit.sh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100128-missing-updates-cascade-remediation-purg.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b71b4a64
+- **Timestamp:** 2026-07-04T08:34:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 32
+     - evidence: `out=$(python3 agents/audit/active-task-scan.py .tasks .context/audits 2>&1); ! echo "$out" | grep -q "missing Updates section"`
+
+### 2026-07-04T08:34:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

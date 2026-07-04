@@ -3693,3 +3693,10 @@ X'` returning empty group."
   date: 2026-06-14
   context: Added via context agent
   application: TBD
+- id: L-485
+  learning: "Silent failure path in a task-generator + dedup keyed on a field that failure path never writes = self-amplifying duplicates. audit --emit-tasks resolved the created file via glob inside 'if ls; then' with no else: on glob failure the task stayed default-template with no audit_finding_hash, dedup couldn't see it, next run emitted a duplicate. Fix pattern: parse the creator's own output (File: line) instead of re-deriving paths, and make every failure branch loud."
+  source: P-001
+  task: T-100128
+  date: 2026-07-04
+  context: Added via context agent
+  application: TBD
