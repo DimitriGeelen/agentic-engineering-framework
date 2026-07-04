@@ -1,15 +1,17 @@
 ---
-id: T-100131
-name: "Rewrite README opening with Garbage-In narrative + onboarding prompts"
+id: T-100190
+name: "audit.sh metrics-history writer non-atomic: truncating open-w corrupts YAML
+  when killed mid-dump"
 description: >
-  Rewrite README opening with Garbage-In narrative + onboarding prompts
+  audit.sh metrics-history writer non-atomic: truncating open-w corrupts YAML when
+  killed mid-dump
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-04T08:47:10Z
-last_update: 2026-07-04T23:45:26Z
-date_finished:
+created: 2026-07-04T23:37:38Z
+last_update: 2026-07-04T23:45:07Z
+date_finished: 2026-07-04T23:45:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -35,53 +37,49 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-04T09:00:02Z'
+  - ts: '2026-07-04T23:45:02Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-04T09:00:02Z'
+  - ts: '2026-07-04T23:45:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
-      D3: 4
-      D4: 2
+      D3: 2
+      D4: 0
       F-RECALL: 0
       F-ORCH: 0
       F-AUTONOMY: 0
       audit_severity: 0
-      F3: 1
-      F1: 1
-      F2: 1
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=4 
-      (body:framework-level-ux); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
-      audit_severity=0 (no-signal); F3=1 (body/components:prompt-incidental); 
-      F1=1 (body/components:context-fabric-incidental); F2=1 
-      (body/components:component-fabric-incidental)
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); audit_severity=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-100131: Rewrite README opening with Garbage-In narrative + onboarding prompts
+# T-100190: audit.sh metrics-history writer non-atomic: truncating open-w corrupts YAML when killed mid-dump
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Found 2026-07-05 when the pre-push YAML gate (T-1599/T-1610) blocked a push: `.context/project/metrics-history.yaml` was truncated mid-entry (file ended with a bare `warn`, no colon/newline). The writer at `agents/audit/audit.sh:5131` does `open(METRICS_FILE, "w")` — a truncating in-place rewrite (the block also prunes/downsamples, so it rewrites the whole file each audit run). A kill mid-`yaml.dump` (cron audit killed by pkill / session teardown — see T-100146) leaves a corrupt file. Third instance of the non-atomic-YAML-write class: T-2457 (fabric cards, L-493), T-2456 (fw note, L-492). Fix: same-dir temp + `os.replace`. Immediate corruption was recovered via `git checkout -- .context/project/metrics-history.yaml` (HEAD copy valid; cron re-appends).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] README opens with the "Garbage in, garbage out?" narrative and the "One principle, two mechanisms" (Context Fabric + Component Fabric) framing
-- [x] Onboarding-prompts section present with both entry paths (A greenfield, B existing codebase), each in a copy-pasteable fenced code block
-- [x] Later "Hand it to your agent" install block reconciled (points to the new onboarding section, no duplicate prompt)
-- [x] Markdown is well-formed: `python3 -m markdown README.md > /dev/null` (or fenced-block balance check) passes
+- [x] `agents/audit/audit.sh` metrics-history block writes via same-dir temp file + `os.replace` (no truncating `open(METRICS_FILE, "w")` on the live path)
+- [x] bats test pins the atomic pattern (temp+replace present; direct `"w"` write on METRICS_FILE absent) and the writer round-trips: run the extracted python block against a fixture history and the output parses as YAML with entries preserved
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -116,56 +114,21 @@ bvp_scores_proposed:
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-out=$(cat README.md); echo "$out" | grep -q "Garbage in, garbage out?"
-out=$(cat README.md); echo "$out" | grep -q "One principle, two mechanisms"
-out=$(cat README.md); echo "$out" | grep -q "A — Greenfield" && echo "$out" | grep -q "B — Existing codebase"
-fences=$(grep -c '^```' README.md); [ $((fences % 2)) -eq 0 ]
+# Origin-based checks (MAIN's branch lags origin/master where this lands).
+git show origin/master:agents/audit/audit.sh > /tmp/.t100190-audit.sh && grep -q "os.replace(tmp_path, METRICS_FILE)" /tmp/.t100190-audit.sh
+! grep -q 'with open(METRICS_FILE, "w")' /tmp/.t100190-audit.sh
+git show origin/master:tests/unit/audit_metrics_history_atomic.bats > /tmp/.t100190-bats && grep -q "T-100190" /tmp/.t100190-bats
+python3 -c "import yaml; yaml.safe_load(open('.context/project/metrics-history.yaml'))"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `git push` from MAIN blocked by the pre-push YAML gate: `.context/project/metrics-history.yaml` failed to parse (truncated mid-entry, last line a bare `warn`).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the METRICS_EOF block in `agents/audit/audit.sh` rewrote the whole history file in place via truncating `open(METRICS_FILE, "w")`. Any kill mid-`yaml.dump` (cron audit terminated by pkill/session teardown — the T-100146 environment) leaves a partial file. Prune+downsample means every audit run rewrites the entire file, so the exposure window is every run, not just appends.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the framework has an atomic-write learning (L-493, from T-2457 fabric cards and T-2456 fw note) but no corpus-wide sweep — each non-atomic writer is found only when its file corrupts. The pre-push gate (T-1599/T-1610) detected the corruption but only at push time, days of cron runs after the truncation could occur.
+
+**Prevention:** `tests/unit/audit_metrics_history_atomic.bats` pins (1) temp+`os.replace` present, (2) truncating write absent, (3) the failure mode itself — a partial temp never corrupts the live file. A corpus sweep for remaining `open(..., "w")` sites on `.context/` YAML is candidate follow-up work (same class, separate task per sizing rules).
 
 ## Evolution
 
@@ -214,7 +177,19 @@ fences=$(grep -c '^```' README.md); [ $((fences % 2)) -eq 0 ]
 
 ## Updates
 
-### 2026-07-04T08:47:10Z — task-created [task-create-agent]
+### 2026-07-04T23:37:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100131-rewrite-readme-opening-with-garbage-in-n.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100190-auditsh-metrics-history-writer-non-atomi.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1357670a
+- **Timestamp:** 2026-07-04T23:45:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-04T23:45:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

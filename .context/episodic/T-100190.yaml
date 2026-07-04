@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100190: audit.sh metrics-history writer non-atomic: truncating open-w corrupts YAML
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T23:45:16Z
+# ============================================================================
+
+task_id: T-100190
+task_name: "audit.sh metrics-history writer non-atomic: truncating open-w corrupts YAML"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T23:37:38Z
+completed: 2026-07-04T23:45:07Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-05T01:41:18+02:00
+last_commit: 2026-07-05T01:41:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  atomic metrics-history write (same-dir temp + os.replace) + bats pin. refresh vendored copies
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` metrics-history block writes via same-dir temp file + `os.replace` (no truncating `open(METRICS_FILE, "w")` on the live path)'
+  - 'bats test pins the atomic pattern (temp+replace present; direct `"w"` write on METRICS_FILE absent) and the writer round-trips: run the extracted python block against a fixture history and the output parses as YAML with entries preserved'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-100190-auditsh-metrics-history-writer-non-atomi.md'
+  - 'tests/unit/audit_metrics_history_atomic.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-05T01:41:18"
+    action: "T-100190: atomic metrics-history write (same-dir temp + os.replace) + bats pin"
+  - time: "2026-07-05T01:41:23"
+    action: "T-100190: refresh vendored copies"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 7
+  commits: 2
+  files_changed: 4
+  lines_added: 235
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100190-auditsh-metrics-history-writer-non-atomi.md
+generated_by: context-agent-hybrid
