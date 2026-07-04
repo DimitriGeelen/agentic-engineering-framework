@@ -21064,3 +21064,39 @@ scan_id: R-e49cc4fb
 task_id: T-2457
 payload:
   task_file: .tasks/active/T-2457-audit-warn--task-t-2436-audit-fail--ctl-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T00:24:20Z'
+scan_id: R-4c78ae0c
+task_id: T-2455
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T00:24:20Z'
+scan_id: R-4c78ae0c
+task_id: T-2455
+payload:
+  task_file: .tasks/active/T-2455-audit-warn--task-t-2434-audit-warn--ctl-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T00:38:19Z'
+scan_id: R-f5e7e8c9
+task_id: T-2469
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T00:38:19Z'
+scan_id: R-f5e7e8c9
+task_id: T-2469
+payload:
+  task_file: .tasks/active/T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md

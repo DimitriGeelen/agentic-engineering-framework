@@ -1,14 +1,14 @@
 # Escalation drift summary — T-1555 Layer B v1
 # Re-emitted on every scanner run. Read-only artifact.
-generated: 2026-07-03T03:23:02.145763+00:00
-corpus_total: 2169
-bug_class_total: 358
+generated: 2026-07-04T03:23:01.889561+00:00
+corpus_total: 2249
+bug_class_total: 376
 bug_class_pct: 16
 h1_flagged: 290
-h1_pct_of_bug_class: 81
+h1_pct_of_bug_class: 77
 h2_repeat_patterns: 117
 h3_flagged: 245
-h3_pct_of_bug_class: 68
+h3_pct_of_bug_class: 65
 recent_30d_flagged: 4
 report_md: docs/reports/T-1549-escalation-scan-v0.md
 recent_sample:
@@ -22,15 +22,15 @@ recent_sample:
     name: "Fix OBS-076: _self_vendor_* find must prune node_modules/__pycache__ (phantom pr"
 h2_top:
   - learning: "P-011"
-    task_count: 904
+    task_count: 940
   - learning: "L-387"
-    task_count: 742
+    task_count: 778
   - learning: "L-291"
-    task_count: 504
+    task_count: 522
   - learning: "L-398"
-    task_count: 307
+    task_count: 325
   - learning: "P-010"
-    task_count: 173
+    task_count: 175
   - learning: "L-006"
     task_count: 54
   - learning: "L-001"

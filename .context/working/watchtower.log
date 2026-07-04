@@ -11294,3 +11294,629 @@ FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engine
 127.0.0.1 - - [04/Jul/2026 02:14:34] "GET /metrics HTTP/1.1" 200 -
 127.0.0.1 - - [04/Jul/2026 02:15:44] "GET /timeline HTTP/1.1" 200 -
 192.168.10.107 - - [04/Jul/2026 02:17:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:20:45] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:20:45] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:20:49] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:21:21] "GET /cockpit/activity HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:21:26] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:21:34] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:21:54] "GET /decisions HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [04/Jul/2026 02:21:57] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:01] "GET /escalation-drift HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:02] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:06] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:17] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:22] "GET /fabric HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:22:29] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:33] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:36] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:40] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:43] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:22:57] "GET /hooks HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:23:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:07] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:16] "GET /orchestrator/parallel HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:23] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:27] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:27] "GET /reviewer/audit HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:38] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:39] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:43] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:48] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [04/Jul/2026 02:23:53] "GET /docs/generated HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:23:54] "GET /risks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:02] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:03] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:05] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:11] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:19] "GET /settings/appearance HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:25] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:27] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:30] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:24:34] "GET /cron HTTP/1.1" 200 -
+[2026-07-04 02:24:41,661] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2455-audit-warn--task-t-2434-audit-warn--ctl-.md'
+[2026-07-04 02:24:43,214] ERROR in app: Exception on /tasks [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/tasks.py", line 653, in tasks
+    all_tasks = [copy.copy(t) for t in get_all_task_metadata()]
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2455-audit-warn--task-t-2434-audit-warn--ctl-.md'
+[2026-07-04 02:24:45,840] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 400, in index
+    ctx["stale_tasks"] = _get_stale_tasks()
+                         ^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 262, in _get_stale_tasks
+    for fm in get_all_task_metadata():
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2455-audit-warn--task-t-2434-audit-warn--ctl-.md'
+127.0.0.1 - - [04/Jul/2026 02:25:00] "GET /tasks HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:25:00] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:25:03] "GET / HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:25:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:25:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:26:38] "GET /bvp HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:26:46] "GET /orchestrator HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:27:40] "GET /arcs HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:27:40] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:28:02] "GET /project HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:28:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:28:43] "GET /metrics HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:29:28] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:32:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:32:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:34:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:34:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:34:43] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:34:43] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:34:48] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:35:19] "GET /cockpit/activity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:35:22] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:35:26] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:35:34] "GET /config HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:35:49] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:35:53] "GET /decisions HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [04/Jul/2026 02:35:58] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:00] "GET /escalation-drift HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:03] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:14] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:20] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:32] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:33] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:35] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:36] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:36:53] "GET /hooks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:05] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:14] "GET /orchestrator/parallel HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:22] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:27] "GET /reviewer/audit HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:28] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:30] "GET /docs/generated HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:40] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:41] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:42] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:47] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [04/Jul/2026 02:37:52] "GET /risks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:37:59] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:03] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:08] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:12] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:18] "GET /cron HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:19] "GET /settings/appearance HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:29] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:29] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:38:35] "GET /quality HTTP/1.1" 200 -
+[2026-07-04 02:38:42,543] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/core.py", line 377, in index
+    all_task_data = get_all_task_metadata()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md'
+[2026-07-04 02:38:44,214] ERROR in app: Exception on /tasks [GET]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/flask/app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/blueprints/tasks.py", line 653, in tasks
+    all_tasks = [copy.copy(t) for t in get_all_task_metadata()]
+                                       ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/999-Agentic-Engineering-Framework/web/shared.py", line 937, in get_all_task_metadata
+    fm, _ = parse_frontmatter(f.read_text())
+                              ^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1029, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/999-Agentic-Engineering-Framework/.tasks/active/T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md'
+192.168.10.107 - - [04/Jul/2026 02:39:01] "GET / HTTP/1.1" 500 -
+127.0.0.1 - - [04/Jul/2026 02:39:01] "GET /tasks HTTP/1.1" 500 -
+192.168.10.107 - - [04/Jul/2026 02:39:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:39:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:39:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:40:09] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:40:33] "GET /bvp HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:40:44] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:40:48] "GET /orchestrator HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:41:37] "GET /arcs HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:42:17] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:42:52] "GET /metrics HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:43:17] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 02:43:35] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:43:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:46:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:46:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:48:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:48:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:50:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:50:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:53:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:53:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:56:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:56:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:58:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:59:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 02:59:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:00:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:01:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:02:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:03:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:04:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:05:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:05:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:05:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:06:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:06:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:07:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:09:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:09:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:10:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:11:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:11:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:11:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:12:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:12:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:13:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:14:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:14:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:15:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:15:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:16:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:16:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:17:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:17:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:18:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:18:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:18:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:18:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:19:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:21:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:21:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:29:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:30:34] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:33:50] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:34:16] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:43:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:44:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:44:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:46:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:47:08] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:48:17] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:48:28] "GET /approvals/content HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:48:41] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:48:44] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:49:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:50:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:51:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:53:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:53:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:55:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:55:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:57:38] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:57:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 03:58:13] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:58:58] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:59:23] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 03:59:47] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:03:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:03:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:04:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:05:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:05:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:05:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:09:15] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 04:09:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:09:59] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 04:10:37] "GET /approvals/content HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 04:11:01] "GET /inception HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 04:11:36] "GET /approvals HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:12:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:12:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:14:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:15:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:15:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:17:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:17:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:18:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:18:38] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 04:20:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:20:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:20:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:21:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:21:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:22:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:23:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:23:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:24:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:24:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:24:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:25:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:25:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:26:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:26:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:26:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:27:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:27:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:28:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:28:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:28:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:29:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:30:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:30:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:30:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:32:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:32:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:33:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:33:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:34:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:36:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:43:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:44:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:45:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:46:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:46:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:47:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:47:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:48:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:49:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:50:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:50:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:51:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:51:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:52:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:52:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:52:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:54:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:54:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:55:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:55:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:55:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:56:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:56:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:57:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:57:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:58:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:58:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:58:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:59:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 04:59:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:00:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:00:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:00:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:01:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:01:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:02:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:02:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:02:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:03:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:03:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:03:58] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:04:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:05:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:05:13] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:05:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:05:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:06:02] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:06:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:06:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:06:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:07:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:07:51] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:07:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:08:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:08:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:08:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:09:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:10:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:10:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:10:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:10:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:11:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:11:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:11:50] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:12:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:12:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:12:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:13:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:13:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:14:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:14:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:15:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:15:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:16:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:20:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:20:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:21:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:23:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:23:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:24:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:24:36] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:25:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:25:29] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:25:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:26:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:26:26] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:27:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:27:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:27:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:27:48] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:28:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:28:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:29:53] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:30:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:33:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:33:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 05:34:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:17:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:17:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:20:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:20:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:24:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:24:37] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:30:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 06:56:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:05:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:06:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:11:01] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:11:35] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:19:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:24:07] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:24:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:28:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:28:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:30:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:31:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:37:21] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:40:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:40:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:43:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:44:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:48:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:49:04] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:51:22] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:54:15] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:54:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:58:06] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 07:58:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:01:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:01:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:03:47] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:04:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:06:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:07:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:08:23] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:08:23] "GET /api/_identity HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:08:31] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:09:04] "GET /cockpit/activity HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:09:23] "GET /assumptions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:09:34] "GET /config HTTP/1.1" 200 -
+Failed to parse bypass log /opt/999-Agentic-Engineering-Framework/.context/bypass-log.yaml: '<' not supported between instances of 'datetime.datetime' and 'str'
+127.0.0.1 - - [04/Jul/2026 08:09:45] "GET /escalation-drift HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:09:48] "GET /decisions HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:09:51] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:09:55] "GET /costs HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:09:56] "GET /directives HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:09:57] "GET /discoveries HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:10:06] "GET /enforcement HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:10:16] "GET /fabric HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:10:21] "GET /health HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:10:28] "GET /fleet HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:10:32] "GET /gaps HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:10:43] "GET /fabric/graph HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:10:50] "GET /hooks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:03] "GET /learnings HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:10] "GET /orchestrator/parallel HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:13] "GET /reviewer/audit HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:18] "GET /patterns HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:22] "GET /pending HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:28] "GET /search/conversations HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:32] "GET /reviewer/overrides HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:32] "GET /prompts HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:33] "GET /search/load-conversation HTTP/1.1" 400 -
+127.0.0.1 - - [04/Jul/2026 08:11:48] "GET /settings/models HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:11:54] "GET /risks HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:01] "GET /search/feedback/analytics HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:03] "GET /sessions HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:07] "GET /docs/generated HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:08] "GET /settings/ HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:16] "GET /settings/appearance HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:24] "GET /terminal HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:39] "GET /search HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:12:49] "GET /quality HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:13:38] "GET /cron HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:14:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:15:05] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:16:10] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:16:23] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:17:09] "GET /orchestrator HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:17:28] "GET /bvp HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:19:08] "GET /project HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:19:28] "GET /arcs HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:20:30] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:20:51] "GET /metrics HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:21:22] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:21:31] "GET /timeline HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:24:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:24:41] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [04/Jul/2026 08:25:57] "GET /tasks HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:27:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:30:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:30:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:34:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:34:34] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:36:19] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:36:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:38:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:39:11] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:40:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:41:18] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:44:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:44:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:44:42] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:50:14] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:50:17] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:50:49] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:53:56] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:54:41] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:56:43] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:57:25] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:59:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 08:59:31] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:01:55] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:02:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:03:27] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:03:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:05:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:05:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:05:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:07:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:07:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:12:09] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:12:23] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:12:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:13:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:17:28] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:18:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:18:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:22:44] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:23:39] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:24:08] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:24:20] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:27:32] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:30:30] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:31:00] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:31:38] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:31:59] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:32:12] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:33:16] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:34:40] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:35:33] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:36:46] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:37:45] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:38:54] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:39:24] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:40:57] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:41:03] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:41:52] "GET / HTTP/1.1" 200 -
+192.168.10.107 - - [04/Jul/2026 09:41:55] "GET / HTTP/1.1" 200 -
