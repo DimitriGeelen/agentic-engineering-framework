@@ -1,13 +1,16 @@
 ---
 id: T-100157
-name: "fw doctor calls fw_consumer_yamls (defined in lib/config.sh) at bin/fw:1870,1962 without sourcing lib/config.sh in that path — 'command not found' twice per doctor run; the consumer-yaml checks silently no-op. Pre-existing on master, verified with T-100143 changes stashed."
+name: "fw doctor: source lib/config.sh before fw_consumer_yamls (consumer checks silently
+  no-op)"
 description: >
-  Promoted from observation OBS-085
+  Promoted from observation OBS-085. do_doctor calls fw_consumer_yamls
+  (lib/config.sh) without sourcing it — 'command not found' twice per run,
+  consumer-yaml checks silently skipped.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T13:47:37Z
-last_update: 2026-07-04T13:47:49Z
-date_finished: null
+last_update: '2026-07-04T14:00:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +37,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-07-04T13:59:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-04T14:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-100157: fw doctor calls fw_consumer_yamls (defined in lib/config.sh) at bin/fw:1870,1962 without sourcing lib/config.sh in that path — 'command not found' twice per doctor run; the consumer-yaml checks silently no-op. Pre-existing on master, verified with T-100143 changes stashed.
+# T-100157: fw doctor: source lib/config.sh before fw_consumer_yamls
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`do_doctor` (bin/fw) calls `fw_consumer_yamls` — defined in `lib/config.sh` —
+at two sites (~1870, ~1962 on master) without sourcing lib/config.sh in that
+code path. Every doctor run prints `fw_consumer_yamls: command not found`
+twice and the consumer-yaml-dependent checks silently no-op (loop over empty
+list looks identical to "no consumers"). Pre-existing on master; verified
+independent of T-100143 by stashing. Build in a worktree off origin/master
+(code target is master lineage — see T-100142/T-100143 episodics for flow).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/config.sh` is sourced before both `fw_consumer_yamls` call sites in `do_doctor` (single idempotent source at top of do_doctor, not per-site duplication)
+- [x] `fw doctor` run emits zero `command not found` lines — live-fired: `grep -c "command not found"` = 0 on doctor --quick
+- [x] The consumer-yaml checks actually execute — live run now surfaces real Consumer Projects WARNs (001-sprechloop, 002-Claude-Partner-Network behind + missing hooks) that were silently skipped before
+- [x] Regression pin: tests/unit/t100157_doctor_config_source.bats — static ordering pin (source line precedes first call site) + contract pin (config.sh defines fw_consumer_yamls); live no-command-not-found asserted by ## Verification at the completion gate
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -82,6 +123,10 @@ date_finished: null
 
 ## Verification
 
+# Origin-based after `fw integrate run master --push` lands the fix (L-387 file-capture).
+git show origin/master:bin/fw > /tmp/.t100157-fw 2>/dev/null && grep -q "T-100157 (OBS-085)" /tmp/.t100157-fw
+git show origin/master:tests/unit/t100157_doctor_config_source.bats > /tmp/.t100157-tests 2>/dev/null && grep -q "contract pin" /tmp/.t100157-tests
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -113,7 +158,24 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+## Recommendation
+
+- **Recommendation:** GO — close as work-completed
+- **Rationale:** One-line structural fix (source lib/config.sh at top of do_doctor), verified live: doctor now emits zero `command not found` lines and the Consumer Projects fleet checks execute again — they immediately surfaced real drift (001-sprechloop and 002-Claude-Partner-Network behind + missing hooks) that had been invisible. All four Agent ACs ticked; no Human ACs.
+- **Evidence:**
+  - Fix on origin/master (grep `T-100157 (OBS-085)` in bin/fw)
+  - tests/unit/t100157_doctor_config_source.bats — 2/2 green (ordering pin + contract pin)
+  - Live doctor run: `grep -c "command not found"` = 0; Consumer Projects WARNs now render
+
 ## RCA
+
+**Symptom:** every `fw doctor` run printed `bin/fw: line 1870: fw_consumer_yamls: command not found` (and again at 1962); the Consumer Projects fleet checks produced no output.
+
+**Root cause:** T-616/T-1195 consumer checks call `fw_consumer_yamls` from `lib/config.sh`, but `do_doctor` never sources that lib — only `do_config` (bin/fw:2002) does. The empty command substitution makes the `for` loop iterate zero times, which is indistinguishable from "no consumers found".
+
+**Why structurally allowed:** the failure is a stderr line inside a command whose overall exit code stays 0 — doctor has no self-check that its own sections executed, and no test asserted doctor output is free of `command not found`. The silent-no-op shape (empty loop == clean state) violates D2 (no silent failures) invisibly.
+
+**Prevention:** tests/unit/t100157_doctor_config_source.bats pins (a) the source line precedes the first call site inside do_doctor, (b) lib/config.sh still defines fw_consumer_yamls (contract pin — fails if the function moves without updating the doctor source).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -183,3 +245,7 @@ date_finished: null
 
 ### 2026-07-04T13:47:49Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-07-04T13:59:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
