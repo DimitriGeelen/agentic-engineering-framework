@@ -4,15 +4,15 @@ name: "Audit WARN — CTL-029: T-2221 has all Agent ACs ticked but status='start
 description: >
   Audit WARN — CTL-029: T-2221 has all Agent ACs ticked but status='started-work' — c...
 
-status: started-work
+status: work-completed
 workflow_type: build
 audit_severity: warn
 audit_finding_hash: 8f5302dc3def95a3bc537dcf81c22e7150fa3615
 tags: [audit-finding, severity:warn, section:CTL-029]
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T19:09:38Z
-last_update: 2026-07-04T00:25:40Z
-date_finished: null
+last_update: 2026-07-04T00:26:23Z
+date_finished: 2026-07-04T00:26:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -75,3 +75,20 @@ Mitigation: Run: bin/fw task update T-2221 --status work-completed
 # Re-run audit - finding should be absent
 bin/fw audit 2>&1 | grep -q "CTL-029: T-2221 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f5e7e8c9
+- **Timestamp:** 2026-07-04T00:38:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw audit 2>&1 | grep -q "CTL-029: T-2221 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0`
+
+### 2026-07-04T00:26:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
