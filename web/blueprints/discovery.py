@@ -657,13 +657,34 @@ def patterns_api():
 
 # T-1233: Reverse index for learning application counts (was 562K file reads/request)
 import time as _time_mod
+import threading as _threading_mod
 
 _app_index_cache = {"data": None, "ts": 0}
 _APP_INDEX_TTL = 60  # seconds — graduation page is less frequently visited
+_app_index_lock = _threading_mod.Lock()
 
 
 def _build_application_index():
-    """Build {learning_id: count} by scanning files once."""
+    """Build {learning_id: count} by scanning files once.
+
+    T-100140: single-flight — the full-corpus scan takes seconds; without a
+    rebuild lock every concurrent request past the TTL re-scanned in
+    parallel (50 threads deep in the 2026-07-04 livelock). One thread
+    rebuilds; the rest serve the stale index.
+    """
+    now = _time_mod.monotonic()
+    if _app_index_cache["data"] is not None and (now - _app_index_cache["ts"]) < _APP_INDEX_TTL:
+        return _app_index_cache["data"]
+
+    if not _app_index_lock.acquire(blocking=(_app_index_cache["data"] is None)):
+        return _app_index_cache["data"]
+    try:
+        return _build_application_index_locked()
+    finally:
+        _app_index_lock.release()
+
+
+def _build_application_index_locked():
     now = _time_mod.monotonic()
     if _app_index_cache["data"] is not None and (now - _app_index_cache["ts"]) < _APP_INDEX_TTL:
         return _app_index_cache["data"]

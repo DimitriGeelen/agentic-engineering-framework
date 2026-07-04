@@ -1,6 +1,7 @@
 """Core blueprint — dashboard, project docs, directives."""
 
 import re as re_mod
+import threading as _threading_mod
 import time as _time_mod
 
 import markdown2
@@ -20,6 +21,7 @@ bp = Blueprint("core", __name__)
 # --- Dashboard caches (T-1246) ---
 _trace_cache = {"data": None, "ts": 0}
 _qr_cache = {"data": None, "ts": 0}
+_qr_lock = _threading_mod.Lock()  # T-100140 single-flight
 _concerns_cache = {"data": None, "ts": 0}
 _DASHBOARD_CACHE_TTL = 60  # seconds
 
@@ -295,7 +297,25 @@ def _get_pattern_summary():
 
 
 def _get_approval_qr():
-    """Build approval summary and QR data URL for mobile access (T-671). Cached for 60s (T-1246)."""
+    """Build approval summary and QR data URL for mobile access (T-671). Cached for 60s (T-1246).
+
+    T-100140: single-flight — `_build_approvals_context()` is a multi-second
+    corpus walk; without a rebuild lock every `/` request past the TTL
+    rebuilt it concurrently (33 threads deep in the 2026-07-04 livelock).
+    One thread rebuilds; the rest serve the stale tuple.
+    """
+    now = _time_mod.monotonic()
+    if _qr_cache["data"] is not None and (now - _qr_cache["ts"]) < _DASHBOARD_CACHE_TTL:
+        return _qr_cache["data"]
+    if not _qr_lock.acquire(blocking=(_qr_cache["data"] is None)):
+        return _qr_cache["data"]
+    try:
+        return _get_approval_qr_locked()
+    finally:
+        _qr_lock.release()
+
+
+def _get_approval_qr_locked():
     now = _time_mod.monotonic()
     if _qr_cache["data"] is not None and (now - _qr_cache["ts"]) < _DASHBOARD_CACHE_TTL:
         return _qr_cache["data"]
