@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100142: C1: fw integrate run deletes landed source branch by default (keep-branch opt-out)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T12:53:04Z
+# ============================================================================
+
+task_id: T-100142
+task_name: "C1: fw integrate run deletes landed source branch by default (keep-branch opt-out)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T11:49:31Z
+completed: 2026-07-04T12:52:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-04T14:49:55+02:00
+last_commit: 2026-07-04T14:49:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw integrate run deletes landed source branch by default (--keep-branch opt-out)
+
+# Key outcomes
+outcomes:
+  - 'After a successful `fw integrate run` landing, the source branch is deleted by default (and its worktree removed first when one exists, since git refuses to delete a checked-out branch) — `_cleanup_branch` in lib/integrate.py, called as the last step of `cmd_run`'
+  - '`--keep-branch` opts out: branch (and worktree) survive, output says kept'
+  - 'Deletion only happens on a fully successful landing — pushed landings only (`not pushed` → kept), and failed/aborted integrations return before cleanup is reached'
+  - 'Output names what was deleted (branch, worktree path, remote ref) under a `Branch cleanup:` block; containment in origin/<target> is re-checked with `merge-base --is-ancestor` before any deletion (the -d semantic against the landed state — unmerged work is never force-deleted)'
+  - 'Regression tests pin all four behaviours + dry-run plan line: `tests/unit/t100142_integrate_run_branch_cleanup.bats` (6 tests green; existing t2471/t2474 suites green, zone-2 test updated to --keep-branch)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-04 — deletion trigger: pushed landings only'
+    chose: 'delete only when `--push` succeeded AND `merge-base --is-ancestor <branch> origin/<target>` confirms containment; without `--push` the branch is always kept.'
+    rationale: '"verified landing" (T-100139 artifact wording) means the work is provably reachable from the canonical target. A local-only merge leaves the branch as the sole holder of the merge commit — deleting it would lose work.'
+    alternatives_rejected: ['deleting after zone-2 local FF (local master can still diverge from origin); a `--delete-branch` opt-in (inverts the GO decision — deletion must be the default to close the debris tap).']
+  - decision: '2026-07-04 — branch -D after explicit containment check, not -d'
+    chose: 're-check containment ourselves, then `git -C <MAIN> branch -D`.'
+    rationale: '`-d` judges merged-ness against the *deleting checkout''s* HEAD; MAIN is routinely on a session branch off-master, so `-d` would refuse valid deletions. The is-ancestor check against origin/<target> is the same safety, aimed at the right ref.'
+    alternatives_rejected: ['plain `-d` (false refusals from MAIN), plain `-D` without the check (could destroy unmerged work on a push race).']
+  - decision: '2026-07-04 — self-removal ordering'
+    chose: 'cleanup is the last step of `cmd_run`; worktree removed before branch deletion; all post-removal git calls run with `cwd=` pinned to MAIN.'
+    rationale: 'git refuses to delete a checked-out branch, and after our own worktree dies any subprocess inheriting the dead cwd fails ("Unable to read current working directory").'
+    alternatives_rejected: ['deleting from within the worktree (impossible); leaving the worktree behind (it IS the debris the GO decision targets).']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'lib/integrate.py'
+  - '.tasks/active/T-100142-c1-fw-integrate-run-deletes-landed-sourc.md'
+  - 'tests/unit/t100142_integrate_run_branch_cleanup.bats'
+  - 'tests/unit/t2474_integrate_run_landing.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-04T14:49:55"
+    action: "T-100142: fw integrate run deletes landed source branch by default (--keep-branch opt-out)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 63 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 63
+  commits: 1
+  files_changed: 5
+  lines_added: 445
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100142-c1-fw-integrate-run-deletes-landed-sourc.md
+generated_by: context-agent-hybrid

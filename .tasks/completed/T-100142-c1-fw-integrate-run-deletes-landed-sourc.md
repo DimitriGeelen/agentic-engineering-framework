@@ -2,14 +2,15 @@
 id: T-100142
 name: "C1: fw integrate run deletes landed source branch by default (keep-branch opt-out)"
 description: >
-  Post-GO slice of T-100139. fw integrate run deletes the landed source branch after successful merge-back; --keep-branch opts out.
+  Post-GO slice of T-100139. fw integrate run deletes the landed source branch after
+  successful merge-back; --keep-branch opts out.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/integrate.py]
 related_tasks: [T-100139]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +23,8 @@ related_tasks: [T-100139]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T11:49:31Z
-last_update: 2026-07-04T11:49:31Z
-date_finished: null
+last_update: 2026-07-04T12:52:54Z
+date_finished: 2026-07-04T12:52:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,20 +35,56 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-04T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-04T12:00:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 0
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-100142: C1: fw integrate run deletes landed source branch by default (keep-branch opt-out)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+C1 slice of T-100139 (branch/worktree lifecycle inception, GO). Landed source
+branches accumulate because nothing deletes them after a successful merge-back —
+`fw integrate run` completes the merge and leaves the branch behind. This slice
+makes deletion-after-successful-landing the default, with `--keep-branch` opt-out.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] After a successful `fw integrate run` landing, the source branch is deleted by default (and its worktree removed first when one exists, since git refuses to delete a checked-out branch) — `_cleanup_branch` in lib/integrate.py, called as the last step of `cmd_run`
+- [x] `--keep-branch` opts out: branch (and worktree) survive, output says kept
+- [x] Deletion only happens on a fully successful landing — pushed landings only (`not pushed` → kept), and failed/aborted integrations return before cleanup is reached
+- [x] Output names what was deleted (branch, worktree path, remote ref) under a `Branch cleanup:` block; containment in origin/<target> is re-checked with `merge-base --is-ancestor` before any deletion (the -d semantic against the landed state — unmerged work is never force-deleted)
+- [x] Regression tests pin all four behaviours + dry-run plan line: `tests/unit/t100142_integrate_run_branch_cleanup.bats` (6 tests green; existing t2471/t2474 suites green, zone-2 test updated to --keep-branch)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -82,36 +119,13 @@ date_finished: null
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# Feature landed on origin/master (runs from any checkout, incl. MAIN on an old branch)
+# L-387: file-capture then grep — even `echo "$out" | grep -q` SIGPIPEs on files
+# larger than the pipe buffer when the match sits before the tail (bin/fw ~4700 lines)
+git show origin/master:lib/integrate.py > /tmp/.t100142-v && grep -q "_cleanup_branch" /tmp/.t100142-v
+grep -q "keep_branch" /tmp/.t100142-v
+git show origin/master:tests/unit/t100142_integrate_run_branch_cleanup.bats > /tmp/.t100142-v && grep -q "never force-deleted" /tmp/.t100142-v
+git show origin/master:bin/fw > /tmp/.t100142-v && grep -q -- "--keep-branch" /tmp/.t100142-v && rm -f /tmp/.t100142-v
 
 ## RCA
 
@@ -155,6 +169,21 @@ date_finished: null
 
 ## Decisions
 
+### 2026-07-04 — deletion trigger: pushed landings only
+- **Chose:** delete only when `--push` succeeded AND `merge-base --is-ancestor <branch> origin/<target>` confirms containment; without `--push` the branch is always kept.
+- **Why:** "verified landing" (T-100139 artifact wording) means the work is provably reachable from the canonical target. A local-only merge leaves the branch as the sole holder of the merge commit — deleting it would lose work.
+- **Rejected:** deleting after zone-2 local FF (local master can still diverge from origin); a `--delete-branch` opt-in (inverts the GO decision — deletion must be the default to close the debris tap).
+
+### 2026-07-04 — branch -D after explicit containment check, not -d
+- **Chose:** re-check containment ourselves, then `git -C <MAIN> branch -D`.
+- **Why:** `-d` judges merged-ness against the *deleting checkout's* HEAD; MAIN is routinely on a session branch off-master, so `-d` would refuse valid deletions. The is-ancestor check against origin/<target> is the same safety, aimed at the right ref.
+- **Rejected:** plain `-d` (false refusals from MAIN), plain `-D` without the check (could destroy unmerged work on a push race).
+
+### 2026-07-04 — self-removal ordering
+- **Chose:** cleanup is the last step of `cmd_run`; worktree removed before branch deletion; all post-removal git calls run with `cwd=` pinned to MAIN.
+- **Why:** git refuses to delete a checked-out branch, and after our own worktree dies any subprocess inheriting the dead cwd fails ("Unable to read current working directory").
+- **Rejected:** deleting from within the worktree (impossible); leaving the worktree behind (it IS the debris the GO decision targets).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -180,3 +209,23 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100142-c1-fw-integrate-run-deletes-landed-sourc.md
 - **Context:** Initial task creation
+
+### 2026-07-04T12:39:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a801fa39
+- **Timestamp:** 2026-07-04T12:52:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -f`
+
+### 2026-07-04T12:52:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
