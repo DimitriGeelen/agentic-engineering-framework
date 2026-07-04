@@ -21100,3 +21100,165 @@ scan_id: R-f5e7e8c9
 task_id: T-2469
 payload:
   task_file: .tasks/active/T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T08:53:36Z'
+scan_id: R-c38219af
+task_id: T-100130
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T08:53:36Z'
+scan_id: R-c38219af
+task_id: T-100130
+payload:
+  task_file: .tasks/active/T-100130-create-task-template-substitution-un-anc.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T08:59:19Z'
+scan_id: R-189d52d0
+task_id: T-100132
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T08:59:19Z'
+scan_id: R-189d52d0
+task_id: T-100132
+payload:
+  task_file: .tasks/active/T-100132-createtaskbats-hermeticity-tests-pollute.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T10:00:08Z'
+scan_id: R-5a2a72bc
+task_id: T-100138
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T10:00:08Z'
+scan_id: R-5a2a72bc
+task_id: T-100138
+payload:
+  task_file: .tasks/active/T-100138-delete-merged-branch-debris--29-fully-me.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T10:09:35Z'
+scan_id: R-ba431a32
+task_id: T-100136
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T10:09:35Z'
+scan_id: R-ba431a32
+task_id: T-100136
+payload:
+  task_file: .tasks/active/T-100136-audit-emit-tasks-writes-duplicate-tags-k.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T10:12:12Z'
+scan_id: R-48f8fa5e
+task_id: T-100137
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T10:12:12Z'
+scan_id: R-48f8fa5e
+task_id: T-100137
+payload:
+  task_file: .tasks/active/T-100137-testauditemittasksbats-test-3-dry-run-cr.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T10:45:43Z'
+scan_id: R-458155af
+task_id: T-100139
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T10:45:43Z'
+scan_id: R-458155af
+task_id: T-100139
+payload:
+  task_file: .tasks/active/T-100139-branchworktree-lifecycle-policy--prevent.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T11:12:46Z'
+scan_id: R-0c04c09a
+task_id: T-100140
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T11:12:46Z'
+scan_id: R-0c04c09a
+task_id: T-100140
+payload:
+  task_file: .tasks/active/T-100140-watchtower-slow-and-unresponsive-to-link.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T11:31:36Z'
+scan_id: R-cf77dec0
+task_id: T-2208
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T11:31:36Z'
+scan_id: R-cf77dec0
+task_id: T-2208
+payload:
+  task_file: .tasks/completed/T-2208-t-2204-slice-d--hourly-cron-for-fw-incep.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T11:34:59Z'
+scan_id: R-7c981a37
+task_id: T-100135
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T11:34:59Z'
+scan_id: R-7c981a37
+task_id: T-100135
+payload:
+  task_file: .tasks/active/T-100135-audit-emit-tasks-dedup-hash-volatile-tok.md

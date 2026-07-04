@@ -662,3 +662,31 @@ observations:
   tags: []
   status: dismissed
   promoted_to: null
+- id: OBS-079
+  text: "Cross-session commit sweep: concurrent session's T-100131 README commit (7bace9fa4) swept another session's uncommitted create-task.sh + create_task.bats changes (T-100130 work) into its commit — commit-message/content mismatch pollutes traceability. Class: broad staging under multi-session concurrency; violates scope-commits discipline. Candidate guard: warn when commit-message task-ID differs from files' plausible task scope."
+  captured: 2026-07-04T08:55:28Z
+  context_task: T-100132
+  tags: []
+  status: promoted
+  promoted_to: task
+- id: OBS-080
+  text: "test_audit_emit_tasks.bats test 3 (dry-run creates no files) counts the LIVE .tasks/active directory before/after running a real audit — inherently racy against concurrent task creation (cron --emit-tasks, BVP estimator, parallel sessions, the operator). Observed live 2026-07-04: concurrent T-100136 creation during suite run flipped the count and failed the test. Candidate fix: sandbox TASKS_DIR for the test, or assert on the audit's own [CREATED] output instead of directory counts. (T-100135)"
+  captured: 2026-07-04T09:42:47Z
+  context_task: T-100135
+  tags: []
+  status: promoted
+  promoted_to: task
+- id: OBS-081
+  text: "Pre-push self-vendor drift gate (T-2240) blocks delete-only pushes (git push --delete <branch>): no commits ship, so stale vendored copies cannot reach the remote, yet the gate fires on working-tree drift and forces a Tier-2 bypass. Candidate fix: in the pre-push hook, skip the self-vendor check when all pushed refspecs are deletions (local sha = 0000000...). Observed 2026-07-04 during T-100138 branch cleanup. (T-100138)"
+  captured: 2026-07-04T09:59:08Z
+  context_task: T-100138
+  tags: []
+  status: pending
+  promoted_to: null
+- id: OBS-082
+  text: "Cron audit --emit-tasks stole session focus: hourly audit created T-100141 (status started-work!) and rewrote .context/working/focus.yaml current_task while an interactive session held focus on T-100140. Emitted backlog tasks should be captured+horizon:later and must NOT touch focus.yaml. Blocked the session's next Bash call via G-020 (T-100141 has placeholder ACs)."
+  captured: 2026-07-04T11:03:38Z
+  context_task: T-100140
+  tags: []
+  status: pending
+  promoted_to: null
