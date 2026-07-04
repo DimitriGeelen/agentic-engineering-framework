@@ -122,11 +122,11 @@ master (see T-100142's episodic for the worked flow: worktree + copy task file
 
 ## Verification
 
-bash -n lib/branch-hygiene.sh
-bash -n bin/fw
-bats tests/unit/t100143_branch_hygiene.bats > /tmp/.t100143-bats 2>&1 && grep -q "^ok 6" /tmp/.t100143-bats
-grep -q "fw_branch_hygiene" bin/fw
-grep -q "FW_BRANCH_BEHIND_WARN" lib/branch-hygiene.sh
+# Origin-based (L-387 file-capture): passes from MAIN after `fw integrate run master --push` lands C2.
+git show origin/master:lib/branch-hygiene.sh > /tmp/.t100143-lib 2>/dev/null && grep -q "fw_branch_hygiene" /tmp/.t100143-lib
+grep -q "FW_BRANCH_BEHIND_WARN" /tmp/.t100143-lib
+git show origin/master:bin/fw > /tmp/.t100143-fw 2>/dev/null && grep -q "Branch hygiene" /tmp/.t100143-fw
+git show origin/master:tests/unit/t100143_branch_hygiene.bats > /tmp/.t100143-tests 2>/dev/null && grep -q "clean repo: no findings" /tmp/.t100143-tests
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
