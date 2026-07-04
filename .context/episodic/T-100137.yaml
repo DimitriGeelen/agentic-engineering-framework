@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100137: emit-tasks bats test 3 races live .tasks/active — assert on dry-run output
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T10:12:21Z
+# ============================================================================
+
+task_id: T-100137
+task_name: "emit-tasks bats test 3 races live .tasks/active — assert on dry-run output"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T09:51:58Z
+completed: 2026-07-04T10:12:10Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Test 3 no longer counts the live `.tasks/active/` directory; it asserts the dry-run output contains no `[CREATED]` line (the real-create marker) and completes without depending on shared mutable state'
+  - 'Suite passes with concurrent task creation possible (no before/after dir-count assertions remain in the file) — evidence: live rerun 2026-07-04, test 3 `ok` while this session was actively committing task files mid-run (the old assertion failed under exactly those conditions earlier the same day)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 1
+  files_changed: 12
+  lines_added: 736
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100137-testauditemittasksbats-test-3-dry-run-cr.md
+generated_by: context-agent-hybrid
