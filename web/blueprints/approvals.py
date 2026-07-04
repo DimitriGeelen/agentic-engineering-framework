@@ -255,6 +255,11 @@ def _load_pending_go_decisions():
         # T-1569 / F3: surface reviewer agent's mechanical verdict at decision time.
         reviewer = extract_reviewer_verdict(body)
 
+        # T-100188: compact evidence badge from the claims-validator verdict
+        # (T-100187). None overall = no badge rendered.
+        from web.shared import extract_recommendation_claims_verdict
+        claims = extract_recommendation_claims_verdict(body)
+
         results.append({
             "task_id": task_id,
             "name": fm.get("name", ""),
@@ -269,6 +274,7 @@ def _load_pending_go_decisions():
             "verdict": verdict,
             "go_nogo_criteria": go_nogo_raw,
             "reviewer": reviewer,
+            "claims": claims,
         })
 
     return results

@@ -377,6 +377,10 @@ def inception_detail(task_id):
             continue
         if heading.startswith("Reviewer Verdict"):
             continue
+        # T-100188: claims-validator verdict (T-100187) — surfaced structurally
+        # beside the recommendation, not as a generic card.
+        if heading.startswith("Recommendation Verdict"):
+            continue
         if content:
             extra_sections.append({"heading": heading, "content": _md(content)})
 
@@ -436,8 +440,12 @@ def inception_detail(task_id):
 
     # T-1585: surface reviewer's mechanical verdict structurally — cross-surface
     # parity with /approvals (T-1569), /review (T-1583), /tasks (T-1584).
-    from web.shared import extract_reviewer_verdict
+    from web.shared import extract_recommendation_claims_verdict, extract_reviewer_verdict
     reviewer = extract_reviewer_verdict(task_body)
+
+    # T-100188: claims-validator verdict (T-100187) — mechanical check of the
+    # evidence claims inside ## Recommendation, rendered beside it.
+    claims_verdict = extract_recommendation_claims_verdict(task_body)
 
     return render_page(
         "inception_detail.html",
@@ -453,6 +461,7 @@ def inception_detail(task_id):
         rec_stance=rec_stance,
         decision_matches_recommendation=decision_matches_recommendation,
         reviewer=reviewer,
+        claims_verdict=claims_verdict,
     )
 
 

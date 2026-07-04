@@ -182,6 +182,37 @@
         border-radius: 4px; background: #fde68a; color: #78350f;
         font-size: 0.7rem; font-weight: 600;
     }
+    /* ── Recommendation Verdict block (T-100188, claims validator T-100187) ── */
+    .claims-verdict-block {
+        border-radius: 8px; padding: 0.75rem 1rem;
+        margin: 0.75rem 0 1rem 0;
+        border: 1px solid var(--pico-muted-border-color);
+        background: var(--pico-card-background-color);
+    }
+    .claims-verdict-block h4 {
+        margin: 0 0 0.4rem 0; font-size: 0.9rem; font-weight: 600; text-transform: none;
+    }
+    .claims-verdict-block[data-claims-overall="CONFIRMED"] {
+        background: #ecfdf5; border-color: #10b981;
+    }
+    .claims-verdict-block[data-claims-overall="CONFIRMED"] h4 { color: #065f46; }
+    .claims-verdict-block[data-claims-overall="CONTRADICTED"] {
+        background: #fef2f2; border-color: #dc2626;
+    }
+    .claims-verdict-block[data-claims-overall="CONTRADICTED"] h4 { color: #991b1b; }
+    .claims-verdict-block[data-claims-overall="UNVERIFIED"] {
+        background: #fffbeb; border-color: #f59e0b;
+    }
+    .claims-verdict-block[data-claims-overall="UNVERIFIED"] h4 { color: #92400e; }
+    .claims-verdict-block table {
+        margin: 0.4rem 0 0 0; font-size: 0.8rem;
+    }
+    .claims-verdict-block td, .claims-verdict-block th {
+        padding: 0.2rem 0.6rem;
+    }
+    .claims-verdict-block .claim-pass { color: #065f46; }
+    .claims-verdict-block .claim-fail { color: #991b1b; font-weight: 600; }
+    .claims-verdict-block .claim-unverifiable { color: #92400e; }
 </style>
 
 <a href="/inception" class="back-link" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">&larr; All Inceptions</a>
@@ -372,6 +403,34 @@
             <div class="section-content">{{ sections.recommendation }}</div>
         </article>
     {% endif %}
+{% endif %}
+
+{# T-100188: Recommendation Verdict — mechanical check of the evidence claims
+   inside ## Recommendation (claims validator T-100187). Rendered directly
+   under the Agent Recommendation; silently absent when no
+   `## Recommendation Verdict (vX.Y)` block exists. Display-only. #}
+{% if claims_verdict and claims_verdict.overall %}
+<section class="claims-verdict-block" data-claims-overall="{{ claims_verdict.overall }}">
+    <h4>Evidence Claims — {{ claims_verdict.overall }}
+        <span style="font-weight: 400; font-size: 0.8rem;">({{ claims_verdict.passed }}/{{ claims_verdict.total }} confirmed)</span>
+    </h4>
+    {% if claims_verdict.claims %}
+    <div style="overflow-x: auto;">
+    <table>
+        <thead><tr><th>Claim</th><th>Type</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for c in claims_verdict.claims %}
+        <tr>
+            <td><code>{{ c.raw }}</code></td>
+            <td>{{ c.kind }}</td>
+            <td class="claim-{{ c.status }}">{{ c.status }}{% if c.detail %} — {{ c.detail }}{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% endif %}
+</section>
 {% endif %}
 
 {# T-1585: Reviewer Verdict — cross-surface parity with /approvals (T-1569),
