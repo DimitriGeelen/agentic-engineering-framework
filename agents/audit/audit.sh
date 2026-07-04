@@ -5290,15 +5290,18 @@ bin/fw audit 2>&1 | grep -q \"$check_text\" && exit 1 || exit 0
 - **Context:** Auto-generated task for audit finding hash $hash
 "
 
-            # Use fw task create with custom fields
+            # Use fw task create with custom fields.
+            # T-100146 (OBS-082): emitted findings are backlog proposals, not active
+            # work — captured + horizon:later, and never --start (which would set
+            # started-work AND reassign session focus via context.sh, stealing focus
+            # from whatever interactive session is running when the cron fires).
             local create_out
             create_out=$("$FRAMEWORK_ROOT/bin/fw" task create \
                 --name "$title" \
                 --description "$title" \
                 --type build \
                 --owner agent \
-                --horizon now \
-                --start \
+                --horizon later \
                 2>&1)
             local task_id=$(echo "$create_out" | grep "^ID:" | awk '{print $2}')
             # T-100128: resolve the file from create output (File: line) instead of

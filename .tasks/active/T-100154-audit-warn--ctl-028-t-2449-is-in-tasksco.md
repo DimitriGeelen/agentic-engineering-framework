@@ -1,16 +1,14 @@
 ---
-id: T-100141
-name: "Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu)
-  ..."
+id: T-100154
+name: "Audit WARN — CTL-028: T-2449 is in .tasks/completed/ but frontmatter status='starte..."
 description: >
-  Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu)
-  ...
+  Audit WARN — CTL-028: T-2449 is in .tasks/completed/ but frontmatter status='starte...
 
 status: captured
 workflow_type: build
 audit_severity: warn
-audit_finding_hash: b40ded23fd14cb53f9d29e0bd3435d30f004fcef
-tags: [audit-finding, severity:warn, section:audit]
+audit_finding_hash: cbe6569d0d269c6261d792cfa597236b7b8bc6eb
+tags: [audit-finding, severity:warn, section:CTL-028]
 owner: agent
 horizon: later
 components: []
@@ -25,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-04T11:02:41Z
-last_update: 2026-07-04T12:36:44Z
-date_finished:
+created: 2026-07-04T12:35:15Z
+last_update: 2026-07-04T12:36:46Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -38,52 +36,21 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-04T11:15:01Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 3
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=3 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-07-04T11:15:01Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 1
-      D2: 4
-      D3: 0
-      D4: 0
-      F-RECALL: 0
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      audit_severity: 4
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=1 (body:fix-without-learning); D2=4 (body:fw-audit-or-doctor);
-      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-ORCH=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); audit_severity=4 
-      (fm:audit_severity=warn); F3=0 (no-signal); F1=0 (no-signal); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-100141: Audit WARN — D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) ...
+# T-100154: Audit WARN — CTL-028: T-2449 is in .tasks/completed/ but frontmatter status='starte...
 ## Trigger
 
-Audit run: 2026-07-04T11:02:41Z
-Finding: D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)
+Audit run: 2026-07-04T12:35:15Z
+Finding: CTL-028: T-2449 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
 
 ## Finding
 
 ```
-D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)
+CTL-028: T-2449 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)
 ```
 
-Mitigation: Recover both classes with: bin/fw inception sweep (T-1514)
+Mitigation: Fix: bin/fw task update T-2449 --status work-completed --force, or hand-edit frontmatter to status: work-completed + set date_finished
 
 ## RCA
 
@@ -105,16 +72,16 @@ Mitigation: Recover both classes with: bin/fw inception sweep (T-1514)
 ## Verification
 
 # Re-run audit - finding should be absent
-bin/fw audit 2>&1 | grep -q "D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-2066(A:1hu)" && exit 1 || exit 0
+bin/fw audit 2>&1 | grep -q "CTL-028: T-2449 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-completed)" && exit 1 || exit 0
 
 ## Updates
 
-### 2026-07-04T11:02:41Z — audit-emit-task [audit-agent]
+### 2026-07-04T12:35:15Z — audit-emit-task [audit-agent]
 - **Action:** Created by audit --emit-tasks
-- **Finding:** warn: D13: Inception limbo — 5 task(s): A=5/B=0 T-2062(A:1hu) T-2063(A:1hu) T-2064(A:1hu) T-2065(A:1hu) T-
-- **Context:** Auto-generated task for audit finding hash b40ded23fd14cb53f9d29e0bd3435d30f004fcef
+- **Finding:** warn: CTL-028: T-2449 is in .tasks/completed/ but frontmatter status='started-work' (expected: work-comple
+- **Context:** Auto-generated task for audit finding hash cbe6569d0d269c6261d792cfa597236b7b8bc6eb
 
 
-### 2026-07-04T12:36:44Z — status-update [task-update-agent]
+### 2026-07-04T12:36:46Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)

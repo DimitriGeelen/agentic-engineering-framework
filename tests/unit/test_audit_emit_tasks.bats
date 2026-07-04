@@ -144,6 +144,28 @@ Y
     [ "$ha" != "$hb" ]
 }
 
+# --- T-100146 (OBS-082): emitted tasks are backlog proposals ---
+
+@test "emit-tasks: create call never passes --start and uses horizon later (T-100146)" {
+    # --start makes create-task.sh set started-work AND reassign session focus
+    # (create-task.sh: context.sh focus under START_WORK) — an unattended cron
+    # doing that steals focus from a live interactive session (OBS-082 incident:
+    # T-100141 grabbed focus from T-100140 and tripped G-020 on the next call).
+    local block
+    block=$(sed -n '/bin\/fw" task create/,/2>&1)/p' "$FRAMEWORK_ROOT/agents/audit/audit.sh")
+    [ -n "$block" ]
+    ! echo "$block" | grep -q -- "--start"
+    echo "$block" | grep -q -- "--horizon later"
+}
+
+@test "emit-tasks: focus reassignment in create-task.sh only fires under --start (T-100146)" {
+    # The only focus call in create-task.sh must sit inside the START_WORK guard,
+    # so a plain (captured) create can never touch focus.yaml.
+    local script="$FRAMEWORK_ROOT/agents/task-create/create-task.sh"
+    [ "$(grep -c "context.sh\" focus" "$script")" -eq 1 ]
+    grep -B3 "context.sh\" focus" "$script" | grep -q "START_WORK"
+}
+
 # --- T-100136: single tags: key in emitted frontmatter ---
 
 @test "emit-tasks: injection sed deletes the template tags line (T-100136)" {
