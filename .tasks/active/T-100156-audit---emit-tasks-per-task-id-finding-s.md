@@ -1,17 +1,21 @@
 ---
-id: T-100144
-name: "C3: handover surfaces branch ahead/behind + merge-back-overdue nudge"
+id: T-100156
+name: "Audit --emit-tasks per-task-ID finding storm: one cron run emitted 6 separate
+  CTL-028 tasks (T-100150..T-100155), one per completed-task status inconsistency,
+  because T-100135 hash dedup keeps T-IDs as identity. Per-task-ID finding classes
+  (CTL-028, D5 lifecycle) should emit ONE sweep task per class per run (or fold task
+  IDs out of identity for corpus-hygiene checks), else every hygiene sweep floods
+  the backlog."
 description: >
-  Post-GO slice of T-100139. Handover lists current branch ahead/behind origin/master,
-  nudges when merge-back overdue.
+  Promoted from observation OBS-083
 
 status: captured
 workflow_type: build
-owner: agent
-horizon: next
+owner: human
+horizon: later
 tags: []
 components: []
-related_tasks: [T-100139]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -22,8 +26,8 @@ related_tasks: [T-100139]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-04T11:49:49Z
-last_update: 2026-07-04T13:24:17Z
+created: 2026-07-04T13:29:03Z
+last_update: '2026-07-04T13:30:02Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,7 +40,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-04T12:00:02Z'
+  - ts: '2026-07-04T13:30:01Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -46,14 +50,14 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-04T12:00:02Z'
+  - ts: '2026-07-04T13:30:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 0
       D3: 2
       D4: 2
-      F-RECALL: 1
+      F-RECALL: 0
       F-ORCH: 0
       F-AUTONOMY: 0
       audit_severity: 0
@@ -61,32 +65,25 @@ bvp_scores_proposed:
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
-      (body:episodic-only); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
       audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-100144: C3: handover surfaces branch ahead/behind + merge-back-overdue nudge
+# T-100156: Audit --emit-tasks per-task-ID finding storm: one cron run emitted 6 separate CTL-028 tasks (T-100150..T-100155), one per completed-task status inconsistency, because T-100135 hash dedup keeps T-IDs as identity. Per-task-ID finding classes (CTL-028, D5 lifecycle) should emit ONE sweep task per class per run (or fold task IDs out of identity for corpus-hygiene checks), else every hygiene sweep floods the backlog.
 
 ## Context
 
-C3 slice of T-100139 (branch/worktree lifecycle GO). Strand divergence is
-invisible at session boundaries — all live strands were 215–248 commits behind
-master before the inception measured them. This slice makes divergence visible
-in every handover. NOTE: handover agent code lives on the master lineage —
-build in a worktree off master (see T-100142's episodic for the worked flow:
-worktree + copy task file + set worktree focus, land with
-`fw integrate run master --push`).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Handover document prints the current branch's ahead/behind counts vs origin/master (e.g. "Branch: t2416… +157 / −248 vs origin/master")
-- [ ] When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run`
-- [ ] Silent/neutral when on master or within threshold (no nudge noise)
-- [ ] bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -215,7 +212,10 @@ worktree + copy task file + set worktree focus, land with
 
 ## Updates
 
-### 2026-07-04T11:49:49Z — task-created [task-create-agent]
+### 2026-07-04T13:29:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100144-c3-handover-surfaces-branch-aheadbehind-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100156-audit---emit-tasks-per-task-id-finding-s.md
 - **Context:** Initial task creation
+
+### 2026-07-04T13:29:21Z — status-update [task-update-agent]
+- **Change:** horizon: now → later

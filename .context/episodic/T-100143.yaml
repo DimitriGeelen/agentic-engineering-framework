@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100143: C2: doctor/audit branch-hygiene WARNs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T13:48:49Z
+# ============================================================================
+
+task_id: T-100143
+task_name: "C2: doctor/audit branch-hygiene WARNs"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T11:49:40Z
+completed: 2026-07-04T13:48:39Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-07-04T14:55:00+02:00
+last_commit: 2026-07-04T15:47:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs + worktree-flow note; shelve to horizon:next (budget). doctor branch-hygiene WARNs (merged-undeleted, behind-threshold, worktree-merged, remote-contained). document FW_BRANCH_BEHIND_WARN in config reference. origin-based verification commands (complete from MAIN after landing). merge origin/master (C1 branch-cleanup landing) before re-push. vendor sync (branch-hygiene lib into .agentic-framework)
+
+# Key outcomes
+outcomes:
+  - '`fw doctor` (and/or audit structure section — pick one primary surface, WARN-only) reports: merged-but-undeleted local branches (tip ⊆ master) — primary surface: doctor, via `lib/branch-hygiene.sh` `fw_branch_hygiene` (merged-undeleted lines)'
+  - 'WARN for live branches > N commits behind master (default 50, configurable `FW_BRANCH_BEHIND_WARN`) — behind-threshold lines; live-fired: 6 real strands (216-5665 behind) surfaced'
+  - 'WARN for worktrees whose branch is already merged to master, and remote refs with ahead:0 — worktree-merged + remote-contained lines'
+  - 'Silent when hygiene is clean (no noise on a tidy repo) — fw_branch_hygiene prints nothing on a tidy repo; doctor emits a single OK line'
+  - 'bats regression tests pin: merged-branch WARN, behind-threshold WARN, clean-repo silence — tests/unit/t100143_branch_hygiene.bats (6 tests, incl. worktree-merged, remote-contained, no-master-lineage)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-04 — Primary surface: doctor (not audit)'
+    chose: '`fw doctor` as the single primary surface; scan lives in `lib/branch-hygiene.sh` as a sourceable function.'
+    rationale: 'doctor is the interactive health loop where branch debris is actionable; a standalone lib keeps the scan bats-testable against fixture repos without invoking doctor.'
+    alternatives_rejected: ['audit structure section (daily cron would re-emit the same WARN into audit tasks — C1 already closes the tap; advisory visibility belongs in doctor); inline-in-doctor (untestable).']
+  - decision: '2026-07-04 — Aggregate WARN (1 warning, N finding lines, head -12 cap)'
+    chose: 'one doctor WARN counting all findings, listing first 12.'
+    rationale: '29+ merged branches would otherwise dominate doctor output; single WARN keeps the project-verdict honest without flooding.'
+    alternatives_rejected: ['per-finding WARNs (verdict noise), no cap (wall of text).']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - 'lib/branch-hygiene.sh'
+  - '.tasks/active/T-100143-c2-doctoraudit-branch-hygiene-warns.md'
+  - '.tasks/active/T-100144-c3-handover-surfaces-branch-aheadbehind-.md'
+  - 'tests/unit/t100143_branch_hygiene.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-04T14:55:00"
+    action: "T-100143: real ACs + worktree-flow note; shelve to horizon:next (budget)"
+  - time: "2026-07-04T15:43:42"
+    action: "T-100143: doctor branch-hygiene WARNs (merged-undeleted, behind-threshold, worktree-merged, remote-contained)"
+  - time: "2026-07-04T15:44:41"
+    action: "T-100143: document FW_BRANCH_BEHIND_WARN in config reference"
+  - time: "2026-07-04T15:45:10"
+    action: "T-100143: origin-based verification commands (complete from MAIN after landing)"
+  - time: "2026-07-04T15:46:36"
+    action: "T-100143: merge origin/master (C1 branch-cleanup landing) before re-push"
+  - time: "2026-07-04T15:47:00"
+    action: "T-100143: vendor sync (branch-hygiene lib into .agentic-framework)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 118 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 118
+  commits: 6
+  files_changed: 9
+  lines_added: 878
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100143-c2-doctoraudit-branch-hygiene-warns.md
+generated_by: context-agent-hybrid

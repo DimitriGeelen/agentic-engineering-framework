@@ -1,16 +1,16 @@
 ---
-id: T-100144
-name: "C3: handover surfaces branch ahead/behind + merge-back-overdue nudge"
+id: T-100143
+name: "C2: doctor/audit branch-hygiene WARNs"
 description: >
-  Post-GO slice of T-100139. Handover lists current branch ahead/behind origin/master,
-  nudges when merge-back overdue.
+  Post-GO slice of T-100139. Branch-hygiene checks: merged-undeleted branches, behind>50
+  divergence, worktrees on merged branches, dirty-worktree age. WARN-only.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/integrate.py]
 related_tasks: [T-100139]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,9 +22,9 @@ related_tasks: [T-100139]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-04T11:49:49Z
-last_update: 2026-07-04T13:24:17Z
-date_finished:
+created: 2026-07-04T11:49:40Z
+last_update: 2026-07-04T13:48:39Z
+date_finished: 2026-07-04T13:48:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,7 +53,7 @@ bvp_scores_proposed:
       D2: 0
       D3: 2
       D4: 2
-      F-RECALL: 1
+      F-RECALL: 0
       F-ORCH: 0
       F-AUTONOMY: 0
       audit_severity: 0
@@ -61,32 +61,33 @@ bvp_scores_proposed:
       F1: 0
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
-      (body:episodic-only); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
       audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-100144: C3: handover surfaces branch ahead/behind + merge-back-overdue nudge
+# T-100143: C2: doctor/audit branch-hygiene WARNs
 
 ## Context
 
-C3 slice of T-100139 (branch/worktree lifecycle GO). Strand divergence is
-invisible at session boundaries — all live strands were 215–248 commits behind
-master before the inception measured them. This slice makes divergence visible
-in every handover. NOTE: handover agent code lives on the master lineage —
-build in a worktree off master (see T-100142's episodic for the worked flow:
-worktree + copy task file + set worktree focus, land with
-`fw integrate run master --push`).
+C2 slice of T-100139 (branch/worktree lifecycle GO). Nothing observes branch
+hygiene today — 29 merged-but-undeleted branches sat invisible until the
+inception measured them. C1 (T-100142, shipped 37c1943e2) closes the tap for
+integrate-run landings; this slice makes the remaining debris visible.
+NOTE: doctor/audit code lives on the master lineage — build in a worktree off
+master (see T-100142's episodic for the worked flow: worktree + copy task file
++ set worktree focus, land with `fw integrate run master --push`).
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Handover document prints the current branch's ahead/behind counts vs origin/master (e.g. "Branch: t2416… +157 / −248 vs origin/master")
-- [ ] When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run`
-- [ ] Silent/neutral when on master or within threshold (no nudge noise)
-- [ ] bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold
+- [x] `fw doctor` (and/or audit structure section — pick one primary surface, WARN-only) reports: merged-but-undeleted local branches (tip ⊆ master) — primary surface: doctor, via `lib/branch-hygiene.sh` `fw_branch_hygiene` (merged-undeleted lines)
+- [x] WARN for live branches > N commits behind master (default 50, configurable `FW_BRANCH_BEHIND_WARN`) — behind-threshold lines; live-fired: 6 real strands (216-5665 behind) surfaced
+- [x] WARN for worktrees whose branch is already merged to master, and remote refs with ahead:0 — worktree-merged + remote-contained lines
+- [x] Silent when hygiene is clean (no noise on a tidy repo) — fw_branch_hygiene prints nothing on a tidy repo; doctor emits a single OK line
+- [x] bats regression tests pin: merged-branch WARN, behind-threshold WARN, clean-repo silence — tests/unit/t100143_branch_hygiene.bats (6 tests, incl. worktree-merged, remote-contained, no-master-lineage)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -120,6 +121,12 @@ worktree + copy task file + set worktree focus, land with
 -->
 
 ## Verification
+
+# Origin-based (L-387 file-capture): passes from MAIN after `fw integrate run master --push` lands C2.
+git show origin/master:lib/branch-hygiene.sh > /tmp/.t100143-lib 2>/dev/null && grep -q "fw_branch_hygiene" /tmp/.t100143-lib
+grep -q "FW_BRANCH_BEHIND_WARN" /tmp/.t100143-lib
+git show origin/master:bin/fw > /tmp/.t100143-fw 2>/dev/null && grep -q "Branch hygiene" /tmp/.t100143-fw
+git show origin/master:tests/unit/t100143_branch_hygiene.bats > /tmp/.t100143-tests 2>/dev/null && grep -q "clean repo: no findings" /tmp/.t100143-tests
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -194,6 +201,16 @@ worktree + copy task file + set worktree focus, land with
 
 ## Decisions
 
+### 2026-07-04 — Primary surface: doctor (not audit)
+- **Chose:** `fw doctor` as the single primary surface; scan lives in `lib/branch-hygiene.sh` as a sourceable function.
+- **Why:** doctor is the interactive health loop where branch debris is actionable; a standalone lib keeps the scan bats-testable against fixture repos without invoking doctor.
+- **Rejected:** audit structure section (daily cron would re-emit the same WARN into audit tasks — C1 already closes the tap; advisory visibility belongs in doctor); inline-in-doctor (untestable).
+
+### 2026-07-04 — Aggregate WARN (1 warning, N finding lines, head -12 cap)
+- **Chose:** one doctor WARN counting all findings, listing first 12.
+- **Why:** 29+ merged branches would otherwise dominate doctor output; single WARN keeps the project-verdict honest without flooding.
+- **Rejected:** per-finding WARNs (verdict noise), no cap (wall of text).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -215,7 +232,35 @@ worktree + copy task file + set worktree focus, land with
 
 ## Updates
 
-### 2026-07-04T11:49:49Z — task-created [task-create-agent]
+### 2026-07-04T11:49:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100144-c3-handover-surfaces-branch-aheadbehind-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100143-c2-doctoraudit-branch-hygiene-warns.md
 - **Context:** Initial task creation
+
+### 2026-07-04T12:53:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → started-work
+- **Change:** horizon: now → now (auto-sync)
+
+### 2026-07-04T12:54:45Z — status-update [task-update-agent]
+- **Change:** horizon: now → next
+- **Change:** status: started-work → captured (auto-sync)
+
+### 2026-07-04T13:29:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fa3f8d36
+- **Timestamp:** 2026-07-04T13:48:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **external-publish** (high) — External publish or release
+     - matched: `merged to master`
+
+### 2026-07-04T13:48:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
