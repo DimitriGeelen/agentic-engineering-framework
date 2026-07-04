@@ -9,16 +9,16 @@ description: >
   (e.g. "evidence: 7/7 confirmed") per queued inception. Server-side template
   change only; no new JS dependencies. Depends on T-100187.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/blueprints/inception.py, web/shared.py, web/templates/_approvals_content.html, web/templates/inception_detail.html]
 related_tasks: [T-100186, T-100187]
 created: 2026-07-05T00:30:00Z
-last_update: 2026-07-04T23:05:45Z
-date_finished:
+last_update: 2026-07-04T23:30:39Z
+date_finished: 2026-07-04T23:30:39Z
 cost_estimate_proposed:
   - ts: '2026-07-04T22:30:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -56,17 +56,15 @@ bvp_scores_proposed:
 
 ## Context
 
-Slice B of T-100186 GO (decided 2026-07-05). Renders the claims-verdict produced by T-100187 where the operator decides. Research artifact: `docs/reports/T-100186-reviewer-assisted-inception-decides.md`. Dependency T-100187 SHIPPED (landed on origin/master 2026-07-05).
-
-**WIP state (S-2026-0705, budget-gated mid-build):** implementation complete and committed on local branch `t100188-verdict-render` in worktree `.claude/worktrees/t100188` (commit "T-100188: WIP — …", NOT yet pushed — budget gate blocked push). Done: `web/shared.py:extract_recommendation_claims_verdict` (mirrors extract_reviewer_verdict), `web/blueprints/inception.py` (extract + exclude "Recommendation Verdict" heading from extra_sections + pass claims_verdict), `web/templates/inception_detail.html` (styled claims-verdict-block table under Agent Recommendation, CONFIRMED/CONTRADICTED/UNVERIFIED palette), `web/blueprints/approvals.py` + `web/templates/_approvals_content.html` (Evidence: N/M badge on pending-inception rows). REMAINING: (1) unit test for the extractor (pin table-row parse + absent-block None), (2) Playwright test per T-971 AC, (3) push branch + `bin/fw integrate run master --push` from the worktree, (4) sync task file into MAIN, live-verify on Watchtower, then `fw task review T-100188` for the [REVIEW] Human AC.
+Slice B of T-100186 GO (decided 2026-07-05). Renders the claims-verdict produced by T-100187 where the operator decides. Research artifact: `docs/reports/T-100186-reviewer-assisted-inception-decides.md`. Blocked until T-100187 ships the verdict block schema.
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `/inception/<id>` renders the Recommendation Verdict table (per-claim status + overall) beside the recommendation when the block exists; page unchanged when absent
-- [ ] `/approvals` inception rows show a compact evidence badge (confirmed/total or overall verdict); absent block renders no badge
-- [ ] Playwright test covers: verdict table visible on a fixture inception with a verdict block; page 200s cleanly without one (T-971 rule)
-- [ ] No change to the decide form/actions — verdict is display-only
+- [x] `/inception/<id>` renders the Recommendation Verdict table (per-claim status + overall) beside the recommendation when the block exists; page unchanged when absent
+- [x] `/approvals` inception rows show a compact evidence badge (confirmed/total or overall verdict); absent block renders no badge
+- [x] Playwright test covers: verdict table visible on a fixture inception with a verdict block; page 200s cleanly without one (T-971 rule)
+- [x] No change to the decide form/actions — verdict is display-only
 
 ### Human
 - [ ] [REVIEW] Verdict placement and badge read clean on the decide page
@@ -79,7 +77,12 @@ Slice B of T-100186 GO (decided 2026-07-05). Renders the claims-verdict produced
 ## Verification
 
 # Render-surface task (P-013): keep the [REVIEW] Human AC above.
-# Fill concrete curl/playwright commands while building (P-011).
+# Origin-based checks (MAIN's branch lags origin/master where this lands).
+git show origin/master:web/shared.py > /tmp/.t100188-shared.py && grep -q "def extract_recommendation_claims_verdict" /tmp/.t100188-shared.py
+git show origin/master:web/templates/inception_detail.html > /tmp/.t100188-tpl.html && grep -q "data-claims-overall" /tmp/.t100188-tpl.html
+git show origin/master:web/templates/_approvals_content.html > /tmp/.t100188-appr.html && grep -q "claims-badge" /tmp/.t100188-appr.html
+git show origin/master:tests/playwright/test_inception_claims_verdict.py > /tmp/.t100188-pw.py && grep -q "claims-verdict-block" /tmp/.t100188-pw.py
+rm -rf /tmp/.t100188-tree && mkdir -p /tmp/.t100188-tree && git archive origin/master web tests lib | tar -x -C /tmp/.t100188-tree && cd /tmp/.t100188-tree && PYTHONPATH=. python3 -m pytest tests/unit/test_extract_recommendation_claims_verdict.py -q > /dev/null 2>&1
 
 ## RCA
 
@@ -87,8 +90,43 @@ Slice B of T-100186 GO (decided 2026-07-05). Renders the claims-verdict produced
 
 ## Decisions
 
+- **Parse the on-disk verdict block in `web/shared.py` rather than importing `lib.reviewer.recommendation_claims`** — the markdown block IS the contract (same pattern as `extract_reviewer_verdict`); keeps web decoupled from the reviewer's dataclasses and works on completed/ tasks the reviewer never re-scans.
+- **Badge shows `passed/total` + overall, not overall alone** — "Evidence: 7/9" tells the operator where to look before opening the page; a bare CONTRADICTED chip would force a click to learn severity.
+
+## Recommendation
+
+**Recommendation:** GO — approve the render.
+
+**Rationale:** Both surfaces are display-only additions mirroring the existing Reviewer Verdict block's pattern and palette; the decide form is untouched. All four Agent ACs are ticked with tests pinning the contract both ways (block present → table renders; block absent → clean 200, no artifact).
+
+**Evidence:**
+- `web/shared.py:extract_recommendation_claims_verdict` + 7 unit tests (`tests/unit/test_extract_recommendation_claims_verdict.py`, all pass)
+- `/inception/<id>` claims-verdict table + `/approvals` Evidence badge — 2 Playwright tests (`tests/playwright/test_inception_claims_verdict.py`, both pass)
+- Sibling extractor regression suite green (49 passed)
+
 ## Updates
 
 ### 2026-07-04T23:05:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7ee7fdc4
+- **Timestamp:** 2026-07-04T23:30:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 7
+     - evidence: `rm -rf /tmp/.t100188-tree && mkdir -p /tmp/.t100188-tree && git archive origin/master web tests lib | tar -x -C /tmp/.t100188-tree && cd /tmp/.t100188-tree && PYTHONPATH=. python3 -m pytest tests/unit`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-07-04T23:30:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
