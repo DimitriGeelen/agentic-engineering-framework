@@ -1,6 +1,7 @@
 """Shared helpers for the web UI blueprints."""
 from __future__ import annotations
 
+import copy as _copy
 import logging
 import os
 import re as re_mod
@@ -13,6 +14,16 @@ import yaml
 from flask import render_template, request
 
 logger = logging.getLogger(__name__)
+
+# T-100140: prefer the libyaml C loader — ~11× faster than the pure-python
+# SafeLoader on this corpus (learnings.yaml 276KB: 0.61s → 0.05s), with
+# identical output. Falls back when PyYAML was built without libyaml.
+_YAML_SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+
+def yaml_safe_load(stream):
+    """yaml.safe_load with the C loader when available (T-100140)."""
+    return yaml.load(stream, Loader=_YAML_SAFE_LOADER)
 
 # ---------------------------------------------------------------------------
 # Path resolution
@@ -378,27 +389,44 @@ def build_ambient():
 _yaml_errors: list[str] = []
 
 
+# T-100140: mtime-keyed cache for load_yaml/load_scan. Context YAMLs
+# (learnings 276KB, decisions 78KB, scan 63KB) were re-parsed per request —
+# nearly half the dashboard's steady-state latency. Cached entries store
+# (data, error_desc); callers receive a deepcopy (5ms vs 50-600ms parse) so
+# mutation can never poison the cache.
+_LOAD_YAML_CACHE: dict[str, tuple[int, tuple]] = {}
+
+
+def _parse_yaml_for_cache(path: Path, label: str = "") -> tuple:
+    """parse_fn for mtime_cached_get: (data, error_desc_or_None)."""
+    try:
+        with open(path) as f:
+            data = yaml_safe_load(f)
+        return (data if isinstance(data, (dict, list)) else {}, None)
+    except yaml.YAMLError as exc:
+        return ({}, f"{label or path.name}: {exc}")
+    except Exception as exc:
+        return ({}, f"{label or path.name}: {exc}")
+
+
 def load_yaml(path, *, label: str = ""):
-    """Load a YAML file. Log and collect errors instead of silently returning {}."""
+    """Load a YAML file. Log and collect errors instead of silently returning {}.
+
+    T-100140: mtime-cached; parse errors are re-surfaced on every request
+    (preserving the T-403 error-banner contract), successful parses are
+    served as deepcopies of the cached value.
+    """
     path = Path(path)
     if not path.exists():
         return {}
-    try:
-        with open(path) as f:
-            data = yaml.safe_load(f)
-        return data if isinstance(data, (dict, list)) else {}
-    except yaml.YAMLError as exc:
-        desc = label or path.name
-        msg = f"YAML parse error in {desc} ({path}): {exc}"
-        logger.warning(msg)
-        _yaml_errors.append(f"{desc}: {exc}")
+    data, err = mtime_cached_get(
+        path, lambda p: _parse_yaml_for_cache(p, label), _LOAD_YAML_CACHE, ({}, None)
+    )
+    if err:
+        logger.warning(f"YAML parse error in {err} ({path})")
+        _yaml_errors.append(err)
         return {}
-    except Exception as exc:
-        desc = label or path.name
-        msg = f"Error reading {desc} ({path}): {exc}"
-        logger.warning(msg)
-        _yaml_errors.append(f"{desc}: {exc}")
-        return {}
+    return _copy.deepcopy(data)
 
 
 def get_yaml_errors() -> list[str]:
@@ -409,17 +437,17 @@ def get_yaml_errors() -> list[str]:
 
 
 def load_scan() -> dict | None:
-    """Load the latest scan from .context/scans/LATEST.yaml."""
+    """Load the latest scan from .context/scans/LATEST.yaml.
+
+    T-100140: mtime-cached (stat follows the LATEST.yaml symlink, so a
+    repointed link or rewritten target both invalidate).
+    """
     latest = PROJECT_ROOT / ".context" / "scans" / "LATEST.yaml"
-    if not latest.exists():
-        return None
-    try:
-        with open(latest) as f:
-            data = yaml.safe_load(f)
-        if isinstance(data, dict) and data.get("schema_version"):
-            return data
-    except Exception:
-        pass
+    data, _err = mtime_cached_get(
+        latest, lambda p: _parse_yaml_for_cache(p, "scan"), _LOAD_YAML_CACHE, ({}, None)
+    )
+    if isinstance(data, dict) and data.get("schema_version"):
+        return _copy.deepcopy(data)
     return None
 
 
@@ -433,7 +461,7 @@ def parse_frontmatter(content):
     if not fm_match:
         return {}, content
     try:
-        fm = yaml.safe_load(fm_match.group(1))
+        fm = yaml_safe_load(fm_match.group(1))  # T-100140: C loader
     except yaml.YAMLError:
         return {}, content
     if not isinstance(fm, dict):
@@ -911,43 +939,80 @@ def extract_reviewer_verdict(body: str) -> dict:
 # ---------------------------------------------------------------------------
 
 import time as _time
+import threading as _threading
 
 _task_cache = {"data": None, "names": None, "tags": None, "ts": 0}
 _TASK_CACHE_TTL = 30  # seconds
+_task_cache_lock = _threading.Lock()
+
+# T-100140: per-file frontmatter cache keyed on mtime_ns. The TTL rebuild
+# below used to re-parse YAML for the full corpus (~2.5k files, ~10s on an
+# idle host) every 30 seconds — once the corpus grew past the point where a
+# rebuild outran the TTL, every request paid the full parse, and concurrent
+# pollers stampeded the threaded dev server into a 135-thread GIL livelock
+# (2026-07-04 outage). With this cache a rebuild is stat()-only for
+# unchanged files; only edited/new tasks are re-parsed.
+_FM_FILE_CACHE: dict[str, tuple[int, dict]] = {}
+
+
+def _parse_task_frontmatter(path: Path) -> dict:
+    """parse_fn for mtime_cached_get: frontmatter dict only (no body)."""
+    try:
+        fm, _ = parse_frontmatter(path.read_text())
+    except Exception:
+        return {}
+    return fm if isinstance(fm, dict) else {}
 
 
 def get_all_task_metadata():
     """Return list of frontmatter dicts for all tasks (active + completed).
 
     Cached for _TASK_CACHE_TTL seconds. Each dict has '_location' key.
+
+    T-100140: single-flight — when the TTL expires, exactly one thread
+    rebuilds while concurrent callers are served the previous (stale by at
+    most one rebuild) snapshot instead of stampeding. Cold start (no
+    snapshot yet) blocks until the first build completes.
     """
     now = _time.monotonic()
     if _task_cache["data"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
         return _task_cache["data"]
 
-    all_tasks = []
-    names = {}
-    for location in ("active", "completed"):
-        task_dir = PROJECT_ROOT / ".tasks" / location
-        if not task_dir.exists():
-            continue
-        for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
-            if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
-                continue
-            fm, _ = parse_frontmatter(f.read_text())
-            if fm:
-                fm["_location"] = location
-                fm["_path"] = str(f)  # T-1244: enable body re-read without re-glob
-                all_tasks.append(fm)
-                tid = fm.get("id", "")
-                name = fm.get("name", "")
-                if tid and name:
-                    names[tid] = name
+    if not _task_cache_lock.acquire(blocking=(_task_cache["data"] is None)):
+        return _task_cache["data"]  # another thread is rebuilding — serve stale
+    try:
+        now = _time.monotonic()
+        if _task_cache["data"] is not None and (now - _task_cache["ts"]) < _TASK_CACHE_TTL:
+            return _task_cache["data"]  # rebuilt while we waited on the lock
 
-    _task_cache["data"] = all_tasks
-    _task_cache["names"] = names
-    _task_cache["ts"] = now
-    return all_tasks
+        all_tasks = []
+        names = {}
+        for location in ("active", "completed"):
+            task_dir = PROJECT_ROOT / ".tasks" / location
+            if not task_dir.exists():
+                continue
+            for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
+                if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
+                    continue
+                fm = mtime_cached_get(f, _parse_task_frontmatter, _FM_FILE_CACHE, {})
+                if fm:
+                    # Shallow-copy so callers mutating entries never poison
+                    # the per-file cache across rebuilds.
+                    fm = dict(fm)
+                    fm["_location"] = location
+                    fm["_path"] = str(f)  # T-1244: enable body re-read without re-glob
+                    all_tasks.append(fm)
+                    tid = fm.get("id", "")
+                    name = fm.get("name", "")
+                    if tid and name:
+                        names[tid] = name
+
+        _task_cache["data"] = all_tasks
+        _task_cache["names"] = names
+        _task_cache["ts"] = _time.monotonic()
+        return all_tasks
+    finally:
+        _task_cache_lock.release()
 
 
 def get_task_names():
@@ -971,16 +1036,29 @@ def get_episodic_tags():
         for f in episodic_dir.glob("T-*.yaml"):
             if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
                 continue
-            try:
-                with open(f) as fh:
-                    edata = yaml.safe_load(fh)
-                if isinstance(edata, dict):
-                    tags[edata.get("task_id", f.stem)] = edata.get("tags", [])
-            except yaml.YAMLError:
-                continue
+            entry = mtime_cached_get(f, _parse_episodic_tags, _EP_TAG_CACHE, None)
+            if entry is not None:
+                tags[entry[0]] = entry[1]
 
     _task_cache["tags"] = tags
     return tags
+
+
+# T-100140: per-file cache for episodic tag extraction (sibling of
+# _FM_FILE_CACHE — same corpus-rescan-per-TTL class).
+_EP_TAG_CACHE: dict[str, tuple[int, "tuple | None"]] = {}
+
+
+def _parse_episodic_tags(path: Path):
+    """parse_fn for mtime_cached_get: (task_id, tags) or None."""
+    try:
+        with open(path) as fh:
+            edata = yaml_safe_load(fh)
+    except Exception:
+        return None
+    if isinstance(edata, dict):
+        return (edata.get("task_id", path.stem), edata.get("tags", []))
+    return None
 
 
 def sse_event(event_type, **kwargs):

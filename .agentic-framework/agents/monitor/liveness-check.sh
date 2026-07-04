@@ -65,6 +65,33 @@ if curl -sf -m 2 "${wt_url%/}/" >/dev/null 2>&1; then
     watchtower_state="running"
 fi
 
+# ── Watchtower watchdog (T-100140) ──────────────────────────────────────────
+# 2026-07-04 outage: the server hung (135-thread GIL livelock) while this
+# monitor dutifully logged `watchtower: stopped` every minute for 3+ hours —
+# detection without remediation. Self-heal rule: the pid file exists (the
+# instance is SUPPOSED to be running — a deliberate `watchtower.sh stop`
+# removes it) AND the HTTP probe has failed WATCHDOG_THRESHOLD consecutive
+# runs → restart via bin/watchtower.sh restart (which preserves the port).
+# The counter resets on success and after each restart attempt, so restarts
+# are spaced at least THRESHOLD minutes apart (no tight restart loop while a
+# cold cache rebuilds). Opt out: WATCHTOWER_WATCHDOG=0.
+WATCHDOG_ENABLED="${WATCHTOWER_WATCHDOG:-1}"
+WATCHDOG_THRESHOLD="${WATCHTOWER_WATCHDOG_THRESHOLD:-3}"
+WATCHDOG_STATE="$MONITOR_DIR/.watchtower-probe-failures"
+wt_pid_file="$PROJECT_ROOT/.context/working/watchtower.pid"
+if [ "$watchtower_state" = "running" ]; then
+    rm -f "$WATCHDOG_STATE"
+elif [ "$WATCHDOG_ENABLED" = "1" ] && [ -f "$wt_pid_file" ]; then
+    fails=$(( $(cat "$WATCHDOG_STATE" 2>/dev/null || echo 0) + 1 ))
+    echo "$fails" > "$WATCHDOG_STATE"
+    if [ "$fails" -ge "$WATCHDOG_THRESHOLD" ]; then
+        restart_out=$("$PROJECT_ROOT/bin/watchtower.sh" restart 2>&1 | tail -3 | tr '\n' ' ' | tr -d '"\\' || true)
+        printf '{"ts":"%s","host":"%s","event":"watchtower-watchdog-restart","consecutive_failures":%d,"detail":"%s"}\n' \
+            "$timestamp" "$hostname" "$fails" "$restart_out" >> "$LOG_FILE"
+        rm -f "$WATCHDOG_STATE"
+    fi
+fi
+
 printf '{"ts":"%s","host":"%s","boot":%s,"termlink_hub":"%s","termlink_hub_detail":"%s","claude_instances":%d,"fw_agent_session":"%s","fw_agent_id":"%s","watchtower":"%s"}\n' \
     "$timestamp" "$hostname" "$boot_marker" "$hub_state" "$hub_detail" "$claude_count" "$fw_agent_session" "$fw_agent_id" "$watchtower_state" \
     >> "$LOG_FILE"

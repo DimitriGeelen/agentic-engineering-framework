@@ -34,7 +34,7 @@ from lib.arc_membership import (
     scan_tasks_by_arc_id as _scan_tasks_by_arc_id_shared,
     scan_tasks_by_arc_membership as _scan_tasks_by_arc_membership_shared,
 )
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import PROJECT_ROOT, get_all_task_metadata, render_page
 
 bp = Blueprint("arcs", __name__)
 
@@ -351,34 +351,52 @@ def _state_counts(arcs: list[dict[str, Any]]) -> dict[str, int]:
 
 
 def _read_task_meta(task_id: str) -> dict[str, Any] | None:
-    """Locate task file in active/ or completed/ and return its frontmatter + completion."""
-    tasks_dir = PROJECT_ROOT / ".tasks"
-    for sub in ("active", "completed"):
-        for cand in (tasks_dir / sub).glob(f"{task_id}-*.md"):
-            try:
-                text = cand.read_text()
-            except OSError:
-                continue
-            m = _FRONTMATTER_RE.search(text)
-            if not m:
-                continue
-            try:
-                fm = yaml.safe_load(m.group(1)) or {}
-            except yaml.YAMLError:
-                continue
-            return {
-                "id": task_id,
-                "name": fm.get("name", "(no name)"),
-                "status": fm.get("status", "?"),
-                "horizon": fm.get("horizon", "?"),
-                "type": fm.get("workflow_type", "?"),
-                "completed": (sub == "completed"),
-                # T-1909: arc_id + tags so the arc_badge macro can render
-                # membership on the arc-detail constituent-task table.
-                "arc_id": fm.get("arc_id") or "",
-                "_tags": [str(t) for t in (fm.get("tags") or [])],
-            }
-    return None
+    """Return task frontmatter + completion, via the shared task cache.
+
+    T-100140: previously this globbed .tasks/{active,completed} and
+    yaml.safe_load'ed the file PER TASK PER REQUEST — _resolve_constituents
+    calls it for every constituent of every arc, so /approvals paid hundreds
+    of YAML parses per render (10s+ during the 2026-07-04 livelock). The
+    shared 30s-TTL metadata cache already carries every field needed here.
+    """
+    fm = _task_meta_index().get(task_id)
+    if fm is None:
+        return None
+    return {
+        "id": task_id,
+        "name": fm.get("name", "(no name)"),
+        "status": fm.get("status", "?"),
+        "horizon": fm.get("horizon", "?"),
+        "type": fm.get("workflow_type", "?"),
+        "completed": (fm.get("_location") == "completed"),
+        # T-1909: arc_id + tags so the arc_badge macro can render
+        # membership on the arc-detail constituent-task table.
+        "arc_id": fm.get("arc_id") or "",
+        "_tags": [str(t) for t in (fm.get("tags") or [])],
+    }
+
+
+_TASK_META_INDEX_CACHE: dict = {"src": None, "index": {}}
+
+
+def _task_meta_index() -> dict:
+    """{task_id: frontmatter} view over get_all_task_metadata().
+
+    Identity-keyed on the shared list object, so it rebuilds exactly when
+    the shared cache does. setdefault keeps the active/ entry when a task id
+    appears in both locations (matches the old glob order preference).
+    """
+    data = get_all_task_metadata()
+    if _TASK_META_INDEX_CACHE["src"] is data:
+        return _TASK_META_INDEX_CACHE["index"]
+    idx: dict = {}
+    for fm in data:
+        tid = fm.get("id")
+        if tid:
+            idx.setdefault(tid, fm)
+    _TASK_META_INDEX_CACHE["src"] = data
+    _TASK_META_INDEX_CACHE["index"] = idx
+    return idx
 
 
 def _scan_tasks_by_tag(tag: str) -> list[str]:
@@ -441,7 +459,9 @@ def _resolve_constituents(arc: dict[str, Any]) -> list[dict[str, Any]]:
     slug = str(arc.get("slug") or "").strip()
     arc_numeric = str(arc.get("id") or "").strip()
 
-    by_arc_id, by_tag = _scan_tasks_by_arc_membership()
+    # T-100140: use the cached wrapper — the raw pass-through re-scanned the
+    # full corpus head-first PER ARC (this fn runs once per arc per request).
+    by_arc_id, by_tag = _arc_membership()
     membership: list[str] = []
     if slug:
         membership.extend(by_arc_id.get(slug, []))
