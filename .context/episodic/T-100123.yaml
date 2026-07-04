@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100123: Audit WARN — D3: Commit velocity — WARN drop today=5 avg=55 ratio=0.1x
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-04T22:07:19Z
+# ============================================================================
+
+task_id: T-100123
+task_name: "Audit WARN — D3: Commit velocity — WARN drop today=5 avg=55 ratio=0.1x"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-03T23:02:56Z
+completed: 2026-07-04T22:07:09Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-07-05T00:06:09+02:00
+last_commit: 2026-07-05T00:06:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  D3 velocity drop check prorates by fraction-of-day (kills midnight-window false WARN)
+
+# Key outcomes
+outcomes:
+  - 'Root cause identified and documented in RCA section'
+  - 'Fix implemented (or determination that finding is false positive / transient)'
+  - 'Re-run audit shows finding absent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-100123-audit-warn--d3-commit-velocity--warn-dro.md'
+  - 'tests/unit/audit_d3_commit_velocity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-05T00:06:09"
+    action: "T-100123: D3 velocity drop check prorates by fraction-of-day (kills midnight-window false WARN)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1384 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit-finding, severity:warn, section:audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 1384
+  commits: 1
+  files_changed: 3
+  lines_added: 225
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100123-audit-warn--d3-commit-velocity--warn-dro.md
+generated_by: context-agent-hybrid
