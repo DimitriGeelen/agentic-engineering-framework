@@ -805,6 +805,12 @@ do_doctor() {
         esac
     done
 
+    # T-100157 (OBS-085): the Consumer Projects checks below call
+    # fw_consumer_yamls (lib/config.sh) — source it once here or every doctor
+    # run prints 'command not found' twice and the consumer checks silently
+    # no-op (empty loop is indistinguishable from "no consumers").
+    source "$FRAMEWORK_ROOT/lib/config.sh"
+
     echo -e "${BOLD}fw doctor${NC} - Framework Health Check"
     if [ "$quick_mode" = "1" ]; then
         echo -e "  ${CYAN}--quick${NC}: project-only mode — host/network probes skipped"
