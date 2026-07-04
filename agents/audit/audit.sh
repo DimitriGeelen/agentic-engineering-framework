@@ -5195,12 +5195,17 @@ pruned = sorted(old_by_day.values(), key=lambda x: x.get("timestamp") or "") + r
 
 data["entries"] = pruned
 
-with open(METRICS_FILE, "w") as f:
+# T-100190: same-dir temp + os.replace — a kill mid-dump must not truncate the
+# live file (L-493 class; a cron audit killed mid-write corrupted this YAML and
+# the pre-push gate then blocked all pushes until manual recovery).
+tmp_path = METRICS_FILE + ".tmp"
+with open(tmp_path, "w") as f:
     # Preserve header comment
     f.write("# Time-series metrics history\n")
     f.write("# Auto-appended by audit.sh on each run\n")
     f.write("# 30-day rolling retention\n")
     yaml.dump({"entries": pruned}, f, default_flow_style=False, sort_keys=False)
+os.replace(tmp_path, METRICS_FILE)
 METRICS_EOF
 fi
 
