@@ -240,3 +240,28 @@ teardown() {
     [[ "$output" == *"Inception template missing required sections"* ]]
     [[ "$output" == *"Decision"* ]]
 }
+
+# --- Frontmatter-key hijack regression (T-100130) ---
+
+@test "T-100130: name containing 'owner:' does not corrupt frontmatter" {
+    run "$CREATE_TASK" --name "detector skip for (owner:human + Recommendation) shape" \
+        --description "regression: un-anchored replace let name text hijack frontmatter keys" \
+        --type build --owner agent
+    [ "$status" -eq 0 ]
+    f=$(ls "$TEST_DIR/active/T-"*.md | head -1)
+    # owner field intact on its own line
+    grep -q '^owner: agent' "$f"
+    # name preserved verbatim (not mangled to 'owner: agenthuman')
+    grep -F 'owner:human + Recommendation' "$f" >/dev/null
+    ! grep -q 'agenthuman' "$f"
+}
+
+@test "T-100130: name containing 'workflow_type:' does not corrupt frontmatter" {
+    run "$CREATE_TASK" --name "audit finds workflow_type: drift in emitted tasks" \
+        --description "regression sibling: any frontmatter key in the name must stay inert" \
+        --type refactor --owner agent
+    [ "$status" -eq 0 ]
+    f=$(ls "$TEST_DIR/active/T-"*.md | head -1)
+    grep -q '^workflow_type: refactor' "$f"
+    grep -F 'workflow_type: drift' "$f" >/dev/null
+}

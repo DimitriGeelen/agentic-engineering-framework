@@ -3,15 +3,219 @@
 > blast-radius foresight, value scoring, audit, and cross-agent coordination —
 > wrapped around any CLI agent you already use. Coordinates, does not execute.
 
-I built this because I recognised a pattern. In 25 years of enterprise IT
-governance — transition management at Shell, operational readiness for
-infrastructure programmes — the same structural requirements appear every
-time a powerful actor operates in a shared environment. Clear direction.
-Awareness of context. Awareness of resource constraints. Awareness of impact.
-Capable engaged actors. Remove any one and the system degrades.
+## Garbage in, garbage out?
 
-The domain changed from human operators to AI coding agents. The principle
-did not.
+It is true — for many input/output processes, in biological life and in
+computer systems alike. And when working with LLMs: the better the prompt,
+the better the context, the better the focus. The better the contextual
+awareness, the better the outputs an LLM generates. Governing that practice
+is what I have come to call **agentic engineering** — something I have been
+doing over the last year.
+
+Agentic engineering is about good guidance. This framework is an attempt to
+provide it: to give capable agents the direction, context, and constraints
+they need to do good work — automated as far as it can be, with the human
+kept in the loop wherever judgment or risk demands it.
+
+Agents here are coached — and where it matters, forced — to come back for
+human feedback. Sometimes that is a matter of taste: *"Operator, do you like
+how this looks?"* Sometimes it is a matter of consequence: *"Operator, I am
+about to blow up the earth — y / n?"* The framework's job is to know which
+moment is which, and to make sure the second kind never happens silently.
+
+## One principle, two mechanisms
+
+The core mechanics rest on one principle and two mechanisms.
+
+**The principle is traceability: nothing gets done without a task.** Everything
+that happens is captured — every conversation, every thought, every variant
+raised and discarded, every reason behind a decision and the way it was
+carried out, every document, task, and artefact. In my experience this is the
+thing that matters most, and the thing most systems lose. The record of all
+of it is the **Context Fabric**.
+
+**The second mechanism is the Component Fabric — the map of how the pieces
+relate.** A real service is never one piece of code working alone; it is a
+moving, dynamic system. Touch one part and there is impact upstream and
+downstream. The Component Fabric makes that blast radius visible before the
+change, not after.
+
+The principle is not new. In 25 years of enterprise IT governance —
+transition management at Shell, operational readiness for infrastructure
+programmes — the same structural requirements appear every time a powerful
+actor operates in a shared environment: clear direction, awareness of
+context, awareness of resource constraints, awareness of impact, capable
+engaged actors. The domain changed from human operators to AI coding agents.
+The principle did not.
+
+## Get started — hand a prompt to your coding agent
+
+Two entry paths. Paste the matching block into your coding agent (Claude
+Code, Cursor, Aider, or any agent with shell access). Each is self-contained.
+
+- **A — Greenfield:** you want to build something new. The agent installs and
+  initialises the framework in a new directory, then guides you into starting
+  an app.
+- **B — Existing codebase:** you want to govern code you already have. The
+  agent installs and initialises in place, ingests the codebase into the
+  Component Fabric, audits and heals to a clean baseline, then guides you into
+  a new feature.
+
+Both encode the same discipline: the agent does the mechanical work
+autonomously, but stops at the `[ASK]` points (the human-in-the-loop moments
+— "do you like this?" / "are you sure?"), self-heals per step, and never
+works around a gate or invents a command.
+
+<details>
+<summary><b>A — Greenfield: install AEF and start a new app</b></summary>
+
+```
+You are setting up the Agentic Engineering Framework in a NEW project, then helping me start
+building. Work autonomously through the mechanical steps. Stop and ask me only at the points
+marked [ASK]. If a step fails, try the self-heal in that step before stopping; if you cannot
+recover, stop and show me the exact error and the command that produced it — never work around
+a gate or invent a command. Discover real command names with `fw help` and `fw <area> --help`;
+the verbs below are expected, but confirm anything unfamiliar before relying on it.
+
+STEP 1 — Prerequisites
+  Check and report versions: bash (need 4.4+), git (need 2.20+), python3 (need 3.8+).
+  Self-heal: on macOS with bash 3.2, install a modern bash (`brew install bash`) and use it —
+  do NOT proceed on 3.2. If git or python3 is missing, install it via the platform package
+  manager and tell me what you did.
+
+STEP 2 — Install the framework (once per machine)
+  [ASK] Confirm with me before running a piped installer, then run:
+    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+  Self-heal: on a transient GitHub failure (network / 5xx / rate-limit) retry once after a
+  short pause, then stop and report. If `fw` is not found afterwards, add ~/.local/bin to PATH
+  (or re-source the shell) and confirm `fw --version` prints a version.
+
+STEP 3 — Create and initialise the project
+  [ASK] Confirm (a) the new directory name and (b) the provider — claude / cursor / generic.
+  (Pick `claude` if you are Claude Code: it gets full pre-action enforcement; other agents get
+  git hooks + CLI tooling.) Then:
+    mkdir <dir> && cd <dir> && git init       # recent fw init also auto-creates git
+    fw init --provider <choice>
+  Self-heal: if the directory already contains a .framework.yaml it is already initialised —
+  STOP and ask me rather than overwriting. If `fw init` reports "not a git repository" on an
+  older fw, run `git init` first and retry.
+
+STEP 4 — Verify health
+  Run `fw doctor`. A non-zero exit is a real failure: show me the output, fix what is clearly
+  fixable (PATH; re-wire hooks with `fw git install-hooks --force`), and re-run. If it still
+  fails, stop and report. A zero exit with warnings is fine — note them and proceed.
+
+STEP 5 — Start Watchtower (it does NOT auto-start today)
+    fw serve &                 # background the dashboard
+    fw watchtower url          # print the URL
+  Self-heal: if the port is busy, start on another with `fw serve --port <N>` and re-print the
+  URL. Give me the URL and say what it shows (task board, audit, fabric, BVP).
+
+STEP 6 — Guide me into building
+  In one short message, tell me:
+   - The one rule: nothing gets edited without an active task — you WILL hit the gate if you
+     skip this.
+   - [ASK] Which way I want to begin:
+       • Explore first:  fw inception start "<what we're building>"  → you propose an
+         architecture, I record a go / no-go.
+       • Build now:      fw work-on "<first task>" --type build
+  Once I choose, create the task (or inception), set focus, and start. From here every commit
+  traces to a task, every destructive command waits for my approval, and the dashboard shows
+  state.
+
+THROUGHOUT
+  - You hold initiative, not authority. Choose approaches freely; never approve your own work.
+    The approval verbs (inception decide, tier0 approve, arc close) are mine.
+  - Stop at every [ASK], and before anything destructive or irreversible. When unsure, ask me
+    "y / n" rather than proceeding.
+  - Final report: project path · provider · fw version · dashboard URL · onboarding tasks
+    created · any doctor warnings.
+```
+
+</details>
+
+<details>
+<summary><b>B — Existing codebase: install, ingest, heal to a clean baseline, start a feature</b></summary>
+
+```
+You are installing the Agentic Engineering Framework INTO AN EXISTING codebase: bring it under
+governance, get it to a clean baseline, then help me start a new feature. Work autonomously
+through the mechanical steps. Stop at the [ASK] points. Self-heal per step; if you cannot
+recover, stop and show me the exact error and command — never work around a gate or invent a
+command. Discover real verbs with `fw help` / `fw <area> --help`; confirm anything unfamiliar
+before relying on it.
+
+STEP 1 — Prerequisites
+  bash 4.4+ / git 2.20+ / python3 3.8+. Self-heal: macOS bash 3.2 → `brew install bash` and use
+  it (do not proceed on 3.2); install any missing tool and report.
+
+STEP 2 — Install the framework (once per machine)
+  [ASK] Confirm before the piped installer, then:
+    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
+  Self-heal: retry once on a transient GitHub failure; if `fw` is not found, add ~/.local/bin
+  to PATH and confirm `fw --version`.
+
+STEP 3 — Initialise IN PLACE
+  [ASK] Confirm this is the right repo and the provider (claude / cursor / generic).
+  From the repo root:
+    fw init --provider <choice>
+  fw init is ADDITIVE: it adds .tasks/, .context/, .fabric/, hook wiring, a CLAUDE.md, and
+  onboarding tasks; it does not rewrite your source. Self-heal: if already initialised
+  (.framework.yaml present), STOP and ask. If init wants to overwrite an existing CLAUDE.md or
+  agent settings, show me the diff and ask before touching it.
+
+STEP 4 — Verify health
+  Run `fw doctor`. Non-zero exit → show me, fix the clearly-fixable, re-run, else report. Zero
+  with warnings → note and proceed.
+
+STEP 5 — Ingest the codebase into the Component Fabric
+  Goal: a topology card for every real component — no unregistered files, no orphaned cards.
+  Discover the real path with `fw fabric --help` (expected: `fw fabric drift` to find
+  unregistered/orphaned, `fw fabric register <path>` to add a component, `fw fabric overview`
+  for coverage).
+  Loop, bounded, checkpointing with me each pass:
+    a. `fw fabric drift`  → list unregistered files and orphaned cards.
+    b. Register the real components; fix or remove orphaned cards.
+    c. Re-run drift. Repeat until drift is clean.
+  [ASK] Before mass-registering a large tree, show me your proposed component grouping and let
+  me confirm — do not impose a topology on my codebase without a y / n.
+  Self-heal: if the tree is huge, ingest by subsystem in slices and report progress. Never loop
+  unbounded — if drift is not converging after a few passes, stop and show me what will not
+  resolve.
+
+STEP 6 — Audit and housekeeping to a clean baseline
+  Run `fw audit`. Work the findings down, classifying each as governance, codebase, or
+  environmental:
+   - Record fixes as patterns:  fw healing diagnose <id>  /  fw healing resolve <id> --mitigation "..."
+   - Capture genuine gaps with `fw gaps` rather than papering over them.
+  Re-run audit until it is green or only advisory warnings remain. Heal the loops until the
+  fabric cards are clean AND the audit passes.
+  [ASK] If a finding implies a change to my source beyond housekeeping (a refactor, a
+  behavioural fix), do NOT make it silently — surface it as a proposed task for me to approve.
+
+STEP 7 — Start Watchtower (it does NOT auto-start today)
+    fw serve &
+    fw watchtower url          # --port <N> if the default is busy, then re-print
+  Point me at the fabric graph — now populated from my own codebase — plus the audit and BVP
+  views, and give me the URL.
+
+STEP 8 — Guide me into a new feature
+  In one short message, then [ASK] which feature I want:
+   - Start it under governance:  fw work-on "<feature>" --type build
+   - Before editing, check impact:  fw fabric blast-radius HEAD  and  fw fabric deps <file> —
+     the fabric you just built now tells us what a change touches.
+   - Every commit traces to the task; destructive commands wait for my approval.
+
+THROUGHOUT
+  - You hold initiative, not authority. Choose approaches freely; never approve your own work —
+    the approval verbs are mine.
+  - Stop at every [ASK], and before anything destructive or irreversible. When unsure, ask
+    "y / n".
+  - Final report: repo path · provider · fw version · fabric coverage (registered / drift) ·
+    audit result · dashboard URL · onboarding tasks · any doctor warnings.
+```
+
+</details>
 
 ## The five requirements, one harness
 
@@ -323,40 +527,16 @@ different shape.
 
 ### Hand it to your agent (lead)
 
-Paste this verbatim into your agent's chat. The agent runs it; the framework
-arrives.
+The fastest path is the two self-contained onboarding prompts at the top of
+this README — **[§ Get started — hand a prompt to your coding
+agent](#get-started--hand-a-prompt-to-your-coding-agent)**. Pick **A —
+Greenfield** for a new project or **B — Existing codebase** to bring code you
+already have under governance, paste the block into your agent's chat, and it
+installs, initialises, verifies health, and guides you into your first task —
+stopping at the `[ASK]` points for your decisions.
 
-```
-Install the Agentic Engineering Framework into this project. Steps:
-
-1. Verify prerequisites:
-     bash --version       # need 4.4 or newer
-     git --version        # need 2.20 or newer
-     python3 --version    # need 3.8 or newer
-
-2. Install the framework globally (one machine, once):
-     curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash
-
-3. Initialise this project (run inside the project root):
-     fw init                  # auto-detects provider; pass --provider claude|cursor|generic to force
-
-4. Surface the dashboard URL (Watchtower does not auto-start today):
-     fw serve &               # background the dashboard
-     fw watchtower url        # print the URL to open
-
-5. Report back to me:
-     - the project path
-     - the dashboard URL
-     - how many onboarding tasks were created
-     - any warnings from `fw doctor`
-
-Then create the first task with `fw work-on "name" --type build` and stop —
-the rest is mine to decide.
-```
-
-*[ILLUSTRATIVE — this block has not been end-to-end tested against a fresh
-machine in this session; the first agent or human to run it should capture the
-real output and confirm or correct it.]*
+Everything below is for when you want a different install shape (curl,
+Homebrew, vendored isolation, CI) or to run the steps yourself.
 
 Use this when: you already have Claude Code, Cursor, Aider, or another CLI
 agent open and want to try AEF on a real project without leaving the editor.
