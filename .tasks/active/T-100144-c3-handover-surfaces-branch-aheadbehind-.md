@@ -23,7 +23,7 @@ related_tasks: [T-100139]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-04T11:49:49Z
-last_update: 2026-07-04T13:48:58Z
+last_update: 2026-07-04T13:54:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -103,10 +103,10 @@ worktree + copy task file + set worktree focus, land with
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Handover document prints the current branch's ahead/behind counts vs origin/master (e.g. "Branch: t2416… +157 / −248 vs origin/master")
-- [ ] When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run`
-- [ ] Silent/neutral when on master or within threshold (no nudge noise)
-- [ ] bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold
+- [x] Handover document prints the current branch's ahead/behind counts vs origin/master — live-fired: `**Branch:** `t100144-handover-divergence` +1 / −0 vs origin/master` rendered under Where We Are (S-2026-0704-1552)
+- [x] When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run` — live-fired with forced threshold (rendered in S-2026-0704-1553)
+- [x] Silent/neutral when on master or within threshold (no nudge noise) — fw_branch_divergence returns nothing on master/detached/no-origin; nudge only when behind > threshold
+- [x] bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold — tests/unit/t100144_handover_divergence.bats (6 tests incl. master-silence, no-origin silence, handover.sh wiring pins)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +140,12 @@ worktree + copy task file + set worktree focus, land with
 -->
 
 ## Verification
+
+# Origin-based (L-387 file-capture): passes from MAIN after `fw integrate run master --push` lands C3.
+git show origin/master:lib/branch-hygiene.sh > /tmp/.t100144-lib 2>/dev/null && grep -q "fw_branch_divergence" /tmp/.t100144-lib
+git show origin/master:agents/handover/handover.sh > /tmp/.t100144-ho 2>/dev/null && grep -q "MERGEBACK_NUDGE" /tmp/.t100144-ho
+grep -q "fw integrate run master --push" /tmp/.t100144-ho
+git show origin/master:tests/unit/t100144_handover_divergence.bats > /tmp/.t100144-tests 2>/dev/null && grep -q "nudge fires when behind exceeds threshold" /tmp/.t100144-tests
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -213,6 +219,16 @@ worktree + copy task file + set worktree focus, land with
 -->
 
 ## Decisions
+
+### 2026-07-04 — Divergence computation lives in lib/branch-hygiene.sh (not inline in handover.sh)
+- **Chose:** `fw_branch_divergence` as a second function in C2's lib, sourced by handover.sh.
+- **Why:** shares FW_BRANCH_BEHIND_WARN with the doctor scan (one threshold, one semantics) and is bats-testable against fixture repos without running the full handover pipeline.
+- **Rejected:** inline git calls in handover.sh (untestable, threshold duplication).
+
+### 2026-07-04 — Placement: counts under Where We Are, nudge under Suggested First Action
+- **Chose:** divergence line first thing in Where We Are; overdue nudge as first line of Suggested First Action.
+- **Why:** the counts are state (belongs with situation summary); the nudge is an action and must compete with the suggested-first-action slot, which is what the next session actually reads.
+- **Rejected:** frontmatter-only fields (invisible to a human skimming the handover).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
