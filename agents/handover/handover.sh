@@ -243,7 +243,13 @@ if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
         _bd_ahead=$(echo "$_bd_line" | awk '{print $3}' | cut -d= -f2)
         _bd_behind=$(echo "$_bd_line" | awk '{print $4}' | cut -d= -f2)
         BRANCH_DIVERGENCE="**Branch:** \`$_bd_branch\` +${_bd_ahead} / −${_bd_behind} vs origin/master"
-        if printf '%s\n' "$_bd_out" | grep -q '^nudge '; then
+        if printf '%s\n' "$_bd_out" | grep -q '^fork '; then
+            # T-100195: bidirectional fork — a bare `git merge origin/master`
+            # conflicts (T-100194 origin: 100+ conflicts). Reconcile while small,
+            # do NOT recommend a one-way `fw integrate` (it cannot absorb the
+            # ${_bd_behind} commits master has that this branch lacks).
+            MERGEBACK_NUDGE="**⚠ Branch has FORKED from origin/master:** \`$_bd_branch\` is +${_bd_ahead} ahead AND −${_bd_behind} behind (threshold ${FW_BRANCH_BEHIND_WARN:-50}). This is a bidirectional fork, not a lag — a go-live \`git merge origin/master\` will conflict. Reconcile now while the fork is small: merge origin/master INTO this branch and resolve, or reset to origin/master if the unique commits are already landed. (RCA T-100194; safe go-live path: T-100195 Leg 2.)"
+        elif printf '%s\n' "$_bd_out" | grep -q '^nudge '; then
             MERGEBACK_NUDGE="**Merge-back overdue:** \`$_bd_branch\` is ${_bd_behind} commits behind origin/master (threshold ${FW_BRANCH_BEHIND_WARN:-50}) — land the strand with \`fw integrate run master --push\` before starting new work."
         fi
     fi

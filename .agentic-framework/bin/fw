@@ -2324,6 +2324,11 @@ else:
                 echo -e "         … $((_bh_count - 12)) more (full list: git branch --merged origin/master)"
             fi
             echo -e "         Cleanup: git branch -d <name> (merged); fw integrate run (overdue merge-back)"
+            if printf '%s\n' "$_bh_out" | grep -q '^diverged-fork '; then
+                # T-100195 (RCA T-100194): a fork needs reconcile-while-small, NOT
+                # a one-way `fw integrate` — that cannot absorb what master has.
+                echo -e "         ${YELLOW}FORK${NC}: a diverged-fork branch is BOTH ahead and behind — a go-live \`git merge origin/master\` will conflict. Reconcile now while small (merge origin/master INTO the branch and resolve, or reset if the unique commits already landed). Do NOT use \`fw integrate\` on a fork (one-way). See T-100195."
+            fi
             warnings=$((warnings + 1))
         else
             echo -e "  ${GREEN}OK${NC}  Branch hygiene clean"
