@@ -98,14 +98,29 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Investigation of a TermLink-crate behavior gap (T-1820 AC#3 partial-ship): the
+inner function `mirror_inbox_deposit_with()` fires `inbox.queued` (proven by
+unit + integration tests), but two user-facing CLI flows (file send to offline
+target, channel post with kill-9'd member) did not fire the event. The code
+under investigation lives in `/opt/termlink` — outside this project's boundary
+(T-559), and the fix homes there (§Gap Homing, T-1333). This task therefore
+coordinates: dispatch the investigation into a worker rooted at /opt/termlink,
+collect findings, and ensure follow-up is filed where the fix lives.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Investigation dispatched to /opt/termlink (TermLink worker in the target
+      project's own context, per T-559 boundary rule); findings collected via
+      fw bus or a report file in this repo under docs/reports/T-2409-*.md
+- [ ] Findings answer scope (a): which user-facing CLI deposit paths call
+      mirror_inbox_deposit_with() and which take a bypass path that skips the
+      inbox.queued emit (file:line references into the termlink crates)
+- [ ] Findings answer scope (b): a CLI flow that DOES fire inbox.queued is
+      reproduced, OR the gap is confirmed with a stated root cause
+- [ ] Follow-up homed where the fix lives: termlink-side task/pickup reference
+      recorded in this task's Updates (scope (c) integration-test extension is
+      termlink-repo work, not AEF work)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
