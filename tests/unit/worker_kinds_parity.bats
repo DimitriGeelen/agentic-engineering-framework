@@ -63,9 +63,16 @@ PYEOF
     rm -rf "$(dirname "$TMP_FW")"
 }
 
-@test "parity literal exists at expected location in bin/fw" {
-    # Pin: keep the literal where the doctor expects to find it (bin/fw line ~1804).
-    grep -E "VALID_WORKER_KINDS\s*=\s*\{" "$FRAMEWORK_ROOT/bin/fw"
+@test "parity literal exists at expected location in lib/workflow_lint.py" {
+    # T-2388: T-1946 extracted the bin/fw inline heredoc to lib/worker_kinds_parity.py —
+    # bin/fw no longer holds a literal. The two real sources are lib/resolver.py and
+    # lib/workflow_lint.py; bin/fw delegates to the parity module.
+    grep -E "VALID_WORKER_KINDS\s*=\s*\{" "$FRAMEWORK_ROOT/lib/workflow_lint.py"
+}
+
+@test "bin/fw delegates parity check to lib/worker_kinds_parity.py (post-T-1946 shape)" {
+    grep -q "worker_kinds_parity.py" "$FRAMEWORK_ROOT/bin/fw"
+    [ -f "$FRAMEWORK_ROOT/lib/worker_kinds_parity.py" ]
 }
 
 @test "parity literal exists at expected location in lib/resolver.py" {
@@ -73,14 +80,13 @@ PYEOF
 }
 
 @test "parity literal in both files is identical (source-of-truth check)" {
-    fw_set=$(python3 -c "
-import re
-with open('$FRAMEWORK_ROOT/bin/fw') as f:
-    for line in f:
-        m = re.match(r'\s*VALID_WORKER_KINDS\s*=\s*\{([^}]+)\}', line)
-        if m:
-            print(','.join(sorted({s.strip().strip(chr(34)).strip(chr(39)) for s in m.group(1).split(',') if s.strip()})))
-            break
+    # T-2388: compare the two real sources (lib/workflow_lint.py ↔ lib/resolver.py);
+    # bin/fw dropped its literal in the T-1946 heredoc extraction.
+    lint_set=$(python3 -c "
+import sys
+sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
+from workflow_lint import VALID_WORKER_KINDS
+print(','.join(sorted(VALID_WORKER_KINDS)))
 ")
     resolver_set=$(python3 -c "
 import sys
@@ -88,7 +94,8 @@ sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
 from resolver import VALID_WORKER_KINDS
 print(','.join(sorted(VALID_WORKER_KINDS)))
 ")
-    [ "$fw_set" = "$resolver_set" ]
+    [ -n "$lint_set" ]
+    [ "$lint_set" = "$resolver_set" ]
 }
 
 @test "doctor parity check exits without crashing in fresh shell" {
