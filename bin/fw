@@ -335,6 +335,7 @@ do_vendor() {
         agents
         web
         docs
+        policy
         .tasks/templates
         FRAMEWORK.md
         metrics.sh

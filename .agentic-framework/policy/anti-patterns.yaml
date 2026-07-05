@@ -1,0 +1,514 @@
+# Anti-pattern catalogue for the reviewer agent (T-1443 v1.0)
+#
+# Severity is split into two axes per L-261 (severity-axis conflation):
+#   detection_confidence  — how reliably we can detect the pattern
+#                           values: deterministic | heuristic | semantic
+#   lie_severity          — if the pattern fires, how badly does the evidence lie
+#                           values: complete | severe | partial | narrow | staleness
+#
+# Action urgency / risk / blast-radius are extrinsic (task-level) and
+# combined via policy/action-matrix.yaml in later versions (v1.2+).
+#
+# v1.0 scope: 4 seed patterns. v3+ expands to 12 categories via mining
+# external test-smell literature, internal corpus, and peer-agent dispatch.
+#
+# Schema version: 1
+# Source: T-1443 inception + spikes A/D/F/G/I
+
+schema_version: 2
+catalogue_version: "v1.3-seed"
+policy_origin: T-1443
+
+patterns:
+  - id: tautology
+    name: "Tautological verification"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_tautology"
+    description: >
+      Verification command that proves nothing because it asserts what it just did.
+      Examples: `echo "tests pass" && true`, `[ 1 -eq 1 ]`, `true`, `: # ok`.
+      The command exits 0 unconditionally; no real check happens.
+    examples_positive:
+      - "true"
+      - "echo 'all good' && true"
+      - "[ 1 = 1 ]"
+      - ": # placeholder"
+    examples_negative:
+      - "bin/fw test unit"
+      - "test -f required-file.txt"
+      - "grep -q 'expected' output.txt"
+
+  - id: empty-body
+    name: "Empty acceptance-criterion body"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_empty_body"
+    description: >
+      Acceptance criterion with no real content — placeholder text like
+      "[First criterion]", "TODO", "...", or empty after stripping markers.
+      A checked AC with empty body is a checkbox-only completion.
+    examples_positive:
+      - "[ ] [First criterion]"
+      - "[x] TODO"
+      - "[x] ..."
+      - "[x] tbd"
+    examples_negative:
+      - "[x] lib/reviewer/static_scan.py exists with 4 anti-pattern detectors"
+
+  - id: swallowed-errors
+    name: "Errors swallowed or hooks bypassed"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_swallowed_errors"
+    description: >
+      Verification or commit chain that suppresses error signals. Includes
+      `--no-verify` on commit/push, `2>/dev/null || true` on critical commands,
+      `set +e` without re-arming, and `|| true` after the only assertion.
+      Indicates real failures may have been hidden.
+    examples_positive:
+      - "git commit --no-verify -m '...'"
+      - "bin/fw test unit 2>/dev/null || true"
+      - "make test || true"
+    examples_negative:
+      - "bin/fw test unit"
+      - "git commit -m 'T-1445: ...'"
+      - "command || (echo 'failed' && exit 1)"
+
+  - id: output-spoofing
+    name: "Output-spoofing success markers"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_output_spoofing"
+    description: >
+      Evidence relies on echoed strings like "TESTS PASS" without an
+      assertion that those strings actually came from a real test runner.
+      Pattern: a line that prints success text followed by no exit-status check.
+      Heuristic — the false-positive rate is non-trivial; v1.0 raises CONCERN
+      not FAIL on this pattern alone.
+
+      v1.1: widened token set (TESTS PASSED, BUILD SUCCESSFUL, VERIFIED, GREEN).
+    examples_positive:
+      - "echo 'TESTS PASS' >> evidence.txt"
+      - "printf 'BUILD OK\\n' && exit 0"
+      - "echo 'VERIFIED' >> log"
+    examples_negative:
+      - "bin/fw test unit | tee /tmp/test.log; grep -q 'PASS' /tmp/test.log"
+      - "test \"$(./run-tests.sh)\" = 'OK'"
+
+  - id: empty-output-success
+    name: "Exit-code-only verification with discarded output"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_empty_output_success"
+    description: >
+      Verification line that redirects output to /dev/null and relies solely
+      on the exit code. Many commands return 0 even when no real work is done
+      (compilers without input, idempotent operations, etc.). Asserting on
+      output content is the antifragile alternative.
+      Exempt: `grep -q`, `test`, `[ ]` — these are designed for silent assertion.
+    examples_positive:
+      - "bin/fw doctor > /dev/null"
+      - "make build > /dev/null 2>&1"
+    examples_negative:
+      - "grep -q 'expected' file.txt"
+      - "test -f required.json"
+
+  - id: skip-as-pass
+    name: "Skipped/collected tests treated as pass"
+    detection_confidence: deterministic
+    lie_severity: severe
+    detector_ref: "lib.reviewer.static_scan:detect_skip_as_pass"
+    description: >
+      Verification command runs in collect-only or skip-mode, exiting 0 without
+      executing the underlying assertion. `pytest --collect-only`, `make test
+      SKIP=true`, `xfail`-decorated tests, etc. The runner reports success
+      but the test never ran.
+    examples_positive:
+      - "pytest --collect-only tests/"
+      - "make test SKIP=true"
+      - "pytest -m 'not slow' --xfail tests/"
+    examples_negative:
+      - "pytest tests/unit/"
+      - "bin/fw test integration"
+
+  - id: mock-only-integration
+    name: "Integration AC verified only by unit tests"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_mock_only_integration"
+    description: >
+      AC promises integration / e2e / cross-process behavior, but verification
+      commands only reference `tests/unit/` paths. Unit tests cannot cover
+      integration claims by definition.
+      Heuristic — does not cover semantic mock detection (the harder case).
+    examples_positive:
+      - "AC: 'integration tested' + Verification: pytest tests/unit/test_x.py"
+    examples_negative:
+      - "AC: 'integration tested' + Verification: pytest tests/integration/"
+      - "AC: 'unit test exists' + Verification: pytest tests/unit/"
+
+  - id: human-ac-mechanical-signal
+    name: "[REVIEW] Human AC has mechanical Expected clause (should be [REVIEWER])"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_human_ac_mechanical_signal"
+    description: >
+      A `[REVIEW]`-prefixed Human acceptance criterion whose `**Expected:**` clause
+      contains mechanical signals (grep/wc/exit-code/file-exists/curl/HTTP status)
+      AND no taste signals (feels/reads/cleanly/tone/voice/intuitive/rhythm)
+      AND no strategic markers in the body (decide/approve/authorize/sign-off).
+
+      Such ACs should be `[REVIEWER]` (Agent AC + `## Verification` with reviewer
+      command) instead — the reviewer agent or shell can verify them deterministically.
+
+      Origin: T-1878 inception found 13% mis-class rate on partial-completes (412:7
+      `[REVIEW]:[REVIEWER]` adoption gap). T-1894 manually re-classed 4 such ACs
+      across arc-grooming partial-completes; this detector is the structural catch
+      that fires at task close so the next round doesn't need a manual sweep.
+
+      Override: `fw reviewer override add T-XXX --pattern human-ac-mechanical-signal
+      --ac N --reason "..." --ttl 90` suppresses the finding (T-1443 v1.4).
+    examples_positive:
+      # I/O-checking dialect (T-1896 original):
+      - "[REVIEW] Confirm endpoint returns 200 — Expected: `curl -sf URL` exits 0"
+      - "[REVIEW] Check log file — Expected: `grep -q ERROR /var/log/app.log` returns 1"
+      # Conformance-checking dialect (T-1897 widening):
+      - "[REVIEW] Confirm block message complete — Expected: message names the missing deliverable and points at inception override flag"
+      - "[REVIEW] Confirm focus-drift block — Expected: message shows current focus task and contains the --switch-focus override flag"
+      - "[REVIEW] Confirm closure side-effect — Expected: audit log row appended to .context/audits/foo.jsonl"
+    examples_negative:
+      - "[REVIEW] Dashboard reads cleanly — Expected: layout feels intuitive"
+      - "[REVIEW] Decide whether to close arc — Expected: arc transitions to closed"
+      - "[REVIEW] Banner reads as obvious supersedes note — Expected: voice + framing tells a fresh reader"
+      # Gate 2b (T-1897): taste in AC LINE suppresses even if Expected has mechanical signals:
+      - "[REVIEW] Reviewer finding wording reads usefully — Expected: Finding text names the AC by index (taste 'reads' in header wins)"
+
+  - id: reviewer-prose-mismatch
+    name: "[REVIEWER] Human AC has prose-quality Expected (should be [REVIEW] or paired)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_reviewer_prose_mismatch"
+    description: >
+      A `[REVIEWER]`-prefixed Human acceptance criterion whose body or
+      `**Expected:**` clause contains taste / prose-quality vocabulary
+      (reads/tone/rhythm/intuitive/cleanly/voice/cohesive/...).
+
+      `[REVIEWER]` means "verifiable by `fw reviewer T-XXX` static scan", but
+      the reviewer has zero detectors for natural-language prose quality —
+      its 9 detectors operate on YAML/shell structural patterns only.
+
+      When such ACs are filed as `[REVIEWER]`, the reviewer silently ignores
+      them (no detector fires) and reports verdict on OTHER ACs. The Overall
+      status looks identical at the surface whether the scanner had something
+      to say or stayed silent — false-success class (worse than acknowledged
+      failure per the design-dialogue antifragility principle).
+
+      Such ACs should be `[REVIEW]` (genuine human-taste judgment) OR kept as
+      `[REVIEWER]` only when paired with an explicit `[REVIEW]` AC covering
+      the prose dimension. The `[REVIEWER]` prefix is necessary-but-not-
+      sufficient on prose-quality ACs.
+
+      Origin: T-1947 (L-409). Surfaced via T-1811's own AC#1 `[REVIEWER]
+      Updated CLAUDE.md section reads clearly` — the reviewer reported
+      CONCERN on Agent AC#3 but silently passed over the prose AC.
+
+      Override: `fw reviewer override add T-XXX --pattern reviewer-prose-mismatch
+      --ac N --reason "..." --ttl 90` when the AC is genuinely paired with a
+      `[REVIEW]` sibling (T-1443 v1.4).
+    examples_positive:
+      - "[REVIEWER] Updated section reads clearly — Expected: Reviewer returns PASS"
+      - "[REVIEWER] Form renders cleanly inside review page rhythm — Expected: panel layout reads intuitively"
+      - "[REVIEWER] Document reads accurately — Expected: matches shipped implementation tone"
+    examples_negative:
+      - "[REVIEWER] Block message names both bypass mechanisms — Expected: message contains '--switch-focus' and 'FW_SWITCH_FOCUS=1'"
+      - "[REVIEW] Dashboard reads cleanly — Expected: layout feels intuitive (prefix is [REVIEW], not [REVIEWER])"
+      - "[REVIEWER] Reviewer PASS — Expected: `bin/fw reviewer T-XXX 2>&1 | grep -q 'Overall:.*PASS'`"
+
+  - id: l387-sigpipe-risk
+    name: "L-387 SIGPIPE-prone pipe to terminal grep -q"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_l387_sigpipe_risk"
+    description: >
+      Verification command of the shape `<streaming-cmd> [...] | grep -q[E]? "..."`.
+      Under `set -eo pipefail` (the regime P-011 runs verification in), `grep -q`
+      exits 0 on first match and closes stdin; the upstream streaming command
+      (`bin/fw doctor`, `bin/fw audit`, `bats`, `find`, `ls *`, brace-pipelines)
+      receives SIGPIPE while still writing → exits 141. pipefail propagates 141
+      → P-011 records the verification as failed even though the pattern was
+      present. Verification block lies: green output reads "PATTERN matched" but
+      the gate refuses close. Captured 7+ times (T-1716, T-1838, T-1862, T-1863,
+      T-2008, T-1701, T-1707) across two sessions before being detected; spike
+      report at docs/reports/T-2057-l-387-detector-spike.md.
+
+      Safe form (~26 existing tasks): capture upstream first, then grep the
+      capture — `out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"` or
+      `cmd > /tmp/.out 2>&1; grep -q "PATTERN" /tmp/.out`.
+
+      Heuristic — false-positive class is `echo "$..."| grep -q` and
+      `printf "..."| grep -q` (finite, bounded upstream, no SIGPIPE risk).
+      The detector exempts those shapes explicitly.
+    examples_positive:
+      - 'bin/fw doctor 2>&1 | grep -q "All checks passed"'
+      - 'bats tests/unit/test_x.bats | grep -q "ok 5"'
+      - 'find .tasks/active -name "T-*.md" | grep -q "T-2059"'
+      - '{ bin/fw audit 2>&1; } | grep -qE "(FAIL|WARN)"'
+      - 'bin/fw doctor 2>&1 | grep -cE "FAIL" | grep -q "^0$"'
+    examples_negative:
+      - 'out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "OK"'
+      - 'bin/fw doctor 2>&1 > /tmp/d; grep -q "OK" /tmp/d'
+      - 'echo "yes" | grep -q "yes"'
+      - 'printf "ok\n" | grep -q "ok"'
+
+  - id: audience-mismatch
+    name: "[REVIEW] Human AC asks about agent experience (should be Agent self-eval)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_audience_mismatch"
+    description: >
+      A `[REVIEW]`-prefixed Human acceptance criterion whose subject is *agent*
+      experience — stderr the agent reads, gate prose the agent trips, CLI
+      output the agent sees while mid-session. The operator has no operational
+      context for those — answering "does this read cleanly" requires being the
+      system that hit the gate. Routing such ACs to a human asks the wrong
+      audience.
+
+      Correct routing: `### Agent` (self-eval against the prose), not any Human
+      prefix. The integration test that proves the gate works is the structural
+      proof; tone-of-stderr is the agent's judgment to make.
+
+      Gates (all must hold):
+        1. AC sits under `### Human` subhead with `[REVIEW]` prefix
+        2. AC body or Expected contains agent-as-subject phrasing
+           (`agent who`, `agent reads`, `agent trips`, `the agent will`,
+           `tripping agent`, `for an agent`, …)
+        3. AC's `**Expected:**` clause does NOT re-anchor on a human subject
+           (operator/user/human/you used as the question's subject)
+        4. Body has no author opt-out marker (`rewritten to ask the operator`,
+           `audience: operator`, etc.)
+
+      Routing-discipline ladder (CLAUDE.md §AC Classification Guidance):
+        T-1878 — between Human prefixes by check-shape (grep-able → [REVIEWER])
+        T-1947 — between [REVIEW]/[REVIEWER] by Expected vocabulary (prose → [REVIEW])
+        T-2143 — out of Human prefixes entirely by audience (agent-audience → ### Agent)
+        T-2147 — this reviewer-time backstop catches author-time misses on T-2143
+
+      Origin: T-2143 RCA — T-2139 V1 keystone gate-message AC recursed 4
+      author rounds because the agent's single-axis routing heuristic
+      (subjective → Human) had no audience check. CLAUDE.md §AC Classification
+      Guidance item #6 (T-2148, shipped 2026-05-31) introduced the audience
+      axis at author-time; this detector is the reviewer-time backstop.
+
+      Override: `fw reviewer override add T-XXX --pattern audience-mismatch
+      --ac N --reason "..." --ttl 90` when the AC is genuinely framed as an
+      operator question even though the body uses agent vocabulary.
+    examples_positive:
+      - "[REVIEW] Block-message stderr reads cleanly to a tripping agent — Expected: stderr makes the agent unblock itself"
+      - "[REVIEW] CLI output for the agent feels clean — Expected: agent reading the help text gets the right next step"
+      - "[REVIEW] Gate refusal prose is clear for the agent that trips it"
+    examples_negative:
+      - "[REVIEW] Dashboard renders agent activity panel — Expected: the user sees agent rows highlighted in green"
+      - "[REVIEW] Agent's stderr re-read (rewritten to ask the operator) — Expected: operator confirms readability"
+      - "[REVIEWER] Agent reads stderr — Expected: Reviewer PASS (prose-mismatch's territory, not audience)"
+      - "### Agent AC: [REVIEW] Agent self-checks readability (correct routing — not Human-subhead)"
+
+  - id: defer-as-hedge
+    name: "Inception DEFER despite complete evidence trail (T-2144)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_defer_as_hedge"
+    description: >
+      An inception task filed with `Recommendation: DEFER` while its research
+      artifact carries substantive evidence — 5-Whys, Dialogue Log, candidate
+      matrix — AND the Rationale block is substantive (>300 chars). The
+      structural fingerprint: evidence-complete + recommendation-hedged.
+
+      DEFER is a legitimate recommendation when (a) evidence is incomplete
+      and more research is needed, OR (b) the operator has been asked to
+      pick from a candidate set the agent has no preference between. It is
+      a *failure mode* when the agent has done the research, the evidence
+      points clearly toward GO or NO-GO, but the agent hedges to limit
+      downside on a confidence-calibration concern. Loss-aversion masquerading
+      as discipline. Operator caught this in T-2143 ("why do you recommend
+      defer ???") — the real GO recommendation surfaced in chat in three
+      paragraphs once asked directly. The on-disk advisory and the in-chat
+      advisory diverged.
+
+      Gates (all must hold):
+        1. `workflow_type: inception` in frontmatter
+        2. `## Recommendation` section contains `Recommendation: DEFER`
+           (case-insensitive; "DEFER (historical)" / "DEFER (superseded)"
+           shapes are exempt as legitimate revisit-trigger markers)
+        3. Recommendation references a `docs/reports/T-NNNN-*.md` artifact
+        4. Artifact exists on disk and contains ≥2 of these indicators:
+           - `## 5-Whys` heading
+           - `## Dialogue Log` heading
+           - A Markdown table headed `| Candidate` or `| Option` with ≥3 rows
+        5. `**Rationale:**` block inside Recommendation is >300 chars
+
+      Note (T-2145 corpus walk): the task spec called for ≥1 evidence
+      indicator. The 2119-file corpus walk found 4 false-positives at
+      that threshold — all sovereignty-pending or sequence-planning DEFERs
+      with a Dialogue Log alone. T-2143's origin had 2+ indicators. The
+      threshold was raised to ≥2 based on corpus evidence.
+
+      Origin: T-2144 RCA — T-2143 was filed `DEFER` with full evidence
+      trail. Same family as T-679 (blank decision); one layer deeper
+      (decision-shaped placeholder).
+
+      Override: `fw reviewer override add T-XXX --pattern defer-as-hedge
+      --reason "operator pick pending — not a hedge" --ttl 90` when the
+      DEFER is genuinely sovereignty-pending despite the evidence shape.
+    examples_positive:
+      - "Inception with **Recommendation:** DEFER, artifact has 5-Whys + Dialogue Log + candidate matrix, Rationale >300 chars"
+      - "Inception with full evidence + Rationale that conflates 'decision is operator's' with 'I have no recommendation'"
+    examples_negative:
+      - "Inception with **Recommendation:** GO Candidate D (no hedge)"
+      - "Inception with **Recommendation:** DEFER, only Dialogue Log present (incomplete evidence, legitimate DEFER)"
+      - "Inception with **Recommendation:** DEFER (historical — superseded by 2026-05-31 re-evaluation) (revisit-trigger marker)"
+      - "Build task (not inception) with DEFER in body somewhere"
+
+  - id: disposition-incomplete
+    name: "Inception IW-N missing disposition/rationale or answered-without-citation (T-2191)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_disposition_completeness"
+    description: >
+      Inception `## Open Questions` discipline (per 050-Inceptions.md
+      §Disposition Gate). Each declared `- **IW-N:**` entry must carry:
+
+        - `disposition:` line with value ∈ {answered, deferred, dissolved}
+        - `rationale:` line with content (not empty / placeholder)
+        - When `disposition: answered`, rationale must cite evidence — a
+          file:line, `T-NNNN` ref, `docs/reports/...` path, G-/L-/D-NNN
+          id, dialogue-log reference, or commit hash.
+
+      This is the per-question sibling of `defer-as-hedge` (T-2145): the
+      same decision-without-evidence family applied to inception sub-
+      decisions. T-2190 ships the completion-time disposition gate
+      (refuses `--status work-completed`); T-2194 ships the filing-time
+      placeholder gate (blocks source-edits with no IW-N declared); this
+      detector is the static-scan layer that catches the laxity in
+      between — questions filed but disposed by hand-wave.
+
+      Gates (all must hold):
+        1. `workflow_type: inception` in frontmatter
+        2. `## Open Questions` section exists in body
+        3. ≥1 `- **IW-N:**` entry declared
+        4. ≥1 entry fails one of: missing `disposition:`, invalid value,
+           missing/empty `rationale:`, or `answered` without citation
+
+      Verdict-level findings (`ac_index=None`) — one Finding per malformed
+      IW-N. CONCERN-level via the verdict thresholds; never blocks alone.
+
+      Origin: T-2191 — extends T-2145 (defer-as-hedge / decision-without-
+      evidence) to per-question dispositions. The recursion is intentional:
+      T-2143 hedged at the Recommendation level; T-2145 catches that. The
+      same anti-pattern at the Open-Question level — "answered: idk" —
+      should be caught by the same family of static-scan rules.
+
+      Override: `fw reviewer override add T-XXX --pattern disposition-incomplete
+      --reason "..." --ttl 90` when the rationale is intentionally
+      placeholder during draft work, or when citation lives in a follow-up
+      task linked but not yet inlined.
+    examples_positive:
+      - "Inception IW-1 with `disposition: answered` and `rationale: yes`"
+      - "Inception IW-1 with no `disposition:` line"
+      - "Inception IW-1 with `disposition: maybe` (invalid value)"
+      - "Inception IW-1 with `disposition: answered` and `rationale: agreed with the user`"
+    examples_negative:
+      - "Inception IW-1 with `disposition: answered` and `rationale: see docs/reports/T-9999.md L42`"
+      - "Inception IW-1 with `disposition: deferred` and `rationale: spike scheduled in T-9998`"
+      - "Inception IW-1 with `disposition: dissolved` and `rationale: premise refuted by F-0.3 dialogue-log`"
+      - "Build task (not inception) with similar disposition markup anywhere"
+      - "Inception with NO `## Open Questions` section (grandfathered)"
+
+  - id: review-link-homework
+    name: "`### Human` AC Steps require constructing URL instead of clickable link (T-2138)"
+    detection_confidence: heuristic
+    lie_severity: partial
+    detector_ref: "lib.reviewer.static_scan:detect_review_link_homework"
+    description: >
+      A `### Human` acceptance criterion's Steps/body contains a review-handoff
+      homework pattern — text that asks the reviewer to construct the Watchtower
+      URL themselves (e.g. "URL from `bin/fw watchtower url`", "base from
+      `bin/fw watchtower url`", "(Watchtower URL from `bin/fw watchtower url`)")
+      instead of emitting a full clickable URL. The reviewer can't click; they
+      have to run a command, mentally concatenate, and paste — multiplied across
+      every path the AC asks them to open.
+
+      Gates (all must hold per AC):
+        1. AC sits under `### Human` subhead (Agent ACs and `## Verification`
+           legitimately reference paths and must not trip)
+        2. AC body OR its trailing Steps/Expected/If-not lines contain one of
+           the three named homework patterns:
+             - `URL from `bin/fw watchtower url``
+             - `base from `bin/fw watchtower url``
+             - `(Watchtower URL from`
+        3. NO author opt-out marker present
+           (`<!-- review-link-homework-ok: ... -->`,
+            `<!-- meta: review-link-homework-discussed -->`, or text saying
+           "documents the homework pattern" — for the documentation-meta task
+           class that necessarily quotes the literal strings: T-2138 RCA,
+           T-2139 gate-build, T-2140 catalogue, T-2030 origin)
+
+      Class lineage:
+        T-2030  — origin inception (wrong-URL class: /appearance vs /settings/appearance)
+        T-2050  — Candidate C build (advisory app.url_map validation; left
+                  absence-of-URL class unhandled, CTL-027)
+        T-2109  — recurrence that prompted the RCA
+        T-2138  — RCA + 5 candidate shapes + Dialogue Log
+        T-2139  — V1 keystone: transition-time blocking gate (`bin/fw task review`)
+        T-2140  — V2 companion: THIS detector (catch-before-handoff backstop)
+
+      Why this is a structural backstop, not a redundancy: T-2139 fires at
+      handoff transition (when the agent runs `bin/fw task review T-XXX`).
+      This detector fires DURING pre-completion review (`bin/fw reviewer
+      T-XXX`) so the agent self-corrects BEFORE handoff. Same shape as the
+      author-time + reviewer-time pair on the audience-mismatch (T-2147) and
+      defer-as-hedge (T-2145) detectors shipped earlier in arc-008.
+
+      Origin diagnosis: docs/reports/T-2138-review-handoff-author-time-gap.md
+      and docs/reports/T-2140-corpus-walk.md (this detector's corpus walk).
+
+      Override: `fw reviewer override add T-XXX --pattern review-link-homework
+      [--ac N] --reason "..." --ttl 90` for any legitimate exceptions.
+    examples_positive:
+      - "Human AC Steps: 'Open each of these (Watchtower URL from `bin/fw watchtower url`): - /bvp - /approvals' (homework, 0 clickable URLs)"
+      - "Human AC: 'base from `bin/fw watchtower url`' + bullets of bare paths"
+    examples_negative:
+      - "Human AC Steps: 'Open http://192.168.10.107:3000/bvp' (full URL, clickable)"
+      - "Agent AC referencing `/bvp` path (not a Human AC — out of scope)"
+      - "`## Verification` block with `curl -sf \"$(bin/fw watchtower url)/bvp\"` (legitimate shell, not a human-readable Step)"
+      - "Task body containing the literal pattern but with `<!-- review-link-homework-ok: this task documents the pattern -->` opt-out marker"
+
+  - id: AC-verify-mismatch
+    name: "Checked AC names a file path the verification never touches"
+    detection_confidence: heuristic
+    lie_severity: narrow
+    detector_ref: "lib.reviewer.static_scan:detect_ac_verify_mismatch"
+    description: >
+      A checked Agent AC mentions a specific source file path with a code
+      extension (.py, .sh, .yaml, etc.), but no verification line references
+      that path. Suggests the AC was ticked without mechanical proof of the
+      file's existence/correctness.
+      Conservative — only fires when path is explicitly named in AC body and
+      not in any non-comment verification line. False-positive risk: aspirational
+      paths in long AC narratives.
+    examples_positive:
+      - "AC: 'lib/x/foo.py exists' (checked) + Verification: no reference to lib/x/foo.py"
+    examples_negative:
+      - "AC: 'lib/x/foo.py exists' (checked) + Verification: 'test -f lib/x/foo.py'"
+
+# Verdict thresholds (v1.0):
+#   any pattern with lie_severity in {complete, severe} fires → FAIL
+#   any pattern with lie_severity in {partial, narrow}        → CONCERN
+#   any pattern with lie_severity = staleness                 → CONCERN
+#   no patterns fire                                          → PASS
+#
+# v1.1+ adds task-level risk/blast-radius modulation via action-matrix.yaml.
+verdict_thresholds:
+  fail_on_severities: [complete, severe]
+  concern_on_severities: [partial, narrow, staleness]
+  pass_when_no_findings: true

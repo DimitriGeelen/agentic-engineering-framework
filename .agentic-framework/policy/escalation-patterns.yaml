@@ -1,0 +1,88 @@
+# Layer 1 escalation patterns (T-1443 v1.1)
+#
+# Mechanical triggers — when ANY trigger matches, the reviewer recommends
+# human signoff regardless of anti-pattern findings. This is the "safety-net"
+# layer for high-risk / destructive / external-impact tasks.
+#
+# Layer 2 (frontmatter `risk` / `human_signoff` declarations) overlays this
+# at task-creation time. Layer 3 (audit cron) re-checks at idle (v1.2+).
+#
+# v1.1 ships the seed catalogue; v2.0+ adds learned triggers from the
+# feedback stream override events.
+#
+# Schema:
+#   triggers[]:
+#     id: snake-case identifier
+#     name: human-readable
+#     match:
+#       - kind: ac_text | verification_text | task_metadata
+#         pattern: regex (case-insensitive unless ^^ marker present)
+#         description: what this matches
+#     reason: why this triggers human signoff
+#     severity: low | medium | high
+
+schema_version: 1
+catalogue_version: "v1.1-seed"
+policy_origin: T-1443
+
+triggers:
+  - id: destructive-action
+    name: "Destructive operation in verification or AC"
+    severity: high
+    reason: >
+      Any task whose verification or AC text references rm -rf, DROP TABLE,
+      git push --force, git reset --hard, kill -9, or destroying production
+      data must be reviewed by a human regardless of detector verdict.
+    match:
+      - kind: verification_text
+        pattern: '\b(rm\s+-[rfRF]+|DROP\s+(TABLE|DATABASE|SCHEMA)|git\s+(push\s+(--force|-f)|reset\s+--hard|filter-branch|filter-repo))\b'
+        description: destructive shell or SQL operation
+      - kind: ac_text
+        pattern: '\b(force[- ]push|hard[- ]reset|drop[- ](table|db)|destroy|wipe|purge\s+production)\b'
+        description: destructive language in AC
+
+  - id: external-publish
+    name: "External publish or release"
+    severity: high
+    reason: >
+      Any task that publishes to a registry, releases a package, deploys to
+      production, or sends external communications has irreversible blast
+      radius and requires explicit human signoff.
+    match:
+      - kind: verification_text
+        pattern: '\b(npm\s+publish|cargo\s+publish|pypi|twine\s+upload|gh\s+release|brew\s+(tap|install)|docker\s+push|kubectl\s+apply.*prod|terraform\s+apply.*prod|ansible-playbook.*prod)\b'
+        description: publish/release/deploy command in verification
+      - kind: ac_text
+        pattern: '\b(publish(ed)?\s+to\s+(npm|pypi|crates|brew)|release(d)?\s+to\s+production|merg(e|ed)\s+to\s+(main|master|production)|deploy(ed)?\s+to\s+prod|send.*email\s+to\s+users|broadcast)\b'
+        description: external publish/release/broadcast in AC
+
+  - id: cross-project-blast
+    name: "Cross-project or cross-repo change"
+    severity: medium
+    reason: >
+      Changes affecting multiple consumer projects or external repositories
+      have outsized blast radius. Vendored framework changes propagate to all
+      consumers on next upgrade — the reviewer cannot evidence that downstream
+      impact is acceptable; only the human owning those consumers can.
+    match:
+      - kind: ac_text
+        pattern: '\b(consumer\s+project|all\s+consumers|vendored\s+install|cross[- ](repo|project)|fleet[- ]wide|all\s+(machines|hosts|nodes))\b'
+        description: cross-project / cross-repo / fleet language
+      - kind: verification_text
+        pattern: '\bfor\s+\w+\s+in.*\.framework|fleet[- ]doctor|termlink\s+remote\s+\w+\s+--all\b'
+        description: looping over multiple projects in verification
+
+  - id: secret-handling
+    name: "Secret or credential changes"
+    severity: high
+    reason: >
+      Tasks touching secrets, API keys, TLS certificates, or auth credentials
+      need human signoff because automated misroutes can expose credentials
+      and the reviewer cannot evidence the absence of leakage.
+    match:
+      - kind: verification_text
+        pattern: '\b(infisical|vault\s+(read|write)|kubectl\s+create\s+secret|openssl\s+(req|x509|genpkey)|gpg\s+(--gen-key|--export-secret))\b'
+        description: secret tooling in verification
+      - kind: ac_text
+        pattern: '\b(rotate\s+(secret|cert|key|token)|provision\s+credentials?|api\s+key|tls\s+cert|new\s+root\s+ca)\b'
+        description: credential rotation/provisioning language
