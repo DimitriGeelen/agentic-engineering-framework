@@ -2269,3 +2269,18 @@ concerns:
   status: open
   created: 2026-07-02
   related_tasks: [T-2416, T-2501, T-2054, T-2462, T-650]
+
+# T-100194 — persistent working branch forks from origin/master undetected (bidirectional divergence blind spot)
+- id: OBS-090
+  type: structural-gap
+  severity: high
+  surface: lib/branch-hygiene.sh (fw_branch_divergence, behind-only trigger) + fw integrate (one-way land) + no doctor fork WARN
+  detected_in: T-100194 / S-2026-0705 (go-live merge exploded into 100+ conflicts)
+  symptom: "Host working branch t2416-fw-safe-mode-hook-timing and origin/master forked (+199 / +287 commits past merge-base dde2265) undetected across many sessions. Operator's go-live 'git merge origin/master' produced 100+ conflicts instead of a fast-forward and left the repo in a broken mid-merge state (git merge --abort then failed on index inconsistency). Unique work on both sides: host-only tests/unit/test_audit_emit_tasks.bats + test_task_cache_t100140.py (0 commits on origin/master); origin/master-only govd feature (0 occurrences on HEAD)."
+  root_cause: "Framework mechanises only ONE direction — landing work TO the trunk via one-way 'fw integrate run master --push' from throwaway worktrees — while the persistent host session stays on its branch and only receives task-file syncs + handover commits. Nothing pulls origin/master back into the branch, and no detector distinguishes a bidirectional FORK (ahead>0 AND behind>threshold) from a mere strand-behind. fw_branch_divergence computes both ahead and behind but only 'behind > FW_BRANCH_BEHIND_WARN' triggers the nudge; the recommended remedy (fw integrate, one-way) cannot reconcile a fork. Recursive irony: the entire branch-hygiene rail (lib/branch-hygiene.sh, T-100144 handover nudge) landed on origin/master ONLY and was never merged back into the host branch — the merge-back detector was itself stranded by the merge-back gap it was built to close."
+  prevention: "T-100195 Leg 1 (ships): fw doctor WARN when BOTH origin/master..HEAD > 0 AND HEAD..origin/master > threshold (bidirectional fork), worded distinctly from behind-only ('forked — needs merge-back or reset, not fw integrate'); bats coverage forked/behind/up-to-date. T-100195 Leg 2 (may spin out): reconciling safe go-live path (fw integrate auto-merge-back, or fw go-live verb routing a forked branch to T-2473 union resolver / explicit reset). Meta-lesson: a detection rail must live on the branch it polices."
+  blast_radius: framework-wide (any long-lived working branch that publishes to master via fw integrate)
+  observed: 2026-07-05
+  status: open
+  created: 2026-07-05
+  related_tasks: [T-100194, T-100195, T-100143, T-100144, T-2473, T-100139]
