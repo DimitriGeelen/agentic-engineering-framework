@@ -157,8 +157,13 @@ for part in parts[:-1]:
 
 current[parts[-1]] = value
 
-with open(yaml_file, 'w') as f:
+# T-100191: same-dir temp + os.replace — a kill mid-dump must not truncate
+# the live config (L-493 non-atomic-YAML-write class).
+import os
+tmp_path = yaml_file + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.dump(data, f)
+os.replace(tmp_path, yaml_file)
 
 print(f"Set {key} = {value}")
 

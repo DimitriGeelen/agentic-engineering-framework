@@ -352,9 +352,12 @@ if apply_mode and (auto_mutators or auto_readonly):
     )
     header_lines.append(stamp)
     body = yaml.safe_dump(baseline, default_flow_style=False, sort_keys=False)
-    with open(baseline_path, 'w') as f:
+    # T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+    tmp_path = baseline_path + '.tmp'
+    with open(tmp_path, 'w') as f:
         f.write(''.join(header_lines))
         f.write(body)
+    os.replace(tmp_path, baseline_path)
     apply_result = {
         'applied_mutators': auto_mutators,
         'applied_readonly': auto_readonly,
@@ -505,8 +508,11 @@ result = {
     'framework_findings': framework_findings,
 }
 
-with open(latest_path, 'w') as f:
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_path = latest_path + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.safe_dump(result, f, default_flow_style=False, sort_keys=False)
+os.replace(tmp_path, latest_path)
 
 print(f"=== orchestrator-mcp-scan ({status}) ===")
 print(f"Tools: {len(current_tools)} (baseline {baseline['baseline_count']})")

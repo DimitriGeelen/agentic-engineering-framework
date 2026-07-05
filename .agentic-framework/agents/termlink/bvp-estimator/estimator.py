@@ -84,6 +84,14 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
+def _atomic_write_text(path: Path, text: str) -> None:
+    """T-100191: same-dir temp + os.replace — a kill mid-write must not truncate
+    task frontmatter (L-493 non-atomic-YAML-write class)."""
+    tmp = Path(str(path) + ".tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
 def _rubric_sha() -> str:
     """Module-level cache: rubric SHA is computed once per process (D4
     reusable-state — AC says preload, not per-task)."""
@@ -2442,7 +2450,7 @@ def write_proposed(task_path: Path, scores: dict[str, int],
     new_text = f"---\n{new_fm_text}\n---\n{body_text}"
     if dry_run:
         return False, "dry-run"
-    task_path.write_text(new_text)
+    _atomic_write_text(task_path, new_text)
     return True, "wrote"
 
 
@@ -2647,7 +2655,7 @@ def write_proposed_cost(task_path: Path, cost_estimate: dict,
     new_text = f"---\n{new_fm_text}\n---\n{body_text}"
     if dry_run:
         return False, "dry-run"
-    task_path.write_text(new_text)
+    _atomic_write_text(task_path, new_text)
     return True, "wrote"
 
 
@@ -2748,7 +2756,7 @@ def _clear_unscored_flag(task_path: Path) -> bool:
         new_fm_text = buf.getvalue().rstrip("\n")
     else:
         new_fm_text = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False).rstrip("\n")
-    task_path.write_text(f"---\n{new_fm_text}\n---\n{body_text}")
+    _atomic_write_text(task_path, f"---\n{new_fm_text}\n---\n{body_text}")
     return True
 
 
@@ -2776,7 +2784,7 @@ def _set_unscored_flag(task_path: Path) -> bool:
         new_fm_text = buf.getvalue().rstrip("\n")
     else:
         new_fm_text = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False).rstrip("\n")
-    task_path.write_text(f"---\n{new_fm_text}\n---\n{body_text}")
+    _atomic_write_text(task_path, f"---\n{new_fm_text}\n---\n{body_text}")
     return True
 
 

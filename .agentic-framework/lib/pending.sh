@@ -108,6 +108,7 @@ EOF
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
     python3 - "$PENDING_FILE" "$command" "$reason" "$task" "${host:-}" "$agent" "$timestamp" <<'PYPEND'
+import os
 import sys
 import yaml
 
@@ -143,8 +144,11 @@ entries.append({
 })
 data['pending_updates'] = entries
 
-with open(pending_file, 'w') as f:
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_path = pending_file + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+os.replace(tmp_path, pending_file)
 
 print(next_id)
 PYPEND
@@ -228,6 +232,7 @@ do_pending_resolve() {
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
     python3 - "$PENDING_FILE" "$entry_id" "$note" "$timestamp" <<'PYRESOLVE'
+import os
 import sys
 import yaml
 
@@ -252,8 +257,11 @@ if not found:
     raise SystemExit(1)
 
 data['pending_updates'] = entries
-with open(pending_file, 'w') as f:
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_path = pending_file + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+os.replace(tmp_path, pending_file)
 
 print(f"Resolved: {entry_id}")
 PYRESOLVE

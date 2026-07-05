@@ -309,8 +309,11 @@ elif subcmd.startswith('L-') or subcmd.startswith('PL-'):
     # Append to practices file
     practices.append(new_practice)
     p_data['practices'] = practices
-    with open(practices_file, 'w') as f:
+    # T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+    tmp_path = practices_file + '.tmp'
+    with open(tmp_path, 'w') as f:
         yaml.dump(p_data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    os.replace(tmp_path, practices_file)
 
     print(f'{GREEN}=== Learning Promoted ==={NC}')
     print(f'  {learning_id} → {new_id}: {name}')

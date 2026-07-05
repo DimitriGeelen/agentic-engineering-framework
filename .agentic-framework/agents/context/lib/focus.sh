@@ -47,7 +47,7 @@ do_focus() {
 
         # Update focus.yaml with task + session stamp (T-560)
         python3 -c "
-import yaml, sys
+import yaml, sys, os
 focus_file = '$focus_file'
 task_id = '$task_id'
 session_id = '${current_session_id:-unknown}'
@@ -70,10 +70,13 @@ for k, v in defaults.items():
         data[k] = v
 data['current_task'] = task_id
 data['focus_session'] = session_id
-with open(focus_file, 'w') as f:
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_path = focus_file + '.tmp'
+with open(tmp_path, 'w') as f:
     f.write('# Working Memory - Current Focus\n')
     f.write(f'# Session: {session_id}\n\n')
     yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+os.replace(tmp_path, focus_file)
 " 2>/dev/null || {
             # Fallback if Python fails
             _sed_i "s/^current_task:.*/current_task: $task_id/" "$focus_file"
