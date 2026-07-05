@@ -89,5 +89,7 @@ bin/fw audit 2>&1 | grep -q "CTL-029: T-2221 has all Agent ACs ticked but status
   1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
      - evidence: `bin/fw audit 2>&1 | grep -q "CTL-029: T-2221 has all Agent ACs ticked but status='started-work' — completable, not closed" && exit 1 || exit 0`
 
+## Updates
+
 ### 2026-07-04T00:26:23Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

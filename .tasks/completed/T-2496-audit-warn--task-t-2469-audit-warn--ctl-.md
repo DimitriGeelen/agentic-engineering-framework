@@ -5,10 +5,10 @@ name: "Audit WARN — Task T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md mi
 description: >
   Audit WARN — Task T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md missing Update...
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-02T20:09:48Z
-last_update: '2026-07-02T20:15:07Z'
-date_finished:
+last_update: 2026-07-05T00:17:50Z
+date_finished: 2026-07-05T00:17:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -72,14 +72,14 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Audit WARN (2026-07-03): `.tasks/completed/T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md` is missing its `## Updates` section heading — the status-update writer appended a `### … status-update` entry directly after `## Reviewer Verdict` without the parent heading, so the audit's section-structure check flags the file. Archival hygiene fix: insert the `## Updates` heading above the orphaned entries.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] T-2469's completed task file has a `## Updates` heading preceding its status-update entries
+- [x] Audit no longer flags "T-2469 … missing Updates section" (grep the fixed file for the heading; a full audit run confirms on next cron)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,36 +114,8 @@ cost_estimate_proposed:
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q "^## Updates" .tasks/completed/T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md
+grep -A2 "^## Updates" .tasks/completed/T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md > /tmp/.t2496-upd && grep -q "status-update" /tmp/.t2496-upd
 
 ## RCA
 
@@ -212,3 +184,15 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2496-audit-warn--task-t-2469-audit-warn--ctl-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-08ea850d
+- **Timestamp:** 2026-07-05T00:17:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-05T00:17:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
