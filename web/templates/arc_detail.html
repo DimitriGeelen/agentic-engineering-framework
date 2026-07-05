@@ -427,7 +427,18 @@
             (Framework-side dispatch / audit / handover paths exercise the substrate.)</li>
     </ol>
 </div>
+{# T-2349 (T-2347a slice A1): Watchtower close form is the primary affordance;
+   CLI moves into a collapsed fallback for headless contexts (§Arc Action Handoffs). #}
 <p>When you can answer all three with evidence, close the arc:</p>
+<p>
+    <a href="/arcs/{{ arc_slug }}/close" class="close-arc-button"
+       style="display: inline-block; padding: 0.55rem 1.2rem; background: #065f46; color: #fff; border-radius: 6px; font-weight: 600; text-decoration: none;">
+        Close this arc →
+    </a>
+    <span class="muted" style="margin-left: 0.6rem;">(guided form — demo evidence, decision, §ACD gates)</span>
+</p>
+<details class="close-arc-cli-fallback">
+    <summary class="muted">CLI fallback (headless / no-Watchtower contexts)</summary>
 <pre><code>cd {{ project_root }} && bin/fw arc close {{ arc_id }} \
     --demo &lt;path-to-wire-evidence&gt; \
     --decision "&lt;success|partial|failed|cancelled&gt; — &lt;one-line summary&gt;"</code></pre>
@@ -446,6 +457,7 @@
     human-typing-into-agent-session), <code>--from-watchtower</code> (used by
     Flask backend when Watchtower closes the arc on the human's behalf).
 </p>
+</details>
 {% if arc.demo_evidence %}
 <p class="muted"><small><strong>Latest demo on file:</strong> <code>{{ arc.demo_evidence }}</code> — preserved across any aborted close attempts.</small></p>
 {% endif %}
