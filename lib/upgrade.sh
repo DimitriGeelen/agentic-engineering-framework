@@ -279,7 +279,10 @@ _self_vendor_policy() {
     # is absent in fresh vendored copies. The two original flat-list entries
     # (value-drivers.yaml, bvp-scoring-rubric.md) don't need mkdir; the guard
     # is harmless for them.
-    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml; do
+    # T-2329 (termlink): anti-patterns.yaml + escalation-patterns.yaml are the two
+    # catalogues static_scan.py loads — omitting them left the reviewer's inputs
+    # out of the vendored mirror (reviewer silently disabled in consumers).
+    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml; do
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue
