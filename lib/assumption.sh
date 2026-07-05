@@ -95,7 +95,7 @@ do_assumption_add() {
 
     # Add assumption via Python
     python3 - "$ASSUMPTIONS_FILE" "$statement" "$task" "$timestamp" << 'PYADD'
-import sys, yaml
+import os, sys, yaml
 
 assumptions_file, statement, task, timestamp = sys.argv[1:5]
 
@@ -131,8 +131,11 @@ assumptions.append({
 
 data['assumptions'] = assumptions
 
-with open(assumptions_file, 'w') as f:
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_path = assumptions_file + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+os.replace(tmp_path, assumptions_file)
 
 print(next_id)
 PYADD
@@ -190,7 +193,7 @@ do_assumption_update() {
 
     # Update via Python
     python3 - "$ASSUMPTIONS_FILE" "$assumption_id" "$new_status" "$evidence" "$timestamp" << 'PYUPDATE'
-import sys, yaml
+import os, sys, yaml
 
 assumptions_file, assumption_id, new_status, evidence, timestamp = sys.argv[1:6]
 
@@ -212,8 +215,11 @@ if not found:
     print(f"ERROR: {assumption_id} not found", file=sys.stderr)
     sys.exit(1)
 
-with open(assumptions_file, 'w') as f:
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_path = assumptions_file + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+os.replace(tmp_path, assumptions_file)
 
 print(f"Updated: {assumption_id} -> {new_status}")
 PYUPDATE
@@ -240,7 +246,7 @@ do_assumption_list() {
     fi
 
     python3 - "$ASSUMPTIONS_FILE" "$status_filter" << 'PYLIST'
-import sys, yaml
+import os, sys, yaml
 
 assumptions_file, status_filter = sys.argv[1:3]
 

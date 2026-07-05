@@ -289,9 +289,12 @@ def generate_report(learnings_path, patterns_path, threshold, output_path):
     report["recommendations"] = recs
 
     # Write report
+    # T-100191: same-dir temp + os.replace — atomic write (L-493 class)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, "w") as f:
+    tmp_path = output_path + ".tmp"
+    with open(tmp_path, "w") as f:
         yaml.dump(report, f, default_flow_style=False, sort_keys=False, allow_unicode=True, width=120)
+    os.replace(tmp_path, output_path)
 
     return report
 
@@ -348,9 +351,13 @@ def apply_report(report_path, no_backup=False):
     data["learnings"] = learnings
     # Preserve the file header comment
     header = "# Project Memory - Learnings\n# Lessons learned from completed tasks.\n# Used by agents to improve future work.\n\n"
-    with open(learnings_path, "w") as f:
+    # T-100191: same-dir temp + os.replace — a kill mid-dump must not truncate
+    # learnings.yaml (L-493 non-atomic-YAML-write class).
+    tmp_path = learnings_path + ".tmp"
+    with open(tmp_path, "w") as f:
         f.write(header)
         yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, width=120)
+    os.replace(tmp_path, learnings_path)
 
     print(f"Applied: removed {removed_count} duplicate learnings (kept richest from each cluster)")
     print(f"Remaining: {len(learnings)} learnings")

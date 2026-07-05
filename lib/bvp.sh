@@ -62,6 +62,14 @@ except ImportError:
     _HAS_RUAMEL = False
 
 
+def _atomic_write_text(path, text):
+    """T-100191: same-dir temp + os.replace — a kill mid-write must not truncate
+    durable state (L-493 non-atomic-YAML-write class)."""
+    tmp = Path(str(path) + '.tmp')
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
 def _str_safe_load(text):
     """PyYAML safe_load with the implicit timestamp resolver removed, so unquoted
     ISO `2026-06-02T00:00:00Z` datetimes round-trip as strings instead of being
@@ -143,7 +151,7 @@ def history_append(entry):
     if 'entries' not in data:
         data['entries'] = []
     data['entries'].append(entry)
-    HISTORY_PATH.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+    _atomic_write_text(HISTORY_PATH, yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
 
 
 # ---------------------------------------------------------------- policy load
@@ -570,10 +578,12 @@ def cmd_arcs():
 def _save_policy_preserving(policy_path, data):
     """Write policy YAML back to disk, preserving comments if ruamel available."""
     if _HAS_RUAMEL:
-        with open(policy_path, 'w') as f:
-            _ruamel_yaml.dump(data, f)
+        from io import StringIO
+        buf = StringIO()
+        _ruamel_yaml.dump(data, buf)
+        _atomic_write_text(policy_path, buf.getvalue())
     else:
-        policy_path.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+        _atomic_write_text(policy_path, yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
 
 
 def _load_policy_preserving():
@@ -888,7 +898,7 @@ def cmd_confirm(args):
         new_fm_text = yaml.safe_dump(fm, sort_keys=False, default_flow_style=False).rstrip()
 
     new_body = raw[:m.start(1)] + new_fm_text + raw[m.end(1):]
-    task_path.write_text(new_body)
+    _atomic_write_text(task_path, new_body)
 
     print(f"OK: confirmed bvp_scores for {task_id}")
     print(f"  Scores: {confirmed}")
@@ -1116,7 +1126,7 @@ def _auto_promote_log_event(event):
     if 'entries' not in data:
         data['entries'] = []
     data['entries'].append(event)
-    AUTO_PROMOTE_LOG.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+    _atomic_write_text(AUTO_PROMOTE_LOG, yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
 
 
 def _auto_promote_set_enabled(value, rationale, mechanism_args):
@@ -1128,11 +1138,11 @@ def _auto_promote_set_enabled(value, rationale, mechanism_args):
         from io import StringIO
         buf = StringIO()
         _ruamel_yaml.dump(data, buf)
-        policy_path.write_text(buf.getvalue())
+        _atomic_write_text(policy_path, buf.getvalue())
     else:
         data = yaml.safe_load(policy_path.read_text())
         data['auto_promote']['enabled'] = value
-        policy_path.write_text(yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
+        _atomic_write_text(policy_path, yaml.safe_dump(data, sort_keys=False, default_flow_style=False))
 
 
 def _auto_promote_file_review_reminder():

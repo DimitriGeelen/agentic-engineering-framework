@@ -605,8 +605,12 @@ envelope = {
 }
 
 out_path = os.environ["OUT_PATH"]
-with open(out_path, "w") as f:
+# T-100191: same-dir temp + os.replace — inbox pollers must never see a
+# half-written envelope (L-493 class; atomic create, not just rewrite).
+tmp_path = out_path + ".tmp"
+with open(tmp_path, "w") as f:
     yaml.safe_dump(envelope, f, default_flow_style=False, allow_unicode=True, sort_keys=False)
+os.replace(tmp_path, out_path)
 
 # Post-write guard (P-002 recommendation #3): re-load and verify shape.
 with open(out_path) as f:

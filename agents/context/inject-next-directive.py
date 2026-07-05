@@ -28,6 +28,7 @@ Tests: tests/unit/test_inject_next_directive.py
 """
 
 import argparse
+import os
 import re
 import sys
 from datetime import datetime, timedelta, timezone
@@ -161,11 +162,16 @@ def resolve_task_blast_radius(project_root, task_id):
 
 
 def write_state(path, state):
-    """Write the continuous-mode unified file. Silent on failure."""
+    """Write the continuous-mode unified file. Silent on failure.
+
+    T-100191: same-dir temp + os.replace — a kill mid-dump must not truncate
+    the live state file (L-493 non-atomic-YAML-write class)."""
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("w") as f:
+        tmp = path.with_name(path.name + ".tmp")
+        with tmp.open("w") as f:
             yaml.safe_dump(state, f, default_flow_style=False, sort_keys=False)
+        os.replace(tmp, path)
     except Exception:
         pass
 

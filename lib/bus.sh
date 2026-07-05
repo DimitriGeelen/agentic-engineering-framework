@@ -195,8 +195,13 @@ if payload_ref:
 elif payload_inline:
     envelope['payload'] = payload_inline
 
-with open(os.environ['BUS_RESULT_FILE'], 'w') as f:
+# T-100191: same-dir temp + os.replace — readers (manifest/read) must never
+# see a half-written envelope (L-493 class; atomic create, not just rewrite).
+result_file = os.environ['BUS_RESULT_FILE']
+tmp_path = result_file + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.dump(envelope, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+os.replace(tmp_path, result_file)
 PYEOF
 
     # shellcheck disable=SC2181 # $? needed — exit code from heredoc Python block above

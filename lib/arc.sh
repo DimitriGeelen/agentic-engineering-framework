@@ -1236,7 +1236,7 @@ for sd in (d.get('scoped_drivers') or []):
 
     # Append + flip-if-draft via python (preserves YAML structure).
     python3 - "$f" "$name" "$w" "$rationale" <<'PY'
-import sys, datetime
+import os, sys, datetime
 try:
     from ruamel.yaml import YAML
     yaml_r = YAML(); yaml_r.preserve_quotes = True; yaml_r.indent(mapping=2, sequence=4, offset=2)
@@ -1272,10 +1272,13 @@ if len(new_proposed) < len(proposed):
 if data.get('status') == 'draft':
     data['status'] = 'in-progress'
 
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_fn = fn + '.tmp'
 if HAS_RUAMEL:
-    with open(fn, 'w') as fh: yaml_r.dump(data, fh)
+    with open(tmp_fn, 'w') as fh: yaml_r.dump(data, fh)
 else:
-    with open(fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+    with open(tmp_fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+os.replace(tmp_fn, fn)
 PY
 
     echo "OK: approved scoped driver '$name' (weight=$w) on arc '$id'."
@@ -1364,7 +1367,7 @@ else:
     fi
 
     python3 - "$f" "$name" <<'PY'
-import sys, datetime
+import os, sys, datetime
 try:
     from ruamel.yaml import YAML
     yaml_r = YAML(); yaml_r.preserve_quotes = True; yaml_r.indent(mapping=2, sequence=4, offset=2)
@@ -1383,10 +1386,13 @@ sd = data.get('scoped_drivers') or []
 sd2 = [x for x in sd if x.get('name') != name]
 data['scoped_drivers'] = sd2
 
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_fn = fn + '.tmp'
 if HAS_RUAMEL:
-    with open(fn, 'w') as fh: yaml_r.dump(data, fh)
+    with open(tmp_fn, 'w') as fh: yaml_r.dump(data, fh)
 else:
-    with open(fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+    with open(tmp_fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+os.replace(tmp_fn, fn)
 PY
 
     # Audit row to the same bypass log used by approve-driver --none (single forensic surface).
@@ -1502,7 +1508,7 @@ PY
 )
 
     python3 - "$f" "$name" "$weight" <<'PY'
-import sys
+import os, sys
 try:
     from ruamel.yaml import YAML
     yaml_r = YAML(); yaml_r.preserve_quotes = True; yaml_r.indent(mapping=2, sequence=4, offset=2)
@@ -1525,10 +1531,13 @@ for entry in sd:
         entry['weight'] = new_weight
         break
 
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_fn = fn + '.tmp'
 if HAS_RUAMEL:
-    with open(fn, 'w') as fh: yaml_r.dump(data, fh)
+    with open(tmp_fn, 'w') as fh: yaml_r.dump(data, fh)
 else:
-    with open(fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+    with open(tmp_fn, 'w') as fh: yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+os.replace(tmp_fn, fn)
 PY
 
     # Audit row to dedicated weight-change history.

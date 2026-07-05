@@ -253,8 +253,11 @@ try:
     else:
         data = {}
     data.setdefault('bypasses', []).append(entry)
-    with open(log_file, 'w') as f:
+    # T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+    tmp_path = log_file + '.tmp'
+    with open(tmp_path, 'w') as f:
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+    os.replace(tmp_path, log_file)
 except:
     pass
 " 2>/dev/null &
@@ -324,8 +327,11 @@ with open(f) as fh:
     data = yaml.safe_load(fh) or {}
 data['status'] = 'consumed'
 data.setdefault('response', {})['consumed_at'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
-with open(f, 'w') as fh:
+# T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+tmp_path = f + '.tmp'
+with open(tmp_path, 'w') as fh:
     yaml.dump(data, fh, default_flow_style=False, sort_keys=False)
+os.replace(tmp_path, f)
 " 2>/dev/null
 
         # Log to bypass-log for audit trail (fire-and-forget)
@@ -353,8 +359,11 @@ try:
     else:
         data = {}
     data.setdefault('bypasses', []).append(entry)
-    with open(log_file, 'w') as f:
+    # T-100191: same-dir temp + os.replace — atomic write (L-493 class)
+    tmp_path = log_file + '.tmp'
+    with open(tmp_path, 'w') as f:
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+    os.replace(tmp_path, log_file)
 except:
     pass
 " 2>/dev/null &
@@ -434,8 +443,12 @@ data = {
     'command_hash': os.environ.get('T0_HASH', ''),
     'status': 'pending',
 }
-with open(sys.argv[1], 'w') as f:
+# T-100191: same-dir temp + os.replace — atomic create; the approval consumer
+# (fw tier0 approve / Watchtower) must never read a half-written file.
+tmp_path = sys.argv[1] + '.tmp'
+with open(tmp_path, 'w') as f:
     yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+os.replace(tmp_path, sys.argv[1])
 " "$APPROVAL_YAML" 2>/dev/null || true
 
 # Push notification for Tier 0 block (T-709)
