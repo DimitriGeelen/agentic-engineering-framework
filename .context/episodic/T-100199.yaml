@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100199: audit and remediate branch/worktree hygiene process
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-05T19:15:25Z
+# ============================================================================
+
+task_id: T-100199
+task_name: "audit and remediate branch/worktree hygiene process"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-05T18:32:43Z
+completed: 2026-07-05T19:15:17Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Inventory captured in `## Findings`: exact counts of local branches, remote branches, and on-disk worktrees, with each classified (merged-into-origin/master vs live/unmerged vs orphaned worktree dir). Cross-checked against `fw_branch_hygiene` output.'
+  - 'Root-cause the accumulation: for each stale branch/worktree class, state WHY it persists (integrate cleanup not run, non-integrate landing, abandoned worktree, forked strand) — distinguish "process not followed" from "process has a gap"'
+  - 'Concrete remediation executed OR recorded as decision: delete provably-merged branches/orphaned worktrees (safe), and record the reconcile plan for any forked strand as a referenced decision (do NOT auto-resolve a fork — that''s the operator''s Tier-0 call)'
+  - 'Process verdict in `## Decisions`: is the worktree-off-origin/master flow sound (keep), or does it need a structural change (e.g. auto-prune, cleanup gate)? If a fix is warranted, spin it out with a task ID'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-05 — Process verdict: keep worktree flow, kill session-branch pattern'
+    chose: 'KEEP the worktree-off-origin/master + `fw integrate` build flow — its auto-cleanup (delete branch+worktree on FF-land) works correctly (demonstrated twice this session: the rescue worktree self-removed after landing). The problem is NOT the worktree flow.'
+    chose: 'The ROOT fix is the persistent session-branch pattern → **T-100196 option (c): the session tracks origin/master directly**. This is a Level-D ways-of-working change and remains the **operator''s structural call** (not actioned autonomously).'
+    rationale: 'every strand traces to a session branch that never merges back + a reset that orphans its commits. Dissolving the session branch removes the whole class.'
+    alternatives_rejected: ['auto-force-pruning the strands — `git cherry` cannot prove their re-derived work is landed, and they have no remote, so deletion is unproven data loss.']
+  - decision: '2026-07-05 — Remediation executed vs operator-gated'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 42 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 42
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-100199-audit-and-remediate-branchworktree-hygie.md
+generated_by: context-agent-hybrid
