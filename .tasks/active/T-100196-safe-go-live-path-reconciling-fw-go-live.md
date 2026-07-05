@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T17:29:21Z
-last_update: 2026-07-05T17:36:36Z
+last_update: 2026-07-05T19:16:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -193,14 +193,34 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-07-05 — Mechanism: session tracks origin/master directly (option c)
+- **Chose:** (c) the persistent session runs on `master` — no session branch —
+  with a lightweight `fw go-live` guard from (b) as defense-in-depth. Full design:
+  `docs/reports/T-100196-permanent-branch-hygiene-design.md`.
+- **Why:** only (c) satisfies the target invariant *"the session never holds a
+  commit that isn't on origin/master"* structurally rather than by discipline.
+  Real code already lands via worktree + `fw integrate` (gated), so the session
+  branch carries only governance state — which belongs on master anyway. The
+  session branch is pure liability: the sole source of drift (T-100194 fork,
+  T-100199 strands).
+- **Rejected:** (a) auto-merge-back and (b) go-live-guard-only — both leave a
+  session branch alive, i.e. leave the drift class alive and merely slow it.
+
+### 2026-07-05 — Slice ordering: additive tooling now, workflow flip on GO
+- **Chose:** ship Slice 2 (`fw worktree gc`) and the guard now (additive,
+  reversible, mechanism-agnostic); hold Slice 1 (flip the live session onto
+  master) and Slice 4 (Tier-0 debris prune) for explicit human GO.
+- **Why:** Slice 1 changes the operator's daily workflow and Slice 4 is
+  destructive (Tier-0) — both require authority, not just initiative
+  (§Autonomous Mode Boundaries). Slice 2/guard need neither.
+
+## Slice status
+- **Slice 2 — `fw worktree gc`:** SHIPPED. `lib/worktree.sh` (`do_worktree_gc`,
+  `_wt_work_landed` content-verify), `bin/fw worktree gc` route,
+  `tests/unit/t100196_worktree_gc.bats` (7/7 green, incl. a control test proving
+  `git cherry` gives the false "unlanded" verdict gc fixes).
+- **Slice 1 — session-on-master (keystone):** awaits human GO.
+- **Slice 4 — migrate/prune existing strands:** awaits human Tier-0 approval.
 
 ## Decision
 

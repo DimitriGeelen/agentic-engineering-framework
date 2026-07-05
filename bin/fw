@@ -3676,10 +3676,21 @@ EOF
                 ( cd "$PROJECT_ROOT" && do_worktree_create "$@" )
                 exit $?
                 ;;
+            gc)
+                # T-100196 slice 2: reclaim landed worktrees/branches by CONTENT
+                # comparison (survives fw-integrate/vendor re-derivation, which defeats
+                # git cherry). Dry-run default; --apply removes landed worktrees;
+                # branch deletes stay Tier-0 (surfaced, never self-run).
+                # shellcheck source=lib/worktree.sh
+                . "$FRAMEWORK_ROOT/lib/worktree.sh"
+                ( cd "$PROJECT_ROOT" && do_worktree_gc "$@" )
+                exit $?
+                ;;
             ""|--help|-h|help)
                 cat <<'EOF'
 fw worktree status [--json]            topology of the framework checkout (read-only)
 fw worktree create <name> [--from R]   spin up an isolated worktree in one safe step
+fw worktree gc [--apply] [--json]      reclaim landed worktrees/branches (content-verified)
 
 Reports the git-worktree topology so parallel work + merge-back is legible:
   - which branch the MAIN checkout is on, and whether merging to master goes LIVE

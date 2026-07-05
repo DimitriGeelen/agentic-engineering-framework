@@ -311,3 +311,187 @@ do_worktree_create() {
     echo "  Merge back: fw integrate run          (from inside the worktree -- T-2471)"
     return 0
 }
+
+# ── fw worktree gc (T-100196 slice 2) ────────────────────────────────────────
+# Reclaim landed worktrees + branches. The core problem (T-100199 finding):
+# `git cherry` compares patch-ids, which NEVER match after re-derivation
+# (`fw integrate` + `fw vendor self` re-commit different file sets), so it reports
+# genuinely-landed branches as unlanded and nothing can be safely pruned. gc
+# instead does a CONTENT comparison of deliverable files, which survives
+# re-derivation: if every source file a branch changed is byte-identical on
+# master, the branch's *work* is landed even though its commits never will be.
+
+# Paths that don't count as "deliverable work" for landing decisions — they are
+# vendored (re-derived), generated, or session-local governance churn, and differ
+# between branch and master even when the real work is landed. This is exactly the
+# set that defeats git cherry.
+_wt_is_ignorable_path() {
+    case "$1" in
+        .context/*|.agentic-framework/*|.fabric/*|VERSION) return 0 ;;
+        lib/ts/dist/*) return 0 ;;
+        *.budget-status|*.hook-counter|*.tool-counter|*.loop-detect.json) return 0 ;;
+    esac
+    return 1
+}
+
+# _wt_work_landed <branch> <master_ref>
+# Echoes a reason token; return: 0 = work landed, 1 = unlanded, 2 = undecidable.
+#   0 "no-deliverables"           — branch changed only ignorable paths
+#   0 "all-deliverables-on-master"— every deliverable file byte-identical on master
+#   1 "unlanded:<n>/<total>"      — n deliverable files differ from master
+#   2 "no-merge-base"             — cannot relate branch to master
+_wt_work_landed() {
+    local branch="$1" master_ref="$2"
+    local mb; mb="$(git merge-base "$branch" "$master_ref" 2>/dev/null)" || { echo "no-merge-base"; return 2; }
+    [ -n "$mb" ] || { echo "no-merge-base"; return 2; }
+
+    local -a deliverables=()
+    local f
+    while IFS= read -r f; do
+        [ -z "$f" ] && continue
+        _wt_is_ignorable_path "$f" && continue
+        deliverables+=("$f")
+    done < <(git diff --name-only "$mb" "$branch" 2>/dev/null)
+
+    if [ "${#deliverables[@]}" -eq 0 ]; then
+        echo "no-deliverables"; return 0
+    fi
+
+    local diffcount=0 bblob mblob
+    for f in "${deliverables[@]}"; do
+        bblob="$(git rev-parse "$branch:$f" 2>/dev/null || echo MISSING_B)"
+        mblob="$(git rev-parse "$master_ref:$f" 2>/dev/null || echo MISSING_M)"
+        [ "$bblob" != "$mblob" ] && diffcount=$((diffcount + 1))
+    done
+    if [ "$diffcount" -eq 0 ]; then
+        echo "all-deliverables-on-master"; return 0
+    fi
+    echo "unlanded:$diffcount/${#deliverables[@]}"; return 1
+}
+
+# do_worktree_gc [--apply] [--json]
+# Dry-run by default. Classifies every linked worktree + local branch as
+# reclaimable (work landed) / keep (unlanded) / active (current or master).
+# --apply removes reclaimable *worktrees* (git worktree remove — safe, keeps the
+# branch) and surfaces the Tier-0 `git branch -D` commands (never self-run: branch
+# deletion is Tier-0, the operator approves it).
+do_worktree_gc() {
+    local apply=0 json=0
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --apply) apply=1 ;;
+            --json)  json=1 ;;
+            -h|--help)
+                echo "usage: fw worktree gc [--apply] [--json]"
+                echo "  Reclaim landed worktrees/branches by CONTENT comparison (survives re-derivation)."
+                echo "  Dry-run default. --apply removes landed worktrees; branch deletes stay Tier-0 (surfaced)."
+                return 0 ;;
+            *) echo "worktree gc: unknown arg: $1" >&2; return 64 ;;
+        esac
+        shift
+    done
+
+    git rev-parse --git-dir >/dev/null 2>&1 || { echo "ERROR: not in a git repository" >&2; return 4; }
+    local master_ref; master_ref="$(_wt_master_ref)" || { echo "ERROR: no master/main ref found" >&2; return 4; }
+
+    local -a _WT_PATH _WT_HEAD _WT_BRANCH
+    _wt_parse
+    local main_path="${_WT_PATH[0]}"
+    local cur_top; cur_top="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+
+    # Branch -> worktree path map (a branch checked out in a linked worktree).
+    # reclaim/keep rows are "kind|branch|path|reason|has_remote".
+    local -a rows=()
+    local i br wtpath reason rc has_remote
+
+    # 1) linked worktrees
+    for i in "${!_WT_PATH[@]}"; do
+        [ "$i" = "0" ] && continue
+        wtpath="${_WT_PATH[$i]}"; br="${_WT_BRANCH[$i]}"
+        case "$br" in master|main|"(detached)") continue ;; esac
+        if reason="$(_wt_work_landed "refs/heads/$br" "$master_ref")"; then rc=0; else rc=$?; fi
+        has_remote=no
+        git rev-parse --verify --quiet "refs/remotes/origin/$br" >/dev/null 2>&1 && has_remote=yes
+        if [ "$wtpath" = "$cur_top" ]; then
+            rows+=("active|$br|$wtpath|current-worktree|$has_remote")
+        elif [ "$rc" = "0" ]; then
+            rows+=("reclaim-wt|$br|$wtpath|$reason|$has_remote")
+        else
+            rows+=("keep-wt|$br|$wtpath|$reason|$has_remote")
+        fi
+    done
+
+    # 2) local branches with no worktree (skip master/main + branches already listed)
+    local listed
+    while IFS= read -r br; do
+        [ -z "$br" ] && continue
+        case "$br" in master|main) continue ;; esac
+        listed=0
+        for i in "${!_WT_BRANCH[@]}"; do [ "${_WT_BRANCH[$i]}" = "$br" ] && listed=1 && break; done
+        [ "$listed" = "1" ] && continue
+        if reason="$(_wt_work_landed "refs/heads/$br" "$master_ref")"; then rc=0; else rc=$?; fi
+        has_remote=no
+        git rev-parse --verify --quiet "refs/remotes/origin/$br" >/dev/null 2>&1 && has_remote=yes
+        if [ "$rc" = "0" ]; then
+            rows+=("reclaim-branch|$br|-|$reason|$has_remote")
+        else
+            rows+=("keep-branch|$br|-|$reason|$has_remote")
+        fi
+    done < <(git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null)
+
+    if [ "$json" = "1" ]; then
+        printf '%s\n' "${rows[@]}" | python3 -c '
+import sys, json
+out=[]
+for line in sys.stdin:
+    line=line.rstrip("\n")
+    if not line: continue
+    kind,branch,path,reason,has_remote=line.split("|",4)
+    out.append({"kind":kind,"branch":branch,"path":(None if path=="-" else path),
+                "reason":reason,"has_remote":has_remote=="yes"})
+print(json.dumps({"master_ref":sys.argv[1] if len(sys.argv)>1 else None,"items":out},indent=2))
+' "$master_ref"
+        return 0
+    fi
+
+    # ---- human format ----
+    local n_reclaim=0 n_keep=0 r kind rbr rpath rreason rrem
+    echo "worktree gc — reclaim analysis (content-verified, survives re-derivation)"
+    echo ""
+    for r in "${rows[@]}"; do
+        IFS='|' read -r kind rbr rpath rreason rrem <<<"$r"
+        case "$kind" in
+            reclaim-wt)
+                n_reclaim=$((n_reclaim+1))
+                echo "  ✓ RECLAIM worktree  $rbr  ($rreason)"
+                echo "      $rpath"
+                if [ "$apply" = "1" ]; then
+                    if git worktree remove "$rpath" 2>/dev/null; then
+                        echo "      → removed worktree (branch kept)"
+                    elif git worktree remove --force "$rpath" 2>/dev/null; then
+                        echo "      → removed worktree --force (branch kept)"
+                    else
+                        echo "      → could NOT remove (dirty/locked?) — inspect manually" >&2
+                    fi
+                fi
+                echo "      Tier-0 to delete branch:  git branch -D $rbr   ($([ "$rrem" = yes ] && echo 'on origin — safe' || echo 'NO remote — pushed?'))"
+                ;;
+            reclaim-branch)
+                n_reclaim=$((n_reclaim+1))
+                echo "  ✓ RECLAIM branch    $rbr  ($rreason)"
+                echo "      Tier-0 to delete:  git branch -D $rbr   ($([ "$rrem" = yes ] && echo 'on origin — safe' || echo 'NO remote — push first'))"
+                ;;
+            keep-wt|keep-branch)
+                n_keep=$((n_keep+1))
+                echo "  ✗ KEEP  ${rbr}  ($rreason)$([ "$rrem" = no ] && echo '  [no remote — push before any prune]')"
+                ;;
+            active)
+                echo "  • ACTIVE (current) $rbr — skipped"
+                ;;
+        esac
+    done
+    echo ""
+    echo "Summary: $n_reclaim reclaimable, $n_keep to keep (unlanded work — push-then-triage)."
+    [ "$apply" = "0" ] && [ "$n_reclaim" -gt 0 ] && echo "Dry-run — re-run with --apply to remove reclaimable worktrees (branch deletes stay Tier-0)."
+    return 0
+}
