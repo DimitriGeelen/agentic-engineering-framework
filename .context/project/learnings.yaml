@@ -3805,3 +3805,10 @@ X'` returning empty group."
   date: 2026-06-25
   context: Added via context agent
   application: TBD
+- id: L-497
+  learning: "A branch-hygiene / merge-back detection rail must live ON the branch it polices. The T-100144 divergence nudge + lib/branch-hygiene.sh landed on origin/master only and were never merged into the long-lived host branch, so they never ran there — the merge-back detector was stranded by the merge-back gap it was built to close. Corollary caught live in T-100195/T-100199: the host session-branch also lacks the T-2462 push safe-list and T-2465 worktree-focus fixes (both origin/master-only), turning routine pushes into a governance thicket, AND the OBS-NNN concern series + this session's task files never reach master at all. Also: 'behind origin/master' cannot distinguish a bidirectional fork (ahead>threshold AND behind>threshold) from a landable lag; gate diverged-fork on BOTH directions exceeding threshold, not any-ahead. Root: the long-lived session-branch pattern accumulates divergence by design; the persistent session should track origin/master directly (T-100196 option c)."
+  source: P-001
+  task: T-100194
+  date: 2026-07-05
+  context: Rescued onto master via T-100199 (original L-489 stranded on t2416)
+  application: TBD
