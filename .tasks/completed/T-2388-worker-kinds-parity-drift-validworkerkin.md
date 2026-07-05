@@ -8,12 +8,12 @@ description: >
   between the two worker-kind definitions or a stale test after a bin/fw refactor.
   Classify drift-vs-stale-test, then fix the source-of-truth or the test.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [audit, governance, parity, dispatch]
-components: []
+components: [bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T01:02:37Z
-last_update: '2026-07-03T14:00:05Z'
-date_finished:
+last_update: 2026-07-05T00:12:40Z
+date_finished: 2026-07-05T00:12:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -109,10 +109,10 @@ a bin/fw refactor that moved/reshaped the `VALID_WORKER_KINDS` literal.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Classify (a) real drift vs (b) stale test: locate the worker-kind definition in bin/fw, compare its set to lib/resolver.py, and check git history for a bin/fw refactor that reshaped the literal
-- [ ] If real drift: reconcile to a single source of truth (the set both must share); if stale test: update the test's grep/extraction to match bin/fw's current shape
-- [ ] `bats tests/unit/worker_kinds_parity.bats` green; `fw doctor` worker-kinds parity line green
-- [ ] RCA filled; reviewer PASS
+- [x] Classify (a) real drift vs (b) stale test: locate the worker-kind definition in bin/fw, compare its set to lib/resolver.py, and check git history for a bin/fw refactor that reshaped the literal
+- [x] If real drift: reconcile to a single source of truth (the set both must share); if stale test: update the test's grep/extraction to match bin/fw's current shape
+- [x] `bats tests/unit/worker_kinds_parity.bats` green; `fw doctor` worker-kinds parity line green
+- [x] RCA filled; reviewer PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,76 +147,22 @@ a bin/fw refactor that moved/reshaped the `VALID_WORKER_KINDS` literal.
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# Origin-based checks (MAIN's branch lags origin/master where this lands).
+git show origin/master:tests/unit/worker_kinds_parity.bats > /tmp/.t2388-bats && grep -q "post-T-1946 shape" /tmp/.t2388-bats
+! grep -q "expected location in bin/fw" /tmp/.t2388-bats
+python3 lib/worker_kinds_parity.py lib > /tmp/.t2388-parity && grep -q "OK|" /tmp/.t2388-parity
+git show origin/master:lib/resolver.py > /tmp/.t2388-resolver && grep -q "VALID_WORKER_KINDS = {" /tmp/.t2388-resolver
+git show origin/master:lib/workflow_lint.py > /tmp/.t2388-lint && grep -q "VALID_WORKER_KINDS = {" /tmp/.t2388-lint
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** 2 of 7 tests in `tests/unit/worker_kinds_parity.bats` failed (background bug-hunt, session 77ac04c8): the grep for a `VALID_WORKER_KINDS = {...}` literal in `bin/fw` found nothing, and the bin/fw-vs-resolver set comparison returned empty-vs-populated.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** classification **(b) stale test** — T-1946 (commit 307aafefd) extracted bin/fw's inline worker-kinds parity heredoc to `lib/worker_kinds_parity.py` per L-332/L-408, removing the literal from bin/fw by design. The real sources are `lib/resolver.py` and `lib/workflow_lint.py` (both `{"Task", "TermLink", "pi", "ollama-loop"}`, parity module reports OK). No dispatch-correctness drift existed.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the T-1946 refactor moved the source-of-truth location but did not update the T-1735 pin tests that encoded the OLD location — the test suite was not run as part of that task's Verification (its gate covered the new module, not the sibling pins). Producer/consumer split within the test corpus: the refactor shipped, the pins lagged.
 
-## Evolution
-
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
-
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
-
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
-
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+**Prevention:** tests now pin the post-T-1946 shape explicitly (literal in workflow_lint + resolver, bin/fw delegates to the parity module) with a comment naming the refactor, so the next relocation fails with a message pointing at the delegation contract rather than a bare grep miss.
 
 ## Decisions
 
@@ -245,3 +191,19 @@ a bin/fw refactor that moved/reshaped the `VALID_WORKER_KINDS` literal.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/arc012-continuous-run-s4s5/.tasks/active/T-2388-worker-kinds-parity-drift-validworkerkin.md
 - **Context:** Initial task creation
+
+### 2026-07-04T23:58:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-914fbd33
+- **Timestamp:** 2026-07-05T00:12:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-05T00:12:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
