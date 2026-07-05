@@ -1,18 +1,18 @@
 ---
-id: T-100195
-name: "Guard trunk divergence: fw doctor WARN on host↔origin-master fork + safe go-live
-  path (not raw git merge)"
+id: T-100196
+name: "Safe go-live path: reconciling fw go-live / integrate auto-merge-back (not
+  raw git merge)"
 description: >
-  Structural prevention for T-100194 RCA. Detect bidirectional host↔origin/master
-  divergence (both branches ahead of merge-base, not just 'behind' which T-100143
-  FW_BRANCH_BEHIND_WARN already covers) and provide a go-live path that reconciles
-  safely (ff-only / union resolver / auto-merge-back after fw integrate) instead of
-  a raw 'git merge origin/master' that explodes into conflicts.
+  Leg 2 of T-100195 (RCA T-100194). Detection now WARNs on a bidirectional fork (diverged-fork).
+  This task adds the reconciling ACTION: either fw integrate auto-merges origin/master
+  back into the working branch after each landing so they never drift, or a guarded
+  fw go-live verb that ff-only-checks and routes a forked branch to the T-2473 union
+  resolver / explicit reset instead of a bare git merge origin/master.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-05T16:38:42Z
-last_update: 2026-07-05T17:18:36Z
+created: 2026-07-05T17:29:21Z
+last_update: '2026-07-05T17:30:04Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,21 +40,21 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-05T16:45:03Z'
+  - ts: '2026-07-05T17:30:03Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-05T16:45:05Z'
+  - ts: '2026-07-05T17:30:04Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 4
+      D2: 0
       D3: 2
       D4: 2
       F-RECALL: 0
@@ -64,7 +64,7 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
       (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
       (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
       audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
@@ -72,38 +72,18 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-100195: Guard trunk divergence: fw doctor WARN on host↔origin-master fork + safe go-live path (not raw git merge)
+# T-100196: Safe go-live path: reconciling fw go-live / integrate auto-merge-back (not raw git merge)
 
 ## Context
 
-Structural prevention for the divergence root-caused in **T-100194** (host branch
-`t2416` and origin/master forked 198/287 commits; go-live `git merge` exploded into
-100+ conflicts). Two independent prevention legs — this task ships the **detection**
-leg and scopes the **safe-go-live** leg (which may spin into its own build/inception
-once T-100194's RCA lands, because it involves a flow-design choice).
-
-**Leg 1 — detection (this task):** the framework already WARNs when the host branch
-is *behind* origin/master (`FW_BRANCH_BEHIND_WARN`, T-100143), but that check is
-one-directional. It stays silent when the host is *also ahead* — the exact
-divergent-fork state that made go-live explode. Add a bidirectional check: WARN when
-BOTH `git rev-list --count origin/master..HEAD > 0` AND
-`git rev-list --count HEAD..origin/master > threshold`, i.e. the trunks have forked
-rather than merely lagged.
-
-**Leg 2 — safe go-live (scoped, may spin out):** `git merge origin/master` is the
-wrong tool once divergence exists. Candidate designs (T-100194 RCA decides): (a)
-`fw integrate` auto-merges origin/master back into the host branch after each
-landing so they never drift; (b) a guarded `fw go-live` verb that detects divergence
-and routes to ff-only or the T-2473 union resolver instead of a raw merge; (c) the
-host session tracks origin/master directly and never accumulates its own trunk.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw doctor` (and/or audit) emits a WARN when the current working branch has BIDIRECTIONALLY diverged from origin/master (host ahead > threshold AND host behind > threshold) — distinct from the existing "behind" WARN; reuses the `FW_BRANCH_BEHIND_WARN` config surface via a new `diverged-fork` finding class in `fw_branch_hygiene` (doctor scan) + a `fork` line in `fw_branch_divergence` (handover). Refined "ahead ≥1" → "ahead > threshold": an unmerged branch behind master always has ≥1 unique commit, so any-ahead would mislabel every landable feature branch (Decision 1)
-- [x] The WARN message names the safe reconciliation path (not "run git merge") — the handover fork block and the doctor FORK hint both say reconcile-while-small (merge origin/master INTO the branch / reset), and explicitly say NOT to use a one-way `fw integrate` on a fork (it cannot absorb what master has)
-- [x] bats coverage: `tests/unit/t100195_diverged_fork.bats` — forked branch (ahead>t AND behind>t) → diverged-fork/fork; small-ahead behind branch → behind-threshold (no false fork); merely-behind current checkout (ahead=0) → nudge; up-to-date → neither. Existing t100143/t100144 stay green (17/17)
-- [x] Leg 2 disposition recorded in `## Decisions`: spun out as **T-100196** (safe go-live reconciling path — `fw go-live` / integrate auto-merge-back), horizon later
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -169,31 +149,21 @@ host session tracks origin/master directly and never accumulates its own trunk.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-# Landed on origin/master via fw integrate; the diverged-fork code is on the trunk.
-# (branch-hygiene.sh + the bats are origin/master-only — this branch t2416 lacks
-#  them by design; verify against the landed trunk content.)
-git show origin/master:lib/branch-hygiene.sh | grep -q "diverged-fork"
-git show origin/master:lib/branch-hygiene.sh | grep -q "^        echo \"fork ahead="
-D=$(mktemp -d); mkdir -p "$D/lib" "$D/tests/unit"; git show origin/master:lib/branch-hygiene.sh > "$D/lib/branch-hygiene.sh"; git show origin/master:tests/unit/t100195_diverged_fork.bats > "$D/tests/unit/t.bats"; bats "$D/tests/unit/t.bats" >/dev/null 2>&1; rc=$?; rm -rf "$D"; [ $rc -eq 0 ]
-
 ## RCA
 
-**Symptom:** (inherited from T-100194) a go-live `git merge origin/master` on a long-lived
-working branch produced 100+ conflicts instead of a fast-forward.
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
 
-**Root cause (of the DETECTION gap this task closes):** `fw_branch_hygiene` and
-`fw_branch_divergence` measured only the `behind` dimension. A bidirectional fork (branch
-ALSO substantially ahead) was indistinguishable from a landable strand-behind, so the one
-advisory that existed recommended a one-way `fw integrate` that cannot reconcile a fork.
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
 
-**Why structurally allowed:** no finding class separated "ahead AND behind" from "behind";
-the `ahead` count was computed (`rev-list --left-right`) but never a trigger.
-
-**Prevention (this task):** a distinct `diverged-fork` finding (both directions past
-`FW_BRANCH_BEHIND_WARN`) at the doctor + handover surfaces, worded to name the
-reconcile-while-small remedy and to warn AGAINST a bare `git merge` / one-way `fw
-integrate` on a fork. Pinned by `tests/unit/t100195_diverged_fork.bats`. The reconciling
-*action* (auto-merge-back / `fw go-live`) is Leg 2 → T-100196.
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -221,20 +191,14 @@ integrate` on a fork. Pinned by `tests/unit/t100195_diverged_fork.bats`. The rec
 
 ## Decisions
 
-### 2026-07-05 — Fork threshold: `ahead > threshold`, not `ahead ≥ 1`
-- **Chose:** classify `diverged-fork` only when BOTH `behind > FW_BRANCH_BEHIND_WARN` AND `ahead > FW_BRANCH_BEHIND_WARN`.
-- **Why:** an unmerged local branch that is behind master provably has ≥1 unique commit (otherwise its tip is an ancestor → the `merged-undeleted` class). So `ahead ≥ 1` (the original AC wording) would reclassify *every* ordinary landable feature branch as a dangerous fork — false alarms, and wrong advice ("don't use fw integrate" when integrate would land it cleanly). Gating on `ahead > threshold` isolates the genuinely dangerous case (the T-100194 199/287 explosion) where reconciliation really is non-trivial.
-- **Rejected:** `ahead ≥ 1` (AC's initial phrasing — too broad, see above); a separate `FW_BRANCH_DIVERGED_WARN` config knob (unnecessary — the shared threshold reads naturally as "substantial in both directions" and keeps one tunable).
-
-### 2026-07-05 — Build on a worktree off origin/master, land via fw integrate
-- **Chose:** implement Leg 1 in a throwaway worktree checked out from origin/master, then land via `fw integrate run master --push`.
-- **Why:** `lib/branch-hygiene.sh` and `fw_branch_divergence` live on origin/master, NOT on the host branch t2416 (that stranding is itself the T-100194 root cause). Building on t2416 would (a) lack the base code and (b) add to the very fork being fixed. Building off origin/master puts the fix where the code lives and demonstrates the correct non-diverging workflow.
-- **Rejected:** editing on t2416 directly (would deepen the fork and conflict on landing).
-
-### 2026-07-05 — Leg 2 (reconciling action) deferred to T-100196
-- **Chose:** ship detection here; spin the safe go-live *action* out as T-100196 (horizon later).
-- **Why:** early detection is the high-value prevention (forks never grow past the threshold unnoticed). The reconciling verb (`fw go-live` auto-merge-back / union-resolver routing) is a flow-design choice with its own blast radius — one deliverable per task (Task Sizing).
-- **Rejected:** implementing both legs under one task (violates one-task-one-deliverable; Leg 2 needs its own design).
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -248,11 +212,7 @@ integrate` on a fork. Pinned by `tests/unit/t100195_diverged_fork.bats`. The rec
 
 ## Updates
 
-### 2026-07-05T16:38:42Z — task-created [task-create-agent]
+### 2026-07-05T17:29:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100195-guard-trunk-divergence-fw-doctor-warn-on.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100196-safe-go-live-path-reconciling-fw-go-live.md
 - **Context:** Initial task creation
-
-### 2026-07-05T17:18:36Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
