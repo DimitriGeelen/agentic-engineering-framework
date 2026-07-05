@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100191: Sweep: atomic-write pattern for all .context YAML writers (10+ non-atomic yaml.dump
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-05T09:42:51Z
+# ============================================================================
+
+task_id: T-100191
+task_name: "Sweep: atomic-write pattern for all .context YAML writers (10+ non-atomic yaml.dump"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-05T00:21:25Z
+completed: 2026-07-05T09:42:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-05T02:21:58+02:00
+last_commit: 2026-07-05T11:37:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file atomic-write corpus sweep (census: 10 non-atomic yaml.dump sites). atomic-write sweep — 16 YAML writer files converted to same-dir temp + os.replace, corpus lint added. refresh vendored copies (atomic-write sweep)
+
+# Key outcomes
+outcomes:
+  - 'Every census site classified (convert vs exempt-with-reason) in this task''s Decisions'
+  - 'All convert-class sites write via same-dir temp + os.replace (or mv on the shell side)'
+  - 'Lint test pins the pattern corpus-wide (new truncating yaml.dump writers on durable .context state fail CI)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-05 — census classification (convert vs exempt)'
+    chose: 'convert ALL file-writing YAML dump sites — including new-file'
+    rationale: 'new-file creates are read by pollers/consumers (bus manifest,'
+    alternatives_rejected: ['exempting new-file creates as "no durable state destroyed" —']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/orchestrator-mcp-scan.sh'
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.agentic-framework/agents/context/consolidate.py'
+  - '.agentic-framework/agents/context/inject-next-directive.py'
+  - '.agentic-framework/agents/context/lib/focus.sh'
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/assumption.sh'
+  - '.agentic-framework/lib/bus.sh'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/config-file.sh'
+  - '.agentic-framework/lib/pending.sh'
+  - '.agentic-framework/lib/pickup.sh'
+  - '.agentic-framework/lib/promote.sh'
+  - 'agents/audit/orchestrator-mcp-scan.sh'
+  - 'agents/context/check-tier0.sh'
+  - 'agents/context/consolidate.py'
+  - 'agents/context/inject-next-directive.py'
+  - 'agents/context/lib/focus.sh'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - '.context/working/focus.yaml'
+  - 'lib/arc.sh'
+  - 'lib/assumption.sh'
+  - 'lib/bus.sh'
+  - 'lib/bvp.sh'
+  - 'lib/config-file.sh'
+  - 'lib/pending.sh'
+  - 'lib/pickup.sh'
+  - 'lib/promote.sh'
+  - '.tasks/active/T-100191-sweep-atomic-write-pattern-for-all-conte.md'
+  - 'tests/unit/atomic_yaml_write_lint.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-05T02:21:58"
+    action: "T-100191: file atomic-write corpus sweep (census: 10 non-atomic yaml.dump sites)"
+  - time: "2026-07-05T11:36:44"
+    action: "T-100191: atomic-write sweep — 16 YAML writer files converted to same-dir temp + os.replace, corpus lint added"
+  - time: "2026-07-05T11:37:04"
+    action: "T-100191: refresh vendored copies (atomic-write sweep)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 561 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 561
+  commits: 3
+  files_changed: 31
+  lines_added: 797
+  lines_removed: 89
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100191-sweep-atomic-write-pattern-for-all-conte.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2496: Audit WARN — Task T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md missing
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-05T00:17:59Z
+# ============================================================================
+
+task_id: T-2496
+task_name: "Audit WARN — Task T-2469-audit-warn--ctl-029-t-2221-has-all-agent.md missing"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-02T20:09:48Z
+completed: 2026-07-05T00:17:50Z
+duration_days: 3
+updates_count: 1
+first_commit: 2026-07-02T09:48:16+02:00
+last_commit: 2026-07-02T09:48:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cron job for escalation rule lifecycle
+
+# Key outcomes
+outcomes:
+  - 'T-2469''s completed task file has a `## Updates` heading preceding its status-update entries'
+  - 'Audit no longer flags "T-2469 … missing Updates section" (grep the fixed file for the heading; a full audit run confirms on next cron)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.fabric/components/tools-escalation-rule-lifecycle.yaml'
+  - '.tasks/active/T-2496-escalation-scan-cron-job-for-rule-lifecy.md'
+  - 'tools/escalation-rule-lifecycle.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-02T09:48:16"
+    action: "T-2496: cron job for escalation rule lifecycle"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3128 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 3128
+  commits: 2
+  files_changed: 14
+  lines_added: 2026
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2496-audit-warn--task-t-2469-audit-warn--ctl-.md
+generated_by: context-agent-hybrid

@@ -21496,3 +21496,129 @@ scan_id: R-7ee7fdc4
 task_id: T-100188
 payload:
   task_file: .tasks/active/T-100188-recommendation-verdict-watchtower-render.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T23:45:08Z'
+scan_id: R-1357670a
+task_id: T-100190
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T23:45:08Z'
+scan_id: R-1357670a
+task_id: T-100190
+payload:
+  task_file: .tasks/active/T-100190-auditsh-metrics-history-writer-non-atomi.md
+---
+kind: scan_emitted
+timestamp: '2026-07-04T23:53:47Z'
+scan_id: R-cc242a1e
+task_id: T-100131
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-04T23:53:47Z'
+scan_id: R-cc242a1e
+task_id: T-100131
+payload:
+  task_file: .tasks/active/T-100131-rewrite-readme-opening-with-garbage-in-n.md
+---
+kind: scan_emitted
+timestamp: '2026-07-05T00:12:41Z'
+scan_id: R-914fbd33
+task_id: T-2388
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-05T00:12:41Z'
+scan_id: R-914fbd33
+task_id: T-2388
+payload:
+  task_file: .tasks/active/T-2388-worker-kinds-parity-drift-validworkerkin.md
+---
+kind: scan_emitted
+timestamp: '2026-07-05T00:17:52Z'
+scan_id: R-08ea850d
+task_id: T-2496
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-05T00:17:52Z'
+scan_id: R-08ea850d
+task_id: T-2496
+payload:
+  task_file: .tasks/active/T-2496-audit-warn--task-t-2469-audit-warn--ctl-.md
+---
+kind: scan_emitted
+timestamp: '2026-07-05T00:30:21Z'
+scan_id: R-d41341c0
+task_id: T-2349
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-05T00:30:21Z'
+scan_id: R-d41341c0
+task_id: T-2349
+payload:
+  task_file: .tasks/active/T-2349-t-2347a-slice-a1--arcdetailhtml-close-ar.md
+---
+kind: scan_emitted
+timestamp: '2026-07-05T09:42:35Z'
+scan_id: R-3e4608a4
+task_id: T-100191
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-05T09:42:35Z'
+scan_id: R-3e4608a4
+task_id: T-100191
+payload:
+  task_file: .tasks/active/T-100191-sweep-atomic-write-pattern-for-all-conte.md
+---
+kind: scan_emitted
+timestamp: '2026-07-05T09:42:42Z'
+scan_id: R-9796bb40
+task_id: T-100191
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-07-05T09:42:42Z'
+scan_id: R-9796bb40
+task_id: T-100191
+payload:
+  task_file: .tasks/active/T-100191-sweep-atomic-write-pattern-for-all-conte.md

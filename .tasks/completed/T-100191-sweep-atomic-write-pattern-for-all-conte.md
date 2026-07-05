@@ -7,12 +7,12 @@ description: >
   writes to same-dir temp + os.replace (or register a gap if a site is append-only
   safe)
 
-status: captured
+status: work-completed
 workflow_type: refactor
 owner: agent
-horizon: next
+horizon: null
 tags: []
-components: []
+components: [agents/audit/orchestrator-mcp-scan.sh, agents/context/check-tier0.sh, agents/context/inject-next-directive.py, agents/context/lib/focus.sh, agents/termlink/bvp-estimator/estimator.py, lib/arc.sh, lib/assumption.sh, lib/bus.sh, lib/bvp.sh, lib/config-file.sh, lib/pending.sh, lib/pickup.sh, lib/promote.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T00:21:25Z
-last_update: '2026-07-05T00:30:02Z'
-date_finished:
+last_update: 2026-07-05T09:42:41Z
+date_finished: 2026-07-05T09:42:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -84,9 +84,9 @@ Scope: for each site, classify (a) full-file rewrite of durable state → conver
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every census site classified (convert vs exempt-with-reason) in this task's Decisions
-- [ ] All convert-class sites write via same-dir temp + os.replace (or mv on the shell side)
-- [ ] Lint test pins the pattern corpus-wide (new truncating yaml.dump writers on durable .context state fail CI)
+- [x] Every census site classified (convert vs exempt-with-reason) in this task's Decisions
+- [x] All convert-class sites write via same-dir temp + os.replace (or mv on the shell side)
+- [x] Lint test pins the pattern corpus-wide (new truncating yaml.dump writers on durable .context state fail CI)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -121,36 +121,16 @@ Scope: for each site, classify (a) full-file rewrite of durable state → conver
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# All landings live on origin/master (worktree-off-origin/master flow); MAIN's
+# branch lags, so verify against origin/master content (L-387-safe pattern).
+git fetch origin -q
+git show origin/master:tests/unit/atomic_yaml_write_lint.bats > /tmp/.t100191_lint && grep -q "atomic-write signal" /tmp/.t100191_lint
+git show origin/master:lib/bvp.sh > /tmp/.t100191_bvp && grep -q "_atomic_write_text" /tmp/.t100191_bvp
+git show origin/master:lib/arc.sh > /tmp/.t100191_arc && grep -q "os.replace(tmp_fn, fn)" /tmp/.t100191_arc
+git show origin/master:agents/context/check-tier0.sh > /tmp/.t100191_t0 && grep -q "os.replace(tmp_path, log_file)" /tmp/.t100191_t0
+git show origin/master:agents/termlink/bvp-estimator/estimator.py > /tmp/.t100191_est && grep -q "_atomic_write_text" /tmp/.t100191_est
+git show origin/master:lib/config-file.sh > /tmp/.t100191_cfg && grep -q "os.replace(tmp_path, yaml_file)" /tmp/.t100191_cfg
+git show origin/master:agents/context/lib/focus.sh > /tmp/.t100191_foc && grep -q "os.replace(tmp_path, focus_file)" /tmp/.t100191_foc
 
 ## RCA
 
@@ -194,14 +174,53 @@ Scope: for each site, classify (a) full-file rewrite of durable state → conver
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-07-05 — census classification (convert vs exempt)
+
+- **Chose:** convert ALL file-writing YAML dump sites — including new-file
+  creates (bus/pickup envelopes, tier0 approval files) — leaving only two
+  exempt files: `lib/integrate.py` (string-only dumps; the merge driver
+  writes via git plumbing) and `agents/docgen/test_docgen.py` (test fixture).
+- **Why:** new-file creates are read by pollers/consumers (bus manifest,
+  pickup inbox cron, fw tier0 approve, Watchtower) that can observe a
+  half-written file; temp+os.replace makes creation atomic too, and an empty
+  exempt class makes the lint story trivial to reason about.
+- **Rejected:** exempting new-file creates as "no durable state destroyed" —
+  true but leaves the half-read window open for ~zero conversion savings.
+
+**Converted (16 files; original census 10 + 4 census misses + 2 envelope creates):**
+
+| File | Sites | State written |
+|------|-------|---------------|
+| lib/config-file.sh | 1 | .framework.yaml (config set) |
+| lib/assumption.sh | 2 | assumptions.yaml add/update |
+| lib/pending.sh | 2 | pending register/resolve |
+| lib/promote.sh | 1 | practices.yaml |
+| lib/arc.sh | 3 | arc YAML approve/remove/set-weight (ruamel+pyyaml dual path) |
+| lib/bvp.sh | 5 | score history, value-drivers policy ×2, task frontmatter, auto-promote log (shared `_atomic_write_text` helper) |
+| lib/bus.sh | 1 | result envelope (atomic create) |
+| lib/pickup.sh | 1 | pickup envelope (atomic create) |
+| agents/context/lib/focus.sh | 1 | focus.yaml |
+| agents/audit/orchestrator-mcp-scan.sh | 2 | baseline rewrite + LATEST scan result |
+| agents/context/check-tier0.sh | 4 | bypass-log ×2, resolved-approval flip, pending-approval create (census miss) |
+| agents/context/consolidate.py | 2 | learnings.yaml rewrite + report (census miss) |
+| agents/context/inject-next-directive.py | 1 | continuous-mode state (census miss) |
+| agents/termlink/bvp-estimator/estimator.py | 4 | task frontmatter writes (census miss; shared helper) |
+
+**Exempt (2):** lib/integrate.py (string-only), agents/docgen/test_docgen.py
+(test fixture). lib/reviewer/{audit,overrides}.py were already atomic via
+pathlib `tmp.replace()` — the lint accepts that signal.
+
+### 2026-07-05 — lint granularity
+
+- **Chose:** file-level ratchet in `tests/unit/atomic_yaml_write_lint.bats`
+  (file dumps YAML + no atomic signal → fail), with a live-exempt-list guard
+  test so stale exemptions get pruned.
+- **Why:** mirrors the census method; catches the dominant class (new writer
+  files). Verified it fires on a probe violation and passes on clean tree.
+- **Rejected:** site-level linting — needs AST analysis of shell-embedded
+  python heredocs; cost far exceeds the marginal catch (a new truncating
+  site added to a file that already has one atomic site).
+
 
 ## Decision
 
@@ -219,3 +238,19 @@ Scope: for each site, classify (a) full-file rewrite of durable state → conver
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100191-sweep-atomic-write-pattern-for-all-conte.md
 - **Context:** Initial task creation
+
+### 2026-07-05T09:22:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9796bb40
+- **Timestamp:** 2026-07-05T09:42:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-05T09:42:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
