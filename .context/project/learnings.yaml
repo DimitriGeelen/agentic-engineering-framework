@@ -3721,3 +3721,10 @@ X'` returning empty group."
   date: 2026-07-04
   context: Added via context agent
   application: TBD
+- id: L-489
+  learning: "A branch-hygiene / merge-back detection rail must live ON the branch it polices. The T-100144 divergence nudge + lib/branch-hygiene.sh landed on origin/master only and were never merged into the long-lived host branch, so they never ran there — the merge-back detector was stranded by the merge-back gap it was built to close. Corollary caught live in T-100195: the same host branch also lacks the T-2462 push safe-list and T-2465 worktree-focus fixes (both origin/master-only), turning a routine push into a governance thicket. Also: 'behind origin/master' cannot distinguish a bidirectional fork (ahead>threshold AND behind>threshold) from a landable lag; gate diverged-fork on BOTH directions exceeding the threshold, not any-ahead (an unmerged behind branch always has >=1 unique commit)."
+  source: P-001
+  task: T-100194
+  date: 2026-07-05
+  context: Added via context agent
+  application: TBD
