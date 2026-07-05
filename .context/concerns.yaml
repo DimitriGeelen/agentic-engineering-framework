@@ -121,3 +121,20 @@
   fixed_in: T-2498
   fixed_date: 2026-06-25
   related: [OBS-087, T-2486, T-2483, T-2497, T-2498]
+
+# Self-introduced structural contradiction: a new CLAUDE.md keystone (T-100196)
+# was authored instructing an action that a pre-existing live pre-commit gate
+# (T-2394 master-guard) structurally blocks. Born already-contradicting — the
+# inverse of the L-405 advisory-decay class.
+- id: OBS-091
+  type: design
+  severity: medium
+  surface: "CLAUDE.md §Trunk-Based Session Flow (T-100196) vs agents/git/lib/master-guard.sh (T-2394, PROTECT_MASTER=1)"
+  detected_in: T-100201 (this session's GO-commit cascade)
+  symptom: "CLAUDE.md §Trunk-Based instructs 'the persistent session runs on master; governance commits go straight to master', but PROTECT_MASTER=1 (T-2394 master-guard) structurally BLOCKS any direct authored commit on master. Live 2026-07-05: operator's GO commit refused with 'master is merge-only', triggering a six-command workaround cascade + a manual FF push."
+  root_cause: "The T-100196 keystone was authored and landed into CLAUDE.md without cross-checking it against the already-active structural gates it collides with. T-2394 (structural) and T-100196 (advisory prose) are mutually exclusive on the 'how does the session reach master' axis; nothing forced reconciliation. No gate — nor checklist step — validates a new CLAUDE.md keystone against the set of live PreToolUse/pre-commit hooks."
+  prevention: "INTERIM (T-100201): correction callout added to §Trunk-Based naming the conflict + interim safe rule (worktree→FF, no direct master commit while PROTECT_MASTER=1; structural gate wins per Instruction Precedence + L-405). Mechanism reconciliation (scope the guard / bypass in fw sync / exempt the persistent session) is an OPEN operator Level-D decision — Human [REVIEW] AC on T-100201. DURABLE candidate (out of T-100201 scope): doctor/reviewer detector that flags CLAUDE.md guidance instructing an action a live hook blocks."
+  blast_radius: scoped
+  observed: 2026-07-05
+  status: open
+  related: [T-100196, T-2394, T-100201, L-405, L-300]

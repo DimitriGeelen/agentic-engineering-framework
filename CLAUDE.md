@@ -999,6 +999,25 @@ If you need a scratchpad during complex multi-step work, use conversation text o
 
 ## Trunk-Based Session Flow (T-100196, keystone)
 
+> **⚠ KNOWN CONFLICT — read before following this section (T-100201).** The
+> "session runs on `master`, commits go straight to master" mechanism below
+> **contradicts the T-2394 master-merge-only gate** (`agents/git/lib/master-guard.sh`),
+> which is **live in this repo** (`PROTECT_MASTER=1`) and structurally BLOCKS any
+> direct authored commit on `master`. A fast-forward never fires the guard; a direct
+> commit does. This conflict was hit live on 2026-07-05 (operator got
+> `BLOCKED: direct commit on 'master' — master is merge-only`).
+>
+> **Interim safe rule (until T-100201 resolves the mechanism):** the *invariant*
+> below still holds — the session must never hold a commit that isn't on
+> origin/master. But do **NOT** commit governance state directly on `master` while
+> `PROTECT_MASTER=1`. Work in a worktree/branch and **FF-land** to master
+> (`fw integrate` / a scoped `git push origin <branch>:master` that FFs) — FF is the
+> one path that satisfies BOTH T-100196's invariant and T-2394's gate. Precedence:
+> T-2394 is a *structural* gate; T-100196's "commit on master" is *advisory* text —
+> the structural gate wins (see Instruction Precedence + L-405). The mechanism
+> reconciliation (scope the guard / bypass in `fw sync` / exempt the persistent
+> session) is an open operator decision tracked in **T-100201**.
+
 **The persistent session runs on `master`. There is no long-lived session branch.**
 
 This is the permanent fix for the branch/worktree divergence class (T-100194 fork,
