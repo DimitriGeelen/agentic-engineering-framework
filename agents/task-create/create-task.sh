@@ -164,21 +164,56 @@ if ! is_valid_horizon "$HORIZON"; then
     die "Valid horizons: $VALID_HORIZONS"
 fi
 
-# Generate next task ID
+# Generate next task ID.
+#
+# T-100202: the allocator is "MAIN-CLUSTER max + 1", not "global max + 1".
+# A block of IDs separated from the rest by a gap larger than
+# FW_ID_QUARANTINE_GAP (default 1000) is treated as a quarantined outlier band
+# and excluded from the ceiling. Rationale: a removed self-feeding audit-finding
+# emitter inflated one ID to T-99971 in a single leap (2026-07-03), and the old
+# "global max + 1" then chained every new task into the T-100xxx band while real
+# work sat at ~T-2524. Quarantining lets new tasks resume at sane numbers
+# (T-2525…) WITHOUT renumbering the existing band (zero blast radius — those
+# files keep their IDs and all cross-references). Collision-safe: normal work
+# only ever increments by 1, so a >1000 gap always signals inflation, never
+# legitimate spacing; and the ~97k gap means the main sequence can never climb
+# into the band in any realistic lifetime. Backward-compatible: with no outlier
+# band, the main-cluster max == the global max (original behaviour).
+#
+# Hardening: the id is parsed from the LEADING `^T-<n>` only — never from an
+# embedded T-NNNN inside a recursive inflation-era slug.
 generate_id() {
-    local max_id=0
+    local gap_threshold="${FW_ID_QUARANTINE_GAP:-1000}"
+    local ids=() f id
     shopt -s nullglob
     for f in "$TASKS_DIR"/active/T-*.md "$TASKS_DIR"/completed/T-*.md; do
         [ -f "$f" ] || continue
-        local id
-        id=$(basename "$f" | grep -oE 'T-[0-9]+' | grep -oE '[0-9]+')
+        id=$(basename "$f" | grep -oE '^T-[0-9]+' | grep -oE '[0-9]+')
         # Use 10# to force base-10 interpretation (avoids octal issues with 008, 009)
-        if [ -n "$id" ] && [ "$((10#$id))" -gt "$max_id" ]; then
-            max_id=$((10#$id))
-        fi
+        [ -n "$id" ] && ids+=("$((10#$id))")
     done
     shopt -u nullglob
-    printf "T-%03d" $((max_id + 1))
+
+    if [ "${#ids[@]}" -eq 0 ]; then
+        printf "T-%03d" 1
+        return
+    fi
+
+    # Ascending unique; walk up from the bottom and stop at the first gap larger
+    # than the threshold — everything above that cliff is a quarantined band.
+    local n prev="" main_max=0
+    while IFS= read -r n; do
+        if [ -z "$prev" ]; then
+            main_max=$n
+        elif [ $((n - prev)) -gt "$gap_threshold" ]; then
+            break
+        else
+            main_max=$n
+        fi
+        prev=$n
+    done < <(printf '%s\n' "${ids[@]}" | sort -n -u)
+
+    printf "T-%03d" $((main_max + 1))
 }
 
 # Generate slug from name

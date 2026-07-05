@@ -74,10 +74,17 @@ emitter hand-assigned IDs by a scheme other than `generate_id`. Must be pinned b
       number vs a genuine high task). Document in `## RCA`. → DONE: seed T-99971 (commit 0ab1e255f),
       self-feeding audit-finding emitter (removed from HEAD); recorded in RCA. Residual: exact
       99971 arithmetic in removed emitter source (scoped, non-blocking).
-- [ ] **Harden `generate_id` against runaway** — add a sanity guard (e.g. reject/flag a `max+1`
-      that jumps the current-max by an implausible delta, or clamp emitter-created IDs to the
-      hand-authored band) with a regression bats test. The allocator must not let one bad ID
-      inflate the whole space.
+- [x] **Harden `generate_id` against runaway** — DONE: `generate_id` now allocates "MAIN-CLUSTER
+      max + 1", quarantining any band separated by a gap > `FW_ID_QUARANTINE_GAP` (default 1000).
+      New tasks resume at T-2525 without renumbering the T-100xxx band (zero blast radius). Also
+      anchors the id parse to leading `^T-` (ignores embedded T-NNNN in recursive slugs).
+      Regression: `tests/unit/t100202_id_quarantine.bats` (6/6 green — quarantine, band-dominant,
+      backward-compat, sub-threshold gap, leading-anchor, empty corpus).
+      **Caveat cleared:** grep found no "highest task-ID = newest" assumption — consumers
+      (`estimator.py`, `bvp.sh`, `resolver.py`) sort task *files lexically* for iteration/sampling,
+      unaffected in correctness. NOTE (sibling risk, out of scope): `L-`/`P-`/`D-`/`FP-` ID
+      allocators (learning.sh/pattern.sh/decision.sh/resolve.sh) share the same max+1 pattern and
+      would inflate identically if ever seeded — not quarantined by this fix.
 - [ ] **Close or gate the split-view divergence** — `generate_id` (and `find_task_file`) must not
       produce a lower `max`/wrong file when run from a worktree that sees a partial `.tasks/` view
       (this is the T-100200-dup root). Either resolve `.tasks/` to a canonical location or add a
@@ -127,6 +134,8 @@ emitter hand-assigned IDs by a scheme other than `generate_id`. Must be pinned b
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+bash -n agents/task-create/create-task.sh
+bats tests/unit/t100202_id_quarantine.bats
 #
 # Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
 # `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
