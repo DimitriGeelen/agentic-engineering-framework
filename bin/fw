@@ -4175,6 +4175,44 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
     git)
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;
+    sync)
+        # T-100196 slice 1 (keystone): trunk-based session reconcile. In the
+        # session-on-master model the persistent session commits governance state
+        # directly to master; `fw sync` reconciles with origin/master via REBASE
+        # (never a merge — no merge-commit noise, no fork) and pushes. This is the
+        # concurrent-session safety valve: if another session advanced origin/master,
+        # rebase replays local governance commits on top, then push fast-forwards.
+        _sync_branch=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)
+        echo -e "${BOLD}fw sync${NC} — reconcile ${_sync_branch} with origin/master (rebase + push)"
+        echo ""
+        if [ "$_sync_branch" != "master" ] && [ "$_sync_branch" != "main" ]; then
+            echo -e "  ${YELLOW}⚠${NC} You are on '${_sync_branch}', not master."
+            echo -e "     Trunk-based session flow (T-100196) runs the persistent session ON master."
+            echo -e "     Code changes belong in a worktree landed via ${BOLD}fw integrate${NC};"
+            echo -e "     the session itself should be on master. Switch: ${BOLD}git checkout master${NC}"
+            echo ""
+        fi
+        if ! git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin'; then
+            echo -e "  ${RED}✗${NC} no 'origin' remote — nothing to sync."
+            exit 1
+        fi
+        echo -e "  ${CYAN}→${NC} git fetch origin master"
+        git -C "$PROJECT_ROOT" fetch origin master 2>&1 | sed 's/^/    /'
+        echo -e "  ${CYAN}→${NC} git pull --rebase origin master"
+        git -C "$PROJECT_ROOT" pull --rebase origin master 2>&1 | sed 's/^/    /'
+        if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            echo -e "  ${RED}✗${NC} rebase blocked/conflicted — commit or stash local changes (or 'git rebase --continue'), then re-run 'fw sync'." >&2
+            exit 1
+        fi
+        echo -e "  ${CYAN}→${NC} git push origin ${_sync_branch}"
+        git -C "$PROJECT_ROOT" push origin "$_sync_branch" 2>&1 | sed 's/^/    /'
+        if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            echo -e "  ${RED}✗${NC} push failed — inspect above." >&2
+            exit 1
+        fi
+        echo -e "  ${GREEN}✓${NC} in sync with origin/master."
+        exit 0
+        ;;
     push)
         # T-1153: Push to all remotes with per-remote status.
         # T-1513: align with handover hook's T-1255 logic — when `origin` exists

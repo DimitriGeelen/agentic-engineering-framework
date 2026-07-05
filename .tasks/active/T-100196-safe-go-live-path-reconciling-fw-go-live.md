@@ -219,8 +219,14 @@ bvp_scores_proposed:
   `_wt_work_landed` content-verify), `bin/fw worktree gc` route,
   `tests/unit/t100196_worktree_gc.bats` (7/7 green, incl. a control test proving
   `git cherry` gives the false "unlanded" verdict gc fixes).
-- **Slice 1 — session-on-master (keystone):** awaits human GO.
-- **Slice 4 — migrate/prune existing strands:** awaits human Tier-0 approval.
+- **Slice 1 — session-on-master (keystone):** SHIPPED (human GO 2026-07-05).
+  `fw sync` (rebase+push trunk reconcile, `bin/fw` sync route, non-master advisory,
+  pipe-status-safe) + CLAUDE.md §Trunk-Based Session Flow codification. Guard
+  (Slice 3) already present via T-100195 `diverged-fork` in doctor. Remaining
+  operator action: the one-time flip of the main checkout to master
+  (`git checkout -B master origin/master` — t2416 is a clean ancestor, FF-safe).
+- **Slice 4 — migrate/prune existing strands:** awaits human Tier-0 approval
+  (`fw worktree gc` classifies; `git push origin <strand>` preserves; Tier-0 `git branch -D`).
 
 ## Decision
 

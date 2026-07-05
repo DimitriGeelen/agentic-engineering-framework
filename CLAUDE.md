@@ -997,6 +997,42 @@ Use `bin/fw task create --name "task name"` for more options.
 
 If you need a scratchpad during complex multi-step work, use conversation text or write notes to `.context/working/` — never use Claude Code's built-in todo system.
 
+## Trunk-Based Session Flow (T-100196, keystone)
+
+**The persistent session runs on `master`. There is no long-lived session branch.**
+
+This is the permanent fix for the branch/worktree divergence class (T-100194 fork,
+T-100199 strands). The invariant it buys:
+
+> The persistent session never holds a commit that is not already on origin/master.
+
+If that holds, divergence is impossible *by construction* — no session branch to
+fork, nothing to strand, nothing to reconcile.
+
+**Why a session branch is pure liability here:** real code lands on `origin/master`
+via **worktree + `fw integrate`** (gated, FF-only) — never from the session directly.
+So the session only ever commits *governance state* (handovers, task files,
+`.context/` memory), which belongs on master anyway. A session branch protects
+nothing and is the sole source of drift.
+
+**The flow:**
+- **Session runs on `master`.** Handover / task-sync / context commits go straight
+  to master, pushed via `fw sync` (rebase + push — reconciles concurrent sessions
+  without merge noise) or `fw handover --commit`.
+- **Real code goes through a worktree.** `fw worktree create <name>` → build →
+  `fw integrate run master --push` (FF-lands + auto-prunes the worktree/branch).
+  Run integrate from the **main checkout**, targeting the worktree — never from
+  inside the worktree it will remove (that self-removal hangs).
+- **`fw worktree gc`** reclaims landed worktrees/branches by content comparison
+  (survives re-derivation, which defeats `git cherry`). Dry-run default; branch
+  deletes stay Tier-0.
+- **Guard:** `fw doctor` WARNs (`diverged-fork`, T-100195) if a session ever sits
+  on a divergent non-master branch — the regression signal back into the antipattern.
+
+**Do NOT** create a persistent session branch (`t<NNNN>-<topic>`). If you find the
+main checkout on one, reconcile it to master: `git merge --ff-only origin/master`
+(when it's a clean ancestor) or land its unique commits via a worktree first.
+
 ## Session Start Protocol
 
 **Before beginning any work:**
