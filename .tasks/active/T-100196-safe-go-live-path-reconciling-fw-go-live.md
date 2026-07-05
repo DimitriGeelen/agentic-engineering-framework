@@ -9,10 +9,10 @@ description: >
   fw go-live verb that ff-only-checks and routes a forked branch to the T-2473 union
   resolver / explicit reset instead of a bare git merge origin/master.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T17:29:21Z
-last_update: '2026-07-05T17:30:04Z'
+last_update: 2026-07-05T17:33:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,8 +82,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Design decision recorded in `## Decisions`: which reconciling mechanism ships — (a) `fw integrate` auto-merges origin/master back into the working branch after each landing, (b) a guarded `fw go-live` verb that ff-only-checks and routes a forked branch to reconciliation, or (c) the host session tracks origin/master directly (no per-branch strand). Chosen with rationale vs the T-100194 fork evidence
+- [ ] The chosen mechanism refuses / safely reconciles a bidirectional fork instead of a bare `git merge origin/master` (the T-100194 explosion). Detection already exists (T-100195 `diverged-fork`); this leg consumes that signal to route the action
+- [ ] bats coverage: a forked fixture repo routes to reconciliation (not a raw conflicting merge); an ff-clean repo lands fast-forward; a merely-behind repo lands via one-way integrate — each asserted at the CLI surface
+- [ ] Landed on origin/master via `fw integrate` (the code lives on the trunk, not a stranded branch — the T-100194 meta-lesson), and vendored to `.agentic-framework/`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -216,3 +218,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100196-safe-go-live-path-reconciling-fw-go-live.md
 - **Context:** Initial task creation
+
+### 2026-07-05T17:33:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
