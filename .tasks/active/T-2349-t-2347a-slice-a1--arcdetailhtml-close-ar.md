@@ -7,12 +7,12 @@ description: >
   Keep three-question prose. Move CLI into collapsible details fallback for headless
   contexts. Add Playwright pin to guard button presence.
 
-status: captured
+status: work-completed
 workflow_type: build
-owner: agent
-horizon: next
+owner: human
+horizon: now
 tags: [watchtower, arc-mechanics, ux]
-components: []
+components: [web/templates/arc_detail.html]
 related_tasks: [T-2347, T-1911, T-2348]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -25,8 +25,8 @@ related_tasks: [T-2347, T-1911, T-2348]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T10:38:21Z
-last_update: '2026-07-02T16:15:07Z'
-date_finished:
+last_update: 2026-07-05T00:30:20Z
+date_finished: 2026-07-05T00:30:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -109,78 +109,31 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Slice A1 of T-2347a (arc-action Watchtower UX). `web/templates/arc_detail.html` (~line 417-447) hands the operator a raw `fw arc close` CLI block; the Watchtower close form already exists at `/arcs/<slug>/close` (`web/blueprints/arcs.py:1253`). Replace the inline CLI with a primary Close-arc button linking to the form; keep the three-question §ACD prose; move the CLI into a collapsible `<details>` fallback for headless contexts (per CLAUDE.md §Arc Action Handoffs — URL primary, CLI fallback).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Non-closed arc detail page shows a primary "Close this arc" button/link to `/arcs/<slug>/close`; the three-question §ACD prose stays
+- [x] The `fw arc close` CLI block moves inside a collapsed `<details>` fallback (not removed — headless contexts still need it)
+- [x] Playwright test pins: button href present on a non-closed arc; CLI block inside details; closed arcs render neither (T-971 rule)
 
 ### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [ ] [REVIEW] Close-arc button placement reads clean on the arc detail page
+  **Steps:**
+  1. Open `{watchtower_url}/arcs/<any in-progress arc>` (list at `{watchtower_url}/arcs`)
+  2. Scroll to the §Arc Completion Discipline section: check the button leads, the CLI is tucked in the collapsed fallback, nothing is crowded
+  **Expected:** the close path is obvious at a glance; the three-question prose still frames it
+  **If not:** note the crowded/odd element; agent adjusts spacing or wording
 
 ## Verification
 
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+# Origin-based checks (MAIN's branch lags origin/master where this lands).
+git show origin/master:web/templates/arc_detail.html > /tmp/.t2349-tpl && grep -q "close-arc-button" /tmp/.t2349-tpl
+grep -q "close-arc-cli-fallback" /tmp/.t2349-tpl
+grep -q "fw arc close" /tmp/.t2349-tpl
+git show origin/master:tests/playwright/test_arc_close_button.py > /tmp/.t2349-pw && grep -q "close-arc-button" /tmp/.t2349-pw
 
 ## RCA
 
@@ -243,9 +196,35 @@ cost_estimate_proposed:
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** GO — approve the render.
+
+**Rationale:** The primary affordance is now the guided `/arcs/<slug>/close` form (per §Arc Action Handoffs, T-2347); the CLI and §ACD gate prose are preserved verbatim inside a collapsed fallback, so headless contexts lose nothing. Both directions pinned by Playwright.
+
+**Evidence:**
+- `web/templates/arc_detail.html`: `.close-arc-button` → `/arcs/<slug>/close`, CLI in `<details class="close-arc-cli-fallback">`
+- `tests/playwright/test_arc_close_button.py`: open arc shows button + collapsed CLI; closed arc renders neither (2/2 pass)
+
 ## Updates
 
 ### 2026-06-12T10:38:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2349-t-2347a-slice-a1--arcdetailhtml-close-ar.md
 - **Context:** Initial task creation
+
+### 2026-07-05T00:24:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d41341c0
+- **Timestamp:** 2026-07-05T00:30:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-05T00:30:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
