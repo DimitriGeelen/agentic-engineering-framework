@@ -67,9 +67,13 @@ TMP="{tmp_verdict}"
 FW="{fw}"
 TASK="{task_id}"
 
-# Run inline reviewer (captures both stdout and stderr to TMP)
-if ! "$FW" reviewer "$TASK" --json > "$TMP" 2>&1; then
-    RC=$?
+# Run inline reviewer (captures both stdout and stderr to TMP).
+# T-2330 (termlink): capture RC BEFORE the test — `if ! cmd; then RC=$?`
+# stores the NEGATED status (always 0 on failure), so every reviewer
+# failure reported "ERROR (rc=0)" and the worker exited 0 (fail-open).
+"$FW" reviewer "$TASK" --json > "$TMP" 2>&1
+RC=$?
+if [ "$RC" -ne 0 ]; then
     ERR=$(head -5 "$TMP" 2>/dev/null || echo "reviewer exited rc=$RC")
     "$FW" bus post --task "$TASK" --agent reviewer-dispatched \\
         --summary "reviewer: ERROR (rc=$RC)" \\
