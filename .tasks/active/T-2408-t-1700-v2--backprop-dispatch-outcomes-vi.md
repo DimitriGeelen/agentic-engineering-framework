@@ -11,7 +11,7 @@ description: >
   shows the N outcome rows. The v1 substrate already shipped via T-1706 'ollama-loop'
   worker (100% real tool_use); this v2 task closes the observability loop.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-15T17:27:56Z
-last_update: '2026-07-02T16:15:08Z'
+last_update: 2026-07-05T09:59:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,9 +101,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] tools/t1700-ollama-harness.sh dispatches via `bin/fw resolver run <task> ollama-research --var TASK_DESCRIPTION="<probe prompt>"` instead of raw `bin/fw termlink dispatch` (envelope rows land in .context/dispatches.jsonl)
+- [ ] Harness adapts result handling to resolver-run outcome (status/events_path from `--json`) — tool_use counting reads the events stream, no orphan exit_code polling
+- [ ] Live N=1 harness run produces: (1) a dispatches.jsonl row with task_type=ollama-research, (2) after `fw outcome backprop`, a matching row in dispatch-outcomes.jsonl
+- [ ] Verification greps pin all three surfaces (harness uses resolver run; dispatches.jsonl row; outcomes row)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -236,3 +237,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2408-t-1700-v2--backprop-dispatch-outcomes-vi.md
 - **Context:** Initial task creation
+
+### 2026-07-05T09:59:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
