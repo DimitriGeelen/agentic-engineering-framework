@@ -29,7 +29,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-15T17:27:56Z
-last_update: 2026-07-05T09:59:32Z
+last_update: 2026-07-05T17:36:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -49,6 +49,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 6
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-05T16:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -89,6 +98,27 @@ bvp_scores_proposed:
       (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); 
       audit_severity=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
       (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-05T16:45:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-ORCH: 1
+      F-AUTONOMY: 0
+      audit_severity: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=2 
+      (body:telemetry-or-audit-entry); D3=2 (body:default-change); D4=2 
+      (body:env-class-handled); F-RECALL=0 (no-signal); F-ORCH=1 
+      (body:hand-wired-dispatch); F-AUTONOMY=0 (no-signal); audit_severity=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 

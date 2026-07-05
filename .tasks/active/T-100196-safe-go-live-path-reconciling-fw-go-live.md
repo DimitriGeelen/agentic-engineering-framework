@@ -9,10 +9,10 @@ description: >
   fw go-live verb that ff-only-checks and routes a forked branch to the T-2473 union
   resolver / explicit reset instead of a bare git merge origin/master.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -27,7 +27,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-05T17:29:21Z
-last_update: 2026-07-05T17:33:28Z
+last_update: 2026-07-05T17:36:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -222,3 +222,7 @@ bvp_scores_proposed:
 ### 2026-07-05T17:33:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-05T17:36:36Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
