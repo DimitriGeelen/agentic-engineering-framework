@@ -4,16 +4,16 @@ name: "Enforce session-on-master invariant — blocking gate vs advisory"
 description: >
   Inception: Enforce session-on-master invariant — blocking gate vs advisory
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-05T20:43:21Z
-last_update: 2026-07-05T20:44:33Z
-date_finished: null
+last_update: 2026-07-05T22:14:08Z
+date_finished: 2026-07-05T22:14:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +22,34 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-07-05T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
+      (no-signal); F3=2 (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-05T21:45:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-100200: Enforce session-on-master invariant — blocking gate vs advisory
@@ -109,7 +137,7 @@ own independent task.
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -178,7 +206,33 @@ A/B/C/D axis and newly surfaced → own task. GO not DEFER: the spikes closed th
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — scoped to mechanism C (escalate the `diverged-fork` WARN → FAIL after
+N days), NOT a blocking commit-gate; and file drift-vector #5 (stale-ref go-live reset) as its
+own separate task. Hold mech B (commit-target gate) as a conditional follow-up.
+
+Rationale:
+
+Spikes 1–3 are complete (docs/reports/T-100200-session-on-master-enforcement.md). Spike 1 proved
+the dominant drift vector (#1, persistent-session branch) is already closed by the shipped
+practice — a heavy blocking gate defends an already-shut door. The residual enforcement target
+narrows to vector #2 (a deliberate `git checkout -b` in the main checkout), which the
+`diverged-fork` WARN already detects; the only gap is that a WARN is ignorable forever — exactly
+what mech C closes, at zero lockout risk and near-zero build cost. Mech B is the only true
+prevention but Spike 2 shows real consumer/CI/detached-HEAD collateral and Spike 3 shows its
+marginal value over C is low for a non-accidental vector → hold it. Vector #5 is independent of the
+A/B/C/D axis and newly surfaced → own task. GO not DEFER: the spikes closed the evidence gap
+(feedback_defer_for_evidence_not_confidence).
+
+Evidence:
+- Drift-vector table (7 vectors, Y/N verdicts): `docs/reports/T-100200-session-on-master-enforcement.md` §Spike 1.
+- Discriminator edge-case matrix + IW-2 verdict: same doc §Spike 2.
+- Mechanism A/B/C/D verdict table: same doc §Spike 3.
+- Vector #5 hit live this session (operator's `git reset --hard origin/master` landed on stale tip 79b9dc8f0); recovered via `git fetch && git checkout -f -B master origin/master`.
+- Dominant vector #1 already closed: session-on-master keystone shipped in 42f9c3552 (T-100196), `fw worktree gc` in 2dd655171.
+
+**Date**: 2026-07-05T22:14:07Z
 
 ## Updates
 
@@ -187,3 +241,62 @@ A/B/C/D axis and newly surfaced → own task. GO not DEFER: the spikes closed th
 
 ### 2026-07-05T20:44:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-05T22:14:07Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — scoped to mechanism C (escalate the `diverged-fork` WARN → FAIL after
+N days), NOT a blocking commit-gate; and file drift-vector #5 (stale-ref go-live reset) as its
+own separate task. Hold mech B (commit-target gate) as a conditional follow-up.
+
+Rationale:
+
+Spikes 1–3 are complete (docs/reports/T-100200-session-on-master-enforcement.md). Spike 1 proved
+the dominant drift vector (#1, persistent-session branch) is already closed by the shipped
+practice — a heavy blocking gate defends an already-shut door. The residual enforcement target
+narrows to vector #2 (a deliberate `git checkout -b` in the main checkout), which the
+`diverged-fork` WARN already detects; the only gap is that a WARN is ignorable forever — exactly
+what mech C closes, at zero lockout risk and near-zero build cost. Mech B is the only true
+prevention but Spike 2 shows real consumer/CI/detached-HEAD collateral and Spike 3 shows its
+marginal value over C is low for a non-accidental vector → hold it. Vector #5 is independent of the
+A/B/C/D axis and newly surfaced → own task. GO not DEFER: the spikes closed the evidence gap
+(feedback_defer_for_evidence_not_confidence).
+
+Evidence:
+- Drift-vector table (7 vectors, Y/N verdicts): `docs/reports/T-100200-session-on-master-enforcement.md` §Spike 1.
+- Discriminator edge-case matrix + IW-2 verdict: same doc §Spike 2.
+- Mechanism A/B/C/D verdict table: same doc §Spike 3.
+- Vector #5 hit live this session (operator's `git reset --hard origin/master` landed on stale tip 79b9dc8f0); recovered via `git fetch && git checkout -f -B master origin/master`.
+- Dominant vector #1 already closed: session-on-master keystone shipped in 42f9c3552 (T-100196), `fw worktree gc` in 2dd655171.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-964da8c0
+- **Timestamp:** 2026-07-05T22:14:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-da3bc0ce
+- **Timestamp:** 2026-07-05T22:14:09Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-100200-session-on-master-enforcement.md` | file | ✓ pass |
+| `T-100196` | task | ✓ pass |
+
+### 2026-07-05T22:14:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
