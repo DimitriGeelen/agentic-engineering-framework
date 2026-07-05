@@ -69,9 +69,11 @@ emitter hand-assigned IDs by a scheme other than `generate_id`. Must be pinned b
 ## Acceptance Criteria
 
 ### Agent
-- [ ] **Pin the inflation mechanism** — git-archaeology on the T-2514→T-99xxx→T-100000 transition;
+- [x] **Pin the inflation mechanism** — git-archaeology on the T-2514→T-99xxx→T-100000 transition;
       identify exactly what minted the first out-of-band ID (emitter ID scheme vs a parsed large
-      number vs a genuine high task). Document in `## RCA`.
+      number vs a genuine high task). Document in `## RCA`. → DONE: seed T-99971 (commit 0ab1e255f),
+      self-feeding audit-finding emitter (removed from HEAD); recorded in RCA. Residual: exact
+      99971 arithmetic in removed emitter source (scoped, non-blocking).
 - [ ] **Harden `generate_id` against runaway** — add a sanity guard (e.g. reject/flag a `max+1`
       that jumps the current-max by an implausible delta, or clamp emitter-created IDs to the
       hand-authored band) with a regression bats test. The allocator must not let one bad ID
@@ -169,7 +171,28 @@ is at ~T-2514 — a ~97,000 gap that is NOT 97,000 real tasks. Two ID sequences 
 duplicate IDs have occurred (this session's two T-100200 files → the "not an inception task"
 decide failure).
 
-**Root cause (partial — investigation AC will complete it):** two compounding defects.
+**Investigation finding (AC #1, 2026-07-06 — mechanism pinned; one arithmetic residual):**
+The exact jump is **T-2524 → T-99971** (a single leap, not incremental) in commit `0ab1e255f`
+(2026-07-03). The seed T-99971's frontmatter:
+```
+name: "Audit WARN — Task T-2488-audit-warn--task-t-2462-audit-warn--task.md missing Updates..."
+audit_severity: warn
+audit_finding_hash: 9deea5d7068a10a0d25736f9350687748404e3fa
+tags: [audit-finding, severity:warn, section:audit]
+```
+This is the **self-feeding audit-finding emitter**, distinct from plain `fw task create`
+(it writes `audit_severity` / `audit_finding_hash` / `audit-finding` tag). The loop:
+audit finds "T-2462 missing Updates" → emits an audit-finding task **named after the target's
+filename** (T-2488-audit-warn--task-t-2462-…) → the next audit flags *that emitted task* as
+"missing Updates" → emits another, name nesting one level deeper → unbounded. The emitter (a)
+creates a task per WARN, (b) names it after the offending FILENAME (recursive name growth), (c)
+then audits its own emissions. That emitter is **removed from HEAD** (no `--emit-tasks` flag in
+`audit.sh`/`bin/fw`/`lib`, no cron entry — consistent with the T-100146 fix). **Residual:** the
+precise reason the ID assigned was `99971` (vs `2525`) lives in the removed emitter's ID logic at
+`0ab1e255f` — recoverable via `git show 0ab1e255f` of the emitter source; the fix does not depend
+on it.
+
+**Root cause (compounding defects):**
 1. **Unbounded allocator.** `generate_id` is global `max_id + 1` with no sanity bound. It faithfully
    inherits whatever ceiling exists, so a single out-of-band ID permanently inflates the space for
    all future tasks.
