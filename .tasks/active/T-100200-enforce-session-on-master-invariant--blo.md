@@ -28,11 +28,21 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+T-100196 shipped **session-on-master (option c)** as a *practice* — the persistent session tracks
+`origin/master` directly instead of a long-lived session branch — plus detection (`diverged-fork`
+WARN) and `fw worktree gc`. The operator challenged the claim that this "fixes" branch/worktree
+drift: *"how can you be sure its fixed?"* It is NOT enforced — nothing structurally blocks the
+antipattern from recurring. This inception explores whether to harden the invariant into a
+**blocking gate**, and if so, which mechanism closes the drift **without breaking the deliberate
+worktree-branch parallelism flow** (the operator's explicit constraint: branches are created on
+purpose). Now: because the mitigation just shipped and its completeness is unproven.
 
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: persistent-session branch is the complete/dominant root of drift → **PARTIAL** (dominant, not complete; Spike 1).
+- A2: "main checkout on master" is a safe discriminator → **CONFIRMED w/ constraints** (Spike 2).
+- A3: a blocking gate's lockout risk is acceptable → **CONTEXT-DEPENDENT** (Spike 3 — not worth paying yet).
 
 ## Open Questions
 
@@ -53,19 +63,19 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 -->
 
 - **IW-1: Is the persistent-session branch the COMPLETE root of working-state drift, or are there other vectors (interrupted integrate, consumer vendored drift, background/cron writers, stale-ref go-live reset) that session-on-master does not close?**
-  confidence: 1
-  disposition: deferred
-  rationale: Spike 1 — enumerate all drift vectors into a table, each marked closed-by-session-on-master Y/N. Just hit a live stale-ref reset vector; ≥2 vectors already suspected.
+  confidence: 3
+  disposition: answered
+  rationale: Spike 1 DONE — 7-vector table in docs/reports/T-100200-session-on-master-enforcement.md. Dominant NOT complete: session-on-master closes #1 (persistent-session branch) + #3 (cron amplifier, conditional); residual #2 (enforcement target, WARN-detected), #4/#6 (gc-mitigated), #5 (new independent — stale-ref go-live reset).
 
 - **IW-2: Is there a mechanical discriminator that blocks persistent-session-branch drift WITHOUT breaking the worktree parallelism flow (worktree branches are also non-master and commit legitimately)?**
-  confidence: 1
-  disposition: deferred
-  rationale: Spike 2 — test candidate "MAIN checkout must be on master; linked worktrees unrestricted" against mid-migration / consumers / claude-fw / detached HEAD / CI.
+  confidence: 3
+  disposition: answered
+  rationale: Spike 2 DONE — discriminator "main checkout on master; worktrees free" holds ONLY when scoped to framework repo + exempting detached-HEAD/CI + firing on commit not startup. Commit-target gate (mech B) satisfies all; session-start refusal (mech A) fights every edge.
 
 - **IW-3: Which enforcement mechanism (A session-start refusal / B commit-target gate / C WARN→FAIL escalation / D none) has the right risk-benefit — specifically, is a blocking gate's lockout risk acceptable with a clean bypass?**
-  confidence: 1
-  disposition: deferred
-  rationale: Spike 3 — depends on IW-1 (does enforcement buy anything over mitigation) and IW-2 (is the discriminator safe). D is the honest fallback.
+  confidence: 3
+  disposition: answered
+  rationale: Spike 3 DONE — recommend mech C (escalate diverged-fork WARN→FAIL after N days): zero lockout risk, closes the ignorable-WARN gap for the narrow deliberate-action vector #2. Hold B (commit-gate) as conditional follow-up; reject A (dominated by B) + D (undersells — WARN ignorable forever). File #5 separately.
 
 ## Exploration Plan
 
@@ -81,17 +91,21 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+**IN:** enumerate all working-state drift vectors; decide whether/how to enforce the
+session-on-master invariant for the *framework repo*. **OUT:** consumer-repo branch policy
+(consumers run their own branches — gap-homing); the actual build of the chosen mechanism (a GO
+spawns separate build tasks); vector #5 (stale-ref go-live reset) — surfaced here but filed as its
+own independent task.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -127,17 +141,29 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — scoped to mechanism **C** (escalate the `diverged-fork` WARN → FAIL after
+N days), NOT a blocking commit-gate; and file drift-vector **#5** (stale-ref go-live reset) as its
+own separate task. Hold mech **B** (commit-target gate) as a conditional follow-up.
 
 **Rationale:**
 
-Exploration pending: must enumerate ALL drift vectors (not just persistent-session branch) and find a discriminator that blocks session-branch drift WITHOUT breaking the worktree parallelism flow, before recommending an enforcement mechanism. Evidence gap, not confidence hedge.
+Spikes 1–3 are complete (docs/reports/T-100200-session-on-master-enforcement.md). Spike 1 proved
+the **dominant** drift vector (#1, persistent-session branch) is **already closed by the shipped
+practice** — a heavy blocking gate defends an already-shut door. The residual enforcement target
+**narrows to vector #2** (a *deliberate* `git checkout -b` in the main checkout), which the
+`diverged-fork` WARN **already detects**; the only gap is that a WARN is ignorable forever — exactly
+what mech C closes, at zero lockout risk and near-zero build cost. Mech B is the only true
+*prevention* but Spike 2 shows real consumer/CI/detached-HEAD collateral and Spike 3 shows its
+marginal value over C is low for a non-accidental vector → hold it. Vector #5 is independent of the
+A/B/C/D axis and newly surfaced → own task. GO not DEFER: the spikes closed the *evidence* gap
+(feedback_defer_for_evidence_not_confidence).
 
 **Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Drift-vector table (7 vectors, Y/N verdicts): `docs/reports/T-100200-session-on-master-enforcement.md` §Spike 1.
+- Discriminator edge-case matrix + IW-2 verdict: same doc §Spike 2.
+- Mechanism A/B/C/D verdict table: same doc §Spike 3.
+- Vector #5 hit **live this session** (operator's `git reset --hard origin/master` landed on stale tip 79b9dc8f0); recovered via `git fetch && git checkout -f -B master origin/master`.
+- Dominant vector #1 already closed: session-on-master keystone shipped in 42f9c3552 (T-100196), `fw worktree gc` in 2dd655171.
 
 ## Decisions
 
