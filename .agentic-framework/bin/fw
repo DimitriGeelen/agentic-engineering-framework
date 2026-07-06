@@ -1057,24 +1057,28 @@ do_doctor() {
         fi
     fi
 
-    # Check 5d: Last pre-compact handover outcome (T-2506)
+    # Check 5d: Last auto-handover outcome (T-2506 pre-compact + T-2507 checkpoint)
     # T-2374 made pre-compact log "Handover FAILED (rc=N)" to .compact-log instead of
-    # lying about success — but that FAILED line surfaced NOWHERE. A handover that dies
-    # (e.g. the exec-bit-loss class that dropped memory across /compact) is recorded and
-    # invisible. Surface it here: if the most recent pre-compact handover entry is a
-    # failure, the next compaction will reinject a stale handover. (Directive 2 —
-    # recorded is not surfaced.)
+    # lying about success — but that FAILED line surfaced NOWHERE. Both auto-capture
+    # paths — pre-compact (/compact) and checkpoint (budget-critical auto-restart) —
+    # now write [pre-compact]/[checkpoint] Handover generated|FAILED entries here.
+    # Surface the most recent: if it FAILED, memory capture is broken and the next
+    # compaction/restart reinjects a stale handover. (Directive 2 — recorded is not
+    # surfaced.) The budget-critical path (T-2507) was previously echo-to-stderr only.
     local compact_log="$PROJECT_ROOT/.context/working/.compact-log"
     if [ -f "$compact_log" ]; then
-        local last_ho_line
-        last_ho_line=$(grep -E '\[pre-compact\].*Handover' "$compact_log" 2>/dev/null | tail -1)
+        local last_ho_line last_ho_src
+        last_ho_line=$(grep -E '\[(pre-compact|checkpoint)\].*Handover' "$compact_log" 2>/dev/null | tail -1)
+        case "$last_ho_line" in
+            *"[checkpoint]"*) last_ho_src="budget-critical auto-handover" ;;
+            *)                last_ho_src="pre-compact handover" ;;
+        esac
         if echo "$last_ho_line" | grep -q "FAILED"; then
-            _doctor_warn_host "Last pre-compact handover FAILED — memory capture is broken; /compact will reinject a stale handover"
+            _doctor_warn_host "Last $last_ho_src FAILED — memory capture is broken; the next compaction/restart will reinject a stale handover"
             echo -e "         Cause: $last_ho_line"
-            echo -e "         Details: $PROJECT_ROOT/.context/working/.pre-compact.handover.stderr"
             echo -e "         Recover: fw handover --no-commit   (repoints LATEST.md to a fresh capture)"
         elif [ -n "$last_ho_line" ]; then
-            echo -e "  ${GREEN}OK${NC}  Last pre-compact handover succeeded"
+            echo -e "  ${GREEN}OK${NC}  Last auto-handover succeeded ($last_ho_src)"
         fi
     fi
 

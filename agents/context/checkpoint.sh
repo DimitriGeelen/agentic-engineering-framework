@@ -183,7 +183,19 @@ warn_by_tokens() {
             # is the OTHER silent memory-capture path (T-179). A missing exec bit on the
             # vendored handover.sh would drop it exactly like pre-compact did. Interpreter
             # invocation makes it exec-bit-immune. Same class as pre-compact.sh fix.
-            if timeout "$_ah_total_timeout" bash "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
+            # T-2507: capture output to a durable file and branch on the handover's
+            # TRUE exit code, then RECORD success/FAILED to the same .compact-log fw
+            # doctor Check 5d reads. The budget-critical auto-handover failure was
+            # echo-to-stderr ONLY (not-even-recorded) — the most catastrophic
+            # memory-loss path, since the session is about to auto-restart. Now a
+            # failed budget-critical handover surfaces exactly like a failed
+            # pre-compact one. Sibling to T-2506 (pre-compact) / T-2374 (honest log).
+            _ah_capture="$CONTEXT_DIR/working/.checkpoint.handover.stderr"
+            _ah_log="$CONTEXT_DIR/working/.compact-log"
+            _ah_ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            if timeout "$_ah_total_timeout" bash "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit >"$_ah_capture" 2>&1; then
+                tail -5 "$_ah_capture" >&2 2>/dev/null || true
+                echo "[checkpoint] [auto] Handover generated at $_ah_ts" >> "$_ah_log" 2>/dev/null || true
                 echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
                 # T-186: Write restart signal for wrapper script (T-179 auto-restart)
                 local restart_signal="$CONTEXT_DIR/working/.restart-requested"
@@ -216,6 +228,8 @@ except Exception:
 SIGNAL_EOF
                 echo "AUTO-RESTART: Signal written — wrapper will auto-restart on exit." >&2
             else
+                tail -5 "$_ah_capture" >&2 2>/dev/null || true
+                echo "[checkpoint] [auto] Handover FAILED at $_ah_ts — see $_ah_capture" >> "$_ah_log" 2>/dev/null || true
                 echo "AUTO-HANDOVER: Failed — run '$(_fw_cmd) handover' manually." >&2
             fi
             rm -f "$handover_lock"

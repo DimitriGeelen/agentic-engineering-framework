@@ -81,8 +81,9 @@ teardown() {
         > "$PROJECT_ROOT/.context/working/.compact-log"
 
     run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJECT_ROOT' '$FW' doctor 2>&1"
-    [[ "$output" != *"Last pre-compact handover FAILED"* ]]
-    [[ "$output" == *"Last pre-compact handover succeeded"* ]]
+    [[ "$output" != *"FAILED"* ]]
+    # T-2507 generalised the OK line to "Last auto-handover succeeded (<source>)".
+    [[ "$output" == *"Last auto-handover succeeded"* ]]
 }
 
 @test "T-2506: fw doctor is silent about pre-compact when there is no compact-log" {
