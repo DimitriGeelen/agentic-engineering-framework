@@ -6,17 +6,17 @@ description: >
   live onboarding dogfood: F4 invalid greenfield value-drivers.yaml, F5 session-init
   fails on happy path, F9 Watchtower false-positive health, F10 fw serve misidentifies
   the project. Inception scopes/sequences the fix; F4 is the cleanest first build slice.
-status: started-work
+status: work-completed
 workflow_type: inception
 target_blast_radius: 4
 voi_score: 0.7
 owner: agent
-horizon: now
+horizon: null
 tags: [onboarding, remediation, dogfood, high-prio]
 related_tasks: [T-2441]
 created: 2026-06-21T07:30:00Z
-last_update: 2026-06-21T07:30:00Z
-date_finished: null
+last_update: 2026-07-06T11:54:51Z
+date_finished: 2026-07-06T11:54:51Z
 ---
 
 # T-2442: Remediate greenfield-onboarding bug-class (dogfood F4/F5/F9/F10)
@@ -104,3 +104,27 @@ greenfield-init / bare-fw-routing region, so batching the scope avoids four disc
 shim-routing root has higher blast radius and may warrant its own design slice — that split is the one
 genuine open question, and it does not block starting F4. This is a GO, not a DEFER: the evidence is
 complete; only the routing-leg sequencing is open.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f42d2f28
+- **Timestamp:** 2026-07-06T11:54:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-29bf15f1
+- **Timestamp:** 2026-07-06T11:54:52Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2441-aef-onboarding-dogfooding.md` | file | ✓ pass |
+| `T-2441` | task | ✓ pass |
+
+### 2026-07-06T11:54:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

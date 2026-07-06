@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100144: C3: handover surfaces branch ahead/behind + merge-back-overdue nudge
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T12:50:39Z
+# ============================================================================
+
+task_id: T-100144
+task_name: "C3: handover surfaces branch ahead/behind + merge-back-overdue nudge"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T11:49:49Z
+completed: 2026-07-06T12:50:29Z
+duration_days: 2
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Handover document prints the current branch''s ahead/behind counts vs origin/master — live-fired: `**Branch:** `t100144-handover-divergence` +1 / −0 vs origin/master` rendered under Where We Are (S-2026-0704-1552)'
+  - 'When behind exceeds a threshold (default 50, configurable `FW_BRANCH_BEHIND_WARN`, shared with C2/T-100143), the Suggested First Action section gains a "merge-back overdue" nudge naming `fw integrate run` — live-fired with forced threshold (rendered in S-2026-0704-1553)'
+  - 'Silent/neutral when on master or within threshold (no nudge noise) — fw_branch_divergence returns nothing on master/detached/no-origin; nudge only when behind > threshold'
+  - 'bats regression tests pin: counts line present, nudge at >threshold, no nudge under threshold — tests/unit/t100144_handover_divergence.bats (6 tests incl. master-silence, no-origin silence, handover.sh wiring pins)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-04 — Divergence computation lives in lib/branch-hygiene.sh (not inline in handover.sh)'
+    chose: '`fw_branch_divergence` as a second function in C2''s lib, sourced by handover.sh.'
+    rationale: 'shares FW_BRANCH_BEHIND_WARN with the doctor scan (one threshold, one semantics) and is bats-testable against fixture repos without running the full handover pipeline.'
+    alternatives_rejected: ['inline git calls in handover.sh (untestable, threshold duplication).']
+  - decision: '2026-07-04 — Placement: counts under Where We Are, nudge under Suggested First Action'
+    chose: 'divergence line first thing in Where We Are; overdue nudge as first line of Suggested First Action.'
+    rationale: 'the counts are state (belongs with situation summary); the nudge is an action and must compete with the suggested-first-action slot, which is what the next session actually reads.'
+    alternatives_rejected: ['frontmatter-only fields (invisible to a human skimming the handover).']
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2940 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2940
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-100144-c3-handover-surfaces-branch-aheadbehind-.md
+generated_by: context-agent-hybrid

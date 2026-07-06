@@ -746,3 +746,10 @@ observations:
   tags: [bug]
   status: dismissed
   promoted_to: null
+- id: OBS-091
+  text: "Reviewer skip-as-pass detector false-positive: it matches the RCA-template boilerplate comment '...Use --skip-rca to bypass (logged)' as if it were a verification skip. Hit on T-100142 (a feature task with the empty RCA template retained). Recurs on any non-bug-class task that keeps the RCA template comment block. Detector should exclude HTML-comment/template regions (sibling to OBS-081 disposition-comment-strip, L-488) before scanning Verification+RCA for skip-as-pass. Non-blocking (advisory verdict), but noisy."
+  captured: 2026-07-06T12:49:06Z
+  context_task: T-100143
+  tags: []
+  status: pending
+  promoted_to: null

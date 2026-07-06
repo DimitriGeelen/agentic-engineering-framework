@@ -1,16 +1,16 @@
 ---
-id: T-100143
-name: "C2: doctor/audit branch-hygiene WARNs"
+id: T-100142
+name: "C1: fw integrate run deletes landed source branch by default (keep-branch opt-out)"
 description: >
-  Post-GO slice of T-100139. Branch-hygiene checks: merged-undeleted branches, behind>50
-  divergence, worktrees on merged branches, dirty-worktree age. WARN-only.
+  Post-GO slice of T-100139. fw integrate run deletes the landed source branch after
+  successful merge-back; --keep-branch opts out.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/integrate.py]
 related_tasks: [T-100139]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,9 +22,9 @@ related_tasks: [T-100139]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-04T11:49:40Z
-last_update: 2026-07-04T13:29:30Z
-date_finished:
+created: 2026-07-04T11:49:31Z
+last_update: 2026-07-06T12:47:46Z
+date_finished: 2026-07-06T12:47:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -68,26 +68,23 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-100143: C2: doctor/audit branch-hygiene WARNs
+# T-100142: C1: fw integrate run deletes landed source branch by default (keep-branch opt-out)
 
 ## Context
 
-C2 slice of T-100139 (branch/worktree lifecycle GO). Nothing observes branch
-hygiene today — 29 merged-but-undeleted branches sat invisible until the
-inception measured them. C1 (T-100142, shipped 37c1943e2) closes the tap for
-integrate-run landings; this slice makes the remaining debris visible.
-NOTE: doctor/audit code lives on the master lineage — build in a worktree off
-master (see T-100142's episodic for the worked flow: worktree + copy task file
-+ set worktree focus, land with `fw integrate run master --push`).
+C1 slice of T-100139 (branch/worktree lifecycle inception, GO). Landed source
+branches accumulate because nothing deletes them after a successful merge-back —
+`fw integrate run` completes the merge and leaves the branch behind. This slice
+makes deletion-after-successful-landing the default, with `--keep-branch` opt-out.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw doctor` (and/or audit structure section — pick one primary surface, WARN-only) reports: merged-but-undeleted local branches (tip ⊆ master) — primary surface: doctor, via `lib/branch-hygiene.sh` `fw_branch_hygiene` (merged-undeleted lines)
-- [x] WARN for live branches > N commits behind master (default 50, configurable `FW_BRANCH_BEHIND_WARN`) — behind-threshold lines; live-fired: 6 real strands (216-5665 behind) surfaced
-- [x] WARN for worktrees whose branch is already merged to master, and remote refs with ahead:0 — worktree-merged + remote-contained lines
-- [x] Silent when hygiene is clean (no noise on a tidy repo) — fw_branch_hygiene prints nothing on a tidy repo; doctor emits a single OK line
-- [x] bats regression tests pin: merged-branch WARN, behind-threshold WARN, clean-repo silence — tests/unit/t100143_branch_hygiene.bats (6 tests, incl. worktree-merged, remote-contained, no-master-lineage)
+- [x] After a successful `fw integrate run` landing, the source branch is deleted by default (and its worktree removed first when one exists, since git refuses to delete a checked-out branch) — `_cleanup_branch` in lib/integrate.py, called as the last step of `cmd_run`
+- [x] `--keep-branch` opts out: branch (and worktree) survive, output says kept
+- [x] Deletion only happens on a fully successful landing — pushed landings only (`not pushed` → kept), and failed/aborted integrations return before cleanup is reached
+- [x] Output names what was deleted (branch, worktree path, remote ref) under a `Branch cleanup:` block; containment in origin/<target> is re-checked with `merge-base --is-ancestor` before any deletion (the -d semantic against the landed state — unmerged work is never force-deleted)
+- [x] Regression tests pin all four behaviours + dry-run plan line: `tests/unit/t100142_integrate_run_branch_cleanup.bats` (6 tests green; existing t2471/t2474 suites green, zone-2 test updated to --keep-branch)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -122,44 +119,13 @@ master (see T-100142's episodic for the worked flow: worktree + copy task file
 
 ## Verification
 
-# Origin-based (L-387 file-capture): passes from MAIN after `fw integrate run master --push` lands C2.
-git show origin/master:lib/branch-hygiene.sh > /tmp/.t100143-lib 2>/dev/null && grep -q "fw_branch_hygiene" /tmp/.t100143-lib
-grep -q "FW_BRANCH_BEHIND_WARN" /tmp/.t100143-lib
-git show origin/master:bin/fw > /tmp/.t100143-fw 2>/dev/null && grep -q "Branch hygiene" /tmp/.t100143-fw
-git show origin/master:tests/unit/t100143_branch_hygiene.bats > /tmp/.t100143-tests 2>/dev/null && grep -q "clean repo: no findings" /tmp/.t100143-tests
-
-# Shell commands that MUST pass before work-completed. One per line.
-# Lines starting with # are comments (skipped). Empty lines ignored.
-# The completion gate runs each command — if any exits non-zero, completion is blocked.
-#
-# Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
-# *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
-# pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
-# past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
-#     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
-# string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
-# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
-# Verification block. Otherwise the canonical hash diverges and `fw doctor`
-# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
-# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
-# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-## RCA
+# Feature landed on origin/master (runs from any checkout, incl. MAIN on an old branch)
+# L-387: write-to-file, not `git show | grep -q` — the pipe SIGPIPEs (exit 141) on large
+# blobs (bin/fw) under the gate's pipefail when grep -q matches and closes stdin early.
+git show origin/master:lib/integrate.py > /tmp/.t100142-integrate.py && grep -q "_cleanup_branch" /tmp/.t100142-integrate.py
+grep -q "keep_branch" /tmp/.t100142-integrate.py
+git show origin/master:tests/unit/t100142_integrate_run_branch_cleanup.bats > /tmp/.t100142-test.bats && grep -q "never force-deleted" /tmp/.t100142-test.bats
+git show origin/master:bin/fw > /tmp/.t100142-fw && grep -q -- "--keep-branch" /tmp/.t100142-fw
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -201,15 +167,20 @@ git show origin/master:tests/unit/t100143_branch_hygiene.bats > /tmp/.t100143-te
 
 ## Decisions
 
-### 2026-07-04 — Primary surface: doctor (not audit)
-- **Chose:** `fw doctor` as the single primary surface; scan lives in `lib/branch-hygiene.sh` as a sourceable function.
-- **Why:** doctor is the interactive health loop where branch debris is actionable; a standalone lib keeps the scan bats-testable against fixture repos without invoking doctor.
-- **Rejected:** audit structure section (daily cron would re-emit the same WARN into audit tasks — C1 already closes the tap; advisory visibility belongs in doctor); inline-in-doctor (untestable).
+### 2026-07-04 — deletion trigger: pushed landings only
+- **Chose:** delete only when `--push` succeeded AND `merge-base --is-ancestor <branch> origin/<target>` confirms containment; without `--push` the branch is always kept.
+- **Why:** "verified landing" (T-100139 artifact wording) means the work is provably reachable from the canonical target. A local-only merge leaves the branch as the sole holder of the merge commit — deleting it would lose work.
+- **Rejected:** deleting after zone-2 local FF (local master can still diverge from origin); a `--delete-branch` opt-in (inverts the GO decision — deletion must be the default to close the debris tap).
 
-### 2026-07-04 — Aggregate WARN (1 warning, N finding lines, head -12 cap)
-- **Chose:** one doctor WARN counting all findings, listing first 12.
-- **Why:** 29+ merged branches would otherwise dominate doctor output; single WARN keeps the project-verdict honest without flooding.
-- **Rejected:** per-finding WARNs (verdict noise), no cap (wall of text).
+### 2026-07-04 — branch -D after explicit containment check, not -d
+- **Chose:** re-check containment ourselves, then `git -C <MAIN> branch -D`.
+- **Why:** `-d` judges merged-ness against the *deleting checkout's* HEAD; MAIN is routinely on a session branch off-master, so `-d` would refuse valid deletions. The is-ancestor check against origin/<target> is the same safety, aimed at the right ref.
+- **Rejected:** plain `-d` (false refusals from MAIN), plain `-D` without the check (could destroy unmerged work on a push race).
+
+### 2026-07-04 — self-removal ordering
+- **Chose:** cleanup is the last step of `cmd_run`; worktree removed before branch deletion; all post-removal git calls run with `cwd=` pinned to MAIN.
+- **Why:** git refuses to delete a checked-out branch, and after our own worktree dies any subprocess inheriting the dead cwd fails ("Unable to read current working directory").
+- **Rejected:** deleting from within the worktree (impossible); leaving the worktree behind (it IS the debris the GO decision targets).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -232,19 +203,28 @@ git show origin/master:tests/unit/t100143_branch_hygiene.bats > /tmp/.t100143-te
 
 ## Updates
 
-### 2026-07-04T11:49:40Z — task-created [task-create-agent]
+### 2026-07-04T11:49:31Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100143-c2-doctoraudit-branch-hygiene-warns.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100142-c1-fw-integrate-run-deletes-landed-sourc.md
 - **Context:** Initial task creation
 
-### 2026-07-04T12:53:29Z — status-update [task-update-agent]
-- **Change:** status: started-work → started-work
-- **Change:** horizon: now → now (auto-sync)
-
-### 2026-07-04T12:54:45Z — status-update [task-update-agent]
-- **Change:** horizon: now → next
-- **Change:** status: started-work → captured (auto-sync)
-
-### 2026-07-04T13:29:30Z — status-update [task-update-agent]
+### 2026-07-04T12:39:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c605852d
+- **Timestamp:** 2026-07-06T12:47:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **skip-as-pass** (severe, deterministic) @ Verification:line 20
+     - evidence: `bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).`
+
+### 2026-07-06T12:47:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
