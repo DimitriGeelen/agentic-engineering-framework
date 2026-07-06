@@ -3819,3 +3819,10 @@ X'` returning empty group."
   date: 2026-07-06
   context: Added via context agent
   application: TBD
+- id: L-499
+  learning: "Renaming a JSON contract key (e.g. framework-mcp->fw in a .mcp.json fragment) silently drifts any bats/unit test that pins that key by string — the renaming task's Verification scope won't catch it unless it re-runs the downstream test. Before renaming a contract field, run 'fw fabric blast-radius <contract-file>' to surface pinning tests as dependants. Origin: T-2283 renamed the key, T-2272's test drifted red on master until OBS-089/T-2508 caught it."
+  source: P-001
+  task: T-2508
+  date: 2026-07-06
+  context: Added via context agent
+  application: TBD

@@ -744,5 +744,5 @@ observations:
   captured: 2026-07-06T09:25:57Z
   context_task: T-2506
   tags: [bug]
-  status: pending
+  status: dismissed
   promoted_to: null

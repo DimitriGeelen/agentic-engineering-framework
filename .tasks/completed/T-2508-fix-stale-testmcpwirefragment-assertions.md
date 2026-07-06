@@ -4,12 +4,12 @@ name: "Fix stale test_mcp_wire_fragment assertions (framework-mcp -> fw key, T-2
 description: >
   OBS-089: tests/unit/test_mcp_wire_fragment.bats t2/t3/t4 assert the fragment top-key 'framework-mcp', but T-2283 (commit fcd0ca0e8) intentionally renamed it to 'fw' for arc-010 prefix match. Fragment is correct; test assertions are stale. Update t2/t3/t4 + comments to assert 'fw'.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_mcp_wire_fragment.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-06T12:37:02Z
-last_update: 2026-07-06T12:37:02Z
-date_finished: null
+last_update: 2026-07-06T12:39:56Z
+date_finished: 2026-07-06T12:39:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -192,3 +192,15 @@ as the durable rail rather than adding a bespoke lint for this one key.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/active/T-2508-fix-stale-testmcpwirefragment-assertions.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-75c93222
+- **Timestamp:** 2026-07-06T12:39:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-06T12:39:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
