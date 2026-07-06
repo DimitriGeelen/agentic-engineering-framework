@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2509: Watchtower decision-commit blocked by master-guard on master checkout
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T16:32:19Z
+# ============================================================================
+
+task_id: T-2509
+task_name: "Watchtower decision-commit blocked by master-guard on master checkout"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-06T16:14:26Z
+completed: 2026-07-06T16:32:09Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`_commit_decision` passes `FW_ALLOW_MASTER_COMMIT=1` in the commit subprocess env (the master-guard''s own documented Tier-2 bypass) so a Watchtower decision — a human-authorized governance write via the sanctioned surface — commits on a `PROTECT_MASTER=1` master checkout instead of being blocked.'
+  - 'The bypass is scoped to this decision-commit subprocess only (not process-wide), so agent/session commits on master remain guarded by T-2394.'
+  - 'End-to-end proof: a decision recorded via the live Watchtower on a master checkout with `PROTECT_MASTER=1` results in a committed decision on origin/master (no "recorded but not committed" warning). **Proven (composed, live, non-destructive):** (1) T-2505''s stuck GO now committed on origin/master (`e8628b3ef`, in `completed/`); (2) on the live master checkout, `master-guard.sh check` returns exit 1 (BLOCK, reproduces the failure) without the flag and exit 0 (ALLOW) with `FW_ALLOW_MASTER_COMMIT=1`; (3) the deployed live Watchtower (PID serving `/opt/999`) has the fix in its `inception.py`. A fresh UI click was deliberately NOT manufactured — driving a throwaway decision through the live Watchtower would auto-commit into the behind/dirty main and create new divergence (see Evolution boundary note).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-06 — how to persist T-2505 given a behind/dirty main checkout'
+    chose: 'Recreate T-2505''s scoped decision (rename active→completed + episodic) in the clean worktree at origin/master and FF-land it.'
+    rationale: 'Main is 2–3 commits behind origin/master with a large uncommitted divergence. A stash/FF/pop cycle to persist one decision risks corrupting that tree — the exact main-checkout mess the operator is fighting (T-100199).'
+    alternatives_rejected: ['Committing directly in the dirty main (would diverge + need rebase on a dirty tree, which git refuses).']
+  - decision: '2026-07-06 — boundary discovered: fix unblocks the commit, does NOT push'
+    chose: 'Scope T-2509 to the master-guard block only; disclose the push/divergence boundary separately.'
+    rationale: '`_commit_decision` (T-2053) commits but never pushes — by design it relies on the mirror-sync cron / next handover to propagate. My fix makes the commit *succeed*; propagation to origin/master is the pre-existing separate concern (main runs behind + dirty → the committed decision needs a later reconcile-push). Conflating the two would balloon this bug task. Homed as a note for the T-100201 reconciliation.'
+    alternatives_rejected: ['Adding a push to `_commit_decision` here — that''s a design change with divergence-handling implications, not a bug fix; needs its own task.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 17
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-2509-watchtower-decision-commit-blocked-by-ma.md
+generated_by: context-agent-hybrid
