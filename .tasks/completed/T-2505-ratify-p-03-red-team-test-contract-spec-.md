@@ -1,19 +1,21 @@
 ---
 id: T-2505
-name: "Ratify P-03 red-team test contract (SPEC-autonomy-integrity-redteam) and commit RT-1..RT-5 red"
+name: "Ratify P-03 red-team test contract (SPEC-autonomy-integrity-redteam) and commit
+  RT-1..RT-5 red"
 description: >
-  Inception: Ratify P-03 red-team test contract (SPEC-autonomy-integrity-redteam) and commit RT-1..RT-5 red
+  Inception: Ratify P-03 red-team test contract (SPEC-autonomy-integrity-redteam)
+  and commit RT-1..RT-5 red
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-06T08:13:37Z
-last_update: 2026-07-06T08:15:09Z
-date_finished: null
+last_update: 2026-07-06T16:09:23Z
+date_finished: 2026-07-06T16:09:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +24,34 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-07-06T14:00:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-06T14:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-ORCH: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-ORCH=2 (no-signal); F-AUTONOMY=2 
+      (no-signal); F3=2 (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2505: Ratify P-03 red-team test contract (SPEC-autonomy-integrity-redteam) and commit RT-1..RT-5 red
@@ -120,15 +150,15 @@ implements lock-1 must not be the person who authored this contract.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -198,7 +228,20 @@ DISCOVERY-governance-test-audit (T-2514), re-verified live against 1.6.80 this s
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: KILLED by operator decision. The P-03 bypass gap is real, but filing the red-team
+contract as an *inception awaiting go/no-go* was unwanted ceremony — the operator asked
+"what is this stuff about red team spec" / "where has the bats gone" across three turns.
+If the coverage gap is pursued later, write RT-1..RT-5 directly under a build task (no
+inception gate needed); the spec artifact
+`docs/reports/SPEC-autonomy-integrity-redteam-2026-07-06.md` stays on disk as the
+contract. The four §8 Open Questions are dissolved (moot — not building it). Original GO
+rationale retained below for the record:
+
+DISCOVERY-governance-test-audit (T-2514), re-verified live against 1.6.80 this session, confirms the P-03 bypass class is genuinely uncovered: fw dispatch approve (lib/dispatch.sh:166) has zero governance tests, no RT tests exist, and no refused-attempt sink exists (.gate-bypass-log.yaml records only sanctioned FW_* overrides, not refusals). The pasted SPEC is well-formed and every RT case red-today premise holds against the repo. Adopting it — commit RT-1..RT-5 RED before lock-1, under the producer-not-judge bind the discovery itself violated — is the mechanism the value ruling already endorsed. GO to ratify + land the contract red. The four §8 open items (sink sequencing a/b, ATTEMPT_LOG name+schema, RT-3 cage mechanism, RT-5 timing) are Sovereign sub-decisions within the GO, not blockers to it.
+
+**Date**: 2026-07-06T16:09:22Z
 
 ## Updates
 
@@ -207,3 +250,45 @@ DISCOVERY-governance-test-audit (T-2514), re-verified live against 1.6.80 this s
 
 ### 2026-07-06T08:15:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-06T16:09:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** KILLED by operator decision. The P-03 bypass gap is real, but filing the red-team
+contract as an *inception awaiting go/no-go* was unwanted ceremony — the operator asked
+"what is this stuff about red team spec" / "where has the bats gone" across three turns.
+If the coverage gap is pursued later, write RT-1..RT-5 directly under a build task (no
+inception gate needed); the spec artifact
+`docs/reports/SPEC-autonomy-integrity-redteam-2026-07-06.md` stays on disk as the
+contract. The four §8 Open Questions are dissolved (moot — not building it). Original GO
+rationale retained below for the record:
+
+DISCOVERY-governance-test-audit (T-2514), re-verified live against 1.6.80 this session, confirms the P-03 bypass class is genuinely uncovered: fw dispatch approve (lib/dispatch.sh:166) has zero governance tests, no RT tests exist, and no refused-attempt sink exists (.gate-bypass-log.yaml records only sanctioned FW_* overrides, not refusals). The pasted SPEC is well-formed and every RT case red-today premise holds against the repo. Adopting it — commit RT-1..RT-5 RED before lock-1, under the producer-not-judge bind the discovery itself violated — is the mechanism the value ruling already endorsed. GO to ratify + land the contract red. The four §8 open items (sink sequencing a/b, ATTEMPT_LOG name+schema, RT-3 cage mechanism, RT-5 timing) are Sovereign sub-decisions within the GO, not blockers to it.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f8668caa
+- **Timestamp:** 2026-07-06T16:09:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-11cf9add
+- **Timestamp:** 2026-07-06T16:09:24Z
+- **Overall:** CONTRADICTED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/SPEC-autonomy-integrity-redteam-2026-07-06.md` | file | ✓ pass |
+| `docs/reports/DISCOVERY-governance-test-audit-2026-06-21.md` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `lib/dispatch.sh:166` | file_line | ✓ pass |
+| `agents/context/check-agent-dispatch.sh:102` | file_line | ✓ pass |
+| `T-2514` | task | ✗ fail — no task file in .tasks/{active,completed}/ |
+
+### 2026-07-06T16:09:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

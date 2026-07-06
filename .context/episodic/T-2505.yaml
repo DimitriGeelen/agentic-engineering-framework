@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2505: Ratify P-03 red-team test contract (SPEC-autonomy-integrity-redteam) and commit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T16:09:32Z
+# ============================================================================
+
+task_id: T-2505
+task_name: "Ratify P-03 red-team test contract (SPEC-autonomy-integrity-redteam) and commit"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-06T08:13:37Z
+completed: 2026-07-06T16:09:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-01T13:34:11+02:00
+last_commit: 2026-07-06T10:18:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — worktree usage/lifecycle policy (refine per-task default). Investigate duplicate T-2502 (branch divergence, audit noise cleaned up). incept P-03 red-team test contract — preserve spec + file inception (GO)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2505.yaml'
+  - 'docs/reports/SPEC-autonomy-integrity-redteam-2026-07-06.md'
+  - 'docs/reports/T-2505-worktree-usage-policy.md'
+  - '.tasks/active/T-2505-ratify-p-03-red-team-test-contract-spec-.md'
+  - '.tasks/active/T-2505-worktree-usage-policy--refine-per-task-d.md'
+  - '.tasks/completed/T-2505-investigate-duplicate-t-2502-active--com.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-01T13:34:11"
+    action: "T-2505: file inception — worktree usage/lifecycle policy (refine per-task default)"
+  - time: "2026-07-03T00:40:52"
+    action: "T-2505: Investigate duplicate T-2502 (branch divergence, audit noise cleaned up)"
+  - time: "2026-07-06T10:18:44"
+    action: "T-2505: incept P-03 red-team test contract — preserve spec + file inception (GO)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 475 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 475
+  commits: 3
+  files_changed: 6
+  lines_added: 667
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2505-ratify-p-03-red-team-test-contract-spec-.md
+generated_by: context-agent-hybrid
