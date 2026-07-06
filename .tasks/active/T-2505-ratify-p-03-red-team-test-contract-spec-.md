@@ -70,22 +70,22 @@ blockers to it — the contract lands red regardless; these bind how it greens.
 
 - **IW-1: §6 sink-sequencing — fold refused-attempt logging into lock-1 (a), or split it to a lock-1b milestone (b)?**
   confidence: 1
-  disposition: deferred
+  disposition: dissolved
   rationale: Sovereign lock-scoping call. Spec §6 flags that (b) reintroduces a smaller version of the exact audit-blind H2 names — argues for (a) unless lock-1 is already too wide. Not a test-design decision; withheld by design.
 
 - **IW-2: What is the `ATTEMPT_LOG` refused-attempt sink named, and what is its schema?**
   confidence: 1
-  disposition: deferred
+  disposition: dissolved
   rationale: No such sink exists today (F4 — .gate-bypass-log.yaml records sanctioned FW_* overrides, not refusals). Spec §5 leaves the name unset on purpose ("naming it is a lock-1/Sovereign decision, not mine to invent"). Must carry ≥ {path, tool/verb, timestamp, task_id?}.
 
 - **IW-3: What cage mechanism does lock-1 pick for Layer A (RT-3) — POSIX perms, process/container boundary, or LSM?**
   confidence: 1
-  disposition: deferred
+  disposition: dissolved
   rationale: RT-3's H1 assertion is mechanism-dependent (spec §5 caveat): EPERM-under-agent-user vs boundary-denial vs LSM-denial. The contract (write refused + recorded) is fixed now; the assertion binds when lock-1 chooses. Blocks finalizing RT-3 only, not filing the contract red.
 
 - **IW-4: Does RT-5 (block-without-log isolator) land immediately against a current gate, or wait for the sink?**
   confidence: 2
-  disposition: deferred
+  disposition: dissolved
   rationale: Spec §4 RT-5 says it is the one case addable against a real gate now (doesn't depend on lock-1) — it converts F4's finding into a standing assertion immediately. But its H2 log-assertion still needs the IW-2 sink to exist. Sovereign call whether to land RT-5 red now or with lock-1b.
 
 ## Exploration Plan
@@ -161,9 +161,18 @@ implements lock-1 must not be the person who authored this contract.
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** NO-GO (operator kill, 2026-07-06 — "do 1")
 
 **Rationale:**
+
+KILLED by operator decision. The P-03 bypass gap is real, but filing the red-team
+contract as an *inception awaiting go/no-go* was unwanted ceremony — the operator asked
+"what is this stuff about red team spec" / "where has the bats gone" across three turns.
+If the coverage gap is pursued later, write RT-1..RT-5 directly under a build task (no
+inception gate needed); the spec artifact
+`docs/reports/SPEC-autonomy-integrity-redteam-2026-07-06.md` stays on disk as the
+contract. The four §8 Open Questions are dissolved (moot — not building it). Original GO
+rationale retained below for the record:
 
 DISCOVERY-governance-test-audit (T-2514), re-verified live against 1.6.80 this session, confirms the P-03 bypass class is genuinely uncovered: fw dispatch approve (lib/dispatch.sh:166) has zero governance tests, no RT tests exist, and no refused-attempt sink exists (.gate-bypass-log.yaml records only sanctioned FW_* overrides, not refusals). The pasted SPEC is well-formed and every RT case red-today premise holds against the repo. Adopting it — commit RT-1..RT-5 RED before lock-1, under the producer-not-judge bind the discovery itself violated — is the mechanism the value ruling already endorsed. GO to ratify + land the contract red. The four §8 open items (sink sequencing a/b, ATTEMPT_LOG name+schema, RT-3 cage mechanism, RT-5 timing) are Sovereign sub-decisions within the GO, not blockers to it.
 
