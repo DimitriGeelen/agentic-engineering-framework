@@ -723,6 +723,7 @@ def _commit_decision(task_id: str, decision: str):
     delete + an untracked add (two porcelain lines, no rename arrow).
     """
     import subprocess
+    import os  # T-2509: needed for the FW_ALLOW_MASTER_COMMIT env below
     try:
         status = subprocess.run(
             ["git", "status", "--porcelain", "--untracked-files=all"],
@@ -772,10 +773,25 @@ def _commit_decision(task_id: str, decision: str):
         # active→completed deletion (a `git commit -- pathspec` cannot capture a
         # deletion once the path is gone from the working tree; the foreign-staged
         # guard above keeps a whole-index commit scoped).
+        #
+        # T-2509: when the Watchtower serves from a checkout that sits on master
+        # with PROTECT_MASTER=1 (the T-100196 trunk-based flow), the T-2394
+        # master-guard pre-commit hook BLOCKS this direct commit ("master is
+        # merge-only"), leaving every operator decision recorded-but-uncommitted.
+        # A decision made through the Watchtower IS the human's sovereign act via
+        # the sanctioned surface (same principle as the --from-watchtower exemption
+        # for the CLAUDECODE agent-block, T-1262). FW_ALLOW_MASTER_COMMIT=1 is the
+        # master-guard's own documented Tier-2 bypass for exactly this "rare,
+        # deliberate" master write — it WARNs to stderr (auditable) and allows the
+        # commit. Scoped to THIS subprocess only (not os.environ) so agent/session
+        # commits on master stay guarded. Off master / on a feature branch the
+        # guard exits before the bypass matters, so this is a safe no-op there.
+        _commit_env = {**os.environ, "FW_ALLOW_MASTER_COMMIT": "1"}
         msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
         commit = subprocess.run(
             ["git", "commit", "-m", msg],
             cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+            env=_commit_env,
         )
         if commit.returncode != 0:
             return False, (commit.stderr or commit.stdout or "git commit failed").strip()[:200]
