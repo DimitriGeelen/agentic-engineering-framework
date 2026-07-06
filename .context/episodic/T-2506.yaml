@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2506: pre-compact handover silently drops session memory on missing exec bit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T09:33:29Z
+# ============================================================================
+
+task_id: T-2506
+task_name: "pre-compact handover silently drops session memory on missing exec bit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-06T09:18:30Z
+completed: 2026-07-06T09:32:05Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'AC1: `pre-compact.sh` invokes `handover.sh` via the `bash` interpreter (not bare exec), so a missing exec bit cannot drop the handover. Both the `--commit` and `--no-commit` branches.'
+  - 'AC2: Every other handover.sh invocation site reachable under compaction / budget-critical (notably `checkpoint.sh` auto-handover, T-179) is exec-bit-safe — audited, and any bare-exec in a hot path converted to interpreter-invoke. (`checkpoint.sh:182` converted; `bin/fw:4263` `exec` is the user-invoked `fw handover` — a missing bit there fails loudly to the operator, not silently, so out of the silent-memory-loss class.)'
+  - 'AC3: `fw doctor` emits a WARN when the last pre-compact handover FAILED (rc≠0 in `.compact-log`, or a non-empty `.pre-compact.handover.stderr`), naming the recovery.'
+  - 'AC4: Regression bats — mechanism proven (non-exec script runs via `bash`, fails via bare exec) + both call sites pinned to the `bash` form.'
+  - 'AC5: Regression bats — a seeded pre-compact FAILED marker makes `fw doctor` surface the WARN; a clean/absent state does not.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 13
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-2506-pre-compact-handover-silently-drops-sess.md
+generated_by: context-agent-hybrid

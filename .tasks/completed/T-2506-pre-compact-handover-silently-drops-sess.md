@@ -4,12 +4,12 @@ name: "pre-compact handover silently drops session memory on missing exec bit"
 description: >
   pre-compact handover silently drops session memory on missing exec bit
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-008, agents/context/pre-compact.sh, bin/fw]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-06T09:18:30Z
-last_update: 2026-07-06T09:18:30Z
-date_finished: null
+last_update: 2026-07-06T09:32:05Z
+date_finished: 2026-07-06T09:32:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -214,3 +214,15 @@ So the framework's own memory-capture could fail indefinitely while reporting su
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/active/T-2506-pre-compact-handover-silently-drops-sess.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-63909b7f
+- **Timestamp:** 2026-07-06T09:33:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-06T09:32:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2507: Surface recorded-not-surfaced failure sinks in fw doctor (OBS-090)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T10:44:43Z
+# ============================================================================
+
+task_id: T-2507
+task_name: "Surface recorded-not-surfaced failure sinks in fw doctor (OBS-090)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-06T10:32:03Z
+completed: 2026-07-06T10:44:22Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'AC1: Enumerated persistent failure-recording sinks in `lib/`, `agents/`, `bin/fw`. Findings in RCA below (file:line).'
+  - 'AC2: Classified surfaced vs invisible. Result: surfacing is well-covered post-T-2506 — the only genuine *not-surfaced/not-recorded* failure found was checkpoint.sh''s budget-critical auto-handover.'
+  - 'AC3: Surfaced it — checkpoint.sh now records `[checkpoint] Handover generated|FAILED` to `.compact-log`; doctor Check 5d broadened to catch both `[pre-compact]` and `[checkpoint]` and name the source. No manufactured surfacing (generic `*.stderr` sweep was evaluated and rejected — stale-content false positives, inferior to the semantic compact-log check).'
+  - 'AC4: `tests/governance/test_checkpoint_handover_recorded.bats` (6/6) + no regression to T-2506''s suite (12/12 combined).'
+  - 'AC5: Out-of-scope sinks noted in RCA: `notify` ntfy failures are advisory-by-design (not recorded — a deliberate choice, not blindness); `.hook-crashes.log`, mirror divergence, bypass-log are all already surfaced.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-2507-surface-recorded-not-surfaced-failure-si.md
+generated_by: context-agent-hybrid
