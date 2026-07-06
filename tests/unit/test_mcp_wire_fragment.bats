@@ -8,7 +8,7 @@
 #
 # AC mapping (per .tasks/active/T-2272-*.md):
 #   Fragment is valid JSON                    — t1
-#   Fragment shape: framework-mcp + cmd+args  — t2
+#   Fragment shape: fw key + cmd+args         — t2 (key renamed framework-mcp→fw, T-2283)
 #   Fragment args path resolves to server     — t3
 #   `wire-fragment` verb prints valid JSON    — t4
 #   Output matches fragment byte-for-byte     — t5
@@ -30,12 +30,12 @@ setup() {
     [ "$status" -eq 0 ]
 }
 
-@test "t2272:t2 fragment shape: framework-mcp key with command + args" {
+@test "t2272:t2 fragment shape: fw key with command + args" {
     run python3 -c "
 import json
 d = json.load(open('$FRAMEWORK_ROOT/agents/mcp/framework-mcp.mcp-fragment.json'))
-assert 'framework-mcp' in d, 'missing framework-mcp key'
-entry = d['framework-mcp']
+assert 'fw' in d, 'missing fw key'
+entry = d['fw']
 assert 'command' in entry, 'missing command'
 assert 'args' in entry, 'missing args'
 assert isinstance(entry['args'], list), 'args not list'
@@ -48,7 +48,7 @@ assert len(entry['args']) >= 1, 'args empty'
     run python3 -c "
 import json, os
 d = json.load(open('$FRAMEWORK_ROOT/agents/mcp/framework-mcp.mcp-fragment.json'))
-path = d['framework-mcp']['args'][-1]
+path = d['fw']['args'][-1]
 # Either absolute (resolves directly) or relative (resolves under FRAMEWORK_ROOT)
 resolved = path if os.path.isabs(path) else os.path.join('$FRAMEWORK_ROOT', path)
 assert os.path.isfile(resolved), 'server script not found: ' + resolved
@@ -60,7 +60,7 @@ assert resolved.endswith('framework_mcp_server.py'), 'wrong target: ' + resolved
 @test "t2272:t4 fw mcp wire-fragment prints valid JSON to stdout" {
     run "$FRAMEWORK_ROOT/bin/fw" mcp wire-fragment
     [ "$status" -eq 0 ]
-    echo "$output" | python3 -c "import json,sys; d=json.load(sys.stdin); assert 'framework-mcp' in d"
+    echo "$output" | python3 -c "import json,sys; d=json.load(sys.stdin); assert 'fw' in d"
 }
 
 @test "t2272:t5 wire-fragment output matches fragment file byte-for-byte" {
