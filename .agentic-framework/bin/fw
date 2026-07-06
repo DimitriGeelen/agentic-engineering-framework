@@ -1057,6 +1057,27 @@ do_doctor() {
         fi
     fi
 
+    # Check 5d: Last pre-compact handover outcome (T-2506)
+    # T-2374 made pre-compact log "Handover FAILED (rc=N)" to .compact-log instead of
+    # lying about success — but that FAILED line surfaced NOWHERE. A handover that dies
+    # (e.g. the exec-bit-loss class that dropped memory across /compact) is recorded and
+    # invisible. Surface it here: if the most recent pre-compact handover entry is a
+    # failure, the next compaction will reinject a stale handover. (Directive 2 —
+    # recorded is not surfaced.)
+    local compact_log="$PROJECT_ROOT/.context/working/.compact-log"
+    if [ -f "$compact_log" ]; then
+        local last_ho_line
+        last_ho_line=$(grep -E '\[pre-compact\].*Handover' "$compact_log" 2>/dev/null | tail -1)
+        if echo "$last_ho_line" | grep -q "FAILED"; then
+            _doctor_warn_host "Last pre-compact handover FAILED — memory capture is broken; /compact will reinject a stale handover"
+            echo -e "         Cause: $last_ho_line"
+            echo -e "         Details: $PROJECT_ROOT/.context/working/.pre-compact.handover.stderr"
+            echo -e "         Recover: fw handover --no-commit   (repoints LATEST.md to a fresh capture)"
+        elif [ -n "$last_ho_line" ]; then
+            echo -e "  ${GREEN}OK${NC}  Last pre-compact handover succeeded"
+        fi
+    fi
+
     # Check 6: Claude Code hooks — validate paths resolve (G-021 path isolation)
     local settings_file="$PROJECT_ROOT/.claude/settings.json"
     if [ -f "$settings_file" ]; then

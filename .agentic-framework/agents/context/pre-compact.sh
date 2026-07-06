@@ -72,10 +72,17 @@ fi
 # so a failed handover (e.g. one that left LATEST.md dangling) was reported as
 # success (Directive-2: no silent failures).
 _ho_stderr="$PROJECT_ROOT/.context/working/.pre-compact.handover.stderr"
+# T-2506: invoke via the `bash` interpreter, NOT bare exec. A bare exec is
+# exec-bit-dependent — when the vendored handover.sh loses its +x (the recurring
+# exec-bit-loss-on-vendor class, OBS-087/090), the exec dies with `Permission
+# denied` (rc≈126), the handover never runs, LATEST.md is never repointed, and the
+# fresh session reinjects a STALE handover ("we keep losing memory"). Interpreter
+# invocation ignores the exec bit, so this class can never again silently drop a
+# handover (Directive 1 — antifragile). Origin: S-2026-0706 memory-loss RCA.
 if [ "$SKIP_COMMIT" = "true" ]; then
-    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --no-commit 2>"$_ho_stderr"
+    bash "$FRAMEWORK_ROOT/agents/handover/handover.sh" --no-commit 2>"$_ho_stderr"
 else
-    "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>"$_ho_stderr"
+    bash "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>"$_ho_stderr"
 fi
 _ho_rc=$?
 

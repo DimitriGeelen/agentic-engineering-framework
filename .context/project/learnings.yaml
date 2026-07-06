@@ -3812,3 +3812,10 @@ X'` returning empty group."
   date: 2026-07-05
   context: Rescued onto master via T-100199 (original L-489 stranded on t2416)
   application: TBD
+- id: L-498
+  learning: "PreCompact/checkpoint handover invoked handover.sh by bare exec — a missing exec bit on the vendored copy (OBS-087/090 class) killed it with Permission denied, silently dropping session memory across /compact. Invoke governance scripts via 'bash <script>' in auto-capture hot paths so exec-bit loss can never drop memory; and surface recorded-but-invisible failures (.compact-log FAILED) in fw doctor."
+  source: P-001
+  task: T-2506
+  date: 2026-07-06
+  context: Added via context agent
+  application: TBD

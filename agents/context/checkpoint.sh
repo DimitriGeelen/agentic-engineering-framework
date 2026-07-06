@@ -179,7 +179,11 @@ warn_by_tokens() {
             # cannot stall the Claude Code session for hours on slow networks.
             # Default 60s (push×N + commit + audit + handover write).
             _ah_total_timeout="${FW_HANDOVER_TOTAL_TIMEOUT:-60}"
-            if timeout "$_ah_total_timeout" "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
+            # T-2506: `bash <script>`, not bare exec — the budget-critical auto-handover
+            # is the OTHER silent memory-capture path (T-179). A missing exec bit on the
+            # vendored handover.sh would drop it exactly like pre-compact did. Interpreter
+            # invocation makes it exec-bit-immune. Same class as pre-compact.sh fix.
+            if timeout "$_ah_total_timeout" bash "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit 2>&1 | tail -5 >&2; then
                 echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
                 # T-186: Write restart signal for wrapper script (T-179 auto-restart)
                 local restart_signal="$CONTEXT_DIR/working/.restart-requested"
