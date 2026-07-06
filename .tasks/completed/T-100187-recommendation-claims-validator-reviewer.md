@@ -12,16 +12,16 @@ description: >
   Exposed via fw reviewer T-XXX on inception tasks. Advisory only — no change
   to fw inception decide, no auto-tick.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/reviewer/recommendation_claims.py, lib/reviewer/static_scan.py, tests/unit/test_recommendation_claims.py]
 related_tasks: [T-100186]
 created: 2026-07-05T00:30:00Z
-last_update: 2026-07-04T22:45:16Z
-date_finished:
+last_update: 2026-07-06T12:55:41Z
+date_finished: 2026-07-06T12:55:41Z
 cost_estimate_proposed:
   - ts: '2026-07-04T22:30:02Z'
     estimator: bvp-estimator-v1-heuristic
@@ -92,3 +92,24 @@ rm -rf /tmp/.t100187-tree && git worktree list >/dev/null 2>&1; mkdir -p /tmp/.t
 
 ### 2026-07-04T22:45:16Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-81ff67b6
+- **Timestamp:** 2026-07-06T12:55:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** yes
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 6
+     - evidence: `rm -rf /tmp/.t100187-tree && git worktree list >/dev/null 2>&1; mkdir -p /tmp/.t100187-tree && git archive origin/master lib tests web policy | tar -x -C /tmp/.t100187-tree && cd /tmp/.t100187-tree &&`
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `rm -rf`
+
+### 2026-07-06T12:55:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

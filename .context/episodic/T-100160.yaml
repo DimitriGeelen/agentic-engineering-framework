@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100160: create-task.sh interactive prompts hang forever in no-tty contexts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T12:57:56Z
+# ============================================================================
+
+task_id: T-100160
+task_name: "create-task.sh interactive prompts hang forever in no-tty contexts"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T14:27:26Z
+completed: 2026-07-06T12:57:47Z
+duration_days: 2
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'With stdin not a tty and a required field missing, `create-task.sh` exits non-zero with an error naming the missing flag(s) instead of prompting'
+  - 'The tty prompt path is preserved — the no-tty guard precedes the first prompt and fires only when stdin is not a tty (structural pin; live-pty test is racy under bats)'
+  - 'bats regression pins the non-interactive fail-fast behaviour'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2790 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2790
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-100160-create-tasksh-interactive-prompts-hang-f.md
+generated_by: context-agent-hybrid

@@ -2179,3 +2179,17 @@ decisions:
     date: 2026-07-06
     task: T-100144
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-314
+    decision: "convert ALL file-writing YAML dump sites — including new-file"
+    scope: project
+    date: 2026-07-06
+    task: T-100191
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-315
+    decision: "file-level ratchet in `tests/unit/atomic_yaml_write_lint.bats`"
+    scope: project
+    date: 2026-07-06
+    task: T-100191
+    rationale: "Auto-captured from task file on completion"

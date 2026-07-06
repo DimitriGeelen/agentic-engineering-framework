@@ -7,9 +7,9 @@ description: >
   Keep three-question prose. Move CLI into collapsible details fallback for headless
   contexts. Add Playwright pin to guard button presence.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, arc-mechanics, ux]
 components: []
@@ -25,8 +25,8 @@ related_tasks: [T-2347, T-1911, T-2348]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-12T10:38:21Z
-last_update: 2026-07-05T00:24:40Z
-date_finished:
+last_update: 2026-07-06T13:01:31Z
+date_finished: 2026-07-06T13:01:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -216,3 +216,15 @@ git show origin/master:tests/playwright/test_arc_close_button.py > /tmp/.t2349-p
 ### 2026-07-05T00:24:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e2a0f42
+- **Timestamp:** 2026-07-06T13:01:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-06T13:01:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

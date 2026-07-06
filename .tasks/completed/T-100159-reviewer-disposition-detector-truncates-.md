@@ -1,21 +1,21 @@
 ---
-id: T-100189
-name: "D5 partial-complete exclusion misses '### Human (suffix)' headings (T-1062
-  FP)"
+id: T-100159
+name: "reviewer disposition detector truncates multi-line rationale (false answered-without-citation)"
 description: >
-  is_partial_complete() in the D5 audit block matches '### Agent\n'/'### Human\n'
-  exactly; headings with parenthetical suffixes (T-1679-split style) escape the exclusion
-  so T-1062 still flags as a lifecycle anomaly despite being partial-complete. Relax
-  both heading regexes and merge multiple ### Agent sections; add a bats fixture with
-  a suffixed heading. Origin: T-100122 RCA residual.
+  Pickup 074 defect 2: lib/reviewer/static_scan.py:1604 rationale regex is single-line
+  (re.MULTILINE .+? to EOL), so multi-line rationale entries in Open Questions dispositions
+  lose their citation lines before _has_citation runs — emitting false answered-without-citation
+  CONCERNs. Fix: accumulate rationale text until the next field/entry boundary (^\s*\w+:
+  or list-entry start) before citation check. Sibling of T-2449 (defect 1, already
+  fixed).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
-related_tasks: [T-100122]
+components: [lib/reviewer/static_scan.py]
+related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -26,9 +26,9 @@ related_tasks: [T-100122]
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-04T22:42:43Z
-last_update: 2026-07-04T22:58:56Z
-date_finished:
+created: 2026-07-04T14:18:31Z
+last_update: 2026-07-06T12:57:14Z
+date_finished: 2026-07-06T12:57:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -39,18 +39,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-07-04T22:45:01Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 6
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
-      (no-signal)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-04T22:45:02Z'
+  - ts: '2026-07-04T14:24:35Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -72,18 +62,18 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-100189: D5 partial-complete exclusion misses '### Human (suffix)' headings (T-1062 FP)
+# T-100159: reviewer disposition detector truncates multi-line rationale (false answered-without-citation)
 
 ## Context
 
-T-100122 residual: `is_partial_complete()` in the D5 audit block requires `### Agent\n`/`### Human\n` exactly, so annotated headings like `### Human (T-1679 split — …)` (T-1062's real shape) escape the exclusion and the task re-flags daily as a lifecycle anomaly despite being a legitimate partial-complete.
+Pickup 074 (from the reviewer-hardening session) reported two defects in the T-2191 disposition detector. Defect 1 (HTML-comment placeholder parsed as real entry) was already fixed by T-2449. Defect 2 is confirmed real and unfixed: the rationale extraction at `lib/reviewer/static_scan.py:1604` uses a single-line regex (`^\s*rationale:\s*(.+?)$` with `re.MULTILINE`), so a rationale that wraps onto continuation lines is truncated to its first line before `_has_citation` runs. If the citation (T-XXX / file path / URL) sits on a continuation line, the detector emits a false `answered-without-citation` CONCERN.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] D5 heading regexes tolerate suffix text after `### Agent`/`### Human` and merge multiple `### Agent` sections before counting ticks
-- [x] bats fixture with suffixed headings + dual Agent sections is excluded; suffixed-heading task with an unticked Agent AC still flags
-- [x] Landed D5 block re-run against the live corpus no longer lists T-1062
+- [x] Rationale extraction accumulates continuation lines until the next field (`key:`), next list bullet, or blank line — a citation on line 2+ of a wrapped rationale is seen by `_has_citation`
+- [x] Single-line rationales and genuinely citation-less rationales behave exactly as before (no detector regression)
+- [x] Regression test covers the multi-line-rationale-with-citation case (no finding) and multi-line-without-citation (finding fires)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -142,21 +132,39 @@ T-100122 residual: `is_partial_complete()` in the D5 audit block requires `### A
 # stdin on. `echo "$out"` is small and immediate; grep scans the whole captured
 # string anyway, so the tail-3 was cosmetic. Drop it: `echo "$out" | grep -q PAT`.
 #
-# Slice landed via worktree flow — origin-based checks (MAIN branch lags origin/master).
-git show origin/master:agents/audit/audit.sh > /tmp/.t100189-audit.sh && grep -q "T-100189: headings may carry suffixes" /tmp/.t100189-audit.sh
-git show origin/master:tests/unit/audit_d5_task_lifecycle.bats > /tmp/.t100189-bats && grep -q "T-100189: partial-complete with suffixed headings" /tmp/.t100189-bats
-# Landed D5 block re-run: T-1062 (suffixed-heading partial-complete) no longer flagged
-PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework python3 -c "import re,io,contextlib,sys;src=open('/tmp/.t100189-audit.sh').read();m=re.search(\"python3 << 'D5EOF'\\n(.*?)\\nD5EOF\", src, re.S);buf=io.StringIO();ctx=contextlib.redirect_stdout(buf);ctx.__enter__();exec(compile(m.group(1),'d5','exec'));ctx.__exit__(None,None,None);sys.exit(1 if 'T-1062' in buf.getvalue() else 0)"
+# Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
+# (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
+# Verification block. Otherwise the canonical hash diverges and `fw doctor`
+# reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
+# Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
+# the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+git show origin/master:lib/reviewer/static_scan.py > /tmp/.t100159 && grep -q "_extract_rationale" /tmp/.t100159
+git show origin/master:tests/unit/reviewer_disposition_incomplete.bats > /tmp/.t100159b && grep -q "T-100159" /tmp/.t100159b
 
 ## RCA
 
-**Symptom:** T-1062 kept re-flagging in the daily D5 audit as a lifecycle anomaly despite being a legitimate partial-complete (human-owned, all Agent ACs ticked, Human AC pending).
+**Symptom:** reviewer emitted `answered-without-citation` CONCERNs on inception IW-N entries whose rationale wrapped onto a second line, even when that second line carried a valid citation (T-XXX / docs/reports path).
 
-**Root cause:** T-100122's `is_partial_complete()` matched section headings with exact-`\n` regexes (`### Agent\n` / `### Human\n`); T-1062 uses annotated headings from a T-1679 AC split (`### Human (T-1679 split — …)`) plus two `### Agent` sections, so the exclusion never matched and the task fell through to the stale-active flag.
+**Root cause:** `lib/reviewer/static_scan.py` extracted the rationale with a single-line regex (`^\s*rationale:\s*(.+?)$`, `re.MULTILINE`) — continuation lines were never part of the text `_has_citation` inspected.
 
-**Why structurally allowed:** the T-100122 bats fixtures only covered plain headings — the annotated-heading corpus shape (introduced by legitimate AC-split practice) had no fixture, so the regex gap shipped green.
+**Why structurally allowed:** the detector's own bats fixtures only used one-line rationales, so the truncation was invisible to the test suite; real task files wrap prose freely.
 
-**Prevention:** heading regexes relaxed to `### Agent[^\n]*\n` / `### Human[^\n]*\n` with multi-section merge; two new bats fixtures pin the suffixed-heading shapes (excluded when complete, flagged when an Agent AC is unticked).
+**Prevention:** `_extract_rationale` accumulates continuation lines to the next field/bullet/blank boundary; three bats cases pin wrapped-with-citation (pass), wrapped-without (fire), and field-boundary non-rescue.
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -205,10 +213,23 @@ PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework python3 -c "import re,io,con
 
 ## Updates
 
-### 2026-07-04T22:42:43Z — task-created [task-create-agent]
+### 2026-07-04T14:18:31Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100189-d5-partial-complete-exclusion-misses--hu.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-100159-reviewer-disposition-detector-truncates-.md
 - **Context:** Initial task creation
 
-### 2026-07-04T22:58:56Z — status-update [task-update-agent]
+### 2026-07-04T14:24:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-35bcdc27
+- **Timestamp:** 2026-07-06T12:57:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-06T12:57:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

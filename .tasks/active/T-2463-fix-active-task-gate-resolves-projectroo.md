@@ -4,9 +4,9 @@ name: "fix: active-task gate resolves PROJECT_ROOT to main repo in worktree sess
 description: >
   fix: active-task gate resolves PROJECT_ROOT to main repo in worktree sessions (reads wrong focus.yaml) — OBS-080
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-23T08:01:54Z
-last_update: 2026-06-23T08:01:54Z
-date_finished: null
+last_update: 2026-07-06T13:02:03Z
+date_finished: 2026-07-06T13:02:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -274,3 +274,19 @@ sessions after FF-merge to master (same constraint as T-2462).
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2463-fix-active-task-gate-resolves-projectroo.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3d1bd8ff
+- **Timestamp:** 2026-07-06T13:02:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **external-publish** (high) — External publish or release
+     - matched: `merge to master`
+
+### 2026-07-06T13:02:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

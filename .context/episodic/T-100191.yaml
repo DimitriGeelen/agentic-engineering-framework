@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100191: Sweep: atomic-write pattern for all .context YAML writers (10+ non-atomic yaml.dump
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T13:00:59Z
+# ============================================================================
+
+task_id: T-100191
+task_name: "Sweep: atomic-write pattern for all .context YAML writers (10+ non-atomic yaml.dump"
+workflow_type: refactor
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-05T00:21:25Z
+completed: 2026-07-06T13:00:49Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Every census site classified (convert vs exempt-with-reason) in this task''s Decisions'
+  - 'All convert-class sites write via same-dir temp + os.replace (or mv on the shell side)'
+  - 'Lint test pins the pattern corpus-wide (new truncating yaml.dump writers on durable .context state fail CI)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-05 — census classification (convert vs exempt)'
+    chose: 'convert ALL file-writing YAML dump sites — including new-file'
+    rationale: 'new-file creates are read by pollers/consumers (bus manifest,'
+    alternatives_rejected: ['exempting new-file creates as "no durable state destroyed" —']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2199 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2199
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-100191-sweep-atomic-write-pattern-for-all-conte.md
+generated_by: context-agent-hybrid

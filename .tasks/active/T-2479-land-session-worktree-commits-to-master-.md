@@ -4,9 +4,9 @@ name: "land session worktree commits to master via fw integrate run (dogfood)"
 description: >
   Land T-2473/2476/2478 branch commits onto master using the tool built this session (fw integrate run --push). Run preflight check + dry-run first; the actual --push is operator-authorized only.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-24T08:23:39Z
-last_update: 2026-06-24T08:23:39Z
-date_finished: null
+last_update: 2026-07-06T13:04:54Z
+date_finished: 2026-07-06T13:04:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -180,9 +180,46 @@ date_finished: null
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:** The dogfood *tooling* deliverable is done — `fw integrate check/run --dry-run`
+were exercised and churn was classified (Agent ACs 3/3). But the Human AC is a **live
+branch→master push of a specific worktree** (`inception-gov-payload-mediation`), which is
+operator authority, and — verified 2026-07-06 — that worktree still exists **unlanded**
+(`f59472365` local; branch `worktree-inception-gov-payload-mediation` at `2d108af23` on origin).
+Whether that worktree's *content* is ready to land is a separate assessment this dogfood task
+never made. This is a genuine evidence gap (readiness of another branch), not a confidence hedge:
+I have not walked the payload-mediation worktree's task/AC state, so I cannot responsibly
+recommend GO on landing it. It is one of the stranded worktrees noted in T-100199.
+
+**Recommended next step (not this task):** assess the `inception-gov-payload-mediation` worktree
+on its own — if its work is complete, land it via `fw integrate run master --push` from the main
+checkout (operator-authorized); if not, resume or prune it. Don't let this 22-day-old dogfood
+ticket gate that decision.
+
+**Evidence:**
+- Agent ACs 3/3 checked (integrate check + dry-run + churn classification) — Verification passes
+- `git worktree list` (2026-07-06): `inception-gov-payload-mediation` present at `f59472365`, unlanded
+- `git ls-remote origin`: `worktree-inception-gov-payload-mediation` → `2d108af23`, still on origin
+- Trunk-based flow (T-100196) now supersedes the session-branch-landing pattern this task dogfooded
+
 ## Updates
 
 ### 2026-06-24T08:23:39Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.claude/worktrees/inception-gov-payload-mediation/.tasks/active/T-2479-land-session-worktree-commits-to-master-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5f208073
+- **Timestamp:** 2026-07-06T13:04:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-06T13:04:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

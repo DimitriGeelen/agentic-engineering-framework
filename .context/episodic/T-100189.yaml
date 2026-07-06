@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100189: D5 partial-complete exclusion misses '### Human (suffix)' headings (T-1062
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T12:59:50Z
+# ============================================================================
+
+task_id: T-100189
+task_name: "D5 partial-complete exclusion misses '### Human (suffix)' headings (T-1062"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T22:42:43Z
+completed: 2026-07-06T12:59:32Z
+duration_days: 2
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'D5 heading regexes tolerate suffix text after `### Agent`/`### Human` and merge multiple `### Agent` sections before counting ticks'
+  - 'bats fixture with suffixed headings + dual Agent sections is excluded; suffixed-heading task with an unticked Agent AC still flags'
+  - 'Landed D5 block re-run against the live corpus no longer lists T-1062'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2296 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2296
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-100189-d5-partial-complete-exclusion-misses--hu.md
+generated_by: context-agent-hybrid

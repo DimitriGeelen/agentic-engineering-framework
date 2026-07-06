@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100190: audit.sh metrics-history writer non-atomic: truncating open-w corrupts YAML when killed mid-dump
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-06T13:00:24Z
+# ============================================================================
+
+task_id: T-100190
+task_name: "audit.sh metrics-history writer non-atomic: truncating open-w corrupts YAML when killed mid-dump"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-04T23:37:38Z
+completed: 2026-07-06T13:00:14Z
+duration_days: 2
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - '`agents/audit/audit.sh` metrics-history block writes via same-dir temp file + `os.replace` (no truncating `open(METRICS_FILE, "w")` on the live path)'
+  - 'bats test pins the atomic pattern (temp+replace present; direct `"w"` write on METRICS_FILE absent) and the writer round-trips: run the extracted python block against a fixture history and the output parses as YAML with entries preserved'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 2242 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 2242
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.claude/worktrees/t100199-close/.tasks/completed/T-100190-auditsh-metrics-history-writer-non-atomi.md
+generated_by: context-agent-hybrid
