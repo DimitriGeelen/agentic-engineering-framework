@@ -4,17 +4,10 @@ type: script
 subsystem: unknown
 location: tests/playwright/test_command_palette.py
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by: []
 last_verified: 2026-05-23
 created_by: unknown
+standalone: true
+standalone_reason: playwright black-box HTTP test — no code-import edges (T-2511)
