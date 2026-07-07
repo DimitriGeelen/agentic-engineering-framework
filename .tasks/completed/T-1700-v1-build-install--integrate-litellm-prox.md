@@ -18,6 +18,7 @@ arc_id: orchestrator-rethink
 created: 2026-05-03T15:46:59Z
 last_update: 2026-06-15T17:24:03Z
 date_finished: 2026-06-15T21:40:41Z
+bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
