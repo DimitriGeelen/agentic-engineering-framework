@@ -1,0 +1,16 @@
+id: lib/hook_paths.py
+name: hook_paths
+type: script
+subsystem: framework-core
+location: lib/hook_paths.py
+tags: []
+purpose: 'TODO: describe what this component does'
+depends_on:
+- target: lib/paths.sh
+  type: calls
+- target: bin/fw
+  type: calls
+depended_by: []
+last_verified: 2026-07-07
+created_by: unknown
+last_enriched: '2026-07-07'

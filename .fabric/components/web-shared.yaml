@@ -19,6 +19,8 @@ depends_on:
   type: calls
 - target: web/blueprints/settings.py
   type: registers
+- target: lib/reviewer/recommendation_claims.py
+  type: calls
 last_verified: 2026-02-20
 created_by: T-227
 depended_by:
@@ -142,4 +144,4 @@ depended_by:
   type: called_by
 - target: tests/unit/test_orchestrator_workflow_coverage.py
   type: called_by
-last_enriched: '2026-05-27'
+last_enriched: '2026-07-07'

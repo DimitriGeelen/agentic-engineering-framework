@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
+- target: lib/reviewer/recommendation_claims.py
+  type: called_by
 last_verified: 2026-05-22
 created_by: unknown
-last_enriched: '2026-05-22'
+last_enriched: '2026-07-07'

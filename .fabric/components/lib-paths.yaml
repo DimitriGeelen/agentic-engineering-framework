@@ -137,6 +137,12 @@ depended_by:
   type: called_by
 - target: tests/unit/t2380_transcript_dir_encoding.bats
   type: tests_by
+- target: tests/unit/t2465_reanchor_from_cwd.bats
+  type: called_by
+- target: tests/unit/t2465_reanchor_from_cwd.bats
+  type: tests_by
+- target: lib/hook_paths.py
+  type: called_by
 last_verified: 2026-03-10
 created_by: T-412
-last_enriched: '2026-06-16'
+last_enriched: '2026-07-07'
