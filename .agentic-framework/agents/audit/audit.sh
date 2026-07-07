@@ -2289,35 +2289,47 @@ if [ -f "$INBOX_FILE" ]; then
     if [ "$pending_obs" -gt 0 ]; then
         # Check for urgent pending observations
         # Count blocks that have both status: pending and urgent: true
+        # T-2514: parse YAML properly. The prior regex block-split
+        # `re.split(r'\n  - ', content)` did NOT match the real inbox format
+        # (observations are `- id:` at column 0, not `  - `), producing one
+        # mega-block whose first `captured:` (oldest obs) got mis-associated
+        # with a `status: pending` bleeding in from a recent obs → phantom
+        # "stale"/"urgent" counts. YAML parse is per-observation and exact.
         urgent_obs=$(python3 -c "
-import re
-with open('$INBOX_FILE') as f:
-    content = f.read()
-blocks = re.split(r'\n  - ', content)
-urgent = sum(1 for b in blocks[1:] if 'status: pending' in b and 'urgent: true' in b)
-print(urgent)
+import yaml
+try:
+    d = yaml.safe_load(open('$INBOX_FILE')) or {}
+    obs = d.get('observations', []) if isinstance(d, dict) else []
+except Exception:
+    obs = []
+print(sum(1 for o in obs if isinstance(o, dict) and o.get('status') == 'pending' and o.get('urgent') is True))
 " 2>/dev/null || true)
 
         # Check for stale observations (>7 days old)
         stale_obs=$(python3 -c "
-import re
-from datetime import datetime, timedelta
-with open('$INBOX_FILE') as f:
-    content = f.read()
-blocks = re.split(r'\n  - ', content)
-cutoff = datetime.utcnow() - timedelta(days=7)
+import yaml
+from datetime import datetime, timedelta, timezone
+try:
+    d = yaml.safe_load(open('$INBOX_FILE')) or {}
+    obs = d.get('observations', []) if isinstance(d, dict) else []
+except Exception:
+    obs = []
+cutoff = datetime.now(timezone.utc) - timedelta(days=7)
 stale = 0
-for b in blocks[1:]:
-    if 'status: pending' not in b:
+for o in obs:
+    if not isinstance(o, dict) or o.get('status') != 'pending':
         continue
-    m = re.search(r'captured: (\S+)', b)
-    if m:
-        try:
-            ts = datetime.fromisoformat(m.group(1).replace('Z', '+00:00')).replace(tzinfo=None)
-            if ts < cutoff:
-                stale += 1
-        except:
-            pass
+    c = o.get('captured')
+    if c is None:
+        continue
+    try:
+        ts = c if isinstance(c, datetime) else datetime.fromisoformat(str(c).replace('Z', '+00:00'))
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
+        if ts < cutoff:
+            stale += 1
+    except Exception:
+        pass
 print(stale)
 " 2>/dev/null || true)
 

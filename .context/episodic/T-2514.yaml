@@ -1,0 +1,178 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2514: audit stale-obs check false-positive: regex block-split mis-associates captured date with pending status
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-07T17:50:39Z
+# ============================================================================
+
+task_id: T-2514
+task_name: "audit stale-obs check false-positive: regex block-split mis-associates captured date with pending status"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-07T17:46:08Z
+completed: 2026-07-07T17:50:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-03T04:12:40+02:00
+last_commit: 2026-07-03T04:12:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  DISCOVERY governance test suite audit — adversarial confirmed, P-03 bypass gap found
+
+# Key outcomes
+outcomes:
+  - '`stale_obs` check in `audit.sh` parses `inbox.yaml` with `yaml.safe_load` per-observation (no regex block-split); tz-aware `datetime.now(timezone.utc)` cutoff.'
+  - '`urgent_obs` check likewise uses a per-observation YAML parse (same block-split bug).'
+  - 'On the current real inbox (0 genuinely->7d-pending obs), the fixed check returns `stale=0` — the phantom WARN is gone.'
+  - 'Regression proof: a synthetic inbox with one `status: pending` obs captured >7d ago returns `stale=1`; the same obs `status: dismissed` returns `stale=0`; and an old-dismissed + recent-pending pair (the exact false-positive shape) returns `stale=0`.'
+  - '`bash -n agents/audit/audit.sh` passes.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/2026-07-02.yaml'
+  - '.context/audits/2026-07-03.yaml'
+  - '.context/audits/cron/LATEST-CRON.yaml'
+  - '.context/audits/discoveries/LATEST.yaml'
+  - '.context/bvp-driver-proposals.jsonl'
+  - '.context/episodic/T-2498.yaml'
+  - '.context/episodic/T-2499.yaml'
+  - '.context/episodic/T-2514.yaml'
+  - '.context/monitors/liveness.jsonl'
+  - '.context/monitors/liveness-latest.yaml'
+  - '.context/monitors/watchtower-rss.jsonl'
+  - '.context/monitors/watchtower-rss-latest.yaml'
+  - '.context/project/decisions.yaml'
+  - '.context/project/metrics-history.yaml'
+  - '.context/working/.approval-notified'
+  - '.context/working/.continuous-mode.yaml'
+  - '.context/working/.edit-counter'
+  - '.context/working/feedback-stream.yaml'
+  - '.context/working/focus.yaml'
+  - '.context/working/.gate-bypass-log.yaml'
+  - '.context/working/.hook-counter'
+  - '.context/working/.hook-crashes.log'
+  - '.context/working/.hook-failure-counter'
+  - '.context/working/.loop-detect.json'
+  - '.context/working/.mirror-sync.log'
+  - '.context/working/.pre-compact.handover.stderr'
+  - '.context/working/.pre-compact.last-run'
+  - '.context/working/.session-metrics.yaml'
+  - '.context/working/session.yaml'
+  - '.context/working/watchtower.log'
+  - 'docs/reports/DISCOVERY-governance-test-audit-2026-06-21.md'
+  - '.tasks/active/T-100000-audit-warn--task-t-99974-audit-warn--tas.md'
+  - '.tasks/active/T-100001-audit-warn--task-t-99975-audit-warn--tas.md'
+  - '.tasks/active/T-100002-audit-warn--task-t-99976-audit-warn--tas.md'
+  - '.tasks/active/T-100003-audit-warn--task-t-99977-audit-warn--tas.md'
+  - '.tasks/active/T-100004-audit-warn--task-t-99978-audit-warn--ctl.md'
+  - '.tasks/active/T-100005-audit-warn--task-t-99979-audit-warn--ctl.md'
+  - '.tasks/active/T-100006-audit-warn--task-t-99980-audit-warn--ctl.md'
+  - '.tasks/active/T-100007-audit-warn--task-t-100000-audit-warn--ta.md'
+  - '.tasks/active/T-100008-audit-warn--task-t-100001-audit-warn--ta.md'
+  - '.tasks/active/T-100009-audit-warn--task-t-100002-audit-warn--ta.md'
+  - '.tasks/active/T-100010-audit-warn--task-t-100003-audit-warn--ta.md'
+  - '.tasks/active/T-100011-audit-warn--task-t-100004-audit-warn--ta.md'
+  - '.tasks/active/T-100012-audit-warn--task-t-100005-audit-warn--ta.md'
+  - '.tasks/active/T-100013-audit-warn--task-t-99980-audit-warn--ctl.md'
+  - '.tasks/active/T-100014-audit-warn--task-t-99982-audit-warn--d5-.md'
+  - '.tasks/active/T-100015-audit-warn--task-t-99983-audit-warn--tas.md'
+  - '.tasks/active/T-100016-audit-warn--task-t-99984-audit-warn--tas.md'
+  - '.tasks/active/T-100017-audit-warn--task-t-99985-audit-warn--tas.md'
+  - '.tasks/active/T-100018-audit-warn--task-t-99986-audit-warn--tas.md'
+  - '.tasks/active/T-100019-audit-warn--task-t-99987-audit-warn--tas.md'
+  - '.tasks/active/T-100020-audit-warn--task-t-99988-audit-warn--tas.md'
+  - '.tasks/active/T-100021-audit-warn--task-t-99989-audit-warn--tas.md'
+  - '.tasks/active/T-100022-audit-warn--task-t-99990-audit-warn--tas.md'
+  - '.tasks/active/T-100023-audit-warn--task-t-99991-audit-warn--tas.md'
+  - '.tasks/active/T-100024-audit-warn--task-t-99992-audit-warn--tas.md'
+  - '.tasks/active/T-2509-audit-warn--task-t-2469-audit-warn--ctl-.md'
+  - '.tasks/active/T-2510-audit-warn--task-t-2475-audit-warn--task.md'
+  - '.tasks/active/T-2511-address-inception-tasks-with-auto-tick-m.md'
+  - '.tasks/active/T-2512-audit-warn--task-t-2476-audit-warn--task.md'
+  - '.tasks/active/T-2513-audit-warn--task-t-2477-audit-warn--task.md'
+  - '.tasks/active/T-2515-audit-warn--task-t-2478-audit-warn--task.md'
+  - '.tasks/active/T-2516-audit-warn--task-t-2479-audit-warn--task.md'
+  - '.tasks/active/T-2517-audit-warn--task-t-2480-audit-warn--task.md'
+  - '.tasks/active/T-2518-audit-warn--task-t-2481-audit-warn--task.md'
+  - '.tasks/active/T-2519-audit-warn--task-t-2482-audit-warn--task.md'
+  - '.tasks/active/T-2520-audit-warn--task-t-2483-audit-warn--task.md'
+  - '.tasks/active/T-2521-audit-warn--task-t-2484-audit-warn--task.md'
+  - '.tasks/active/T-2522-audit-warn--task-t-2485-audit-warn--task.md'
+  - '.tasks/active/T-2523-audit-warn--task-t-2486-audit-warn--task.md'
+  - '.tasks/active/T-2524-audit-warn--task-t-2487-audit-warn--task.md'
+  - '.tasks/active/T-99971-audit-warn--task-t-2488-audit-warn--task.md'
+  - '.tasks/active/T-99972-audit-warn--task-t-2489-audit-warn--task.md'
+  - '.tasks/active/T-99973-audit-warn--task-t-2490-audit-warn--task.md'
+  - '.tasks/active/T-99974-audit-warn--task-t-2491-audit-warn--task.md'
+  - '.tasks/active/T-99975-audit-warn--task-t-2492-audit-warn--task.md'
+  - '.tasks/active/T-99976-audit-warn--task-t-2493-audit-warn--task.md'
+  - '.tasks/active/T-99977-audit-warn--task-t-2494-audit-warn--task.md'
+  - '.tasks/active/T-99978-audit-warn--ctl-029-t-2121-has-all-agent.md'
+  - '.tasks/active/T-99979-audit-warn--ctl-029-t-2268-has-all-agent.md'
+  - '.tasks/active/T-99980-audit-warn--ctl-029-t-2306-has-all-agent.md'
+  - '.tasks/active/T-99981-audit-warn--ctl-029-t-2309-has-all-agent.md'
+  - '.tasks/active/T-99982-audit-warn--d5-task-lifecycle--28-anomal.md'
+  - '.tasks/active/T-99983-audit-warn--task-t-2509-audit-warn--task.md'
+  - '.tasks/active/T-99984-audit-warn--task-t-2510-audit-warn--task.md'
+  - '.tasks/active/T-99985-audit-warn--task-t-2512-audit-warn--task.md'
+  - '.tasks/active/T-99986-audit-warn--task-t-2513-audit-warn--task.md'
+  - '.tasks/active/T-99987-audit-warn--task-t-2515-audit-warn--task.md'
+  - '.tasks/active/T-99988-audit-warn--task-t-2516-audit-warn--task.md'
+  - '.tasks/active/T-99989-audit-warn--task-t-2517-audit-warn--task.md'
+  - '.tasks/active/T-99990-audit-warn--task-t-2518-audit-warn--task.md'
+  - '.tasks/active/T-99991-audit-warn--task-t-2519-audit-warn--task.md'
+  - '.tasks/active/T-99992-audit-warn--task-t-2520-audit-warn--task.md'
+  - '.tasks/active/T-99993-audit-warn--task-t-2521-audit-warn--task.md'
+  - '.tasks/active/T-99994-audit-warn--task-t-2522-audit-warn--task.md'
+  - '.tasks/active/T-99995-audit-warn--task-t-2523-audit-warn--task.md'
+  - '.tasks/active/T-99996-audit-warn--task-t-2524-audit-warn--task.md'
+  - '.tasks/active/T-99997-audit-warn--task-t-99971-audit-warn--tas.md'
+  - '.tasks/active/T-99998-audit-warn--task-t-99972-audit-warn--tas.md'
+  - '.tasks/active/T-99999-audit-warn--task-t-99973-audit-warn--tas.md'
+  - '.tasks/completed/T-2514-discovery-governance-test-suite-audit-ad.md'
+  - 'VERSION'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-03T04:12:40"
+    action: "T-2514: DISCOVERY governance test suite audit — adversarial confirmed, P-03 bypass gap found"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 102
+  lines_added: 12045
+  lines_removed: 417
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2514-audit-stale-obs-check-false-positive-reg.md
+generated_by: context-agent-hybrid
