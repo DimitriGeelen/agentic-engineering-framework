@@ -4,16 +4,16 @@ name: "Remediate audit FAILs and WARNs (cron drift, fabric drift, F-ORCH driver 
 description: >
   Remediate audit FAILs and WARNs (cron drift, fabric drift, F-ORCH driver review)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-07T07:40:45Z
-last_update: '2026-07-07T07:45:07Z'
-date_finished:
+last_update: 2026-07-07T08:08:13Z
+date_finished: 2026-07-07T08:08:13Z
 ---
 
 # T-2510: Remediate audit FAILs and WARNs (cron drift, fabric drift, F-ORCH driver review)
@@ -107,3 +107,20 @@ for a separate follow-up.
 
 ### 2026-07-07 — remediation executed + re-IDed T-2509→T-2510
 - **Action:** cron generate+install (registry→generated→deployed resynced), fabric register+enrich (drift 0/0/0), F-ORCH surfaced. Re-IDed from T-2509 (collision with completed Watchtower task on origin).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1dbc5e63
+- **Timestamp:** 2026-07-07T08:08:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Fabric unregistered source files registered — created cards for lib/branch-hygiene.sh + lib/hook_paths.py; `fw fabric drift` shows 0 unregistered
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/branch-hygiene.sh in: Fabric unregistered source files registered — created cards for lib/branch-hygiene.sh + lib/hook_paths.py; `fw fabric drift` shows 0 unregistered`
+
+### 2026-07-07T08:08:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

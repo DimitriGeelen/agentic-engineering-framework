@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2510: Remediate audit FAILs and WARNs (cron drift, fabric drift, F-ORCH driver review)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-07T08:08:29Z
+# ============================================================================
+
+task_id: T-2510
+task_name: "Remediate audit FAILs and WARNs (cron drift, fabric drift, F-ORCH driver review)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-07T07:40:45Z
+completed: 2026-07-07T08:08:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-07T10:05:41+02:00
+last_commit: 2026-07-07T10:05:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  remediate audit FAILs+WARNs — cron generate+install (registry→generated→deployed resynced), fabric register+enrich (drift 0/0/0), F-ORCH retire surfaced to operator
+
+# Key outcomes
+outcomes:
+  - 'Cron registry→generated drift cleared: `fw cron generate` run; audit no longer emits "Cron registry edited but not generated" (3 missing jobs now present, resolver-loop stays PAUSED)'
+  - 'Cron generated→deployed drift cleared: `fw cron install` run; generated crontab byte-identical to /etc/cron.d/agentic-audit-999-agentic-engineering-framework'
+  - 'Fabric orphaned card removed — `fw fabric drift` shows 0 orphaned (handover''s 1 orphaned already cleared before this task ran)'
+  - 'Fabric unregistered source files registered — created cards for lib/branch-hygiene.sh + lib/hook_paths.py; `fw fabric drift` shows 0 unregistered'
+  - '`fw fabric enrich` run (~29-32 edges, 14 cards). Audit no-edge count 101/865 (was 106/863) — advisory WARN NOT fully cleared: enrich is grep-based auto-inference; remaining edgeless cards are genuine leaves/configs/docs. Full clearance would need manual edge-authoring (low value for an advisory coverage metric). Documented, not silenced.'
+  - 'F-ORCH retire_when finding surfaced to operator as a sovereignty decision (NOT auto-retired) — recommendation recorded in ## Decisions (retire_when met: T-1643 completed + orchestrator live T-2484)'
+  - '`fw audit --sections structure` re-run: **0 FAILs** (rc=1 warnings-only). Remaining WARNs: F-ORCH (sovereignty-surfaced) + fabric no-edges 101/865 (advisory, reduced from 106). Orphaned-card + unregistered-files WARNs both resolved.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-07 — F-ORCH retire is a sovereignty decision, surfaced not actioned'
+    chose: 'Surface the F-ORCH retire_when finding to the operator; do NOT auto-retire.'
+    rationale: 'Retiring a value driver mutates `policy/value-drivers.yaml` scoring policy — a D8'
+    alternatives_rejected: ['Auto-editing value-drivers.yaml (sovereignty violation); `--force`-style silencing without operator sight.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/cron/agentic-audit.crontab'
+  - '.fabric/components/agents-context-check-active-task.yaml'
+  - '.fabric/components/agents-handover-handover.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/lib-branch-hygiene.yaml'
+  - '.fabric/components/lib-bvp.yaml'
+  - '.fabric/components/lib-hook_paths.yaml'
+  - '.fabric/components/lib-inception_decisions.yaml'
+  - '.fabric/components/lib-integrate.yaml'
+  - '.fabric/components/lib-paths.yaml'
+  - '.fabric/components/lib-resolver.yaml'
+  - '.fabric/components/lib-reviewer-recommendation_claims.yaml'
+  - '.fabric/components/tests-unit-check_active_task_cwd_resolution.yaml'
+  - '.fabric/components/tests-unit-t2465_reanchor_from_cwd.yaml'
+  - '.fabric/components/tests-unit-t2473_union_resolve.yaml'
+  - '.fabric/components/tests-unit-test_recommendation_claims.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.tasks/active/T-2510-remediate-audit-fails-and-warns-cron-dri.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-07T10:05:41"
+    action: "T-2510: remediate audit FAILs+WARNs — cron generate+install (registry→generated→deployed resynced), fabric register+enrich (drift 0/0/0), F-ORCH retire surfaced to operator"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 27
+  commits: 1
+  files_changed: 18
+  lines_added: 250
+  lines_removed: 93
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2510-remediate-audit-fails-and-warns-cron-dri.md
+generated_by: context-agent-hybrid
