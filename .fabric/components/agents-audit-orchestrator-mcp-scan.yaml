@@ -21,6 +21,8 @@ depended_by:
   type: called_by
 - target: tests/integration/test_framework_mcp_server.bats
   type: tests_by
+- target: C-004
+  type: called_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-06-09'
+last_enriched: '2026-07-07'

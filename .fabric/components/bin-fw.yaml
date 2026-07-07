@@ -101,6 +101,52 @@ depends_on:
   type: calls
 - target: agents/mcp/manifest.py
   type: calls
+- target: lib/resolver.sh
+  type: calls
+- target: lib/outcome.sh
+  type: calls
+- target: lib/pause.sh
+  type: calls
+- target: lib/pending.sh
+  type: calls
+- target: lib/consumer-recover.sh
+  type: calls
+- target: lib/prompt.sh
+  type: calls
+- target: lib/hook-telemetry.sh
+  type: calls
+- target: lib/verify-acs.sh
+  type: calls
+- target: lib/release.sh
+  type: calls
+- target: lib/mirror.sh
+  type: calls
+- target: lib/config-file.sh
+  type: calls
+- target: lib/version.sh
+  type: calls
+- target: lib/worktree.sh
+  type: calls
+- target: lib/branch-hygiene.sh
+  type: calls
+- target: lib/arc.sh
+  type: calls
+- target: lib/bvp.sh
+  type: calls
+- target: bin/hook-enable.sh
+  type: calls
+- target: agents/metrics/api-usage.sh
+  type: calls
+- target: lib/notify.sh
+  type: calls
+- target: lib/govd_policy.py
+  type: calls
+- target: lib/write_set.py
+  type: calls
+- target: lib/integrate.py
+  type: calls
+- target: agents/orchestrator/orchestrator-graph.py
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
 last_enriched: '2026-07-07'

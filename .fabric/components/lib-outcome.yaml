@@ -11,6 +11,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_outcome.py
   type: called_by
+- target: tools/escalation-scan-v0.5.py
+  type: called_by
 last_verified: 2026-05-03
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

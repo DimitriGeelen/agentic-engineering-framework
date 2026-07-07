@@ -5,7 +5,11 @@ subsystem: unknown
 location: tools/escalation-scan-v0.5.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: lib/resolver.py
+  type: calls
+- target: lib/outcome.py
+  type: calls
 depended_by:
 - target: tests/unit/escalation_scan_v05.bats
   type: called_by
@@ -19,4 +23,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-05
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-07-07'

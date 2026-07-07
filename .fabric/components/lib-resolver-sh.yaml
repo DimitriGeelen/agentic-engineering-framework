@@ -3,14 +3,18 @@ name: resolver-shim
 type: script
 subsystem: framework-core
 location: lib/resolver.sh
-tags: [orchestrator-arc, shim, T-1696]
-
-purpose: "Thin shell shim that routes `fw resolver` invocations to lib/resolver.py. Per D-073: shim does PROJECT_ROOT export + argv passthrough only — no script-level logic."
-
+tags:
+- orchestrator-arc
+- shim
+- T-1696
+purpose: 'Thin shell shim that routes `fw resolver` invocations to lib/resolver.py. Per D-073: shim does PROJECT_ROOT export
+  + argv passthrough only — no script-level logic.'
 depends_on:
-  - target: lib/resolver.py
-    type: calls
-
+- target: lib/resolver.py
+  type: calls
 depended_by:
-  - target: bin/fw
-    type: calls
+- target: bin/fw
+  type: calls
+- target: bin/fw
+  type: called_by
+last_enriched: '2026-07-07'

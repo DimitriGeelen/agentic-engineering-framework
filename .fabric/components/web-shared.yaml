@@ -144,4 +144,6 @@ depended_by:
   type: called_by
 - target: tests/unit/test_orchestrator_workflow_coverage.py
   type: called_by
+- target: tests/unit/test_command_palette.py
+  type: called_by
 last_enriched: '2026-07-07'

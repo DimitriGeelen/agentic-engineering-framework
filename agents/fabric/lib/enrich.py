@@ -246,6 +246,26 @@ def detect_python_imports(content, source_location, framework_root):
             if target != source_location:
                 edges.append((target, "calls"))
 
+    # Pattern: from {web,lib,agents,tools} import NAME  (bare — no dot after prefix)
+    # T-2511: the dotted pattern above misses `from lib import govd_policy` (the
+    # module is a name imported FROM the package, e.g. test_govd_policy.py). Resolve
+    # to prefix/NAME.py. Existence-guarded, additive.
+    for m in re.finditer(r'from\s+(web|lib|agents|tools)\s+import\s+(\w+)', content):
+        target = os.path.join(m.group(1), m.group(2) + ".py")
+        if os.path.exists(os.path.join(framework_root, target)) and target != source_location:
+            edges.append((target, "calls"))
+
+    # Pattern: sys.path.insert(..., ".../lib") then bare `import NAME` → lib/NAME.py
+    # T-2511: unit tests (test_resolver_run, test_ollama_loop, test_pi_worker) prepend
+    # lib/ to sys.path and `import resolver`/`ollama_loop`/`pi_worker`. Only fire when
+    # the file manipulates sys.path into lib/ AND lib/NAME.py exists — double-guarded.
+    if re.search(r'sys\.path\.insert\([^)]*["\']lib["\']', content) or \
+       re.search(r'sys\.path\.insert\([^)]*/\s*["\']lib["\']', content):
+        for m in re.finditer(r'^import\s+(\w+)\s*(?:#.*)?$', content, re.MULTILINE):
+            target = os.path.join("lib", m.group(1) + ".py")
+            if os.path.exists(os.path.join(framework_root, target)) and target != source_location:
+                edges.append((target, "calls"))
+
     # Pattern: render_page("template.html", ...)
     for m in re.finditer(r'render_page\(\s*["\']([^"\']+)["\']', content):
         template = m.group(1)
@@ -621,7 +641,12 @@ def compute_forward_edges(cards, loc_to_id, framework_root):
 
         try:
             with open(source_path, "r", errors="replace") as f:
-                content = f.read(100_000)
+                # T-2511: was 100_000 — bin/fw (349 KB, the central dispatcher that
+                # exec's nearly every lib/agent script) had all its dispatch routing
+                # past byte 100K truncated away, hiding 65+ real edges and leaving
+                # lib/pause.sh, lib/worktree.sh, orchestrator-graph.py edgeless. 2 MB
+                # covers every realistic source file (largest is ~350 KB) with headroom.
+                content = f.read(2_000_000)
         except (OSError, UnicodeDecodeError):
             continue
 

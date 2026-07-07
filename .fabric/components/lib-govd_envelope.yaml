@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: agents/govd/govd.sh
   type: called_by
+- target: lib/govd_holder.py
+  type: called_by
 last_verified: 2026-06-20
 created_by: unknown
-last_enriched: '2026-06-22'
+last_enriched: '2026-07-07'

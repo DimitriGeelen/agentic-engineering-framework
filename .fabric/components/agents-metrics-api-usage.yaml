@@ -1,21 +1,15 @@
 id: agents/metrics/api-usage.sh
 name: api-usage
 type: script
-standalone: true  # T-1754 — by-design orphan, no framework imports
+standalone: true
 subsystem: unknown
 location: agents/metrics/api-usage.sh
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+- target: bin/fw
+  type: called_by
 last_verified: 2026-04-28
 created_by: unknown
+last_enriched: '2026-07-07'

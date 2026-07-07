@@ -23,6 +23,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t2461_doctor_mcp_consumer_path.bats
   type: tests_by
+- target: C-004
+  type: called_by
 last_verified: 2026-06-08
 created_by: unknown
-last_enriched: '2026-06-22'
+last_enriched: '2026-07-07'

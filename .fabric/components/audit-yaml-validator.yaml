@@ -48,6 +48,14 @@ depends_on:
   type: calls
 - target: lib/cron_dry_run.py
   type: calls
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: calls
+- target: lib/notify.sh
+  type: calls
+- target: agents/mcp/manifest.py
+  type: calls
+- target: lib/workflow_coverage.py
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -120,4 +128,4 @@ depended_by:
   type: tests_by
 last_verified: 2026-02-20
 created_by: T-207
-last_enriched: '2026-06-22'
+last_enriched: '2026-07-07'

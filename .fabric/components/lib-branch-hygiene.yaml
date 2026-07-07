@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: agents/handover/handover.sh
   type: called_by
+- target: bin/fw
+  type: called_by
 last_verified: 2026-07-07
 created_by: unknown
 last_enriched: '2026-07-07'

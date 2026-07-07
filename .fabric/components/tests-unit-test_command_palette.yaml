@@ -8,7 +8,9 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: web/app.py
   type: calls
+- target: web/shared.py
+  type: calls
 depended_by: []
 last_verified: 2026-05-23
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-07-07'

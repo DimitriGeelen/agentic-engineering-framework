@@ -3,14 +3,18 @@ name: outcome-shim
 type: script
 subsystem: framework-core
 location: lib/outcome.sh
-tags: [orchestrator-arc, shim, T-1697]
-
-purpose: "Thin shell shim that routes `fw outcome` invocations to lib/outcome.py. Per D-073: shim does PROJECT_ROOT export + argv passthrough only — no script-level logic."
-
+tags:
+- orchestrator-arc
+- shim
+- T-1697
+purpose: 'Thin shell shim that routes `fw outcome` invocations to lib/outcome.py. Per D-073: shim does PROJECT_ROOT export
+  + argv passthrough only — no script-level logic.'
 depends_on:
-  - target: lib/outcome.py
-    type: calls
-
+- target: lib/outcome.py
+  type: calls
 depended_by:
-  - target: bin/fw
-    type: calls
+- target: bin/fw
+  type: calls
+- target: bin/fw
+  type: called_by
+last_enriched: '2026-07-07'

@@ -5,7 +5,9 @@ subsystem: framework-core
 location: lib/govd_holder.py
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: lib/govd_envelope.py
+  type: calls
 depended_by:
 - target: lib/govd_relay.py
   type: called_by
@@ -13,4 +15,4 @@ depended_by:
   type: called_by
 last_verified: 2026-06-20
 created_by: unknown
-last_enriched: '2026-06-22'
+last_enriched: '2026-07-07'

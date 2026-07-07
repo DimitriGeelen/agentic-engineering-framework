@@ -9,6 +9,8 @@ depends_on: []
 depended_by:
 - target: tests/unit/test_workflow_coverage.py
   type: called_by
+- target: C-004
+  type: called_by
 last_verified: 2026-05-12
 created_by: unknown
-last_enriched: '2026-05-15'
+last_enriched: '2026-07-07'

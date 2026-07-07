@@ -12,6 +12,8 @@ depends_on:
   type: calls
 - target: C-004
   type: calls
+- target: lib/reviewer/recommendation_claims.py
+  type: calls
 depended_by:
 - target: agents/task-create/update-task.sh
   type: called_by
@@ -27,4 +29,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-06-04'
+last_enriched: '2026-07-07'

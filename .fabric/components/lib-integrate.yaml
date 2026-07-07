@@ -15,6 +15,8 @@ depended_by:
   type: called_by
 - target: tests/unit/t2473_union_resolve.bats
   type: tests_by
+- target: bin/fw
+  type: called_by
 last_verified: 2026-06-14
 created_by: unknown
 last_enriched: '2026-07-07'

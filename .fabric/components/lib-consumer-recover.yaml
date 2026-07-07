@@ -11,6 +11,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_consumer_recover.bats
   type: tests_by
+- target: bin/fw
+  type: called_by
 last_verified: 2026-06-07
 created_by: unknown
-last_enriched: '2026-06-07'
+last_enriched: '2026-07-07'
