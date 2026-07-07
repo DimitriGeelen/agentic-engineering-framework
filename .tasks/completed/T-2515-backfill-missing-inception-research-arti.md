@@ -6,10 +6,10 @@ description: >
   backfill missing inception research artifacts (C-001 debt) — extract in-body research
   to docs/reports for 24 completed inceptions
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-07T18:13:42Z
-last_update: '2026-07-07T18:15:05Z'
-date_finished:
+last_update: 2026-07-07T18:22:59Z
+date_finished: 2026-07-07T18:22:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -220,3 +220,20 @@ bin/fw audit --section oe-research > /tmp/.t2515-oe.out 2>&1; grep -q "active in
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2515-backfill-missing-inception-research-arti.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a4861b5a
+- **Timestamp:** 2026-07-07T18:23:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Each of the 24 completed inceptions (T-1372, T-1376, T-1444, T-1506, T-1507, T-1616, T-1617, T-1621, T-1626, T-1710, T-1713, T-1732, T-1829, T-1831, T-1833, T-1958, T-1959, T-1981, T-2000, T-2159, T-2
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/extract_inception_artifacts.py in: Each of the 24 completed inceptions (T-1372, T-1376, T-1444, T-1506, T-1507, T-1616, T-1617, T-1621, T-1626, T-1710, T-1713, T-1732, T-1829, T-1831, T`
+
+### 2026-07-07T18:22:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2515: backfill missing inception research artifacts (C-001 debt) — extract in-body
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-07T18:23:14Z
+# ============================================================================
+
+task_id: T-2515
+task_name: "backfill missing inception research artifacts (C-001 debt) — extract in-body"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-07T18:13:42Z
+completed: 2026-07-07T18:22:59Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Each of the 24 completed inceptions (T-1372, T-1376, T-1444, T-1506, T-1507, T-1616, T-1617, T-1621, T-1626, T-1710, T-1713, T-1732, T-1829, T-1831, T-1833, T-1958, T-1959, T-1981, T-2000, T-2159, T-2203, T-2252, T-2324, T-2416) has a `docs/reports/T-XXXX-*.md` artifact extracted from its real in-body research — content traceable to the source task, no invented findings. (T-1626 hand-written as proof; other 23 by faithful mechanical extraction, `.context/working/extract_inception_artifacts.py`, copies verbatim.)'
+  - '`fw audit` "Inception task ... has no research artifact" WARN count drops to 0 — verified `[PASS] All 347 completed inceptions have research artifacts`; plus T-2121 (active, live inception run) → `[PASS] C-001: All 1 active inceptions have research artifacts`.'
+  - 'Each artifact names its source task ID and states the decision (GO/NO-GO/DEFER) that was actually recorded (header line on every artifact).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 9
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2515-backfill-missing-inception-research-arti.md
+generated_by: context-agent-hybrid
