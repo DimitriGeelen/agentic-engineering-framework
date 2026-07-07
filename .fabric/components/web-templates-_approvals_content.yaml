@@ -4,11 +4,13 @@ type: fragment
 subsystem: watchtower
 location: web/templates/_approvals_content.html
 tags: []
-purpose: "htmx partial: approvals content fragment — task list with AC checkboxes, loaded by htmx swap into approvals page."
+purpose: 'htmx partial: approvals content fragment — task list with AC checkboxes, loaded by htmx swap into approvals page.'
 depends_on: []
 depended_by:
 - target: web/templates/approvals.html
   type: included_by
+- target: tests/unit/test_approvals_content_tokens.py
+  type: called_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-07-07'

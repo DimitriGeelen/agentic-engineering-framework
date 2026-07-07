@@ -65,6 +65,50 @@ depends_on:
 - target: agents/context/post-compact-resume.sh
   type: triggers
   note: SessionStart lifecycle hook (compact, resume)
+- target: agents/context/pre-compact.sh
+  type: calls
+- target: agents/context/post-compact-resume.sh
+  type: calls
+- target: agents/context/block-plan-mode.sh
+  type: calls
+- target: agents/context/check-active-task.sh
+  type: calls
+- target: agents/context/check-human-ac-tick.sh
+  type: calls
+- target: agents/context/check-arc-id.sh
+  type: calls
+- target: agents/context/check-inception-decisions.sh
+  type: calls
+- target: agents/context/check-heredoc-cmd-sub.sh
+  type: calls
+- target: agents/context/check-inception-schema.sh
+  type: calls
+- target: agents/context/check-tier0.sh
+  type: calls
+- target: agents/context/check-agent-dispatch.sh
+  type: calls
+- target: agents/context/check-project-boundary.sh
+  type: calls
+- target: C-007
+  type: calls
+- target: agents/context/block-task-tools.sh
+  type: calls
+- target: C-008
+  type: calls
+- target: agents/context/error-watchdog.sh
+  type: calls
+- target: agents/context/check-dispatch.sh
+  type: calls
+- target: agents/context/loop-detect.sh
+  type: calls
+- target: agents/context/check-fabric-new-file.sh
+  type: calls
+- target: agents/context/commit-cadence.sh
+  type: calls
+- target: agents/context/audit-task-tools.sh
+  type: calls
+- target: agents/context/check-settings-edit.sh
+  type: calls
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -74,4 +118,4 @@ coupling: soft
 coupling_note: Hook format is Claude Code-specific. Hooks snapshot at session start — runtime edits require restart.
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

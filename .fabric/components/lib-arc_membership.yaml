@@ -20,6 +20,8 @@ depends_on:
   type: reads
 - target: web/blueprints/arcs.py
   type: calls
+- target: web/blueprints/tasks.py
+  type: calls
 depended_by:
 - target: web/blueprints/arcs.py
   type: calls
@@ -37,4 +39,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-17
 created_by: T-1880
-last_enriched: '2026-05-18'
+last_enriched: '2026-07-07'

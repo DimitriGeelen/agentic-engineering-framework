@@ -4,13 +4,15 @@ type: template
 subsystem: watchtower
 location: web/templates/approvals.html
 tags: []
-purpose: "Full page template: approvals queue — wrapper around _approvals_content partial with nav, filters, bulk actions."
+purpose: 'Full page template: approvals queue — wrapper around _approvals_content partial with nav, filters, bulk actions.'
 depends_on:
 - target: web/templates/_approvals_content.html
   type: includes
 depended_by:
 - target: web/blueprints/approvals.py
   type: rendered_by
+- target: tests/unit/test_approvals_style_tokens.py
+  type: called_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-03-28'
+last_enriched: '2026-07-07'

@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/govd_envelope.py
   type: calls
+- target: agents/govd/govd.sh
+  type: calls
 depended_by:
 - target: lib/govd_relay.py
   type: called_by

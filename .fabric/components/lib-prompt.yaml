@@ -18,6 +18,8 @@ depended_by:
   type: sourced_by
 - target: bin/fw
   type: called_by
+- target: web/blueprints/prompts.py
+  type: called_by
 last_verified: 2026-04-24
 last_enriched: '2026-07-07'
 created_by: T-1283

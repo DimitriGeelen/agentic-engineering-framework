@@ -21,6 +21,18 @@ depends_on:
   type: registers
 - target: lib/reviewer/recommendation_claims.py
   type: calls
+- target: web/blueprints/bvp.py
+  type: calls
+- target: web/blueprints/approvals.py
+  type: calls
+- target: web/blueprints/timeline.py
+  type: calls
+- target: web/search_utils.py
+  type: calls
+- target: web/blueprints/cockpit.py
+  type: calls
+- target: lib/reviewer/static_scan.py
+  type: calls
 last_verified: 2026-02-20
 created_by: T-227
 depended_by:

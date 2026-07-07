@@ -15,6 +15,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_g064_readiness.py
   type: called_by
+- target: lib/gaps.py
+  type: called_by
 last_verified: 2026-05-05
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-07-07'

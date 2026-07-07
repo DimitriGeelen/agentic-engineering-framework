@@ -10,6 +10,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: web/static/css/foundations.css
+  type: calls
 depended_by:
 - target: tests/playwright/test_all_routes_height.py
   type: called_by
@@ -31,6 +33,10 @@ depended_by:
   type: called_by
 - target: tests/playwright/test_timeline_height.py
   type: called_by
+- target: lib/review_link_validator.py
+  type: called_by
+- target: tests/unit/test_ux_review_routes.py
+  type: called_by
 last_verified: 2026-05-23
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-07-07'

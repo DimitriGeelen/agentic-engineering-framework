@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: bin/fw
   type: calls
+- target: lib/reviewer/reverify.py
+  type: calls
 depended_by:
 - target: lib/reviewer/audit.py
   type: called_by
@@ -17,4 +19,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-06
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

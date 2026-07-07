@@ -295,6 +295,11 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
 - **Needs Human:** no
 - **Findings:** none
 
+## Updates
+
 ### 2026-06-18T11:31:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 - **Reason:** Inception decision: GO
+
+### 2026-07-07 — audit remediation (T-2512)
+- **Action:** Added `## Updates` section header (audit WARN — the inception-decision entries above pre-existed but lacked the section header).

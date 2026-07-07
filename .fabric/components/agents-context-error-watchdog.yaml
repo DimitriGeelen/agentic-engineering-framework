@@ -19,4 +19,6 @@ depended_by:
   type: used-by
 - target: agents/audit/audit.sh
   type: called-by
-last_enriched: '2026-03-28'
+- target: C-009
+  type: called_by
+last_enriched: '2026-07-07'

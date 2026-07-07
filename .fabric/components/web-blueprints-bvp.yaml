@@ -10,6 +10,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: lib/bvp.sh
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -29,6 +31,8 @@ depended_by:
   type: registered_by
 - target: web/blueprints/approvals.py
   type: called_by
+- target: web/shared.py
+  type: called_by
 last_verified: 2026-05-19
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-07-07'

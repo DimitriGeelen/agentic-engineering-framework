@@ -20,7 +20,9 @@ depends_on:
   type: tests
 - target: bin/fw
   type: tests
+- target: bin/fw
+  type: calls
 depended_by: []
 last_verified: 2026-06-08
 created_by: unknown
-last_enriched: '2026-06-09'
+last_enriched: '2026-07-07'

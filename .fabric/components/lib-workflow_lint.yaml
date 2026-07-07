@@ -19,6 +19,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_doctor_scope_tags.bats
   type: tests_by
+- target: tests/unit/test_workflow_schema_pause_lint.py
+  type: called_by
 last_verified: 2026-05-13
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-07-07'

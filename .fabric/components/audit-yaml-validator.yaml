@@ -56,6 +56,8 @@ depends_on:
   type: calls
 - target: lib/workflow_coverage.py
   type: calls
+- target: bin/fw
+  type: calls
 depended_by:
 - target: cron-audit
   type: triggers
@@ -126,6 +128,8 @@ depended_by:
   type: called_by
 - target: tests/unit/watchtower_health_verdict_identity.bats
   type: tests_by
+- target: lib/cron_dry_run.py
+  type: called_by
 last_verified: 2026-02-20
 created_by: T-207
 last_enriched: '2026-07-07'

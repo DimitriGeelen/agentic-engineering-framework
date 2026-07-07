@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: lib/write_set.py
   type: calls
+- target: agents/dispatch/yield-point.sh
+  type: calls
 depended_by:
 - target: bin/fw
   type: called_by

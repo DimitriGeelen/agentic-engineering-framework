@@ -24,9 +24,11 @@ depends_on:
   type: calls
 - target: agents/git/lib/master-guard.sh
   type: calls
+- target: bin/fw
+  type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-16'
+last_enriched: '2026-07-07'
 depended_by:
 - target: agents/git/git.sh
   type: called_by

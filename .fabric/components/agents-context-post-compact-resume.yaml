@@ -16,7 +16,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-06-16'
+last_enriched: '2026-07-07'
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -32,3 +32,5 @@ depended_by:
   type: called_by
 - target: tests/integration/continuous_loop.bats
   type: tests_by
+- target: C-009
+  type: called_by

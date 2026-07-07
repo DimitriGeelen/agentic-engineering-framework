@@ -7,7 +7,9 @@ tags:
 - docs
 - docgen
 purpose: Python implementation for component reference documentation generation from fabric cards
-depends_on: []
+depends_on:
+- target: F-001
+  type: calls
 depended_by:
 - target: agents/docgen/generate-component.sh
   type: calls
@@ -15,4 +17,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-12
 created_by: T-364
-last_enriched: '2026-03-28'
+last_enriched: '2026-07-07'

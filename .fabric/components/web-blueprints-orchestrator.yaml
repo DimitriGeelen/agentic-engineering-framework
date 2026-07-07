@@ -14,6 +14,8 @@ depends_on:
   type: calls
 - target: web/templates/orchestrator_parallel.html
   type: renders
+- target: agents/audit/orchestrator-mcp-scan.sh
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -29,6 +31,8 @@ depended_by:
   type: called_by
 - target: tests/unit/test_orchestrator_parallel_view.py
   type: registered_by
+- target: tests/unit/test_termlink_governance_frame_contract.py
+  type: called_by
 last_verified: 2026-05-01
 created_by: unknown
-last_enriched: '2026-06-11'
+last_enriched: '2026-07-07'

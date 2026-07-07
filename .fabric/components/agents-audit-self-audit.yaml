@@ -7,9 +7,8 @@ tags:
 - audit
 - standalone
 - integrity
-purpose: Standalone framework integrity check (Layers 1-4) that does not depend on
-  fw CLI. Verifies foundation files, directory structure, Claude Code hooks, and git
-  hooks.
+purpose: Standalone framework integrity check (Layers 1-4) that does not depend on fw CLI. Verifies foundation files, directory
+  structure, Claude Code hooks, and git hooks.
 depends_on:
 - target: bin/fw
   type: reads
@@ -43,9 +42,11 @@ depends_on:
   note: Verifies hook script exists, is executable, and parses (Layer 1)
 - target: lib/paths.sh
   type: calls
+- target: bin/fw
+  type: calls
 last_verified: 2026-03-01
 created_by: T-286
-last_enriched: '2026-03-28'
+last_enriched: '2026-07-07'
 depended_by:
 - target: agents/onboarding-test/test-onboarding.sh
   type: called_by

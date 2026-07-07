@@ -14,7 +14,11 @@ depends_on:
   type: calls
 - target: web/blueprints/settings.py
   type: registers
+- target: web/templates/base.html
+  type: calls
+- target: web/templates/appearance.html
+  type: calls
 depended_by: []
 last_verified: 2026-05-24
 created_by: unknown
-last_enriched: '2026-05-27'
+last_enriched: '2026-07-07'

@@ -19,6 +19,8 @@ depends_on:
 depended_by:
 - target: tests/lint/no-bare-fw-in-gate-scripts.bats
   type: tests_by
+- target: C-009
+  type: called_by
 last_verified: '2026-03-23'
 created_by: T-533
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

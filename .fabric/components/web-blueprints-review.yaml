@@ -16,6 +16,8 @@ depends_on:
   type: calls
 - target: web/blueprints/inception.py
   type: registers
+- target: lib/review.sh
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -30,4 +32,4 @@ depended_by:
   type: called_by
 last_verified: 2026-03-28
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

@@ -5,7 +5,9 @@ subsystem: framework-core
 location: lib/update.sh
 tags: []
 purpose: 'fw update subcommand: CLI wrapper for framework self-update. Pulls latest, runs upgrade, reports changes.'
-depends_on: []
+depends_on:
+- target: bin/fw
+  type: calls
 depended_by:
 - target: bin/fw
   type: called_by
@@ -17,4 +19,4 @@ depended_by:
   type: tests_by
 last_verified: 2026-03-23
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

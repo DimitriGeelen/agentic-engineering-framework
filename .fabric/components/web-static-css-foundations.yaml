@@ -6,8 +6,11 @@ location: web/static/css/foundations.css
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on: []
-depended_by: []
+depended_by:
+- target: agents/ux-review/ux-review.py
+  type: called_by
 last_verified: 2026-05-22
 created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
+last_enriched: '2026-07-07'

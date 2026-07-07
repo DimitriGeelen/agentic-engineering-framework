@@ -36,7 +36,13 @@ depended_by:
   type: called_by
 - target: tests/unit/tier0_hash_normalization.bats
   type: tests_by
-last_enriched: '2026-05-06'
+- target: C-009
+  type: called_by
+- target: tests/unit/doctor_hook_exercise.bats
+  type: called_by
+- target: tests/unit/session_start_hook_warning.bats
+  type: called_by
+last_enriched: '2026-07-07'
 docs:
 - path: docs/articles/deep-dives/02-tier0-protection.md
   title: 'Deep Dive: Tier 0 Protection'

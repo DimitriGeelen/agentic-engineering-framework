@@ -11,6 +11,8 @@ depends_on:
 depended_by:
 - target: tests/unit/test_ollama_loop.py
   type: called_by
+- target: lib/spawn.py
+  type: called_by
 last_verified: 2026-05-09
 created_by: unknown
 last_enriched: '2026-07-07'

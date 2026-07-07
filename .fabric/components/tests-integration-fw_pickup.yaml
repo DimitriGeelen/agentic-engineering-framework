@@ -9,7 +9,9 @@ depends_on:
 - lib/pickup.sh
 - target: bin/fw
   type: tests
+- target: bin/fw
+  type: calls
 depended_by: []
 last_verified: 2026-03-30
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

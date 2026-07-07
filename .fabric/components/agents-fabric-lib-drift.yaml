@@ -11,7 +11,9 @@ created_by: unknown
 depended_by:
 - target: agents/fabric/fabric.sh
   type: called_by
-last_enriched: '2026-02-21'
+- target: tests/unit/test_fabric_drift_absolute_paths.py
+  type: called_by
+last_enriched: '2026-07-07'
 docs:
 - path: docs/articles/deep-dives/07-component-fabric.md
   title: 'Deep Dive: Component Fabric'

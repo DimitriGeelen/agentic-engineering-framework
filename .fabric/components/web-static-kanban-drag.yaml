@@ -6,8 +6,11 @@ location: web/static/kanban-drag.js
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on: []
-depended_by: []
+depended_by:
+- target: tests/unit/test_kanban_drag.py
+  type: called_by
 last_verified: 2026-05-24
 created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
+last_enriched: '2026-07-07'

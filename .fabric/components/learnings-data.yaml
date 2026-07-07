@@ -38,4 +38,10 @@ depended_by:
   type: read_by
 - target: C-003
   type: read_by
-last_enriched: '2026-02-21'
+- target: agents/docgen/generate_article.py
+  type: called_by
+- target: agents/docgen/generate_component.py
+  type: called_by
+- target: tests/playwright/test_api_context_capture.py
+  type: called_by
+last_enriched: '2026-07-07'

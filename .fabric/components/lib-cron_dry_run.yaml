@@ -8,6 +8,8 @@ purpose: 'TODO: describe what this component does'
 depends_on:
 - target: bin/fw
   type: calls
+- target: C-004
+  type: calls
 depended_by:
 - target: C-004
   type: called_by
@@ -15,4 +17,4 @@ depended_by:
   type: called_by
 last_verified: 2026-05-20
 created_by: unknown
-last_enriched: '2026-05-20'
+last_enriched: '2026-07-07'

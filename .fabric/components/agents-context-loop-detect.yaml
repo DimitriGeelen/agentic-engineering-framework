@@ -4,15 +4,16 @@ type: script
 subsystem: context-fabric
 location: agents/context/loop-detect.sh
 tags: []
-
-purpose: "PostToolUse hook: detect repetitive tool call patterns — warns when agent appears stuck in a loop (same tool+args repeated)."
-
+purpose: 'PostToolUse hook: detect repetitive tool call patterns — warns when agent appears stuck in a loop (same tool+args
+  repeated).'
 depends_on:
-  - target: lib/ts/src/loop-detect.ts
-    type: calls
+- target: lib/ts/src/loop-detect.ts
+  type: calls
 depended_by:
-  - target: agents/context/error-watchdog.sh
-    type: complements
-
+- target: agents/context/error-watchdog.sh
+  type: complements
+- target: C-009
+  type: called_by
 last_verified: 2026-03-27
 created_by: unknown
+last_enriched: '2026-07-07'

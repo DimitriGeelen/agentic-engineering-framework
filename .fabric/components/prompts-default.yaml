@@ -6,7 +6,12 @@ location: prompts/default.md
 tags: []
 purpose: 'TODO: describe what this component does'
 depends_on: []
-depended_by: []
+depended_by:
+- target: tests/unit/test_pause_resolve.py
+  type: called_by
+- target: tests/unit/test_review_paused_resolve.py
+  type: called_by
 last_verified: 2026-05-03
 created_by: unknown
 standalone: true
+last_enriched: '2026-07-07'

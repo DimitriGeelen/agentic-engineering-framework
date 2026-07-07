@@ -169,6 +169,40 @@ def detect_bash_sources(content, source_location, framework_root):
             if target != source_location:
                 edges.append((target, "calls"))
 
+    # Pattern: "$FRAMEWORK_ROOT/bin/fw" / "$PROJECT_ROOT/bin/fw" — suffixless
+    # invocation (T-2511). The FRAMEWORK_ROOT/*.sh pattern above requires a
+    # .sh/.py suffix, so an actual `"$FRAMEWORK_ROOT/bin/fw" orchestrator …` call
+    # (single-host-parallel-demo.sh) was missed. This is a real invocation path,
+    # not prose — distinct from the bare `bin/fw` grep-pattern false-positive class.
+    if re.search(r'"\$(?:FRAMEWORK_ROOT|PROJECT_ROOT)/bin/fw"', content) \
+       and source_location != "bin/fw" and os.path.exists(os.path.join(framework_root, "bin/fw")):
+        edges.append(("bin/fw", "calls"))
+
+    # Pattern: exec python3 "$(dirname "$0")/sibling.py"  (T-2511)
+    # The fw hook dispatcher loads a thin .sh that exec's its own-dir .py sibling
+    # (check-inception-schema.sh -> check-inception-schema.py etc.). Resolve
+    # relative to the SOURCE file's directory.
+    for m in re.finditer(r'\$\(\s*dirname\s+"?\$0"?\s*\)/([^"$\s]+\.(?:sh|py))', content):
+        target = os.path.normpath(os.path.join(source_dir, m.group(1)))
+        if os.path.exists(os.path.join(framework_root, target)) and target != source_location:
+            edges.append((target, "calls"))
+
+    return edges
+
+
+def detect_fw_hook_dispatch(content, source_location, framework_root):
+    """Detect `fw hook <name>` dispatcher calls → agents/context/<name>.sh (T-2511).
+
+    `.claude/settings.json` (and some scripts) wire PreToolUse/PostToolUse hooks
+    via `bin/fw hook check-inception-schema`, NOT a direct path to the .sh file —
+    so the literal-path detectors never saw the dependency. The fw dispatcher
+    convention is `fw hook <name>` -> agents/context/<name>.sh. Existence-guarded.
+    """
+    edges = []
+    for m in re.finditer(r'fw\s+hook\s+([\w-]+)', content):
+        target = os.path.join("agents", "context", m.group(1) + ".sh")
+        if os.path.exists(os.path.join(framework_root, target)) and target != source_location:
+            edges.append((target, "calls"))
     return edges
 
 
@@ -317,14 +351,36 @@ def detect_python_path_refs(content, source_location, framework_root):
 
     # Pattern: literal framework paths embedded in any string
     # (matches the detect_bats_deps literal-path branch).
+    # T-2511: added backtick + paren to the prefix class — orchestrator-graph.py
+    # references `agents/dispatch/yield-point.sh` inside a Markdown-style backtick
+    # docstring, which the original ["\'\s/] prefix excluded.
     for m in re.finditer(
-        r'(?:["\'\s/]|^)((?:bin|lib|agents|tools|web|prompts)/[\w./-]+\.(?:sh|py))',
+        r'(?:["\'\s/`(]|^)((?:bin|lib|agents|tools|web|prompts)/[\w./-]+\.(?:sh|py))',
         content,
     ):
         target = os.path.normpath(m.group(1))
         if os.path.exists(os.path.join(framework_root, target)):
             if target != source_location:
                 edges.append((target, "calls"))
+
+    # Pattern: os.path.join(<var>, "seg", ..., "file.py")  and
+    #          <base> / "seg" / ... / "file.{py,sh}" slash-chains with ANY base
+    # T-2511: tests build the module-under-test path via os.path.join or pathlib
+    # slash-chains whose base is a local var (ROOT, repo, Path(...).parents[N]) —
+    # the T-1758 chain_re only matched REPO_ROOT/FRAMEWORK_ROOT/PROJECT_ROOT bases.
+    for m in re.finditer(r'os\.path\.join\(\s*\w+\s*,\s*((?:"[^"]+"\s*,\s*)*"[^"]+")\s*\)', content):
+        segs = re.findall(r'"([^"]+)"', m.group(1))
+        target = os.path.normpath("/".join(segs))
+        if os.path.exists(os.path.join(framework_root, target)) and target != source_location:
+            edges.append((target, "calls"))
+    for m in re.finditer(r'(?:parents\[\d+\]|\b\w+)((?:\s*/\s*"[^"]+")+)', content):
+        segs = re.findall(r'"([^"]+)"', m.group(1))
+        if not segs:
+            continue
+        target = os.path.normpath("/".join(segs))
+        if os.path.exists(os.path.join(framework_root, target)) and target != source_location \
+           and target.split("/")[0] in ("bin", "lib", "agents", "tools", "web", "prompts", "tests"):
+            edges.append((target, "calls"))
 
     # Pattern: bare bin/fw reference (subprocess args, etc.)
     if re.search(r'\bbin/fw\b', content) and "bin/fw" != source_location:
@@ -680,6 +736,11 @@ def compute_forward_edges(cards, loc_to_id, framework_root):
             raw_edges.extend(detect_ts_js_imports(content, location, framework_root))
         elif is_rust:
             raw_edges.extend(detect_rust_deps(content, location, framework_root))
+
+        # T-2511: fw-hook dispatcher edges (`fw hook <name>` → agents/context/<name>.sh)
+        # run on EVERY card regardless of type — the primary source is
+        # .claude/settings.json (a .json file that no type-detector above scans).
+        raw_edges.extend(detect_fw_hook_dispatch(content, location, framework_root))
 
         if not raw_edges:
             continue

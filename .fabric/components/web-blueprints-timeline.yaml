@@ -12,7 +12,7 @@ depends_on:
   type: renders
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'
 depended_by:
 - target: web/app.py
   type: called_by
@@ -24,4 +24,6 @@ depended_by:
   type: registered_by
 - tests/playwright/test_timeline.py
 - target: tests/playwright/test_api_timeline_detail.py
+  type: called_by
+- target: web/shared.py
   type: called_by

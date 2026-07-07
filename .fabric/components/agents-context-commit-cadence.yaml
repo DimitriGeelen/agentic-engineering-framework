@@ -4,15 +4,15 @@ type: script
 subsystem: context-fabric
 location: agents/context/commit-cadence.sh
 tags: []
-
-purpose: "PostToolUse hook: monitor time since last commit — warns when commit cadence exceeds threshold (P-009 budget management)."
-
+purpose: 'PostToolUse hook: monitor time since last commit — warns when commit cadence exceeds threshold (P-009 budget management).'
 depends_on:
-  - target: agents/context/checkpoint.sh
-    type: reads
+- target: agents/context/checkpoint.sh
+  type: reads
 depended_by:
-  - target: agents/context/checkpoint.sh
-    type: complements
-
+- target: agents/context/checkpoint.sh
+  type: complements
+- target: C-009
+  type: called_by
 last_verified: 2026-03-27
 created_by: unknown
+last_enriched: '2026-07-07'

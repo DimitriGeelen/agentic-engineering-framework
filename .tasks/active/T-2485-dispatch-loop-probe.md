@@ -66,3 +66,9 @@ It is throwaway. Delete after Spike 2.
 
 # No verification — this is a no-op probe. The proof is a dispatches.jsonl row
 # with a matched outcome, observed by the dispatching Agent (T-2484), not by the worker.
+
+## Updates
+
+### 2026-07-07 — audit remediation (T-2512)
+- **Action:** Added missing `## Updates` section (audit WARN remediation).
+- **Note:** No-op dispatch-loop probe; proof is a matched dispatches.jsonl row observed by T-2484, not a code change.

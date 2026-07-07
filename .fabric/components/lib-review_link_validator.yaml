@@ -10,6 +10,8 @@ depends_on:
   type: calls
 - target: bin/fw
   type: calls
+- target: agents/ux-review/ux-review.py
+  type: calls
 depended_by:
 - target: tests/unit/test_review_link_validator.py
   type: called_by
@@ -17,4 +19,4 @@ depended_by:
   type: tests_by
 last_verified: 2026-05-25
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-07-07'

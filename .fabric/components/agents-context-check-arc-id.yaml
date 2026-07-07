@@ -11,6 +11,8 @@ depended_by:
   type: called_by
 - target: tests/unit/arc_id_validation_guard.bats
   type: tests_by
+- target: C-009
+  type: called_by
 last_verified: 2026-05-16
 created_by: unknown
-last_enriched: '2026-05-18'
+last_enriched: '2026-07-07'

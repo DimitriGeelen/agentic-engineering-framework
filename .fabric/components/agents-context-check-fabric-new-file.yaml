@@ -4,10 +4,13 @@ type: script
 subsystem: context-fabric
 location: agents/context/check-fabric-new-file.sh
 tags: []
-purpose: "PostToolUse hook: detect new files created by Write tool — prompts fabric registration for structural tracking."
+purpose: 'PostToolUse hook: detect new files created by Write tool — prompts fabric registration for structural tracking.'
 depends_on:
 - target: agents/fabric/fabric.sh
   type: calls
-depended_by: []
+depended_by:
+- target: C-009
+  type: called_by
 last_verified: 2026-03-09
 created_by: unknown
+last_enriched: '2026-07-07'

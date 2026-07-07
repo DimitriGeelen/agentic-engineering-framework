@@ -42,6 +42,8 @@ depended_by:
   type: registered_by
 - target: tests/playwright/test_api_approvals.py
   type: called_by
+- target: web/shared.py
+  type: called_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-06-02'
+last_enriched: '2026-07-07'

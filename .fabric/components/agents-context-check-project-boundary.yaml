@@ -32,6 +32,8 @@ depended_by:
   type: tests_by
 - target: tools/g065-readiness.py
   type: called_by
+- target: C-009
+  type: called_by
 last_verified: 2026-03-28
 created_by: T-559
-last_enriched: '2026-06-10'
+last_enriched: '2026-07-07'

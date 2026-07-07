@@ -31,4 +31,10 @@ depended_by:
   type: extended_by
 - target: web/templates/bvp.html
   type: extended_by
-last_enriched: '2026-05-27'
+- target: tests/unit/test_nav_layout_polish.py
+  type: called_by
+- target: tests/unit/test_settings_nav_link.py
+  type: called_by
+- target: tests/unit/test_theme_toggle_contrast.py
+  type: called_by
+last_enriched: '2026-07-07'

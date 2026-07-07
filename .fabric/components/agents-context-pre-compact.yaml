@@ -14,7 +14,7 @@ depends_on:
   type: calls
 last_verified: 2026-02-20
 created_by: unknown
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'
 depended_by:
 - target: agents/audit/self-audit.sh
   type: read_by
@@ -30,3 +30,13 @@ depended_by:
   type: called_by
 - target: tests/unit/pre_compact_timewindow_dedup.bats
   type: tests_by
+- target: C-009
+  type: called_by
+- target: tests/unit/context_safe_commands.bats
+  type: called_by
+- target: tests/unit/doctor_duplicate_hook_detection.bats
+  type: called_by
+- target: tests/unit/upgrade_dedupe_user_hooks.bats
+  type: called_by
+- target: tests/unit/upgrade_duplicate_hook_detection.bats
+  type: called_by

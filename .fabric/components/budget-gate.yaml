@@ -40,6 +40,8 @@ depended_by:
   type: triggers_by
 - target: tests/lint/no-bare-fw-in-gate-scripts.bats
   type: tests_by
+- target: C-009
+  type: called_by
 shared_constants:
   TOKEN_WARN: 120000
   TOKEN_URGENT: 150000
@@ -51,4 +53,4 @@ docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'
   type: deep-dive
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'

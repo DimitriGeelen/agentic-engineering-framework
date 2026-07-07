@@ -5,9 +5,12 @@ subsystem: unknown
 location: docs/runbooks/arc-012-continuous-mode-live-fire.md
 tags: []
 purpose: 'TODO: describe what this component does'
-depends_on: []
+depends_on:
+- target: C-008
+  type: calls
 depended_by: []
 last_verified: 2026-06-13
 created_by: unknown
 standalone: true
 standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)
+last_enriched: '2026-07-07'

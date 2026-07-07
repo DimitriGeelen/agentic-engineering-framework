@@ -5,7 +5,9 @@ subsystem: framework-core
 location: lib/version.sh
 tags: []
 purpose: 'fw version subcommand: show framework version, git tag, commit count, paths. Supports --check for update detection.'
-depends_on: []
+depends_on:
+- target: bin/fw
+  type: calls
 depended_by:
 - target: tests/unit/lib_version.bats
   type: called-by

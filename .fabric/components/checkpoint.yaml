@@ -59,6 +59,14 @@ depended_by:
   type: called_by
 - target: tests/unit/handover_push_timeout.bats
   type: tests_by
+- target: docs/runbooks/arc-012-continuous-mode-live-fire.md
+  type: called_by
+- target: C-009
+  type: called_by
+- target: tests/unit/doctor_hook_exercise.bats
+  type: called_by
+- target: tests/unit/upgrade_duplicate_hook_detection.bats
+  type: called_by
 writes:
 - target: .context/working/.tool-counter
   contract: Text integer, incremented on every post-tool call
@@ -75,7 +83,7 @@ shared_constants:
   note: Duplicated in C-007 (budget-gate.sh)
 last_verified: 2026-02-20
 created_by: T-191
-last_enriched: '2026-05-06'
+last_enriched: '2026-07-07'
 docs:
 - path: docs/articles/deep-dives/03-context-budget.md
   title: 'Deep Dive: Context Budget Management'

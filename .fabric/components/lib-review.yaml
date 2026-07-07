@@ -29,6 +29,8 @@ depended_by:
   type: called_by
 - target: tests/unit/recommendation_gate_build_partial.bats
   type: tests_by
+- target: web/blueprints/review.py
+  type: called_by
 last_verified: 2026-03-27
 created_by: unknown
-last_enriched: '2026-06-16'
+last_enriched: '2026-07-07'

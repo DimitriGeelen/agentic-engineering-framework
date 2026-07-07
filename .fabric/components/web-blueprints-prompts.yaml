@@ -12,6 +12,8 @@ depends_on:
   type: renders
 - target: web/templates/prompt_detail.html
   type: renders
+- target: lib/prompt.sh
+  type: calls
 depended_by:
 - target: web/blueprints/__init__.py
   type: called_by
@@ -19,4 +21,4 @@ depended_by:
   type: registered_by
 last_verified: 2026-04-18
 created_by: unknown
-last_enriched: '2026-04-19'
+last_enriched: '2026-07-07'
