@@ -1,13 +1,13 @@
 ---
-id: T-2405
-name: "fw review-queue --arc filter (arc-focused human verification burst)"
+id: T-2513
+name: "fw note <unknown-verb> silently captures the verb as a new note instead of erroring/hinting. Hit live in T-2457: 'fw note resolve OBS-080 --note ...' created a junk OBS-084 with text 'resolve' (no resolve verb exists; verbs are triage/promote/dismiss). Footgun: typo'd or plausible-but-wrong verbs (resolve/close/fix/done) become silent junk notes. Consider a 'did you mean dismiss?' hint when the sole non-flag arg matches a small denylist AND subcommand-style flags (--reason/--note) follow. Design judgment on capture-first ergonomics — operator call."
 description: >
-  fw review-queue --arc filter (arc-focused human verification burst)
+  Promoted from observation OBS-085
 
-status: work-completed
+status: captured
 workflow_type: build
-owner: agent
-horizon: now
+owner: human
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -21,9 +21,10 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-06-15T15:13:04Z
-last_update: '2026-06-15T15:15:05Z'
-date_finished: 2026-06-15T17:17:39Z
+created: 2026-07-07T17:13:07Z
+last_update: 2026-07-07T17:13:27Z
+date_finished: null
+# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
 # bvp_scores:                     # confirmed per-driver scores 0-5, set by `fw bvp confirm` (T-1924).
@@ -33,65 +34,20 @@ date_finished: 2026-06-15T17:17:39Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-06-15T15:15:03Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 0
-      tier: 2
-      effort: 8
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-06-15T15:15:05Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 2
-      D4: 2
-      F-RECALL: 0
-      F-ORCH: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-ORCH=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-2405: fw review-queue --arc filter (arc-focused human verification burst)
+# T-2513: fw note <unknown-verb> silently captures the verb as a new note instead of erroring/hinting. Hit live in T-2457: 'fw note resolve OBS-080 --note ...' created a junk OBS-084 with text 'resolve' (no resolve verb exists; verbs are triage/promote/dismiss). Footgun: typo'd or plausible-but-wrong verbs (resolve/close/fix/done) become silent junk notes. Consider a 'did you mean dismiss?' hint when the sole non-flag arg matches a small denylist AND subcommand-style flags (--reason/--note) follow. Design judgment on capture-first ergonomics — operator call.
 
 ## Context
 
-`fw review-queue` (T-1536) lists every active task with unchecked Human ACs +
-every pending inception decision — corpus-wide. As the corpus grows, the
-queue gets noisy: a focused-on-arc-003 operator currently sees 178 verdict
-rows when they want the ~17 partial-completes tagged to arc-003. The
-operator already uses `fw arc focus <id>` to narrow attention; the review
-queue should honour the same lens.
-
-Fix: add `--arc <id>` flag that filters DECISIONS + VERDICT sections to
-tasks tagged with that arc. Accepts either form (`arc-003` or
-`orchestrator-rethink`) since the arc YAMLs carry both. Reads task's
-`arc_id:` frontmatter field AND legacy `tags: [arc:<slug>, ...]` form
-(T-1849 canonical + back-compat). PAUSED section unaffected (dispatch-level,
-not task-arc-scoped).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw review-queue --arc arc-003` filters DECISIONS + VERDICT sections to tasks whose `arc_id:` resolves to arc-003 (slug or arc-NNN form).
-- [x] `fw review-queue --arc orchestrator-rethink` produces identical output to `--arc arc-003` (slug form accepted equivalently).
-- [x] Legacy `tags: [arc:orchestrator-rethink, ...]` form also matched (T-1849 back-compat).
-- [x] Unknown arc id (e.g. `--arc not-a-real-arc`) prints clear error to stderr + exits 1; does NOT silently produce empty output.
-- [x] `fw review-queue --help` documents the `--arc <id>` flag and accepted forms.
-- [x] No regression in `fw review-queue` (no flag) — same output as before.
-- [x] Bats test covers: no-flag baseline, --arc arc-NNN form, --arc slug form, --arc legacy-tag form, --arc unknown-id error.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -134,9 +90,6 @@ not task-arc-scoped).
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-bash -n bin/fw
-bats tests/integration/review_queue_arc.bats
-rev=$(bin/fw reviewer T-2405 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONCERN)" && ! echo "$rev" | grep -q "Overall:.*FAIL"
 #
 # Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
 # `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
@@ -223,16 +176,10 @@ rev=$(bin/fw reviewer T-2405 2>&1); echo "$rev" | grep -qE "Overall:.*(PASS|CONC
 
 ## Updates
 
-### 2026-06-15T15:13:04Z — task-created [task-create-agent]
+### 2026-07-07T17:13:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2405-fw-review-queue---arc-filter-arc-focused.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2513-fw-note-unknown-verb-silently-captures-t.md
 - **Context:** Initial task creation
 
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-e28fec13
-- **Timestamp:** 2026-06-15T15:16:45Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
+### 2026-07-07T17:13:27Z — status-update [task-update-agent]
+- **Change:** horizon: now → later

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100200: Enforce session-on-master invariant — blocking gate vs advisory
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-07T17:08:53Z
+# ============================================================================
+
+task_id: T-100200
+task_name: "Enforce session-on-master invariant — blocking gate vs advisory"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-05T20:43:21Z
+completed: 2026-07-05T22:14:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-05T22:46:19+02:00
+last_commit: 2026-07-06T00:22:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  seed session-on-master enforcement inception (research artifact first, C-001). complete inception exploration — Spikes 1-3, GO-scoped-to-mech-C. record GO decision
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-100200-session-on-master-enforcement.md'
+  - '.tasks/active/T-100200-enforce-session-on-master-invariant--blo.md'
+  - '.tasks/completed/T-100200-enforce-session-on-master-invariant--blo.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-05T22:46:19"
+    action: "T-100200: seed session-on-master enforcement inception (research artifact first, C-001)"
+  - time: "2026-07-05T23:29:46"
+    action: "T-100200: complete inception exploration — Spikes 1-3, GO-scoped-to-mech-C"
+  - time: "2026-07-06T00:22:18"
+    action: "T-100200: record GO decision"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 90 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 90
+  commits: 5
+  files_changed: 118
+  lines_added: 169034
+  lines_removed: 62
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100200-enforce-session-on-master-invariant--blo.md
+generated_by: context-agent-hybrid

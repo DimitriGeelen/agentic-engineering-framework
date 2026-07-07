@@ -4,7 +4,7 @@ name: "Refresh continuous-run directive for arc-012 live-fire"
 description: >
   Refresh continuous-run directive for arc-012 live-fire
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
 horizon: now
@@ -23,8 +23,7 @@ related_tasks: []
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-06-14T18:22:35Z
 last_update: '2026-06-16T12:45:08Z'
-date_finished:
-# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
+date_finished: 2026-06-16T18:28:01Z
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
 # bvp_scores:                     # confirmed per-driver scores 0-5, set by `fw bvp confirm` (T-1924).

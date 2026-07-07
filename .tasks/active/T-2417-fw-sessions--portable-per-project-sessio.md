@@ -6,7 +6,7 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: null
 tags: []
 components: [agents/sessions/claude-code/list.sh, agents/sessions/render.py, agents/sessions/SCHEMA.md, bin/fw, tests/unit/sessions_claude_code_adapter.bats, tests/unit/sessions_render.bats]

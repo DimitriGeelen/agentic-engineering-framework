@@ -709,8 +709,8 @@ observations:
   captured: 2026-06-22T02:40:22Z
   context_task: null
   tags: [dogfood]
-  status: pending
-  promoted_to: null
+  status: promoted
+  promoted_to: task
 - id: OBS-086
   text: "add"
   captured: 2026-06-22T09:30:41Z
@@ -730,14 +730,14 @@ observations:
   captured: 2026-06-22T09:31:18Z
   context_task: T-2459
   tags: [bug]
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-089
   text: "T-2459 finding: tests/unit/test_mcp_wire_fragment.bats (T-2272) t2/t3/t4 FAIL on master — fragment agents/mcp/framework-mcp.mcp-fragment.json top-key is 'fw' (T-2268) but the T-2272 test still asserts 'framework-mcp'. Pre-existing (git diff HEAD = 0 lines both files). Relevant to T-2458 consumer-wiring slice which consumes this fragment."
   captured: 2026-06-22T09:31:18Z
   context_task: T-2459
   tags: [bug]
-  status: pending
+  status: dismissed
   promoted_to: null
 - id: OBS-090
   text: "Recorded-but-not-surfaced class: T-2374 wrote 'Handover FAILED (rc=N)' to .compact-log honestly, but nothing surfaced it — so the framework's own memory-capture could fail across every /compact while /compact reported success. Fixed in T-2506 (fw doctor WARN). Broader lesson: any 'we log the failure' remediation must be paired with a surfacing rail (doctor/audit), or it is blindness with a paper trail. Audit for other log-only failure sinks."

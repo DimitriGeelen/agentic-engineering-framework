@@ -168,7 +168,7 @@ out=$(python3 -m pytest tests/unit/test_reviewer_defer_as_hedge.py 2>&1); echo "
 out=$(bats tests/unit/test_reviewer_defer_as_hedge.bats 2>&1); echo "$out" | grep -q "ok 5"
 out=$(python3 -c "import yaml; d=yaml.safe_load(open('policy/anti-patterns.yaml')); print('defer-as-hedge' in [p['id'] for p in d['patterns']])"); echo "$out" | grep -q True
 test -f docs/reports/T-2145-corpus-walk.md
-out=$(python3 -m pytest tests/unit/test_reviewer_*.py 2>&1); echo "$out" | grep -q "273 passed"
+out=$(python3 -m pytest tests/unit/test_reviewer_*.py 2>&1); echo "$out" | grep -qE "[0-9]+ passed" && ! echo "$out" | grep -qE "[0-9]+ (failed|error)"
 
 ## RCA
 

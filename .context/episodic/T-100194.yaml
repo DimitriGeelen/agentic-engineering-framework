@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-100194: RCA: host working-branch forked 198/287 commits from origin-master — go-live
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-07T17:08:50Z
+# ============================================================================
+
+task_id: T-100194
+task_name: "RCA: host working-branch forked 198/287 commits from origin-master — go-live"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-05T16:38:02Z
+completed: 2026-07-05T17:13:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-05T19:39:35+02:00
+last_commit: 2026-07-05T19:39:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture L-489 — detection rails must live on the branch they police
+
+# Key outcomes
+outcomes:
+  - '`## RCA` section completed: 5-Whys tracing from the symptom (100+ conflict go-live) to the structural root (no gate keeps host branch in lockstep with origin/master; no WARN on bidirectional divergence)'
+  - 'Mechanism documented with evidence: enumerate ≥2 commits/files that landed on only one side (e.g. host-only `tests/unit/test_audit_emit_tasks.bats`, `test_task_cache_t100140.py` — confirmed via `git cat-file -e origin/master:<path>` returning absent + `git log origin/master -- <path>` empty)'
+  - 'Explain why existing rails did not catch it: `FW_BRANCH_BEHIND_WARN`/T-100143 only measures "behind origin/master", not bidirectional fork where the host is also *ahead*; `fw integrate` lands one-way and never merges back'
+  - 'Remediation traceability: T-100195 referenced here with its scope, and any further spin-outs filed with IDs'
+  - 'Concern registered in `.context/project/concerns.yaml` (register-first-fix-second) linking this RCA + T-100195'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-05T19:39:35"
+    action: "T-100194: capture L-489 — detection rails must live on the branch they police"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 35 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 35
+  commits: 1
+  files_changed: 1
+  lines_added: 7
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-100194-rca-host-working-branch-forked-198287-co.md
+generated_by: context-agent-hybrid
