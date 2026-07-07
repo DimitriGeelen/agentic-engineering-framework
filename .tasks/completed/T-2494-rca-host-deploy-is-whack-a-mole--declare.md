@@ -1,8 +1,10 @@
 ---
 id: T-2494
-name: "RCA: host deploy is whack-a-mole — declare deploy topology + end-to-end deploy-doctor/release orchestrator"
+name: "RCA: host deploy is whack-a-mole — declare deploy topology + end-to-end deploy-doctor/release
+  orchestrator"
 description: >
-  Inception: RCA: host deploy is whack-a-mole — declare deploy topology + end-to-end deploy-doctor/release orchestrator
+  Inception: RCA: host deploy is whack-a-mole — declare deploy topology + end-to-end
+  deploy-doctor/release orchestrator
 
 status: started-work
 workflow_type: inception
@@ -12,8 +14,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-06-24T21:01:38Z
-last_update: 2026-06-24T21:03:34Z
-date_finished: null
+last_update: '2026-07-07T08:00:11Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +24,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-07-07T08:00:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2494: RCA: host deploy is whack-a-mole — declare deploy topology + end-to-end deploy-doctor/release orchestrator

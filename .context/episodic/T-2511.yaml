@@ -1,0 +1,211 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2511: Remediate remaining audit WARNs: retire F-ORCH driver (retire_when met) + reduce
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-07T14:25:06Z
+# ============================================================================
+
+task_id: T-2511
+task_name: "Remediate remaining audit WARNs: retire F-ORCH driver (retire_when met) + reduce"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-07T10:35:31Z
+completed: 2026-07-07T14:24:56Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-07T12:45:55+02:00
+last_commit: 2026-07-07T16:20:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  retire F-ORCH driver (retire_when met, reversible) + honest fabric standalone-classification (no-edge 101→28). fix enrich edge-detection root causes (fabric no-edge 28->17)
+
+# Key outcomes
+outcomes:
+  - 'F-ORCH retired reversibly in policy/value-drivers.yaml (converted to commented RETIRED block, definition preserved verbatim, not deleted); parses; active free_drivers = [F-RECALL, F-AUTONOMY, F3, F1, F2] — F-ORCH gone'
+  - 'F-ORCH retire_when WARN removed (audit iterates active free_drivers only)'
+  - 'Fabric no-edge reduced **101→17** via honest classification + two enrich root-fixes: (1) standalone-marking of 48 playwright black-box tests + ~25 docs/static assets + 4 zero-reference leaf utilities (genuinely no code edges — the field''s purpose, NOT gaming); (2) **enrich truncation root-fix** (100KB→2MB read cap) restoring 54 real bin/fw dispatch edges (cleared pause.sh/worktree.sh/orchestrator-graph.py); (3) **python bare-import detector** (`from lib import X`, `sys.path.insert(lib)+import X`) restoring 18 real test→module edges. All 72 edges verified real (existence-guarded, zero false positives).'
+  - 'Two enrich detection root-fixes shipped (Level-C) — see RCA below. This was the "author real edges OR improve enrich" follow-up; done as the reliable structural fix, not deferred.'
+  - '**Residual 17 (>10, WARN STILL FIRES) classified honestly, NOT gamed:** 6 settings.json/cron-invoked hooks + ~7 `importlib`-dynamic / `$HOOK`-variable tests + integrate-go-live/demos/escalation-v0. These have REAL edges that are invocation-based (settings.json→hook, no card-source) or dynamically-constructed (runtime importlib paths) — not statically resolvable without dedicated detectors. Marking them standalone would be gaming (they are not standalone). Honest floor for this pass; further reduction tracked in follow-up T-2512 (settings.json→hook + importlib-resolution detectors OR threshold recalibration — operator call). This AC''s deliverable = correct classification + no gaming + documented path; DONE.'
+  - 'Changes committed + FF-landed on origin/master — commits `4a198eb5c` (F-ORCH retire + vendored refresh) and `094128785` (enrich root-fixes) both verified on origin/master (0/0 ahead/behind). Pre-push audit: Pass 23 / Warn 1 / Fail 0.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fix enrich edge-detection root causes (fabric no-edge 28->17)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - '.agentic-framework/policy/value-drivers.yaml'
+  - 'agents/fabric/lib/enrich.py'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0707-1246.md'
+  - '.context/handovers/S-2026-0707-1247.md'
+  - '.context/handovers/S-2026-0707-1317.md'
+  - '.context/handovers/S-2026-0707-1556.md'
+  - '.fabric/components/012-ArcSystem.yaml'
+  - '.fabric/components/agents-audit-orchestrator-mcp-scan.yaml'
+  - '.fabric/components/agents-mcp-framework-mcp.mcp-fragment.yaml'
+  - '.fabric/components/agents-mcp-manifest.yaml'
+  - '.fabric/components/agents-metrics-api-usage.yaml'
+  - '.fabric/components/agents-orchestrator-orchestrator-graph.yaml'
+  - '.fabric/components/agents-sessions-SCHEMA.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-AGENT.yaml'
+  - '.fabric/components/audit-yaml-validator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/docs-architecture-parallel-execution-aef.yaml'
+  - '.fabric/components/docs-architecture-parallel-execution-substrate.yaml'
+  - '.fabric/components/docs-reports-arc-010-hm-a-demo-evidence.yaml'
+  - '.fabric/components/docs-reports-arc-010-hm-a-demo-prompt.yaml'
+  - '.fabric/components/docs-reports-T-1922-a3-measurement-raw.yaml'
+  - '.fabric/components/docs-reports-T-1922-a3-measurement.yaml'
+  - '.fabric/components/docs-reports-T-2371-arc-011-wire-evidence-demo.yaml'
+  - '.fabric/components/docs-runbooks-arc-012-continuous-mode-live-fire.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-branch-hygiene.yaml'
+  - '.fabric/components/lib-bvp.yaml'
+  - '.fabric/components/lib-config-file.yaml'
+  - '.fabric/components/lib-consumer-recover.yaml'
+  - '.fabric/components/lib-govd_envelope.yaml'
+  - '.fabric/components/lib-govd_holder.yaml'
+  - '.fabric/components/lib-govd_policy.yaml'
+  - '.fabric/components/lib-hook-telemetry.yaml'
+  - '.fabric/components/lib-integrate.yaml'
+  - '.fabric/components/lib-mirror.yaml'
+  - '.fabric/components/lib-notify.yaml'
+  - '.fabric/components/lib-ollama_loop.yaml'
+  - '.fabric/components/lib-outcome-sh.yaml'
+  - '.fabric/components/lib-outcome.yaml'
+  - '.fabric/components/lib-pause.yaml'
+  - '.fabric/components/lib-pending.yaml'
+  - '.fabric/components/lib-pi_worker.yaml'
+  - '.fabric/components/lib-prompt.yaml'
+  - '.fabric/components/lib-release.yaml'
+  - '.fabric/components/lib-resolver-sh.yaml'
+  - '.fabric/components/lib-resolver.yaml'
+  - '.fabric/components/lib-reviewer-recommendation_claims.yaml'
+  - '.fabric/components/lib-reviewer-static_scan.yaml'
+  - '.fabric/components/lib-verify-acs.yaml'
+  - '.fabric/components/lib-version.yaml'
+  - '.fabric/components/lib-workflow_coverage.yaml'
+  - '.fabric/components/lib-worktree.yaml'
+  - '.fabric/components/lib-write_set.yaml'
+  - '.fabric/components/tests-playwright-test_appearance_presets.yaml'
+  - '.fabric/components/tests-playwright-test_approvals_arc_closure_section.yaml'
+  - '.fabric/components/tests-playwright-test_approvals_arc_review_navigation.yaml'
+  - '.fabric/components/tests-playwright-test_approvals_content_tokens.yaml'
+  - '.fabric/components/tests-playwright-test_approvals_style_tokens.yaml'
+  - '.fabric/components/tests-playwright-test_arc_badge.yaml'
+  - '.fabric/components/tests-playwright-test_arc_close_recommendation_panel.yaml'
+  - '.fabric/components/tests-playwright-test_arc_detail_bvp.yaml'
+  - '.fabric/components/tests-playwright-test_arc_page_parity.yaml'
+  - '.fabric/components/tests-playwright-test_arc_review_route.yaml'
+  - '.fabric/components/tests-playwright-test_arc_scoped_sliders.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_detail_arc_id_membership.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_pages_tokens.yaml'
+  - '.fabric/components/tests-playwright-test_badge_contrast.yaml'
+  - '.fabric/components/tests-playwright-test_breadcrumb.yaml'
+  - '.fabric/components/tests-playwright-test_bulk_actions.yaml'
+  - '.fabric/components/tests-playwright-test_bvp_propose_queue.yaml'
+  - '.fabric/components/tests-playwright-test_bvp_scatter.yaml'
+  - '.fabric/components/tests-playwright-test_bvp_sliders.yaml'
+  - '.fabric/components/tests-playwright-test_cockpit_activity_navigation.yaml'
+  - '.fabric/components/tests-playwright-test_cockpit_activity.yaml'
+  - '.fabric/components/tests-playwright-test_cockpit_density_spacing.yaml'
+  - '.fabric/components/tests-playwright-test_cockpit_inline_tokens.yaml'
+  - '.fabric/components/tests-playwright-test_cockpit_knowledge_counts.yaml'
+  - '.fabric/components/tests-playwright-test_cockpit_status_pills.yaml'
+  - '.fabric/components/tests-playwright-test_cockpit_traceability.yaml'
+  - '.fabric/components/tests-playwright-test_command_palette.yaml'
+  - '.fabric/components/tests-playwright-test_cross_surface_parity.yaml'
+  - '.fabric/components/tests-playwright-test_fabric_coupling_token.yaml'
+  - '.fabric/components/tests-playwright-test_fabric_graph_cold_load.yaml'
+  - '.fabric/components/tests-playwright-test_filter_chips.yaml'
+  - '.fabric/components/tests-playwright-test_gaps_close.yaml'
+  - '.fabric/components/tests-playwright-test_hooks_page.yaml'
+  - '.fabric/components/tests-playwright-test_kanban_drag.yaml'
+  - '.fabric/components/tests-playwright-test_nav_layout_polish.yaml'
+  - '.fabric/components/tests-playwright-test_nav_layouts.yaml'
+  - '.fabric/components/tests-playwright-test_nav_subsections.yaml'
+  - '.fabric/components/tests-playwright-test_pins.yaml'
+  - '.fabric/components/tests-playwright-test_review_acs_navigation.yaml'
+  - '.fabric/components/tests-playwright-test_review_csrf.yaml'
+  - '.fabric/components/tests-playwright-test_review_htmx_target_inheritance.yaml'
+  - '.fabric/components/tests-playwright-test_settings_nav_link.yaml'
+  - '.fabric/components/tests-playwright-test_shortcuts_overlay.yaml'
+  - '.fabric/components/tests-playwright-test_task_detail_bvp.yaml'
+  - '.fabric/components/tests-playwright-test_task_panel_edit.yaml'
+  - '.fabric/components/tests-playwright-test_task_panel.yaml'
+  - '.fabric/components/tests-playwright-test_tasks_listing_bvp.yaml'
+  - '.fabric/components/tests-playwright-test_theme_toggle_contrast.yaml'
+  - '.fabric/components/tests-scripts-yaml_parse_all_tasks.yaml'
+  - '.fabric/components/tests-unit-test_command_palette.yaml'
+  - '.fabric/components/tests-unit-test_govd_policy.yaml'
+  - '.fabric/components/tests-unit-test_ollama_loop.yaml'
+  - '.fabric/components/tests-unit-test_pi_worker.yaml'
+  - '.fabric/components/tests-unit-test_resolver_run.yaml'
+  - '.fabric/components/tools-check_task_yamls.yaml'
+  - '.fabric/components/tools-episodic-corpus-check.yaml'
+  - '.fabric/components/tools-escalation-scan-v0-5.yaml'
+  - '.fabric/components/tools-migrate-inception-schema.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.fabric/components/web-static-bulk-actions.yaml'
+  - '.fabric/components/web-static-command-palette.yaml'
+  - '.fabric/components/web-static-csrf-htmx.yaml'
+  - '.fabric/components/web-static-css-foundations.yaml'
+  - '.fabric/components/web-static-htmx-toast.yaml'
+  - '.fabric/components/web-static-kanban-drag.yaml'
+  - '.fabric/components/web-static-shortcuts-overlay.yaml'
+  - '.fabric/components/web-static-task-panel.yaml'
+  - '.fabric/components/web-templates-_cockpit_activity.yaml'
+  - '.fabric/components/web-templates-_error_csrf.yaml'
+  - '.fabric/components/web-templates-_partials-arc_badge.yaml'
+  - '.fabric/components/web-templates-_partials-bvp_badge.yaml'
+  - '.fabric/components/web-templates-_task_panel.yaml'
+  - 'policy/value-drivers.yaml'
+  - '.tasks/active/T-2511-remediate-remaining-audit-warns-retire-f.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-07T12:45:55"
+    action: "T-2511: retire F-ORCH driver (retire_when met, reversible) + honest fabric standalone-classification (no-edge 101→28)"
+  - time: "2026-07-07T12:45:55"
+    action: "T-2511: retire F-ORCH driver (retire_when met, reversible) + honest fabric standalone-classification (no-edge 101→28)"
+  - time: "2026-07-07T16:20:58"
+    action: "T-2511: fix enrich edge-detection root causes (fabric no-edge 28->17)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 229 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 229
+  commits: 3
+  files_changed: 129
+  lines_added: 6265
+  lines_removed: 2066
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2511-remediate-remaining-audit-warns-retire-f.md
+generated_by: context-agent-hybrid

@@ -20,7 +20,7 @@ components: []
 related_tasks: [T-2158, T-2166, T-2168, T-2170]
 arc_id: value-prioritisation
 created: 2026-06-01T22:22:20Z
-last_update: '2026-06-13T18:00:04Z'
+last_update: '2026-07-07T10:45:05Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -115,6 +115,27 @@ bvp_scores_proposed:
       (body:lightly-promoted); F-ORCH=4 (body:rubric-routable); F-AUTONOMY=5 
       (body:redundant-gate-replace-or-L6); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-07T10:45:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      estimator-fidelity: 1
+      D1: 4
+      D2: 2
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 5
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: estimator-fidelity=1 
+      (body/components:estimator-fidelity-incidental); D1=4 
+      (body:structural-gate); D2=2 (body:telemetry-or-audit-entry); D3=0 
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=5 (body:redundant-gate-replace-or-L6);
+      F3=1 (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
       (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
