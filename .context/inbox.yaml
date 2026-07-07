@@ -753,3 +753,10 @@ observations:
   tags: []
   status: pending
   promoted_to: null
+- id: OBS-092
+  text: "fw fabric drift intermittently reports EXISTING cards as unregistered (count flip-flopped 2->3->1 for lib/doctor-hook-exercise.py, lib/hook-threshold.py, bin/fw-shim; 'fabric register' returned 'Card already exists'). Authoritative audit correctly reports 0 unregistered / 874 registered. Non-deterministic false-positive in the drift scan (likely path-normalization/caching; cf test_fabric_drift_absolute_paths.py). Discovered during T-2511."
+  captured: 2026-07-07T14:28:53Z
+  context_task: T-100201
+  tags: [bug]
+  status: pending
+  promoted_to: null
