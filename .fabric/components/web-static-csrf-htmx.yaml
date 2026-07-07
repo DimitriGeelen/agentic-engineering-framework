@@ -4,17 +4,10 @@ type: script
 subsystem: watchtower
 location: web/static/csrf-htmx.js
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by: []
 last_verified: 2026-04-25
 created_by: unknown
+standalone: true
+standalone_reason: frontend asset / documentation leaf — no code-dependency edges (T-2511)

@@ -4,17 +4,10 @@ type: script
 subsystem: unknown
 location: docs/reports/T-1922-a3-measurement.md
 tags: []
-
-purpose: "TODO: describe what this component does"
-
-depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
-
-depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
-
+purpose: 'TODO: describe what this component does'
+depends_on: []
+depended_by: []
 last_verified: 2026-05-19
 created_by: unknown
+standalone: true
+standalone_reason: documentation/data artifact — no code-dependency edges (T-2511)

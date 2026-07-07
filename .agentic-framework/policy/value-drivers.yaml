@@ -120,36 +120,46 @@ free_drivers:
       L4 Reflect criteria (positive reinforcement capture, preference index,
       CLAUDE.md auto-sync, durable reflection log) are green.
 
-  - id: F-ORCH
-    name: Orchestration Leverage
-    weight: 5                       # strategic/forward bet; sits below Recall by design
-    rationale: >
-      Rewards expanding the surface that can be routed to a NON-primary executor
-      -- how much a piece of work raises the framework's capacity to dispatch,
-      fan out, and run unattended rather than serially through the primary agent.
-      Maps onto the Initiative axis (L4->L5->L6) and the in-flight orchestrator
-      substrate (T-1643). No other driver scores work by how much it raises that
-      ceiling.
-    polarity: positive
-    rubric:
-      0: Inherently primary-agent-only and serial; no routable surface added.
-      1: Runs only via hand-wired dispatch; no reusable routing artifact.
-      2: Minor routing improvement, single-use.
-      3: Adds a clean typed I/O contract or decision gate so the framework can 
-        refuse-or-dispatch the step mechanically.
-      4: Converts interpretive primary work into rubric-scored work a TermLink 
-        worker can run, OR adds an explicit router decision tree (closes the 
-        open router-skills gap).
-      5: Expands the orchestration substrate itself -- new worker class, 
-        parallel/multi-perspective dispatch, or advances the orchestrator.
-    guardrails: >
-      Score CAPABILITY UPLIFT (does this expand what the framework can orchestrate?),
-      NOT ease-of-delegating-this-task (that is a cost-side property -- keep it off
-      the value side or you double-count). Anchor on genuine routable-surface
-      expansion to avoid manufactured I/O-block busywork.
-    retire_when: >
-      Multi-agent orchestration criterion goes green / orchestrator substrate
-      (T-1643) lands in production.
+  # -------------------------------------------------------------------------
+  # RETIRED 2026-07-07 (T-2511) -- retire_when condition MET: orchestrator
+  # substrate (T-1643) landed in production. T-1643 is in .tasks/completed/;
+  # the orchestrator is live (fw resolver run/pick dispatches real workers,
+  # litellm :4000 + systemd -- T-2484). Orchestration Leverage is now baseline
+  # capability, no longer a differentiating scoring axis vs D1-D4.
+  # Retirement authorized by operator (re-issued "remediate audit warns", Tier-2).
+  # REVERSIBLE: to reactivate, uncomment the block below and re-add under
+  # free_drivers: with a weight. Definition preserved verbatim.
+  #
+  # - id: F-ORCH
+  #   name: Orchestration Leverage
+  #   weight: 5                       # strategic/forward bet; sits below Recall by design
+  #   rationale: >
+  #     Rewards expanding the surface that can be routed to a NON-primary executor
+  #     -- how much a piece of work raises the framework's capacity to dispatch,
+  #     fan out, and run unattended rather than serially through the primary agent.
+  #     Maps onto the Initiative axis (L4->L5->L6) and the in-flight orchestrator
+  #     substrate (T-1643). No other driver scores work by how much it raises that
+  #     ceiling.
+  #   polarity: positive
+  #   rubric:
+  #     0: Inherently primary-agent-only and serial; no routable surface added.
+  #     1: Runs only via hand-wired dispatch; no reusable routing artifact.
+  #     2: Minor routing improvement, single-use.
+  #     3: Adds a clean typed I/O contract or decision gate so the framework can
+  #       refuse-or-dispatch the step mechanically.
+  #     4: Converts interpretive primary work into rubric-scored work a TermLink
+  #       worker can run, OR adds an explicit router decision tree (closes the
+  #       open router-skills gap).
+  #     5: Expands the orchestration substrate itself -- new worker class,
+  #       parallel/multi-perspective dispatch, or advances the orchestrator.
+  #   guardrails: >
+  #     Score CAPABILITY UPLIFT (does this expand what the framework can orchestrate?),
+  #     NOT ease-of-delegating-this-task (that is a cost-side property -- keep it off
+  #     the value side or you double-count). Anchor on genuine routable-surface
+  #     expansion to avoid manufactured I/O-block busywork.
+  #   retire_when: >
+  #     Multi-agent orchestration criterion goes green / orchestrator substrate
+  #     (T-1643) lands in production.
 
   # -------------------------------------------------------------------------
   # CANDIDATE (INACTIVE) -- not consuming a slot. Documented so the carve is
