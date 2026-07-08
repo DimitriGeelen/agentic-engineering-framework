@@ -12,19 +12,21 @@ name: "T-2091 RCA prevention follow-up: structural detector for active↔complet
 description: >
   Promoted from observation OBS-035
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-004, lib/inception.sh, lib/upgrade.sh, tests/unit/t2318_retrofit_injector_append_missing.bats, tests/unit/test_self_vendor_agents_md_filter.bats]
 related_tasks: [T-2516, T-2517]
 inception_decisions:
   - id: prong-3-doctor-untracked
-    text: "fw doctor WARNs on untracked T-*.md under .tasks/{active,completed}/ — closes the 7-day mask window"
+    text: "fw doctor WARNs on untracked T-*.md under .tasks/{active,completed}/ —
+      closes the 7-day mask window"
     ships_in: deferred:T-2516
   - id: prong-1-dedup-hook
-    text: "PreToolUse hook blocks a same-id active/completed duplicate at write time (bypass for fw task update git-mv)"
+    text: "PreToolUse hook blocks a same-id active/completed duplicate at write time
+      (bypass for fw task update git-mv)"
     ships_in: deferred:T-2517
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -33,8 +35,8 @@ inception_decisions:
 target_blast_radius: 3
 voi_score: 0.4
 created: 2026-05-30T20:16:09Z
-last_update: 2026-07-08T06:38:50Z
-date_finished:
+last_update: 2026-07-08T07:20:02Z
+date_finished: 2026-07-08T07:20:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,6 +82,15 @@ cost_estimate_proposed:
       tier: 4
       effort: 7
     rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-07-08T07:15:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
@@ -325,7 +336,7 @@ the T-2091 origin + a live recurrence). The prior `DEFER` in this block was a
 T-2204 auto-retrofit stub ("Auto-retrofitted by 'fw inception retrofit-rec'"),
 not a graded advisory.
 
-**Date**: 2026-07-08T07:04:18Z
+**Date**: 2026-07-08T07:20:02Z
 
 ## Updates
 
@@ -398,3 +409,52 @@ discipline): the artifact carries complete evidence (grounded 3-prong analysis v
 the T-2091 origin + a live recurrence). The prior `DEFER` in this block was a
 T-2204 auto-retrofit stub ("Auto-retrofitted by 'fw inception retrofit-rec'"),
 not a graded advisory.
+
+### 2026-07-08T07:20:02Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The active↔completed task-id divergence class has a detection-only control
+(G-052 STRUCTURE audit "No duplicate task IDs") that fires *after* the divergence
+is committed and only at audit time — which is why the T-2091 origin surfaced 7
+days late and at the worst moment (a pre-push gate that stranded a handover
+commit). There is **no** write-time prevention and **no** early `fw doctor`
+surface (verified: no dedup hook in `agents/context/`, no untracked-`.tasks/`
+check in `audit.sh`/`bin/fw`). The class has **recurred** — `T-100202` is active
+today — so "cleanup when it happens" is demonstrably insufficient. Prong 3 is
+cheap/low-risk (read-only `git status --porcelain .tasks/`); prong 1 is moderate
+(must not block the legitimate `fw task update --status work-completed` git-mv
+path). Prong 2 (bumper cross-check) is deferred: once 1+3 exist the metadata-worker
+masking is largely moot, so it's the lowest-marginal-value prong.
+
+DEFER is **not** appropriate here (per the DEFER-for-evidence-not-confidence
+discipline): the artifact carries complete evidence (grounded 3-prong analysis vs
+the T-2091 origin + a live recurrence). The prior `DEFER` in this block was a
+T-2204 auto-retrofit stub ("Auto-retrofitted by 'fw inception retrofit-rec'"),
+not a graded advisory.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c0520182
+- **Timestamp:** 2026-07-08T07:20:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-6de7fc4c
+- **Timestamp:** 2026-07-08T07:20:03Z
+- **Overall:** CONFIRMED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-100202` | task | ✓ pass |
+| `docs/reports/T-2121-tasks-dir-divergence-prevention.md` | file | ✓ pass |
+| `T-2091` | task | ✓ pass |
+| `T-2204` | task | ✓ pass |
+
+### 2026-07-08T07:20:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

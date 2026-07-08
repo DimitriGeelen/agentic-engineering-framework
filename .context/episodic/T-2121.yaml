@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2121: T-2091 RCA prevention follow-up: structural detector for active↔completed task-id
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-08T07:20:12Z
+# ============================================================================
+
+task_id: T-2121
+task_name: "T-2091 RCA prevention follow-up: structural detector for active↔completed task-id"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-05-30T20:16:09Z
+completed: 2026-07-08T07:20:02Z
+duration_days: 39
+updates_count: 2
+first_commit: 2026-07-02T21:44:43+02:00
+last_commit: 2026-07-08T09:08:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception decision GO (via Watchtower). Tick ACs + file 3 build prongs (T-2472/T-2473/T-2474). replace T-2204 auto-retrofit DEFER stub with graded GO recommendation. GO scope-out — file prong-1 (T-2517) + prong-3 (T-2516) build tasks, tick ACs
+
+# Key outcomes
+outcomes:
+  - 'Inception decision recorded (GO / NO-GO / DEFER) on whether to ship any of the three prongs from the task body — (1) PreToolUse hook on Write|Edit refusing same-id duplicates between `.tasks/active/` and `.tasks/completed/`, (2) BVP estimator + last_update bumper cross-check before mutating `.tasks/active/` files, (3) `bin/fw doctor` surfacing untracked files in `.tasks/{active,completed}/`.'
+  - 'If GO: each prong filed as its own build task (per "one bug = one task") with `unlocks_inception_decision: [T-2121:<decision-id>]` traceability. If NO-GO or DEFER: rationale recorded in `## Recommendation` block citing why the T-2091 cleanup pattern is sufficient without structural prevention, or what evidence would push the next revisit toward GO.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2121-t-2091-rca-prevention-follow-up-structur.md'
+  - '.tasks/active/T-2472-t-2121-prong-1-pretooluse-hook-refusing-.md'
+  - '.tasks/active/T-2473-t-2121-prong-2-bvp-estimator--lastupdate.md'
+  - '.tasks/active/T-2474-t-2121-prong-3-fw-doctor-surfacing-untra.md'
+  - '.tasks/active/T-2516-fw-doctor-surface-untracked-files-under-.md'
+  - '.tasks/active/T-2517-pretooluse-hook-block-manual-write-creat.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-02T21:44:43"
+    action: "T-2121: inception decision GO (via Watchtower)"
+  - time: "2026-07-02T21:49:51"
+    action: "T-2121: Tick ACs + file 3 build prongs (T-2472/T-2473/T-2474)"
+  - time: "2026-07-08T08:14:25"
+    action: "T-2121: replace T-2204 auto-retrofit DEFER stub with graded GO recommendation"
+  - time: "2026-07-08T09:04:19"
+    action: "T-2121: inception decision GO (via Watchtower)"
+  - time: "2026-07-08T09:08:31"
+    action: "T-2121: GO scope-out — file prong-1 (T-2517) + prong-3 (T-2516) build tasks, tick ACs"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 55383 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 55383
+  commits: 7
+  files_changed: 37
+  lines_added: 4475
+  lines_removed: 28
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2121-t-2091-rca-prevention-follow-up-structur.md
+generated_by: context-agent-hybrid
