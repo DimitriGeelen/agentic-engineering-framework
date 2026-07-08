@@ -26,7 +26,7 @@ related_tasks: []
 target_blast_radius: 3
 voi_score: 0.4
 created: 2026-05-30T20:16:09Z
-last_update: '2026-07-07T10:45:05Z'
+last_update: 2026-07-08T06:38:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -297,13 +297,28 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion of inception tasks via:
-     fw inception decide T-XXX go|no-go|defer --rationale "..."
+**Decision**: GO
 
-     For non-inception tasks this section is ignored. Kept in template
-     so `fw inception decide` (lib/inception.sh) finds the anchor heading
-     without auto-creating; T-1832 added auto-create as fallback for
-     legacy tasks lacking this section. -->
+**Rationale**: The active↔completed task-id divergence class has a detection-only control
+(G-052 STRUCTURE audit "No duplicate task IDs") that fires *after* the divergence
+is committed and only at audit time — which is why the T-2091 origin surfaced 7
+days late and at the worst moment (a pre-push gate that stranded a handover
+commit). There is **no** write-time prevention and **no** early `fw doctor`
+surface (verified: no dedup hook in `agents/context/`, no untracked-`.tasks/`
+check in `audit.sh`/`bin/fw`). The class has **recurred** — `T-100202` is active
+today — so "cleanup when it happens" is demonstrably insufficient. Prong 3 is
+cheap/low-risk (read-only `git status --porcelain .tasks/`); prong 1 is moderate
+(must not block the legitimate `fw task update --status work-completed` git-mv
+path). Prong 2 (bumper cross-check) is deferred: once 1+3 exist the metadata-worker
+masking is largely moot, so it's the lowest-marginal-value prong.
+
+DEFER is **not** appropriate here (per the DEFER-for-evidence-not-confidence
+discipline): the artifact carries complete evidence (grounded 3-prong analysis vs
+the T-2091 origin + a live recurrence). The prior `DEFER` in this block was a
+T-2204 auto-retrofit stub ("Auto-retrofitted by 'fw inception retrofit-rec'"),
+not a graded advisory.
+
+**Date**: 2026-07-08T07:04:18Z
 
 ## Updates
 
@@ -354,3 +369,25 @@ Each GO prong files as its own build task ("one bug = one task") with
 ### 2026-06-12T10:13:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-08T07:04:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The active↔completed task-id divergence class has a detection-only control
+(G-052 STRUCTURE audit "No duplicate task IDs") that fires *after* the divergence
+is committed and only at audit time — which is why the T-2091 origin surfaced 7
+days late and at the worst moment (a pre-push gate that stranded a handover
+commit). There is **no** write-time prevention and **no** early `fw doctor`
+surface (verified: no dedup hook in `agents/context/`, no untracked-`.tasks/`
+check in `audit.sh`/`bin/fw`). The class has **recurred** — `T-100202` is active
+today — so "cleanup when it happens" is demonstrably insufficient. Prong 3 is
+cheap/low-risk (read-only `git status --porcelain .tasks/`); prong 1 is moderate
+(must not block the legitimate `fw task update --status work-completed` git-mv
+path). Prong 2 (bumper cross-check) is deferred: once 1+3 exist the metadata-worker
+masking is largely moot, so it's the lowest-marginal-value prong.
+
+DEFER is **not** appropriate here (per the DEFER-for-evidence-not-confidence
+discipline): the artifact carries complete evidence (grounded 3-prong analysis vs
+the T-2091 origin + a live recurrence). The prior `DEFER` in this block was a
+T-2204 auto-retrofit stub ("Auto-retrofitted by 'fw inception retrofit-rec'"),
+not a graded advisory.
