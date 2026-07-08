@@ -18,7 +18,14 @@ owner: human
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-2516, T-2517]
+inception_decisions:
+  - id: prong-3-doctor-untracked
+    text: "fw doctor WARNs on untracked T-*.md under .tasks/{active,completed}/ — closes the 7-day mask window"
+    ships_in: deferred:T-2516
+  - id: prong-1-dedup-hook
+    text: "PreToolUse hook blocks a same-id active/completed duplicate at write time (bypass for fw task update git-mv)"
+    ships_in: deferred:T-2517
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -177,8 +184,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Inception decision recorded (GO / NO-GO / DEFER) on whether to ship any of the three prongs from the task body — (1) PreToolUse hook on Write|Edit refusing same-id duplicates between `.tasks/active/` and `.tasks/completed/`, (2) BVP estimator + last_update bumper cross-check before mutating `.tasks/active/` files, (3) `bin/fw doctor` surfacing untracked files in `.tasks/{active,completed}/`.
-- [ ] If GO: each prong filed as its own build task (per "one bug = one task") with `unlocks_inception_decision: [T-2121:<decision-id>]` traceability. If NO-GO or DEFER: rationale recorded in `## Recommendation` block citing why the T-2091 cleanup pattern is sufficient without structural prevention, or what evidence would push the next revisit toward GO.
+- [x] Inception decision recorded (GO / NO-GO / DEFER) on whether to ship any of the three prongs from the task body — (1) PreToolUse hook on Write|Edit refusing same-id duplicates between `.tasks/active/` and `.tasks/completed/`, (2) BVP estimator + last_update bumper cross-check before mutating `.tasks/active/` files, (3) `bin/fw doctor` surfacing untracked files in `.tasks/{active,completed}/`.
+- [x] If GO: each prong filed as its own build task (per "one bug = one task") with `unlocks_inception_decision: [T-2121:<decision-id>]` traceability. If NO-GO or DEFER: rationale recorded in `## Recommendation` block citing why the T-2091 cleanup pattern is sufficient without structural prevention, or what evidence would push the next revisit toward GO.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
