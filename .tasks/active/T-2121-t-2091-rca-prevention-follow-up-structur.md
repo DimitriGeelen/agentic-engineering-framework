@@ -317,15 +317,38 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO (prongs 1 + 3); DEFER prong 2
 
 **Rationale:**
 
-Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
+The active↔completed task-id divergence class has a detection-only control
+(G-052 STRUCTURE audit "No duplicate task IDs") that fires *after* the divergence
+is committed and only at audit time — which is why the T-2091 origin surfaced 7
+days late and at the worst moment (a pre-push gate that stranded a handover
+commit). There is **no** write-time prevention and **no** early `fw doctor`
+surface (verified: no dedup hook in `agents/context/`, no untracked-`.tasks/`
+check in `audit.sh`/`bin/fw`). The class has **recurred** — `T-100202` is active
+today — so "cleanup when it happens" is demonstrably insufficient. Prong 3 is
+cheap/low-risk (read-only `git status --porcelain .tasks/`); prong 1 is moderate
+(must not block the legitimate `fw task update --status work-completed` git-mv
+path). Prong 2 (bumper cross-check) is deferred: once 1+3 exist the metadata-worker
+masking is largely moot, so it's the lowest-marginal-value prong.
+
+DEFER is **not** appropriate here (per the DEFER-for-evidence-not-confidence
+discipline): the artifact carries complete evidence (grounded 3-prong analysis vs
+the T-2091 origin + a live recurrence). The prior `DEFER` in this block was a
+T-2204 auto-retrofit stub ("Auto-retrofitted by 'fw inception retrofit-rec'"),
+not a graded advisory.
 
 **Evidence:**
 
-<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
+- Research artifact: `docs/reports/T-2121-tasks-dir-divergence-prevention.md` (5-Whys origin, 3-prong analysis, cost/blast-radius).
+- Recurrence: `T-100202` active — the divergence/collision class is not a one-off.
+- Detection-only gap: G-052 audit check exists but fires post-commit at audit time; no write-time hook, no `fw doctor` untracked-`.tasks/` surface (verified absent in current source).
+- Origin cost: T-2091 divergence masked for ~7 days by `last_update:` churn, then FAILed a pre-push audit and stranded handover commit `e1a6fd50`.
+
+Each GO prong files as its own build task ("one bug = one task") with
+`unlocks_inception_decision: [T-2121:<decision-id>]` traceability.
 
 
 ### 2026-06-12T10:13:47Z — status-update [task-update-agent]
