@@ -1,0 +1,231 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2512: Fabric enrich: settings.json-hook + importlib-dynamic edge detectors (no-edge
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-08T06:37:55Z
+# ============================================================================
+
+task_id: T-2512
+task_name: "Fabric enrich: settings.json-hook + importlib-dynamic edge detectors (no-edge"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-07T14:24:24Z
+completed: 2026-07-08T06:37:43Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-07-07T17:01:04+02:00
+last_commit: 2026-07-07T17:01:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  enrich detectors clear fabric no-edge WARN (17->10 PASS)
+
+# Key outcomes
+outcomes:
+  - 'Six new existence-guarded enrich detectors added (all edges verified real, zero false positives): (1) `.sh` exec `$(dirname "$0")/X.py` sibling; (2) `os.path.join(var, "seg"…, "x.py")`; (3) pathlib slash-chains with ANY base (`parents[N] / "a" / "x.py"`); (4) backtick-wrapped literal paths in docstrings; (5) suffixless `"$FRAMEWORK_ROOT/bin/fw"` invocation; (6) `fw hook <name>` dispatcher → `agents/context/<name>.sh`, wired to run on `.json` (settings.json had NO detector before).'
+  - 'Fabric no-edge WARN CLEARED: 17 → **10** (threshold is `-gt 10`; 10 = PASS). Confirmed by `fw audit`: `[PASS] Fabric edges: 778/788 cards enriched (10 without edges)`.'
+  - 'Rejected the bare-`bin/fw` bash detector after it produced a false positive (`check-project-boundary.sh` matched `bin/fw` inside a grep *pattern*) — removed it; kept only the safe suffixless-path form. No gaming, no false edges.'
+  - 'enrich regression tests green (`test_enrich_bats_parser.py`, `test_enrich_python_path_refs.py` — 19 passed).'
+  - 'Residual 10 are genuinely hard (self-contained cron hooks chat-bare-path/revisit, `importlib`-dynamic test_bvp_estimator, bats testing python via `python3 -c`, the escalation-v0 spike, integrate-go-live guidance) — real edges via `$SCRIPT_DIR/../` relative paths or dynamic construction; left honest, not standalone-gamed.'
+  - 'Committed + FF-landed on origin/master.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - 'agents/fabric/lib/enrich.py'
+  - '.fabric/components/agents-audit-orchestrator-mcp-scan.yaml'
+  - '.fabric/components/agents-audit-self-audit.yaml'
+  - '.fabric/components/agents-context-audit-task-tools.yaml'
+  - '.fabric/components/agents-context-block-plan-mode.yaml'
+  - '.fabric/components/agents-context-block-task-tools.yaml'
+  - '.fabric/components/agents-context-check-active-task.yaml'
+  - '.fabric/components/agents-context-check-agent-dispatch.yaml'
+  - '.fabric/components/agents-context-check-arc-id.yaml'
+  - '.fabric/components/agents-context-check-dispatch.yaml'
+  - '.fabric/components/agents-context-check-fabric-new-file.yaml'
+  - '.fabric/components/agents-context-check-heredoc-cmd-sub.yaml'
+  - '.fabric/components/agents-context-check-human-ac-tick.yaml'
+  - '.fabric/components/agents-context-check-inception-decisions.yaml'
+  - '.fabric/components/agents-context-check-inception-schema.yaml'
+  - '.fabric/components/agents-context-check-project-boundary.yaml'
+  - '.fabric/components/agents-context-check-settings-edit.yaml'
+  - '.fabric/components/agents-context-check-tier0.yaml'
+  - '.fabric/components/agents-context-commit-cadence.yaml'
+  - '.fabric/components/agents-context-error-watchdog.yaml'
+  - '.fabric/components/agents-context-loop-detect.yaml'
+  - '.fabric/components/agents-context-post-compact-resume.yaml'
+  - '.fabric/components/agents-context-pre-compact.yaml'
+  - '.fabric/components/agents-dispatch-single-host-parallel-demo.yaml'
+  - '.fabric/components/agents-dispatch-yield-point.yaml'
+  - '.fabric/components/agents-docgen-generate_article.yaml'
+  - '.fabric/components/agents-docgen-generate_component.yaml'
+  - '.fabric/components/agents-fabric-lib-drift.yaml'
+  - '.fabric/components/agents-git-lib-hooks.yaml'
+  - '.fabric/components/agents-govd-govd.yaml'
+  - '.fabric/components/agents-handover-handover.yaml'
+  - '.fabric/components/agents-onboarding-test-test-onboarding.yaml'
+  - '.fabric/components/agents-orchestrator-orchestrator-graph.yaml'
+  - '.fabric/components/agents-task-create-update-task.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-bvp-estimator.yaml'
+  - '.fabric/components/agents-termlink-bvp-estimator-estimator.yaml'
+  - '.fabric/components/agents-ux-review-ux-review.yaml'
+  - '.fabric/components/audit-yaml-validator.yaml'
+  - '.fabric/components/bin-fw.yaml'
+  - '.fabric/components/budget-gate.yaml'
+  - '.fabric/components/checkpoint.yaml'
+  - '.fabric/components/context-project-decisions.yaml'
+  - '.fabric/components/docs-runbooks-arc-012-continuous-mode-live-fire.yaml'
+  - '.fabric/components/hook-config.yaml'
+  - '.fabric/components/learnings-data.yaml'
+  - '.fabric/components/lib-arc_membership.yaml'
+  - '.fabric/components/lib-arc.yaml'
+  - '.fabric/components/lib-bvp.yaml'
+  - '.fabric/components/lib-cron_dry_run.yaml'
+  - '.fabric/components/lib-gaps.yaml'
+  - '.fabric/components/lib-govd_holder.yaml'
+  - '.fabric/components/lib-init.yaml'
+  - '.fabric/components/lib-ollama_loop.yaml'
+  - '.fabric/components/lib-prompt.yaml'
+  - '.fabric/components/lib-reviewer-drift.yaml'
+  - '.fabric/components/lib-reviewer-reverify.yaml'
+  - '.fabric/components/lib-reviewer-static_scan.yaml'
+  - '.fabric/components/lib-review_link_validator.yaml'
+  - '.fabric/components/lib-review.yaml'
+  - '.fabric/components/lib-setup.yaml'
+  - '.fabric/components/lib-spawn.yaml'
+  - '.fabric/components/lib-termlink_worker.yaml'
+  - '.fabric/components/lib-update.yaml'
+  - '.fabric/components/lib-upgrade.yaml'
+  - '.fabric/components/lib-version.yaml'
+  - '.fabric/components/lib-workflow_lint.yaml'
+  - '.fabric/components/prompts-default.yaml'
+  - '.fabric/components/tests-governance-test_pretooluse_gates.yaml'
+  - '.fabric/components/tests-governance-test_task_lifecycle_gates.yaml'
+  - '.fabric/components/tests-integration-audit_blocks_review_and_decide.yaml'
+  - '.fabric/components/tests-integration-cron_install.yaml'
+  - '.fabric/components/tests-integration-fw_pickup.yaml'
+  - '.fabric/components/tests-integration-test_framework_mcp_server.yaml'
+  - '.fabric/components/tests-playwright-test_api_context_capture.yaml'
+  - '.fabric/components/tests-playwright-test_arcs_detail_arc_id_membership.yaml'
+  - '.fabric/components/tests-unit-add_learning_id_allocator.yaml'
+  - '.fabric/components/tests-unit-arc_create_start_flag.yaml'
+  - '.fabric/components/tests-unit-audit_task_tools.yaml'
+  - '.fabric/components/tests-unit-context_safe_commands.yaml'
+  - '.fabric/components/tests-unit-cron_flock_parity.yaml'
+  - '.fabric/components/tests-unit-doctor_duplicate_hook_detection.yaml'
+  - '.fabric/components/tests-unit-doctor_hook_exercise.yaml'
+  - '.fabric/components/tests-unit-fw_derive_version_symlink.yaml'
+  - '.fabric/components/tests-unit-gaps_close.yaml'
+  - '.fabric/components/tests-unit-hook_absolute_paths.yaml'
+  - '.fabric/components/tests-unit-hook_enable_absolute_path.yaml'
+  - '.fabric/components/tests-unit-hook_telemetry.yaml'
+  - '.fabric/components/tests-unit-inception_defer_park.yaml'
+  - '.fabric/components/tests-unit-reviewer_human_ac_mechanical_signal.yaml'
+  - '.fabric/components/tests-unit-session_start_hook_warning.yaml'
+  - '.fabric/components/tests-unit-t2318_retrofit_injector_append_missing.yaml'
+  - '.fabric/components/tests-unit-t2331_driver_propose.yaml'
+  - '.fabric/components/tests-unit-t2452_doctor_quick.yaml'
+  - '.fabric/components/tests-unit-t2461_doctor_mcp_consumer_path.yaml'
+  - '.fabric/components/tests-unit-task_archive_eligible.yaml'
+  - '.fabric/components/tests-unit-test_approvals_content_tokens.yaml'
+  - '.fabric/components/tests-unit-test_approvals_style_tokens.yaml'
+  - '.fabric/components/tests-unit-test_audit_completable_not_completed.yaml'
+  - '.fabric/components/tests-unit-test_audit_cron_registry_generated_drift.yaml'
+  - '.fabric/components/tests-unit-test_audit_retire_when.yaml'
+  - '.fabric/components/tests-unit-test_audit_revert_chain.yaml'
+  - '.fabric/components/tests-unit-test_bin_fw_no_heredoc_cmd_sub.yaml'
+  - '.fabric/components/tests-unit-test_cockpit_density_spacing.yaml'
+  - '.fabric/components/tests-unit-test_cockpit_inline_tokens.yaml'
+  - '.fabric/components/tests-unit-test_cockpit_status_pills.yaml'
+  - '.fabric/components/tests-unit-test_cron_generate_shape.yaml'
+  - '.fabric/components/tests-unit-test_cron_registry_generated_drift.yaml'
+  - '.fabric/components/tests-unit-test_doctor_litellm_ollama.yaml'
+  - '.fabric/components/tests-unit-test_doctor_scope_tags.yaml'
+  - '.fabric/components/tests-unit-test_escalation_v05_parser.yaml'
+  - '.fabric/components/tests-unit-test_fabric_drift_absolute_paths.yaml'
+  - '.fabric/components/tests-unit-test_kanban_drag.yaml'
+  - '.fabric/components/tests-unit-test_mcp_wire_fragment.yaml'
+  - '.fabric/components/tests-unit-test_nav_layout_polish.yaml'
+  - '.fabric/components/tests-unit-test_orchestrator_graph.yaml'
+  - '.fabric/components/tests-unit-test_orchestrator_status_synthetic_filter.yaml'
+  - '.fabric/components/tests-unit-test_pause_resolve.yaml'
+  - '.fabric/components/tests-unit-test_reviewer_prose_mismatch.yaml'
+  - '.fabric/components/tests-unit-test_review_paused_resolve.yaml'
+  - '.fabric/components/tests-unit-test_settings_nav_link.yaml'
+  - '.fabric/components/tests-unit-test_termlink_governance_frame_contract.yaml'
+  - '.fabric/components/tests-unit-test_theme_toggle_contrast.yaml'
+  - '.fabric/components/tests-unit-test_ux_review_routes.yaml'
+  - '.fabric/components/tests-unit-test_worker_kind_drift.yaml'
+  - '.fabric/components/tests-unit-test_workflow_schema_pause_lint.yaml'
+  - '.fabric/components/tests-unit-test_work_on_completed_task.yaml'
+  - '.fabric/components/tests-unit-test_write_set.yaml'
+  - '.fabric/components/tests-unit-upgrade_dedupe_user_hooks.yaml'
+  - '.fabric/components/tests-unit-upgrade_duplicate_hook_detection.yaml'
+  - '.fabric/components/tests-unit-verify_acs.yaml'
+  - '.fabric/components/tests-unit-watchtower_health_verdict_identity.yaml'
+  - '.fabric/components/tools-escalation-scan-v0-5.yaml'
+  - '.fabric/components/tools-g064-readiness.yaml'
+  - '.fabric/components/web-blueprints-approvals.yaml'
+  - '.fabric/components/web-blueprints-bvp.yaml'
+  - '.fabric/components/web-blueprints-cockpit.yaml'
+  - '.fabric/components/web-blueprints-orchestrator.yaml'
+  - '.fabric/components/web-blueprints-prompts.yaml'
+  - '.fabric/components/web-blueprints-review.yaml'
+  - '.fabric/components/web-blueprints-tasks.yaml'
+  - '.fabric/components/web-blueprints-timeline.yaml'
+  - '.fabric/components/web-search_utils.yaml'
+  - '.fabric/components/web-shared.yaml'
+  - '.fabric/components/web-static-css-foundations.yaml'
+  - '.fabric/components/web-static-kanban-drag.yaml'
+  - '.fabric/components/web-templates-appearance.yaml'
+  - '.fabric/components/web-templates-_approvals_content.yaml'
+  - '.fabric/components/web-templates-approvals.yaml'
+  - '.fabric/components/web-templates-base.yaml'
+  - '.fabric/components/web-templates-cockpit.yaml'
+  - '.tasks/active/T-2428-governance-by-payload-mediation.md'
+  - '.tasks/active/T-2485-dispatch-loop-probe.md'
+  - '.tasks/active/T-2512-fabric-enrich-settingsjson-hook--importl.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-07T17:01:04"
+    action: "T-2512: enrich detectors clear fabric no-edge WARN (17->10 PASS)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 973 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 973
+  commits: 2
+  files_changed: 155
+  lines_added: 933
+  lines_removed: 269
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2512-fabric-enrich-settingsjson-hook--importl.md
+generated_by: context-agent-hybrid

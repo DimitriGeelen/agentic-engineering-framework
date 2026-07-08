@@ -10,10 +10,10 @@ description: >
   justify a threshold recalibration. Follow-up to T-2511 (which shipped the truncation
   + bare-import root-fixes, 101->17). NOT to be closed by standalone-gaming.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-07T14:24:24Z
-last_update: 2026-07-07T15:00:27Z
-date_finished:
+last_update: 2026-07-08T06:37:43Z
+date_finished: 2026-07-08T06:37:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -244,3 +244,15 @@ python3 -c "import glob,yaml; n=sum(1 for f in glob.glob('.fabric/components/*.y
 
 ### 2026-07-07T15:00:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-553c2c8a
+- **Timestamp:** 2026-07-08T06:37:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-08T06:37:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
