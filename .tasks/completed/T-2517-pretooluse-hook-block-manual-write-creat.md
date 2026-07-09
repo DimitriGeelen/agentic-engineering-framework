@@ -8,12 +8,12 @@ description: >
   'fw task update --status work-completed' git-mv path. Prevents the active/completed
   divergence at write time.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-completed-dup.py, C-009]
 related_tasks: [T-2121]
 unlocks_inception_decision: [T-2121:prong-1-dedup-hook]
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -27,8 +27,8 @@ unlocks_inception_decision: [T-2121:prong-1-dedup-hook]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-08T07:06:14Z
-last_update: 2026-07-09T23:25:07Z
-date_finished:
+last_update: 2026-07-09T23:38:55Z
+date_finished: 2026-07-09T23:38:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -260,8 +260,8 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Enforcement baseline" && ! ech
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-2ed775c7
-- **Timestamp:** 2026-07-09T23:19:33Z
+- **Scan ID:** R-7c714f22
+- **Timestamp:** 2026-07-09T23:43:27Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Needs Human:** no
@@ -271,6 +271,8 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Enforcement baseline" && ! ech
 
   1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
      - evidence: `bats tests/unit/active_completed_dup_guard.bats`
-
 ### 2026-07-09T23:25:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-09T23:38:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
