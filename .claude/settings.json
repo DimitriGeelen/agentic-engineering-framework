@@ -81,6 +81,10 @@
           {
             "type": "command",
             "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-inception-schema"
+          },
+          {
+            "type": "command",
+            "command": "/opt/999-Agentic-Engineering-Framework/bin/fw hook check-active-completed-dup"
           }
         ]
       },

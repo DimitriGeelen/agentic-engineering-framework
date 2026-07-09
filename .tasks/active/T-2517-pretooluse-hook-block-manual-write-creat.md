@@ -8,7 +8,7 @@ description: >
   'fw task update --status work-completed' git-mv path. Prevents the active/completed
   divergence at write time.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ unlocks_inception_decision: [T-2121:prong-1-dedup-hook]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-08T07:06:14Z
-last_update: '2026-07-09T23:00:06Z'
+last_update: 2026-07-09T23:25:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,6 +57,23 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-07-09T23:25:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-07-08T07:15:05Z'
     estimator: bvp-estimator-v1-heuristic
@@ -82,15 +99,24 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-2121 GO prong 1. Shipped `agents/context/check-active-completed-dup.{sh,py}` — a
+PreToolUse hook that blocks a Write/Edit/MultiEdit from CREATING
+`.tasks/{active,completed}/T-NNNN-*.md` while the sibling directory already has a
+file for the same id. Only fires when the target path does not yet exist on disk
+(a genuine creation), so edits to already-existing files (including cleaning up a
+pre-existing duplicate) are never blocked. The `fw task update --status
+work-completed` transition moves the file via `git mv`/`mv` in a Bash subprocess —
+it never invokes the Write/Edit tool, so it never reaches this hook at all; no
+special-case bypass was needed. Override: `FW_ALLOW_ACTIVE_COMPLETED_DUP=1`
+(Tier-2 logged). See `docs/reports/T-2121-tasks-dir-divergence-prevention.md`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A PreToolUse hook on Write|Edit refuses creating `.tasks/completed/T-NNNN-*.md` while `.tasks/active/T-NNNN-*.md` exists for the same id (and vice-versa), with an actionable block message.
-- [ ] The legitimate `fw task update --status work-completed` git-mv path is NOT blocked (the transition removes the active/ copy as it writes completed/, so both never co-exist mid-transition) — verified by an end-to-end completion in the test.
-- [ ] The hook is registered in `.claude/settings.json` and `bin/fw enforcement baseline` refreshed; a bats test asserts (a) manual same-id duplicate write is blocked, (b) `fw task update --status work-completed` completes cleanly.
+- [x] A PreToolUse hook on Write|Edit refuses creating `.tasks/completed/T-NNNN-*.md` while `.tasks/active/T-NNNN-*.md` exists for the same id (and vice-versa), with an actionable block message.
+- [x] The legitimate `fw task update --status work-completed` git-mv path is NOT blocked (the transition removes the active/ copy as it writes completed/, so both never co-exist mid-transition) — verified by an end-to-end completion in the test.
+- [x] The hook is registered in `.claude/settings.json` and `bin/fw enforcement baseline` refreshed; a bats test asserts (a) manual same-id duplicate write is blocked, (b) `fw task update --status work-completed` completes cleanly.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -125,6 +151,8 @@ cost_estimate_proposed:
 
 ## Verification
 
+bats tests/unit/active_completed_dup_guard.bats
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -155,6 +183,12 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -m py_compile agents/context/check-active-completed-dup.py
+bash -n agents/context/check-active-completed-dup.sh
+grep -q "check-active-completed-dup" .claude/settings.json
+bats tests/unit/active_completed_dup_guard.bats
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Enforcement baseline" && ! echo "$out" | grep -q "Enforcement baseline CHANGED"
 
 ## RCA
 
@@ -223,3 +257,20 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2517-pretooluse-hook-block-manual-write-creat.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2ed775c7
+- **Timestamp:** 2026-07-09T23:19:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/active_completed_dup_guard.bats`
+
+### 2026-07-09T23:25:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
