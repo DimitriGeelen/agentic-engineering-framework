@@ -143,3 +143,18 @@ fw_branch_divergence() {
     fi
     return 0
 }
+
+# ── T-2516 (T-2121 prong 3): untracked .tasks/ files ──
+# Prints one repo-relative path per line for each untracked (not tracked, not
+# gitignored) file under .tasks/active/ or .tasks/completed/. Empty output +
+# exit 0 on a clean tree. This is the early-detection rail for the active↔
+# completed divergence class (T-2091): an orphaned untracked completion copy
+# that never got committed was invisible for ~7 days because nothing surfaced
+# untracked files under .tasks/. Read-only `git status --porcelain` scan.
+fw_untracked_tasks() {
+    local repo="${1:-.}"
+    git -C "$repo" rev-parse --git-dir >/dev/null 2>&1 || return 0
+    git -C "$repo" status --porcelain -- .tasks/active/ .tasks/completed/ 2>/dev/null \
+        | sed -n 's/^?? //p'
+    return 0
+}

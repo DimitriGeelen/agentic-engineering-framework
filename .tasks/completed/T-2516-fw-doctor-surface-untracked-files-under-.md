@@ -7,10 +7,10 @@ description: >
   .tasks/active/ or .tasks/completed/. Closes the 7-day mask window that let the T-2091
   divergence go undetected. Read-only git status --porcelain .tasks/ check.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-2121]
@@ -26,8 +26,8 @@ unlocks_inception_decision: [T-2121:prong-3-doctor-untracked]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-08T07:05:58Z
-last_update: '2026-07-09T23:00:06Z'
-date_finished:
+last_update: 2026-07-09T23:29:17Z
+date_finished: 2026-07-09T23:29:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -87,9 +87,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/fw doctor` emits a WARN listing any untracked file under `.tasks/active/` or `.tasks/completed/` (detected via `git status --porcelain -- .tasks/active/ .tasks/completed/`), naming each offending path.
-- [ ] The check is silent (no WARN) when `.tasks/{active,completed}/` has no untracked files, and is read-only (single `git status --porcelain` call, no writes).
-- [ ] A bats test in `tests/unit/` asserts both branches: (a) WARN fires with the path when an untracked `.tasks/active/T-*.md` exists, (b) no WARN when the tree is clean.
+- [x] `bin/fw doctor` emits a WARN listing any untracked file under `.tasks/active/` or `.tasks/completed/` (detected via `git status --porcelain -- .tasks/active/ .tasks/completed/`), naming each offending path.
+- [x] The check is silent (no WARN) when `.tasks/{active,completed}/` has no untracked files, and is read-only (single `git status --porcelain` call, no writes).
+- [x] A bats test in `tests/unit/` asserts both branches: (a) WARN fires with the path when an untracked `.tasks/active/T-*.md` exists, (b) no WARN when the tree is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -123,6 +123,10 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t2516_untracked_tasks.bats
+bash -n bin/fw
+bash -n lib/branch-hygiene.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -231,3 +235,15 @@ cost_estimate_proposed:
 
 ### 2026-07-09T22:58:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-05a190e6
+- **Timestamp:** 2026-07-09T23:29:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-09T23:29:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

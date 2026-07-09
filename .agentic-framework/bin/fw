@@ -2360,6 +2360,29 @@ else:
         fi
     fi
 
+    # T-2516 (T-2121 prong 3): untracked .tasks/ files — early-detection rail for
+    # the active↔completed divergence class (T-2091), which masked an orphaned
+    # untracked completion copy for ~7 days. Silent on a clean tree (OK line).
+    if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+        . "$FRAMEWORK_ROOT/lib/branch-hygiene.sh"
+        local _ut_out _ut_count
+        _ut_out=$(fw_untracked_tasks "$PROJECT_ROOT" 2>/dev/null || true)
+        if [ -n "$_ut_out" ]; then
+            _ut_count=$(printf '%s\n' "$_ut_out" | grep -c .)
+            echo -e "  ${YELLOW}WARN${NC}  Untracked task files: $_ut_count under .tasks/{active,completed}/"
+            while IFS= read -r _ul; do
+                echo -e "         $_ul"
+            done < <(printf '%s\n' "$_ut_out" | head -12)
+            if [ "$_ut_count" -gt 12 ]; then
+                echo -e "         … $((_ut_count - 12)) more"
+            fi
+            echo -e "         An untracked completion copy that never got committed is the T-2091 divergence class. Commit it (git add + fw git commit) or remove the orphan. See T-2121 prong 3."
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  No untracked task files under .tasks/{active,completed}/"
+        fi
+    fi
+
     # T-2185: stale gauge-READY gaps — surface operator-procrastination class.
     # WARN when ≥1 gap has closure_check_command + gauge currently READY for
     # ≥7 days (created/last_reviewed). Mirrors OBS-048 (G-064 READY since
