@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2521: fw designer: vendor+serve pinned Workflow Designer 0.1.0 (T-173 beachhead)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-10T14:48:39Z
+# ============================================================================
+
+task_id: T-2521
+task_name: "fw designer: vendor+serve pinned Workflow Designer 0.1.0 (T-173 beachhead)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-10T11:21:45Z
+completed: 2026-07-10T14:13:21Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-10T13:42:06+02:00
+last_commit: 2026-07-10T16:14:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw designer — vendor+serve mechanism for pinned Workflow Designer (T-173 beachhead). vendor the real 0.1.0 build (832-delivered) — AC1+AC4 met. partial-complete — 6/6 agent ACs met, GO recommendation, [REVIEW] pending
+
+# Key outcomes
+outcomes:
+  - '`fw designer sync` vendors `aef-workflow-designer-0.1.0.html` into a pinned AEF location and **verifies sha256 against the manifest** — rejects (non-zero exit) on mismatch'
+  - 'The pinned version + checksum are recorded on the AEF side (explicit, reproducible pin — not "track HEAD")'
+  - '`fw designer` route exists (case arm in `bin/fw`) and opens/serves the vendored build'
+  - 'Watchtower blueprint serves the designer: page returns HTTP 200 and contains the editor root element'
+  - 'Vendored copy is treated read-only (never edited in-place); improvements route upstream to 832 per the protocol — asserted by a comment/guard, not by editing the artifact'
+  - 'CDN-fonts caveat documented (designer attempts Google Fonts fetch; functions offline with system-font fallback) so a locked-down deployment isn''t surprised'
+  - '[REVIEW] The `/designer` page renders as a usable BPMN workflow editor  <!-- operator confirmed 2026-07-10: "renders" -->'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/web/blueprints/designer.py'
+  - '.agentic-framework/web/blueprints/__init__.py'
+  - 'agents/designer/designer.sh'
+  - 'bin/fw'
+  - '.fabric/components/agents-designer-designer.yaml'
+  - '.fabric/components/web-blueprints-designer.yaml'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-2521-fw-designer-vendorserve-pinned-workflow-.md'
+  - 'tests/unit/designer_sync_sha256.bats'
+  - 'vendor/designer/aef-workflow-designer-0.1.0.html'
+  - 'vendor/designer/README.md'
+  - 'web/blueprints/designer.py'
+  - 'web/blueprints/__init__.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-10T13:42:06"
+    action: "T-2521: fw designer — vendor+serve mechanism for pinned Workflow Designer (T-173 beachhead)"
+  - time: "2026-07-10T16:11:45"
+    action: "T-2521: vendor the real 0.1.0 build (832-delivered) — AC1+AC4 met"
+  - time: "2026-07-10T16:14:25"
+    action: "T-2521: partial-complete — 6/6 agent ACs met, GO recommendation, [REVIEW] pending"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 171 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 171
+  commits: 4
+  files_changed: 18
+  lines_added: 9143
+  lines_removed: 92
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2521-fw-designer-vendorserve-pinned-workflow-.md
+generated_by: context-agent-hybrid
