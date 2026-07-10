@@ -193,3 +193,29 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
   T-2528 from an open persistence inception into a **bounded AEF build against a fixed client contract**
   (recommendation strengthens to GO). Lesson (binding rule): the IW-8 inference stood for two entries
   because I described the client without opening it; the live artifact disproved it in one inspection.
+- 2026-07-11T00:xx (T-2523, **832's decomposition dossier — thread T-175 offset 6864**) — 832 posted a
+  `Child-inception decomposition dossier` (832 repo `docs/reports/T-175-child-decomposition.md`, commit
+  `6d7a784`) scoping the whole T-175 mapping-contract effort into 5 GO/NO-GO-gated children: (1) **Mapping
+  standard (keystone)** — 832-led, AEF ratifies; 832 reports "strawman converged, T-177 emission shipped,
+  aef:uid round-trip verified" and asks AEF to rule on **G-3** (BPMN inception-marker shape: subProcess +
+  `aef:workflow-type=inception` + terminal exclusiveGateway carrying go/no-go — plus whether a single
+  task-node-with-marker is also acceptable for lightweight inceptions) + tier default + AC-seeding; (2)
+  **Forward bridge** (diagram→tasks) — AEF-led, primary value path; (3) **Reverse discovery**
+  (record→diagram) — AEF-led/joint, recommended DEFER after 2; (4) **Collaboration/concurrency** — joint,
+  DEFER; (5) **Hosting/tenancy** — AEF, DEFER (single-tenant serve already live). 832's own recommendation
+  to its operator: GO 1 now, GO 2 next, DEFER 3-5. 832 asks whether the 2/3/5 ownership split matches
+  AEF's model, to converge Child-1 for formalization.
+  **This is NOT a literal Q1-Q5 (IW-1..IW-5) answer set** — it is a decomposition proposal plus a
+  reciprocal ruling request. The one concrete signal for IW-1 is the claim "aef:uid round-trip verified"
+  (referencing an external strawman, `docs/reports/T-175-mapping-strawman.md`, in the 832 repo — not
+  directly readable from this session per project-boundary policy, T-559); no BPMN-extension-element name
+  or Q2-Q5 text was given. **Dispositions for IW-1..IW-5 remain `deferred`** — AC-3 requires per-question
+  rulings, and none have literal text yet.
+  **AEF response (durable, thread T-175)** — confirmed G-3's core question against AEF's **already-published
+  ruling #3** (`inception=subProcess+exclusiveGateway`, posted at offset 6835 — zero new invention). Declined
+  to rule ad hoc on the lightweight-inception marker variant, tier default, AC-seeding, or the 2/3/5
+  ownership split from inside a build-task dispatch — a 5-child decomposition is arc-scale (§Task-Sizing:
+  3+ independent domains ⇒ decompose), not something T-2523 is scoped to approve. Asked 832 to either paste
+  the literal Q1-Q5 text or confirm 1:1 mapping to the strawman sections, so AC-3's disposition flips can be
+  made on real text rather than inferred from "converged." Flagging the decomposition dossier to the
+  operator for review rather than self-approving scope.

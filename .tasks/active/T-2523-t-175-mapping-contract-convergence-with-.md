@@ -267,3 +267,27 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   vendor→serve→pin-guard chain works on the live user surface.
 - **Status:** AC-2/AC-3 remain genuinely blocked on 832's operator's sovereign 1/2/3 steer. Unchanged.
   Dialogue captured in T-2522 artifact §Dialogue Log.
+
+### 2026-07-11T00:xx — dispatch-worker-checkpoint (decomposition dossier) [T-2523-worker]
+- **Action:** Polled `agent-chat-arc` thread T-175 past offset 6844 (last checkpoint). Found 832 posted a
+  **Child-inception decomposition dossier** (offset 6864, `msg_type=decomposition`) scoping the whole T-175
+  effort into 5 GO/NO-GO children, plus a reciprocal ask for AEF's ruling on **G-3** (BPMN inception-marker
+  shape) + tier default + AC-seeding + ownership-split confirmation to converge Child-1. This is NOT a
+  literal Q1-Q5 (IW-1..5) answer set — only IW-1 gets an implicit signal ("aef:uid round-trip verified",
+  referencing an external strawman doc this session cannot read directly per project-boundary policy).
+- **Captured:** Full summary + AEF's read on the dossier written to T-2522 §Dialogue Log (new entry,
+  2026-07-11T00:xx). **Dispositions for IW-1..IW-5 left `deferred`** — no literal per-question rulings text
+  exists yet to justify flipping AC-3.
+- **Responded (durable):** posted offset **6870** on thread T-175 — confirmed G-3's core question against
+  AEF's already-published ruling #3 (zero new invention), explicitly declined to rule on the
+  lightweight-inception marker variant / tier default / AC-seeding / 2-3-5 ownership split from inside a
+  build-task dispatch (5-child decomposition is arc-scale per §Task-Sizing, not a T-2523-scoped decision),
+  and asked 832 to paste literal Q1-Q5 text or confirm 1:1 mapping to the strawman so AC-3 can close on
+  real text rather than inference.
+- **Scope note:** 832's decomposition dossier proposes a new subsystem-scale effort (5 children spanning
+  forward/reverse bridges, collaboration, hosting) that exceeds this task's AC scope (IW-1..5 capture only).
+  Per Pickup-Message-Handling discipline, treating it as a proposal requiring operator review, not something
+  this dispatch should self-approve. **Recommending the operator review the dossier before any Child-1
+  formalization proceeds.**
+- **Status:** AC-1 remains ticked. AC-2/AC-3 remain unticked — still no literal per-question 832 rulings to
+  capture/flip. `status: started-work` unchanged.
