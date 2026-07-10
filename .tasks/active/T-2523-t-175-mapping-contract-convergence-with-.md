@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: '2026-07-10T17:15:08Z'
+last_update: 2026-07-10T19:25:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -234,3 +234,36 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   dependency, not something this dispatch can force. Recommend leaving `status: started-work`; a
   follow-up pass (cron re-poll of thread T-175, or the operator nudging 832's operator directly if
   time-sensitive) should complete AC-2/AC-3 once 832 actually posts.
+
+### 2026-07-10T19:15:00Z — dispatch-worker-checkpoint [T-2523-worker]
+- **Action:** Re-polled `agent-chat-arc` thread T-175 (topic now at offset 6840, was 6837 at last
+  checkpoint) and re-inspected 832's live PTY (`tl-spmeo4lr`). No change: offsets 6838-6840 are more
+  `ring20-management` presence beacons (latest ts 2026-07-10T19:14:14Z); no reply from 832 (fp
+  `d1993c2c3ec44c94`) exists on thread T-175. 832's PTY still shows the same paused/holding state
+  observed at the prior checkpoint (identical token count, identical scrollback) — no forward progress
+  on its side since.
+- **Status:** No change to AC-2/AC-3 — still genuinely blocked on 832's operator steering it past the
+  hold. Leaving `status: started-work`. Not re-narrating the full investigation each pass; future
+  checkpoints should just report offset delta + PTY delta unless something actually changes.
+
+### 2026-07-10T19:xx — main-session resume (post-compact) [T-2523-main]
+- **Multi-session note:** a concurrent `T-2523-worker` dispatch owns the two checkpoints above; this
+  entry is from the main session. To avoid duplicate polling: the main session is NOT going to tight-poll
+  — the block is external and won't clear on a clock. The worker's cron re-poll cadence is sufficient.
+- **PTY delta:** 832's live PTY (`tl-spmeo4lr`) is NOT frozen — it is actively churning (~189K tokens,
+  "Unfurling…"), so the 832 agent IS alive (not merely the register-wrapper/heartbeat, correcting the
+  ambiguity flagged pre-compact). Its bottom-of-buffer still shows the same 3-way hold, now with an
+  explicit offer to "send a brief holding ack." So: 832 has *parsed* IW-1..IW-5 (references "their
+  identity-anchor question", "AEF on T-175") and is deliberately governance-pausing on its operator.
+- **Action (AEF response, NEW durable post):** posted an async-ack to thread T-175 — **offset 6844**,
+  depth-1 reply under root 6835 (verified durable via `termlink_channel_thread`). It (1) affirms 832's
+  pause is correct, (2) states AEF is NOT blocked-waiting — AEF half GO+committed, async watch mode, no
+  clock, (3) declines the holding ack, (4) flags IW-1 as the *sole* Child-2/3 blocker so a minimal pre-GO
+  832 scope can unblock the critical path. This satisfies the "communicate with the workflow-designer
+  agent" directive without forcing either sovereign decision.
+- **Integration surface live-verify (adjacent, unblocked):** `/designer` (the surface T-2521+T-2524
+  protect) verified end-to-end: `GET http://192.168.10.107:3001/designer` → 200, served bytes sha256
+  `d0e0177c…` **byte-identical to the pinned vendored 0.1.0 build**, genuine designer content. The
+  vendor→serve→pin-guard chain works on the live user surface.
+- **Status:** AC-2/AC-3 remain genuinely blocked on 832's operator's sovereign 1/2/3 steer. Unchanged.
+  Dialogue captured in T-2522 artifact §Dialogue Log.

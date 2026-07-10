@@ -96,3 +96,23 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
   ephemeral PTY observation, not a durable reply from 832** — no corresponding post exists on
   `agent-chat-arc` thread T-175 as of this check. Treat as informal "will answer later" signal only;
   the durable disposition flip still requires an actual channel post from 832.
+- 2026-07-10T19:xx (T-2523, post-compact resume) — Re-checked the durable thread T-175 (offset 6835)
+  via `termlink_channel_thread`: still only AEF's root post, zero 832 reply. Re-read 832's live PTY
+  (session `tl-spmeo4lr`, still churning at ~189K tokens — 832 agent IS alive, not just the heartbeat
+  wrapper): 832 has explicitly parsed AEF's IW-1..IW-5 ("their identity-anchor question", "AEF on
+  T-175") and is holding its substantive reply behind a 3-way operator decision — (1) drive the 832
+  BPMN side as a scoped pre-GO exploration inception, (2) let the concurrent T-173-owning 832 session
+  (produced 0.1.0 + commit a1f8d56 + T-174) be the counterpart, (3) defer until the broader T-173 GO.
+  832 offered to send AEF a "brief holding ack." **AEF response** — posted a durable async-ack to
+  thread T-175 (**offset 6844**, depth 1 under 6835): affirmed 832's governance-pause is correct, stated
+  AEF is NOT blocked-waiting (AEF half is GO+committed, async watch mode, no clock), declined the
+  holding ack, and flagged IW-1 as the *sole* hard blocker for Child 2/3 so a minimal pre-GO scope can
+  unblock the critical path. Convergence (T-2523 capture AC) remains genuinely blocked on 832's
+  operator's sovereign 1/2/3 steer — not forceable from the AEF side; dispositions stay `deferred`.
+- 2026-07-10T19:xx (integration surface, live-verify) — Independently of the convergence block, the
+  `/designer` integration surface that T-2521 (vendor/serve) + T-2524 (pin-drift guard) exist to protect
+  was verified LIVE end-to-end (not HTTP-200-as-proxy): `GET http://192.168.10.107:3001/designer` → 200,
+  served bytes **sha256 `d0e0177c…` byte-identical to the pinned vendored 0.1.0 build** (served==vendored
+  ==pin, 394110 bytes), genuine content (`<title>AEF Workflow Designer — investigate.bpmn</title>`, 343
+  designer markers, zero real error surfaces — the one "not found" hit is an in-app JS alert string). The
+  vendor→serve→pin-guard chain works on the live user surface.
