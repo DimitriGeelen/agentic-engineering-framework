@@ -8,12 +8,12 @@ description: >
   T-2520. BUILD GATED on operator GO (T-173 GO was recorded in the 832 session, not
   AEF's).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/designer/designer.sh, bin/fw, web/blueprints/designer.py, web/blueprints/__init__.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T11:21:45Z
-last_update: '2026-07-10T11:30:05Z'
-date_finished:
+last_update: 2026-07-10T14:13:21Z
+date_finished: 2026-07-10T14:13:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -93,6 +93,17 @@ GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is
 - [x] CDN-fonts caveat documented (designer attempts Google Fonts fetch; functions offline with system-font fallback) so a locked-down deployment isn't surprised
 
 ### Human
+- [ ] [REVIEW] The `/designer` page renders as a usable BPMN workflow editor
+  **Steps:**
+  1. Open http://192.168.10.107:3001/designer in a browser
+  2. Confirm the canvas + left palette (select/connect tools, add-lane) render
+  3. Try placing a node and drawing a connection
+  **Expected:** A working diagram editor loads (title "AEF Workflow Designer"),
+  palette is usable, no broken layout or blank canvas. (Google Fonts may 404 on a
+  locked-down network — text still renders via system-font fallback; that's expected.)
+  **If not:** Note what's broken (blank canvas / JS error in console / missing palette)
+  and reopen — the vendored build or the blueprint serve path needs a look.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -140,6 +151,27 @@ delivered `dist/aef-workflow-designer-0.1.0.html` via termlink `file_send`
 
 Cross-project boundary (T-559) held throughout: AEF never read /opt/832; the SoT
 delivered the artifact. Loop closed with 832 on completion.
+
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** All 6 agent ACs are met and verified live. The phase-1 mechanism
+(pin → sha256-verify → read-only install → serve) works end-to-end, and the real
+832-delivered 0.1.0 build is now vendored and served. The only open item is the
+[REVIEW] Human AC — a visual confirmation that the BPMN editor actually renders and
+is usable in a browser, which curl/grep cannot judge. Recommend GO pending that
+one look.
+
+**Evidence:**
+- `fw designer sync` verified the delivered artifact's sha256 (`d0e0177c…`) against
+  the pin and installed read-only → `vendor/designer/aef-workflow-designer-0.1.0.html`.
+- Reject path proven: live mismatch → exit 1; `tests/unit/designer_sync_sha256.bats` 4/4 green.
+- `GET /designer` → HTTP 200 serving the real 394110-byte editor (title "AEF Workflow
+  Designer — investigate.bpmn", palette tools + lanes present), not the placeholder.
+- Delivery honoured the T-559 boundary: 832 (SoT, session `tl-spmeo4lr`) `file_send`
+  → AEF `tl-uhqt63fb` (`xfer-mcp-2880427`); AEF never read /opt/832.
+- Verification gate: 5/5 passed.
 
 ## Verification
 
@@ -250,3 +282,15 @@ WURL=$(cat .context/working/watchtower.url 2>/dev/null || echo "http://localhost
 
 ### 2026-07-10T11:29:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3bc74c49
+- **Timestamp:** 2026-07-10T14:13:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-10T14:13:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
