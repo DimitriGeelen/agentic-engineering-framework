@@ -1,11 +1,14 @@
 ---
 id: T-2527
-name: "AEF agent identity split: heartbeat listens as per-agent key, session posts as host key → cross-agent DMs never wake the session"
+name: "AEF agent identity split: heartbeat listens as per-agent key, session posts
+  as host key → cross-agent DMs never wake the session"
 description: >
   Interactive AEF claude session posts/receives under the shared HOST termlink key
   (d1993c2c) while its be-reachable heartbeat/pushwaker advertises+listens under the
-  per-agent key (0e7ee6ca / dm:aef:*). Cross-agent DMs addressed to the session key are
-  durably written but never observed by the waker → no ring → no wake → proposals sit
+  per-agent key (0e7ee6ca / dm:aef:*). Cross-agent DMs addressed to the session key
+  are
+  durably written but never observed by the waker → no ring → no wake → proposals
+  sit
   undelivered forever. Silent Reliability-directive violation. Should we incept structural
   remediation?
 status: captured
@@ -16,8 +19,35 @@ tags: [termlink, identity, reliability, delivery-gap]
 components: []
 related_tasks: []
 created: 2026-07-10T21:40:00Z
-last_update: 2026-07-10T21:40:00Z
+last_update: '2026-07-10T21:45:11Z'
 date_finished:
+cost_estimate_proposed:
+  - ts: '2026-07-10T21:45:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 4
+      effort: 1
+    rationale: blast_radius=0 (no-signal); tier=4 (no-signal); effort=1 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-10T21:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2527: AEF agent identity split — heartbeat vs interactive session
