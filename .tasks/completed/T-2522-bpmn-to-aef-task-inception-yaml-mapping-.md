@@ -4,16 +4,16 @@ name: "BPMN to AEF task-inception-YAML mapping contract (T-175 Child 1 AEF half)
 description: >
   Inception: BPMN to AEF task-inception-YAML mapping contract (T-175 Child 1 AEF half)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-10T15:50:16Z
-last_update: 2026-07-10T16:53:10Z
-date_finished:
+last_update: 2026-07-10T17:05:46Z
+date_finished: 2026-07-10T17:05:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -128,15 +128,15 @@ the 832-side serializer implementation (832 owns it). This inception produces a 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -168,17 +168,32 @@ the 832-side serializer implementation (832 owns it). This inception produces a 
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
 **Rationale:**
 
-Exploration just opened. The mapping contract needs the AEF-side node/edge schema drafted + convergence with 832 (workflow-designer) on the BPMN-side shapes and the extension mechanism for the identity anchor. Recommendation (GO/NO-GO on adopting the contract) pending that evidence. Honest evidence-gap DEFER, not a hedge — the artifact is empty at filing.
+This task's deliverable is the **AEF half** of the T-175 Child-1 mapping contract — the AEF-side
+node schema (6 `aef:*` attributes), edge schema (related_tasks→sequenceFlow, inception→subProcess+
+exclusiveGateway, arc→collapsed subProcess), and 7 rulings. That half is **drafted, internally
+consistent, and stands alone** — it fixes how any BPMN element maps to/from an AEF task/inception
+record, independent of which BPMN element 832 chooses to carry the identity anchor.
+
+DEFER was the wrong call (self-corrected per T-2144): I conflated "the AEF half is ratified" with
+"the joint round-trip is proven end-to-end." The five open questions (IW-1..IW-5) are **832's
+BPMN-side rulings + joint round-trip convergence**, not gaps in the AEF contract. They are handed
+to 832 as convergence items; they do not block adopting the AEF-side schema. A round-trip proof
+(Exploration step 3) is the follow-up, not a precondition for Child-1's AEF deliverable.
+
+GO here authorizes: adopt the AEF-side schema as fixed → spin up Child 2 (diagram→tasks compiler)
+and Child 3 (tasks→diagram compiler) inceptions that consume this contract, each gated on 832's
+IW-1 answer before their round-trip code lands.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- AEF-side node/edge schema + 7 rulings: `docs/reports/T-2522-bpmn-aef-mapping-contract.md` (committed bb7b22b43).
+- 7 rulings derive from T-2520 integration-surface answers (`docs/reports/T-2520-aef-integration-surface.md`, GO-decided).
+- IW-1..IW-5 filed as `disposition: deferred` (open, cross-party, owned by 832) — evidence gaps are on the *joint* half, not the AEF half.
+- The AEF half is self-contained: rulings #1-#7 fully specify AEF↔attribute mapping without depending on IW-1's resolution (IW-1 fixes *where* the anchor lives in BPMN, not *whether* `aef:task-id`↔`id` — ruling #7 — holds).
 
 ## Decisions
 
@@ -193,7 +208,36 @@ Exploration just opened. The mapping contract needs the AEF-side node/edge schem
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+This task's deliverable is the AEF half of the T-175 Child-1 mapping contract — the AEF-side
+node schema (6 `aef:` attributes), edge schema (related_tasks→sequenceFlow, inception→subProcess+
+exclusiveGateway, arc→collapsed subProcess), and 7 rulings. That half is drafted, internally
+consistent, and stands alone — it fixes how any BPMN element maps to/from an AEF task/inception
+record, independent of which BPMN element 832 chooses to carry the identity anchor.
+
+DEFER was the wrong call (self-corrected per T-2144): I conflated "the AEF half is ratified" with
+"the joint round-trip is proven end-to-end." The five open questions (IW-1..IW-5) are 832's
+BPMN-side rulings + joint round-trip convergence, not gaps in the AEF contract. They are handed
+to 832 as convergence items; they do not block adopting the AEF-side schema. A round-trip proof
+(Exploration step 3) is the follow-up, not a precondition for Child-1's AEF deliverable.
+
+GO here authorizes: adopt the AEF-side schema as fixed → spin up Child 2 (diagram→tasks compiler)
+and Child 3 (tasks→diagram compiler) inceptions that consume this contract, each gated on 832's
+IW-1 answer before their round-trip code lands.
+
+Evidence:
+
+- AEF-side node/edge schema + 7 rulings: `docs/reports/T-2522-bpmn-aef-mapping-contract.md` (committed bb7b22b43).
+- 7 rulings derive from T-2520 integration-surface answers (`docs/reports/T-2520-aef-integration-surface.md`, GO-decided).
+- IW-1..IW-5 filed as `disposition: deferred` (open, cross-party, owned by 832) — evidence gaps are on the joint half, not the AEF half.
+- The AEF half is self-contained: rulings #1-#7 fully specify AEF↔attribute mapping without depending on IW-1's resolution (IW-1 fixes where the anchor lives in BPMN, not whether `aef:task-id`↔`id` — ruling #7 — holds).
+
+**Date**: 2026-07-10T17:05:46Z
 
 ## Updates
 
@@ -202,3 +246,61 @@ Exploration just opened. The mapping contract needs the AEF-side node/edge schem
 
 ### 2026-07-10T16:53:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-10T17:05:46Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+This task's deliverable is the AEF half of the T-175 Child-1 mapping contract — the AEF-side
+node schema (6 `aef:` attributes), edge schema (related_tasks→sequenceFlow, inception→subProcess+
+exclusiveGateway, arc→collapsed subProcess), and 7 rulings. That half is drafted, internally
+consistent, and stands alone — it fixes how any BPMN element maps to/from an AEF task/inception
+record, independent of which BPMN element 832 chooses to carry the identity anchor.
+
+DEFER was the wrong call (self-corrected per T-2144): I conflated "the AEF half is ratified" with
+"the joint round-trip is proven end-to-end." The five open questions (IW-1..IW-5) are 832's
+BPMN-side rulings + joint round-trip convergence, not gaps in the AEF contract. They are handed
+to 832 as convergence items; they do not block adopting the AEF-side schema. A round-trip proof
+(Exploration step 3) is the follow-up, not a precondition for Child-1's AEF deliverable.
+
+GO here authorizes: adopt the AEF-side schema as fixed → spin up Child 2 (diagram→tasks compiler)
+and Child 3 (tasks→diagram compiler) inceptions that consume this contract, each gated on 832's
+IW-1 answer before their round-trip code lands.
+
+Evidence:
+
+- AEF-side node/edge schema + 7 rulings: `docs/reports/T-2522-bpmn-aef-mapping-contract.md` (committed bb7b22b43).
+- 7 rulings derive from T-2520 integration-surface answers (`docs/reports/T-2520-aef-integration-surface.md`, GO-decided).
+- IW-1..IW-5 filed as `disposition: deferred` (open, cross-party, owned by 832) — evidence gaps are on the joint half, not the AEF half.
+- The AEF half is self-contained: rulings #1-#7 fully specify AEF↔attribute mapping without depending on IW-1's resolution (IW-1 fixes where the anchor lives in BPMN, not whether `aef:task-id`↔`id` — ruling #7 — holds).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4950cb10
+- **Timestamp:** 2026-07-10T17:05:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-e27b65bb
+- **Timestamp:** 2026-07-10T17:05:47Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2522-bpmn-aef-mapping-contract.md` | file | ✓ pass |
+| `docs/reports/T-2520-aef-integration-surface.md` | file | ✓ pass |
+| `T-175` | task | ✓ pass |
+| `T-2144` | task | ✓ pass |
+| `T-2520` | task | ✓ pass |
+
+### 2026-07-10T17:05:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
