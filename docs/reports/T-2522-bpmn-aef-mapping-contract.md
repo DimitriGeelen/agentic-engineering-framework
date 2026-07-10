@@ -116,3 +116,29 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
   ==pin, 394110 bytes), genuine content (`<title>AEF Workflow Designer — investigate.bpmn</title>`, 343
   designer markers, zero real error surfaces — the one "not found" hit is an in-app JS alert string). The
   vendor→serve→pin-guard chain works on the live user surface.
+- 2026-07-10T22:xx (T-2523, operator design review of the 0.2.0 node-extension fields) — Operator
+  inspected the live `/designer` AEF-extension panel on the deployed 0.2.0 build and raised two
+  field-design defects. Both verified correct; both are **832-side (SoT) design decisions**, so they
+  become new convergence items on top of IW-1..IW-5. AEF vendors the released build and does not edit it —
+  the fix routes upstream to 832.
+  - **IW-6 — `horizon` does not belong on a design-time node (category error).** `horizon`
+    (now/next/later) is transient, per-instance scheduling state; it is answered at instantiation
+    (`fw work-on` / task-create), relative to a live session's *this moment*. A BPMN diagram is a reusable
+    template — the same node is `now` this run, `later` the next. A design-time `horizon` field is
+    therefore either dead metadata the runtime must ignore, or a stale default every instantiation
+    silently inherits while looking authoritative. Contrast: `workflow_type / owner / tier / endpoint /
+    contextReads / artifactsWrites` ARE properties of the work and true every run — they belong on the
+    node. `horizon` is a property of *when you schedule it*. **Recommendation: remove `horizon` from the
+    node extension; set it at instantiation.** disposition: deferred (832 owns the build).
+  - **IW-7 — node-level `owner` double-encodes ownership already carried by the BPMN Lane.** BPMN's native
+    "who performs this" is the Lane (swimlane = role/participant); the panel's Lane already reads `human`.
+    A separate node-level `owner` field that "overrides lane" encodes the same fact twice → two sources of
+    truth that drift. Concrete failure: Lane=`human`, Owner=`agent` — the override wins but the diagram
+    now *lies* (node sits in the human swimlane while agent-owned; any reader is misled). **Recommendation:
+    Lane is the source of truth for owner (`owner: human|agent` ⇔ two lanes); node-level owner is an
+    exception escape-hatch only, shown with a divergence warning when it disagrees with the lane — not a
+    co-equal field inviting routine double-entry.** disposition: deferred (832 owns the build).
+  - Both findings surfaced from the operator visually reviewing the fields the T-177 `aef:meta` mapping
+    emits — i.e. the mapping contract shipped `horizon` and `owner` onto nodes without first resolving
+    whether they are design-time or instance-time (horizon) and whether they collide with a native BPMN
+    construct (owner↔lane). Relay to 832 on thread T-175 pending (outward-facing; not fired blind).
