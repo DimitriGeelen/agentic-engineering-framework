@@ -164,3 +164,32 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
     (new subsystem: workflow store + list/save routes + designer client wiring), distinct from the
     832-side build-nits IW-6/IW-7. Scope with §Task-Sizing (project browser + save + store = 3 deliverables
     → decompose after the go/no-go). disposition: deferred (needs the persistence-owner decision first).
+- 2026-07-11T00:xx (T-2523, **IW-8 CORRECTED by live Playwright inspection of the 0.2.0 client** —
+  supersedes the framing two entries above). The IW-8 entry above inferred "the 0.2.0 build has no
+  project browser; AEF should build the store, 832 builds a thin client, don't build localStorage-only."
+  **That inference was wrong** — I had not inspected 832's client. Browser inspection of the deployed
+  build (`browser_evaluate` over the 346KB inline script) shows **832 already shipped the entire
+  persistence client**: hidden buttons `btn-open-project` / `btn-save-project` / `btn-versions` + a card
+  browser (thumbnails, filter, hover-zoom), **progressive-enhancement-gated** — `detectSaveApi()` probes
+  `GET /api/health` and only reveals the buttons when a write-capable "gallery server" answers `{ok:true}`.
+  Source refs visible in the JS: T-130 (B3 save-to-project), T-144 (in-editor browser), T-160/T-161/T-163,
+  "B2 sidecar". **Root cause of "cannot save to project": AEF serves `/designer` as a static file, so
+  `GET /api/health` 404s (confirmed — it is the ONLY console error on the live page) → `_apiAvailable=false`
+  → the client keeps the buttons `display:none`.** So IW-8 is neither a design negotiation nor 832 work —
+  it is **purely AEF implementing the gallery-server API 832's client already calls.** The persistence-
+  owner question (IW-1 of T-2528) is thereby *answered by the artifact*: AEF owns the server, 832's client
+  is done. Contract recovered verbatim from the 0.2.0 JS:
+    - `GET  /api/health`               → `{ok:true}`                         (PE gate)
+    - `GET  /api/list`                 → `{maps:[{id,…}]}`                    (browser + jump-to; superset of in-session library)
+    - `POST /api/save`   `{id,bpmn,png,note}` → `{ok:true, v:N}`             (versioned; png=thumbnail via captureThumbnail())
+    - `GET  /api/versions?id=<id>`     → `[{v,…}]`                           (sorted desc client-side)
+    - `GET  /api/version?id=<id>&v=<v>`→ bpmn                                (open/restore a version)
+    - `POST /api/delete` `{id,scope:'version',v}` → `{ok:true}`             (recoverable)
+    - `GET  rendered/<id>.bpmn`                                              (pre-rendered corpus, relative to /designer)
+    - id constraint: `^[a-z0-9][a-z0-9_-]*$`
+  Corrected to 832 durably on thread T-175 (offset 6865) — retracted the mischaracterization, credited the
+  client, asked 832 to confirm 5 contract details (list map[] fields, /api/version body shape, /api/versions
+  element shape, rendered/ base path, existence of a reference "B2 sidecar" impl to match). This turns
+  T-2528 from an open persistence inception into a **bounded AEF build against a fixed client contract**
+  (recommendation strengthens to GO). Lesson (binding rule): the IW-8 inference stood for two entries
+  because I described the client without opening it; the live artifact disproved it in one inspection.
