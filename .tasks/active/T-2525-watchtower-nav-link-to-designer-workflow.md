@@ -133,6 +133,23 @@ out=$(curl -sf "$(bin/fw watchtower url)/"); echo "$out" | grep -q "Designer"
 curl -sf -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/designer" | grep -q 200
 python3 -m pytest tests/unit/test_nav_layout_polish.py -q
 
+## Recommendation
+
+**Recommendation:** GO (accept the nav link; confirm placement)
+
+**Rationale:** The `/designer` workflow-designer surface was serving the pinned 0.1.0 build but had
+no way in from the UI. This adds a "Designer" leaf under the **Architecture** nav group (next to
+Explorer/Fabric — the other structural/visual tools). All Agent ACs pass on the live surface. The one
+open item is a taste call: is "Architecture" the right group, or would you prefer "Work" (next to
+Tasks/Arcs)? One-line to move it if so.
+
+**Evidence:**
+- `web/shared.py` NAV_GROUPS → `("Designer", "designer.designer", None)` under Architecture
+- Live nav renders `>Designer<` (http://192.168.10.107:3001/, post-restart)
+- `/designer` → HTTP 200, served bytes sha256 `d0e0177c…` byte-identical to the pinned 0.1.0 build
+- `tests/unit/test_nav_layout_polish.py` → 9 passed
+- Commit `da8f6acdb`
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
