@@ -62,6 +62,20 @@ do_drift() {
             resolved="$PROJECT_ROOT/$loc"
         fi
         if [ -n "$loc" ] && [ ! -f "$resolved" ]; then
+            # T-2519: a missing location that is gitignored is a runtime/generated
+            # data artifact (e.g. F-004 budget-gate-counter → .budget-gate-counter,
+            # created lazily by the budget-gate hook, gitignored, absent between
+            # sessions / after a .context/working/ clean). Its transient absence is
+            # expected state, not real drift — the same class the stale-edges check
+            # already exempts (T-2427/G-070, section 3). A genuinely-deleted
+            # *tracked* source file is NOT gitignored, so it still flags. git
+            # check-ignore only runs on the rare missing-file branch → no scan
+            # slowdown. Exit codes: 0 = ignored (skip), 1 = not ignored (flag),
+            # 128 = no git repo / path outside repo (treated as not-ignored →
+            # flag, preserving pre-fix behavior — no regression).
+            if git -C "$PROJECT_ROOT" check-ignore --quiet -- "$loc" 2>/dev/null; then
+                continue
+            fi
             local name
             name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
             echo "  ! $name → $loc (file missing)"
