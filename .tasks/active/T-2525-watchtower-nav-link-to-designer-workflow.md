@@ -4,12 +4,12 @@ name: "Watchtower nav link to /designer workflow-designer surface"
 description: >
   Watchtower nav link to /designer workflow-designer surface
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/task-create/create-task.sh, web/shared.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T19:49:33Z
-last_update: 2026-07-10T19:49:33Z
-date_finished: null
+last_update: 2026-07-10T19:56:57Z
+date_finished: 2026-07-10T19:56:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -128,9 +128,11 @@ integration (T-2521 vendor/serve, T-2524 pin-drift guard, T-2522 mapping contrac
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+# L-387: use here-string (grep -q <<<"$out"), NOT `echo "$out" | grep -q` — the pipe
+# SIGPIPEs (exit 141) under `set -eo pipefail` when grep matches early on a large page.
 grep -q '"designer.designer"' web/shared.py
-out=$(curl -sf "$(bin/fw watchtower url)/"); echo "$out" | grep -q "Designer"
-curl -sf -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/designer" | grep -q 200
+out=$(curl -sf "$(bin/fw watchtower url)/"); grep -q "Designer" <<<"$out"
+code=$(curl -sf -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/designer"); [ "$code" = 200 ]
 python3 -m pytest tests/unit/test_nav_layout_polish.py -q
 
 ## Recommendation
@@ -217,3 +219,15 @@ Tasks/Arcs)? One-line to move it if so.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2525-watchtower-nav-link-to-designer-workflow.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3c5cbfec
+- **Timestamp:** 2026-07-10T19:57:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-10T19:56:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
