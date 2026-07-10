@@ -76,8 +76,12 @@ single-file editor**, adding server/corpus later only if AEF users need them. *D
 
 **IW-4 — Dependency-cycle avoidance? → Reference a build artifact, never source.**
 832 vendors AEF for governance (`.agentic-framework/`); AEF would vendor **only 832's released
-designer build**. Two artifacts, no source recursion. AEF has **zero** existing reference to 832
-today (grep clean), so we start from zero coupling and keep the reference pinned to a released tag.
+designer build**. Two artifacts, no source recursion. AEF has **no *code* reference to 832** (no
+import/exec/source of 832 anywhere), so we start from zero *code* coupling and keep the reference
+pinned to a released tag. (Correction to the auto-generated draft's "zero reference / grep clean":
+AEF *does* carry prior **governance** history for this collaboration — the T-2202 "dispatch AEF
+setup worker on 832" task and T-2203 — but those are docs/tasks, not code, and do not create a
+dependency cycle. The IW-4 claim is specifically about code/dependency coupling, which is nil.)
 
 **IW-5 — Version & release cadence? → 832 owns a version tag; AEF pins it.**
 832 tags each released single-file build; AEF records that version string in a vendor manifest and

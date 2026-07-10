@@ -1,10 +1,10 @@
 ---
-id: T-2519
-name: "fabric orphaned-card check flags gitignored runtime-data artifacts (transient FP, T-2427 sibling)"
+id: T-2521
+name: "fw designer: vendor+serve pinned Workflow Designer 0.1.0 (T-173 beachhead)"
 description: >
-  fabric orphaned-card check flags gitignored runtime-data artifacts (transient FP, T-2427 sibling)
+  AEF-side phase-1 of the designer integration (M3 + fw designer). Pin+vendor 832's released single-file build 0.1.0 with sha256 verification per docs/aef-designer-integration-protocol.md, add a fw designer route, serve via a Watchtower blueprint. Traces from inception T-2520. BUILD GATED on operator GO (T-173 GO was recorded in the 832 session, not AEF's).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -21,8 +21,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-10T05:49:07Z
-last_update: 2026-07-10T05:49:07Z
+created: 2026-07-10T11:21:45Z
+last_update: 2026-07-10T11:21:45Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -36,32 +36,29 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2519: fabric orphaned-card check flags gitignored runtime-data artifacts (transient FP, T-2427 sibling)
+# T-2521: fw designer: vendor+serve pinned Workflow Designer 0.1.0 (T-173 beachhead)
 
 ## Context
 
-`fw fabric drift` section 2 (orphaned-card check, `agents/fabric/lib/drift.sh:50-71`)
-flags **any** card whose `location:` file is missing from disk. But some cards
-legitimately point at **gitignored runtime data artifacts** (e.g. `F-004
-budget-gate-counter` → `.context/working/.budget-gate-counter`, a counter the
-budget-gate hook creates lazily and which is absent between sessions / after a
-`.context/working/` clean). When such a file is transiently absent at scan time,
-the orphaned check falsely reports `orphaned: 1` → audit WARN. The sibling
-stale-edges check (section 3) already got exactly this exemption in T-2427/G-070
-(runtime/data-artifact targets whose absence is expected → not drift); the
-orphaned-card check never did. Discriminator: a **gitignored** location is
-runtime/generated state whose absence is expected; a **tracked** location that's
-missing is a genuinely-deleted source file (real drift). `git check-ignore`
-cleanly separates the two, and only runs on the rare missing-file branch (no scan
-slowdown). Sibling of L-290 ("drift reports stale edges for files that exist").
+Phase-1 beachhead of the Workflow Designer integration (inception T-2520 → M3 + `fw designer`).
+832 is SoT; AEF vendors a **pinned build artifact**, never source. Contract: 832's
+`docs/aef-designer-integration-protocol.md`. Release to vendor: `0.1.0`
+(`dist/aef-workflow-designer-0.1.0.html`, sha256 `d0e0177cffd3cdd86f99710d4ee98cc17ee7be2bf0153c5b68a3f3feccb0317d`, 394110 bytes).
+
+**⚠ BUILD GATED:** do NOT start (status stays `captured`) until the operator issues an explicit
+GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is not AEF authority
+(G-020, verify-claims). On GO: `fw work-on T-2521`.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] orphaned-card check in `agents/fabric/lib/drift.sh` skips a card whose `location:` file is missing **when that path is gitignored** (`git check-ignore`), and still flags a missing **tracked** location as orphaned
-- [x] a bats regression test (`tests/unit/fabric_drift_orphaned_gitignored.bats`) proves both directions: gitignored-missing → NOT orphaned, tracked-missing → orphaned
-- [x] vendored copy `.agentic-framework/agents/fabric/lib/drift.sh` re-synced (`fw vendor self`) so audit does not FAIL on vendor drift (T-2240)
-- [x] `bin/fw fabric drift` reports `orphaned: 0` with the real `.budget-gate-counter` file moved aside (the transient-absence case that produced the WARN)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] `fw designer sync` vendors `aef-workflow-designer-0.1.0.html` into a pinned AEF location and **verifies sha256 against the manifest** — rejects (non-zero exit) on mismatch
+- [ ] The pinned version + checksum are recorded on the AEF side (explicit, reproducible pin — not "track HEAD")
+- [ ] `fw designer` route exists (case arm in `bin/fw`) and opens/serves the vendored build
+- [ ] Watchtower blueprint serves the designer: page returns HTTP 200 and contains the editor root element
+- [ ] Vendored copy is treated read-only (never edited in-place); improvements route upstream to 832 per the protocol — asserted by a comment/guard, not by editing the artifact
+- [ ] CDN-fonts caveat documented (designer attempts Google Fonts fetch; functions offline with system-font fallback) so a locked-down deployment isn't surprised
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -96,12 +93,6 @@ slowdown). Sibling of L-290 ("drift reports stale edges for files that exist").
 
 ## Verification
 
-bash -n agents/fabric/lib/drift.sh
-grep -q 'check-ignore' agents/fabric/lib/drift.sh
-bats tests/unit/fabric_drift_orphaned_gitignored.bats
-diff -q agents/fabric/lib/drift.sh .agentic-framework/agents/fabric/lib/drift.sh
-out=$(bin/fw fabric drift 2>&1); echo "$out" | grep -qE "orphaned: 0,"
-
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -135,35 +126,19 @@ out=$(bin/fw fabric drift 2>&1); echo "$out" | grep -qE "orphaned: 0,"
 
 ## RCA
 
-**Symptom:** The pre-push audit in handover `S-2026-0710-0647` reported
-`[WARN] Fabric: 1 orphaned card(s) (file deleted but card remains) — 1 cards
-reference missing files`. The single "orphaned" card was `F-004
-budget-gate-counter` → `.context/working/.budget-gate-counter` — a file that was
-not actually deleted, merely transiently absent (the budget-gate hook re-created
-it at 07:47, after which `fw fabric drift` reported `orphaned: (none)`).
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
 
-**Root cause:** `drift.sh` section 2 (orphaned-card check) treats *file missing on
-disk* as *card is orphaned*, unconditionally. It has no notion that some cards
-legitimately point at **runtime data artifacts** — gitignored, lazily-created
-state files whose absence between runs is normal, not drift. `.budget-gate-counter`
-is gitignored (`.gitignore:6`), `type: data`, created on demand by the budget-gate
-hook.
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
 
-**Why structurally allowed:** The exact analogous case for *edges* was already
-recognised and fixed in T-2427/G-070 — the stale-edges check (section 3) skips
-targets that resolve to real on-disk artifacts and skips `writes*` edge types
-whose targets are created lazily. That fix was scoped to section 3 (edges) and
-never mirrored into section 2 (orphaned cards). So a known, already-solved class
-(runtime artifact ≠ drift) still had one un-patched surface. Sibling of L-290
-("drift reports stale edges for files that DO exist", T-1494).
-
-**Prevention:** (1) The fix itself: orphaned check now skips a missing location
-when `git check-ignore` says it is ignored (runtime/generated state); a missing
-*tracked* location is still flagged (a genuinely-deleted source file is not
-gitignored). (2) Distinct from the fix — a bats regression test
-(`tests/unit/fabric_drift_orphaned_gitignored.bats`) pins **both** directions
-(gitignored-missing → not orphaned; tracked-missing → orphaned), so a future
-refactor that drops the discriminator fails CI rather than re-flaking the audit.
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -212,7 +187,7 @@ refactor that drops the discriminator fails CI rather than re-flaking the audit.
 
 ## Updates
 
-### 2026-07-10T05:49:07Z — task-created [task-create-agent]
+### 2026-07-10T11:21:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2519-fabric-orphaned-card-check-flags-gitigno.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2521-fw-designer-vendorserve-pinned-workflow-.md
 - **Context:** Initial task creation
