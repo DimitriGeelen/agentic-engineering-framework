@@ -10,18 +10,19 @@
 # the delivered artifact's sha256 against `sha256:` below and installs it, rejecting
 # (non-zero exit) on any mismatch. The pin is the reproducibility anchor.
 
-version: "0.1.0"
-sha256: "d0e0177cffd3cdd86f99710d4ee98cc17ee7be2bf0153c5b68a3f3feccb0317d"
-bytes: 394110
+version: "0.2.0"
+sha256: "e301986b993baf58d5ed29ed25436d94b08ed2be910c6781b0f4b906c25c153a"
+bytes: 395178
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.1.0.html"
-source_tag: "designer-v0.1.0"
+source_artifact: "dist/aef-workflow-designer-0.2.0.html"
+source_tag: "designer-v0.2.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
-vendored_path: "vendor/designer/aef-workflow-designer-0.1.0.html"
+# 0.2.0 = 0.1.0 + T-177: emits horizon/workflowType/owner via aef:meta on task-like nodes.
+vendored_path: "vendor/designer/aef-workflow-designer-0.2.0.html"
 
 # CDN-fonts caveat (AC6): the build links Google Fonts. Diagramming + import/export
 # function OFFLINE via system-font fallback, but a locked-down deployment will make

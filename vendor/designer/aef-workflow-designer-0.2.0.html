@@ -1497,14 +1497,14 @@ const NODE_DEFAULTS = {
 const AEF_FIELDS = {
   startEvent:   ['triggeredBy', 'contextReads'],
   endEvent:     ['emits'],
-  serviceTask:  ['tier', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites'],
-  userTask:     ['tier', 'endpoint', 'decisionOutputs'],
-  scriptTask:   ['tier', 'endpoint', 'contextReads', 'artifactsWrites'],
+  serviceTask:  ['horizon', 'workflowType', 'owner', 'tier', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites'],
+  userTask:     ['horizon', 'workflowType', 'owner', 'tier', 'endpoint', 'decisionOutputs'],
+  scriptTask:   ['horizon', 'workflowType', 'owner', 'tier', 'endpoint', 'contextReads', 'artifactsWrites'],
   exclusiveGateway: ['decisionInput', 'decisionOwner'],
   parallelGateway: [],
   linkEventThrow: ['targetWorkflow', 'linkId'],
   linkEventCatch: ['targetWorkflow', 'linkId'],
-  subProcess:   ['tier', 'endpoint', 'contextReads', 'artifactsWrites', 'scopeOf'],
+  subProcess:   ['horizon', 'workflowType', 'owner', 'tier', 'endpoint', 'contextReads', 'artifactsWrites', 'scopeOf'],
 };
 
 const FIELD_META = {
@@ -1522,6 +1522,13 @@ const FIELD_META = {
   linkId:         { label: 'Link ID',         hint: 'identifier shared with matching catch/throw', textarea: false },
   // T-081: FC-15 boundary marker — this subProcess is the collapsed scope of another node.
   scopeOf:        { label: 'Scope of',        hint: 'uid of the node this is the collapsed body of', textarea: false },
+  // T-177: the three core task-governance fields, expressible on task-like nodes so
+  // the diagram can carry a task's horizon / workflow_type / owner. Closed value sets
+  // mirror the framework's own vocabulary; emitted via the aef:meta scalar channel
+  // (kept in bridge parity — see metaKeys + tools/yaml-to-bpmn.py META_KEYS).
+  horizon:        { label: 'Horizon',         hint: 'when to work on it', special: 'select', options: ['', 'now', 'next', 'later'] },
+  workflowType:   { label: 'Workflow type',   hint: 'task workflow_type', special: 'select', options: ['', 'build', 'test', 'refactor', 'decommission', 'specification', 'design', 'inception'] },
+  owner:          { label: 'Owner',           hint: 'node-level owner (overrides lane)', special: 'select', options: ['', 'human', 'agent'] },
 };
 
 // I/O contract — which node types declare typed inputs/outputs, and the type vocabulary.
@@ -7749,7 +7756,9 @@ function aefExtensionXml(node) {
   const metaKeys = ['tier', 'agentType', 'decisionOwner', 'triggeredBy',
     'terminalKind', 'state', 'note', 'softFail', 'section', 'guard',
     'external', 'exitCode', 'autoTrigger', 'trigger', 'gatewayKind', 'gate',
-    'scopeOf'];
+    'scopeOf',
+    // T-177: task-governance scalars — horizon / workflow_type / owner.
+    'horizon', 'workflowType', 'owner'];
   const metaAttrs = metaKeys.filter(k => aefKeys.includes(k)).map(k => `${k}="${escAttr(aef[k])}"`).join(' ');
   if (metaAttrs) out += `        <aef:meta ${metaAttrs}/>\n`;
   if (aef.endpoint) out += `        <aef:endpoint>${escText(aef.endpoint)}</aef:endpoint>\n`;
