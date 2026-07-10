@@ -142,3 +142,25 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
     emits — i.e. the mapping contract shipped `horizon` and `owner` onto nodes without first resolving
     whether they are design-time or instance-time (horizon) and whether they collide with a native BPMN
     construct (owner↔lane). Relay to 832 on thread T-175 pending (outward-facing; not fired blind).
+  - **IW-8 — no project/workflow browser, cannot save to a project (persistence + navigation subsystem
+    missing).** Operator: the 0.2.0 build can diagram + import/export a single file, but there is no way
+    to *browse* existing workflows or *save into a project/library* — the editor is stateless per load.
+    This is a materially larger item than IW-6/IW-7 (a field nit vs a whole subsystem) and it is
+    **cross-boundary**, not purely 832-side: `/designer` is currently a *static single-file serve*
+    (`web/blueprints/designer.py` → `_pin()` → `vpath.read_text()`), so **AEF exposes no save/list
+    endpoint whatsoever**. Before either side builds, a design decision is required on WHERE workflows
+    persist and who owns that store:
+      - (a) **AEF backend** — AEF adds `GET /designer/projects` (list) + `POST /designer/projects/<id>`
+        (save) routes backed by a `.context/` or repo-tracked workflow store; the 832 build wires its
+        browse/open/save UI to those endpoints. Keeps AEF as the system-of-record for workflows-as-repo-
+        artifacts (fits "nothing gets done without a task" — a saved workflow is a durable artifact).
+      - (b) **832 build local storage** — the single-file editor persists to browser localStorage /
+        File System Access API. Zero AEF backend, but workflows are trapped per-browser, not repo-tracked,
+        not shareable — violates Portability + the repo-as-SoT model.
+      - (c) **file-round-trip only** (status quo) — no browser; save == export a `.bpmn` file the operator
+        manually re-imports. Honest but poor UX; the operator's report is that this is insufficient.
+    Recommendation direction: **(a)** — workflows are first-class repo artifacts, so persistence belongs
+    on the AEF side with 832's editor as the thin client. That makes IW-8 an **AEF-side inception**
+    (new subsystem: workflow store + list/save routes + designer client wiring), distinct from the
+    832-side build-nits IW-6/IW-7. Scope with §Task-Sizing (project browser + save + store = 3 deliverables
+    → decompose after the go/no-go). disposition: deferred (needs the persistence-owner decision first).
