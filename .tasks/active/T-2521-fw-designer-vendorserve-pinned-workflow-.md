@@ -85,10 +85,10 @@ GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw designer sync` vendors `aef-workflow-designer-0.1.0.html` into a pinned AEF location and **verifies sha256 against the manifest** — rejects (non-zero exit) on mismatch
+- [x] `fw designer sync` vendors `aef-workflow-designer-0.1.0.html` into a pinned AEF location and **verifies sha256 against the manifest** — rejects (non-zero exit) on mismatch
 - [x] The pinned version + checksum are recorded on the AEF side (explicit, reproducible pin — not "track HEAD")
 - [x] `fw designer` route exists (case arm in `bin/fw`) and opens/serves the vendored build
-- [ ] Watchtower blueprint serves the designer: page returns HTTP 200 and contains the editor root element
+- [x] Watchtower blueprint serves the designer: page returns HTTP 200 and contains the editor root element
 - [x] Vendored copy is treated read-only (never edited in-place); improvements route upstream to 832 per the protocol — asserted by a comment/guard, not by editing the artifact
 - [x] CDN-fonts caveat documented (designer attempts Google Fonts fetch; functions offline with system-font fallback) so a locked-down deployment isn't surprised
 
@@ -123,19 +123,23 @@ GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-## Build Status (2026-07-10)
+## Build Status (2026-07-10) — COMPLETE
 
-Mechanism BUILT + verified live. **Two ACs remain BLOCKED on 832 delivering the
-0.1.0 build** (the T-559 project boundary forbids this AEF session pulling it from
-/opt/832; 832, the SoT, must deliver it):
-- **AC1** (vendor the real `aef-workflow-designer-0.1.0.html`) — the sync verify/
-  reject/read-only-install mechanism is proven (bats accept+reject with a fixture pin,
-  and a live mismatch→exit-1). Only the real-artifact install awaits delivery.
-- **AC4** (blueprint serves 200 **+ editor root element**) — 200 is verified live on
-  :3001; the "editor root element" appears only once the real build is vendored.
+Mechanism built + verified live, AND the real build is now vendored + served.
 
-On delivery: update `policy/designer-pin.yaml` if the release moved, then
-`fw designer sync --from <delivered>` → tick AC1/AC4 → `--status work-completed`.
+**Delivery resolved (all 6 ACs met):** 832 (workflow-designer session `tl-spmeo4lr`)
+delivered `dist/aef-workflow-designer-0.1.0.html` via termlink `file_send`
+(transfer_id `xfer-mcp-2880427`) to the AEF session `tl-uhqt63fb`. Received into
+`.context/working/designer-inbox/`, sha256 `d0e0177c…` — end-to-end match.
+- **AC1** ✓ — `fw designer sync --from <delivered>` verified sha256 against the pin
+  and installed read-only to `vendor/designer/aef-workflow-designer-0.1.0.html`.
+  (Reject-on-mismatch proven separately: live mismatch→exit-1 + bats.)
+- **AC4** ✓ — `GET /designer` → HTTP 200, serves the real 394110-byte editor (title
+  "AEF Workflow Designer — investigate.bpmn", palette tools/lanes present), not the
+  placeholder.
+
+Cross-project boundary (T-559) held throughout: AEF never read /opt/832; the SoT
+delivered the artifact. Loop closed with 832 on completion.
 
 ## Verification
 
