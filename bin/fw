@@ -1454,6 +1454,34 @@ else:
         fi
     fi
 
+    # Check: designer pin ↔ vendored build drift (T-2524, T-2521 integration hardening)
+    # Sibling of the MCP manifest + cron registry→generated drift classes. Content-compares
+    # (sha256, never mtime — T-2290/T-2432) the vendored Workflow Designer build against
+    # policy/designer-pin.yaml. Catches a pin bump without re-sync, or an edit to the
+    # (read-only) vendored HTML. Designer is an AEF-specific feature → PROJECT_ROOT; SKIPs
+    # gracefully when the pin is absent (consumers) or the vendored file isn't present yet.
+    local _dz_pin="$PROJECT_ROOT/policy/designer-pin.yaml"
+    if [ -f "$_dz_pin" ]; then
+        local _dz_want _dz_vp _dz_file _dz_have
+        _dz_want=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dz_pin'));print(d.get('sha256','') or '')" 2>/dev/null)
+        _dz_vp=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dz_pin'));print(d.get('vendored_path','') or '')" 2>/dev/null)
+        _dz_file="$PROJECT_ROOT/$_dz_vp"
+        if [ -z "$_dz_want" ] || [ -z "$_dz_vp" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  designer pin present but missing sha256/vendored_path"
+        elif [ ! -f "$_dz_file" ]; then
+            echo -e "  ${CYAN}SKIP${NC}  designer not yet vendored — run: fw designer sync --from <build>"
+        else
+            _dz_have=$(sha256sum "$_dz_file" 2>/dev/null | cut -d' ' -f1)
+            if [ "$_dz_have" = "$_dz_want" ]; then
+                echo -e "  ${GREEN}OK${NC}  designer vendored build matches pin (${_dz_want:0:12}...)"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  designer vendored build drifted from pin"
+                echo -e "         pin=${_dz_want:0:12}... vendored=${_dz_have:0:12}... — run: fw designer sync --from <build>"
+                warnings=$((warnings + 1))
+            fi
+        fi
+    fi
+
     # Check: proxy-policy emitted-but-not-installed drift (T-2432, arc-013)
     # Sibling of the MCP manifest + cron registry→generated drift classes. Compares the
     # in-repo SOURCE policy against the DEPLOYED copy by CONTENT (sha256, never mtime).
