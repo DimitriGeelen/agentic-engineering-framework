@@ -13,7 +13,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-10T09:19:41Z
-last_update: 2026-07-10T09:20:24Z
+last_update: '2026-07-10T09:30:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -39,6 +39,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-10T09:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -174,7 +184,7 @@ Mechanism is answerable now from measurement (see artifact: AEF has no external-
 **Evidence:**
 
 - **IW-1 (no loader) — measured:** MCP registration wraps *fw's own verbs* only (`policy/capability-overlay/tool-set.yaml`, emitter `agents/mcp/manifest.py`, `fw mcp emit-manifest` bin/fw:5026; `fw_command` must be a real fw verb — no external exec target). "plugin" = skill governance-audit (`agents/audit/plugin-audit.sh`, bin/fw:3644), not a loader; `plugins/` holds only a WezTerm config. Component Fabric reads cards as YAML data, never sources/execs them (topology only). Agents/subcommands/blueprints all wired by editing a hardcoded case-arm/list (`bin/fw:3519` route table; `web/blueprints/__init__.py:7`). ⇒ no runtime plugin loader, no external-component registration anywhere.
-- **IW-4 (no cycle) — measured:** AEF has zero existing reference to 832 (grep clean). Plan references a *pinned build artifact*, never 832 source.
+- **IW-4 (no cycle) — measured:** AEF has no *code* reference to 832 (no import/exec/source anywhere). Plan references a *pinned build artifact*, never 832 source. (Correction to draft's "zero reference": prior *governance* history exists — T-2202/T-2203 setup tasks — but those are docs/tasks, not code coupling; IW-4 is about dependency cycles, which are nil.)
 - **Recommended mechanism:** M3 (832 releases a versioned single-file designer build) + a thin in-repo `fw designer` launcher over a pinned, vendored copy of that build. Satisfies C1 (832=SoT), C2 (dev stays in 832), C3/Directive-4 (standard git/release + one small case arm), IW-4 (artifact not source).
 - **Full analysis + mechanism map:** `docs/reports/T-2520-aef-integration-surface.md`.
 - **Peer inception:** `/opt/832-Workflow-designer/docs/reports/T-173-aef-integration-inception.md`; reply posted to TermLink thread T-173.
