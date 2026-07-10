@@ -4220,6 +4220,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
     fabric)
         exec "$AGENTS_DIR/fabric/fabric.sh" "$@"
         ;;
+    designer)
+        # T-2521: vendor + serve the pinned Workflow Designer build (SoT: 832).
+        exec "$AGENTS_DIR/designer/designer.sh" "$@"
+        ;;
     git)
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;

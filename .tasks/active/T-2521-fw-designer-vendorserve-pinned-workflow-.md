@@ -2,9 +2,13 @@
 id: T-2521
 name: "fw designer: vendor+serve pinned Workflow Designer 0.1.0 (T-173 beachhead)"
 description: >
-  AEF-side phase-1 of the designer integration (M3 + fw designer). Pin+vendor 832's released single-file build 0.1.0 with sha256 verification per docs/aef-designer-integration-protocol.md, add a fw designer route, serve via a Watchtower blueprint. Traces from inception T-2520. BUILD GATED on operator GO (T-173 GO was recorded in the 832 session, not AEF's).
+  AEF-side phase-1 of the designer integration (M3 + fw designer). Pin+vendor 832's
+  released single-file build 0.1.0 with sha256 verification per docs/aef-designer-integration-protocol.md,
+  add a fw designer route, serve via a Watchtower blueprint. Traces from inception
+  T-2520. BUILD GATED on operator GO (T-173 GO was recorded in the 832 session, not
+  AEF's).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -22,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T11:21:45Z
-last_update: 2026-07-10T11:21:45Z
-date_finished: null
+last_update: '2026-07-10T11:30:05Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +38,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-07-10T11:29:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-10T11:30:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2521: fw designer: vendor+serve pinned Workflow Designer 0.1.0 (T-173 beachhead)
@@ -54,11 +86,11 @@ GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] `fw designer sync` vendors `aef-workflow-designer-0.1.0.html` into a pinned AEF location and **verifies sha256 against the manifest** — rejects (non-zero exit) on mismatch
-- [ ] The pinned version + checksum are recorded on the AEF side (explicit, reproducible pin — not "track HEAD")
-- [ ] `fw designer` route exists (case arm in `bin/fw`) and opens/serves the vendored build
+- [x] The pinned version + checksum are recorded on the AEF side (explicit, reproducible pin — not "track HEAD")
+- [x] `fw designer` route exists (case arm in `bin/fw`) and opens/serves the vendored build
 - [ ] Watchtower blueprint serves the designer: page returns HTTP 200 and contains the editor root element
-- [ ] Vendored copy is treated read-only (never edited in-place); improvements route upstream to 832 per the protocol — asserted by a comment/guard, not by editing the artifact
-- [ ] CDN-fonts caveat documented (designer attempts Google Fonts fetch; functions offline with system-font fallback) so a locked-down deployment isn't surprised
+- [x] Vendored copy is treated read-only (never edited in-place); improvements route upstream to 832 per the protocol — asserted by a comment/guard, not by editing the artifact
+- [x] CDN-fonts caveat documented (designer attempts Google Fonts fetch; functions offline with system-font fallback) so a locked-down deployment isn't surprised
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -91,12 +123,32 @@ GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+## Build Status (2026-07-10)
+
+Mechanism BUILT + verified live. **Two ACs remain BLOCKED on 832 delivering the
+0.1.0 build** (the T-559 project boundary forbids this AEF session pulling it from
+/opt/832; 832, the SoT, must deliver it):
+- **AC1** (vendor the real `aef-workflow-designer-0.1.0.html`) — the sync verify/
+  reject/read-only-install mechanism is proven (bats accept+reject with a fixture pin,
+  and a live mismatch→exit-1). Only the real-artifact install awaits delivery.
+- **AC4** (blueprint serves 200 **+ editor root element**) — 200 is verified live on
+  :3001; the "editor root element" appears only once the real build is vendored.
+
+On delivery: update `policy/designer-pin.yaml` if the release moved, then
+`fw designer sync --from <delivered>` → tick AC1/AC4 → `--status work-completed`.
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 #
+bash -n agents/designer/designer.sh
+bats tests/unit/designer_sync_sha256.bats
+python3 -c "from web.blueprints.designer import bp; assert bp.name=='designer'"
+out=$(bin/fw designer status 2>&1); echo "$out" | grep -q "pinned Workflow Designer"
+# Live route returns 200 (placeholder until synced, real editor after):
+WURL=$(cat .context/working/watchtower.url 2>/dev/null || echo "http://localhost:3000"); code=$(curl -s -o /dev/null -w '%{http_code}' "$WURL/designer"); [ "$code" = "200" ]
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
@@ -191,3 +243,6 @@ GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2521-fw-designer-vendorserve-pinned-workflow-.md
 - **Context:** Initial task creation
+
+### 2026-07-10T11:29:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
