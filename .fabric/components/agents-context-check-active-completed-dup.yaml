@@ -3,18 +3,22 @@ name: check-active-completed-dup
 type: script
 subsystem: context-fabric
 location: agents/context/check-active-completed-dup.py
-tags: []
+tags:
+- hook
+- pretooluse
+- task-integrity
 
-purpose: "TODO: describe what this component does"
+purpose: "PreToolUse Write|Edit|MultiEdit guard (T-2121 prong 1) that blocks creating .tasks/completed/T-N while .tasks/active/T-N already exists (or vice-versa) — the T-2091 active/completed divergence class. Fires only on genuine file creation; git-mv completion path never reaches it. Blocks under agent control; override FW_ALLOW_ACTIVE_COMPLETED_DUP=1 (Tier-2 logged)."
 
 depends_on:
-  # Format: - target: <relative-path>
-  #          type: calls|reads|writes|triggers|renders
-  []
+- target: lib/hook_paths.py
+  type: calls
 
 depended_by:
-  # Same format as depends_on — filled by enrich.py or manually
-  []
+- target: agents/context/check-active-completed-dup.sh
+  type: triggers
+- target: .claude/settings.json
+  type: renders
 
-last_verified: 2026-07-09
-created_by: unknown
+last_verified: 2026-07-10
+created_by: T-2517

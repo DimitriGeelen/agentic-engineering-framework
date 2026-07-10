@@ -27,7 +27,17 @@ do_drift() {
         echo -e "${CYAN}Unregistered components:${NC}"
         while IFS= read -r rel_path; do
             [ -z "$rel_path" ] && continue
-            if ! echo "$registered" | grep -qx "$rel_path" 2>/dev/null; then
+            # T-2518: was `echo "$registered" | grep -qx "$rel_path"`. Under the
+            # inherited `set -euo pipefail`, when grep -q short-circuits on an
+            # early match it closes the pipe and `echo` takes SIGPIPE (141);
+            # pipefail then makes the pipeline exit 141, so `! 141` → true and a
+            # genuinely-registered file is falsely flagged. The race is timing-
+            # dependent (files whose location sorts early are hit more often),
+            # which is why drift reported a different random subset of carded
+            # files each run (OBS-092). Herestring has no producer process to
+            # receive SIGPIPE; -F makes the path a fixed string (dots in paths
+            # are no longer regex). Same L-387/L-402 class.
+            if ! grep -qxF "$rel_path" <<<"$registered" 2>/dev/null; then
                 echo "  ! $rel_path"
                 unregistered=$((unregistered + 1))
             fi
