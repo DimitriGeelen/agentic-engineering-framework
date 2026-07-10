@@ -56,12 +56,43 @@ drawn. 6 node `aef:owner` overrides lane. 7 `aef:task-id` present⇒UPDATE absen
 - Q4 no-lane fallback: if diagram has no lanes, per-node `aef:owner` required, or diagram default?
 - Q5 arc round-trip: editing a collapsed subProcess (arc) → regenerate arc YAML, or only members?
 
-## Recommendation: DEFER (honest evidence-gap — artifact is a draft, Q1-Q5 open, needs 832 convergence)
-On convergence: GO (adopt → spin up Child 2/3 compiler inceptions) or NO-GO (if round-trip proves
-lossy beyond the extension layer).
+## Recommendation: GO (adopt the AEF-side contract)
+This task = the **AEF half** of Child 1. The AEF-side node/edge schema + 7 rulings are drafted,
+internally consistent, and stand alone (ruling #7 `aef:task-id`↔`id` holds regardless of *where*
+832 stores the anchor — that's IW-1's scope). GO authorizes adopting the AEF schema as fixed and
+spinning Child 2 (diagram→tasks) + Child 3 (tasks→diagram) inceptions off it — each gated on 832's
+IW-1 answer before its round-trip *code* lands. Q1-Q5 (IW-1..IW-5) are 832's BPMN-side rulings +
+joint round-trip convergence, handed to 832 — not blockers on the AEF half.
+
+**DEFER→GO self-correction (T-2144):** the earlier DEFER conflated "AEF half ratified" with "joint
+round-trip proven." Operator challenged it ("why is 2522 on defer?"); on re-examination the evidence
+for the AEF half is complete, so DEFER was a confidence hedge, not an evidence gap. Corrected to GO.
 
 ## Dialogue Log
 - 2026-07-10 opened. Operator cleared advancing integration + live 832 collaboration (T-173 GO stays
   sovereign). Resolved two-session confusion (redundant sibling tl-uhqt63fb held for GO while THIS
   session completed T-2521); corrected 832's coordination target. Proposed Child 1 as keystone; posted
   Q1 to 832 on thread T-175. AEF schema + 7 rulings drafted. Awaiting 832 answers to Q1-Q5.
+- 2026-07-10T18:29:47Z (T-2523) — IW-1..IW-5 (= Q1-Q5 above) delivered durably to 832 workflow-designer
+  via `termlink channel post agent-chat-arc` (thread T-175, offset **6835**, sender fingerprint
+  `d1993c2c3ec44c94`). Full text quotes each ruling number, flags IW-1 as KEYSTONE/BLOCKER, states AEF
+  schema + 7 rulings are fixed (adopt as given), and tells 832 to reply on thread T-175 when it surfaces
+  from its current work (T-168, unrelated edge/port exploration — confirmed live via `termlink pty
+  output tl-spmeo4lr`). Checked thread T-175 for a reply as of 2026-07-10T18:42Z (offset 6836 is an
+  unrelated ring20-management presence beacon) — **no 832 answer yet, no explicit "will answer later"
+  either**. Delivery is durable (channel record, not fire-and-forget) regardless of reply timing.
+  Dispositions for IW-1..IW-5 remain `deferred` pending 832's rulings — this entry is the delivery
+  cross-reference T-2523's AC asks for; the disposition flip to `answered` happens in a follow-up pass
+  once 832 replies (see T-2523 Updates for polling status).
+- 2026-07-10T18:47Z (T-2523) — Live PTY inspection of 832's session (`termlink pty output tl-spmeo4lr`,
+  byte-offset-ordered against token-count progression to confirm recency) shows 832 HAS surfaced the
+  IW-1 keystone question ("the aef:task-id round-trip identity anchor + which BPMN extension element
+  holds it") and is currently **paused, presenting 3 options to its own operator**: (1) drive the 832
+  side as a scoped pre-GO exploration inception and answer now, (2) defer to a concurrent 832 session
+  that owns T-173/produced the 0.1.0 artifact, or (3) hold everything until the operator gives the
+  broader T-173 GO. 832's own text: *"I'll hold any substantive reply to the AEF agent until you
+  steer."* This is 832 applying its own version of AEF's Pickup-Message-Handling discipline (a chat
+  message is a proposal, not authorization) — not a stall, a governance-correct pause. **This is an
+  ephemeral PTY observation, not a durable reply from 832** — no corresponding post exists on
+  `agent-chat-arc` thread T-175 as of this check. Treat as informal "will answer later" signal only;
+  the durable disposition flip still requires an actual channel post from 832.

@@ -1,8 +1,10 @@
 ---
 id: T-2523
-name: "T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side rulings"
+name: "T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side
+  rulings"
 description: >
-  T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side rulings
+  T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side
+  rulings
 
 status: started-work
 workflow_type: build
@@ -22,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: 2026-07-10T17:08:15Z
-date_finished: null
+last_update: '2026-07-10T17:15:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +36,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-10T17:15:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 7
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-10T17:15:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2523: T-175 mapping-contract convergence with 832: deliver IW-1..IW-5, collect BPMN-side rulings
@@ -49,7 +79,7 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] IW-1..IW-5 delivered to 832 durably (delivery confirmed live — visible in 832's session or a durable channel record, not fire-and-forget)
+- [x] IW-1..IW-5 delivered to 832 durably (delivery confirmed live — visible in 832's session or a durable channel record, not fire-and-forget)
 - [ ] 832's answers (or explicit "will answer later") captured back into `docs/reports/T-2522-bpmn-aef-mapping-contract.md` §Open questions / Dialogue Log
 - [ ] For each of IW-1..IW-5 that 832 answers, the corresponding disposition in T-2522 is updated from `deferred` to `answered` with the ruling (note: T-2522 is completed — dispositions recorded in the artifact, cross-referenced)
 
@@ -184,3 +214,23 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2523-t-175-mapping-contract-convergence-with-.md
 - **Context:** Initial task creation
+
+### 2026-07-10T18:47:00Z — dispatch-worker-checkpoint [T-2523-worker]
+- **Action:** Verified AC-1 (durable delivery) already satisfied by a prior pass: IW-1..IW-5 posted to
+  `agent-chat-arc` thread T-175, offset **6835**, ts 2026-07-10T18:29:47Z, sender fp `d1993c2c3ec44c94`.
+  Confirmed via `termlink channel subscribe agent-chat-arc --cursor 6835` that no reply exists yet
+  (offsets 6836-6837 are unrelated ring20-management presence beacons). Polled every 30s for 3 minutes
+  — no new posts on thread T-175.
+- **Investigation:** Inspected 832's live PTY (`termlink pty output tl-spmeo4lr`, session at
+  `/opt/832-Workflow-designer`). Byte-offset vs. token-count analysis confirms the terminal's current
+  (bottom-of-buffer) state is 832 having surfaced the IW-1 keystone question and pausing to present 3
+  options to ITS OWN operator (drive it now as pre-GO exploration / defer to a concurrent T-173-owning
+  session / hold for the broader T-173 GO) — explicitly stating it will hold any substantive reply
+  until steered. This mirrors AEF's own Pickup-Message-Handling discipline on 832's side. It is an
+  ephemeral PTY read, not a durable channel post — captured with that caveat in T-2522's Dialogue Log.
+- **Status:** AC-1 ticked (durable delivery, evidenced). AC-2/AC-3 left unticked — no durable reply or
+  explicit deferral exists on `agent-chat-arc` yet; only an ephemeral, non-durable signal that 832 is
+  aware and is deliberately holding pending its own operator. This is a genuine cross-session async
+  dependency, not something this dispatch can force. Recommend leaving `status: started-work`; a
+  follow-up pass (cron re-poll of thread T-175, or the operator nudging 832's operator directly if
+  time-sensitive) should complete AC-2/AC-3 once 832 actually posts.
