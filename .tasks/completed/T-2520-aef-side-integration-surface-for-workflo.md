@@ -5,16 +5,16 @@ description: >
   Inception: AEF-side integration surface for Workflow Designer (T-173 collab with
   832)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-10T09:19:41Z
-last_update: '2026-07-10T09:30:06Z'
-date_finished:
+last_update: 2026-07-10T11:28:25Z
+date_finished: 2026-07-10T11:28:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -135,15 +135,15 @@ Peer artifact: `/opt/832-Workflow-designer/docs/reports/T-173-aef-integration-in
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -202,7 +202,11 @@ Mechanism is answerable now from measurement (see artifact: AEF has no external-
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Mechanism is answerable now from measurement (see artifact: AEF has no external-component loader; recommend M3 released-artifact from 832 + thin in-repo fw-designer wrapper reusing the vendor-sync machinery, referencing a pinned BUILD artifact not 832 source → no dep cycle). DEFER the overall go/no-go pending (a) operator's IW-3 integration-unit choice and (b) the joint recommendation with the 832 agent — an authority/coordination gap, not a confidence hedge.
+
+**Date**: 2026-07-10T11:28:24Z
 
 ## Updates
 
@@ -211,3 +215,51 @@ Mechanism is answerable now from measurement (see artifact: AEF has no external-
 
 ### 2026-07-10T09:20:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-10T11:28:24Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Mechanism is answerable now from measurement (see artifact: AEF has no external-component loader; recommend M3 released-artifact from 832 + thin in-repo fw-designer wrapper reusing the vendor-sync machinery, referencing a pinned BUILD artifact not 832 source → no dep cycle). DEFER the overall go/no-go pending (a) operator's IW-3 integration-unit choice and (b) the joint recommendation with the 832 agent — an authority/coordination gap, not a confidence hedge.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-233589f5
+- **Timestamp:** 2026-07-10T11:28:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-3c4ef930
+- **Timestamp:** 2026-07-10T11:28:26Z
+- **Overall:** CONFIRMED
+- **Claims:** 9
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `policy/capability-overlay/tool-set.yaml` | file | ✓ pass |
+| `agents/mcp/manifest.py` | file | ✓ pass |
+| `agents/audit/plugin-audit.sh` | file | ✓ pass |
+| `web/blueprints/__init__.py:7` | file_line | ✓ pass |
+| `docs/reports/T-2520-aef-integration-surface.md` | file | ✓ pass |
+| `/opt/832-Workflow-designer/docs/reports/T-173-aef-integration-inception.md` | file | ✓ pass |
+| `T-2202` | task | ✓ pass |
+| `T-2203` | task | ✓ pass |
+| `T-173` | task | ✓ pass |
+
+### 2026-07-10T11:28:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
