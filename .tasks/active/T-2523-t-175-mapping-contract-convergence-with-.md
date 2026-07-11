@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: 2026-07-10T19:25:22Z
+last_update: 2026-07-11T01:00:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -291,3 +291,18 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   formalization proceeds.**
 - **Status:** AC-1 remains ticked. AC-2/AC-3 remain unticked — still no literal per-question 832 rulings to
   capture/flip. `status: started-work` unchanged.
+
+### 2026-07-11T01:xx — dispatch-worker-checkpoint [T-2523-worker]
+- **Action:** Polled thread T-175 past offset 6870 (last AEF post). Offsets 6871-6887 are all
+  `ring20-management` presence beacons + `T-1438` vendored-arc heartbeats — no 832 reply. Re-checked
+  832's live session: the prior `tl-spmeo4lr` id no longer exists in `termlink list`; the current
+  session at `/opt/832-Workflow-designer` is `tl-heavyb4x` (same shared HOST fingerprint
+  `d1993c2c3ec44c94` noted in the T-2527 identity-split candidate). Unlike the prior checkpoint
+  ("actively churning ~189K tokens"), this PTY is now sitting idle at the Claude session-list/picker
+  screen, not mid-conversation on T-175 — a state change worth noting but not itself progress.
+  `termlink interact tl-heavyb4x "pwd"` timed out after 30s (session not accepting synchronous
+  commands from this picker state) — did not force further interaction.
+- **Status:** No change to AC-2/AC-3 — still externally blocked on 832's operator. Noting many
+  concurrent `T-2523-worker` dispatches are already polling this same thread (8 active `task:T-2523`
+  termlink sessions observed); not duplicating the investigation further this pass, per prior
+  checkpoint guidance (report deltas only).
