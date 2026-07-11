@@ -331,3 +331,44 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
       corpus (`examples/aef-processes/rendered/<id>.bpmn`) as a fixture AEF vendors, or is AEF expected to
       generate baselines from its own processes? Until that's answered + a corpus exists, the rendered/BOTH
       legs stay deferred — deliberately, not by omission.
+  - **832 session-end milestone (relayed by operator, 2026-07-11) — seam round-trip-proven BOTH ways.**
+    832 shipped **T-187** (editor-internal round-trip guard: 4 fixtures byte-identical, catches the T-080
+    class) + **T-188** (bridge→editor cross-seam guard: clean across 24 workflows / 620+ uids; self-test
+    reproduces T-042 at 27/27), **closed G-002** (open since 2026-07-03), and captured **PL-030** (fixed-point
+    guard must bite) + **PL-031** (cross-artifact drop-detection traps). Significance for AEF: the invariant
+    Child-2 (forward bridge) and Child-3 (reverse bridge) both rest on — `aef:uid` identity + `aef:meta`
+    governance surviving parse/emit — is now **structurally guarded in both directions** (previously piecemeal,
+    had drifted 3× at T-042/T-053/T-080). This materially de-risks the Child-2 GO.
+  - **AEF proposed positions on 832's Child-1 v1.1 rulings (T-2523, DRAFT — needs operator ratification
+    before relay to 832).** 832 is blocked on three AEF rulings for v1.1 graduation. A prior AEF session
+    correctly declined to *rule* these ad hoc from a build dispatch (arc-scale = operator authority) and
+    confirmed only the G-3 core (`inception = subProcess + terminal exclusiveGateway`, published ruling #3).
+    Below are AEF-domain *proposals* derived from CLAUDE.md governance (zero new invention), for the operator
+    to ratify/adjust — NOT yet relayed to 832:
+    1. **G-3 lightweight-inception marker variant** — *Is a single task-node + `aef:workflow-type=inception`
+       marker acceptable, or must it be the full subProcess + terminal go/no-go exclusiveGateway?*
+       **Proposed: the go/no-go gateway is constitutive, not decorative.** CLAUDE.md defines inception as
+       "explore problem, validate assumptions, **go/no-go**"; the decision IS the deliverable (the commit-msg
+       hook even blocks build commits until a decision is recorded). A marker-only task-node that drops the
+       gateway loses the one semantic that distinguishes an inception from a task. **Proposal: require the
+       decision gateway; the permitted "lightweight" form is a *collapsed* subProcess (gateway implied at the
+       boundary), not a gateway-less task-node.**
+    2. **Tier default for compiled nodes** — **Proposed: default Tier 1 (standard operations).** Per
+       CLAUDE.md Enforcement Tiers, Tier 1 is the default for all standard work. Inception decision-gateways
+       carry `owner: human` (the go/no-go is human authority), which is the correct escalation — not a
+       blanket higher tier on every compiled node. Tier 0/2 are situational and should never be a compile-time
+       default.
+    3. **AC-seeding format** — **Proposed: seed the Agent/Human AC *skeleton* (per T-193 split), never
+       placeholder ACs.** The build-readiness gate (G-020) blocks tasks with placeholder ACs, so a compiler
+       that seeds `- [ ] TODO` would produce tasks that can't start. **Proposal: forward-compiler seeds a
+       structured skeleton — `### Agent` ACs with a `## Verification` stub, `### Human` ACs pre-formatted with
+       Steps/Expected/If-not per T-325 — and marks them `[NEEDS-FILL]` so the downstream author completes real
+       criteria rather than the compiler fabricating them.** (Consistent with the render-review / [REVIEW]
+       routing rules.)
+    - **Ownership split (2/3/5) confirmation** — 832's proposed split matches AEF's model: (2) Forward bridge
+      = **AEF-led** ✓ (it is the translator/enrichment/gate, AEF's per the steer); (3) Reverse discovery =
+      AEF-led/joint, **DEFER** ✓; (5) Hosting/tenancy = AEF, **DEFER** ✓ (single-tenant serve already live).
+      No objection — matches AEF's understanding.
+    - **Routing:** these are operator-ratification items (arc-scale), surfaced to the operator this session.
+      Child-2 GO, IW-9/IW-12 framing, and these three rulings are the AEF-side decisions that unblock 832's
+      v1.1. None self-approved.
