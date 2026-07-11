@@ -309,3 +309,25 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
       NOT yet implemented — this contract is recorded so that follow-up builds *to the spec*, not from
       memory. IW-1=(a) recorded + gallery aligned/shipped/verified = the forward-loop contract is fully
       converged on the 832 side.
+  - **Rendered-corpus follow-up — AEF-side client contract + blocker (T-2523, 2026-07-11 client read)** —
+    read directly from the vendored client `vendor/designer/aef-workflow-designer-0.2.0.html`
+    (`openProjectMap`, `renderProjectCard`, `onDeleteWorkflow`), so the follow-up build has the exact
+    surface, not a guess:
+    1. **Open a rendered baseline:** client does `fetch(\`rendered/${id}.bpmn\`)` — a **relative** URL.
+       The page is served at `/designer` (no trailing slash), so the browser resolves it to
+       **`GET /rendered/<id>.bpmn`** (root-level, sibling of `/designer`). AEF must add that serve route
+       (text/xml). Saved-open stays `/api/version?id=&v=` (already implemented).
+    2. **`sources[]` consumption:** `onDeleteWorkflow` computes `isCorpus = (m.sources||[]).includes('rendered')`
+       (corpus maps get a different delete confirmation); 832 also keys the badge/filter off `sources[]`.
+    3. **Thumb fallback:** saved maps (`openTarget.kind==='version'`) → `/api/thumb?id=&v=`; rendered-only
+       maps → `/api/thumb?id=<id>` (no `&v=`) = the pre-rendered corpus thumbnail. AEF's `/api/thumb`
+       currently only serves stored version PNGs — a rendered-only thumb source is part of the follow-up.
+    - **BLOCKER (why this is NOT built now):** there is **no rendered corpus in AEF** — `examples/aef-processes/`,
+      `build/gallery/rendered/`, etc. are all absent and `git ls-files '*.bpmn'` (non-vendor/test) = **0**.
+      Building the serve route + sources legs against a hand-made fixture would ship **substrate, not a
+      deliverable** (§ACD / G-062). Per the operator's steer (832 = source of truth; fixtures shipped by
+      832), the canonical rendered baselines are most likely **832's to deliver**, not AEF's to invent.
+      **Open coordination question raised to 832 (rail, T-2523):** does 832 ship the canonical rendered
+      corpus (`examples/aef-processes/rendered/<id>.bpmn`) as a fixture AEF vendors, or is AEF expected to
+      generate baselines from its own processes? Until that's answered + a corpus exists, the rendered/BOTH
+      legs stay deferred — deliberately, not by omission.
