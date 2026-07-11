@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: 2026-07-11T01:00:00Z
+last_update: 2026-07-11T03:41:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -317,3 +317,21 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   for operator cleanup (`termlink signal`/`termlink clean`) since these are accumulating without
   self-terminating — out of this dispatch's scope to remediate. Not spawning further polling this
   pass.
+
+### 2026-07-11T03:4x — dispatch-worker-checkpoint [T-2523-worker]
+- **Action:** Re-checked 832's live PTY (`tl-heavyb4x`) — unchanged since the last two checkpoints:
+  still idle at the Claude session-list/picker screen, not mid-conversation, no visible new reply on
+  thread T-175. Unlike the prior two checkpoints, this pass acted on the flagged cleanup instead of
+  re-flagging it: confirmed via `termlink pty output` that all 10 accumulated `task:T-2523` sessions
+  had already printed `Worker X finished (exit: 0)` (i.e. genuinely idle, not mid-run), then
+  `termlink signal <id> SIGTERM` on each + `termlink clean` deregistered all 10. `termlink list`
+  confirms only this dispatch's own session remains under `task:T-2523`.
+- **Structural gap registered:** OBS-091 in `.context/project/concerns.yaml` — the resolver
+  redispatches this checkpoint-style task on a fixed ~30min cadence with no "no new information"
+  backoff, and `fw termlink dispatch` worker sessions don't self-deregister on exit, so idle sessions
+  pile up unbounded between manual cleanups (this is the 2nd consecutive checkpoint to hit the
+  pileup — the prior one flagged but did not fix it). Prevention direction: resolver-side backoff on
+  repeated no-change checkpoints, and/or dispatch-side auto-cleanup on worker exit. Not fixed in this
+  pass (out of T-2523's scope — AC-2/AC-3 are about the 832 contract, not orchestrator scheduling);
+  registered per G-019 (register first, fix second) so it doesn't stay silently invisible.
+- **Status:** No change to AC-2/AC-3 — still externally blocked on 832's operator.

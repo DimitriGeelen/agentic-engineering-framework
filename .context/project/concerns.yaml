@@ -2282,3 +2282,43 @@ concerns:
   status: open
   created: 2026-07-05
   related_tasks: [T-100194, T-100195, T-100143, T-100144, T-2473, T-100139]
+
+# T-2523 — resolver redispatches a task blocked on an external cross-project reply on a fixed
+# cadence with no new-information check, piling up idle TermLink worker sessions
+- id: OBS-091
+  type: structural-gap
+  severity: low
+  surface: fw resolver dispatch cadence (cron, ~30min interval) + fw termlink dispatch (worker never self-deregisters on exit)
+  detected_in: T-2523 (BPMN⇄AEF mapping-contract convergence with 832, checkpoint loop)
+  symptom: "T-2523 is a build task whose remaining AC (capture 832's rulings on IW-1..IW-5) is
+    blocked on an external peer session (832, workflow-designer project) that has been idle at its
+    Claude Code session picker for multiple checkpoint cycles. The resolver keeps redispatching a
+    fresh worker for T-2523 on its normal ~30min cadence regardless of whether anything changed on
+    the 832 side. Each worker checks 832's PTY, finds no new reply, writes a checkpoint commit, and
+    exits 0 — but the underlying TermLink session (a bash shell registered by `fw termlink dispatch`)
+    is never deregistered on worker exit. Ten such idle sessions had accumulated by the time this
+    worker ran (ages 1h-9h), each printing 'Worker X finished (exit: 0)' to an otherwise-idle shell.
+    The prior checkpoint commit (e2c25954c) had already flagged the same 10-session pileup without
+    cleaning it up — i.e. the flag-but-don't-fix pattern repeated across dispatch cycles."
+  root_cause: "Two independent gaps compound: (1) the resolver has no 'blocked on external, no new
+    signal since last dispatch' backoff — it treats T-2523 identically to any other ready build task
+    and redispatches on the fixed interval even when the last N dispatches all reported 'no change'.
+    (2) `fw termlink dispatch` workers exit their `claude -p` process but the wrapping TermLink
+    session registration is not torn down as part of that exit path — cleanup is left to a later,
+    separate `fw termlink cleanup` / `termlink clean` pass that nothing schedules automatically for
+    per-task dispatch sessions (unlike the general orphan-detection `fw termlink cleanup` covers)."
+  prevention: "(a) Resolver-side: when a dispatch's checkpoint outcome is classified as 'no new
+    information' N times in a row (e.g. via a structured field in dispatches.jsonl or the task's own
+    checkpoint commits), extend the redispatch interval (exponential backoff) or require an external
+    signal (e.g. a termlink event from the peer session) to re-arm dispatch instead of polling on a
+    flat cadence. (b) Dispatch-side: `fw termlink dispatch` should deregister (or the resolver's
+    post-dispatch hook should `termlink signal SIGTERM` + `termlink clean`) the worker's TermLink
+    session immediately after a successful exit, so idle sessions don't require a human/agent to
+    notice and manually clean up. Neither exists today; this task manually ran `termlink signal
+    SIGTERM` on all 10 + `termlink clean` as a one-off mitigation (not a fix)."
+  blast_radius: any recurring/checkpoint-style task dispatched via `fw termlink dispatch` on a cron
+    cadence while blocked on an external dependency (cross-project peer sessions, human review, etc.)
+  observed: 2026-07-11
+  status: open
+  created: 2026-07-11
+  related_tasks: [T-2523, T-2522]
