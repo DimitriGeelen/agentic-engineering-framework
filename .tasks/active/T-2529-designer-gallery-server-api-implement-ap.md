@@ -5,12 +5,12 @@ name: "designer gallery-server API: implement /api/* endpoints 832 client alread
 description: >
   designer gallery-server API: implement /api/* endpoints 832 client already calls
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/app.py, web/blueprints/designer_api.py, web/blueprints/__init__.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -23,8 +23,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T22:17:43Z
-last_update: '2026-07-10T22:30:09Z'
-date_finished:
+last_update: 2026-07-11T05:33:47Z
+date_finished: 2026-07-11T05:33:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -166,13 +166,14 @@ plus `rendered/<id>.bpmn` (corpus, follow-up). When AEF answers `/api/health` ok
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 # ── gallery-server API live E2E (server must be running with the new blueprint) ──
-u=$(bin/fw watchtower url)
-h=$(curl -sf "$u/api/health" 2>&1); echo "$h" | grep -q '"ok"'
-s=$(curl -sf -X POST "$u/api/save" -H 'Content-Type: application/json' -d '{"id":"t2529-verify","bpmn":"<definitions id=\"x\"/>","png":"","note":"verify"}' 2>&1); echo "$s" | grep -q '"v"'
-l=$(curl -sf "$u/api/list" 2>&1); echo "$l" | grep -q 't2529-verify'
-v=$(curl -sf "$u/api/versions?id=t2529-verify" 2>&1); echo "$v" | grep -q '"v"'
-b=$(curl -sf "$u/api/version?id=t2529-verify&v=1" 2>&1); echo "$b" | grep -q 'definitions'
-bad=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$u/api/save" -H 'Content-Type: application/json' -d '{"id":"BAD ID","bpmn":"<x/>"}'); [ "$bad" = "400" ]
+# NOTE: the gate runs EACH line in a separate shell — no cross-line variables.
+# Every line self-resolves the watchtower URL (never hard-code :3001).
+h=$(curl -sf "$(bin/fw watchtower url)/api/health" 2>&1); echo "$h" | grep -q '"ok"'
+s=$(curl -sf -X POST "$(bin/fw watchtower url)/api/save" -H 'Content-Type: application/json' -d '{"id":"t2529-verify","bpmn":"<definitions id=\"x\"/>","png":"","note":"verify"}' 2>&1); echo "$s" | grep -q '"v"'
+l=$(curl -sf "$(bin/fw watchtower url)/api/list" 2>&1); echo "$l" | grep -q 't2529-verify'
+v=$(curl -sf "$(bin/fw watchtower url)/api/versions?id=t2529-verify" 2>&1); echo "$v" | grep -q '"v"'
+b=$(curl -sf "$(bin/fw watchtower url)/api/version?id=t2529-verify&v=1" 2>&1); echo "$b" | grep -q 'definitions'
+bad=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$(bin/fw watchtower url)/api/save" -H 'Content-Type: application/json' -d '{"id":"BAD ID","bpmn":"<x/>"}'); [ "$bad" = "400" ]
 
 ## RCA
 
@@ -214,6 +215,24 @@ bad=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$u/api/save" -H 'Content-T
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The operator-reported "cannot save to project" gap is closed and live-verified end-to-end
+in a real browser (not curl-proxy). AEF now serves the 8-endpoint gallery-server API that 832's shipped
+0.2.0 client already calls; the save/open/versions buttons light up, and a real diagram saved through the
+client's own flow stores as valid BPMN 2.0. All 9 Agent ACs pass; the one Human AC is a from-the-operator's-
+seat confirmation of exactly that round-trip. Two decisions are worth a glance (CSRF exemption for the
+mutating endpoints; `.context/` runtime store vs a future tracked-artifact promotion) — both documented
+below.
+
+**Evidence:**
+- `web/blueprints/designer_api.py` — 8 endpoints; all pass live curl + the task's `## Verification` gate.
+- Playwright on `:3001/designer`: buttons VISIBLE (were `display:none`), zero console errors, client's own open-project browser lists a saved map "saved · v3" with a loaded `/api/thumb`.
+- Real "investigate" diagram saved through the client → `/api/version` returns `<bpmn:definitions xmlns:bpmn="…/BPMN/20100524/MODEL">` (valid BPMN 2.0).
+- Committed `6f3a7d9dd`, on origin (verified `git ls-remote` == local). Contract + correction durable in `docs/reports/T-2522-…` and relayed to 832 (thread T-175 offsets 6865, 6918).
+
 ## Decisions
 
 ### 2026-07-11 — CSRF exemption for the gallery mutating endpoints
@@ -247,3 +266,20 @@ bad=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$u/api/save" -H 'Content-T
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2529-designer-gallery-server-api-implement-ap.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7d4c9d08
+- **Timestamp:** 2026-07-11T05:33:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — blueprint registered (`web/blueprints/__init__.py`); `bin/fw vendor self` leaves no self-vendor drift (verified: `cmp` clean on app.py/__init__.py/designer_api.py)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/__init__.py in: blueprint registered (`web/blueprints/__init__.py`); `bin/fw vendor self` leaves no self-vendor drift (verified: `cmp` clean on app.py/__init__.py/des`
+
+### 2026-07-11T05:33:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

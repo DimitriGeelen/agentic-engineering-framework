@@ -2193,3 +2193,31 @@ decisions:
     date: 2026-07-06
     task: T-100191
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-316
+    decision: "Surface the F-ORCH retire_when finding to the operator; do NOT auto-retire."
+    scope: project
+    date: 2026-07-07
+    task: T-2510
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-317
+    decision: "exempt `designer_api.*` POSTs (`/api/save`, `/api/delete`) from AEF's CSRF layer (`web/app.py` `csrf_protect`), sibling to the existing `health` + `/search/` exemptions."
+    scope: project
+    date: 2026-07-11
+    task: T-2529
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-318
+    decision: "file-backed store under `.context/designer/projects/<id>/` (meta.json + v<N>.bpmn + v<N>.png), atomic meta writes (L-493)."
+    scope: project
+    date: 2026-07-11
+    task: T-2529
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-319
+    decision: "implement `/api/thumb` (`?id=&v=` → version PNG; `?id=` → latest/corpus tile) and the exact `/api/list` map shape (`latest:{v}`, `openTarget:{kind:\"version\",v}`) after the client's own open-project browser exercised them."
+    scope: project
+    date: 2026-07-11
+    task: T-2529
+    rationale: "Auto-captured from task file on completion"
