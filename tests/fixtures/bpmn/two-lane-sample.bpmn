@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_two_lane_sample"
+                  targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_sample" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_human" name="Human">
+        <bpmn:flowNodeRef>Task_review</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_escalate</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_agent" name="Agent">
+        <bpmn:flowNodeRef>Task_compile</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="Start_1" name="Start"/>
+
+    <!-- userTask in the Human lane: owner=human (lane and type agree) -->
+    <bpmn:userTask id="Task_review" name="Review proposal">
+      <bpmn:extensionElements>
+        <aef:uid>u-review-001</aef:uid>
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+
+    <!-- serviceTask in the Agent lane: owner=agent (lane and type agree) -->
+    <bpmn:serviceTask id="Task_compile" name="Compile report">
+      <bpmn:extensionElements>
+        <aef:uid>u-compile-002</aef:uid>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+    <!-- serviceTask in the Human lane: O-1 conflict — Lane wins (owner=human) + WARN -->
+    <bpmn:serviceTask id="Task_escalate" name="Escalate to operator">
+      <bpmn:extensionElements>
+        <aef:uid>u-escalate-003</aef:uid>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_1" name="Done"/>
+  </bpmn:process>
+</bpmn:definitions>
