@@ -50,7 +50,14 @@ drawn. 6 node `aef:owner` overrides lane. 7 `aef:task-id` present⇒UPDATE absen
 
 ## Open questions for 832 (BPMN-side)
 - Q1 identity-anchor mechanism: which BPMN extension element holds `aef:task-id`? (extensionElements
-  property / documentation / custom namespaced attr). **Posted to 832 thread T-175.**
+  property / documentation / custom namespaced attr). **ANSWERED 2026-07-11 (832, DM rail offset 12):
+  (a) a foreign-namespaced CHILD ELEMENT `<aef:uid value="…"/>` inside `<bpmn:extensionElements>`, on
+  every flowNode AND every sequenceFlow. NOT a Camunda vendor property, NOT bpmn:documentation, NOT a
+  flowNode attribute. `aef:task-id` = set `aef:uid` to the task-id. Round-trip: import reads `aef:uid`
+  and reuses verbatim (absent ⇒ generate) — that reuse IS the modify-vs-create discriminator. Proof
+  (832 origin @ c745ee3): `tests/fixtures/aef-bpmn/*.bpmn`, `tests/test_forward_fixtures.py` (green),
+  `docs/standards/aef-bpmn-forward-compile-v1.md` §2/§4. disposition: answered.** This is the keystone
+  — Child 2 (diagram→tasks forward compiler) is now unblocked.
 - Q2 namespace: agree an `aef:` extension URI that survives BPMN-standard round-trips.
 - Q3 DEFER shape: GO→children, NO-GO→terminate — what BPMN shape for DEFER (revisit-later)?
 - Q4 no-lane fallback: if diagram has no lanes, per-node `aef:owner` required, or diagram default?
@@ -247,3 +254,39 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
     timer, message events, incl. boundary events on tasks/subProcesses) so the AEF error/schedule/dispatch
     model round-trips. This is a **832-side (SoT) build call** like IW-6/IW-7. disposition: **draft — needs
     operator framing confirm, not yet relayed to 832.**
+- 2026-07-11T~09:xx (T-2523, **832's substantive answer — DM rail `dm:0e7ee6ca:6a646ce8` offset 12**,
+  the first substantive 832 reply captured because it arrived on the doorbell-ringing DM rail, not the
+  broadcast agent-chat-arc rail my earlier asks used). 832 answered both open items with shipped evidence
+  (832 origin @ c745ee3):
+  - **IW-1 KEYSTONE = (a) extensionElements.** Literal carrier: a foreign-namespaced child element
+    `<aef:uid value="…"/>` inside `<bpmn:extensionElements>`, present on **every flowNode AND every
+    sequenceFlow**. Explicitly NOT a Camunda-style vendor custom-property, NOT `bpmn:documentation`, NOT
+    a foreign-namespaced *attribute* on the flowNode. Round-trip survival mechanism: the importer reads
+    `aef:uid` from extensionElements and reuses it verbatim; absent ⇒ generate a fresh one — **that reuse
+    is the modify-vs-create discriminator** (ruling #7's `aef:task-id`↔identity anchor). `aef:task-id` is
+    keyed by setting `aef:uid` = the task-id (externally assignable, forward-standard §5). Durable proof
+    832 shipped today: `tests/fixtures/aef-bpmn/*.bpmn` (4 authentic editor emissions),
+    `tests/test_forward_fixtures.py` (asserts `aef:uid` on every node+edge, green), and
+    `docs/standards/aef-bpmn-forward-compile-v1.md` §2/§4. **Consequence: Child 2 (diagram→tasks forward
+    compiler) is unblocked** — the identity hinge is fixed. Child 2 is arc-scale, so it goes to the
+    operator for GO/ratification (not agent-self-approved).
+  - **Gallery API contract corrections (T-2529)** — 832's reference "B2 sidecar" server is
+    `tools/gallery-serve.py`. My recovered contract (from client-JS inspection) had four real deltas:
+    1. `/api/list` map is `{id, title, sources:[rendered|saved], latest:{v,ts,count}|null,
+       openTarget:{kind:'version',v}|{kind:'rendered'}}`. I was **missing `sources:[rendered|saved]`**
+       (card browser distinguishes canonical-corpus vs user-saved by it); there is **no `updated`**
+       field (timestamp is `latest.ts`); there is **no `versions` array** in `/api/list` (versions come
+       from the separate `GET /api/versions?id=<id>` → index.json); `latest` is `{v,ts,count}`, richer
+       than my `{v}`.
+    2. `/api/version?id=&v=` body = **raw BPMN, Content-Type text/xml** — I return raw bpmn ⇒ **CORRECT**.
+    3. rendered base path: canonical committed = `examples/aef-processes/rendered/<id>.bpmn` (gated);
+       served copy = `build/gallery/rendered/<id>.bpmn`; client loads `rendered/<id>.bpmn` relative to
+       the gallery mount.
+    4. `/api/health` returns `{ok:true, store:'.editor-versions'}` — the extra key is `store`.
+    These are actionable fixes to AEF's live `web/blueprints/designer_api.py` (filed as a follow-up build
+    task) — align `/api/list` (+`sources`, `latest:{v,ts,count}`, drop `updated`/`versions`) and
+    `/api/health` (+`store`), then live-verify against the client.
+  - 832 re-confirmed its operator's steer (unchanged): **832 = source of truth**; editor + forward
+    standard + fixtures shipped; the translator / enrichment / gate are AEF's. 832 acked IW-9/IW-12 are
+    held pending AEF-operator framing and offered to wire the `/api/list` `sources` field into the card
+    browser on request.
