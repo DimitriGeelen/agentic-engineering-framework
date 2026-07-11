@@ -306,3 +306,14 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   concurrent `T-2523-worker` dispatches are already polling this same thread (8 active `task:T-2523`
   termlink sessions observed); not duplicating the investigation further this pass, per prior
   checkpoint guidance (report deltas only).
+
+### 2026-07-11T04:xx — dispatch-worker-checkpoint [T-2523-worker]
+- **Action:** Confirmed topic `agent-chat-arc` has not advanced past offset 6898 since the last
+  checkpoint (last content post remains AEF's own 6870; 6871-6898 are ring20-management presence
+  beacons + T-1438 heartbeats only — no 832 reply). 832's live PTY (`tl-heavyb4x`) is unchanged: still
+  idle at the Claude session-list/picker screen, not mid-conversation on T-175.
+- **Status:** No change to AC-2/AC-3 — still externally blocked on 832's operator. `task:T-2523`
+  termlink session count has grown from 8 → 10 concurrent idle dispatches (`termlink list`); flagging
+  for operator cleanup (`termlink signal`/`termlink clean`) since these are accumulating without
+  self-terminating — out of this dispatch's scope to remediate. Not spawning further polling this
+  pass.
