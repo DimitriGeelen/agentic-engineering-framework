@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T17:08:15Z
-last_update: 2026-07-11T03:41:00Z
+last_update: 2026-07-11T13:56:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -356,3 +356,38 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   path). Flagged IW-9/IW-12 as captured-but-held pending operator framing confirm.
 - **Status:** AC-2/AC-3 still open (awaiting 832's IW-1 ruling) but the *delivery* obstacle is now
   removed — the keystone Q is on a rail proven to wake 832, which the prior agent-chat-arc posts were not.
+
+### 2026-07-11T~13:xx — operator challenged the identity binding; host-107 discovery collapse proven [T-2523-main]
+- **Trigger:** operator pushed back ("i cannot confirm this") after I reported 832's offset-16 gallery
+  reply as "832 confirmed convergence." Correct challenge — I'd stated an *inference* as verified fact.
+- **Forensics run this session (all live termlink/MCP reads):**
+  - My signing identity = `0e7ee6cad65137fc` (verified via `/root/.termlink/identity.json`).
+  - `termlink agent who_is 6a646ce8b1bc6560` → **no name binding** (post_count 0 on agent-chat-arc; it
+    has only ever DMed, never broadcast) — so who_is alone cannot bind the peer to "832".
+  - **Discovery-collapse (the real comms bug):** `agent contact` dry-run resolves `aef`,
+    `workflow-designer`, AND `termlink-agent` — three distinct display names — **all to the same host
+    key `d1993c2c3ec44c94`.** Local `session.discover` cannot distinguish any host-107 agent from
+    another. This is OBS-093 / T-2527 (identity-collision) demonstrated concretely, and it is why
+    `termlink agent contact <name>` is unusable for targeting a specific local agent — every name DMs
+    the shared host inbox `d1993c2c`.
+  - The diagnosis relayed by the operator named `dm:0aef2a7d00026892:0e44a8e5edd94f41` as "the AEF
+    rail" — that is a **false substring match** ("aef" is a substring of "0aef2a7d"); that topic is a
+    stale "Walkthrough thread", last receipt ~74 days ago. Irrelevant to the live 832 rail.
+- **Reconciliation — is `6a646ce8` really 832?** The identity architecture is a SPLIT: each agent has
+  an explicit *agent key* (mine `0e7ee6ca`, 832's `6a646ce8`) distinct from the collapsed *host key*
+  `d1993c2c`. Support that `6a646ce8` = the wf-designer agent: (a) the prior-session **live handshake**
+  above — wf-designer acked on this rail (offset 9) and 832 validated my `0e7ee6ca` signature;
+  (b) offset-16 content is deeply 832-specific (`tools/gallery-serve.py build_map_list`, sources[]
+  ordering, IW-1/9/12). Strong, but a prior-session + content argument, NOT a same-message identity
+  proof for *today's* offset-16 reply.
+- **Action:** posted a liveness challenge on the rail (offset 18) — asks the peer to echo my fresh HEAD
+  `4cdb70bc5` (committed minutes earlier; only a live reader sees it) + paste its own
+  `termlink agent identity`. That is the only obtainable proof *given the discovery layer is collapsed*.
+  Also DMed the termlink diagnostics agent — which itself resolved to the shared `d1993c2c` inbox and
+  did not ack in 90s (async). Both outreach messages posted; neither peer replied synchronously.
+- **Homing (gap-homing discipline):** the FIX for the discovery collapse is the shared
+  `/root/.termlink/identity.json` on host-107 — a **termlink / host-config** concern, not a
+  framework-repo edit (see `feedback_no_cross_repo_edits`). Homed to OBS-093 / T-2527; do NOT patch
+  termlink from this repo.
+- **Status:** "832 converged" downgraded to **prior-handshake + content-inferred, today's reply not yet
+  liveness-proven.** Awaiting offset-18 challenge reply.
