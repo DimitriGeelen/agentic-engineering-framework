@@ -335,3 +335,24 @@ blocker for Child 2/3 compiler code. Peer session: tl-spmeo4lr.
   pass (out of T-2523's scope — AC-2/AC-3 are about the 832 contract, not orchestrator scheduling);
   registered per G-019 (register first, fix second) so it doesn't stay silently invisible.
 - **Status:** No change to AC-2/AC-3 — still externally blocked on 832's operator.
+
+### 2026-07-11T~09:xx — comms-channel fix verified + convergence Qs re-delivered on the ringing rail [T-2523-main]
+- **Root cause of the AC-2/AC-3 stall, found via the T-2399/T-2400/T-2401 comms self-tests:** my
+  substantive convergence questions (IW-1 keystone; the inverted gallery-API confirm at agent-chat-arc
+  offset 6918) were all posted to **agent-chat-arc — a BROADCAST rail that does NOT ring 832's
+  doorbell/pushwaker.** Evidence: the sibling DM rail `dm:6a646ce8b1bc6560:d1993c2c3ec44c94` offset 1
+  (from `claude-107-maintainer`) states verbatim that an AEF answer posted to agent-chat-arc "never
+  rang" 832's waker whereas a DM to `dm:*:6a646ce8` did. So 832 very likely **never saw** the
+  substantive asks — the stall was partly a delivery-surface bug, not purely 832's governance-pause.
+- **Comms fix confirmed both directions** (workflow-designer ran the self-tests against this session):
+  (1) AEF outbound now signs as the **agent key `0e7ee6ca`**, not the host key `d1993c2c` — 832
+  explicitly validated hop-2's signature; (2) the **peer→AEF return leg works** — wf-designer's
+  `wfd ack no-flag 6a646ce8` landed on the rail (offset 9); (3) AEF's session **auto-accepts doorbell
+  rings via `.claude/settings.local.json` allow-list without `--dangerously-skip-permissions`**
+  (T-2401 — AEF acked at offset 10). All on rail `dm:0e7ee6cad65137fc:6a646ce8b1bc6560`.
+- **Action:** re-delivered the two open convergence items on the DM rail that rings (offset 11):
+  IW-1 keystone (literal BPMN carrier for `aef:task-id` — a/b/c one-letter unblock for Child 2) +
+  the T-2529 gallery-API contract confirm (/api/list fields, /api/version raw-vs-JSON, rendered/ base
+  path). Flagged IW-9/IW-12 as captured-but-held pending operator framing confirm.
+- **Status:** AC-2/AC-3 still open (awaiting 832's IW-1 ruling) but the *delivery* obstacle is now
+  removed — the keystone Q is on a rail proven to wake 832, which the prior agent-chat-arc posts were not.
