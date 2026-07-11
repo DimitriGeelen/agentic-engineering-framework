@@ -219,3 +219,31 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
   the literal Q1-Q5 text or confirm 1:1 mapping to the strawman sections, so AC-3's disposition flips can be
   made on real text rather than inferred from "converged." Flagging the decomposition dossier to the
   operator for review rather than self-approving scope.
+- 2026-07-11T05:xx (T-2523, **post-compaction recovery of two straggler design-review findings, IW-9 &
+  IW-12**). ⚠ **Fidelity caveat (extract-don't-fabricate):** these two items were noted during the same
+  operator design-review pass that produced IW-6/IW-7/IW-8, but their detail was lost to a context
+  compaction before capture — the text below is a **post-hoc reconstruction from terse session notes**,
+  articulated from AEF-domain knowledge, **not verbatim from the operator**. Framing needs operator
+  confirmation before relay to 832 (NOT yet fired — unlike IW-6/7/8, to avoid firing a garbled version of
+  the operator's own observation outward). There is a **numbering gap: IW-10 and IW-11 were not recorded**
+  and may or may not have existed — flagged honestly rather than back-filled.
+  - **IW-9 — authority over a node is triple-encoded (`workflow_type` ⊕ Lane ⊕ `owner`).** Extends IW-7.
+    IW-7 caught `owner`↔Lane double-encoding; IW-9 observes a *third* carrier: `workflow_type` itself
+    signals authority (an `inception` node is a human go/no-go decision point; `build`/`test`/`refactor`
+    are agent-executable). So "who has authority here" is smeared across three fields that can disagree
+    (e.g. `workflow_type: build` + Lane `human` + `owner: agent`). **Reconstructed proposal direction:**
+    one authority-of-record axis. Lane = *who performs* (owner:human|agent ⇔ two lanes, per IW-7);
+    `workflow_type` = *what kind of work* (which implies the decision-authority for inception vs execution
+    intrinsically, not as a separate owner override). Collapse the redundant third encoding rather than
+    add reconciliation rules for three-way drift. disposition: **draft — needs operator framing confirm,
+    not yet relayed to 832.**
+  - **IW-12 — the 0.2.0 event palette has no error / timer / message events (only plain start/end).**
+    AEF has first-class concepts that map naturally onto BPMN *typed* events, and the palette can't
+    express any of them: failure/healing (`status: issues` → BPMN **error / boundary-error event**),
+    horizon + cron scheduling (→ **timer event**), dispatch / pickup / bus hand-offs (→ **message event**).
+    Without typed events, an AEF workflow's error paths, scheduled triggers, and cross-agent hand-offs are
+    undiagrammable — they'd have to be flattened into plain tasks, losing the exact semantics the mapping
+    contract is meant to preserve. **Reconstructed proposal direction:** 832-side palette addition (error,
+    timer, message events, incl. boundary events on tasks/subProcesses) so the AEF error/schedule/dispatch
+    model round-trips. This is a **832-side (SoT) build call** like IW-6/IW-7. disposition: **draft — needs
+    operator framing confirm, not yet relayed to 832.**
