@@ -6,12 +6,12 @@ description: >
   align designer gallery API to 832 authoritative contract (sources, latest.ts/count,
   health.store)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/designer_api.py]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-11T12:09:37Z
-last_update: '2026-07-11T12:15:08Z'
-date_finished:
+last_update: 2026-07-11T12:22:40Z
+date_finished: 2026-07-11T12:22:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -165,6 +165,41 @@ out=$(curl -sf "$(bin/fw watchtower url)/api/list"); echo "$out" | grep -q '"cou
 out=$(curl -sf "$(bin/fw watchtower url)/api/list"); if echo "$out" | grep -q '"updated"'; then exit 1; fi
 cmp -s web/blueprints/designer_api.py .agentic-framework/web/blueprints/designer_api.py
 
+## Recommendation
+
+**Recommendation:** GO (partial-complete — one [REVIEW] Human AC remains).
+
+**Rationale:** The gallery API is aligned to 832's authoritative `tools/gallery-serve.py` contract
+(delivered on the T-2523 DM rail, offset 12) and live-verified end-to-end in a real browser — not by
+curl alone. A fresh save round-tripped through the client's own Save-to-project flow into valid BPMN 2.0
++ a real 320×136 png thumbnail, and the card browser rendered "saved · v1" from the new `sources` +
+`latest.v` fields. All 7 Agent ACs pass.
+
+**Evidence:**
+- `/api/list` now `{id,title,sources:["saved"],latest:{v,ts,count},openTarget}` — verified via curl + client parse
+- `/api/health` → `{"ok":true,"store":".context/designer/projects"}`; `/api/version` → `Content-Type: text/xml`
+- Fresh save `t2530-verify`: `/api/thumb?id=t2530-verify&v=1` → 200 image/png; `img.complete=true`, 320×136
+- Only console errors are pre-existing/unrelated (favicon; stale `t2529-verify` v3 missing-png → graceful ▦)
+- Vendored copy `cmp`-clean; committed 8e977b66c
+- **832 convergence bonus:** IW-1 keystone answered ((a) extensionElements `<aef:uid>`) → Child 2
+  (diagram→tasks forward compiler) is unblocked and awaiting operator GO (arc-scale, not self-approved)
+
+**Human AC pending:** operator confirms the save→open round-trip in their own browser.
+
+## Decisions
+
+### 2026-07-11 — gallery contract alignment choices
+- **`sources` for saved-only store:** emit `sources:["saved"]` per map. **Why:** AEF's store holds only
+  user-saved maps (no rendered corpus yet); 832's card browser keys corpus-vs-saved off this field.
+  Confirmed the semantics with 832 on the rail (saved-only ⇒ `["saved"]`). When the rendered corpus
+  lands, maps gain `["rendered"]`/both.
+- **`/api/health` `store` value = own path, not 832's literal:** report `.context/designer/projects`
+  (AEF's actual store) rather than echoing 832's `.editor-versions`. **Why:** the field is diagnostic;
+  the client gates on `ok:true`. Reporting a false path would be misleading. **Rejected:** echoing
+  `.editor-versions` verbatim (dishonest about AEF's real store).
+- **`/api/version` `text/xml` not `application/xml`:** aligned to 832's exact reference MIME even though
+  both parse identically client-side — this task's purpose is contract exactness.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -232,3 +267,20 @@ cmp -s web/blueprints/designer_api.py .agentic-framework/web/blueprints/designer
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2530-align-designer-gallery-api-to-832-author.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e20071f5
+- **Timestamp:** 2026-07-11T12:22:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 35
+     - evidence: `out=$(curl -sf "$(bin/fw watchtower url)/api/list"); if echo "$out" | grep -q '"updated"'; then exit 1; fi`
+
+### 2026-07-11T12:22:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
