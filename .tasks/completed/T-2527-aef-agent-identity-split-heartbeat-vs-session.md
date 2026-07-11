@@ -11,16 +11,16 @@ description: >
   sit
   undelivered forever. Silent Reliability-directive violation. Should we incept structural
   remediation?
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: [termlink, identity, reliability, delivery-gap]
 components: []
 related_tasks: []
 created: 2026-07-10T21:40:00Z
-last_update: '2026-07-10T21:45:11Z'
-date_finished:
+last_update: 2026-07-11T13:54:19Z
+date_finished: 2026-07-11T13:54:19Z
 cost_estimate_proposed:
   - ts: '2026-07-10T21:45:07Z'
     estimator: bvp-estimator-v1-heuristic
@@ -96,6 +96,29 @@ receiver). Blast radius = session-wide + every peer that DMs AEF.
   - rationale: fix-space is a real design choice (wrapper vs hook vs termlink-side);
     needs one scoped decision before any build.
 
+## Decision
+
+**Decision**: GO
+
+**Rationale**: Recommendation: GO (incept)
+
+Rationale: This is a verified, structural, silently-failing delivery gap with
+session-wide blast radius — squarely a Reliability-directive concern. It is NOT a
+confidence hedge: the mechanism is proven (operator-verified topic inspection), the
+remediation space is a genuine design choice (three candidate legs, an AEF/TermLink
+homing question), and it cost real convergence delay this session. That is exactly the
+"one problem, one go/no-go, real fix-space to explore" shape an inception exists for.
+Scope it as one question (IW-1). Do NOT fold it into the designer arc — it is a TermLink
+identity concern that happened to surface there.
+
+Evidence:
+- Correct topic `dm:0e7ee6cad65137fc:6a646ce8b1bc6560` does not exist (never addressed).
+- Live topic `dm:…:d1993c2c3ec44c94`, sender `d1993c2c` (host key), waker on `0e7ee6ca`.
+- 0.2.0 file + offset-21 proposal delivered-but-unrung; only manual `file_receive` surfaced them.
+- T-2292 gave distinct per-agent fps but only wired the heartbeat leg.
+
+**Date**: 2026-07-11T13:54:18Z
+
 ## Recommendation
 
 **Recommendation:** GO (incept)
@@ -114,3 +137,56 @@ identity concern that happened to surface there.
 - Live topic `dm:…:d1993c2c3ec44c94`, sender `d1993c2c` (host key), waker on `0e7ee6ca`.
 - 0.2.0 file + offset-21 proposal delivered-but-unrung; only manual `file_receive` surfaced them.
 - T-2292 gave distinct per-agent fps but only wired the heartbeat leg.
+
+### 2026-07-11T13:54:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO (incept)
+
+Rationale: This is a verified, structural, silently-failing delivery gap with
+session-wide blast radius — squarely a Reliability-directive concern. It is NOT a
+confidence hedge: the mechanism is proven (operator-verified topic inspection), the
+remediation space is a genuine design choice (three candidate legs, an AEF/TermLink
+homing question), and it cost real convergence delay this session. That is exactly the
+"one problem, one go/no-go, real fix-space to explore" shape an inception exists for.
+Scope it as one question (IW-1). Do NOT fold it into the designer arc — it is a TermLink
+identity concern that happened to surface there.
+
+Evidence:
+- Correct topic `dm:0e7ee6cad65137fc:6a646ce8b1bc6560` does not exist (never addressed).
+- Live topic `dm:…:d1993c2c3ec44c94`, sender `d1993c2c` (host key), waker on `0e7ee6ca`.
+- 0.2.0 file + offset-21 proposal delivered-but-unrung; only manual `file_receive` surfaced them.
+- T-2292 gave distinct per-agent fps but only wired the heartbeat leg.
+
+### 2026-07-11T13:54:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8b64444d
+- **Timestamp:** 2026-07-11T13:54:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1: no `disposition:` line`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-5687da7a
+- **Timestamp:** 2026-07-11T13:54:20Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2292` | task | ✓ pass |
+
+### 2026-07-11T13:54:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
