@@ -8,17 +8,21 @@ only reveals its save / open-project / versions buttons when a write-capable
 404s and the buttons stay hidden — that is the operator's "cannot save to
 project" (T-2528 GO). This blueprint is the AEF side of that contract.
 
-Contract recovered verbatim from the shipped client; full table in
-``docs/reports/T-2522-bpmn-aef-mapping-contract.md`` (IW-8-CORRECTED):
+Contract: recovered from the shipped client (T-2529), then corrected against 832's
+authoritative reference server ``tools/gallery-serve.py`` (T-2523 rail offset 12,
+T-2530). Full table in ``docs/reports/T-2522-bpmn-aef-mapping-contract.md``:
 
-    GET  /api/health                      -> {"ok": true}
-    GET  /api/list                        -> {"maps": [{id, title, v, updated, versions}]}
+    GET  /api/health                      -> {"ok": true, "store": "<store-id>"}
+    GET  /api/list                        -> {"maps": [{id, title, sources:[saved|rendered],
+                                                         latest:{v,ts,count}, openTarget:{kind,v}}]}
     POST /api/save   {id,bpmn,png,note}   -> {"ok": true, "v": N}   (versioned)
     GET  /api/versions?id=<id>            -> [{"v": N, "note", "ts"}]  (desc client-side)
-    GET  /api/version?id=<id>&v=<v>       -> bpmn (application/xml)
+    GET  /api/version?id=<id>&v=<v>       -> bpmn (text/xml)
+    GET  /api/thumb?id=<id>&v=<v>         -> png bytes (decoded from stored data-url)
     POST /api/delete {id,scope,v}         -> {"ok": true}
 
     id constraint: ^[a-z0-9][a-z0-9_-]*$
+    /api/list: NO `updated` (use latest.ts); NO `versions` array (use /api/versions).
 
 Store (runtime data plane; NOT the vendored build, which stays read-only):
     .context/designer/projects/<id>/meta.json   {id,title,latest,updated,versions:[{v,note,ts}]}
@@ -85,8 +89,14 @@ def _err(msg, code=400):
 
 @bp.route("/api/health")
 def health():
-    """Progressive-enhancement gate — presence + {ok:true} lights up the client."""
-    return _ok()
+    """Progressive-enhancement gate — presence + {ok:true} lights up the client.
+
+    Authoritative contract carries a diagnostic `store` key (832 ref server, T-2523
+    rail offset 12: `{ok:true, store:'.editor-versions'}`). AEF reports its own store
+    identifier honestly rather than echoing 832's literal — the client gates on
+    `ok:true`; `store` is diagnostic (T-2530).
+    """
+    return _ok(store=".context/designer/projects")
 
 
 @bp.route("/api/save", methods=["POST"])
@@ -128,16 +138,25 @@ def list_maps():
             latest_v = int(m.get("latest", 0))
             if latest_v < 1:
                 continue  # no versions on disk — skip empty stubs
-            # Shape the client expects (recovered from the 0.2.0 card browser):
-            #   saved = m.latest && m.openTarget && m.openTarget.kind === 'version'
-            #   thumb = /api/thumb?id=&v=m.latest.v ; open via m.openTarget.v
+            # Authoritative shape (832 ref server tools/gallery-serve.py, T-2523 rail offset 12):
+            #   {id, title, sources:[rendered|saved], latest:{v,ts,count}, openTarget:{kind:'version',v}}
+            #   - sources distinguishes canonical-corpus ("rendered") from user-saved ("saved");
+            #     AEF's store holds only user-saved maps for now → ["saved"] (T-2530).
+            #   - latest is {v,ts,count}, NOT scalar {v}; ts = latest version's ts, count = #versions.
+            #   - NO `updated` key (timestamp is latest.ts); NO `versions` array (see /api/versions).
+            vlist = m.get("versions", [])
+            latest_entry = next((x for x in vlist if x.get("v") == latest_v), None)
+            latest_ts = int(
+                latest_entry["ts"]
+                if latest_entry and "ts" in latest_entry
+                else m.get("updated", 0)
+            )
             maps.append({
                 "id": m["id"],
                 "title": m.get("title", m["id"]),
-                "updated": int(m.get("updated", 0)),
-                "latest": {"v": latest_v},
+                "sources": ["saved"],
+                "latest": {"v": latest_v, "ts": latest_ts, "count": len(vlist)},
                 "openTarget": {"kind": "version", "v": latest_v},
-                "versions": len(m.get("versions", [])),
             })
     return jsonify({"maps": maps})
 
@@ -199,7 +218,8 @@ def version():
     p = _map_dir(i) / f"v{vn}.bpmn"
     if not p.is_file():
         return _err("not found", 404)
-    return Response(p.read_text(), mimetype="application/xml")
+    # text/xml to exactly match 832's reference gallery-serve.py contract (T-2530).
+    return Response(p.read_text(), mimetype="text/xml")
 
 
 @bp.route("/api/delete", methods=["POST"])
