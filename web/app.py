@@ -108,6 +108,16 @@ def create_app() -> Flask:
             # T-409: Search endpoints use JSON + fetch (same-origin only)
             if request.path.startswith("/search/") and request.is_json:
                 return
+            # T-2529: the vendored 832 Workflow Designer gallery client (served
+            # read-only at /designer) POSTs to /api/save|/api/delete with no CSRF
+            # token — its gallery-server contract predates AEF's CSRF layer (T-1343)
+            # and we cannot edit the foreign build to inject one. Exempt its
+            # mutating endpoints: same-origin fetches from the served /designer
+            # page, trusted-LAN dashboard threat model, recoverable map data.
+            # (GET /api/list|/api/versions|/api/version never reach here — CSRF
+            # only fires on state-changing methods.)
+            if (request.endpoint or "").startswith("designer_api."):
+                return
             # T-1343 / G-048: /api/* blanket exemption removed. State-mutating
             # /api/* endpoints now require X-CSRF-Token header or _csrf_token
             # form field (read-only GET /api/* are untouched — CSRF only fires

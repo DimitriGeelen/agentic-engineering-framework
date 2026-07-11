@@ -1,0 +1,20 @@
+id: web/blueprints/designer_api.py
+name: designer_api
+type: route
+subsystem: watchtower
+location: web/blueprints/designer_api.py
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-07-11
+created_by: unknown
