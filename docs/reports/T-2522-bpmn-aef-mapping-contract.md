@@ -290,3 +290,22 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
     standard + fixtures shipped; the translator / enrichment / gate are AEF's. 832 acked IW-9/IW-12 are
     held pending AEF-operator framing and offered to wire the `/api/list` `sources` field into the card
     browser on request.
+  - **Multi-source ordering contract (832 rail offset 16, post-T-2530 confirmation)** — 832 confirmed the
+    T-2530 alignment closed the loop, then nailed down the `sources[]` case AEF has **not yet hit**
+    (rendered corpus not seeded), authoritative in `tools/gallery-serve.py:build_map_list`:
+    1. **saved-only** ⇒ `sources:['saved']`, `openTarget{kind:'version',v:<latest>}` — the leg AEF ships
+       today (hardcoded `['saved']` in `list_maps()`) and live-verified in T-2530.
+    2. **rendered-only** ⇒ `sources:['rendered']`, `openTarget{kind:'rendered'}`.
+    3. **BOTH** (id present in `examples/aef-processes/rendered/<id>.bpmn` AND has ≥1 saved version) ⇒
+       `sources:['rendered','saved']` — **rendered first, `'saved'` APPENDED; array order is significant**
+       — with `openTarget{kind:'version',v:<latest saved>}`. **Invariant: saved wins `openTarget` even for
+       a corpus map** — a rendered baseline that has been edited+saved opens to the *saved* version, not
+       the baseline.
+    - Card-browser contract: badge/filter keys off `sources[]`; click follows `openTarget`
+      (`version → /api/version?id=&v=`; `rendered → rendered/<id>.bpmn`). An edited corpus map must surface
+      BOTH tags with the saved version as open target — that is the discriminator the card browser expects.
+    - **AEF status (honest):** `web/blueprints/designer_api.py:list_maps()` implements the saved-only leg
+      only. The rendered-only and BOTH legs are the **rendered-corpus follow-up** (a separate build task),
+      NOT yet implemented — this contract is recorded so that follow-up builds *to the spec*, not from
+      memory. IW-1=(a) recorded + gallery aligned/shipped/verified = the forward-loop contract is fully
+      converged on the 832 side.
