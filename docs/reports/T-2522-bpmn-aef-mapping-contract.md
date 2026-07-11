@@ -242,8 +242,7 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
     one authority-of-record axis. Lane = *who performs* (owner:human|agent ⇔ two lanes, per IW-7);
     `workflow_type` = *what kind of work* (which implies the decision-authority for inception vs execution
     intrinsically, not as a separate owner override). Collapse the redundant third encoding rather than
-    add reconciliation rules for three-way drift. disposition: **draft — needs operator framing confirm,
-    not yet relayed to 832.**
+    add reconciliation rules for three-way drift. disposition: **relayed to 832 (rail offset 20, 2026-07-11) as reconstructed AEF finding — awaiting 832 BPMN-side read; framing still subject to operator refinement.**
   - **IW-12 — the 0.2.0 event palette has no error / timer / message events (only plain start/end).**
     AEF has first-class concepts that map naturally onto BPMN *typed* events, and the palette can't
     express any of them: failure/healing (`status: issues` → BPMN **error / boundary-error event**),
@@ -252,8 +251,9 @@ for the AEF half is complete, so DEFER was a confidence hedge, not an evidence g
     undiagrammable — they'd have to be flattened into plain tasks, losing the exact semantics the mapping
     contract is meant to preserve. **Reconstructed proposal direction:** 832-side palette addition (error,
     timer, message events, incl. boundary events on tasks/subProcesses) so the AEF error/schedule/dispatch
-    model round-trips. This is a **832-side (SoT) build call** like IW-6/IW-7. disposition: **draft — needs
-    operator framing confirm, not yet relayed to 832.**
+    model round-trips. This is a **832-side (SoT) build call** like IW-6/IW-7. disposition: **relayed to
+    832 (rail offset 20, 2026-07-11) as reconstructed AEF finding — awaiting 832 BPMN-side read; framing
+    still subject to operator refinement.**
 - 2026-07-11T~09:xx (T-2523, **832's substantive answer — DM rail `dm:0e7ee6ca:6a646ce8` offset 12**,
   the first substantive 832 reply captured because it arrived on the doorbell-ringing DM rail, not the
   broadcast agent-chat-arc rail my earlier asks used). 832 answered both open items with shipped evidence
