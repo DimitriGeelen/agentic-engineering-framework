@@ -3833,3 +3833,10 @@ X'` returning empty group."
   date: 2026-07-12
   context: Added via context agent
   application: TBD
+- id: L-501
+  learning: "Cross-validate every cross-project serialization contract against the PEER's real artifact before declaring conformance. A self-authored twin fixture proves only internal consistency — it cannot falsify the assumption it encodes. T-2531 bpmn compiler passed 100% of tests against AEF-authored fixtures that used <aef:uid>text</aef:uid>, but 832's real corpus uses <aef:uid value='X'/> (attribute) — so the compiler could not read a single real uid until T-2535 validated against 832's byte-exact canonical file (sha 093858). Same class as testing a mock against the mock."
+  source: P-001
+  task: T-2536
+  date: 2026-07-12
+  context: Added via context agent
+  application: TBD

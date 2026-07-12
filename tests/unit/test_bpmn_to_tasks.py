@@ -22,6 +22,12 @@ FIXTURE_INCEPTION = os.path.join(
 FIXTURE_PLAIN = os.path.join(
     REPO_ROOT, "tests", "fixtures", "bpmn", "plain-composite-sample.bpmn"
 )
+# 832's byte-exact canonical inception fixture (delivered over the DM rail, T-193).
+# Uses the REAL aef: namespace URI + the attribute uid form <aef:uid value="..."/>.
+FIXTURE_CANONICAL = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "inception-gonogo-canonical.bpmn"
+)
+CANONICAL_SHA256 = "093858400716a0c5dd4e6676ad96b1564e47980527a15028fd08242df1c7041e"
 
 
 def _by_uid(skeletons):
@@ -162,3 +168,43 @@ def test_plain_composite_not_emitted_as_inception():
     assert "u-gather-9" not in by_uid
     assert set(by_uid) == {"u-review-9"}
     assert by_uid["u-review-9"]["workflow_type"] == "build"
+
+
+# ── T-2536: uid attribute serialization (832 canonical corpus) ───────────────
+
+def test_canonical_fixture_byte_guard():
+    """The vendored canonical fixture is byte-exact with 832's delivery (sha256 guard)."""
+    import hashlib
+
+    with open(FIXTURE_CANONICAL, "rb") as fh:
+        digest = hashlib.sha256(fh.read()).hexdigest()
+    assert digest == CANONICAL_SHA256, "canonical fixture mutated — re-fetch from 832 rail"
+
+
+def test_uid_read_from_value_attribute():
+    """832 serializes uid as <aef:uid value="X"/> (attribute), not text — must resolve X.
+
+    Regression for T-2536: the attribute form was silently missed, so every node in
+    832's real corpus fell back to its node id (hum_1_inception instead of n_inception).
+    """
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_CANONICAL)
+    by_uid = _by_uid(skeletons)
+    assert "n_inception" in by_uid, "uid attribute form not read"
+    assert "hum_1_inception" not in by_uid, "fell back to node id — attribute form missed"
+    assert not any("no aef:uid" in w for w in warnings)
+
+
+def test_canonical_full_parity():
+    """832's canonical inception fixture compiles to the same shape as the AEF twin."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_CANONICAL)
+    by_uid = _by_uid(skeletons)
+    node = by_uid["n_inception"]
+    assert node["workflow_type"] == "inception"
+    assert node["owner"] == "human"  # from <aef:laneMeta authority="sovereignty">
+
+
+def test_text_form_uid_still_resolves():
+    """Regression: the text-content uid form (AEF twin fixtures) still works."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)  # two-lane uses <aef:uid>text</aef:uid>
+    by_uid = _by_uid(skeletons)
+    assert "u-review-001" in by_uid

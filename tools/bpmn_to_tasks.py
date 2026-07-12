@@ -82,12 +82,32 @@ def _lane_owner(lane_name: str) -> str | None:
 
 
 def _find_uid(node: ET.Element) -> str | None:
-    """Return the aef:uid text from a node's <extensionElements>, matched by local name."""
+    """Return the aef:uid from a node's <extensionElements>, matched by local name.
+
+    Two serializations are supported (T-2536 — cross-validation against 832's real
+    corpus showed the ATTRIBUTE form is what ships; the text form was an AEF-twin
+    assumption that silently masked the mismatch):
+      - attribute (832 canonical): <aef:uid value="n_inception"/>
+      - text:                       <aef:uid>n_inception</aef:uid>
+    The `value` attribute is matched namespace-agnostically for robustness.
+    """
     for ext in node:
         if _local(ext.tag) != "extensionElements":
             continue
         for child in ext.iter():
-            if _local(child.tag) == "uid" and (child.text or "").strip():
+            if _local(child.tag) != "uid":
+                continue
+            # Attribute form (832 canonical) takes precedence.
+            v = child.get("value")
+            if v is None:
+                for k, val in child.attrib.items():
+                    if _local(k) == "value":
+                        v = val
+                        break
+            if v and v.strip():
+                return v.strip()
+            # Text form (AEF twin fixtures).
+            if (child.text or "").strip():
                 return child.text.strip()
     return None
 
