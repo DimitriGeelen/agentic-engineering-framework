@@ -42,6 +42,15 @@ with 832's real `aef:` namespace URI when the vendored corpus lands.
   `inception-gonogo-sample.bpmn` (AEF twin of 832's `inception-gonogo.bpmn`), negative
   `plain-composite-sample.bpmn`. Correction from the offset-30 guess: the marker is
   `workflowType`, NOT `scopeOf` (scopeOf is the T-081 composition back-ref).
-- **Follow-up:** byte-level cross-validation against 832's canonical `inception-gonogo.bpmn`
-  (transfer to be re-sent); write-out mode (emit real `.tasks/` files, not stdout);
-  real-corpus validation once 832's 24-map fixture drop is received.
+- **Slice 3 cross-validation (T-2535, done):** byte-exact against 832's canonical
+  `inception-gonogo.bpmn` (positive, sha `093858…`) and `resume-status.bpmn` (negative,
+  sha `7b15f3e0…`), both delivered inline over the DM rail. This caught the uid-attribute
+  bug (T-2536): 832 serializes uid as `<aef:uid value="X"/>`, not text content.
+- **O-3 fail-fast (T-2537, done):** O-3 graduated to v1.1 (832 T-195, rail offset 47) as
+  MUST + machine-checkable G-3 — an inception's go/no-go boundary MUST be sovereignty-laned.
+  A mis-laned inception now raises `MalformedInceptionError` (CLI exit 3, actionable ERROR),
+  superseding the pre-graduation force-human+WARN. A name-only "Human" lane (no laneMeta)
+  is accepted with a conformance WARN (pre-laneMeta compat). Fixtures:
+  `inception-mislaned-sample.bpmn` (raises), `inception-nameonly-lane-sample.bpmn` (warn).
+- **Follow-up:** write-out mode (emit real `.tasks/` files, not stdout); real-corpus
+  breadth validation descoped (discriminator proven both ways against 832's real bytes).
