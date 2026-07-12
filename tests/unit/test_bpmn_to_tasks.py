@@ -22,6 +22,14 @@ FIXTURE_INCEPTION = os.path.join(
 FIXTURE_PLAIN = os.path.join(
     REPO_ROOT, "tests", "fixtures", "bpmn", "plain-composite-sample.bpmn"
 )
+# T-2537: inception marker in a NON-sovereignty lane -> malformed -> fail fast.
+FIXTURE_MISLANED = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "inception-mislaned-sample.bpmn"
+)
+# T-2537: inception in a NAME-ONLY human lane (no laneMeta) -> accepted + WARN.
+FIXTURE_NAMEONLY = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "inception-nameonly-lane-sample.bpmn"
+)
 # 832's byte-exact canonical inception fixture (delivered over the DM rail, T-193).
 # Uses the REAL aef: namespace URI + the attribute uid form <aef:uid value="..."/>.
 FIXTURE_CANONICAL = os.path.join(
@@ -227,6 +235,49 @@ def test_resume_status_negative_byte_guard():
     with open(FIXTURE_RESUME_STATUS, "rb") as fh:
         digest = hashlib.sha256(fh.read()).hexdigest()
     assert digest == RESUME_STATUS_SHA256, "negative fixture mutated — re-fetch from 832 rail"
+
+
+# ── T-2537: O-3 graduated — fail fast on a mis-laned inception ───────────────
+
+def test_mislaned_inception_fails_fast():
+    """An inception subProcess in an initiative/agent lane raises (O-3 v1.1, G-3).
+
+    Supersedes the pre-graduation force-human+WARN: a sovereign go/no-go in a
+    non-sovereign lane is a structural defect, not a presentational one (contrast O-1).
+    """
+    import pytest
+
+    with pytest.raises(bpmn_to_tasks.MalformedInceptionError) as exc:
+        bpmn_to_tasks.parse_bpmn(FIXTURE_MISLANED)
+    # The error is actionable: names the node and points at the fix.
+    assert "sub_incept" in str(exc.value)
+    assert "sovereignty" in str(exc.value)
+
+
+def test_mislaned_inception_cli_exits_nonzero(capsys):
+    """The CLI refuses a malformed inception with a non-zero exit + stderr ERROR."""
+    rc = bpmn_to_tasks.main(["bpmn_to_tasks.py", FIXTURE_MISLANED])
+    assert rc != 0
+    err = capsys.readouterr().err
+    assert "ERROR" in err
+    assert "sub_incept" in err
+
+
+def test_valid_sovereignty_inception_still_compiles():
+    """Regression: a sovereignty-laned inception is unchanged — no raise, owner human."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_CANONICAL)
+    by_uid = _by_uid(skeletons)
+    assert by_uid["n_inception"]["owner"] == "human"
+    assert by_uid["n_inception"]["workflow_type"] == "inception"
+
+
+def test_nameonly_human_lane_accepted_with_warning():
+    """A name-only 'Human' lane (no laneMeta authority) is accepted + warned, not failed."""
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_NAMEONLY)
+    by_uid = _by_uid(skeletons)
+    assert by_uid["u-incept-nameonly"]["owner"] == "human"
+    assert by_uid["u-incept-nameonly"]["workflow_type"] == "inception"
+    assert any("NAME only" in w for w in warnings)
 
 
 def test_canonical_negative_frw_gather_not_inception():

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AEF slice-3 / T-2537 COMPAT fixture: an inception in a NAME-ONLY human lane.
+
+  sub_incept bears the inception marker and sits in a lane named "Human" but with NO
+  <aef:laneMeta authority="sovereignty"> (pre-laneMeta-style diagram). Per T-2537 the
+  compiler ACCEPTS this (owner=human via the lane-name heuristic) and emits a conformance
+  WARN nudging the author to add the authority-of-record — it does NOT fail fast. This is
+  the antifragile subset: only an affirmatively non-human lane (initiative/agent, or no
+  human signal) is malformed. Contrast inception-mislaned-sample.bpmn (initiative lane →
+  raises).
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="urn:aef:workflow-designer"
+                  id="defs_nameonly_inception"
+                  targetNamespace="urn:aef:sample">
+  <bpmn:process id="proc_1" isExecutable="false">
+    <bpmn:laneSet id="lanes_1">
+      <bpmn:lane id="lane_human" name="Human">
+        <bpmn:flowNodeRef>sub_incept</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="start_1">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:subProcess id="sub_incept" name="Should we build X? (name-only lane)">
+      <bpmn:extensionElements>
+        <aef:uid value="u-incept-nameonly"/>
+        <aef:meta workflowType="inception"/>
+        <aef:constituents>
+          <aef:constituent id="c1" name="Gather evidence" ref="u-gather"/>
+          <aef:constituent id="c2" name="Record decision" ref="u-decide"/>
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:endEvent id="end_1">
+      <bpmn:incoming>flow_2</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_1" targetRef="sub_incept"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="sub_incept" targetRef="end_1"/>
+  </bpmn:process>
+</bpmn:definitions>

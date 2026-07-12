@@ -24,10 +24,13 @@ Slice 3 (T-2534): inception subProcess mapping. A <subProcess> bearing
 and owner:human. The go/no-go is IMPLIED at the boundary (ratified G-3) — phase-1
 collapsed subProcesses carry NO child gateway, so we synthesize the decision from the
 marker, never by parsing a child <exclusiveGateway>. Owner comes from the lane's
-authority-of-record (<aef:laneMeta authority="sovereignty"> ⇒ human); an inception is a
-sovereign decision, so owner is forced human even if mis-laned (warn). The subProcess's
-<aef:constituents> steps surface as an AC-seed comment. (Contract: 832 rail offset
-32/34; scopeOf is the T-081 composition back-ref, NOT the inception signal.)
+authority-of-record (<aef:laneMeta authority="sovereignty"> ⇒ human). Per O-3 (graduated
+v1.1, 832 T-195, rail offset 47), an inception's go/no-go boundary MUST be
+sovereignty-laned: a mis-laned inception is malformed and the compiler FAILS FAST
+(MalformedInceptionError) rather than silently forcing owner=human (the pre-graduation
+interim, T-2537). The subProcess's <aef:constituents> steps surface as an AC-seed comment.
+(Contract: 832 rail offset 32/34; scopeOf is the T-081 composition back-ref, NOT the
+inception signal.)
 
 Scope note: parse one .bpmn, extract task nodes + inception subProcesses + aef:uid +
 lane, emit valid AEF task-skeleton frontmatter to stdout. Reverse direction
@@ -64,6 +67,32 @@ INCEPTION_WORKFLOW_TYPE = "inception"
 # Lane authority-of-record (aef:laneMeta authority=...) -> owner. Explicit and
 # authoritative; preferred over the lane-name heuristic in _lane_owner.
 AUTHORITY_OWNER = {"sovereignty": "human", "initiative": "agent"}
+
+
+class MalformedInceptionError(ValueError):
+    """An inception subProcess is not sovereignty(human)-laned (O-3 / G-3, v1.1).
+
+    Graduated 2026-07-12 (832 T-195, rail offset 47; Dimitri sovereign): an inception's
+    go/no-go boundary MUST sit in a sovereignty lane. This is machine-checkable G-3 — a
+    mis-laned inception is a structural defect the diagram author must fix, so the
+    compiler fails fast rather than silently forcing owner=human (the pre-graduation
+    interim behaviour, rail offset 39). Distinct from O-1 (task-type vs lane is
+    presentational → lane wins + warn); a sovereign decision in a non-sovereign lane is
+    structural, not presentational.
+    """
+
+    def __init__(self, node_id: str, authority: str | None, lane_name: str | None) -> None:
+        self.node_id = node_id
+        self.authority = authority
+        self.lane_name = lane_name
+        loc = authority or lane_name or "no lane"
+        super().__init__(
+            f"malformed inception: subProcess {node_id!r} carries "
+            f'workflowType="inception" but sits in {loc!r}, not a sovereignty lane. '
+            f"An inception go/no-go boundary MUST be sovereignty(human)-laned "
+            f"(O-3/G-3, v1.1). Fix: move it to a lane with "
+            f'<aef:laneMeta authority="sovereignty">.'
+        )
 
 
 def _local(tag: str) -> str:
@@ -308,20 +337,23 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
         if is_inception:
             workflow_type = INCEPTION_WORKFLOW_TYPE
             constituents = _constituents(node)
-            # G-3/O-3: an inception go/no-go is a sovereign decision — owner is human.
-            # The lane SHOULD confirm this (authority="sovereignty"); if it disagrees we
-            # still emit human but warn (antifragile — never refuse the diagram).
+            # O-3 (graduated v1.1, 832 T-195 / rail offset 47): an inception's go/no-go
+            # boundary MUST be sovereignty-laned — assert and FAIL FAST on a malformed
+            # one (machine-checkable G-3). This supersedes the pre-graduation
+            # force-human+WARN (rail offset 39). A lane resolves to human either via the
+            # authority-of-record (authority="sovereignty", preferred) or — for diagrams
+            # predating laneMeta — a lane whose NAME indicates human (accepted with a
+            # conformance WARN). Anything else (agent/initiative lane, or no sovereignty
+            # signal at all) is a structural defect: raise.
+            if lane_owner != "human":
+                raise MalformedInceptionError(node_id, authority, lane_name)
             owner = "human"
-            if lane_owner == "agent":
+            if authority != "sovereignty":
                 warnings.append(
-                    f"inception subProcess {node_id!r} sits in an agent/initiative lane "
-                    f"({authority or lane_name!r}); a go/no-go is sovereign — forcing "
-                    f"owner=human (G-3/O-3)"
-                )
-            elif lane_owner is None:
-                warnings.append(
-                    f"inception subProcess {node_id!r} is in no sovereignty lane — "
-                    f"owner defaulted human (G-3 inception go/no-go)"
+                    f"inception subProcess {node_id!r} is laned human by NAME only "
+                    f"({lane_name!r}) with no <aef:laneMeta authority=\"sovereignty\"> — "
+                    f"accepted for pre-laneMeta compatibility, but add the "
+                    f"authority-of-record for v1.1 conformance"
                 )
         else:
             workflow_type = "build"  # KIND axis (ratified default for ordinary task nodes)
@@ -424,7 +456,13 @@ def main(argv: list[str]) -> int:
     if len(argv) != 2:
         sys.stderr.write("usage: bpmn_to_tasks.py <path-to.bpmn>\n")
         return 2
-    out, warnings = compile_to_tasks(argv[1])
+    try:
+        out, warnings = compile_to_tasks(argv[1])
+    except MalformedInceptionError as e:
+        # O-3 fail-fast (v1.1): a malformed inception is a structural diagram defect —
+        # refuse the compile with an actionable message, exit non-zero.
+        sys.stderr.write(f"ERROR: {e}\n")
+        return 3
     for w in warnings:
         sys.stderr.write(f"WARN: {w}\n")
     sys.stdout.write(out)

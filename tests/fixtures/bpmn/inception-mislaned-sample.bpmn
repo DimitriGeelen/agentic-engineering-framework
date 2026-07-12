@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AEF slice-3 / T-2537 FAIL-FAST fixture: a MIS-LANED inception.
+
+  sub_incept is a bpmn:subProcess bearing <aef:meta workflowType="inception"> — the
+  ratified inception marker — but it sits in the Agent lane (authority="initiative"),
+  NOT a sovereignty lane. Per O-3 (graduated v1.1, 832 T-195/rail offset 47) an
+  inception's go/no-go boundary MUST be sovereignty(human)-laned; this diagram is
+  structurally malformed, so parse_bpmn must raise MalformedInceptionError (fail fast),
+  NOT force owner=human + warn. Contrast plain-composite-sample.bpmn (no marker → skipped,
+  not an error) and inception-gonogo-canonical.bpmn (marker + sovereignty lane → valid).
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="urn:aef:workflow-designer"
+                  id="defs_mislaned_inception"
+                  targetNamespace="urn:aef:sample">
+  <bpmn:process id="proc_1" isExecutable="false">
+    <bpmn:laneSet id="lanes_1">
+      <bpmn:lane id="lane_agent" name="Agent">
+        <bpmn:extensionElements>
+          <aef:laneMeta authority="initiative"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>sub_incept</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="start_1">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:subProcess id="sub_incept" name="Should we build X? (mis-laned)">
+      <bpmn:extensionElements>
+        <aef:uid value="u-incept-mislaned"/>
+        <aef:meta workflowType="inception"/>
+        <aef:constituents>
+          <aef:constituent id="c1" name="Gather evidence" ref="u-gather"/>
+          <aef:constituent id="c2" name="Record decision" ref="u-decide"/>
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:endEvent id="end_1">
+      <bpmn:incoming>flow_2</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_1" targetRef="sub_incept"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="sub_incept" targetRef="end_1"/>
+  </bpmn:process>
+</bpmn:definitions>
