@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2537: Harden Child-2 compiler: fail-fast on mis-laned inception per graduated O-3
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-12T21:12:29Z
+# ============================================================================
+
+task_id: T-2537
+task_name: "Harden Child-2 compiler: fail-fast on mis-laned inception per graduated O-3"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-12T21:03:56Z
+completed: 2026-07-12T21:12:17Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-12T23:11:39+02:00
+last_commit: 2026-07-12T23:12:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fail-fast on mis-laned inception per graduated O-3 (v1.1). re-vendor bpmn AGENT.md (self-vendor drift, T-2240)
+
+# Key outcomes
+outcomes:
+  - 'An inception subProcess that does NOT resolve to a sovereignty/human lane raises a'
+  - 'Valid sovereignty-laned inceptions are unchanged: positive canonical'
+  - 'A name-only "Human" lane with no `<aef:laneMeta authority="sovereignty">` is ACCEPTED'
+  - '`bin/fw bpmn compile <mislaned>.bpmn` exits non-zero with an actionable stderr message'
+  - 'Full unit suite green (`tests/unit/test_bpmn_to_tasks.py`), including new fail-fast +'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/bpmn/AGENT.md'
+  - 'agents/bpmn/AGENT.md'
+  - 'docs/generated/components/tools-bpmn_to_tasks.md'
+  - '.tasks/active/T-2537-harden-child-2-compiler-fail-fast-on-mis.md'
+  - 'tests/fixtures/bpmn/inception-mislaned-sample.bpmn'
+  - 'tests/fixtures/bpmn/inception-nameonly-lane-sample.bpmn'
+  - 'tests/unit/test_bpmn_to_tasks.py'
+  - 'tools/bpmn_to_tasks.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-12T23:11:39"
+    action: "T-2537: fail-fast on mis-laned inception per graduated O-3 (v1.1)"
+  - time: "2026-07-12T23:12:07"
+    action: "T-2537: re-vendor bpmn AGENT.md (self-vendor drift, T-2240)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 2
+  files_changed: 8
+  lines_added: 462
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2537-harden-child-2-compiler-fail-fast-on-mis.md
+generated_by: context-agent-hybrid
