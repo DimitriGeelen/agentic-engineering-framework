@@ -3826,3 +3826,10 @@ X'` returning empty group."
   date: 2026-07-06
   context: Added via context agent
   application: TBD
+- id: L-500
+  learning: "New agent .sh wrappers exec'd by bin/fw must be committed mode 100755, but core.fileMode=false (this repo) makes chmod +x invisible to git so they commit as 100644 and 'fw <verb>' fails exit 126 after checkout. Fix: git update-index --chmod=+x <file> before commit."
+  source: P-001
+  task: T-2533
+  date: 2026-07-12
+  context: Added via context agent
+  application: TBD
