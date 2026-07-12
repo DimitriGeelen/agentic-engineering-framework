@@ -23,6 +23,9 @@ Mechanical script: `agents/bpmn/bpmn.sh` → `tools/bpmn_to_tasks.py`.
 | `sequenceFlow` order (task-hops from start) | `horizon` (tier1→now, tier2→next, tier≥3→later) | T-2532 |
 | nearest task predecessor (gateways/events transited) | `related_tasks: [uid…]` | T-2532 |
 | node kind | `workflow_type: build` (default), `tier: 1` (default) | ratified defaults |
+| `subProcess` + `<aef:meta workflowType="inception">` | `workflow_type: inception` + `owner: human` | T-2534 (slice 3) — G-3 implied go/no-go |
+| `<aef:laneMeta authority="sovereignty">` | `owner: human` (authority-of-record) | T-2534 / IW-7 |
+| `<aef:constituents>` on inception subProcess | `# constituents:` AC-seed comment | T-2534 |
 
 Namespace-agnostic: matches BPMN/aef elements by **local name**, so it is forward-compatible
 with 832's real `aef:` namespace URI when the vendored corpus lands.
@@ -31,9 +34,14 @@ with 832's real `aef:` namespace URI when the vendored corpus lands.
 
 - **Slice 1 (T-2531, done):** node → skeleton (uid, lane→owner, O-1).
 - **Slice 2 (T-2532, done):** sequenceFlow → horizon + related_tasks.
-- **Slice 3a (T-2533, this):** `fw bpmn compile` CLI verb.
-- **Slice 3 (blocked on 832):** gateway *semantics* — collapsed-subProcess (`aef:scopeOf`, 832 T-081)
-  → `workflow_type: inception` + `owner: human` on the go/no-go decision node (rulings #1/#2, O-3).
-  Needs 832's `aef:scopeOf` serialization answer (rail offset 30, Q1-Q3).
-- **Later:** write-out mode (emit real `.tasks/` files, not stdout); real-corpus validation once
-  832 packages the 24-map fixture drop.
+- **Slice 3a (T-2533, done):** `fw bpmn compile` CLI verb.
+- **Slice 3 (T-2534, done):** inception *semantics* — a `subProcess` with
+  `<aef:meta workflowType="inception">` → `workflow_type: inception` + `owner: human`
+  (owner from `<aef:laneMeta authority="sovereignty">`; go/no-go implied at the boundary,
+  no child gateway). 832's ratified contract, rail offset 32/34. Positive fixture
+  `inception-gonogo-sample.bpmn` (AEF twin of 832's `inception-gonogo.bpmn`), negative
+  `plain-composite-sample.bpmn`. Correction from the offset-30 guess: the marker is
+  `workflowType`, NOT `scopeOf` (scopeOf is the T-081 composition back-ref).
+- **Follow-up:** byte-level cross-validation against 832's canonical `inception-gonogo.bpmn`
+  (transfer to be re-sent); write-out mode (emit real `.tasks/` files, not stdout);
+  real-corpus validation once 832's 24-map fixture drop is received.
