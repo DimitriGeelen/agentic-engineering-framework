@@ -16,6 +16,12 @@ import bpmn_to_tasks  # noqa: E402
 
 FIXTURE = os.path.join(REPO_ROOT, "tests", "fixtures", "bpmn", "two-lane-sample.bpmn")
 FIXTURE_FLOW = os.path.join(REPO_ROOT, "tests", "fixtures", "bpmn", "flow-order-sample.bpmn")
+FIXTURE_INCEPTION = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "inception-gonogo-sample.bpmn"
+)
+FIXTURE_PLAIN = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "plain-composite-sample.bpmn"
+)
 
 
 def _by_uid(skeletons):
@@ -107,3 +113,52 @@ def test_no_flow_defaults_horizon_now():
     skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)
     assert all(s["horizon"] == "now" for s in skeletons)
     assert all(s["related_tasks"] == [] for s in skeletons)
+
+
+# ── Slice 3 (T-2534): inception subProcess -> workflow_type:inception + owner:human ──
+
+def test_inception_subprocess_emits_inception_type():
+    """A subProcess with <aef:meta workflowType="inception"> compiles to workflow_type:inception."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_INCEPTION)
+    by_uid = _by_uid(skeletons)
+    # Only the inception subProcess is a task; start/end events are not.
+    assert set(by_uid) == {"u-inception-2"}
+    assert by_uid["u-inception-2"]["workflow_type"] == "inception"
+
+
+def test_inception_owner_is_human_from_sovereignty_lane():
+    """Owner is derived from the sovereignty lane (IW-7/IW-9) -> human; go/no-go is sovereign (G-3)."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_INCEPTION)
+    by_uid = _by_uid(skeletons)
+    assert by_uid["u-inception-2"]["owner"] == "human"
+
+
+def test_inception_constituents_surface_in_output():
+    """The <aef:constituents> steps surface as an AC-seed comment in the emitted skeleton."""
+    out, _ = bpmn_to_tasks.compile_to_tasks(FIXTURE_INCEPTION)
+    assert "# constituents:" in out
+    for step in ("Gather evidence", "Assess criteria", "Record decision"):
+        assert step in out
+    # Still valid frontmatter: the YAML body round-trips (comment lines are ignored).
+    docs = [yaml.safe_load(b) for b in out.split("---") if b.strip()]
+    assert len(docs) == 1
+    assert docs[0]["workflow_type"] == "inception"
+    assert docs[0]["owner"] == "human"
+
+
+def test_inception_counts_in_flow_order():
+    """The inception subProcess is a task for flow-order: first after start -> horizon now."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_INCEPTION)
+    by_uid = _by_uid(skeletons)
+    assert by_uid["u-inception-2"]["horizon"] == "now"
+    assert by_uid["u-inception-2"]["related_tasks"] == []  # only a start event precedes it
+
+
+def test_plain_composite_not_emitted_as_inception():
+    """A collapsed subProcess WITHOUT the marker is ordinary composition, not a task."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_PLAIN)
+    by_uid = _by_uid(skeletons)
+    # sub_gather (u-gather-9) is a plain composite -> skipped; only the userTask is emitted.
+    assert "u-gather-9" not in by_uid
+    assert set(by_uid) == {"u-review-9"}
+    assert by_uid["u-review-9"]["workflow_type"] == "build"

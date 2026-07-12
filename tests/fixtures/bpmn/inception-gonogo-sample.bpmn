@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AEF slice-3 POSITIVE fixture (T-2534): an inception go/no-go collapsed subProcess.
+
+  Reconstructed from 832-workflow-designer's ratified contract (DM rail offset 34,
+  fixture inception-gonogo.bpmn sha256 093858400716…). 832's canonical byte-identical
+  file could not be received (termlink file-transfer replay is deprecated/consumed);
+  this AEF-authored twin exercises the SAME contract shape so slice-3 development is
+  unblocked. Cross-validation against 832's canonical file is a tracked follow-up.
+
+  Shape (exactly what the slice-3 detector fires on):
+    start agt_1_request (initiative lane)
+      -> subProcess hum_1_inception  <aef:meta workflowType="inception">  (SOVEREIGNTY lane)
+      -> end agt_2_outcome (initiative lane)
+    No child <exclusiveGateway> — phase-1 collapsed; the go/no-go is IMPLIED at the
+    boundary (G-3). Steps live in <aef:constituents>, not as embedded flow nodes.
+    Every node + every sequenceFlow carries aef:uid.
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="urn:aef:workflow-designer"
+                  id="defs_inception_gonogo"
+                  targetNamespace="urn:aef:sample">
+  <bpmn:collaboration id="collab_1">
+    <bpmn:participant id="part_1" name="Inception" processRef="proc_1"/>
+  </bpmn:collaboration>
+  <bpmn:process id="proc_1" isExecutable="false">
+    <bpmn:laneSet id="lanes_1">
+      <bpmn:lane id="lane_initiative" name="Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta authority="initiative"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_outcome</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="lane_sovereignty" name="Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta authority="sovereignty"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_inception</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_request" name="Request inception">
+      <bpmn:extensionElements>
+        <aef:uid>u-request-1</aef:uid>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:subProcess id="hum_1_inception" name="Go / No-Go inception">
+      <bpmn:extensionElements>
+        <aef:uid>u-inception-2</aef:uid>
+        <aef:meta workflowType="inception"/>
+        <aef:constituents>
+          <aef:constituent id="c1" name="Gather evidence" ref="u-gather"/>
+          <aef:constituent id="c2" name="Assess criteria" ref="u-assess"/>
+          <aef:constituent id="c3" name="Record decision" ref="u-record"/>
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:endEvent id="agt_2_outcome" name="Outcome recorded">
+      <bpmn:extensionElements>
+        <aef:uid>u-outcome-3</aef:uid>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_request" targetRef="hum_1_inception">
+      <bpmn:extensionElements>
+        <aef:uid>u-flow-1</aef:uid>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="hum_1_inception" targetRef="agt_2_outcome">
+      <bpmn:extensionElements>
+        <aef:uid>u-flow-2</aef:uid>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

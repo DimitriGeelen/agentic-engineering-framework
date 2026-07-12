@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AEF slice-3 NEGATIVE fixture (T-2534): a PLAIN collapsed composite subProcess.
+
+  sub_gather is a bpmn:subProcess with <aef:constituents> but NO
+  <aef:meta workflowType="inception"> marker → it is ordinary composition, NOT an
+  inception. The slice-3 detector must NOT emit it as a task (mirrors 832's frw_7_gather
+  in resume-status.bpmn). The userTask usr_review IS emitted — a positive control so the
+  test distinguishes "correctly skipped the composite" from "parsed nothing".
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="urn:aef:workflow-designer"
+                  id="defs_plain_composite"
+                  targetNamespace="urn:aef:sample">
+  <bpmn:process id="proc_1" isExecutable="false">
+    <bpmn:laneSet id="lanes_1">
+      <bpmn:lane id="lane_agent" name="Agent">
+        <bpmn:extensionElements>
+          <aef:laneMeta authority="initiative"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>sub_gather</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="lane_human" name="Human">
+        <bpmn:extensionElements>
+          <aef:laneMeta authority="sovereignty"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>usr_review</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="start_1">
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:subProcess id="sub_gather" name="Gather (plain composite)">
+      <bpmn:extensionElements>
+        <aef:uid>u-gather-9</aef:uid>
+        <aef:constituents>
+          <aef:constituent id="c1" name="Fetch inputs" ref="u-fetch"/>
+          <aef:constituent id="c2" name="Normalise" ref="u-norm"/>
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:userTask id="usr_review" name="Review result">
+      <bpmn:extensionElements>
+        <aef:uid>u-review-9</aef:uid>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="end_1">
+      <bpmn:incoming>flow_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="start_1" targetRef="sub_gather"/>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="sub_gather" targetRef="usr_review"/>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="usr_review" targetRef="end_1"/>
+  </bpmn:process>
+</bpmn:definitions>
