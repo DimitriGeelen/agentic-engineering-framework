@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_flow_order_sample"
+                  targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_flow" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_human" name="Human">
+        <bpmn:flowNodeRef>Task_spec</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_agent" name="Agent">
+        <bpmn:flowNodeRef>Task_impl</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_verify</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="Start_1" name="Start"/>
+
+    <!-- tier 1: first task after start -> horizon now, no task predecessor -->
+    <bpmn:userTask id="Task_spec" name="Specify feature">
+      <bpmn:extensionElements><aef:uid>u-spec-1</aef:uid></bpmn:extensionElements>
+    </bpmn:userTask>
+
+    <!-- a gateway between spec and impl: must be TRANSITED, not emitted -->
+    <bpmn:exclusiveGateway id="GW_1" name="ready?"/>
+
+    <!-- tier 2 (transits GW_1) -> horizon next, related_tasks=[u-spec-1] -->
+    <bpmn:serviceTask id="Task_impl" name="Implement feature">
+      <bpmn:extensionElements><aef:uid>u-impl-2</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+    <!-- tier 3 -> horizon later, related_tasks=[u-impl-2] -->
+    <bpmn:serviceTask id="Task_verify" name="Verify feature">
+      <bpmn:extensionElements><aef:uid>u-verify-3</aef:uid></bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_1" name="Done"/>
+
+    <bpmn:sequenceFlow id="f0" sourceRef="Start_1" targetRef="Task_spec"/>
+    <bpmn:sequenceFlow id="f1" sourceRef="Task_spec" targetRef="GW_1"/>
+    <bpmn:sequenceFlow id="f2" sourceRef="GW_1" targetRef="Task_impl"/>
+    <bpmn:sequenceFlow id="f3" sourceRef="Task_impl" targetRef="Task_verify"/>
+    <bpmn:sequenceFlow id="f4" sourceRef="Task_verify" targetRef="End_1"/>
+  </bpmn:process>
+</bpmn:definitions>

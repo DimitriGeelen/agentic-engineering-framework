@@ -29,12 +29,16 @@ URI once the vendored corpus lands.
 """
 from __future__ import annotations
 
+import heapq
 import sys
 import xml.etree.ElementTree as ET
 
 TASK_TAGS = {"userTask", "serviceTask", "scriptTask"}
+START_TAGS = {"startEvent"}
 # Node-type -> the owner it *implies* (used only to WARN when it disagrees with the lane).
 TYPE_OWNER = {"userTask": "human", "serviceTask": "agent", "scriptTask": "agent"}
+# Flow-order tier -> AEF horizon (slice 2). Tier >=3 falls through to "later".
+HORIZON_BY_TIER = {1: "now", 2: "next"}
 
 
 def _local(tag: str) -> str:
@@ -76,14 +80,86 @@ def _lane_map(root: ET.Element) -> dict[str, str]:
     return mapping
 
 
+def _node_types(root: ET.Element) -> dict[str, str]:
+    """Map every element id -> its bare local tag name."""
+    return {n.get("id"): _local(n.tag) for n in root.iter() if n.get("id")}
+
+
+def _flows(root: ET.Element) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    """Build forward (source->targets) and reverse (target->sources) sequenceFlow maps."""
+    fwd: dict[str, list[str]] = {}
+    rev: dict[str, list[str]] = {}
+    for f in root.iter():
+        if _local(f.tag) != "sequenceFlow":
+            continue
+        src, tgt = f.get("sourceRef"), f.get("targetRef")
+        if src and tgt:
+            fwd.setdefault(src, []).append(tgt)
+            rev.setdefault(tgt, []).append(src)
+    return fwd, rev
+
+
+def _task_tier(node_id: str, fwd, ntypes, starts) -> int | None:
+    """Min number of task-nodes on any path from a start event to node_id (inclusive).
+
+    0-1 shortest path: stepping INTO a task node costs 1, into anything else (event,
+    gateway) costs 0. Returns None if node_id is unreachable from any start event.
+    """
+    inf = float("inf")
+    dist: dict[str, float] = {}
+    pq: list[tuple[float, str]] = []
+    for s in starts:
+        d0 = 1 if ntypes.get(s) in TASK_TAGS else 0
+        if d0 < dist.get(s, inf):
+            dist[s] = d0
+            heapq.heappush(pq, (d0, s))
+    while pq:
+        d, u = heapq.heappop(pq)
+        if d > dist.get(u, inf):
+            continue
+        for v in fwd.get(u, []):
+            w = 1 if ntypes.get(v) in TASK_TAGS else 0
+            nd = d + w
+            if nd < dist.get(v, inf):
+                dist[v] = nd
+                heapq.heappush(pq, (nd, v))
+    val = dist.get(node_id)
+    return int(val) if val is not None else None
+
+
+def _nearest_task_preds(node_id: str, rev, ntypes) -> list[str]:
+    """Nearest task-node predecessor ids, transiting non-task nodes (events/gateways)."""
+    result: list[str] = []
+    seen: set[str] = set()
+
+    def walk(nid: str) -> None:
+        for s in rev.get(nid, []):
+            if s in seen:
+                continue
+            seen.add(s)
+            if ntypes.get(s) in TASK_TAGS:
+                if s not in result:
+                    result.append(s)
+            else:
+                walk(s)
+
+    walk(node_id)
+    return result
+
+
 def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     """Parse a .bpmn file into a list of task-skeleton dicts and a list of warnings."""
     tree = ET.parse(path)
     root = tree.getroot()
     lanes = _lane_map(root)
+    ntypes = _node_types(root)
+    fwd, rev = _flows(root)
+    starts = [nid for nid, t in ntypes.items() if t in START_TAGS]
     warnings: list[str] = []
-    skeletons: list[dict] = []
 
+    # Pass 1: extract task nodes (identity + owner). Record node_id -> uid for linking.
+    raw: list[dict] = []
+    uid_by_node: dict[str, str] = {}
     for node in root.iter():
         ntype = _local(node.tag)
         if ntype not in TASK_TAGS:
@@ -114,13 +190,28 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                     f"node {node_id!r} is in no lane — owner defaulted from type ({owner})"
                 )
 
+        raw.append({"node_id": node_id, "uid": uid, "name": name, "owner": owner})
+        uid_by_node[node_id] = uid
+
+    # Pass 2: derive flow-order horizon + related_tasks (slice 2) and finalise skeletons.
+    skeletons: list[dict] = []
+    for r in raw:
+        tier = _task_tier(r["node_id"], fwd, ntypes, starts)
+        horizon = HORIZON_BY_TIER.get(tier, "later") if tier is not None else "now"
+        related = [
+            uid_by_node[p]
+            for p in _nearest_task_preds(r["node_id"], rev, ntypes)
+            if p in uid_by_node
+        ]
         skeletons.append(
             {
-                "uid": uid,
-                "name": name,
-                "owner": owner,
+                "uid": r["uid"],
+                "name": r["name"],
+                "owner": r["owner"],
                 "workflow_type": "build",  # KIND axis; typed-event/inception mapping is a later slice
-                "tier": 1,  # ratified default
+                "tier": 1,  # ratified default (BVP/effort tier, distinct from flow-order tier)
+                "horizon": horizon,
+                "related_tasks": related,
             }
         )
     return skeletons, warnings
@@ -130,6 +221,8 @@ def render_skeleton(sk: dict) -> str:
     """Render one skeleton dict as an AEF task-skeleton frontmatter block."""
     # Emitted as real frontmatter with a [NEEDS-FILL] AC skeleton (never a template stub).
     name = sk["name"].replace('"', "'")
+    related = sk.get("related_tasks", [])
+    related_yaml = "[" + ", ".join(related) + "]" if related else "[]"
     return (
         "---\n"
         f"id: {sk['uid']}\n"
@@ -137,6 +230,8 @@ def render_skeleton(sk: dict) -> str:
         f"owner: {sk['owner']}\n"
         f"workflow_type: {sk['workflow_type']}\n"
         f"tier: {sk['tier']}\n"
+        f"horizon: {sk.get('horizon', 'now')}\n"
+        f"related_tasks: {related_yaml}\n"
         "status: captured\n"
         "# acceptance_criteria: [NEEDS-FILL] — seed T-193 Agent/Human split before start\n"
         "---\n"

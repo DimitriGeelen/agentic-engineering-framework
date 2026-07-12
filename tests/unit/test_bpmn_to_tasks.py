@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.join(REPO_ROOT, "tools"))
 import bpmn_to_tasks  # noqa: E402
 
 FIXTURE = os.path.join(REPO_ROOT, "tests", "fixtures", "bpmn", "two-lane-sample.bpmn")
+FIXTURE_FLOW = os.path.join(REPO_ROOT, "tests", "fixtures", "bpmn", "flow-order-sample.bpmn")
 
 
 def _by_uid(skeletons):
@@ -69,3 +70,40 @@ def test_cli_main_emits_stdout(capsys):
     captured = capsys.readouterr()
     assert "id: u-review-001" in captured.out
     assert "owner: human" in captured.out
+
+
+# ── Slice 2 (T-2532): flow-order -> horizon + related_tasks ──────────────────
+
+def test_horizon_from_flow_order():
+    """Flow-order tier maps to AEF horizon: tier1->now, tier2->next, tier3->later."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_FLOW)
+    by_uid = _by_uid(skeletons)
+    assert by_uid["u-spec-1"]["horizon"] == "now"     # first task after start
+    assert by_uid["u-impl-2"]["horizon"] == "next"    # second tier (transits GW_1)
+    assert by_uid["u-verify-3"]["horizon"] == "later"  # third tier
+
+
+def test_related_tasks_transit_gateway():
+    """related_tasks = nearest task predecessor(s), transiting gateways/events."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_FLOW)
+    by_uid = _by_uid(skeletons)
+    assert by_uid["u-spec-1"]["related_tasks"] == []            # predecessor is a start event
+    assert by_uid["u-impl-2"]["related_tasks"] == ["u-spec-1"]  # through exclusiveGateway GW_1
+    assert by_uid["u-verify-3"]["related_tasks"] == ["u-impl-2"]
+
+
+def test_flow_output_carries_new_fields():
+    """Emitted YAML frontmatter carries horizon + related_tasks and still round-trips."""
+    out, _ = bpmn_to_tasks.compile_to_tasks(FIXTURE_FLOW)
+    docs = [yaml.safe_load(b) for b in out.split("---") if b.strip()]
+    assert len(docs) == 3
+    for d in docs:
+        assert d["horizon"] in ("now", "next", "later")
+        assert isinstance(d["related_tasks"], list)
+
+
+def test_no_flow_defaults_horizon_now():
+    """A fixture with no sequenceFlows leaves every task at horizon=now (slice-1 fixture)."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)
+    assert all(s["horizon"] == "now" for s in skeletons)
+    assert all(s["related_tasks"] == [] for s in skeletons)
