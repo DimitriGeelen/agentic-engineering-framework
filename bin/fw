@@ -4252,6 +4252,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
         # T-2521: vendor + serve the pinned Workflow Designer build (SoT: 832).
         exec "$AGENTS_DIR/designer/designer.sh" "$@"
         ;;
+    bpmn)
+        # T-2533: Child-2 forward compiler — BPMN diagram → AEF task skeletons.
+        exec "$AGENTS_DIR/bpmn/bpmn.sh" "$@"
+        ;;
     git)
         exec "$AGENTS_DIR/git/git.sh" "$@"
         ;;
