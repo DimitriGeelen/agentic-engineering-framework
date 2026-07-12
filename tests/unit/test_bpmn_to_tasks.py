@@ -28,6 +28,14 @@ FIXTURE_CANONICAL = os.path.join(
     REPO_ROOT, "tests", "fixtures", "bpmn", "inception-gonogo-canonical.bpmn"
 )
 CANONICAL_SHA256 = "093858400716a0c5dd4e6676ad96b1564e47980527a15028fd08242df1c7041e"
+# 832's byte-exact canonical NEGATIVE fixture (resume-status.bpmn, delivered over
+# the DM rail at offset 45, T-2535). frw_7_gather is a <subProcess> WITH
+# <aef:constituents> but NO workflowType="inception" -> plain composition, must
+# NOT compile to workflow_type:inception. The positive/negative discriminator pair.
+FIXTURE_RESUME_STATUS = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "resume-status-canonical.bpmn"
+)
+RESUME_STATUS_SHA256 = "7b15f3e0f78587c25d8b448f30dc6d57ffa8b283396f55caf875fa10e4b2c03f"
 
 
 def _by_uid(skeletons):
@@ -208,3 +216,33 @@ def test_text_form_uid_still_resolves():
     skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)  # two-lane uses <aef:uid>text</aef:uid>
     by_uid = _by_uid(skeletons)
     assert "u-review-001" in by_uid
+
+
+# ── T-2535 AC3: negative case against 832's REAL canonical bytes ─────────────
+
+def test_resume_status_negative_byte_guard():
+    """The vendored canonical negative fixture is byte-exact with 832's delivery."""
+    import hashlib
+
+    with open(FIXTURE_RESUME_STATUS, "rb") as fh:
+        digest = hashlib.sha256(fh.read()).hexdigest()
+    assert digest == RESUME_STATUS_SHA256, "negative fixture mutated — re-fetch from 832 rail"
+
+
+def test_canonical_negative_frw_gather_not_inception():
+    """frw_7_gather (subProcess WITH constituents, NO workflowType) must NOT compile
+    to an inception — validated against 832's REAL resume-status.bpmn bytes (T-2535 AC3).
+
+    This is the negative half of the inception discriminator: presence/absence of
+    workflowType="inception" on the subProcess, nothing else. The positive half is
+    inception-gonogo-canonical.bpmn (test_canonical_full_parity).
+    """
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_RESUME_STATUS)
+    by_uid = _by_uid(skeletons)
+    # frw_7_gather is a plain composite -> skipped entirely (not a task).
+    assert "frw_7_gather" not in by_uid
+    # No node in the whole diagram compiles to inception.
+    assert all(s["workflow_type"] != "inception" for s in skeletons)
+    # The real userTask/serviceTask nodes ARE emitted (positive control) as build.
+    assert len(skeletons) >= 1
+    assert all(s["workflow_type"] == "build" for s in skeletons)

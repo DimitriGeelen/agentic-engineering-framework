@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_resume-status"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_resume-status">
+    <bpmn:participant id="Pool_resume_status" name="resume-status" processRef="Process_resume-status"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_resume-status" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="resume-status" version="1" schemaVersion="2" title="resume-status" tier_default="2"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="140"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_fw</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="400"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>frw_9_state</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_1_read</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_2_read</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_3_census</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_5_parse</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_6_degrade</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_8_rule</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_4_handover</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_7_gather</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_fw" name="fw resume status">
+      <bpmn:extensionElements>
+        <aef:uid value="n_start"/>
+        <aef:position x="207.0" y="114.0"/>
+        <aef:meta triggeredBy="agent — after compaction, returning from break, or feeling lost (agents/resume/AGENT.md)"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:endEvent id="frw_9_state" name="state synthesized (advisory)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_report"/>
+        <aef:position x="1382.0" y="334.0"/>
+        <aef:meta terminalKind="success" state="reported" note="informs the agent's next action; resume sync exists to repair stale memory" exitCode="0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:scriptTask id="frw_1_read" name="read working memory: session + focus">
+      <bpmn:extensionElements>
+        <aef:uid value="n_wm"/>
+        <aef:position x="170.0" y="320.0"/>
+        <aef:meta tier="1" note="may be STALE after compaction — that is why resume exists; cmd_sync repairs it"/>
+        <aef:endpoint>resume.sh:95-99 (get_session:81, get_focus:72)</aef:endpoint>
+        <aef:contextReads paths=".context/working/session.yaml, .context/working/focus.yaml"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="frw_2_read" name="read git state: uncommitted, last commit, branch">
+      <bpmn:extensionElements>
+        <aef:uid value="n_git"/>
+        <aef:position x="310.0" y="320.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>resume.sh:119-127 (get_git_state:61-70)</aef:endpoint>
+        <aef:contextReads paths="git status --short, git log -1 --oneline, current branch"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="frw_3_census" name="census active tasks: actionable vs awaiting-human">
+      <bpmn:extensionElements>
+        <aef:uid value="n_tasks"/>
+        <aef:position x="450.0" y="320.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>resume.sh:130-144 (get_active_tasks:30-59)</aef:endpoint>
+        <aef:contextReads paths=".tasks/active/*.md frontmatter (status, owner)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="frw_5_parse" name="parse handover: staleness, Where-We-Are, Suggested Action, Open Qs">
+      <bpmn:extensionElements>
+        <aef:uid value="n_ho"/>
+        <aef:position x="670.0" y="220.0"/>
+        <aef:meta tier="1" softFail="advisory" guard="[TODO] count &gt; 0 -&gt; 'handover has unfilled sections' WARN (does not abort)"/>
+        <aef:endpoint>resume.sh:148-186 ([TODO] count -&gt; stale WARN; sed section extracts)</aef:endpoint>
+        <aef:contextReads paths=".context/handovers/LATEST.md"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="frw_6_degrade" name="degrade: 'No handover found'">
+      <bpmn:extensionElements>
+        <aef:uid value="n_noho"/>
+        <aef:position x="670.0" y="420.0"/>
+        <aef:meta note="synthesis proceeds from the remaining sources — every source is optional" softFail="advisory"/>
+        <aef:endpoint>resume.sh:187-188</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="frw_8_rule" name="rule cascade → Recommendations">
+      <bpmn:extensionElements>
+        <aef:uid value="n_synth"/>
+        <aef:position x="1145.0" y="320.0"/>
+        <aef:meta decisionOwner="framework" guard="no tasks -&gt; create/review; focus set -&gt; continue focus; else -&gt; set focus; plus: uncommitted&gt;0 -&gt; commit with task ref"/>
+        <aef:endpoint>resume.sh:259-272</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:exclusiveGateway id="frw_4_handover" name="handover LATEST.md exists?">
+      <bpmn:extensionElements>
+        <aef:uid value="g_ho"/>
+        <aef:position x="590.0" y="328.0"/>
+        <aef:meta decisionOwner="framework"/>
+        <aef:endpoint>resume.sh:147</aef:endpoint>
+        <aef:decisionInput>${-f .context/handovers/LATEST.md}</aef:decisionInput>
+        <aef:decisionOutputs>found, missing</aef:decisionOutputs>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:subProcess id="frw_7_gather" name="gather optional intelligence: discoveries, scan, recent research">
+      <bpmn:extensionElements>
+        <aef:uid value="n_intel"/>
+        <aef:position x="900.0" y="320.0"/>
+        <aef:meta tier="1" note="FC-11 composite — three optional sources, one collapsed subProcess; each skipped silently if absent"/>
+        <aef:endpoint>resume.sh:192-257 (three independent if-exists blocks)</aef:endpoint>
+        <aef:constituents>
+          <aef:constituent id="c_discoveries" name="audit discoveries (WARN/FAIL only)" ref=".context/audits/discoveries/LATEST.yaml"/>
+          <aef:constituent id="c_scan" name="work-queue scan (needs-decision)" ref=".context/scans/LATEST.yaml"/>
+          <aef:constituent id="c_research" name="recent research reports (mtime&lt;7d)" ref="docs/reports/*.md"/>
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_fw" targetRef="frw_1_read">
+      <bpmn:extensionElements>
+        <aef:uid value="e1"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="frw_1_read" targetRef="frw_2_read">
+      <bpmn:extensionElements>
+        <aef:uid value="e2"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="frw_2_read" targetRef="frw_3_census">
+      <bpmn:extensionElements>
+        <aef:uid value="e3"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="frw_3_census" targetRef="frw_4_handover">
+      <bpmn:extensionElements>
+        <aef:uid value="e4"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" name="found" sourceRef="frw_4_handover" targetRef="frw_5_parse">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">latest_exists</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e5"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" name="missing" sourceRef="frw_4_handover" targetRef="frw_6_degrade">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">!latest_exists</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e6"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" sourceRef="frw_5_parse" targetRef="frw_7_gather">
+      <bpmn:extensionElements>
+        <aef:uid value="e7"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" sourceRef="frw_6_degrade" targetRef="frw_7_gather">
+      <bpmn:extensionElements>
+        <aef:uid value="e8"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" sourceRef="frw_7_gather" targetRef="frw_8_rule">
+      <bpmn:extensionElements>
+        <aef:uid value="e9"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" sourceRef="frw_8_rule" targetRef="frw_9_state">
+      <bpmn:extensionElements>
+        <aef:uid value="e10"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted in this demo; AEF generates it from node coordinates -->
+</bpmn:definitions>
