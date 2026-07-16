@@ -6,16 +6,16 @@ description: >
   Inception: Child-2 write-out mode: how do compiled BPMN skeletons become governed
   AEF tasks
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-13T07:59:26Z
-last_update: 2026-07-13T08:00:57Z
-date_finished:
+last_update: 2026-07-16T05:21:57Z
+date_finished: 2026-07-16T05:21:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -115,15 +115,15 @@ Watchtower surface for staged proposals (a later slice if warranted).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -201,7 +201,40 @@ overall recommendation is GO, with the promotion slice explicitly gated on 832's
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO — build write-out mode as staged proposals (candidate C), two slices.
+
+Rationale:
+
+The go/no-go on whether and how is answerable now. Candidate C (compiler writes uid-keyed
+proposals to `.context/bpmn-staged/`; a `fw bpmn promote` step runs them through
+`fw task create`) is the only approach that satisfies C1–C3 by construction: it never bypasses
+the task gate (proposals aren't tasks until promoted — C1), never fabricates ACs (promotion
+inherits the G-020 gate — C2), and is idempotent by `aef:uid` (IW-1, the modify/create
+discriminator — C3). It reuses the Authority Model directly: the compiler proposes
+(initiative), promotion is the authorized act (the gate). Candidate A (direct write) is a
+NOT-GO — it is the exact Core-Principle bypass this inception exists to reject.
+
+Only ONE sub-question is a genuine evidence gap: the uid↔T-ID mapping contract with 832 (IW-2),
+which gates the promotion slice but NOT the staging slice. That is a question-level DEFER,
+not a decision-level one (T-2144: DEFER is for evidence gaps, not confidence hedges) — so the
+overall recommendation is GO, with the promotion slice explicitly gated on 832's rail reply.
+
+Slices on GO:
+1. Staging (unblocked, AEF-only): `--write` → uid-keyed proposals + manifest in
+   `.context/bpmn-staged/`. Idempotent upsert. `target_blast_radius` ≈ 2 (one tool + a dir).
+2. Promotion (gated on IW-2): `fw bpmn promote <uid|all>` → `fw task create`, records the
+   uid↔T-ID cross-ref. Starts only after 832 confirms the id mapping (surfaced rail offset 48).
+
+Evidence:
+- Design analysis + candidate matrix: `docs/reports/T-2538-writeout-mode-governance.md`
+- Core Principle / task gate: `CLAUDE.md` §Core Principle, §Working with Tasks (G-020)
+- IW-1 stable identity (idempotency basis): shipped in `tools/bpmn_to_tasks.py:_find_uid`,
+  byte-validated against 832's real corpus (T-2536)
+- 832 contract dependency surfaced: rail `dm:0e7ee6cad65137fc:6a646ce8b1bc6560` offset 48
+
+**Date**: 2026-07-16T05:21:57Z
 
 ## Updates
 
@@ -210,3 +243,71 @@ overall recommendation is GO, with the promotion slice explicitly gated on 832's
 
 ### 2026-07-13T08:00:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-16T05:21:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO — build write-out mode as staged proposals (candidate C), two slices.
+
+Rationale:
+
+The go/no-go on whether and how is answerable now. Candidate C (compiler writes uid-keyed
+proposals to `.context/bpmn-staged/`; a `fw bpmn promote` step runs them through
+`fw task create`) is the only approach that satisfies C1–C3 by construction: it never bypasses
+the task gate (proposals aren't tasks until promoted — C1), never fabricates ACs (promotion
+inherits the G-020 gate — C2), and is idempotent by `aef:uid` (IW-1, the modify/create
+discriminator — C3). It reuses the Authority Model directly: the compiler proposes
+(initiative), promotion is the authorized act (the gate). Candidate A (direct write) is a
+NOT-GO — it is the exact Core-Principle bypass this inception exists to reject.
+
+Only ONE sub-question is a genuine evidence gap: the uid↔T-ID mapping contract with 832 (IW-2),
+which gates the promotion slice but NOT the staging slice. That is a question-level DEFER,
+not a decision-level one (T-2144: DEFER is for evidence gaps, not confidence hedges) — so the
+overall recommendation is GO, with the promotion slice explicitly gated on 832's rail reply.
+
+Slices on GO:
+1. Staging (unblocked, AEF-only): `--write` → uid-keyed proposals + manifest in
+   `.context/bpmn-staged/`. Idempotent upsert. `target_blast_radius` ≈ 2 (one tool + a dir).
+2. Promotion (gated on IW-2): `fw bpmn promote <uid|all>` → `fw task create`, records the
+   uid↔T-ID cross-ref. Starts only after 832 confirms the id mapping (surfaced rail offset 48).
+
+Evidence:
+- Design analysis + candidate matrix: `docs/reports/T-2538-writeout-mode-governance.md`
+- Core Principle / task gate: `CLAUDE.md` §Core Principle, §Working with Tasks (G-020)
+- IW-1 stable identity (idempotency basis): shipped in `tools/bpmn_to_tasks.py:_find_uid`,
+  byte-validated against 832's real corpus (T-2536)
+- 832 contract dependency surfaced: rail `dm:0e7ee6cad65137fc:6a646ce8b1bc6560` offset 48
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-71085672
+- **Timestamp:** 2026-07-16T05:21:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-989c7eb6
+- **Timestamp:** 2026-07-16T05:21:58Z
+- **Overall:** CONTRADICTED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-2538-writeout-mode-governance.md` | file | ✓ pass |
+| `tools/bpmn_to_tasks.py:_find_uid` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `T-2144` | task | ✓ pass |
+| `T-2536` | task | ✓ pass |
+
+### 2026-07-16T05:21:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
