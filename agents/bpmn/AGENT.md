@@ -52,5 +52,12 @@ with 832's real `aef:` namespace URI when the vendored corpus lands.
   superseding the pre-graduation force-human+WARN. A name-only "Human" lane (no laneMeta)
   is accepted with a conformance WARN (pre-laneMeta compat). Fixtures:
   `inception-mislaned-sample.bpmn` (raises), `inception-nameonly-lane-sample.bpmn` (warn).
-- **Follow-up:** write-out mode (emit real `.tasks/` files, not stdout); real-corpus
-  breadth validation descoped (discriminator proven both ways against 832's real bytes).
+- **Write-out staging (T-2539, done — from T-2538 GO):** `fw bpmn compile --write` stages
+  uid-keyed *proposals* to `.context/bpmn-staged/<diagram>/` (one `<uid>.md` per node +
+  `manifest.yaml`). Proposals are `status: proposal`, NOT tasks — no `.tasks/` write, no gate,
+  no T-ID allocation (C1). Idempotent upsert by `aef:uid`; stale proposals pruned. This is
+  candidate C of the T-2538 governance inception (`docs/reports/T-2538-writeout-mode-governance.md`).
+- **Follow-up (promotion slice, gated):** `fw bpmn promote <uid|all>` → real tasks via
+  `fw task create`, recording the uid↔T-ID cross-ref. BLOCKED on 832's id-mapping contract
+  (IW-2, surfaced rail offset 48). Real-corpus breadth validation descoped (discriminator
+  proven both ways against 832's real bytes).

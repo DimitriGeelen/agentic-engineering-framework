@@ -226,6 +226,79 @@ def test_text_form_uid_still_resolves():
     assert "u-review-001" in by_uid
 
 
+# ── T-2539: write-out staging slice (uid-keyed proposals, NOT tasks) ─────────
+
+def test_write_stages_proposals_not_tasks(tmp_path):
+    """--write stages one proposal file per skeleton under <stage>/<stem>/ — NOT .tasks/ (C1)."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)
+    out_dir = bpmn_to_tasks.write_proposals(skeletons, FIXTURE, stage_dir=str(tmp_path))
+    md = sorted(p.name for p in tmp_path.joinpath("two-lane-sample").glob("*.md"))
+    assert md == ["u-compile-002.md", "u-escalate-003.md", "u-review-001.md"]
+    # C1: the staging dir is entirely under tmp_path — nothing escapes to a real .tasks path.
+    assert str(tmp_path) in out_dir
+    assert ".tasks" not in out_dir
+
+
+def test_proposal_marked_not_a_task(tmp_path):
+    """Each proposal carries status: proposal + the promote marker (never a task status)."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)
+    bpmn_to_tasks.write_proposals(skeletons, FIXTURE, stage_dir=str(tmp_path))
+    text = tmp_path.joinpath("two-lane-sample", "u-review-001.md").read_text()
+    assert "status: proposal" in text
+    assert "status: captured" not in text
+    assert "PROPOSAL" in text
+    # Still valid frontmatter (comment line ignored by yaml.safe_load).
+    doc = yaml.safe_load([b for b in text.split("---") if b.strip()][0])
+    assert doc["owner"] == "human"
+
+
+def test_manifest_keyed_by_uid(tmp_path):
+    """manifest.yaml is keyed by aef:uid with name/owner/workflow_type/horizon/sha."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)
+    bpmn_to_tasks.write_proposals(skeletons, FIXTURE, stage_dir=str(tmp_path))
+    manifest = yaml.safe_load(
+        tmp_path.joinpath("two-lane-sample", "manifest.yaml").read_text()
+    )
+    assert manifest["diagram"] == "two-lane-sample.bpmn"
+    assert set(manifest["proposals"]) == {"u-review-001", "u-compile-002", "u-escalate-003"}
+    entry = manifest["proposals"]["u-review-001"]
+    assert entry["owner"] == "human"
+    assert entry["workflow_type"] == "build"
+    assert len(entry["sha"]) == 16
+
+
+def test_write_idempotent_upsert(tmp_path):
+    """Re-running --write on the same diagram does NOT duplicate — count is stable (C3)."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)
+    bpmn_to_tasks.write_proposals(skeletons, FIXTURE, stage_dir=str(tmp_path))
+    first = sorted(p.name for p in tmp_path.joinpath("two-lane-sample").glob("*.md"))
+    bpmn_to_tasks.write_proposals(skeletons, FIXTURE, stage_dir=str(tmp_path))
+    second = sorted(p.name for p in tmp_path.joinpath("two-lane-sample").glob("*.md"))
+    assert first == second  # upsert by uid, no duplicates
+
+
+def test_stale_proposal_pruned(tmp_path):
+    """A proposal whose uid is no longer emitted is pruned on the next --write."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE)
+    bpmn_to_tasks.write_proposals(skeletons, FIXTURE, stage_dir=str(tmp_path))
+    # Drop one node and re-stage: its proposal must disappear.
+    bpmn_to_tasks.write_proposals(skeletons[:-1], FIXTURE, stage_dir=str(tmp_path))
+    remaining = sorted(p.name for p in tmp_path.joinpath("two-lane-sample").glob("*.md"))
+    assert "u-escalate-003.md" not in remaining
+    assert len(remaining) == 2
+
+
+def test_main_write_flag_stages_and_stdouts(tmp_path, capsys, monkeypatch):
+    """`--write` stages proposals AND preserves stdout emission (additive)."""
+    monkeypatch.setenv("FW_BPMN_STAGE_DIR", str(tmp_path))
+    rc = bpmn_to_tasks.main(["bpmn_to_tasks.py", "--write", FIXTURE])
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert "id: u-review-001" in captured.out          # stdout preserved
+    assert "staged 3 proposal(s)" in captured.err       # staging reported
+    assert tmp_path.joinpath("two-lane-sample", "manifest.yaml").exists()
+
+
 # ── T-2535 AC3: negative case against 832's REAL canonical bytes ─────────────
 
 def test_resume_status_negative_byte_guard():

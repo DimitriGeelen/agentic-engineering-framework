@@ -42,7 +42,9 @@ URI once the vendored corpus lands.
 """
 from __future__ import annotations
 
+import hashlib
 import heapq
+import os
 import sys
 import xml.etree.ElementTree as ET
 
@@ -452,12 +454,107 @@ def compile_to_tasks(path: str) -> tuple[str, list[str]]:
     return "\n".join(render_skeleton(s) for s in skeletons), warnings
 
 
+# ── Write-out staging (T-2539, T-2538 GO candidate C) ────────────────────────
+# The compiler stages skeletons as uid-keyed *proposals* — NOT tasks. Nothing is
+# written under .tasks/, no T-ID is allocated, and the task gate is never invoked
+# (C1). Promotion (proposals -> real tasks via `fw task create`, recording the
+# uid<->T-ID cross-ref) is the SEPARATE slice gated on 832's id-mapping contract
+# (IW-2). Proposals live under <stage_dir>/<diagram-stem>/ and upsert by uid so a
+# re-compiled diagram never duplicates (C3, on IW-1 stable identity).
+PROPOSAL_MARKER = (
+    "# PROPOSAL — staged by `fw bpmn compile --write`; NOT a task. Promote via the "
+    "gated task path (fw bpmn promote, T-2540) — never hand-copy into .tasks/."
+)
+
+
+def _stage_dir() -> str:
+    """Root staging dir: FW_BPMN_STAGE_DIR override, else .context/bpmn-staged/."""
+    return os.environ.get("FW_BPMN_STAGE_DIR") or os.path.join(".context", "bpmn-staged")
+
+
+def _content_sha(text: str) -> str:
+    """Short content hash for manifest change-detection."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def _yaml_q(s: str) -> str:
+    """Double-quote + escape a scalar for safe manifest emission."""
+    return '"' + str(s).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def render_proposal(sk: dict) -> str:
+    """Render a skeleton as a STAGED PROPOSAL — `status: proposal` (a non-lifecycle
+    marker, NOT a framework task status) plus the promote marker, so a proposal can
+    never be mistaken for — or promoted as — a governed task without going through
+    the gate."""
+    body = render_skeleton(sk)
+    return body.replace(
+        "status: captured\n", "status: proposal\n" + PROPOSAL_MARKER + "\n"
+    )
+
+
+def write_proposals(
+    skeletons: list[dict], diagram_path: str, stage_dir: str | None = None
+) -> str:
+    """Write uid-keyed proposals + a manifest to <stage_dir>/<diagram-stem>/. Idempotent.
+
+    Upsert by uid: proposals for currently-emitted uids are (over)written; proposals whose
+    uid is no longer emitted are pruned. Returns the output directory. NEVER writes under
+    .tasks/ and never allocates a T-ID (C1) — proposals are proposals until promoted.
+    """
+    stage_dir = stage_dir or _stage_dir()
+    stem = os.path.splitext(os.path.basename(diagram_path))[0]
+    out_dir = os.path.join(stage_dir, stem)
+    os.makedirs(out_dir, exist_ok=True)
+
+    current_uids: set[str] = set()
+    entries: list[tuple[str, dict, str]] = []
+    for sk in skeletons:
+        uid = sk["uid"]
+        current_uids.add(uid)
+        text = render_proposal(sk)
+        with open(os.path.join(out_dir, f"{uid}.md"), "w", encoding="utf-8") as fh:
+            fh.write(text)
+        entries.append((uid, sk, _content_sha(text)))
+
+    # Prune stale proposals — uids no longer emitted (node removed from the diagram).
+    for fname in os.listdir(out_dir):
+        if fname == "manifest.yaml" or not fname.endswith(".md"):
+            continue
+        if fname[:-3] not in current_uids:
+            os.remove(os.path.join(out_dir, fname))
+
+    lines = [
+        f"diagram: {_yaml_q(os.path.basename(diagram_path))}",
+        f"generated_from: {_yaml_q(diagram_path)}",
+        "proposals:",
+    ]
+    for uid, sk, sha in sorted(entries):
+        lines.append(f"  {uid}:")
+        lines.append(f"    name: {_yaml_q(sk['name'])}")
+        lines.append(f"    owner: {sk['owner']}")
+        lines.append(f"    workflow_type: {sk['workflow_type']}")
+        lines.append(f"    horizon: {sk.get('horizon', 'now')}")
+        lines.append(f"    sha: {sha}")
+    with open(os.path.join(out_dir, "manifest.yaml"), "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    return out_dir
+
+
 def main(argv: list[str]) -> int:
-    if len(argv) != 2:
-        sys.stderr.write("usage: bpmn_to_tasks.py <path-to.bpmn>\n")
+    write = False
+    positional: list[str] = []
+    for a in argv[1:]:
+        if a == "--write":
+            write = True
+        else:
+            positional.append(a)
+    if len(positional) != 1:
+        sys.stderr.write("usage: bpmn_to_tasks.py [--write] <path-to.bpmn>\n")
         return 2
+    path = positional[0]
     try:
-        out, warnings = compile_to_tasks(argv[1])
+        skeletons, warnings = parse_bpmn(path)
     except MalformedInceptionError as e:
         # O-3 fail-fast (v1.1): a malformed inception is a structural diagram defect —
         # refuse the compile with an actionable message, exit non-zero.
@@ -465,6 +562,12 @@ def main(argv: list[str]) -> int:
         return 3
     for w in warnings:
         sys.stderr.write(f"WARN: {w}\n")
+    if write:
+        # Stage uid-keyed proposals (NOT tasks — no .tasks/ write, no gate). T-2539.
+        out_dir = write_proposals(skeletons, path)
+        sys.stderr.write(f"staged {len(skeletons)} proposal(s) -> {out_dir}/\n")
+    # stdout emission is always preserved (default behaviour, --write is additive).
+    out = "\n".join(render_skeleton(s) for s in skeletons)
     sys.stdout.write(out)
     if out and not out.endswith("\n"):
         sys.stdout.write("\n")

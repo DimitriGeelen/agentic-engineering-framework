@@ -12,7 +12,9 @@ usage() {
 fw bpmn — BPMN process diagram → AEF task compiler (Child-2 forward bridge)
 
 Usage:
-  fw bpmn compile <file.bpmn>   Compile a BPMN diagram to AEF task skeletons (stdout)
+  fw bpmn compile <file.bpmn>          Compile a BPMN diagram to AEF task skeletons (stdout)
+  fw bpmn compile --write <file.bpmn>  Also stage uid-keyed proposals to .context/bpmn-staged/
+                                       (proposals, NOT tasks — promote separately; T-2539)
   fw bpmn help                  Show this help
 
 The compiler extracts task nodes + aef:uid (IW-1 keystone), maps lane→owner
@@ -34,7 +36,8 @@ case "$cmd" in
       echo "error: compiler not found at $COMPILER" >&2
       exit 1
     fi
-    exec python3 "$COMPILER" "$1"
+    # Forward all args (e.g. --write) — the compiler parses them.
+    exec python3 "$COMPILER" "$@"
     ;;
   help|-h|--help|"")
     usage

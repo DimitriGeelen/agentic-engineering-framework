@@ -76,3 +76,6 @@ datetime
 .context/working/*.db-shm
 .context/working/*.db-wal
 .context/working/.agent-dispatch-counter
+
+# Child-2 write-out staging proposals (T-2539) — generated, not tasks; regenerable via `fw bpmn compile --write`
+.context/bpmn-staged/
