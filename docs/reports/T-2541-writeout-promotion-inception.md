@@ -130,6 +130,31 @@ Inspected `agents/task-create/create-task.sh` (read-only; no promote verb built)
 3. **Idempotency spike (IW-2, ~45m):** design the uid↔T-ID registry so re-promote updates in place;
    converge the contract with 832 on the rail (their IW-2).
 
+### Spike 2 — finding (read-only, 2026-07-18) — IW-3 root/confirm
+
+Question: does `captured` + `owner:human` + G-020 give "nothing auto-activates", or is a bespoke
+confirm step needed? Investigated every automated status-transition path:
+
+- **BVP auto-promote** (`lib/bvp.sh:1181`) is the one automated `captured → started-work` path
+  (`:1326`). But it is **OFF by ship default** (`policy/value-drivers.yaml:290-291`
+  `auto_promote.enabled: false`, T-1917; no-op when disabled, `bvp.sh:77`), enabling it is a
+  **§ACD-gated D8 sovereignty act** (Watchtower / `--i-am-human` — an agent cannot flip it), and even
+  when enabled it **only promotes tasks with human-confirmed `bvp_scores`** (`bvp.sh:108`, M3 boundary)
+  — a freshly-promoted BPMN task has none, so it is skipped.
+- **Resolver / orchestrator** dispatch does not pick `captured` tasks (grep: no `captured` selection in
+  `lib/resolver.sh`).
+
+**IW-3 answer: `captured` + `owner:human` in `active/` is safe — no automated path activates it without
+a prior human sovereignty act** (enable auto-promote *and* confirm bvp_scores, both human). G-020 is the
+second safety net at work-start (blocks placeholder-AC activation). **No bespoke confirm step is
+required** — the existing lifecycle already delivers "nothing auto-activates".
+
+**One recommended hardening (not required, belt-and-suspenders):** BVP auto-promote does not explicitly
+exclude `owner:human`. A human-owned task should never auto-start regardless of scores; adding an
+`owner == human → skip` filter to auto-promote would make G2 bulletproof and is a cheap, isolated
+change. Flagged for the GO build scope (or as its own task) — captured as **PL-037** candidate.
+IW-3 confidence 1 → **2**.
+
 ## Assumptions (registered)
 
 - **A1:** `fw task create` (`create-task.sh`) is the sole governed `.tasks/`-writer and can be invoked

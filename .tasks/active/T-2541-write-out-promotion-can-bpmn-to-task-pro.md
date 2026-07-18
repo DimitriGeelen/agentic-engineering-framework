@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-18T08:15:24Z
-last_update: 2026-07-18T08:16:50Z
+last_update: '2026-07-18T08:30:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -40,6 +40,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-18T08:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=6 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -72,9 +82,9 @@ write-out "inception-first, sequenced next" (rail offset 56).
   disposition: deferred
   rationale: 832's IW-2 (rail offset 48) — their contract to define; AEF stores the mapping — Spike 3
 - **IW-3: Which `.tasks/` root do promoted tasks land in — `active/` (captured) directly, or a quarantine the human confirms out of?**
-  confidence: 1
-  disposition: deferred
-  rationale: Dimitri's guardrail says `captured`; whether `captured`+G-020 suffices vs an explicit confirm step is untested — Spike 2
+  confidence: 2
+  disposition: answered
+  rationale: Spike 2 — captured+owner:human in active/ IS safe: only auto-activation path (BVP auto-promote) is off-by-default (value-drivers.yaml:290), D8-gated to enable, requires human-confirmed bvp_scores (bvp.sh:108) which fresh tasks lack; resolver ignores captured. No bespoke confirm step needed; G-020 is the work-start safety net. Latent hardening (auto-promote skip owner:human) = PL-037 candidate
 
 ## Exploration Plan
 
