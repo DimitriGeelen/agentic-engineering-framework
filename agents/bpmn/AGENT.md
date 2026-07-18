@@ -49,9 +49,17 @@ with 832's real `aef:` namespace URI when the vendored corpus lands.
 - **O-3 fail-fast (T-2537, done):** O-3 graduated to v1.1 (832 T-195, rail offset 47) as
   MUST + machine-checkable G-3 — an inception's go/no-go boundary MUST be sovereignty-laned.
   A mis-laned inception now raises `MalformedInceptionError` (CLI exit 3, actionable ERROR),
-  superseding the pre-graduation force-human+WARN. A name-only "Human" lane (no laneMeta)
-  is accepted with a conformance WARN (pre-laneMeta compat). Fixtures:
-  `inception-mislaned-sample.bpmn` (raises), `inception-nameonly-lane-sample.bpmn` (warn).
+  superseding the pre-graduation force-human+WARN. Fixture: `inception-mislaned-sample.bpmn`.
+- **O-3 VETO tightening (T-2540, done):** 832 VETOed (rail offset 49) the T-2537 name-only-"Human"
+  accept+WARN ramp. Per mapping-v1 §3 (IW-9, v1.1) `<aef:laneMeta authority>` is the SOLE
+  authority-of-record — a lane NAME is not an authority carrier. So **only `authority="sovereignty"`
+  satisfies O-3**; name-only-Human, no-lane, laneMeta-without-@authority, and non-sovereignty
+  authority ALL raise identically (§7). The gate now keys off `authority` directly, not the
+  name-folded `lane_owner`, structurally excluding the name heuristic from the sovereignty check.
+  Conformance fix to an already-frozen fence (no sovereign GO needed). `inception-nameonly-lane-sample.bpmn`
+  moved warn-set → raises-set. Also locks PL-035 (832 offset 50): an existence rule must fire
+  HARDEST on absent input — the inline node-loop check has no early return, so a no-laneSet inception
+  raises (regression-locked by `test_no_laneset_inception_raises`).
 - **Write-out staging (T-2539, done — from T-2538 GO):** `fw bpmn compile --write` stages
   uid-keyed *proposals* to `.context/bpmn-staged/<diagram>/` (one `<uid>.md` per node +
   `manifest.yaml`). Proposals are `status: proposal`, NOT tasks — no `.tasks/` write, no gate,

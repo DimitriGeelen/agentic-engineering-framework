@@ -339,24 +339,22 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
         if is_inception:
             workflow_type = INCEPTION_WORKFLOW_TYPE
             constituents = _constituents(node)
-            # O-3 (graduated v1.1, 832 T-195 / rail offset 47): an inception's go/no-go
-            # boundary MUST be sovereignty-laned — assert and FAIL FAST on a malformed
-            # one (machine-checkable G-3). This supersedes the pre-graduation
-            # force-human+WARN (rail offset 39). A lane resolves to human either via the
-            # authority-of-record (authority="sovereignty", preferred) or — for diagrams
-            # predating laneMeta — a lane whose NAME indicates human (accepted with a
-            # conformance WARN). Anything else (agent/initiative lane, or no sovereignty
-            # signal at all) is a structural defect: raise.
-            if lane_owner != "human":
+            # O-3 (v1.1, VETO-tightened per 832 rail offset 49/50): an inception's go/no-go
+            # boundary MUST be sovereignty-laned, and <aef:laneMeta authority> is the SOLE
+            # authority-of-record (mapping-v1 §3, IW-9). Only authority="sovereignty" satisfies
+            # it. A lane NAME ("Human") is NOT an authority carrier — so name-only-Human,
+            # no-lane, laneMeta-without-@authority, and any non-sovereignty authority ALL fail
+            # §7 identically. Fail fast (machine-checkable G-3). This supersedes T-2537's
+            # pre-laneMeta accept+WARN ramp, which forked conformance against 832's reference
+            # validator: the compat case it protected provably cannot arise (every conformant
+            # editor emits @authority; the importer defaults missing→'none', never name-derived).
+            # This is an EXISTENCE rule — it must fire HARDEST on absent input (contrast O-1
+            # below, a comparison that correctly no-ops on absence). Keying off `authority`
+            # directly (not the name-folded `lane_owner`) structurally excludes the name
+            # heuristic from the sovereignty gate. See PL-035 / T-2540 RCA.
+            if authority != "sovereignty":
                 raise MalformedInceptionError(node_id, authority, lane_name)
             owner = "human"
-            if authority != "sovereignty":
-                warnings.append(
-                    f"inception subProcess {node_id!r} is laned human by NAME only "
-                    f"({lane_name!r}) with no <aef:laneMeta authority=\"sovereignty\"> — "
-                    f"accepted for pre-laneMeta compatibility, but add the "
-                    f"authority-of-record for v1.1 conformance"
-                )
         else:
             workflow_type = "build"  # KIND axis (ratified default for ordinary task nodes)
             type_owner = TYPE_OWNER.get(ntype)

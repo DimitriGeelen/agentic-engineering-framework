@@ -344,13 +344,51 @@ def test_valid_sovereignty_inception_still_compiles():
     assert by_uid["n_inception"]["workflow_type"] == "inception"
 
 
-def test_nameonly_human_lane_accepted_with_warning():
-    """A name-only 'Human' lane (no laneMeta authority) is accepted + warned, not failed."""
-    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_NAMEONLY)
-    by_uid = _by_uid(skeletons)
-    assert by_uid["u-incept-nameonly"]["owner"] == "human"
-    assert by_uid["u-incept-nameonly"]["workflow_type"] == "inception"
-    assert any("NAME only" in w for w in warnings)
+def test_nameonly_human_lane_now_raises():
+    """A name-only 'Human' lane (no laneMeta authority) MUST raise (832 VETO, rail offset 49).
+
+    mapping-v1 §3 (IW-9, v1.1): <aef:laneMeta authority> is the SOLE authority-of-record.
+    A lane NAME is not an authority carrier, so a name-only 'Human' lane is not
+    sovereignty-laned and fails O-3 identically to no-lane. Supersedes T-2537's
+    accept+WARN ramp (which forked conformance against 832's reference validator).
+    """
+    import pytest
+
+    with pytest.raises(bpmn_to_tasks.MalformedInceptionError) as exc:
+        bpmn_to_tasks.parse_bpmn(FIXTURE_NAMEONLY)
+    # Actionable: names the offending lane and points at the authority-of-record fix.
+    assert "sovereignty" in str(exc.value)
+
+
+def test_no_laneset_inception_raises(tmp_path):
+    """PL-035 existence-rule lock: an inception subProcess in a diagram with NO laneSet
+    at all (no lanes, no authority, no human signal) MUST raise — the existence rule
+    fires HARDEST on absent input, never no-ops (contrast O-1). 832 offset 50 flagged
+    their own validator skipping O-3 on this exact shape via an early return; this test
+    proves AEF's inline check does not have that hole.
+    """
+    import pytest
+
+    bpmn = tmp_path / "no-laneset-inception.bpmn"
+    bpmn.write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"\n'
+        '             xmlns:aef="http://aef/ns">\n'
+        '  <process id="p1">\n'
+        '    <startEvent id="s1"/>\n'
+        '    <subProcess id="sub_bare" name="Explore?">\n'
+        '      <extensionElements>\n'
+        '        <aef:uid value="u-bare"/>\n'
+        '        <aef:meta workflowType="inception"/>\n'
+        '      </extensionElements>\n'
+        '    </subProcess>\n'
+        '  </process>\n'
+        '</definitions>\n'
+    )
+    with pytest.raises(bpmn_to_tasks.MalformedInceptionError) as exc:
+        bpmn_to_tasks.parse_bpmn(str(bpmn))
+    assert "sub_bare" in str(exc.value)
+    assert "sovereignty" in str(exc.value)
 
 
 def test_canonical_negative_frw_gather_not_inception():
