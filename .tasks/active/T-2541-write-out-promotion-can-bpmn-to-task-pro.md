@@ -153,11 +153,15 @@ write-out "inception-first, sequenced next" (rail offset 56).
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — contingent on 832's IW-2 id-mapping contract + seam confirmation
 
 **Rationale:**
 
-Opening to explore the compiler-side write SEAM + guardrail enforceability on the AEF side. Recommendation follows 3 spikes (seam fork, guardrail-to-gate mapping, idempotent promote). Advisory leans GO-contingent: most guardrails already map to existing AEF gates (T-2539 staging is mechanical; G-020 build-readiness blocks activation without real ACs; owner:human+captured is settable at write). The load-bearing unknown is whether the .tasks/ WRITE itself is gated end-to-end. Flips NO-GO if any guardrail can only be a convention, not a gate. Decision stays Dimitri's (joint w/ 832 T-201).
+Spikes 1 & 2 answer the inception's core question: the promotion guardrails ARE mechanizable as gates. G1 (dry-run default + explicit --write) is a gate (T-2539). G2 (owner:human + status:captured) is a gate — the safe state is create-task.sh's DEFAULT (started-work needs an explicit --start a promote path won't pass). G3 (the load-bearing write-seam — does the .tasks/ write stay inside the gate perimeter) is RESOLVED: delegating to `fw task create` inherits the trusted-writer invariants (T-1068/G-020). G5 (provenance) and G6 (build-readiness/G-020) are gates. No guardrail examined proved to be a convention — so the NO-GO condition is NOT met.
+
+The only open guardrail is G4 (idempotent uid↔T-ID). It is NOT "un-gateable" — it is a trivial mechanical registry pending 832's id-mapping SHAPE (their IW-2 contract, rail offset 48). The two remaining items — 832 confirming manifest-as-seam + delivering the IW-2 contract — are external contract-DELIVERY, not open design risk. So: GO to build the promotion capability once those two land.
+
+Calibration note (T-2144): this upgrades the filing DEFER, which hedged on the sequencing dependency (832 not yet replied) rather than a real evidence gap. Walking the evidence, the core question is answered YES; a genuine external-delivery contingency is named explicitly. Decision remains Dimitri's (joint w/ 832 T-201).
 
 **Evidence:**
 

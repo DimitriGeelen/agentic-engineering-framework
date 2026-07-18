@@ -183,9 +183,25 @@ IW-3 confidence 1 → **2**.
 
 ## Recommendation
 
-**DEFER** — pending the 3 spikes. This is a genuine evidence gap (no spike data yet), not a confidence
-hedge: the whole point of the inception is that G2/G3/G4 enforceability is unproven. Advisory leans
-**GO-contingent** — G1/G5/G6 are already gates and the seam hypothesis (manifest interface + delegate
-to `fw task create`) looks mechanizable — but the recommendation converts to a firm GO/NO-GO only after
-Spike 1 proves the write seam is gated. Flips to **NO-GO** the moment a spike shows any guardrail can
-only be a convention.
+**GO — contingent on 832's IW-2 id-mapping contract + seam confirmation.**
+
+Updated after Spikes 1 & 2 (was DEFER at filing). The inception's core question — *can the promotion
+guardrails be mechanical gates?* — is answered **YES**:
+
+- **G1** (dry-run default + explicit `--write`) — gate (T-2539).
+- **G2** (`owner:human` + `status:captured`) — gate; the safe state is `create-task.sh`'s **default**
+  (Spike 1: `--start` is required to opt into `started-work`; a promote path won't pass it).
+- **G3** (the load-bearing write-seam) — **RESOLVED** (Spike 1): delegating to `fw task create`
+  inherits the trusted-writer invariants (T-1068 / G-020); the write never leaves AEF's gate perimeter.
+- **G5** (provenance) / **G6** (build-readiness, G-020) — gates.
+- **G4** (idempotent uid↔T-ID) — the ONLY open guardrail, and it is **not un-gateable**: it is a
+  trivial mechanical registry pending 832's id-mapping **shape** (their IW-2 contract, rail offset 48).
+
+No guardrail examined proved to be a convention, so the **NO-GO** condition is not met. The two open
+items — 832 confirming manifest-as-seam and delivering the IW-2 contract — are external
+contract-**delivery**, not open design risk.
+
+**Calibration note (T-2144):** the filing DEFER hedged on the sequencing dependency (832 not yet
+replied), not on a real evidence gap. Walking the evidence, the answer is GO with a named external
+contingency. This is the anti-hedge correction. **Decision remains Dimitri's** (joint with 832 T-201);
+this artifact carries the AEF-compiler-half advisory.
