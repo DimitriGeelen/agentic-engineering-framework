@@ -84,6 +84,29 @@ AEF's and gated. **This must be proven by Spike 1, not assumed** — if `fw task
 driven programmatically with forced `owner:human/captured` un-overridably, the hypothesis fails and we
 revisit.
 
+### Spike 1 — partial finding (read-only, 2026-07-18)
+
+Inspected `agents/task-create/create-task.sh` (read-only; no promote verb built):
+
+- **A1 CONFIRMED.** `create-task.sh` is programmatically drivable: `--name`, `--type`, `--owner` flags
+  (`create-task.sh:47-50`), `--start` toggles status. **Default status is `captured`** unless `--start`
+  is passed (`create-task.sh:317-321`); `--owner human` sets `owner:` (`:368/:394/:416`). So
+  `fw task create --type build --owner human --name '…'` (no `--start`) lands **exactly the G2 target
+  `owner:human` + `status:captured` by default** — the safe state is the default, the unsafe state
+  (`started-work`) requires an explicit opt-in flag a promote path simply won't pass. G2 is a gate.
+- **G3 framing refined (important).** `create-task.sh` writes the `.tasks/` file directly and does NOT
+  re-fire the PreToolUse `check-active-task` hook — by design: that hook gates *agent Write/Edit tool
+  calls* on `.tasks/`, and `fw task create` is the sanctioned writer the gate funnels agents toward.
+  So "the write is gated" does NOT mean "promote re-triggers the agent hook" — it means **promote
+  delegates to the single trusted writer that enforces the field invariants (T-1068 status/horizon),
+  build-readiness (G-020), and the inception-recommendation gate.** This is *stronger* for the
+  hypothesis: the guardrails live inside the writer, exactly where they belong, and a promote path that
+  calls `fw task create` inherits all of them without re-implementing any.
+- **Still open (needs the live half of Spike 1):** an end-to-end demo promoting a fixture proposal
+  through `fw task create` — deferred until the seam converges with 832 (building the promote verb
+  itself is post-GO build, not exploration). IW-1 confidence 1 → **2** (mechanism validated by
+  inspection; live wire-through pending).
+
 ## Open Questions (mirrored from the task file — G-067)
 
 - **IW-1 (seam):** Does routing promote through `fw task create` keep the `.tasks/` write inside the

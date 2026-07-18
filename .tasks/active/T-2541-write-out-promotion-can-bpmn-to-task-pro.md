@@ -64,9 +64,9 @@ write-out "inception-first, sequenced next" (rail offset 56).
 ## Open Questions
 
 - **IW-1: Does routing promote through `fw task create` keep the `.tasks/` write inside the task-gate perimeter end-to-end, with `owner:human`+`status:captured` un-overridable by the caller?**
-  confidence: 1
+  confidence: 2
   disposition: deferred
-  rationale: seam hypothesis (delegate to governed writer) looks mechanizable but unproven — Spike 1
+  rationale: Spike 1 read-only CONFIRMED create-task.sh drivable; captured is the default (--start needed for started-work), --owner human sets owner; guardrails live in the trusted writer (T-1068/G-020). Live wire-through demo pending seam convergence — create-task.sh:317-321,368
 - **IW-2: What is the uid↔T-ID cross-ref contract for idempotent re-promote (G4)?**
   confidence: 0
   disposition: deferred
