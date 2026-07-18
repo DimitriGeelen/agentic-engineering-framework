@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2542: fw bpmn promote: staged BPMN proposal to gated .tasks/ write (owner=human,
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-18T09:55:46Z
+# ============================================================================
+
+task_id: T-2542
+task_name: "fw bpmn promote: staged BPMN proposal to gated .tasks/ write (owner=human,"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-18T09:43:31Z
+completed: 2026-07-18T09:55:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-18T11:55:13+02:00
+last_commit: 2026-07-18T11:55:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw bpmn promote — staged BPMN proposal → gated .tasks/ write. register fabric card for test_bpmn_promote.py
+
+# Key outcomes
+outcomes:
+  - '`fw bpmn promote <uid>` and `fw bpmn promote all` read the T-2539 proposal manifest and, in **dry-run (default)**, list what would be promoted with **zero** `.tasks/` writes'
+  - '`--write` promotes each proposal by delegating to `fw task create` with **un-overridable** `owner: human` + `status: captured` (G2/G3 — the write never leaves the task-gate perimeter)'
+  - 'Every promoted task carries an `aef_provenance:` frontmatter block — `uid`, `source_diagram`, `source_bpmn_sha`, `promoted_at` — persisted as-is (832 §3b; `uid` = join key)'
+  - 'G4 reconcile keyed on `(uid, source_bpmn_sha)`: **new** (uid absent) → create; **unchanged** (sha equal) → NO-OP; **changed** (sha differs) → refuse-clobber on `started-work`/human-touched (refresh allowed only on `captured`+untouched under `--write`); **deleted** (uid gone) → orphan + flag, never auto-delete'
+  - 'Unit tests cover new-create, idempotent no-op, changed-refuse-clobber, orphan-flag — all green'
+  - '`fw bpmn promote --help` documents the verb; roadmap in `agents/bpmn/AGENT.md` updated + vendored copy synced (`fw vendor self`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-18 — Provenance injection: post-create edit, not a shared-writer pass-through'
+    chose: '`promote` calls `fw task create` (gated write, forces owner:human + captured), then'
+    rationale: 'Spike-1 found `create-task.sh` templates frontmatter via fixed `str.replace()` on known'
+    alternatives_rejected: ['Adding `--extra-frontmatter` to `create-task.sh` (Option B) — atomic single-write, but']
+  - decision: '2026-07-18 — Idempotency floor: new+unchanged ship together'
+    chose: '`new→create` and `unchanged(sha)→NO-OP` are one indivisible slice; `changed→refuse-clobber`'
+    rationale: 'shipping `new→create` without the `unchanged` guard makes a second `promote --write` run'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/bpmn/AGENT.md'
+  - '.agentic-framework/agents/bpmn/bpmn.sh'
+  - 'agents/bpmn/AGENT.md'
+  - 'agents/bpmn/bpmn.sh'
+  - '.fabric/components/tests-unit-doctor_designer_pin_drift.yaml'
+  - '.fabric/components/tests-unit-test_bpmn_promote.yaml'
+  - '.fabric/components/tools-bpmn_promote.yaml'
+  - '.tasks/active/T-2542-fw-bpmn-promote-staged-bpmn-proposal-to-.md'
+  - 'tests/unit/test_bpmn_promote.py'
+  - 'tools/bpmn_promote.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-18T11:55:13"
+    action: "T-2542: fw bpmn promote — staged BPMN proposal → gated .tasks/ write"
+  - time: "2026-07-18T11:55:35"
+    action: "T-2542: register fabric card for test_bpmn_promote.py"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bpmn, workflow-designer, "832-integration"]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 12
+  commits: 2
+  files_changed: 10
+  lines_added: 997
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2542-fw-bpmn-promote-staged-bpmn-proposal-to-.md
+generated_by: context-agent-hybrid
