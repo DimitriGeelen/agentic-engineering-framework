@@ -65,7 +65,15 @@ with 832's real `aef:` namespace URI when the vendored corpus lands.
   `manifest.yaml`). Proposals are `status: proposal`, NOT tasks — no `.tasks/` write, no gate,
   no T-ID allocation (C1). Idempotent upsert by `aef:uid`; stale proposals pruned. This is
   candidate C of the T-2538 governance inception (`docs/reports/T-2538-writeout-mode-governance.md`).
-- **Follow-up (promotion slice, gated):** `fw bpmn promote <uid|all>` → real tasks via
-  `fw task create`, recording the uid↔T-ID cross-ref. BLOCKED on 832's id-mapping contract
-  (IW-2, surfaced rail offset 48). Real-corpus breadth validation descoped (discriminator
-  proven both ways against 832's real bytes).
+- **Write-out promotion (T-2542, done — from T-2541 + 832 T-201 GO):** `fw bpmn promote <uid|all>`
+  turns staged proposals into real `.tasks/` files via `fw task create` — the ONE governed writer —
+  forcing `owner: human` + `status: captured` (un-overridable G2/G3: proposal content can never
+  override them). Stamps an `aef_provenance` frontmatter block (`uid`, `source_diagram`,
+  `source_bpmn_sha`, `promoted_at`) per 832's IW-2 contract (T-201 §3b): frontmatter is authoritative,
+  the uid↔T-ID map is a derived cache re-scanned from `.tasks/` each run (no ledger file, no split-brain).
+  Reconcile keyed on `(uid, source_bpmn_sha)`: **new**→create, **unchanged**→NO-OP (idempotent re-promote),
+  **changed**→refresh if captured+untouched / REFUSE-clobber if started-work/human-touched,
+  **deleted**→orphan+flag (never auto-delete). Dry-run is the default; `--write` executes.
+  Impl: `tools/bpmn_promote.py`, tests `tests/unit/test_bpmn_promote.py`. Provenance is injected by
+  promote after the gated create (create-task.sh has no arbitrary-frontmatter pass-through — Spike-1);
+  the window is benign (captured+owner:human triggers zero automation — Spike-2).
