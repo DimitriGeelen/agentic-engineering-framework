@@ -4,10 +4,10 @@ name: "E2E integration test: BPMN compile to promote to create against real gate
 description: >
   E2E integration test: BPMN compile to promote to create against real gate (forward bridge)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-18T19:47:14Z
-last_update: 2026-07-18T19:47:14Z
-date_finished: null
+last_update: 2026-07-18T19:53:31Z
+date_finished: 2026-07-18T19:53:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -184,3 +184,20 @@ test ! -f .context/working/.bpmn-promote-audit.jsonl
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2545-e2e-integration-test-bpmn-compile-to-pro.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7ef1eb3c
+- **Timestamp:** 2026-07-18T19:53:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/bpmn_promote_e2e.bats`
+
+### 2026-07-18T19:53:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

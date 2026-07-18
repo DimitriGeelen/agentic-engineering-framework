@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2545: E2E integration test: BPMN compile to promote to create against real gate (forward bridge)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-18T19:53:45Z
+# ============================================================================
+
+task_id: T-2545
+task_name: "E2E integration test: BPMN compile to promote to create against real gate (forward bridge)"
+workflow_type: test
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-18T19:47:14Z
+completed: 2026-07-18T19:53:31Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-18T21:53:22+02:00
+last_commit: 2026-07-18T21:53:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  E2E forward-bridge integration test (compile→promote→real gate)
+
+# Key outcomes
+outcomes:
+  - 'New bats file `tests/unit/bpmn_promote_e2e.bats` runs the full forward bridge against a temp `PROJECT_ROOT`/`TASKS_DIR` (no mocks): real `bpmn compile --write` stages proposals → real `fw bpmn promote all --write` invokes the real `create-task.sh` gate → asserts real `.tasks/active/T-*.md` file(s) created — test 1 (3 fixture nodes → 3 real task files)'
+  - 'Test asserts every T-2543 sovereignty gate end-to-end: (a) created task is `owner: human` + `status: captured` + carries an `aef_provenance:` block — test 1, incl. G2 force-owner proof (Agent-lane `u-compile-002` materializes owner:human); (b) `.bpmn-promote-audit.jsonl` line per task — test 2 (3 JSON lines, required keys); (c) promote-origin `create --owner agent` REFUSED — test 3 (BLOCKED, no file); (d) stale-sha → `[PROPOSE]` + content byte-identical — test 4 (md5 before==after)'
+  - 'Test is hermetic and leaves no residue in the real repo — proven by deleting the real audit + re-running bats → no real audit reappears; real focus.yaml snapshot/restored in teardown; 4/4 green (`bats tests/unit/bpmn_promote_e2e.bats`). Also cleaned a stale `.bpmn-promote-audit.jsonl` left by the T-2543 scratch script (~9h old, not from this test)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2545-e2e-integration-test-bpmn-compile-to-pro.md'
+  - 'tests/unit/bpmn_promote_e2e.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-18T21:53:22"
+    action: "T-2545: E2E forward-bridge integration test (compile→promote→real gate)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 2
+  lines_added: 329
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2545-e2e-integration-test-bpmn-compile-to-pro.md
+generated_by: context-agent-hybrid
