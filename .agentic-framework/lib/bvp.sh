@@ -1283,6 +1283,11 @@ def cmd_auto_promote(args):
         fm = parse_frontmatter(path)
         if not fm or fm.get('status') != 'captured':
             continue
+        if fm.get('owner') == 'human':
+            continue  # PL-037 (T-2544): owner:human never auto-starts — the human
+                      # decides when. Belt-and-suspenders for G2 (T-2541 IW-3): confirming
+                      # bvp_scores for ranking must not imply consent to auto-start a
+                      # human-owned task (e.g. a BPMN-promoted task, T-2542/T-2543).
         scores = fm.get('bvp_scores') or {}
         if not scores:
             continue  # M3 sovereignty boundary: only confirmed scores promote.
