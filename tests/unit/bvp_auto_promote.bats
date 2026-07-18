@@ -256,3 +256,80 @@ PY
     [[ "$output" != *"$PROBE_ID"* ]]
     grep -q "^status: captured" "$PROBE_FILE"
 }
+
+@test "PL-037 (T-2544): owner:human task is excluded from candidates even with qualifying scores" {
+    # Two probes identical except owner: agent-owned should be listed, human-owned excluded.
+    HUMAN_ID="T-99971"
+    HUMAN_FILE=".tasks/active/${HUMAN_ID}-bvp-autopromote-human-probe.md"
+
+    # Agent-owned probe (reuses PROBE_FILE / T-99970 — cleaned by teardown).
+    cat > "$PROBE_FILE" <<'EOF'
+---
+id: T-99970
+name: "bvp auto-promote agent probe (will be removed)"
+description: "probe"
+status: captured
+workflow_type: build
+owner: agent
+horizon: now
+tags: [probe]
+created: 2026-05-19T00:00:00Z
+last_update: 2026-05-19T00:00:00Z
+date_finished: null
+bvp_scores: {D1: 5, D2: 5, D3: 5, D4: 5}
+cost_estimate: {blast_radius: 0, tier: 0, effort: 1}
+---
+
+# probe
+
+## Acceptance Criteria
+- [ ] probe
+
+## Verification
+true
+EOF
+
+    # Human-owned probe — same qualifying scores, only owner differs.
+    cat > "$HUMAN_FILE" <<'EOF'
+---
+id: T-99971
+name: "bvp auto-promote human probe (will be removed)"
+description: "probe"
+status: captured
+workflow_type: build
+owner: human
+horizon: now
+tags: [probe]
+created: 2026-05-19T00:00:00Z
+last_update: 2026-05-19T00:00:00Z
+date_finished: null
+bvp_scores: {D1: 5, D2: 5, D3: 5, D4: 5}
+cost_estimate: {blast_radius: 0, tier: 0, effort: 1}
+---
+
+# probe
+
+## Acceptance Criteria
+- [ ] probe
+
+## Verification
+true
+EOF
+
+    python3 - <<PY
+from ruamel.yaml import YAML
+y = YAML(); y.preserve_quotes = True; y.indent(mapping=2, sequence=4, offset=2)
+src = y.load(open('$POLICY'))
+src['auto_promote']['enabled'] = True
+src['auto_promote']['max_concurrent'] = 999
+y.dump(src, open('$POLICY', 'w'))
+PY
+
+    run bin/fw bvp auto-promote --dry-run
+    rm -f "$HUMAN_FILE"   # clean the extra probe regardless of assertions below
+    [ "$status" -eq 0 ]
+    # Agent-owned probe qualifies and is listed.
+    [[ "$output" == *"$PROBE_ID"* ]]
+    # Human-owned probe is excluded despite identical qualifying scores.
+    [[ "$output" != *"$HUMAN_ID"* ]]
+}
