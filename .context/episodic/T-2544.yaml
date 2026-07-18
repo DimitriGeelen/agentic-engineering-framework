@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2544: PL-037: BVP auto-promote excludes owner human (G2 belt-and-suspenders)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-18T14:39:32Z
+# ============================================================================
+
+task_id: T-2544
+task_name: "PL-037: BVP auto-promote excludes owner human (G2 belt-and-suspenders)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-18T14:34:48Z
+completed: 2026-07-18T14:39:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-18T16:38:53+02:00
+last_commit: 2026-07-18T16:38:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  BVP auto-promote excludes owner:human (PL-037, G2 belt-and-suspenders)
+
+# Key outcomes
+outcomes:
+  - '`cmd_auto_promote` candidate loop skips any active task with `owner == ''human''` (one `continue` guard, placed alongside the existing `status != captured` / no-`bvp_scores` skips), so an owner:human task is never auto-started even with confirmed scores above threshold — `lib/bvp.sh:1285-1290`'
+  - 'A test proves the exclusion: an `owner: human`, `captured` task with `bvp_scores` + `cost_estimate` that WOULD otherwise qualify is NOT in the promoted set, while an equivalent `owner: agent` task IS — same fixture, only `owner` differs — `tests/unit/bvp_auto_promote.bats` test 7 (green; non-vacuous: agent probe asserted present)'
+  - 'Existing BVP tests still pass and no non-owner behavior changes (agent-owned selection identical to before) — 224 pytest passed + bats tests 1-6 unchanged/green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-18 — filter placement + test surface'
+    chose: 'place the `owner == ''human''` skip BEFORE the `bvp_scores` check in the candidate loop, and prove exclusion via a `--dry-run` bats test with two probes differing only in `owner`.'
+    rationale: 'placing before scores excludes owner:human unconditionally (even if a human confirms scores later), which is the whole point — the exclusion must not depend on score state. `--dry-run` proves candidate-selection excludes the human task without mutating real `.tasks/` state or writing to the auto-promote log; the agent-owned twin being listed makes the human twin''s absence non-vacuous.'
+    alternatives_rejected: ['a real-promotion test (would flip status + write log, needing more teardown); a Python-level unit test (auto-promote is only reachable through the CLI path — the bats surface matches how it actually runs).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-2544-pl-037-bvp-auto-promote-excludes-owner-h.md'
+  - 'tests/unit/bvp_auto_promote.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-18T16:38:53"
+    action: "T-2544: BVP auto-promote excludes owner:human (PL-037, G2 belt-and-suspenders)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 3
+  lines_added: 264
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2544-pl-037-bvp-auto-promote-excludes-owner-h.md
+generated_by: context-agent-hybrid
