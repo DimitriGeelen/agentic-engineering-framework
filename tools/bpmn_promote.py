@@ -17,13 +17,19 @@ ledger file).
 
   new       (uid absent in .tasks/)           -> create (captured, owner:human) + stamp provenance
   unchanged (recorded sha == manifest sha)     -> NO-OP  (this is what makes re-promote idempotent)
-  changed   (recorded sha != manifest sha)     -> captured + untouched : refresh under --write
-                                                  started-work / human-touched : REFUSE-clobber + emit diff
+  changed   (recorded sha != manifest sha)     -> PROPOSE-not-clobber: NEVER auto-write; flag for
+                                                  human review regardless of captured/touched (T-2543)
   deleted   (uid in .tasks/ but not manifest)  -> orphan + flag (NEVER auto-delete)
 
 Dry-run is the DEFAULT. `--write` executes. The content hash makes edit-detection a
 bounded diff (not a fuzzy match), so the "unbounded reconciliation" NO-GO is
 structurally excluded.
+
+Gate-level enforcement (T-2543, Dimitri sovereignty bar): promote sets
+`FW_TASK_ORIGIN=bpmn-promote` on each `fw task create`, and create-task.sh's gate refuses
+any promote-origin create that is not owner:human + captured — so a future caller bug can't
+reopen the hole. Every `--write` materialization also appends an audit line to
+`.context/working/.bpmn-promote-audit.jsonl` (no silent .tasks/ writes).
 
 Usage:
   fw bpmn promote all [--write] [--stage-dir DIR]
@@ -179,8 +185,10 @@ def scan_existing() -> dict[str, dict]:
 # action constants
 NEW = "new"
 UNCHANGED = "unchanged"
-CHANGED_REFRESH = "changed-refresh"
-CHANGED_REFUSE = "changed-refuse"
+# T-2543 (Dimitri bar leg 3): changed → propose-not-clobber. A changed proposal is NEVER
+# auto-written — no silent provenance refresh, regardless of captured/touched state. The
+# materialized task is flagged for human review. (Supersedes T-2542's changed+captured→refresh.)
+CHANGED_PROPOSE = "changed-propose"
 ORPHAN = "orphan"
 
 
@@ -203,10 +211,9 @@ def reconcile(
                 action = NEW
             elif ex["sha"] == sha:
                 action = UNCHANGED
-            elif ex["human_touched"]:
-                action = CHANGED_REFUSE
             else:
-                action = CHANGED_REFRESH
+                # changed: propose-not-clobber (never auto-write), regardless of touched state
+                action = CHANGED_PROPOSE
             actions.append(
                 {
                     "uid": uid,
@@ -249,6 +256,32 @@ def _iso_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _audit_path() -> str:
+    """Persistent materialization audit log (T-2543, Dimitri bar leg 2): every --write
+    create leaves a traceable line — no silent .tasks/ writes."""
+    root = os.environ.get("PROJECT_ROOT", ".")
+    return os.path.join(root, ".context", "working", ".bpmn-promote-audit.jsonl")
+
+
+def _audit(uid: str, task_id: str, sha: str, action: str, source_diagram: str) -> None:
+    """Append one JSON line per materialization. Best-effort but never silent: a write
+    that can't be audited raises rather than proceeding un-logged."""
+    import json
+
+    path = _audit_path()
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    row = {
+        "ts": _iso_now(),
+        "uid": uid,
+        "task_id": task_id,
+        "sha": sha,
+        "action": action,
+        "source_diagram": source_diagram,
+    }
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(row, sort_keys=True) + "\n")
+
+
 def create_via_gate(entry: dict) -> tuple[str, str]:
     """Delegate to `fw task create` with un-overridable owner:human + captured.
 
@@ -274,7 +307,12 @@ def create_via_gate(entry: dict) -> tuple[str, str]:
         horizon,
         # NOTE: no --start → status defaults to captured (G2). Never pass --start.
     ]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    # T-2543: mark this create as promote-origin so create-task.sh's GATE enforces
+    # owner:human + captured (Dimitri sovereignty bar). Defense-in-depth: promote still
+    # passes owner:human above, but the gate is the backstop — a caller bug is refused,
+    # not silently written.
+    env = dict(os.environ, FW_TASK_ORIGIN="bpmn-promote")
+    proc = subprocess.run(cmd, capture_output=True, text=True, env=env)
     if proc.returncode != 0:
         raise RuntimeError(
             f"fw task create failed (rc={proc.returncode}): {proc.stderr.strip() or proc.stdout.strip()}"
@@ -333,22 +371,19 @@ def apply_actions(actions: list[dict], write: bool) -> list[str]:
             if write:
                 tid, fpath = create_via_gate(a["entry"])
                 stamp_provenance(fpath, uid, a["source_diagram"], a["sha"])
+                _audit(uid, tid, a["sha"], "created", a["source_diagram"])
                 lines.append(f"  [created]  {uid} -> {tid}  (owner:human, captured)  {fpath}")
             else:
                 lines.append(f"  [would-create]  {uid}  (owner:human, captured)")
         elif action == UNCHANGED:
             lines.append(f"  [no-op]    {uid} -> {ex['tid']}  (sha unchanged)")
-        elif action == CHANGED_REFRESH:
-            if write:
-                # captured + untouched: safe to refresh provenance sha in place.
-                stamp_provenance(ex["path"], uid, a["source_diagram"], a["sha"])
-                lines.append(f"  [refreshed] {uid} -> {ex['tid']}  (captured, sha updated)")
-            else:
-                lines.append(f"  [would-refresh] {uid} -> {ex['tid']}  (captured, sha changed)")
-        elif action == CHANGED_REFUSE:
+        elif action == CHANGED_PROPOSE:
+            # T-2543 (Dimitri bar leg 3): never clobber a materialized task. A changed
+            # proposal is flagged for human review — no write, in dry-run OR --write.
+            touched = "human-touched" if ex["human_touched"] else "captured/untouched"
             lines.append(
-                f"  [REFUSED]  {uid} -> {ex['tid']}  (status={ex['status']}, human-touched) — "
-                f"sha changed but will NOT clobber; review the proposal diff manually"
+                f"  [PROPOSE]  {uid} -> {ex['tid']}  (sha changed, status={ex['status']}, {touched}) — "
+                f"NOT clobbered; review the proposal diff and re-materialize manually if intended"
             )
         elif action == ORPHAN:
             lines.append(
@@ -412,10 +447,11 @@ def main(argv: list[str]) -> int:
     for line in apply_actions(actions, write):
         print(line)
 
-    # A refusal is a non-fatal signal, not a crash — surface it in the exit code so
-    # callers/CI can gate on it, but only under --write (dry-run is always advisory).
-    refused = any(x["action"] == CHANGED_REFUSE for x in actions)
-    if write and refused:
+    # A propose (changed-but-not-clobbered) is a non-fatal signal that human review is
+    # needed — surface it in the exit code so callers/CI can gate on it, but only under
+    # --write (dry-run is always advisory).
+    proposed = any(x["action"] == CHANGED_PROPOSE for x in actions)
+    if write and proposed:
         return 3
     return 0
 

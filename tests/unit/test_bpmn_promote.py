@@ -91,20 +91,32 @@ def test_reconcile_unchanged(tmp_path):
     assert [a["action"] for a in actions] == [bpmn_promote.UNCHANGED]
 
 
-def test_reconcile_changed_untouched_refresh(tmp_path):
+def test_reconcile_changed_propose_not_clobber(tmp_path):
+    """T-2543: changed → propose (no auto-write), regardless of captured/touched state."""
     _, manifests = _stage(tmp_path)
     uid = next(iter(manifests[0]["proposals"]))
-    existing = {uid: {"tid": "T-900", "path": "p", "status": "captured", "sha": "deadbeefdeadbeef", "human_touched": False}}
-    actions = bpmn_promote.reconcile(manifests, existing, only_uid=uid)
-    assert [a["action"] for a in actions] == [bpmn_promote.CHANGED_REFRESH]
+    # captured + untouched: still propose (no silent refresh — supersedes T-2542)
+    ex_captured = {uid: {"tid": "T-900", "path": "p", "status": "captured", "sha": "deadbeefdeadbeef", "human_touched": False}}
+    a1 = bpmn_promote.reconcile(manifests, ex_captured, only_uid=uid)
+    assert [a["action"] for a in a1] == [bpmn_promote.CHANGED_PROPOSE]
+    # started-work + touched: propose too
+    ex_touched = {uid: {"tid": "T-900", "path": "p", "status": "started-work", "sha": "deadbeefdeadbeef", "human_touched": True}}
+    a2 = bpmn_promote.reconcile(manifests, ex_touched, only_uid=uid)
+    assert [a["action"] for a in a2] == [bpmn_promote.CHANGED_PROPOSE]
 
 
-def test_reconcile_changed_touched_refuse(tmp_path):
+def test_changed_propose_never_writes(tmp_path, monkeypatch):
+    """A changed proposal must not mutate the existing task file — even under --write."""
     _, manifests = _stage(tmp_path)
     uid = next(iter(manifests[0]["proposals"]))
-    existing = {uid: {"tid": "T-900", "path": "p", "status": "started-work", "sha": "deadbeefdeadbeef", "human_touched": True}}
+    existing_file = tmp_path / "existing.md"
+    existing_file.write_text("ORIGINAL CONTENT — must not change\n", encoding="utf-8")
+    existing = {uid: {"tid": "T-900", "path": str(existing_file), "status": "captured", "sha": "deadbeefdeadbeef", "human_touched": False}}
     actions = bpmn_promote.reconcile(manifests, existing, only_uid=uid)
-    assert [a["action"] for a in actions] == [bpmn_promote.CHANGED_REFUSE]
+    monkeypatch.setattr(bpmn_promote, "create_via_gate", lambda e: (_ for _ in ()).throw(AssertionError("no create on changed")))
+    lines = bpmn_promote.apply_actions(actions, write=True)
+    assert existing_file.read_text(encoding="utf-8") == "ORIGINAL CONTENT — must not change\n"
+    assert any("PROPOSE" in ln for ln in lines)
 
 
 def test_reconcile_orphan_only_in_all_sweep(tmp_path):
@@ -205,8 +217,9 @@ def test_create_via_gate_forces_owner_human_captured(monkeypatch):
         stdout = "ID:       T-999\nFile:     /tmp/T-999.md\n"
         stderr = ""
 
-    def fake_run(cmd, capture_output, text):
+    def fake_run(cmd, capture_output, text, env=None):
         captured["cmd"] = cmd
+        captured["env"] = env
         return FakeProc()
 
     monkeypatch.setattr(bpmn_promote.subprocess, "run", fake_run)
@@ -218,3 +231,43 @@ def test_create_via_gate_forces_owner_human_captured(monkeypatch):
     # owner is forced to human regardless of entry content; --start is never present
     assert "--owner" in cmd and cmd[cmd.index("--owner") + 1] == "human"
     assert "--start" not in cmd
+    # T-2543: the promote-origin marker is set so the GATE enforces (defense-in-depth)
+    assert captured["env"].get("FW_TASK_ORIGIN") == "bpmn-promote"
+
+
+def test_audit_line_written_on_create(tmp_path, monkeypatch):
+    """T-2543 leg 2: each --write create appends a structured audit line."""
+    import json
+
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
+    _, manifests = _stage(tmp_path)
+    actions = bpmn_promote.reconcile(manifests, existing={}, only_uid=None)
+
+    n = {"i": 0}
+
+    def fake_create(entry):
+        n["i"] += 1
+        tid = f"T-80{n['i']}"
+        fpath = str(tmp_path / f"{tid}.md")
+        with open(fpath, "w", encoding="utf-8") as fh:
+            fh.write("---\nid: %s\nowner: human\nstatus: captured\n---\n\nbody\n" % tid)
+        return tid, fpath
+
+    monkeypatch.setattr(bpmn_promote, "create_via_gate", fake_create)
+    bpmn_promote.apply_actions(actions, write=True)
+
+    audit = tmp_path / ".context" / "working" / ".bpmn-promote-audit.jsonl"
+    assert audit.exists(), "audit log must be written on --write materialization"
+    rows = [json.loads(ln) for ln in audit.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    assert rows and all(r["action"] == "created" for r in rows)
+    assert all({"ts", "uid", "task_id", "sha", "source_diagram"} <= set(r) for r in rows)
+
+
+def test_no_audit_line_on_dry_run(tmp_path, monkeypatch):
+    """Dry-run writes nothing — including no audit line."""
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
+    _, manifests = _stage(tmp_path)
+    actions = bpmn_promote.reconcile(manifests, existing={}, only_uid=None)
+    bpmn_promote.apply_actions(actions, write=False)
+    audit = tmp_path / ".context" / "working" / ".bpmn-promote-audit.jsonl"
+    assert not audit.exists()

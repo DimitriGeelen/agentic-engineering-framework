@@ -77,3 +77,10 @@ with 832's real `aef:` namespace URI when the vendored corpus lands.
   Impl: `tools/bpmn_promote.py`, tests `tests/unit/test_bpmn_promote.py`. Provenance is injected by
   promote after the gated create (create-task.sh has no arbitrary-frontmatter pass-through — Spike-1);
   the window is benign (captured+owner:human triggers zero automation — Spike-2).
+- **Gate-level hardening (T-2543, Dimitri sovereignty bar, rail offset 60):** owner:human+captured is
+  enforced **at the gate**, not the caller — promote sets `FW_TASK_ORIGIN=bpmn-promote` and
+  `create-task.sh` refuses any promote-origin create that isn't owner:human+captured (a future promote
+  caller bug is refused, not silently written; non-promote creates unaffected). Every `--write`
+  materialization appends an audit line to `.context/working/.bpmn-promote-audit.jsonl` (no silent
+  `.tasks/` writes). `changed`→**propose-not-clobber**: a changed proposal is never auto-written,
+  flagged for human review regardless of captured/touched (supersedes T-2542's changed+captured→refresh).

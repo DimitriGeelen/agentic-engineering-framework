@@ -88,6 +88,27 @@ if [ -n "$RECOMMENDATION" ]; then
     esac
 fi
 
+# T-2543: gate-level enforcement for promote-origin creates (Dimitri sovereignty bar,
+# rail offset 60). When a caller marks a create as originating from `fw bpmn promote`
+# (FW_TASK_ORIGIN=bpmn-promote), the GATE — not the caller — refuses anything but
+# owner:human + captured. This closes the hole a future promote-caller bug could open:
+# an owner:agent or --start promote-origin create is refused HERE, never silently
+# written. Non-promote-origin creates are wholly unaffected (keyed off the marker).
+if [ "${FW_TASK_ORIGIN:-}" = "bpmn-promote" ]; then
+    if [ "$OWNER" != "human" ]; then
+        echo -e "${RED}BLOCKED: promote-origin create must be owner:human (got '${OWNER:-<empty>}').${NC}" >&2
+        echo "  fw bpmn promote materializes BPMN proposals as human-owned; the gate refuses otherwise." >&2
+        echo "  Policy: T-2543 gate-level enforcement (Dimitri sovereignty bar, rail offset 60)." >&2
+        exit 1
+    fi
+    if [ "$START_WORK" = true ]; then
+        echo -e "${RED}BLOCKED: promote-origin create must be captured (no --start).${NC}" >&2
+        echo "  Promoted proposals land captured for human review before work-start (G-020)." >&2
+        echo "  Policy: T-2543 gate-level enforcement (Dimitri sovereignty bar, rail offset 60)." >&2
+        exit 1
+    fi
+fi
+
 # Interactive mode if required fields missing.
 # T-100160 (OBS-086): prompt ONLY when stdin is a tty. In no-tty contexts
 # (background dispatch, cron, TermLink workers) stdin is a socket/pipe that

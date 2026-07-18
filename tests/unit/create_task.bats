@@ -287,3 +287,40 @@ teardown() {
     [[ "$output" == *"Inception template missing required sections"* ]]
     [[ "$output" == *"Decision"* ]]
 }
+
+# --- T-2543: gate-level enforcement for promote-origin creates (Dimitri sovereignty bar) ---
+
+@test "T-2543: promote-origin create with --owner agent is REFUSED at the gate" {
+    FW_TASK_ORIGIN=bpmn-promote run timeout 10 "$CREATE_TASK" \
+        --name "Promote origin agent" --description "d" --type build --owner agent < /dev/null
+    [ "$status" -ne 0 ]
+    [ "$status" -ne 124 ]
+    [[ "$output" == *"promote-origin"* ]]
+    [[ "$output" == *"owner:human"* ]]
+    # nothing written
+    ! ls "$TEST_DIR/active/" | grep -q "promote-origin-agent"
+}
+
+@test "T-2543: promote-origin create with --start is REFUSED at the gate" {
+    FW_TASK_ORIGIN=bpmn-promote run timeout 10 "$CREATE_TASK" \
+        --name "Promote origin started" --description "d" --type build --owner human --start < /dev/null
+    [ "$status" -ne 0 ]
+    [ "$status" -ne 124 ]
+    [[ "$output" == *"captured"* ]]
+}
+
+@test "T-2543: promote-origin create with owner:human + captured is ALLOWED" {
+    FW_TASK_ORIGIN=bpmn-promote run timeout 10 "$CREATE_TASK" \
+        --name "Promote origin ok" --description "d" --type build --owner human < /dev/null
+    [ "$status" -eq 0 ]
+    ls "$TEST_DIR/active/" | grep -q "promote-origin-ok"
+    grep -q "owner: human" "$TEST_DIR/active/"*promote-origin-ok*.md
+    grep -q "status: captured" "$TEST_DIR/active/"*promote-origin-ok*.md
+}
+
+@test "T-2543: NON-promote-origin create with --owner agent is UNAFFECTED" {
+    run timeout 10 "$CREATE_TASK" \
+        --name "Normal agent create" --description "d" --type build --owner agent < /dev/null
+    [ "$status" -eq 0 ]
+    ls "$TEST_DIR/active/" | grep -q "normal-agent-create"
+}
