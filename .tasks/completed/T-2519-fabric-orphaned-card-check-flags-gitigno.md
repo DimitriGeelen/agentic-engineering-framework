@@ -1,16 +1,17 @@
 ---
-id: T-2524
-name: "fw doctor: designer pin sha256 drifts from vendored build (T-2521 integration
-  hardening)"
+id: T-2519
+name: "fabric orphaned-card check flags gitignored runtime-data artifacts (transient
+  FP, T-2427 sibling)"
 description: >
-  fw doctor: designer pin sha256 drifts from vendored build (T-2521 integration hardening)
+  fabric orphaned-card check flags gitignored runtime-data artifacts (transient FP,
+  T-2427 sibling)
 
 status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: [bin/fw, tests/unit/doctor_designer_pin_drift.bats]
+components: [agents/fabric/lib/drift.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -22,9 +23,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-10T18:33:39Z
-last_update: 2026-07-10T18:57:39Z
-date_finished: 2026-07-10T18:57:39Z
+created: 2026-07-10T05:49:07Z
+last_update: 2026-07-10T11:15:28Z
+date_finished: 2026-07-10T09:40:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,7 +37,7 @@ date_finished: 2026-07-10T18:57:39Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-07-10T18:45:06Z'
+  - ts: '2026-07-10T06:00:06Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
@@ -46,43 +47,51 @@ cost_estimate_proposed:
       (no-signal)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-07-10T18:45:08Z'
+  - ts: '2026-07-10T06:00:09Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 2
       D4: 2
-      F-RECALL: 0
+      F-RECALL: 1
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 1
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
-      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
-      F2=1 (body/components:component-fabric-incidental)
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=2
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
-# T-2524: fw doctor: designer pin sha256 drifts from vendored build (T-2521 integration hardening)
+# T-2519: fabric orphaned-card check flags gitignored runtime-data artifacts (transient FP, T-2427 sibling)
 
 ## Context
 
-T-2521 shipped `fw designer` (vendor + serve a pinned 832 build). `designer sync` verifies sha256
-against `policy/designer-pin.yaml` at install time, but there is no *continuous* drift detection: a
-pin bump (new version/sha) without a re-sync, or an edit to the vendored HTML, leaves `/designer`
-serving a build that no longer matches the pin — silently. This adds a `fw doctor` check that
-content-compares (sha256, never mtime — per T-2290/T-2432) the vendored build against the pin.
-Sibling to the existing cron-registry→generated and tool-set→manifest drift checks.
+`fw fabric drift` section 2 (orphaned-card check, `agents/fabric/lib/drift.sh:50-71`)
+flags **any** card whose `location:` file is missing from disk. But some cards
+legitimately point at **gitignored runtime data artifacts** (e.g. `F-004
+budget-gate-counter` → `.context/working/.budget-gate-counter`, a counter the
+budget-gate hook creates lazily and which is absent between sessions / after a
+`.context/working/` clean). When such a file is transiently absent at scan time,
+the orphaned check falsely reports `orphaned: 1` → audit WARN. The sibling
+stale-edges check (section 3) already got exactly this exemption in T-2427/G-070
+(runtime/data-artifact targets whose absence is expected → not drift); the
+orphaned-card check never did. Discriminator: a **gitignored** location is
+runtime/generated state whose absence is expected; a **tracked** location that's
+missing is a genuinely-deleted source file (real drift). `git check-ignore`
+cleanly separates the two, and only runs on the rare missing-file branch (no scan
+slowdown). Sibling of L-290 ("drift reports stale edges for files that exist").
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw doctor` emits `OK  designer ...` when the vendored HTML's sha256 matches `policy/designer-pin.yaml:sha256`
-- [x] `fw doctor` emits `WARN  designer vendored build drifted from pin` (and increments the warning count) when the vendored HTML sha256 ≠ pin sha256
-- [x] Check SKIPs gracefully (no WARN, no error) when the pin file is absent (consumers without the designer feature) OR the vendored file is not yet present (pin declares it but sync hasn't run)
-- [x] A bats test (`tests/unit/doctor_designer_pin_drift.bats`) covers all three states (match→OK, mismatch→WARN, absent→SKIP) using a throwaway PROJECT_ROOT + fixture pin
+- [x] orphaned-card check in `agents/fabric/lib/drift.sh` skips a card whose `location:` file is missing **when that path is gitignored** (`git check-ignore`), and still flags a missing **tracked** location as orphaned
+- [x] a bats regression test (`tests/unit/fabric_drift_orphaned_gitignored.bats`) proves both directions: gitignored-missing → NOT orphaned, tracked-missing → orphaned
+- [x] vendored copy `.agentic-framework/agents/fabric/lib/drift.sh` re-synced (`fw vendor self`) so audit does not FAIL on vendor drift (T-2240)
+- [x] `bin/fw fabric drift` reports `orphaned: 0` with the real `.budget-gate-counter` file moved aside (the transient-absence case that produced the WARN)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -117,8 +126,11 @@ Sibling to the existing cron-registry→generated and tool-set→manifest drift 
 
 ## Verification
 
-bats tests/unit/doctor_designer_pin_drift.bats
-out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "OK.*designer" && ! echo "$out" | grep -q "designer vendored build drifted"
+bash -n agents/fabric/lib/drift.sh
+grep -q 'check-ignore' agents/fabric/lib/drift.sh
+bats tests/unit/fabric_drift_orphaned_gitignored.bats
+diff -q agents/fabric/lib/drift.sh .agentic-framework/agents/fabric/lib/drift.sh
+out=$(bin/fw fabric drift 2>&1); echo "$out" | grep -qE "orphaned: 0,"
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -153,19 +165,35 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "OK.*designer" && ! echo "$out"
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** The pre-push audit in handover `S-2026-0710-0647` reported
+`[WARN] Fabric: 1 orphaned card(s) (file deleted but card remains) — 1 cards
+reference missing files`. The single "orphaned" card was `F-004
+budget-gate-counter` → `.context/working/.budget-gate-counter` — a file that was
+not actually deleted, merely transiently absent (the budget-gate hook re-created
+it at 07:47, after which `fw fabric drift` reported `orphaned: (none)`).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `drift.sh` section 2 (orphaned-card check) treats *file missing on
+disk* as *card is orphaned*, unconditionally. It has no notion that some cards
+legitimately point at **runtime data artifacts** — gitignored, lazily-created
+state files whose absence between runs is normal, not drift. `.budget-gate-counter`
+is gitignored (`.gitignore:6`), `type: data`, created on demand by the budget-gate
+hook.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The exact analogous case for *edges* was already
+recognised and fixed in T-2427/G-070 — the stale-edges check (section 3) skips
+targets that resolve to real on-disk artifacts and skips `writes*` edge types
+whose targets are created lazily. That fix was scoped to section 3 (edges) and
+never mirrored into section 2 (orphaned cards). So a known, already-solved class
+(runtime artifact ≠ drift) still had one un-patched surface. Sibling of L-290
+("drift reports stale edges for files that DO exist", T-1494).
+
+**Prevention:** (1) The fix itself: orphaned check now skips a missing location
+when `git check-ignore` says it is ignored (runtime/generated state); a missing
+*tracked* location is still flagged (a genuinely-deleted source file is not
+gitignored). (2) Distinct from the fix — a bats regression test
+(`tests/unit/fabric_drift_orphaned_gitignored.bats`) pins **both** directions
+(gitignored-missing → not orphaned; tracked-missing → orphaned), so a future
+refactor that drops the discriminator fails CI rather than re-flaking the audit.
 
 ## Evolution
 
@@ -214,24 +242,19 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "OK.*designer" && ! echo "$out"
 
 ## Updates
 
-### 2026-07-10T18:33:39Z — task-created [task-create-agent]
+### 2026-07-10T05:49:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2524-fw-doctor-designer-pin-sha256-drifts-fro.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2519-fabric-orphaned-card-check-flags-gitigno.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-65a4091f
-- **Timestamp:** 2026-07-10T19:18:40Z
+- **Scan ID:** R-740f812c
+- **Timestamp:** 2026-07-10T09:40:32Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — `fw doctor` emits `OK  designer ...` when the vendored HTML's sha256 matches `policy/designer-pin.yaml:sha256`
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: `fw doctor` emits `OK  designer ...` when the vendored HTML's sha256 matches `policy/designer-pin.yaml:sha256``
-
-### 2026-07-10T18:57:39Z — status-update [task-update-agent]
+### 2026-07-10T09:40:23Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

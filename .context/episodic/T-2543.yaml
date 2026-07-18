@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2543: harden fw bpmn promote to Dimitri sovereignty bar: gate-level owner-enforcement + audit line + propose-not-clobber
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-18T10:43:50Z
+# ============================================================================
+
+task_id: T-2543
+task_name: "harden fw bpmn promote to Dimitri sovereignty bar: gate-level owner-enforcement + audit line + propose-not-clobber"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-18T10:34:41Z
+completed: 2026-07-18T10:43:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-18T12:43:15+02:00
+last_commit: 2026-07-18T12:43:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  harden fw bpmn promote to Dimitri sovereignty bar (gate-level + audit + propose)
+
+# Key outcomes
+outcomes:
+  - '**Gate-level enforcement:** `create-task.sh` refuses a promote-origin create (marked via env `FW_TASK_ORIGIN=bpmn-promote`) unless `owner=human` AND status=captured (no `--start`) — a promote-origin create with `--owner agent` OR `--start` exits non-zero with an actionable message naming the violation. Non-promote-origin creates are UNAFFECTED (normal `fw task create` behaviour unchanged)'
+  - '**promote routes through the gate:** `bpmn_promote.create_via_gate` sets `FW_TASK_ORIGIN=bpmn-promote` so its creates are enforced by the gate (defense-in-depth: promote still passes owner:human, but the gate is now the backstop — a caller bug is refused, not silently written)'
+  - '**Audit line:** each `--write` materialization (create) appends a persistent, structured line to `.context/working/.bpmn-promote-audit.jsonl` (ts, uid, task_id, sha, action, source_diagram) — no silent `.tasks/` writes'
+  - '**propose-not-clobber:** a changed proposal (sha differs from recorded) is NEVER auto-written — no silent provenance refresh; it is flagged for human review regardless of captured/touched state (T-2542''s `changed+captured→refresh` auto-mutation is removed)'
+  - 'Unit tests cover: gate refuses agent-owner promote-origin, gate refuses `--start` promote-origin, gate allows human+captured promote-origin, non-promote-origin unaffected, audit line written on `--write` create, changed→no-write. `tests/unit/create_task.bats` stays green'
+  - '`agents/bpmn/AGENT.md` roadmap notes the gate-level hardening + vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/bpmn/AGENT.md'
+  - 'agents/bpmn/AGENT.md'
+  - 'agents/task-create/create-task.sh'
+  - '.tasks/active/T-2543-harden-fw-bpmn-promote-to-dimitri-sovere.md'
+  - 'tests/unit/create_task.bats'
+  - 'tests/unit/test_bpmn_promote.py'
+  - 'tools/bpmn_promote.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-18T12:43:15"
+    action: "T-2543: harden fw bpmn promote to Dimitri sovereignty bar (gate-level + audit + propose)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 7
+  lines_added: 368
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2543-harden-fw-bpmn-promote-to-dimitri-sovere.md
+generated_by: context-agent-hybrid

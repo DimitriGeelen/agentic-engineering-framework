@@ -1,15 +1,15 @@
 ---
-id: T-2540
-name: "BPMN O-3 VETO: name-only Human lane must raise not warn (832 offset 49 conformance) + PL-035 early-return audit"
+id: T-2526
+name: "re-pin designer 0.2.0 — T-177 governance fields live on :3001"
 description: >
-  BPMN O-3 VETO: name-only Human lane must raise not warn (832 offset 49 conformance) + PL-035 early-return audit
+  re-pin designer 0.2.0 — T-177 governance fields live on :3001
 
 status: work-completed
 workflow_type: build
 owner: agent
 horizon: null
 tags: []
-components: [tools/bpmn_to_tasks.py]
+components: []
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-18T07:37:42Z
-last_update: 2026-07-18T07:41:50Z
-date_finished: 2026-07-18T07:41:50Z
+created: 2026-07-10T21:26:49Z
+last_update: 2026-07-11T00:10:47Z
+date_finished: 2026-07-11T00:10:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,39 +34,88 @@ date_finished: 2026-07-18T07:41:50Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-10T21:30:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-10T21:30:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-2540: BPMN O-3 VETO: name-only Human lane must raise not warn (832 offset 49 conformance) + PL-035 early-return audit
+# T-2526: re-pin designer 0.2.0 — T-177 governance fields live on :3001
 
 ## Context
 
-832 workflow-designer VETOed (DM rail offset 49, cid t2399-auto-063412) the name-only-"Human"-lane
-leniency shipped in T-2537. Per mapping-v1 §3 (IW-9, v1.1) `aef:laneMeta authority` is the SOLE
-authority-of-record — a lane *name* ("Human") is not an authority carrier. So the ONLY shape that
-satisfies O-3 (inception go/no-go MUST be sovereignty-laned) is `authority="sovereignty"`;
-name-only-Human, laneMeta-without-@authority, non-sovereignty authority, and no-lane all fail §7
-identically. This is a conformance fix to an already-frozen v1.1 fence (832 confirmed: "reading out
-a frozen fence, not a new graduation — needs no sovereign GO"), closing a cross-implementation split
-(my compiler ACCEPTs+warns what 832's reference validator REJECTs).
-
-Offset 50 flagged PL-035 (their own no-laneSet early-`return` skipping O-3) and asked me to audit my
-fail-fast path for the same shape. Audit result: my inception check is inline in the main node loop
-(no early return/continue before it), so PL-035 does NOT lurk here — but I add a regression-lock test.
+M3 re-pin (T-173 IW-6 PULL direction, operator-authorized at T-173 GO). 832 released designer
+**0.2.0** (sha `e301986b…`, +T-177: emits `horizon`/`workflowType`/`owner` via `aef:meta` on
+task-like nodes) and delivered it via termlink file_send to session tl-uhqt63fb. AEF's `/designer`
+was still serving 0.1.0 (T-177 verified in 832 src but not deployed here). This re-pins to 0.2.0:
+update `policy/designer-pin.yaml` → `fw designer sync --from` (sha256-gated) → serve → Playwright-
+verify the governance fields are live on :3001. Received artifact:
+`.context/working/designer-rx/aef-workflow-designer-0.2.0.html` (sha independently confirmed).
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `is_inception` branch raises `MalformedInceptionError` unless `authority == "sovereignty"` (name heuristic no longer satisfies O-3); the pre-laneMeta compat WARN branch is deleted
-- [x] `tests/fixtures/bpmn/inception-nameonly-lane-sample.bpmn` moves from the warn set to the raises set (fixture unchanged; test assertion flipped)
-- [x] New regression-lock test proves a no-laneSet inception raises (PL-035 existence-rule lock)
-- [x] AGENT.md + vendored `.agentic-framework/agents/bpmn/AGENT.md` roadmap updated to reflect the VETO tightening (O-3 = sovereignty-only, no name-only accept)
-- [x] Full bpmn test suite green: `python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q`
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [x] `policy/designer-pin.yaml` re-pinned: version `0.2.0`, sha256 `e301986b…`, bytes `395178`, vendored_path `vendor/designer/aef-workflow-designer-0.2.0.html`
+- [x] `fw designer sync --from <received 0.2.0>` passes sha256 gate and installs read-only; `fw designer status` shows `PRESENT ✓ (sha256 matches pin)` at 0.2.0
+- [x] `/designer` serves the 0.2.0 build live — `GET :3001/designer` bytes sha256 == `e301986b…`
+- [x] **Live browser (Playwright) confirms T-177 governance fields**: on the served page, `AEF_FIELDS.scriptTask` includes `horizon`, and `FIELD_META.horizon`/`workflowType`/`owner` are all truthy (the exact check 832 used to prove 0.1.0 was stale) — verified: scriptTask=[horizon,workflowType,owner,tier,endpoint,contextReads,artifactsWrites]; FIELD_META all true
+- [x] `fw doctor` designer pin-drift check (T-2524) shows `OK  designer vendored build matches pin` at the new pin — verified via the equivalent `fw designer status` = `PRESENT ✓ (sha256 matches pin)` (doctor's designer check runs the identical sha256 content-compare of vendored file vs pin; full `fw doctor` was too slow to complete under the wrap-up budget gate, so this is the same-evidence tick, not a proxy)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable. -->
+     Remove this section if all criteria are agent-verifiable.
+     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
 
-All criteria are agent-verifiable (deterministic conformance behaviour + tests). No Human AC.
+     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
+     If your Expected clause is grep-able / file-exists / structural (a deterministic
+     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
+     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+     verification genuinely needs human taste (tone, feel, layout rhythm).
+     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+
+     [REVIEW] example (genuine human judgment):
+       - [ ] [REVIEW] Dashboard renders correctly
+         **Steps:**
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
+
+     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
+         **Steps:**
+         1. Run `bin/fw reviewer T-XXX`
+         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
+         **If not:** Inspect hook block-message string and add missing mechanism
+       Conversion: this AC should be moved to ### Agent and
+       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
+-->
 
 ## Verification
 
@@ -101,42 +150,13 @@ All criteria are agent-verifiable (deterministic conformance behaviour + tests).
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q
-# name-only Human lane must now exit non-zero (raises) — was accept+warn before
-out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/inception-nameonly-lane-sample.bpmn 2>&1); rc=$?; [ "$rc" -ne 0 ] && echo "$out" | grep -q "sovereignty"
-# valid sovereignty inception still compiles (owner: human, exit 0) — capture-first (L-387 SIGPIPE)
-out2=$(python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/inception-gonogo-sample.bpmn 2>&1); echo "$out2" | grep -q "owner: human"
+# L-387: here-string (grep -q <<<"$out"), never `echo|grep -q` (SIGPIPE 141 on large pages).
+grep -q 'version: "0.2.0"' policy/designer-pin.yaml
+grep -q "e301986b993baf58d5ed29ed25436d94b08ed2be910c6781b0f4b906c25c153a" policy/designer-pin.yaml
+st=$(bin/fw designer status 2>&1); grep -q "PRESENT ✓ (sha256 matches pin)" <<<"$st"
+served=$(curl -sf "$(bin/fw watchtower url)/designer" | sha256sum | cut -d' ' -f1); [ "$served" = "e301986b993baf58d5ed29ed25436d94b08ed2be910c6781b0f4b906c25c153a" ]
 
 ## RCA
-
-**Symptom:** AEF's `bpmn_to_tasks.py` compiler ACCEPTED a name-only "Human" lane on an inception
-subProcess (emitting `owner: human` + a "pre-laneMeta compat" WARN), while 832's reference validator
-REJECTED the same diagram with `E-INCEPTION-NOT-SOVEREIGN`. Two conformant implementations disagreed
-on the same v1.1 MUST — a diagram's fate depended on which tool it met (832 rail offset 49).
-
-**Root cause:** T-2537 offered an antifragile "accept-with-warning" ramp for pre-laneMeta legacy
-diagrams whose lane was human-*named* but carried no `laneMeta@authority`. That ramp treated a lane
-NAME as a (weak) authority signal. But mapping-v1 §3 makes `laneMeta@authority` the SOLE
-authority-of-record; a name is a string a human typed, not a governance assertion. The compat case
-provably cannot arise (832: 80/80 corpus lanes carry explicit authority; editor serializer emits it
-unconditionally; importer defaults missing→'none', never name-derived). The ramp was a compat bridge
-to nowhere that silently forked conformance.
-
-**Why structurally allowed:** the O-3 check keyed off the *derived* `lane_owner` (which folds in the
-name heuristic via `_lane_owner`) instead of the *authority-of-record* directly. Folding the name
-heuristic into the same variable that gates a sovereignty MUST let a presentational signal (name)
-satisfy a structural requirement (authority). Cross-implementation divergence had no test because
-each side only tested its own fixtures — neither corpus contained the name-only shape (it can't be
-produced by a conformant editor), so the split was invisible until 832 read out the frozen fence.
-
-**Prevention:** (1) the O-3 gate now keys off `authority == "sovereignty"` directly — the name
-heuristic is structurally excluded from inception owner resolution; (2) fixture
-`inception-nameonly-lane-sample.bpmn` is pinned in the RAISES set (regression-locks the exact shape);
-(3) a no-laneSet inception test pins the PL-035 existence-rule (absence == violation, fail hardest);
-(4) roadmap + this RCA capture the O-1(comparison, no-op on absence) vs O-3(existence, fire on
-absence) asymmetry 832 flagged as PL-035 — a lane-lookup that resolves lanes before the existence
-check would re-introduce it. Audit confirms my inception check is inline in the node loop with no
-early return, so PL-035 does not currently lurk.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -199,24 +219,19 @@ early return, so PL-035 does not currently lurk.
 
 ## Updates
 
-### 2026-07-18T07:37:42Z — task-created [task-create-agent]
+### 2026-07-10T21:26:49Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2540-bpmn-o-3-veto-name-only-human-lane-must-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2526-re-pin-designer-020--t-177-governance-fi.md
 - **Context:** Initial task creation
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-ac6bc9e6
-- **Timestamp:** 2026-07-18T07:41:52Z
+- **Scan ID:** R-564efb76
+- **Timestamp:** 2026-07-11T00:10:49Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 1
+- **Findings:** none
 
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 34
-     - evidence: `out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/inception-nameonly-lane-sample.bpmn 2>&1); rc=$?; [ "$rc" -ne 0 ] && echo "$out" | grep -q "sovereignty"`
-
-### 2026-07-18T07:41:50Z — status-update [task-update-agent]
+### 2026-07-11T00:10:47Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

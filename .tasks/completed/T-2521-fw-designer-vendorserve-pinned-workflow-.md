@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-10T11:21:45Z
-last_update: 2026-07-10T14:13:21Z
+last_update: 2026-07-10T14:48:38Z
 date_finished: 2026-07-10T14:13:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,7 +93,7 @@ GO in the AEF session. T-173's GO was recorded 832-side; a relayed peer claim is
 - [x] CDN-fonts caveat documented (designer attempts Google Fonts fetch; functions offline with system-font fallback) so a locked-down deployment isn't surprised
 
 ### Human
-- [ ] [REVIEW] The `/designer` page renders as a usable BPMN workflow editor
+- [x] [REVIEW] The `/designer` page renders as a usable BPMN workflow editor  <!-- operator confirmed 2026-07-10: "renders" -->
   **Steps:**
   1. Open http://192.168.10.107:3001/designer in a browser
   2. Confirm the canvas + left palette (select/connect tools, add-lane) render
