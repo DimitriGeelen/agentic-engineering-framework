@@ -6,16 +6,16 @@ description: >
   Inception: Write-out promotion: can BPMN-to-task promotion guardrails be mechanical
   gates not conventions (joint w/ 832 T-201)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-07-18T08:15:24Z
-last_update: '2026-07-18T08:30:06Z'
-date_finished:
+last_update: 2026-07-18T09:12:43Z
+date_finished: 2026-07-18T09:12:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -113,15 +113,15 @@ write-out "inception-first, sequenced next" (rail offset 56).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -182,7 +182,15 @@ Calibration note (T-2144): this upgrades the filing DEFER, which hedged on the s
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Spikes 1 & 2 answer the inception's core question: the promotion guardrails ARE mechanizable as gates. G1 (dry-run default + explicit --write) is a gate (T-2539). G2 (owner:human + status:captured) is a gate — the safe state is create-task.sh's DEFAULT (started-work needs an explicit --start a promote path won't pass). G3 (the load-bearing write-seam — does the .tasks/ write stay inside the gate perimeter) is RESOLVED: delegating to `fw task create` inherits the trusted-writer invariants (T-1068/G-020). G5 (provenance) and G6 (build-readiness/G-020) are gates. No guardrail examined proved to be a convention — so the NO-GO condition is NOT met.
+
+The only open guardrail is G4 (idempotent uid↔T-ID). It is NOT "un-gateable" — it is a trivial mechanical registry pending 832's id-mapping SHAPE (their IW-2 contract, rail offset 48). The two remaining items — 832 confirming manifest-as-seam + delivering the IW-2 contract — are external contract-DELIVERY, not open design risk. So: GO to build the promotion capability once those two land.
+
+Calibration note (T-2144): this upgrades the filing DEFER, which hedged on the sequencing dependency (832 not yet replied) rather than a real evidence gap. Walking the evidence, the core question is answered YES; a genuine external-delivery contingency is named explicitly. Decision remains Dimitri's (joint w/ 832 T-201).
+
+**Date**: 2026-07-18T09:12:43Z
 
 ## Updates
 
@@ -191,3 +199,39 @@ Calibration note (T-2144): this upgrades the filing DEFER, which hedged on the s
 
 ### 2026-07-18T08:16:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-07-18T09:12:43Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Spikes 1 & 2 answer the inception's core question: the promotion guardrails ARE mechanizable as gates. G1 (dry-run default + explicit --write) is a gate (T-2539). G2 (owner:human + status:captured) is a gate — the safe state is create-task.sh's DEFAULT (started-work needs an explicit --start a promote path won't pass). G3 (the load-bearing write-seam — does the .tasks/ write stay inside the gate perimeter) is RESOLVED: delegating to `fw task create` inherits the trusted-writer invariants (T-1068/G-020). G5 (provenance) and G6 (build-readiness/G-020) are gates. No guardrail examined proved to be a convention — so the NO-GO condition is NOT met.
+
+The only open guardrail is G4 (idempotent uid↔T-ID). It is NOT "un-gateable" — it is a trivial mechanical registry pending 832's id-mapping SHAPE (their IW-2 contract, rail offset 48). The two remaining items — 832 confirming manifest-as-seam + delivering the IW-2 contract — are external contract-DELIVERY, not open design risk. So: GO to build the promotion capability once those two land.
+
+Calibration note (T-2144): this upgrades the filing DEFER, which hedged on the sequencing dependency (832 not yet replied) rather than a real evidence gap. Walking the evidence, the core question is answered YES; a genuine external-delivery contingency is named explicitly. Decision remains Dimitri's (joint w/ 832 T-201).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-11cf95ea
+- **Timestamp:** 2026-07-18T09:12:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-427b2011
+- **Timestamp:** 2026-07-18T09:12:44Z
+- **Overall:** CONFIRMED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2539` | task | ✓ pass |
+| `T-1068` | task | ✓ pass |
+| `T-2144` | task | ✓ pass |
+| `T-201` | task | ✓ pass |
+
+### 2026-07-18T09:12:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
