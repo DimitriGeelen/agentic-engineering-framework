@@ -1,0 +1,179 @@
+---
+id: T-2541
+name: "Write-out promotion: can BPMN-to-task promotion guardrails be mechanical gates
+  not conventions (joint w/ 832 T-201)"
+description: >
+  Inception: Write-out promotion: can BPMN-to-task promotion guardrails be mechanical
+  gates not conventions (joint w/ 832 T-201)
+
+status: started-work
+workflow_type: inception
+owner: human
+horizon: now
+tags: []
+components: []
+related_tasks: []
+created: 2026-07-18T08:15:24Z
+last_update: 2026-07-18T08:16:50Z
+date_finished:
+# revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
+# revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+# ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
+target_blast_radius: 3            # int 0..9. Anticipated component count of the build work this inception would authorise on GO.
+                                  # Substitutes for the absent components: list in the F8 cost formula (040). Required.
+                                  # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
+voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
+                                  # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-07-18T08:16:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+---
+
+# T-2541: Write-out promotion: can BPMN-to-task promotion guardrails be mechanical gates not conventions (joint w/ 832 T-201)
+
+## Problem Statement
+
+Can the write-out **promotion** guardrails (proposal → real `.tasks/` file) be made MECHANICAL GATES
+on the AEF compiler side — not conventions — and what compiler-side seam does that require? A compiler
+emitting real task files authors governance artifacts, which is exactly what the Core Principle and
+Authority Model protect (IW-1/IW-3). AEF-compiler half of the joint inception with 832 T-201; go/no-go
+is Dimitri's. Full framing: `docs/reports/T-2541-writeout-promotion-inception.md`. Now: Dimitri steered
+write-out "inception-first, sequenced next" (rail offset 56).
+
+## Assumptions
+
+- **A1:** `fw task create` (`create-task.sh`) is the sole governed `.tasks/`-writer and can be driven
+  programmatically with forced field overrides (`owner:human`, `status:captured`). (Spike 1)
+- **A2:** `captured` + `owner:human` + G-020 build-readiness suffices for "nothing auto-activates"
+  without a bespoke confirm step. (Spike 2)
+
+## Open Questions
+
+- **IW-1: Does routing promote through `fw task create` keep the `.tasks/` write inside the task-gate perimeter end-to-end, with `owner:human`+`status:captured` un-overridable by the caller?**
+  confidence: 1
+  disposition: deferred
+  rationale: seam hypothesis (delegate to governed writer) looks mechanizable but unproven — Spike 1
+- **IW-2: What is the uid↔T-ID cross-ref contract for idempotent re-promote (G4)?**
+  confidence: 0
+  disposition: deferred
+  rationale: 832's IW-2 (rail offset 48) — their contract to define; AEF stores the mapping — Spike 3
+- **IW-3: Which `.tasks/` root do promoted tasks land in — `active/` (captured) directly, or a quarantine the human confirms out of?**
+  confidence: 1
+  disposition: deferred
+  rationale: Dimitri's guardrail says `captured`; whether `captured`+G-020 suffices vs an explicit confirm step is untested — Spike 2
+
+## Exploration Plan
+
+- **Spike 1 (seam, IW-1, ~1h):** prove `fw task create` drivable from a promote path with forced
+  `owner:human`+`status:captured`, provenance stamped, write gated. Deliverable: one promoted task
+  from a fixture proposal showing the gate fired.
+- **Spike 2 (root/confirm, IW-3, ~45m):** does `captured` in `active/` + G-020 give "nothing
+  auto-activates", or is an explicit human-confirm transition needed? Test vs horizon invariants (T-1068).
+- **Spike 3 (idempotency, IW-2, ~45m):** design uid↔T-ID registry for in-place re-promote; converge
+  the contract with 832 on the rail.
+- **Prereq:** 832 seam convergence on the rail + Dimitri review — spikes are next-session work.
+
+## Technical Constraints
+
+<!-- What platform, browser, network, or hardware constraints apply?
+     For web apps: HTTPS requirements, browser API restrictions, CORS, device support.
+     For hardware APIs (mic, camera, GPS, Bluetooth): access requirements, permissions model.
+     For infrastructure: network topology, firewall rules, latency bounds.
+     Fill this BEFORE building. Discovering constraints after implementation wastes sessions. -->
+
+## Scope Fence
+
+<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+
+## Acceptance Criteria
+
+### Agent
+<!-- @auto-tick-on-decide -->
+- [ ] Problem statement validated
+<!-- @auto-tick-on-decide -->
+- [ ] Assumptions tested
+<!-- @auto-tick-on-decide -->
+- [ ] Recommendation written with rationale
+
+### Human
+<!-- @auto-tick-on-decide -->
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+  **Steps:**
+  1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
+  2. Review the Agent Recommendation section and go/no-go criteria evaluation
+  3. Record decision via the Watchtower form or the command shown alongside the QR code
+  **Expected:** Decision recorded, task completed
+  **If not:** Ask agent for clarification on specific findings
+
+## Go/No-Go Criteria
+
+<!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
+**GO if:**
+- Guardrails G1–G6 are each a structural gate (Spike 1 proves the write-seam G3 + owner/status G2; Spike 3 designs idempotent id-mapping G4; G1/G5/G6 already gates)
+- The compiler-side seam converges with 832 on the rail (content=832, gated-write=AEF)
+
+**NO-GO if:**
+- Any guardrail — especially G3 (the `.tasks/` write seam) — can only be a convention, not a gate
+- Then promotion stays proposal-only: T-2539 staging is the terminal capability, a human hand-promotes
+
+## Verification
+
+# Shell commands that MUST pass before work-completed. One per line.
+# Lines starting with # are comments (skipped). Empty lines ignored.
+# For inception tasks, verification is often not needed (decisions, not code).
+#
+# Toolchain hint (L-291): if a GO decision will mean editing *.vbproj/*.csproj/*.xaml,
+# *.go, Cargo.toml, tsconfig.json, or pom.xml in the build task, plan to add the
+# matching build command (dotnet build / go build / cargo check / tsc --noEmit /
+# mvn compile) to that build task's ## Verification — P-011 only runs what you write.
+
+## Recommendation
+
+**Recommendation:** DEFER
+
+**Rationale:**
+
+Opening to explore the compiler-side write SEAM + guardrail enforceability on the AEF side. Recommendation follows 3 spikes (seam fork, guardrail-to-gate mapping, idempotent promote). Advisory leans GO-contingent: most guardrails already map to existing AEF gates (T-2539 staging is mechanical; G-020 build-readiness blocks activation without real ACs; owner:human+captured is settable at write). The load-bearing unknown is whether the .tasks/ WRITE itself is gated end-to-end. Flips NO-GO if any guardrail can only be a convention, not a gate. Decision stays Dimitri's (joint w/ 832 T-201).
+
+**Evidence:**
+
+<!-- Add evidence bullets as exploration progresses (file paths,
+     commit hashes, test results). The filing-time recommendation
+     can be revised before fw inception decide. -->
+
+## Decisions
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
+
+## Decision
+
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+
+## Updates
+
+<!-- Auto-populated by git mining at task completion.
+     Manual entries optional during execution. -->
+
+### 2026-07-18T08:16:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

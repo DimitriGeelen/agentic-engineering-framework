@@ -394,3 +394,21 @@ assumptions:
   linked_task: T-1726
   created: '2026-05-04'
   resolved_date: null
+- id: A-042
+  statement: fw task create (create-task.sh) is the sole governed .tasks/ writer and
+    can be driven programmatically with forced owner:human + status:captured overrides
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2541
+  created: '2026-07-18'
+  resolved_date: null
+- id: A-043
+  statement: captured + owner:human + G-020 build-readiness suffices for nothing-auto-activates
+    without a bespoke confirm step
+  status: untested
+  validation_method: TBD
+  evidence: []
+  linked_task: T-2541
+  created: '2026-07-18'
+  resolved_date: null
