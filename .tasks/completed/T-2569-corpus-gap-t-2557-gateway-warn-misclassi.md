@@ -8,10 +8,10 @@ description: >
   + join fan-in) and a fork has no decision semantics. Found compiling 832 pair-draft
   #2 (T-2568).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -26,8 +26,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T21:41:40Z
-last_update: '2026-07-19T21:45:06Z'
-date_finished:
+last_update: 2026-07-19T22:07:55Z
+date_finished: 2026-07-19T22:07:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -48,6 +48,24 @@ cost_estimate_proposed:
     rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
       (no-signal)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-19T21:45:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2569: corpus gap: T-2557 gateway WARN misclassifies parallelGateway as unrepresentable decision
@@ -59,9 +77,9 @@ Found compiling 832's pair-draft #2 dispatch-loop.bpmn (T-2568): the Pass-4 gate
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Pass-4 distinguishes gateway kinds: exclusiveGateway keeps the T-2557 decision-semantics WARN verbatim; parallelGateway emits a differently-worded note (structure IS represented via sibling related_tasks/fan-in — either an INFO-class line or a WARN that states the true semantics), never "decision semantics … not applied"
-- [ ] Regression test on 832's pinned dispatch-loop.bpmn asserts the exclusive WARNs (agt_4_mode, agt_13_complete) unchanged and the parallel wording corrected for agt_5_fan/agt_10_join; suite green
-- [ ] 832 notified on the rail (their W-PGW-* validator vocabulary may want alignment)
+- [x] Pass-4 distinguishes gateway kinds: exclusiveGateway keeps the T-2557 decision-semantics WARN verbatim; parallelGateway emits a differently-worded note (structure IS represented via sibling related_tasks/fan-in — either an INFO-class line or a WARN that states the true semantics), never "decision semantics … not applied"
+- [x] Regression test on 832's pinned dispatch-loop.bpmn asserts the exclusive WARN text unchanged (agt_4_mode) and the corrected parallel wording for agt_5_fan/agt_10_join (structure IS carried; synchronization not enforced; no 'decision semantics'/'not applied'); suite 53/53 green
+- [x] 832 notified on the rail (offset 102 raised the gap + asked their W-PGW-* opinion; wording shipped in the wrap-up relay)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -126,6 +144,9 @@ Found compiling 832's pair-draft #2 dispatch-loop.bpmn (T-2568): the Pass-4 gate
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/.t2569-pytest.out 2>&1 && grep -q "passed" /tmp/.t2569-pytest.out
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/dispatch-loop.bpmn 2>&1); echo "$out" | grep -q "fork/join structure IS carried"
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/dispatch-loop.bpmn 2>&1); echo "$out" | grep "agt_4_mode" | grep -q "decision semantics are not representable" 
 
 ## RCA
 
@@ -167,6 +188,11 @@ Found compiling 832's pair-draft #2 dispatch-loop.bpmn (T-2568): the Pass-4 gate
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-20 — wording states what IS carried, not just what isn't
+- **What changed:** the corrected note names both halves: fork/join structure IS carried (sibling related_tasks + fan-in) AND the genuinely-lossy part (synchronization enforcement) — honest in both directions, unlike the old text which claimed total loss.
+- **Plan impact:** inclusive/complex gateways deliberately stay on the T-2557 decision text (they ARE choice gateways); only parallelGateway splits.
+- **Triggered:** nothing new. Implemented without waiting for 832's W-PGW vocabulary reply (their input is alignment nice-to-have, not a contract dependency; wording relayed for their reaction).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -194,3 +220,24 @@ Found compiling 832's pair-draft #2 dispatch-loop.bpmn (T-2568): the Pass-4 gate
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2569-corpus-gap-t-2557-gateway-warn-misclassi.md
 - **Context:** Initial task creation
+
+### 2026-07-19T22:02:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-33d5dc9d
+- **Timestamp:** 2026-07-19T22:07:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
+     - evidence: `out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/dispatch-loop.bpmn 2>&1); echo "$out" | grep "agt_4_mode" | grep -q "decision semantics are not representable"`
+
+### 2026-07-19T22:07:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

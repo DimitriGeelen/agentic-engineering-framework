@@ -677,9 +677,8 @@ def test_832_dispatch_multi_backedge_convergence():
 
 def test_832_dispatch_warn_set_pin():
     """Probes 3+4 + T-2567 live: 5 WARNs — 2 exclusive (labeled branches), 2 parallel
-    (<unlabeled> fork edges), 1 aggregated authority-lane fold. NOTE: the parallel
-    gateways currently reuse the exclusive decision-semantics wording — that text
-    assertion MOVES when T-2569 lands (kind-split wording)."""
+    (<unlabeled> fork edges), 1 aggregated authority-lane fold. Parallel-gateway
+    wording is kind-split since T-2569 (see test_parallel_gateway_warn_states_true_semantics)."""
     _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
     gw = [w for w in warnings if "Gateway" in w]
     assert len(gw) == 4, warnings
@@ -750,3 +749,23 @@ def test_non_boundary_typed_event_warns_unchanged_by_t2560():
         for w in warnings:
             if "typed-event annotation" in w:
                 assert "[boundary:" not in w
+
+
+# ------------------------------- parallelGateway WARN kind-split (T-2569)
+
+def test_parallel_gateway_warn_states_true_semantics():
+    """T-2569: parallel gateways no longer claim "decision semantics … not applied" —
+    the note states the truth: structure IS carried, synchronization is not enforced.
+    Exclusive gateways keep the T-2557 text verbatim."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
+    fan = next(w for w in warnings if "node 'agt_5_fan'" in w)
+    join = next(w for w in warnings if "node 'agt_10_join'" in w)
+    for w in (fan, join):
+        assert "fork/join structure IS carried" in w
+        assert "synchronization semantics" in w
+        assert "T-2569" in w
+        assert "decision semantics" not in w
+        assert "not applied" not in w
+    mode = next(w for w in warnings if "node 'agt_4_mode'" in w)
+    assert "decision semantics are not representable" in mode
+    assert "T-2557" in mode

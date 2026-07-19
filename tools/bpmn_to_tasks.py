@@ -539,11 +539,26 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
             branches.append(f"{label or '<unlabeled>'} → {target or '?'}")
         name_str = f" ({gw_name!r})" if gw_name else ""
         branch_str = "; ".join(branches) if branches else "<no outgoing flows>"
-        warnings.append(
-            f"node {node_id!r} is a {tag}{name_str} with branches [{branch_str}] — "
-            f"decision semantics are not representable in AEF task skeletons (T-2557); "
-            f"surfaced here, not applied"
-        )
+        # T-2569 (found on 832 pair-draft #2): the decision-semantics claim is only
+        # true for choice gateways. A parallelGateway has NO decision — all branches
+        # fire — and its fork/join structure IS applied (fork branches emit as
+        # sibling skeletons with a shared predecessor; the join fans all branches
+        # into the successor's related_tasks). Saying "not applied" there was false.
+        # Kind-split the wording; exclusive/inclusive/complex keep the T-2557 text.
+        if tag == "parallelGateway":
+            warnings.append(
+                f"node {node_id!r} is a parallelGateway{name_str} with branches "
+                f"[{branch_str}] — fork/join structure IS carried into task skeletons "
+                f"(sibling related_tasks + fan-in), but the synchronization semantics "
+                f"(all-branches-complete before proceeding) are not enforced by AEF "
+                f"tasks (T-2569); surfaced here"
+            )
+        else:
+            warnings.append(
+                f"node {node_id!r} is a {tag}{name_str} with branches [{branch_str}] — "
+                f"decision semantics are not representable in AEF task skeletons "
+                f"(T-2557); surfaced here, not applied"
+            )
 
     return skeletons, warnings
 

@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2569: corpus gap: T-2557 gateway WARN misclassifies parallelGateway as unrepresentable
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T22:08:06Z
+# ============================================================================
+
+task_id: T-2569
+task_name: "corpus gap: T-2557 gateway WARN misclassifies parallelGateway as unrepresentable"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T21:41:40Z
+completed: 2026-07-19T22:07:55Z
+duration_days: 0
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Pass-4 distinguishes gateway kinds: exclusiveGateway keeps the T-2557 decision-semantics WARN verbatim; parallelGateway emits a differently-worded note (structure IS represented via sibling related_tasks/fan-in — either an INFO-class line or a WARN that states the true semantics), never "decision semantics … not applied"'
+  - 'Regression test on 832''s pinned dispatch-loop.bpmn asserts the exclusive WARN text unchanged (agt_4_mode) and the corrected parallel wording for agt_5_fan/agt_10_join (structure IS carried; synchronization not enforced; no ''decision semantics''/''not applied''); suite 53/53 green'
+  - '832 notified on the rail (offset 102 raised the gap + asked their W-PGW-* opinion; wording shipped in the wrap-up relay)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:designer-corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 26
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2569-corpus-gap-t-2557-gateway-warn-misclassi.md
+generated_by: context-agent-hybrid
