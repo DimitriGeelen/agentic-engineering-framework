@@ -591,16 +591,35 @@ def test_832_handover_gateway_probe_warns_with_labels():
     assert "critical → wrap up → agt_capture" in gw[0]
 
 
-def test_832_handover_authority_lane_current_behavior():
-    """KNOWN LIMIT (T-2567): laneMeta authority="authority" (Framework lane) is not in
-    AUTHORITY_OWNER — its task nodes silently fold to owner: agent with no WARN. This
-    test pins CURRENT behavior; T-2567 will add the WARN (and this assertion moves)."""
+def test_832_handover_authority_lane_warns_not_silent():
+    """T-2567 (moves the T-2566 current-behavior pin): laneMeta authority="authority"
+    (Framework lane) is not in AUTHORITY_OWNER. Nodes still fall back to name/type
+    derivation (owner: agent — 832-ratified, rail offset 95: executor is the agent,
+    what's lost is authority PROVENANCE), but the fold now surfaces ONE aggregated
+    WARN naming the lane, the unrecognized value, and each affected uid→owner."""
     skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_HANDOVER)
     assert len(skeletons) == 9
     by_uid = {s["uid"]: s for s in skeletons}
     assert by_uid["n_pickup"]["owner"] == "human"
     for uid in ("n_resume", "n_gate", "n_persist"):
         assert by_uid[uid]["owner"] == "agent"
-    assert not [w for w in warnings if "authority" in w.lower() and "lane" in w.lower()]
+    auth_warns = [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
+    assert len(auth_warns) == 1, warnings
+    w = auth_warns[0]
+    assert "authority='authority'" in w
+    assert "Framework" in w  # names the lane
+    for pair in ("n_resume→agent", "n_gate→agent", "n_persist→agent"):
+        assert pair in w
+    assert "T-2567" in w
+    # sovereignty/initiative lanes stay silent — additive-only
+    assert "Sovereignty" not in w and "Initiative" not in w
     # back-edge through the gateway resolves to the DISTINCT gate node — no self-ref
     assert set(by_uid["n_work"]["related_tasks"]) == {"n_focus", "n_gate"}
+
+
+def test_recognized_authority_lanes_emit_no_t2567_warn():
+    """Additive-only guard: fixtures whose lanes all carry sovereignty/initiative
+    must produce ZERO T-2567 WARNs (typed-events + boundary-events + D5 corpus)."""
+    for fixture in (FIXTURE_832_TYPED, FIXTURE_832_BOUNDARY):
+        _, warnings = bpmn_to_tasks.parse_bpmn(fixture)
+        assert not [w for w in warnings if "unrecognized aef:laneMeta authority" in w]

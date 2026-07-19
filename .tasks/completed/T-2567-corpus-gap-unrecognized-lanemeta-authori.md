@@ -11,10 +11,10 @@ description: >
   known map, naming the lane, the applied fallback owner, and the affected nodes.
   Sibling of T-2537 name-only-lane WARN class.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner:
-horizon: later
+horizon: null
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -29,8 +29,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T21:13:48Z
-last_update: '2026-07-19T21:15:09Z'
-date_finished:
+last_update: 2026-07-19T21:33:56Z
+date_finished: 2026-07-19T21:33:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -81,8 +81,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Pass-1 owner derivation WARNs when `aef:laneMeta authority=` carries a value outside AUTHORITY_OWNER (sovereignty/initiative), naming the lane, the fallback owner applied, and the affected node uids
-- [ ] sovereignty/initiative lanes byte-identical to today (additive-only); regression test on 832's pinned session-handover.bpmn asserts the WARN and moves the T-2566 current-behavior pin; suite green
+- [x] Pass-1 owner derivation WARNs when `aef:laneMeta authority=` carries a value outside AUTHORITY_OWNER (sovereignty/initiative), naming the lane, the fallback owner applied, and the affected node uids
+- [x] sovereignty/initiative lanes byte-identical to today (additive-only); regression test on 832's pinned session-handover.bpmn asserts the WARN and moves the T-2566 current-behavior pin; suite green (44/44)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,8 +147,19 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/.t2567-pytest.out 2>&1 && grep -q "passed" /tmp/.t2567-pytest.out
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/session-handover.bpmn 2>&1); echo "$out" | grep -q "unrecognized aef:laneMeta authority='authority'"
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/typed-events.bpmn 2>&1); ! echo "$out" | grep -q "unrecognized aef:laneMeta"
 
 ## RCA
+
+**Symptom:** 832's pair-draft #1 (session-handover.bpmn, 3 lanes) compiled its three Framework·Authority nodes (n_resume/n_gate/n_persist) to `owner: agent` with zero WARN — the authority provenance vanished silently (found in T-2566).
+
+**Root cause:** `AUTHORITY_OWNER` maps only sovereignty→human / initiative→agent. Any other `aef:laneMeta authority=` value made `auth_owner` None, dropping to the name-heuristic/type-default chain with no signal that an explicit authority-of-record had been ignored.
+
+**Why structurally allowed:** the fallback chain was designed for *absent* authority (no laneMeta), so "present but unrecognized" rode the same silent path as "absent" — the WARN-first discipline (T-2552 class) covered typed events and gateways but not owner derivation.
+
+**Prevention:** aggregated Pass-1 WARN per lane naming the unrecognized value + every uid→owner fold; regression test `test_832_handover_authority_lane_warns_not_silent` on 832's pinned fixture + additive-only guard test on sovereignty/initiative fixtures.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -188,16 +199,17 @@ bvp_scores_proposed:
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-19 — peer ratification arrived before build started
+- **What changed:** 832 volunteered a design vote (rail offset 95) before this task was picked up: keep owner:agent fallback + WARN, do NOT mint a synthetic "framework" owner — a Framework·Authority node is *enforced by* the framework but *executed by* the agent, so the loss is authority PROVENANCE, not executor identity.
+- **Plan impact:** none — vote matched the filed plan exactly; implemented as one aggregated WARN per lane (mirrors the T-2557 gateway-WARN aggregation style) rather than per-node WARNs.
+- **Triggered:** landing this BEFORE compiling 832's pair-draft #2 (T-2568), whose frw_3_headroom/frw_14_checkpoint nodes will now surface the WARN live instead of re-pinning silent behavior.
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-07-19 — fallback owner for unrecognized authority lanes
+- **Chose:** keep the existing name-heuristic/type-default fold (→ agent for 832's Framework nodes) and surface ONE aggregated WARN per lane listing uid→owner pairs.
+- **Why:** 832's rail-offset-95 vote + own analysis — the executor really is the agent; inventing a "framework" owner would over-fit the task model to round-trip a lane. Aggregation keeps WARN volume proportional to lanes, not nodes.
+- **Rejected:** (a) synthetic `owner: framework` — AEF tasks can't action it; (b) hard error — the encoding is legitimate 832 dialect, and O-3 already hard-errors the one case where authority is load-bearing (inception sovereignty); (c) per-node WARNs — noisy on large lanes, same information.
 
 ## Decision
 
@@ -218,3 +230,24 @@ bvp_scores_proposed:
 
 ### 2026-07-19T21:14:03Z — status-update [task-update-agent]
 - **Change:** tags: +arc:designer-corpus
+
+### 2026-07-19T21:30:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aad69e30
+- **Timestamp:** 2026-07-19T21:33:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
+     - evidence: `out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/typed-events.bpmn 2>&1); ! echo "$out" | grep -q "unrecognized aef:laneMeta"`
+
+### 2026-07-19T21:33:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

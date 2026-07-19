@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2567: corpus gap: unrecognized laneMeta authority value silently folds to owner agent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T21:34:07Z
+# ============================================================================
+
+task_id: T-2567
+task_name: "corpus gap: unrecognized laneMeta authority value silently folds to owner agent"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T21:13:48Z
+completed: 2026-07-19T21:33:56Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Pass-1 owner derivation WARNs when `aef:laneMeta authority=` carries a value outside AUTHORITY_OWNER (sovereignty/initiative), naming the lane, the fallback owner applied, and the affected node uids'
+  - 'sovereignty/initiative lanes byte-identical to today (additive-only); regression test on 832''s pinned session-handover.bpmn asserts the WARN and moves the T-2566 current-behavior pin; suite green (44/44)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-07-19 — fallback owner for unrecognized authority lanes'
+    chose: 'keep the existing name-heuristic/type-default fold (→ agent for 832''s Framework nodes) and surface ONE aggregated WARN per lane listing uid→owner pairs.'
+    rationale: '832''s rail-offset-95 vote + own analysis — the executor really is the agent; inventing a "framework" owner would over-fit the task model to round-trip a lane. Aggregation keeps WARN volume proportional to lanes, not nodes.'
+    alternatives_rejected: ['(a) synthetic `owner: framework` — AEF tasks can''t action it; (b) hard error — the encoding is legitimate 832 dialect, and O-3 already hard-errors the one case where authority is load-bearing (inception sovereignty); (c) per-node WARNs — noisy on large lanes, same information.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:designer-corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 20
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2567-corpus-gap-unrecognized-lanemeta-authori.md
+generated_by: context-agent-hybrid

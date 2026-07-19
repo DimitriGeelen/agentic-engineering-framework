@@ -347,6 +347,14 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     # (slice 3). Record node_id -> uid for linking and owner resolution.
     raw: list[dict] = []
     uid_by_node: dict[str, str] = {}
+    # T-2567: authority values outside AUTHORITY_OWNER (e.g. "authority" on a
+    # Framework lane) are semantically lossy — the lane's authority provenance has
+    # no owner in the AEF task model, so nodes fall back to name/type derivation.
+    # Collect the folds per (authority, lane) and surface ONE aggregated WARN each
+    # after the loop (WARN-first discipline; fallback behavior itself unchanged).
+    # Design ratified by 832 (rail offset 95): agent-fallback + WARN, no synthetic
+    # "framework" owner — the executor is still the agent; what's lost is provenance.
+    unknown_auth: dict[tuple[str, str], list[str]] = {}
     for node in root.iter():
         ntype = _local(node.tag)
         is_inception = _is_inception_subprocess(node)
@@ -406,6 +414,10 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                         f"node {node_id!r} is in no lane — owner defaulted from type "
                         f"({owner})"
                     )
+            if authority is not None and auth_owner is None:
+                unknown_auth.setdefault((authority, lane_name or node_id), []).append(
+                    f"{uid}→{owner}"
+                )
 
         raw.append(
             {
@@ -418,6 +430,15 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
             }
         )
         uid_by_node[node_id] = uid
+
+    for (auth_val, lname), entries in unknown_auth.items():
+        warnings.append(
+            f"lane {lname!r} carries unrecognized aef:laneMeta authority={auth_val!r} — "
+            f"AEF owner derivation knows sovereignty→human / initiative→agent only; "
+            f"affected nodes fell back to name/type derivation: {', '.join(entries)} "
+            f"(T-2567) — authority provenance is not representable in task skeletons; "
+            f"surfaced here, not folded silently"
+        )
 
     task_ids = set(uid_by_node)
 
