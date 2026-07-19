@@ -560,3 +560,47 @@ def test_832_boundary_events_detector_fires_on_boundary_nodes():
     joined = "\n".join(typed)
     assert "bnd_err" in joined and "kind=error" in joined
     assert "bnd_tmr" in joined and "kind=timer" in joined and "0 0 * * *" in joined
+
+
+# ------------------------------- 832 pair-draft #1: session-handover (T-2566)
+# 832's T-214 pair-draft, delivered rail offset 92 as a deliberate live T-2557 probe
+# (one exclusiveGateway + named branches + back-edge) and the first diagram with a
+# THIRD lane authority value (authority="authority", Framework lane).
+
+FIXTURE_832_HANDOVER = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "aef-bpmn", "session-handover.bpmn"
+)
+SHA_832_HANDOVER = "d971a2fccbac6cf93bebcb8ed7de63e6dfc3c6445626e286f18fc282c87f5855"
+
+
+def test_832_handover_fixture_byte_exact():
+    import hashlib
+
+    with open(FIXTURE_832_HANDOVER, "rb") as fh:
+        assert hashlib.sha256(fh.read()).hexdigest() == SHA_832_HANDOVER
+
+
+def test_832_handover_gateway_probe_warns_with_labels():
+    """832's deliberate T-2557 probe: the frw_budget gateway + BOTH branch labels
+    surface in the WARN — confirms the Pass-4 fix against a peer-authored diagram."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_HANDOVER)
+    gw = [w for w in warnings if "T-2557" in w]
+    assert len(gw) == 1, gw
+    assert "frw_budget" in gw[0]
+    assert "budget ok → next unit → agt_work" in gw[0]
+    assert "critical → wrap up → agt_capture" in gw[0]
+
+
+def test_832_handover_authority_lane_current_behavior():
+    """KNOWN LIMIT (T-2567): laneMeta authority="authority" (Framework lane) is not in
+    AUTHORITY_OWNER — its task nodes silently fold to owner: agent with no WARN. This
+    test pins CURRENT behavior; T-2567 will add the WARN (and this assertion moves)."""
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_HANDOVER)
+    assert len(skeletons) == 9
+    by_uid = {s["uid"]: s for s in skeletons}
+    assert by_uid["n_pickup"]["owner"] == "human"
+    for uid in ("n_resume", "n_gate", "n_persist"):
+        assert by_uid[uid]["owner"] == "agent"
+    assert not [w for w in warnings if "authority" in w.lower() and "lane" in w.lower()]
+    # back-edge through the gateway resolves to the DISTINCT gate node — no self-ref
+    assert set(by_uid["n_work"]["related_tasks"]) == {"n_focus", "n_gate"}

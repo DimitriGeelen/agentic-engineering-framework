@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_session-handover"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- Corpus diagram (T-214, arc designer-authoring-surface ↔ AEF arc-014 corpus): the real
+       832/AEF session lifecycle — Session Start Protocol (context injection) → operator pickup
+       → focus → a work/commit loop gated on the budget-gate → Session Capture → handover →
+       persist. Authored in the canonical dialect (three authority-typed lanes, aef:uid +
+       aef:position on every node, aef:uid on every edge). Deliberately carries ONE
+       exclusiveGateway (budget critical?) and ONE back-edge (continue → work) — realistic AND
+       the constructs AEF flagged for silent-loss (their T-2557), so it doubles as a
+       cross-validation case. Pair-draft model (rail 84/87): 832 drafts → operator reviews in
+       the designer UI → AEF compiles via fw bpmn. -->
+
+  <bpmn:collaboration id="Collaboration_session-handover">
+    <bpmn:participant id="Pool_session_handover" name="session-handover" processRef="Process_session-handover"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_session-handover" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="session-handover" version="1" schemaVersion="2" title="session / handover lifecycle" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="150"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_pickup</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="200"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>frw_resume</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_ac</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_budget</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_persist</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_end</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="180"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_focus</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_commit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_capture</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_handover</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_start" name="Session begins (claude / claude-fw)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_start"/>
+        <aef:position x="120.0" y="470.0"/>
+        <aef:meta triggeredBy="claude-fw  |  fw context init"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:scriptTask id="frw_resume" name="Inject context (read LATEST.md, resume hook)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_resume"/>
+        <aef:position x="300.0" y="290.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>SessionStart:resume → agents/resume/resume.sh (reinject handover)</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:userTask id="hum_pickup" name="Read handover, choose first action (human-only)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_pickup"/>
+        <aef:position x="480.0" y="110.0"/>
+        <aef:meta tier="0"/>
+        <aef:endpoint>cat .context/handovers/LATEST.md  ·  Suggested First Action</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:scriptTask id="agt_focus" name="Set focus on the active task">
+      <bpmn:extensionElements>
+        <aef:uid value="n_focus"/>
+        <aef:position x="660.0" y="470.0"/>
+        <aef:meta tier="1" note="P-002: no edit without an active task"/>
+        <aef:endpoint>fw context focus T-XXX  (or fw work-on)</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:serviceTask id="agt_work" name="Do a unit of work (within the active task)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_work"/>
+        <aef:position x="840.0" y="470.0"/>
+        <aef:meta tier="2" note="one meaningful unit = subtask / file / decision"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_commit" name="Commit the unit (commit cadence, ~15–20 min)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_commit"/>
+        <aef:position x="1020.0" y="470.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>fw git commit -m "T-XXX: ..."</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="frw_ac" name="Gate: active-task + AC + verification (P-002/P-010/P-011)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_gate"/>
+        <aef:position x="1200.0" y="290.0"/>
+        <aef:meta tier="1" gate="check-active-task.sh (PreToolUse); update-task.sh P-010/P-011"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="frw_budget" name="Budget critical? (budget-gate ≥150K)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_budget"/>
+        <aef:position x="1380.0" y="290.0"/>
+        <aef:meta decisionOwner="framework"/>
+        <aef:decisionInput>${budget_level}</aef:decisionInput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="agt_capture" name="Session capture (tasks for uncaptured work, learnings)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_capture"/>
+        <aef:position x="1560.0" y="470.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>agents/session-capture/AGENT.md checklist</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:scriptTask id="agt_handover" name="Generate + fill handover (fw handover)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_handover"/>
+        <aef:position x="1740.0" y="470.0"/>
+        <aef:meta tier="1" note="fill ALL [TODO] sections in the same operation"/>
+        <aef:endpoint>fw handover</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:scriptTask id="frw_persist" name="Commit + push handover, pre-push audit">
+      <bpmn:extensionElements>
+        <aef:uid value="n_persist"/>
+        <aef:position x="1920.0" y="290.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>fw handover --commit</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:endEvent id="frw_end" name="Session ends — state safe, handover committed">
+      <bpmn:extensionElements>
+        <aef:uid value="n_end"/>
+        <aef:position x="2100.0" y="290.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_12</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_start" targetRef="frw_resume">
+      <bpmn:extensionElements><aef:uid value="e_01"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="frw_resume" targetRef="hum_pickup">
+      <bpmn:extensionElements><aef:uid value="e_02"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="hum_pickup" targetRef="agt_focus">
+      <bpmn:extensionElements><aef:uid value="e_03"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_focus" targetRef="agt_work">
+      <bpmn:extensionElements><aef:uid value="e_04"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" sourceRef="agt_work" targetRef="agt_commit">
+      <bpmn:extensionElements><aef:uid value="e_05"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_commit" targetRef="frw_ac">
+      <bpmn:extensionElements><aef:uid value="e_06"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" sourceRef="frw_ac" targetRef="frw_budget">
+      <bpmn:extensionElements><aef:uid value="e_07"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" name="budget ok → next unit" sourceRef="frw_budget" targetRef="agt_work">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${budget_level != 'critical'}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_08"/>
+        <aef:anchors sourcePort="S" targetPort="E"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" name="critical → wrap up" sourceRef="frw_budget" targetRef="agt_capture">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${budget_level == 'critical'}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_09"/>
+        <aef:anchors targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" sourceRef="agt_capture" targetRef="agt_handover">
+      <bpmn:extensionElements><aef:uid value="e_10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_handover" targetRef="frw_persist">
+      <bpmn:extensionElements><aef:uid value="e_11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_12" sourceRef="frw_persist" targetRef="frw_end">
+      <bpmn:extensionElements><aef:uid value="e_12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) generated from aef:position on load. -->
+</bpmn:definitions>
