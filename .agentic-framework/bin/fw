@@ -1460,7 +1460,11 @@ else:
     # policy/designer-pin.yaml. Catches a pin bump without re-sync, or an edit to the
     # (read-only) vendored HTML. Designer is an AEF-specific feature → PROJECT_ROOT; SKIPs
     # gracefully when the pin is absent (consumers) or the vendored file isn't present yet.
-    local _dz_pin="$PROJECT_ROOT/policy/designer-pin.yaml"
+    # FW_DESIGNER_PIN_FILE lets tests point the check at a temp pin copy so the live
+    # tracked policy/designer-pin.yaml is never mutated (T-2547 hermetic-test fix).
+    # vendored_path below still resolves against PROJECT_ROOT, so the real vendor dir
+    # is used regardless of which pin file is read.
+    local _dz_pin="${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}"
     if [ -f "$_dz_pin" ]; then
         local _dz_want _dz_vp _dz_file _dz_have
         _dz_want=$(python3 -c "import yaml;d=yaml.safe_load(open('$_dz_pin'));print(d.get('sha256','') or '')" 2>/dev/null)
