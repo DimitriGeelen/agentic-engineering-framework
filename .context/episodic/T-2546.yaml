@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2546: re-pin designer 0.3.0 (T-200 release: IW-9 owner-collapse + offline-hardened)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T09:12:22Z
+# ============================================================================
+
+task_id: T-2546
+task_name: "re-pin designer 0.3.0 (T-200 release: IW-9 owner-collapse + offline-hardened)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T08:04:27Z
+completed: 2026-07-19T09:12:11Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-19T10:08:39+02:00
+last_commit: 2026-07-19T10:56:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin designer 0.3.0 task — ACs + blocked-on-clean-delivery (832 transfer-id collision root-caused). capture L-502 (termlink file_send transfer-id collision → file_receive corruption)
+
+# Key outcomes
+outcomes:
+  - '0.3.0 artifact delivered clean: `file_receive` reassembles + integrity-passes; landed file sha256 == pin (`36be033d…`), bytes == 826643 — verified independently via sha256sum'
+  - '`policy/designer-pin.yaml` bumped to 0.3.0 (version, sha256, bytes, vendored_path, source_artifact, source_tag; cdn_fonts→false per offline-hardening)'
+  - '`fw designer sync --from <delivered>` installs read-only to `vendor/designer/aef-workflow-designer-0.3.0.html`; `fw designer status` reports PRESENT ✓ (sha256 matches pin)'
+  - '`fw doctor` clean on designer pin drift — emits `OK designer vendored build matches pin (36be033d…)`'
+  - 'sha256 match confirmed back to 832 on the rail BEFORE sync (rail offset 71; offset-64 commitment honored)'
+  - 'LIVE end-to-end: `/designer` serves HTTP 200, 826643 bytes, served sha256 == pin; served page has 0 CDN-font refs + 14 base64 woff2 embeds (T-176 offline-hardening confirmed on live bytes)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-2546-re-pin-designer-030-t-200-release-iw-9-o.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-19T10:08:39"
+    action: "T-2546: re-pin designer 0.3.0 task — ACs + blocked-on-clean-delivery (832 transfer-id collision root-caused)"
+  - time: "2026-07-19T10:56:33"
+    action: "T-2546: capture L-502 (termlink file_send transfer-id collision → file_receive corruption)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 67 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 67
+  commits: 2
+  files_changed: 2
+  lines_added: 199
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2546-re-pin-designer-030-t-200-release-iw-9-o.md
+generated_by: context-agent-hybrid

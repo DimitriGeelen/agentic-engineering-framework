@@ -10,23 +10,27 @@
 # the delivered artifact's sha256 against `sha256:` below and installs it, rejecting
 # (non-zero exit) on any mismatch. The pin is the reproducibility anchor.
 
-version: "0.2.0"
-sha256: "e301986b993baf58d5ed29ed25436d94b08ed2be910c6781b0f4b906c25c153a"
-bytes: 395178
+version: "0.3.0"
+sha256: "36be033d66aa1c159a9e75df674f02032eb9f308882af288fad909e6d754a4bb"
+bytes: 826643
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.2.0.html"
-source_tag: "designer-v0.2.0"
+source_artifact: "dist/aef-workflow-designer-0.3.0.html"
+source_tag: "designer-v0.3.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha256-verify → pin → serve)
 
 # Where the verified build lands inside AEF (tracked, served by the blueprint).
-# 0.2.0 = 0.1.0 + T-177: emits horizon/workflowType/owner via aef:meta on task-like nodes.
-vendored_path: "vendor/designer/aef-workflow-designer-0.2.0.html"
+# 0.3.0 = 0.2.0 + 832 T-200: (1) IW-9 editor owner-collapse — node-level `owner`
+#   override RETIRED from the authoring surface; owner is now a READ-ONLY readout
+#   derived from lane authority (sovereignty→human, initiative/authority→agent);
+#   owner is still serialized in metaKeys for reverse-render laning (O-2), so the
+#   AEF import/reverse-render path is unaffected. (2) T-176 offline-hardening.
+vendored_path: "vendor/designer/aef-workflow-designer-0.3.0.html"
 
-# CDN-fonts caveat (AC6): the build links Google Fonts. Diagramming + import/export
-# function OFFLINE via system-font fallback, but a locked-down deployment will make
-# (failing) font requests on load. "Self-contained single-file" is true for FUNCTION,
-# not for NETWORK. Full offline is a separate 832-side task.
-cdn_fonts: true
-notes: "self-contained single-file editor; links Google Fonts CDN (offline fallback ok)"
+# Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
+# on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
+# air-gapped deployments. This is why bytes jumped 395178 → 826643. The 0.2.0
+# CDN-fonts caveat no longer applies.
+cdn_fonts: false
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority)"
