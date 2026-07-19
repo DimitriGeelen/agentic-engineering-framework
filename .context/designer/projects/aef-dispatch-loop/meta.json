@@ -1,0 +1,18 @@
+{
+  "id": "aef-dispatch-loop",
+  "title": "aef-dispatch-loop",
+  "versions": [
+    {
+      "v": 1,
+      "note": "arc-014 D4 (T-2563): dispatch-orchestration loop pair-draft v1",
+      "ts": 1784494694
+    },
+    {
+      "v": 2,
+      "note": "arc-014 D4 (T-2563): v2 \u2014 escape fix for <dispatch_id> in aef:meta note",
+      "ts": 1784494716
+    }
+  ],
+  "latest": 2,
+  "updated": 1784494716
+}
