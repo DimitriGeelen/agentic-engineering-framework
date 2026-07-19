@@ -3840,3 +3840,10 @@ X'` returning empty group."
   date: 2026-07-12
   context: Added via context agent
   application: TBD
+- id: L-502
+  learning: "termlink MCP file_send transfer-id collision corrupts file_receive: two back-to-back file_sends from one sender reused transfer_id xfer-mcp-3273116 (0.3.0 html @17 chunks + a 4314-byte bpmn fixture @1 chunk); file_receive reassembles the most-recent file keyed by transfer_id so it blended both -> 'incomplete transfer got 17/1 chunks'. Symptom mimics a chunk-count bug but root is id reuse. Diagnosis: on any 'got N/M chunks' mismatch, check whether the sender fired multiple file_sends close together under one id. Fix lives in termlink (T-2363), not AEF: unique transfer_id per send / space sends. Receive-side workaround: ask sender to re-fire the wanted file alone under a fresh id. Verified live 2026-07-19, AEF<->832 designer 0.3.0 delivery (T-2546)."
+  source: P-001
+  task: T-2546
+  date: 2026-07-19
+  context: Added via context agent
+  application: TBD
