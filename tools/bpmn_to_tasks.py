@@ -162,6 +162,38 @@ def _meta_attr(node: ET.Element, attr: str) -> str | None:
     return None
 
 
+def _event_def(node: ET.Element) -> tuple[str, dict[str, str]] | None:
+    """Return (kind, bindings) for a node bearing an <aef:eventDef>, else None.
+
+    832's typed-event encoding (their T-204 Slice 1, rail offset 79): error/timer/message
+    carried as <aef:eventDef kind="..." .../> on a NEUTRAL intermediateCatchEvent — no
+    native bpmn:*EventDefinition. `kind` is the event class; every other attribute (e.g.
+    errorStatus / timerSpec / busTopic) is returned as a binding. Matched by local name,
+    consistent with _find_uid / _meta_attr, so it fires on 832's real aef: URI too.
+
+    AEF does not CONSUME typed events yet — consumption semantics is scoped in T-2551.
+    This helper exists so parse_bpmn can WARN that the annotation was seen but not applied,
+    rather than silently dropping it (T-2552).
+    """
+    for ext in node:
+        if _local(ext.tag) != "extensionElements":
+            continue
+        for child in ext.iter():
+            if _local(child.tag) != "eventDef":
+                continue
+            kind = child.get("kind")
+            if kind is None:
+                for k, v in child.attrib.items():
+                    if _local(k) == "kind":
+                        kind = v
+                        break
+            bindings = {
+                _local(k): v for k, v in child.attrib.items() if _local(k) != "kind"
+            }
+            return (kind or "unknown", bindings)
+    return None
+
+
 def _is_inception_subprocess(node: ET.Element) -> bool:
     """True iff node is a <subProcess> bearing <aef:meta workflowType="inception">.
 
@@ -411,6 +443,31 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
                 "constituents": r["constituents"],
             }
         )
+
+    # Pass 3: surface typed-event annotations (T-2552). 832's T-204 Slice 1 encodes
+    # error/timer/message as <aef:eventDef> on a neutral intermediateCatchEvent. Pass 2's
+    # flow-walk TRANSITS these events (they feed related_tasks) but does NOT read the
+    # eventDef — so its kind/binding would be dropped SILENTLY, indistinguishable from the
+    # namespace-agnostic parse's intended forward-compat tolerance of unknown tags. AEF
+    # does not consume typed events yet (scoped in T-2551); WARN so the annotation is never
+    # silently lost. Detection is local-name-based, so it fires on 832's real aef: URI.
+    for node in root.iter():
+        ed = _event_def(node)
+        if ed is None:
+            continue
+        kind, bindings = ed
+        node_id = node.get("id") or "<anon>"
+        bind_str = (
+            " (" + ", ".join(f"{k}={v}" for k, v in sorted(bindings.items())) + ")"
+            if bindings
+            else ""
+        )
+        warnings.append(
+            f"node {node_id!r} carries a typed-event annotation (aef:eventDef "
+            f"kind={kind}){bind_str} — AEF does not consume typed events yet (T-2551); "
+            f"surfaced here, not applied"
+        )
+
     return skeletons, warnings
 
 

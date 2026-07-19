@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic AEF-twin of 832's T-204 Slice 1 typed-event encoding (T-2552).
+  error/timer/message carried as <aef:eventDef kind= ...> on a NEUTRAL
+  intermediateCatchEvent — NO native bpmn:*EventDefinition. Binding scalars are
+  kind-specific attributes (errorStatus / timerSpec / busTopic), per 832 rail
+  offset 79. AEF does not CONSUME typed events yet (scoped in T-2551); this
+  fixture exists to pin that the compiler WARNs rather than silently dropping the
+  annotation. Byte-exact cross-validation against 832's real fixture is Spike-2 of
+  T-2551 (their fixture is inbound over the DM rail).
+-->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://agentic.dev/schema/aef"
+                  id="Defs_typed_event_sample"
+                  targetNamespace="http://agentic.dev/bpmn">
+  <bpmn:process id="Proc_typed_event" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_agent" name="Agent">
+        <bpmn:flowNodeRef>Task_watch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_handle</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="Start_1" name="Start"/>
+
+    <bpmn:serviceTask id="Task_watch" name="Watch for signals">
+      <bpmn:extensionElements>
+        <aef:uid value="u-watch-001"/>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+    <!-- timer event: neutral catch tag, kind carried by the extension -->
+    <bpmn:intermediateCatchEvent id="Evt_timer" name="After 1h">
+      <bpmn:extensionElements>
+        <aef:eventDef kind="timer" timerSpec="PT1H"/>
+      </bpmn:extensionElements>
+    </bpmn:intermediateCatchEvent>
+
+    <!-- error event -->
+    <bpmn:intermediateCatchEvent id="Evt_error" name="On failure">
+      <bpmn:extensionElements>
+        <aef:eventDef kind="error" errorStatus="failed"/>
+      </bpmn:extensionElements>
+    </bpmn:intermediateCatchEvent>
+
+    <!-- message event -->
+    <bpmn:intermediateCatchEvent id="Evt_message" name="On inbox message">
+      <bpmn:extensionElements>
+        <aef:eventDef kind="message" busTopic="inbox.queued"/>
+      </bpmn:extensionElements>
+    </bpmn:intermediateCatchEvent>
+
+    <bpmn:serviceTask id="Task_handle" name="Handle signal">
+      <bpmn:extensionElements>
+        <aef:uid value="u-handle-002"/>
+      </bpmn:extensionElements>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_1" name="Done"/>
+
+    <bpmn:sequenceFlow id="f1" sourceRef="Start_1" targetRef="Task_watch"/>
+    <bpmn:sequenceFlow id="f2" sourceRef="Task_watch" targetRef="Evt_timer"/>
+    <bpmn:sequenceFlow id="f3" sourceRef="Evt_timer" targetRef="Evt_error"/>
+    <bpmn:sequenceFlow id="f4" sourceRef="Evt_error" targetRef="Evt_message"/>
+    <bpmn:sequenceFlow id="f5" sourceRef="Evt_message" targetRef="Task_handle"/>
+    <bpmn:sequenceFlow id="f6" sourceRef="Task_handle" targetRef="End_1"/>
+  </bpmn:process>
+</bpmn:definitions>

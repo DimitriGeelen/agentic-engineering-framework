@@ -1,0 +1,20 @@
+id: tests/fixtures/bpmn/typed-event-sample.bpmn
+name: typed-event-sample
+type: script
+subsystem: unknown
+location: tests/fixtures/bpmn/typed-event-sample.bpmn
+tags: []
+
+purpose: "TODO: describe what this component does"
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-07-19
+created_by: unknown

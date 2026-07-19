@@ -22,6 +22,11 @@ FIXTURE_INCEPTION = os.path.join(
 FIXTURE_PLAIN = os.path.join(
     REPO_ROOT, "tests", "fixtures", "bpmn", "plain-composite-sample.bpmn"
 )
+# T-2552: 832's T-204 typed-event encoding (<aef:eventDef> on a neutral
+# intermediateCatchEvent) — compiler WARNs, does not consume (T-2551).
+FIXTURE_TYPED_EVENT = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "typed-event-sample.bpmn"
+)
 # T-2537: inception marker in a NON-sovereignty lane -> malformed -> fail fast.
 FIXTURE_MISLANED = os.path.join(
     REPO_ROOT, "tests", "fixtures", "bpmn", "inception-mislaned-sample.bpmn"
@@ -408,3 +413,48 @@ def test_canonical_negative_frw_gather_not_inception():
     # The real userTask/serviceTask nodes ARE emitted (positive control) as build.
     assert len(skeletons) >= 1
     assert all(s["workflow_type"] == "build" for s in skeletons)
+
+
+# ── T-2552: typed-event surfacing (WARN, no consumption) ─────────────────────
+
+def test_typed_event_annotation_warns_per_kind():
+    """Each <aef:eventDef> on a neutral intermediateCatchEvent (832 T-204 Slice 1)
+    produces a WARN naming the node, kind, and that AEF does not consume it (T-2551).
+
+    Reliability leg: the flow-walk transits these events but never reads eventDef, so
+    without this WARN the kind/binding would be dropped SILENTLY — indistinguishable
+    from the parse's intended forward-compat tolerance of unknown tags (T-2552 RCA)."""
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_TYPED_EVENT)
+    typed = [w for w in warnings if "typed-event annotation" in w]
+    assert len(typed) == 3, f"expected 3 typed-event WARNs, got {len(typed)}: {typed}"
+    joined = "\n".join(typed)
+    # one per kind, each naming its node and carrying its binding scalar
+    assert "Evt_timer" in joined and "kind=timer" in joined and "timerSpec=PT1H" in joined
+    assert "Evt_error" in joined and "kind=error" in joined and "errorStatus=failed" in joined
+    assert (
+        "Evt_message" in joined
+        and "kind=message" in joined
+        and "busTopic=inbox.queued" in joined
+    )
+    # WARN-only: it explicitly points at the scoping inception, does not consume.
+    assert all("T-2551" in w for w in typed)
+
+
+def test_typed_event_diagram_still_compiles_clean():
+    """A typed-event diagram compiles WITHOUT crash — the two task nodes emit as build
+    skeletons; the events are transited (contribute to related_tasks), never emitted."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_TYPED_EVENT)
+    by_uid = _by_uid(skeletons)
+    assert set(by_uid) == {"u-watch-001", "u-handle-002"}
+    assert all(s["workflow_type"] == "build" for s in skeletons)
+    # Task_handle sits downstream of the three events → nearest task predecessor is
+    # Task_watch, reached by transiting the events (T-2532 flow-walk, unregressed).
+    assert "u-watch-001" in by_uid["u-handle-002"]["related_tasks"]
+
+
+def test_no_typed_event_warn_on_plain_fixtures():
+    """The typed-event WARN must NOT fire on diagrams without <aef:eventDef> —
+    no false positives on the existing two-lane / inception fixtures."""
+    for fx in (FIXTURE, FIXTURE_INCEPTION):
+        _, warnings = bpmn_to_tasks.parse_bpmn(fx)
+        assert not [w for w in warnings if "typed-event annotation" in w]
