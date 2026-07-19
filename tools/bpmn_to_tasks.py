@@ -519,12 +519,16 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
     # representation in the emitted skeletons. Same silent-loss class as Pass 3: without a
     # WARN, a dropped decision is indistinguishable from forward-compat tolerance.
     flow_names: dict[str, tuple[str, str]] = {}
+    cond_flows: set[str] = set()  # flows carrying a conditionExpression (T-2570)
     for f in root.iter():
         if _local(f.tag) != "sequenceFlow":
             continue
         fid = f.get("id")
         if fid:
             flow_names[fid] = (f.get("name") or "", f.get("targetRef") or "")
+            if any(_local(c.tag) == "conditionExpression" for c in f):
+                cond_flows.add(fid)
+    parallel_roles: list[str] = []  # "fork"/"join" per non-noop parallelGateway
     for node in root.iter():
         tag = _local(node.tag)
         if not tag.endswith("Gateway"):
@@ -539,25 +543,64 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
             branches.append(f"{label or '<unlabeled>'} → {target or '?'}")
         name_str = f" ({gw_name!r})" if gw_name else ""
         branch_str = "; ".join(branches) if branches else "<no outgoing flows>"
-        # T-2569 (found on 832 pair-draft #2): the decision-semantics claim is only
-        # true for choice gateways. A parallelGateway has NO decision — all branches
-        # fire — and its fork/join structure IS applied (fork branches emit as
-        # sibling skeletons with a shared predecessor; the join fans all branches
-        # into the successor's related_tasks). Saying "not applied" there was false.
-        # Kind-split the wording; exclusive/inclusive/complex keep the T-2557 text.
+        # T-2569/T-2570 (832 taxonomy, rail offset 103 / their T-217): a
+        # parallelGateway carries CONCURRENCY semantics, not decision semantics —
+        # and a clean balanced fork/join round-trips faithfully (sibling
+        # related_tasks + fan-in), so WARNing on it is a false positive at the
+        # WARN level, not just wrong vocabulary. Occasion split:
+        #   - condition on a fork edge  -> WARN (the CONDITION is ignored —
+        #     "did you mean exclusiveGateway?"; W-PGW-CONDITION analogue)
+        #   - no-op (in<=1 and out<=1)  -> WARN (W-PGW-NOOP analogue)
+        #   - fork/join imbalance is a DIAGRAM-level smell, handled after the loop
+        #   - balanced fork/join        -> silent (clean, matches 832's validator)
+        # Choice gateways (exclusive/inclusive/complex) keep the T-2557 text.
         if tag == "parallelGateway":
-            warnings.append(
-                f"node {node_id!r} is a parallelGateway{name_str} with branches "
-                f"[{branch_str}] — fork/join structure IS carried into task skeletons "
-                f"(sibling related_tasks + fan-in), but the synchronization semantics "
-                f"(all-branches-complete before proceeding) are not enforced by AEF "
-                f"tasks (T-2569); surfaced here"
-            )
+            n_in = sum(1 for c in node if _local(c.tag) == "incoming")
+            n_out = sum(1 for c in node if _local(c.tag) == "outgoing")
+            conditioned = [
+                b
+                for c in node
+                if _local(c.tag) == "outgoing"
+                and (c.text or "").strip() in cond_flows
+                for b in [flow_names.get((c.text or "").strip(), ("", ""))[1] or "?"]
+            ]
+            if conditioned:
+                warnings.append(
+                    f"node {node_id!r} is a parallelGateway{name_str} with a "
+                    f"condition on fork edge(s) toward [{', '.join(conditioned)}] — "
+                    f"a parallel fork takes all branches, so the condition is "
+                    f"ignored — did you mean exclusiveGateway? (T-2570)"
+                )
+            if n_in <= 1 and n_out <= 1:
+                warnings.append(
+                    f"node {node_id!r} is a parallelGateway{name_str} with "
+                    f"{n_in} incoming and {n_out} outgoing — neither forks nor "
+                    f"joins (no-op) (T-2570)"
+                )
+            else:
+                parallel_roles.append("fork" if n_out > 1 else "join")
         else:
             warnings.append(
                 f"node {node_id!r} is a {tag}{name_str} with branches [{branch_str}] — "
                 f"decision semantics are not representable in AEF task skeletons "
                 f"(T-2557); surfaced here, not applied"
+            )
+
+    # T-2570 (W-PGW-UNBALANCED analogue): forks without any join (or vice versa)
+    # mean parallel branches never reconverge — a diagram-level smell. Balanced
+    # sets (>=1 fork AND >=1 join, or no parallel gateways at all) stay silent.
+    if parallel_roles:
+        forks = parallel_roles.count("fork")
+        joins = parallel_roles.count("join")
+        if forks and not joins:
+            warnings.append(
+                f"{forks} parallel fork(s) with no parallel join — branches never "
+                f"reconverge (T-2570)"
+            )
+        elif joins and not forks:
+            warnings.append(
+                f"{joins} parallel join(s) with no parallel fork — nothing forked "
+                f"to reconverge (T-2570)"
             )
 
     return skeletons, warnings

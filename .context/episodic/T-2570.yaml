@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2570: corpus gap: parallelGateway note fires WARN on clean balanced fork/join (occasion-level
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T22:22:10Z
+# ============================================================================
+
+task_id: T-2570
+task_name: "corpus gap: parallelGateway note fires WARN on clean balanced fork/join (occasion-level"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T22:13:41Z
+completed: 2026-07-19T22:21:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-07-20T00:14:15+02:00
+last_commit: 2026-07-20T00:14:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file occasion-level parallel-WARN FP gap (832 offset-103 taxonomy: balanced=clean, W-PGW-CONDITION/NOOP/UNBALANCED analogues)
+
+# Key outcomes
+outcomes:
+  - 'Balanced fork/join emits NO WARN (silence chosen over INFO for v1 — structure already speaks through related_tasks; INFO addable later without moving pins); 832''s dispatch-loop fixture compiles with zero parallel-gateway output'
+  - 'Condition on a fork edge (conditionExpression on a parallelGateway outgoing flow) → WARN naming the CONDITION as ignored ("a parallel fork takes all branches, so the condition is ignored — did you mean exclusiveGateway?"), W-PGW-CONDITION analogue'
+  - 'Unbalanced (fork without join or vice versa, diagram-level) and no-op (in≤1 ∧ out≤1) parallel gateways → WARN, W-PGW-UNBALANCED / W-PGW-NOOP analogues; exclusiveGateway T-2557 text byte-identical throughout'
+  - 'Regression tests: dispatch-loop pins moved (silence asserted; WARN-set pin now 2 exclusive only), synthetic `tests/fixtures/bpmn/parallel-smells-sample.bpmn` fires all three smells, concurrency-vocab-only guard; suite 54/54 green'
+  - '832 notified at rail offset 106 with all three shipped WARN texts verbatim; shared-fixture pair-draft #3 offer restated'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2570-corpus-gap-parallelgateway-note-fires-wa.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-20T00:14:15"
+    action: "T-2570: file occasion-level parallel-WARN FP gap (832 offset-103 taxonomy: balanced=clean, W-PGW-CONDITION/NOOP/UNBALANCED analogues)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:designer-corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 8
+  commits: 1
+  files_changed: 1
+  lines_added: 184
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2570-corpus-gap-parallelgateway-note-fires-wa.md
+generated_by: context-agent-hybrid

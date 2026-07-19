@@ -676,21 +676,17 @@ def test_832_dispatch_multi_backedge_convergence():
 
 
 def test_832_dispatch_warn_set_pin():
-    """Probes 3+4 + T-2567 live: 5 WARNs — 2 exclusive (labeled branches), 2 parallel
-    (<unlabeled> fork edges), 1 aggregated authority-lane fold. Parallel-gateway
-    wording is kind-split since T-2569 (see test_parallel_gateway_warn_states_true_semantics)."""
+    """Probes 3+4 + T-2567 live: 3 WARNs — 2 exclusive (labeled branches) + 1
+    aggregated authority-lane fold. The balanced parallel fork/join is SILENT since
+    T-2570 (see test_balanced_parallel_gateways_are_silent)."""
     _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
     gw = [w for w in warnings if "Gateway" in w]
-    assert len(gw) == 4, warnings
+    assert len(gw) == 2, warnings  # exclusive only — balanced parallel silent (T-2570)
     mode = next(w for w in gw if "agt_4_mode" in w)
     assert "independent · parallel → agt_5_fan" in mode
     assert "dependent · sequential → agt_9_seq" in mode
     complete = next(w for w in gw if "agt_13_complete" in w)
     assert "more · re-dispatch → agt_2_scope" in complete
-    fan = next(w for w in gw if "node 'agt_5_fan'" in w)
-    assert "parallelGateway" in fan
-    assert fan.count("<unlabeled>") == 3
-    assert any("node 'agt_10_join'" in w for w in gw)
     auth = [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
     assert len(auth) == 1
     assert "n_3c4d5e6f→agent" in auth[0] and "n_47586970→agent" in auth[0]
@@ -753,19 +749,42 @@ def test_non_boundary_typed_event_warns_unchanged_by_t2560():
 
 # ------------------------------- parallelGateway WARN kind-split (T-2569)
 
-def test_parallel_gateway_warn_states_true_semantics():
-    """T-2569: parallel gateways no longer claim "decision semantics … not applied" —
-    the note states the truth: structure IS carried, synchronization is not enforced.
-    Exclusive gateways keep the T-2557 text verbatim."""
+def test_balanced_parallel_gateways_are_silent():
+    """T-2570 (832 taxonomy, rail offset 103): a clean balanced fork/join round-trips
+    faithfully, so it emits NOTHING — WARNing on it was an occasion-level false
+    positive (T-2569 had only fixed the vocabulary). Exclusive gateways keep the
+    T-2557 decision text verbatim."""
     _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
-    fan = next(w for w in warnings if "node 'agt_5_fan'" in w)
-    join = next(w for w in warnings if "node 'agt_10_join'" in w)
-    for w in (fan, join):
-        assert "fork/join structure IS carried" in w
-        assert "synchronization semantics" in w
-        assert "T-2569" in w
-        assert "decision semantics" not in w
-        assert "not applied" not in w
+    assert not [
+        w for w in warnings if "node 'agt_5_fan'" in w or "node 'agt_10_join'" in w
+    ]
+    assert not [
+        w
+        for w in warnings
+        if "parallelGateway" in w or "parallel fork" in w or "parallel join" in w
+    ]
     mode = next(w for w in warnings if "node 'agt_4_mode'" in w)
     assert "decision semantics are not representable" in mode
     assert "T-2557" in mode
+
+
+FIXTURE_PARALLEL_SMELLS = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "parallel-smells-sample.bpmn"
+)
+
+
+def test_parallel_smells_fire_condition_noop_unbalanced():
+    """T-2570: the three real parallel smells (832 W-PGW-* analogues) each WARN —
+    conditioned fork edge (condition ignored, exclusiveGateway hint), no-op
+    gateway, and fork-without-join imbalance."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_PARALLEL_SMELLS)
+    cond = next(w for w in warnings if "node 'gw_fork'" in w)
+    assert "condition on fork edge(s) toward [t_b]" in cond
+    assert "the condition is ignored" in cond
+    assert "did you mean exclusiveGateway?" in cond
+    noop = next(w for w in warnings if "node 'gw_noop'" in w)
+    assert "neither forks nor joins (no-op)" in noop
+    assert any("parallel fork(s) with no parallel join" in w for w in warnings)
+    for w in warnings:
+        if "T-2570" in w:
+            assert "decision semantics" not in w  # concurrency vocab only

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- T-2570 synthetic smells: a conditioned fork edge (W-PGW-CONDITION analogue),
+     a no-op parallelGateway (W-PGW-NOOP), and NO join for the fork
+     (W-PGW-UNBALANCED). One diagram, all three findings. -->
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_parallel_smells"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+  <bpmn:process id="Process_smells" isExecutable="true">
+    <bpmn:laneSet id="LS">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements><aef:laneMeta abbr="agt" authority="initiative"/></bpmn:extensionElements>
+        <bpmn:flowNodeRef>t_a</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gw_fork</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>gw_noop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>t_b</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>t_c</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:serviceTask id="t_a" name="prep">
+      <bpmn:extensionElements><aef:uid value="ps_a"/></bpmn:extensionElements>
+      <bpmn:outgoing>f1</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="gw_fork" name="bad fork">
+      <bpmn:incoming>f1</bpmn:incoming>
+      <bpmn:outgoing>f2</bpmn:outgoing>
+      <bpmn:outgoing>f3</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="t_b" name="left">
+      <bpmn:extensionElements><aef:uid value="ps_b"/></bpmn:extensionElements>
+      <bpmn:incoming>f2</bpmn:incoming>
+      <bpmn:outgoing>f4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="t_c" name="right">
+      <bpmn:extensionElements><aef:uid value="ps_c"/></bpmn:extensionElements>
+      <bpmn:incoming>f3</bpmn:incoming>
+    </bpmn:serviceTask>
+    <bpmn:parallelGateway id="gw_noop" name="pointless">
+      <bpmn:incoming>f4</bpmn:incoming>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="f1" sourceRef="t_a" targetRef="gw_fork"/>
+    <bpmn:sequenceFlow id="f2" sourceRef="gw_fork" targetRef="t_b">
+      <bpmn:conditionExpression>${oops == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f3" sourceRef="gw_fork" targetRef="t_c"/>
+    <bpmn:sequenceFlow id="f4" sourceRef="t_b" targetRef="gw_noop"/>
+  </bpmn:process>
+</bpmn:definitions>

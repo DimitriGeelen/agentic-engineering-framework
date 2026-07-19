@@ -1,13 +1,18 @@
 ---
 id: T-2570
-name: "corpus gap: parallelGateway note fires WARN on clean balanced fork/join (occasion-level FP)"
+name: "corpus gap: parallelGateway note fires WARN on clean balanced fork/join (occasion-level
+  FP)"
 description: >
-  832 position (rail offset 103, their T-217): balanced fork/join is CLEAN in their validator — a WARN there is a false positive at the WARN level, not just wording. T-2569 fixed vocab only. Adopt occasion taxonomy: balanced → silent or INFO; reserve 'ignored' verb for condition-on-fork-edge (W-PGW-CONDITION analogue); NOOP/UNBALANCED as real smells.
+  832 position (rail offset 103, their T-217): balanced fork/join is CLEAN in their
+  validator — a WARN there is a false positive at the WARN level, not just wording.
+  T-2569 fixed vocab only. Adopt occasion taxonomy: balanced → silent or INFO; reserve
+  'ignored' verb for condition-on-fork-edge (W-PGW-CONDITION analogue); NOOP/UNBALANCED
+  as real smells.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -22,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T22:13:41Z
-last_update: 2026-07-19T22:13:41Z
-date_finished: null
+last_update: 2026-07-19T22:21:59Z
+date_finished: 2026-07-19T22:21:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +39,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-19T22:15:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-19T22:15:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2570: corpus gap: parallelGateway note fires WARN on clean balanced fork/join (occasion-level FP)
@@ -45,11 +78,11 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Balanced fork/join emits NO WARN — either silence or an INFO-class line stating affirmatively what was encoded ("concurrency: N order-independent siblings, reconverged at join <id>"); 832's dispatch-loop fixture compiles with zero parallel-gateway WARNs
-- [ ] Condition on a fork edge (conditionExpression on a parallelGateway outgoing flow) → WARN naming the CONDITION as ignored ("a parallel fork takes all branches, so the condition is ignored — did you mean exclusiveGateway?"), W-PGW-CONDITION analogue
-- [ ] Unbalanced (fork without join or vice versa) and no-op (in≤1 ∧ out≤1) parallel gateways → WARN, W-PGW-UNBALANCED / W-PGW-NOOP analogues; exclusiveGateway T-2557 text byte-identical throughout
-- [ ] Regression tests: dispatch-loop clean-parallel pin moves (T-2569 test updated), plus synthetic fixtures for condition-on-fork / unbalanced / no-op; suite green
-- [ ] 832 notified with the shipped taxonomy for cross-validator vocabulary check
+- [x] Balanced fork/join emits NO WARN (silence chosen over INFO for v1 — structure already speaks through related_tasks; INFO addable later without moving pins); 832's dispatch-loop fixture compiles with zero parallel-gateway output
+- [x] Condition on a fork edge (conditionExpression on a parallelGateway outgoing flow) → WARN naming the CONDITION as ignored ("a parallel fork takes all branches, so the condition is ignored — did you mean exclusiveGateway?"), W-PGW-CONDITION analogue
+- [x] Unbalanced (fork without join or vice versa, diagram-level) and no-op (in≤1 ∧ out≤1) parallel gateways → WARN, W-PGW-UNBALANCED / W-PGW-NOOP analogues; exclusiveGateway T-2557 text byte-identical throughout
+- [x] Regression tests: dispatch-loop pins moved (silence asserted; WARN-set pin now 2 exclusive only), synthetic `tests/fixtures/bpmn/parallel-smells-sample.bpmn` fires all three smells, concurrency-vocab-only guard; suite 54/54 green
+- [x] 832 notified at rail offset 106 with all three shipped WARN texts verbatim; shared-fixture pair-draft #3 offer restated
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,6 +147,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/.t2570-pytest.out 2>&1 && grep -q "passed" /tmp/.t2570-pytest.out
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/dispatch-loop.bpmn 2>&1); ! echo "$out" | grep -q "parallelGateway"
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/bpmn/parallel-smells-sample.bpmn 2>&1); test "$(echo "$out" | grep -c T-2570)" = "3" 
 
 ## RCA
 
@@ -155,6 +191,11 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-20 — T-2569 was an intermediate state, superseded same-day
+- **What changed:** T-2569's vocab fix shipped minutes before 832's occasion-level position landed (crossing messages). Rather than defend the shipped state, adopted their stronger taxonomy whole — the WARN-on-clean was inconsistent with my own probe-1 finding that the structure round-trips.
+- **Plan impact:** the T-2569 wording WARN existed for under two hours; its test was rewritten, not appended to.
+- **Triggered:** nothing new. Silence-vs-INFO for the balanced case deliberately chose silence; INFO remains a compatible future addition.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -182,3 +223,24 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2570-corpus-gap-parallelgateway-note-fires-wa.md
 - **Context:** Initial task creation
+
+### 2026-07-19T22:18:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f8b8ceab
+- **Timestamp:** 2026-07-19T22:22:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 32
+     - evidence: `out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/dispatch-loop.bpmn 2>&1); ! echo "$out" | grep -q "parallelGateway"`
+
+### 2026-07-19T22:21:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
