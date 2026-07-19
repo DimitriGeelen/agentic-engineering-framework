@@ -695,3 +695,34 @@ def test_832_dispatch_warn_set_pin():
     auth = [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
     assert len(auth) == 1
     assert "n_3c4d5e6f→agent" in auth[0] and "n_47586970→agent" in auth[0]
+
+
+# ------------------------------- D3 corpus: self-loop related_tasks (T-2562)
+# AEF-authored corpus diagram D3 (session lifecycle, T-2561) — sl_work self-loops
+# through the budget gateway (work → gw → work back-edge). Before T-2562 the
+# Pass-2 walk listed sl_work as its own predecessor.
+
+FIXTURE_D3_LIFECYCLE = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "aef-bpmn", "session-lifecycle-d3.bpmn"
+)
+
+
+def test_d3_self_loop_never_self_references():
+    """T-2562: a node reached back through its own self-loop is not a predecessor —
+    no skeleton ever lists itself in related_tasks."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_D3_LIFECYCLE)
+    by_uid = {s["uid"]: s for s in skeletons}
+    assert by_uid["sl_work"]["related_tasks"] == ["sl_init"]
+    for s in skeletons:
+        assert s["uid"] not in s["related_tasks"]
+
+
+def test_distinct_node_backedges_unregressed_by_t2562():
+    """Guard: T-2562 must not break legitimate distinct-node back-edges — 832's
+    handover (n_work ← gate loop) and dispatch-loop (scope ← two loops) pins."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_832_HANDOVER)
+    by_uid = {s["uid"]: s for s in skeletons}
+    assert set(by_uid["n_work"]["related_tasks"]) == {"n_focus", "n_gate"}
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
+    by_uid = {s["uid"]: s for s in skeletons}
+    assert set(by_uid["n_2b3c4d5e"]["related_tasks"]) == {"n_25364758", "n_58697081"}

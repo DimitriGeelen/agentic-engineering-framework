@@ -313,13 +313,18 @@ def _nearest_task_preds(node_id: str, rev, task_ids) -> list[str]:
 
     `task_ids` includes inception subProcesses (slice 3), so a task downstream of an
     inception decision links back to it via related_tasks.
+
+    T-2562: a node reached back through its OWN self-loop (A → gateway → A) is not a
+    predecessor — a task never lists itself in related_tasks. Distinct-node back-edges
+    (B → gateway → A, B ≠ A) still link normally; the walk also does not transit
+    through the origin, so a pure self-loop contributes nothing.
     """
     result: list[str] = []
     seen: set[str] = set()
 
     def walk(nid: str) -> None:
         for s in rev.get(nid, []):
-            if s in seen:
+            if s in seen or s == node_id:
                 continue
             seen.add(s)
             if s in task_ids:

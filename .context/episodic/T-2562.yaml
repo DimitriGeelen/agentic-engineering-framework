@@ -1,0 +1,71 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2562: corpus gap: self-loop through non-task nodes yields self-referential related_tasks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T21:51:49Z
+# ============================================================================
+
+task_id: T-2562
+task_name: "corpus gap: self-loop through non-task nodes yields self-referential related_tasks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T20:51:43Z
+completed: 2026-07-19T21:51:39Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Pass-2 flow-walk skips self-references when accumulating nearest-task predecessors — a task node never lists itself in `related_tasks`'
+  - 'Regression test on the pinned D3 fixture (`tests/fixtures/aef-bpmn/session-lifecycle-d3.bpmn`, self-loop through the budget gateway) asserts `sl_work` related_tasks == [sl_init] + no skeleton self-references; distinct-node back-edges unregressed (832 handover n_work + dispatch-loop n_2b3c4d5e pins re-asserted); suite 50/50 green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:designer-corpus]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 59
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2562-corpus-gap-self-loop-through-non-task-no.md
+generated_by: context-agent-hybrid

@@ -1,13 +1,18 @@
 ---
 id: T-2562
-name: "corpus gap: self-loop through non-task nodes yields self-referential related_tasks entry"
+name: "corpus gap: self-loop through non-task nodes yields self-referential related_tasks
+  entry"
 description: >
-  arc-014 D3 finding (T-2561): aef-session-lifecycle's commit-cadence loop (sl_work → gw_budget → sl_work) makes the flow-walk record sl_work as its own related_task (related_tasks: [sl_init, sl_work]). Not silent loss — but a promoted task pointing at itself is meaningless. Fix: skip self-references when accumulating nearest-task predecessors in Pass 2.
+  arc-014 D3 finding (T-2561): aef-session-lifecycle's commit-cadence loop (sl_work
+  → gw_budget → sl_work) makes the flow-walk record sl_work as its own related_task
+  (related_tasks: [sl_init, sl_work]). Not silent loss — but a promoted task pointing
+  at itself is meaningless. Fix: skip self-references when accumulating nearest-task
+  predecessors in Pass 2.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -22,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:51:43Z
-last_update: 2026-07-19T20:51:53Z
-date_finished: null
+last_update: 2026-07-19T21:51:39Z
+date_finished: 2026-07-19T21:51:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,6 +39,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-07-19T21:00:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 6
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=6 
+      (no-signal)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-07-19T21:00:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2562: corpus gap: self-loop through non-task nodes yields self-referential related_tasks entry
@@ -46,8 +79,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Pass-2 flow-walk skips self-references when accumulating nearest-task predecessors — a task node never lists itself in `related_tasks`
-- [ ] Regression test on `.context/designer/projects/aef-session-lifecycle/v1.bpmn`-equivalent fixture (self-loop through a gateway) asserts `sl_work` predecessors exclude `sl_work`; D1 loop semantics (distinct-node back-edge tl_heal → tl_work) unregressed; full suite green
+- [x] Pass-2 flow-walk skips self-references when accumulating nearest-task predecessors — a task node never lists itself in `related_tasks`
+- [x] Regression test on the pinned D3 fixture (`tests/fixtures/aef-bpmn/session-lifecycle-d3.bpmn`, self-loop through the budget gateway) asserts `sl_work` related_tasks == [sl_init] + no skeleton self-references; distinct-node back-edges unregressed (832 handover n_work + dispatch-loop n_2b3c4d5e pins re-asserted); suite 50/50 green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,8 +145,18 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q > /tmp/.t2562-pytest.out 2>&1 && grep -q "passed" /tmp/.t2562-pytest.out
+out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/session-lifecycle-d3.bpmn 2>/dev/null); ! echo "$out" | grep -q "related_tasks: \[sl_init, sl_work\]"
 
 ## RCA
+
+**Symptom:** D3 (session-lifecycle) compiled `sl_work` with `related_tasks: [sl_init, sl_work]` — a task listing itself as its own predecessor (found in T-2561).
+
+**Root cause:** `_nearest_task_preds` walks the reverse flow graph transiting non-task nodes; a self-loop (work → budget-gateway → work) makes the origin reachable from itself, and the walk had no origin-exclusion — any task node inside its own cycle got self-appended.
+
+**Why structurally allowed:** all prior loop-carrying fixtures (D1 tl_heal→tl_work, 832 handover, dispatch-loop) used DISTINCT-node back-edges, where the nearest task predecessor is legitimately another node — the self-loop shape first appeared in D3.
+
+**Prevention:** `s == node_id` guard in the walk + two pinned tests: self-loop never self-references (D3 fixture) and distinct-node back-edges unregressed (both 832 fixtures).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -153,6 +196,11 @@ date_finished: null
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-07-19 — self-loop was a D3-only shape until now
+- **What changed:** every earlier loop in the corpus was a distinct-node back-edge; D3's work↔budget-gate self-loop was the first, which is why the walk's missing origin-exclusion survived 7 diagrams.
+- **Plan impact:** none — one-line guard, additive; both 832 fixture pins re-asserted as the non-regression evidence.
+- **Triggered:** nothing new.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -183,3 +231,24 @@ date_finished: null
 
 ### 2026-07-19T20:51:53Z — status-update [task-update-agent]
 - **Change:** tags: +arc:designer-corpus
+
+### 2026-07-19T21:49:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e0b2cde8
+- **Timestamp:** 2026-07-19T21:51:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 32
+     - evidence: `out=$(python3 tools/bpmn_to_tasks.py tests/fixtures/aef-bpmn/session-lifecycle-d3.bpmn 2>/dev/null); ! echo "$out" | grep -q "related_tasks: \[sl_init, sl_work\]"`
+
+### 2026-07-19T21:51:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
