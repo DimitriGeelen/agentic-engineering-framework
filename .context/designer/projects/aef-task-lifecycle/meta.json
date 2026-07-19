@@ -1,0 +1,13 @@
+{
+  "id": "aef-task-lifecycle",
+  "title": "aef-task-lifecycle",
+  "versions": [
+    {
+      "v": 1,
+      "note": "T-2555 pair-draft v1 (agent-drafted; operator review pending)",
+      "ts": 1784491597
+    }
+  ],
+  "latest": 1,
+  "updated": 1784491597
+}

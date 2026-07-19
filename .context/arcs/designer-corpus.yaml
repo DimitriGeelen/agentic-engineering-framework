@@ -6,7 +6,7 @@ description: "Corpus exercise (1c both docs+dogfood, 2d pair-draft + operator UI
   \ documenting are filed as constituent tasks and driven to quality closure. AEF\
   \ extends aef:* vocabulary; 832 owns the designer development process; rail ratification\
   \ loop is the continuity spine."
-status: draft
+status: in-progress
 anchor_task: T-2553
 headline_mechanic: "Operator opens the /designer gallery and sees the 5 most-used AEF processes rendered\
   \ as live BPMN diagrams, each compiling through fw bpmn with zero silent drops,\
