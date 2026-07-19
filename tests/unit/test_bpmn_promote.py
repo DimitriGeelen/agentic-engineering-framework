@@ -235,6 +235,40 @@ def test_create_via_gate_forces_owner_human_captured(monkeypatch):
     assert captured["env"].get("FW_TASK_ORIGIN") == "bpmn-promote"
 
 
+def test_create_via_gate_injects_defer_recommendation_for_inception_only(monkeypatch):
+    """T-2549: inception nodes get --recommendation DEFER (past the T-2204 gate);
+    build/other types must NOT carry a recommendation."""
+    captured = {}
+
+    class FakeProc:
+        returncode = 0
+        stdout = "ID:       T-999\nFile:     /tmp/T-999.md\n"
+        stderr = ""
+
+    def fake_run(cmd, capture_output, text, env=None):
+        captured["cmd"] = cmd
+        return FakeProc()
+
+    monkeypatch.setattr(bpmn_promote.subprocess, "run", fake_run)
+
+    # inception → recommendation injected
+    bpmn_promote.create_via_gate(
+        {"name": "explore", "workflow_type": "inception", "horizon": "now"}
+    )
+    cmd = captured["cmd"]
+    assert "--recommendation" in cmd, "inception create must carry a recommendation (T-2204 gate)"
+    assert cmd[cmd.index("--recommendation") + 1] == "DEFER"
+    assert "--rationale" in cmd
+
+    # build → no recommendation flags (unchanged path)
+    bpmn_promote.create_via_gate(
+        {"name": "build it", "workflow_type": "build", "horizon": "now"}
+    )
+    cmd = captured["cmd"]
+    assert "--recommendation" not in cmd, "build create must NOT carry a recommendation"
+    assert "--rationale" not in cmd
+
+
 def test_audit_line_written_on_create(tmp_path, monkeypatch):
     """T-2543 leg 2: each --write create appends a structured audit line."""
     import json

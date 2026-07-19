@@ -141,3 +141,57 @@ PY
     after=$(md5sum < "$f")
     [ "$before" = "$after" ]
 }
+
+@test "E2E seam-slice: two-lane-joint — initiative→agent node G2-forced to owner:human, inception node materializes past T-2204 (T-2548/T-2549)" {
+    # 832's canonical joint fixture (sha efb53839): owner-bearing task in BOTH lanes —
+    # n_inception (subProcess, sovereignty→owner:human, wf:inception) + n_plan
+    # (serviceTask, initiative→owner:agent, wf:build). Exercises the initiative→agent
+    # owner derivation + the G2 gate override + inception-node materialization that the
+    # single-node inception-gonogo fixture and two-lane-sample can't reach.
+    JOINT="tests/fixtures/bpmn/two-lane-joint.bpmn"
+    [ -f "$JOINT" ] || skip "joint fixture missing: $JOINT"
+    JSTAGE="$ROOT/.context/bpmn-staged-joint"
+    FW_BPMN_STAGE_DIR="$JSTAGE" bin/fw bpmn compile --write "$JOINT" >/dev/null 2>&1
+
+    # Compiler owner-derivation from lane authority, BEFORE the gate (staged manifest):
+    man="$JSTAGE/two-lane-joint/manifest.yaml"
+    [ -f "$man" ]
+    grep -A4 'n_inception:' "$man" | grep -q "owner: human"   # sovereignty → human
+    grep -A4 'n_plan:'       "$man" | grep -q "owner: agent"   # initiative  → agent
+
+    # Promote through the REAL gate.
+    run env PROJECT_ROOT="$ROOT" TASKS_DIR="$ROOT/.tasks" FW_BPMN_STAGE_DIR="$JSTAGE" \
+        bin/fw bpmn promote all --write
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"[created]"* ]]
+
+    # 2 owner-bearing nodes → 2 real task files (inception node NOT refused — T-2549).
+    n=$(ls "$ROOT/.tasks/active/"T-*.md 2>/dev/null | wc -l)
+    [ "$n" -eq 2 ]
+
+    # Both materialize owner:human + captured + provenance.
+    for f in "$ROOT/.tasks/active/"T-*.md; do
+        grep -q "^owner: human" "$f"
+        grep -q "^status: captured" "$f"
+        grep -q "^aef_provenance:" "$f"
+    done
+
+    # Load-bearing #1 — initiative→agent leg: n_plan was owner:agent in the manifest;
+    # the T-2543 G2 gate forces it to owner:human at materialization.
+    pf=$(grep -rl "uid: n_plan" "$ROOT/.tasks/active/")
+    [ -n "$pf" ]
+    grep -q "^owner: human" "$pf"
+    grep -q "^workflow_type: build" "$pf"
+
+    # Load-bearing #2 — inception node materializes past the T-2204 gate (T-2549):
+    # a DEFER recommendation is injected at creation so the gate does not refuse it.
+    inf=$(grep -rl "uid: n_inception" "$ROOT/.tasks/active/")
+    [ -n "$inf" ]
+    grep -q "^workflow_type: inception" "$inf"
+    grep -q "^owner: human" "$inf"
+    grep -q "Recommendation:.*DEFER" "$inf"
+
+    # Real repo untouched.
+    ! grep -rlq "uid: n_plan" .tasks/active/ 2>/dev/null
+    ! grep -rlq "uid: n_inception" .tasks/active/ 2>/dev/null
+}

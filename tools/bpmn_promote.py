@@ -307,6 +307,19 @@ def create_via_gate(entry: dict) -> tuple[str, str]:
         horizon,
         # NOTE: no --start → status defaults to captured (G2). Never pass --start.
     ]
+    # T-2549: inception nodes hit the T-2204 recommendation-completeness gate
+    # (fires under CLAUDECODE=1) — `fw task create --type inception` refuses without
+    # a recommendation. A freshly-promoted inception is a captured, owner:human task
+    # the human has not yet explored, so DEFER is the honest state (evidence gap:
+    # human go/no-go pending), matching the T-2208 cron backstop's DEFER stub. Inject
+    # it for inception ONLY — build/test/other types must not carry a recommendation.
+    if wtype == "inception":
+        cmd += [
+            "--recommendation",
+            "DEFER",
+            "--rationale",
+            "Promoted from BPMN workflow diagram (fw bpmn promote); human go/no-go pending.",
+        ]
     # T-2543: mark this create as promote-origin so create-task.sh's GATE enforces
     # owner:human + captured (Dimitri sovereignty bar). Defense-in-depth: promote still
     # passes owner:human above, but the gate is the backstop — a caller bug is refused,

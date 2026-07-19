@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_two-lane-joint"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- Canonical JOINT promote fixture (rail offset 69, option (a)): authored + pinned by
+       832 (serialization source-of-truth) so AEF's bpmn_promote_e2e.bats seam-slice can
+       drive off byte-identical bytes. Unlike inception-gonogo.bpmn (one owner-bearing node
+       — the human/sovereignty inception, exercising ONLY sovereignty→owner:human), this
+       fixture carries an owner-bearing node in BOTH lanes:
+         - hum_1_inception  (subProcess, Human · Sovereignty)  → owner:human  (workflowType=inception)
+         - agt_2_plan       (serviceTask, Agent · Initiative)  → owner:agent  (workflowType=build)
+       so it exercises the initiative→owner:agent derivation the single-node fixture can't
+       reach. Owner is DERIVED from lane authority (IW-9) — no node-level owner override.
+       Reuses only already-shipped vocabulary (T-081 collapsed subProcess + plain
+       serviceTask); no palette or frozen-standard change. -->
+
+  <bpmn:collaboration id="Collaboration_two-lane-joint">
+    <bpmn:participant id="Pool_two_lane_joint" name="two-lane joint seam" processRef="Process_two-lane-joint"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_two-lane-joint" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="two-lane-joint" version="1" schemaVersion="2" title="two-lane joint promote seam (human + agent owner-bearing)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_inception</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_0_request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_plan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_outcome</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_0_request" name="spike requested">
+      <bpmn:extensionElements>
+        <aef:uid value="n_request"/>
+        <aef:position x="180.0" y="120.0"/>
+        <aef:meta triggeredBy="operator or agent identifies an open question needing a go/no-go"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:subProcess id="hum_1_inception" name="explore the question — go/no-go">
+      <bpmn:extensionElements>
+        <aef:uid value="n_inception"/>
+        <aef:position x="360.0" y="300.0"/>
+        <aef:meta workflowType="inception" tier="1" note="collapsed inception; the go/no-go gateway is IMPLIED at the boundary (ratified G-3) — owner derives from the sovereignty lane, no node-level override (IW-9)"/>
+        <aef:constituents>
+          <aef:constituent id="c_evidence" name="gather evidence / run spike" ref="docs/reports/T-XXX-*.md"/>
+          <aef:constituent id="c_assess" name="assess go/no-go criteria"/>
+          <aef:constituent id="c_decide" name="record go/no-go decision"/>
+        </aef:constituents>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:subProcess>
+
+    <bpmn:serviceTask id="agt_2_plan" name="draft the build plan">
+      <bpmn:extensionElements>
+        <aef:uid value="n_plan"/>
+        <aef:position x="560.0" y="120.0"/>
+        <aef:meta workflowType="build" tier="1" note="on GO, the agent drafts the implementation plan; owner derives from the initiative lane, no node-level override (IW-9)"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="agt_3_outcome" name="plan recorded">
+      <bpmn:extensionElements>
+        <aef:uid value="n_outcome"/>
+        <aef:position x="760.0" y="120.0"/>
+        <aef:meta terminalKind="success" state="planned" note="build plan recorded; separate build tasks are filed downstream"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_0_request" targetRef="hum_1_inception">
+      <bpmn:extensionElements>
+        <aef:uid value="e_1"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_2" sourceRef="hum_1_inception" targetRef="agt_2_plan">
+      <bpmn:extensionElements>
+        <aef:uid value="e_2"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_2_plan" targetRef="agt_3_outcome">
+      <bpmn:extensionElements>
+        <aef:uid value="e_3"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

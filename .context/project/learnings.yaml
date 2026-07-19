@@ -3847,3 +3847,17 @@ X'` returning empty group."
   date: 2026-07-19
   context: Added via context agent
   application: TBD
+- id: L-503
+  learning: "Non-hermetic bats tests that mutate a live TRACKED file in place (backup-in-setup + restore-in-teardown) corrupt the working tree if killed mid-run: bats teardown does NOT fire on SIGTERM/SIGKILL/timeout, so the mutated file (bogus values, comments stripped by yaml round-trip) is left in the repo. Widened when each test runs a slow command (full 'fw doctor' ~100s ×N = ~400s interrupt window). doctor_designer_pin_drift.bats did this to policy/designer-pin.yaml and corrupted the T-2546 0.3.0 re-pin TWICE live (zeroed sha, then a does-not-exist fixture path) — nearly shipped a broken pin. Fix pattern (T-2547): make the target path env-overridable (FW_DESIGNER_PIN_FILE) so the test mutates a TEMP COPY; the live file is never written → interrupt-safe by construction, not by teardown. Diagnosis tell: if a tracked file flickers to test-fixture values, grep ps for a running bats mutating it in place."
+  source: P-001
+  task: T-2547
+  date: 2026-07-19
+  context: Added via context agent
+  application: TBD
+- id: L-504
+  learning: "fw bpmn promote cannot materialize workflow_type:inception proposals — create_via_gate (tools/bpmn_promote.py) delegates to 'fw task create --type inception' with no --recommendation/--rationale, so the T-2204 recommendation-completeness gate (CLAUDECODE=1) refuses it and promote raises RuntimeError on any diagram with an inception node. Latent since T-2542: prior e2e used two-lane-sample (no inception node) and unit tests mock the gate. Surfaced by 832's two-lane-joint.bpmn (first inception node driven through the REAL gate end-to-end). Fix: inject --recommendation DEFER --rationale for inception-type nodes only."
+  source: P-001
+  task: T-2548
+  date: 2026-07-19
+  context: Added via context agent
+  application: TBD
