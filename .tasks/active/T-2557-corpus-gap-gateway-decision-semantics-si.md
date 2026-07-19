@@ -46,8 +46,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw bpmn compile` emits one WARN per exclusiveGateway (node id + name + outgoing branch labels) stating the decision semantics are surfaced, not applied — same Pass-3 shape as the T-2552 typed-event WARN
+- [ ] Plain linear fixtures (no gateways) emit zero new WARNs (no false positives); the aef-task-lifecycle corpus diagram emits exactly 2
+- [ ] Unit tests added alongside the T-2552 typed-event tests in tests/unit/test_bpmn_to_tasks.py; full file green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -8,10 +8,10 @@ description: >
   vs work-plan), so promote would offer filing process steps as real tasks. Propose
   additive aef:workflowMeta kind= attribute to 832 (they own vocabulary; rail loop).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -26,7 +26,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:24Z
-last_update: 2026-07-19T20:09:39Z
+last_update: 2026-07-19T20:10:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -68,8 +68,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Additive `aef:workflowMeta kind="documentation|work-plan"` proposed to 832 over the rail (they own the vocabulary; ratification loop per arc-014 continuity spine) and their disposition recorded here
+- [ ] On 832 ratification: `fw bpmn compile` reads the marker — documentation diagrams compile with a "documentation diagram — skeletons are illustrative, not for promote" notice; `fw bpmn promote` refuses (or requires an explicit override) on kind=documentation staged proposals
+- [ ] Missing/absent marker keeps today's behavior byte-identical (additive-only, frozen-v1 discipline); regression test pins both paths
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -209,3 +210,7 @@ bvp_scores_proposed:
 ### 2026-07-19T20:09:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-07-19T20:10:30Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
