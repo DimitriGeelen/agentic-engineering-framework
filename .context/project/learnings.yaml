@@ -3861,3 +3861,10 @@ X'` returning empty group."
   date: 2026-07-19
   context: Added via context agent
   application: TBD
+- id: L-505
+  learning: "Regression tests that pin an exact regex as a source invariant can FREEZE an incomplete fix: T-1967's test grep-pinned the broken '[^>]*' comment-strip, so the missing '>'-in-comment coverage was certified as correct until 832 hit it in the field (G-009 their side, T-2554 ours). When fixing a parser/regex bug, pin BEHAVIOR over the input space (including the shape that failed), not the literal pattern — or update the pattern-pin in the same commit as any regex change."
+  source: T-2554
+  task: T-2554
+  date: 2026-07-19
+  context: Added via context agent
+  application: TBD

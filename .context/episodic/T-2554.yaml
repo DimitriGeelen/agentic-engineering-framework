@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2554: AC comment-strip sed swallows Human header when comment contains '>' (G-009
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T19:48:55Z
+# ============================================================================
+
+task_id: T-2554
+task_name: "AC comment-strip sed swallows Human header when comment contains '>' (G-009"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T19:44:29Z
+completed: 2026-07-19T19:48:44Z
+duration_days: 0
+updates_count: 1
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  >
+
+# Key outcomes
+outcomes:
+  - 'Repro proven on our copy pre-fix: a one-line AC comment containing a literal ''>'' causes the Human-AC partition to collapse into the Agent count (demonstrated with the exact pipeline from update-task.sh)'
+  - 'Fix applied at BOTH sites (update-task.sh line ~91 and line ~1219): one-line strip regex tolerates ''>'' inside the comment (match to first ''-->''), multi-line comments still handled by the range strip'
+  - 'Repo swept for other instances of the same broken sed pattern; all found sites fixed or justified'
+  - 'Regression tests added to tests/unit/ac_counter_sed_range_one_line_comment.bats: ''>''-bearing comment does NOT block (Agent/Human partition intact) AND a genuinely-unchecked Agent AC still blocks; full bats file green'
+  - 'bash -n passes on update-task.sh'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 4
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2554-ac-comment-strip-sed-swallows-human-head.md
+generated_by: context-agent-hybrid

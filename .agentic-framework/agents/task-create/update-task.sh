@@ -88,7 +88,10 @@ check_acceptance_criteria() {
     # it opens — `/<!--/,/-->/d` on a one-line `<!-- ... -->` enters delete-mode at that
     # line and stays there until the NEXT `-->` later in the file, swallowing Agent ACs.
     # Fix: strip one-line comments first, then run the range strip for genuine multi-line.
-    ac_section=$(echo "$ac_section" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
+    # T-2554 (832 G-009): [^>]* stopped at the first '>' INSIDE a comment (e.g. a
+    # cited <tag>), so the range strip swallowed down to a later '-->'. Minimal
+    # POSIX match to the first '-->' instead — tolerates '>' in comment text.
+    ac_section=$(echo "$ac_section" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
     [ -z "$ac_section" ] && return 0
 
     has_agent_header=$(echo "$ac_section" | grep -c '^### Agent' || true)
@@ -1216,7 +1219,7 @@ if [ -n "$NEW_STATUS" ]; then
             AC_SECTION=$(sed -n '/^## Acceptance Criteria/,/^## /p' "$TASK_FILE" 2>/dev/null | sed '$d')
             # Strip HTML comments — template examples contain checkbox patterns.
             # T-1967: two-step strip (one-line first, then range) — see line ~87.
-            AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
+            AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
             ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
             ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))

@@ -507,8 +507,9 @@ if [ -n "$ACTIVE_FILE" ] && grep -q "^workflow_type: inception" "$ACTIVE_FILE" 2
     if grep -q "^## Open Questions" "$ACTIVE_FILE" 2>/dev/null; then
         # Extract Open Questions section content (between header and next ## heading)
         OQ_SECTION=$(awk '/^## Open Questions/{f=1; next} /^## /{f=0} f' "$ACTIVE_FILE" 2>/dev/null)
-        # Strip HTML comments so the template guidance does not count
-        OQ_STRIPPED=$(echo "$OQ_SECTION" | sed -E 's/<!--[^>]*-->//g' | sed '/<!--/,/-->/d')
+        # Strip HTML comments so the template guidance does not count.
+        # T-2554: minimal match to first '-->' — tolerates '>' inside the comment.
+        OQ_STRIPPED=$(echo "$OQ_SECTION" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
         # Count real IW-N entries
         HAS_IW=$(echo "$OQ_STRIPPED" | grep -cE '^\s*-\s*\*\*IW-[0-9]+:' 2>/dev/null || true)
         if [ "${HAS_IW:-0}" -eq 0 ]; then
