@@ -468,6 +468,38 @@ def parse_bpmn(path: str) -> tuple[list[dict], list[str]]:
             f"surfaced here, not applied"
         )
 
+    # Pass 4: surface gateway decision semantics (T-2557, arc-014 D1 finding). Pass 2's
+    # flow-walk TRANSITS gateways (they shape related_tasks edges) but the DECISION itself —
+    # which branch fires, and the branch-condition labels on the outgoing flows — has no
+    # representation in the emitted skeletons. Same silent-loss class as Pass 3: without a
+    # WARN, a dropped decision is indistinguishable from forward-compat tolerance.
+    flow_names: dict[str, tuple[str, str]] = {}
+    for f in root.iter():
+        if _local(f.tag) != "sequenceFlow":
+            continue
+        fid = f.get("id")
+        if fid:
+            flow_names[fid] = (f.get("name") or "", f.get("targetRef") or "")
+    for node in root.iter():
+        tag = _local(node.tag)
+        if not tag.endswith("Gateway"):
+            continue
+        node_id = node.get("id") or "<anon>"
+        gw_name = node.get("name") or ""
+        branches = []
+        for child in node:
+            if _local(child.tag) != "outgoing":
+                continue
+            label, target = flow_names.get((child.text or "").strip(), ("", ""))
+            branches.append(f"{label or '<unlabeled>'} → {target or '?'}")
+        name_str = f" ({gw_name!r})" if gw_name else ""
+        branch_str = "; ".join(branches) if branches else "<no outgoing flows>"
+        warnings.append(
+            f"node {node_id!r} is a {tag}{name_str} with branches [{branch_str}] — "
+            f"decision semantics are not representable in AEF task skeletons (T-2557); "
+            f"surfaced here, not applied"
+        )
+
     return skeletons, warnings
 
 

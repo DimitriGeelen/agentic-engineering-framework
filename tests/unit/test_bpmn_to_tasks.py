@@ -458,3 +458,48 @@ def test_no_typed_event_warn_on_plain_fixtures():
     for fx in (FIXTURE, FIXTURE_INCEPTION):
         _, warnings = bpmn_to_tasks.parse_bpmn(fx)
         assert not [w for w in warnings if "typed-event annotation" in w]
+
+
+# ---------------------------------------------------------------- gateway WARNs (T-2557)
+
+FIXTURE_LIFECYCLE = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "bpmn", "task-lifecycle-corpus.bpmn"
+)
+
+
+def test_gateway_warn_per_gateway_with_branch_labels():
+    """Each gateway produces one WARN naming node id, gateway name, and every outgoing
+    branch label with its target (T-2557, arc-014 D1 finding). Same silent-loss class
+    as the typed-event WARN: the flow-walk transits gateways but the DECISION has no
+    representation in the emitted skeletons."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_LIFECYCLE)
+    gw = [w for w in warnings if "T-2557" in w]
+    assert len(gw) == 2, f"expected 2 gateway WARNs, got {len(gw)}: {gw}"
+    joined = "\n".join(gw)
+    assert "agt_gw_issues" in joined and "issues encountered?" in joined
+    assert "agt_gw_human" in joined and "unchecked Human ACs?" in joined
+    # branch labels + targets surfaced verbatim
+    assert "yes — status: issues → agt_4_heal" in joined
+    assert "no — all ACs agent-verifiable → agt_7_archive" in joined
+    # WARN-only contract: surfaced, never applied
+    assert all("surfaced here, not applied" in w for w in gw)
+
+
+def test_gateway_warn_no_false_positives_on_plain_fixtures():
+    """No gateway WARNs on gateway-free diagrams (two-lane, inception, typed-event)."""
+    for fx in (FIXTURE, FIXTURE_INCEPTION, FIXTURE_TYPED_EVENT):
+        _, warnings = bpmn_to_tasks.parse_bpmn(fx)
+        assert not [w for w in warnings if "T-2557" in w]
+
+
+def test_lifecycle_corpus_diagram_compiles_clean_with_loop():
+    """The D1 corpus diagram (issues↔work back-edge) compiles: 7 skeletons, correct
+    owner split, loop predecessors intact — pins the arc-014 D1 result."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_LIFECYCLE)
+    assert len(skeletons) == 7
+    by_uid = {s["uid"]: s for s in skeletons}
+    assert by_uid["tl_human_review"]["owner"] == "human"
+    assert all(
+        s["owner"] == "agent" for s in skeletons if s["uid"] != "tl_human_review"
+    )
+    assert set(by_uid["tl_work"]["related_tasks"]) == {"tl_start", "tl_heal"}

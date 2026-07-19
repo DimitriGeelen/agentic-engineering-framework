@@ -2,12 +2,15 @@
 id: T-2557
 name: "corpus gap: gateway decision semantics silently dropped at compile (no WARN)"
 description: >
-  arc-014 D1 finding: both exclusiveGateways (issues? / unchecked Human ACs?) and their branch-condition labels vanished from fw bpmn compile output with no WARN — same silent-loss class T-2552 fixed for typed events. Fix: Pass-3-style WARN for decision nodes whose semantics are not represented.
+  arc-014 D1 finding: both exclusiveGateways (issues? / unchecked Human ACs?) and
+  their branch-condition labels vanished from fw bpmn compile output with no WARN
+  — same silent-loss class T-2552 fixed for typed events. Fix: Pass-3-style WARN for
+  decision nodes whose semantics are not represented.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -22,8 +25,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:07:33Z
-last_update: 2026-07-19T20:07:51Z
-date_finished: null
+last_update: 2026-07-19T20:16:50Z
+date_finished: 2026-07-19T20:16:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -34,21 +37,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-07-19T20:14:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 2
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=2 
+      (body:default-change); D4=2 (body:env-class-handled); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-19T20:15:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 0
+      tier: 2
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2557: corpus gap: gateway decision semantics silently dropped at compile (no WARN)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+arc-014 D1 finding (docs/reports/T-2555-d1-compile-log.md finding 4): gateways vanish from
+compile output with no surface. Fixed as Pass-4 in tools/bpmn_to_tasks.py, sibling of the
+T-2552 typed-event Pass-3 WARN.
+
+## RCA
+
+- **Symptom:** exclusiveGateways and their branch-condition labels are absent from `fw bpmn compile` output with zero signal — discovered by diffing D1's drafted semantics against compile output.
+- **Root cause:** the flow-walk deliberately transits non-task nodes (correct for related_tasks), but nothing surfaced the *decision* being dropped — loss and tolerance were indistinguishable (same RCA shape as T-2552).
+- **Why structurally allowed:** WARN coverage was added per-annotation-type reactively (uid → events) rather than from a "every non-representable semantic surfaces" principle; gateways were the next uncovered type.
+- **Prevention:** Pass-4 WARN (node id + name + branch labels + targets, "surfaced here, not applied"); corpus diagram pinned as tests/fixtures/bpmn/task-lifecycle-corpus.bpmn with 3 regression tests (exact-2 WARNs, zero false positives, loop/owner pinning).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw bpmn compile` emits one WARN per exclusiveGateway (node id + name + outgoing branch labels) stating the decision semantics are surfaced, not applied — same Pass-3 shape as the T-2552 typed-event WARN
-- [ ] Plain linear fixtures (no gateways) emit zero new WARNs (no false positives); the aef-task-lifecycle corpus diagram emits exactly 2
-- [ ] Unit tests added alongside the T-2552 typed-event tests in tests/unit/test_bpmn_to_tasks.py; full file green
+- [x] `fw bpmn compile` emits one WARN per exclusiveGateway (node id + name + outgoing branch labels) stating the decision semantics are surfaced, not applied — same Pass-3 shape as the T-2552 typed-event WARN
+- [x] Plain linear fixtures (no gateways) emit zero new WARNs (no false positives); the aef-task-lifecycle corpus diagram emits exactly 2
+- [x] Unit tests added alongside the T-2552 typed-event tests in tests/unit/test_bpmn_to_tasks.py; full file green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -82,6 +122,10 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -c "import ast; ast.parse(open('tools/bpmn_to_tasks.py').read())"
+python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q
+out=$(bin/fw bpmn compile tests/fixtures/bpmn/task-lifecycle-corpus.bpmn 2>&1 >/dev/null); [ $(echo "$out" | grep -c "T-2557") -eq 2 ]
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -131,6 +175,10 @@ date_finished: null
 -->
 
 ## Evolution
+
+- Scoped at filing as "exclusiveGateway WARN"; widened during build to ALL *Gateway local names (parallel/inclusive/eventBased) — same silent-loss argument applies to the whole family, and matching the local-name suffix costs nothing extra.
+- Branch labels turned out to need a flow-id → (name, targetRef) map that Pass 2's fwd/rev structures don't carry (they are id-only) — small parallel structure in Pass 4 rather than widening _flows(), keeping the flow-walk untouched.
+- Pinning the D1 corpus diagram as a repo fixture (task-lifecycle-corpus.bpmn) fell out of test-writing: the corpus store (.context/) is not a stable test target, and the copy doubles as the first corpus-dialect regression pin.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -184,3 +232,19 @@ date_finished: null
 
 ### 2026-07-19T20:07:51Z — status-update [task-update-agent]
 - **Change:** tags: +arc:designer-corpus
+
+### 2026-07-19T20:14:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1ac995e8
+- **Timestamp:** 2026-07-19T20:16:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-19T20:16:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
