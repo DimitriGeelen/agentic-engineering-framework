@@ -84,10 +84,10 @@ temp copy — the live file is never touched. See L-502 sibling; RCA below.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `bin/fw` doctor designer-pin check honors `FW_DESIGNER_PIN_FILE` (falls back to `$PROJECT_ROOT/policy/designer-pin.yaml`); `vendored_path` still resolves against `PROJECT_ROOT`
-- [ ] `doctor_designer_pin_drift.bats` rewritten hermetic: mutations target a temp pin via `FW_DESIGNER_PIN_FILE`; the live `policy/designer-pin.yaml` is never written
-- [ ] all 4 cases still pass (t1 OK / t2 WARN / t3 SKIP-absent / t4 SKIP-missing-fields)
-- [ ] interrupt-safety proven: `git diff --quiet policy/designer-pin.yaml` holds during and after a run (live file untouched even mid-run)
+- [x] `bin/fw` doctor designer-pin check honors `FW_DESIGNER_PIN_FILE` (falls back to `$PROJECT_ROOT/policy/designer-pin.yaml`); `vendored_path` still resolves against `PROJECT_ROOT` — verified `bin/fw:1467`
+- [x] `doctor_designer_pin_drift.bats` rewritten hermetic: mutations target a temp pin via `FW_DESIGNER_PIN_FILE`; the live `policy/designer-pin.yaml` is never written — verified (test lines 26-27 cp→temp + export)
+- [x] all 4 cases still pass (t1 OK / t2 WARN / t3 SKIP-absent / t4 SKIP-missing-fields) — bats 5/5 rc=0 (t5 = hermetic guard)
+- [x] interrupt-safety proven: `git diff --quiet policy/designer-pin.yaml` holds during and after a run (live file untouched even mid-run) — PROVEN LIVE: a SIGKILL'd run (exit 137) left the tracked pin clean, plus in-test t5 guard
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
