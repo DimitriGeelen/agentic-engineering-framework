@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_dispatch_loop"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <bpmn:collaboration id="Collaboration_dispatch_loop">
+    <bpmn:participant id="Pool_dispatch_loop" name="dispatch-loop" processRef="Process_dispatch_loop"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_dispatch_loop" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="dispatch-loop" version="1" schemaVersion="2" title="Sub-Agent Dispatch Loop" description="Orchestrator scopes deliverables, reserves context headroom, fans out N&#8804;5 sub-agents (parallel) or runs one sequential worker, collects via the result ledger, synthesizes, and re-dispatches remaining work until done — then commits and checks in with the human." tier_default="2"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human &#183; Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_15_checkin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_16_done</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework &#183; Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>frw_3_headroom</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_14_checkpoint</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent &#183; Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="360"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_1_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_scope</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_mode</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_fan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_worker1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_worker2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_8_worker3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_9_seq</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_10_join</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_11_collect</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_12_synth</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_13_complete</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_1_start" name="Dispatch needed">
+      <bpmn:extensionElements>
+        <aef:uid value="n_1a2b3c4d"/>
+        <aef:position x="120.0" y="450.0"/>
+        <aef:meta triggeredBy="orchestrator has a task needing sub-agents"/>
+        <aef:io>
+          <aef:output name="task_id" type="task_id"/>
+          <aef:output name="run_id" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_2_scope" name="Scope deliverables (1 task = 1 deliverable)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_2b3c4d5e"/>
+        <aef:position x="250.0" y="442.0"/>
+        <aef:meta tier="2" agentType="primary"/>
+        <aef:endpoint>agents/dispatch/skills/scope.md</aef:endpoint>
+        <aef:contextReads paths=".tasks/active/${task_id}.md"/>
+        <aef:artifactsWrites paths=".context/working/dispatch-${run_id}/deliverables.yaml"/>
+        <aef:io>
+          <aef:input name="task_id" type="task_id" required="true"/>
+          <aef:output name="deliverables" type="list"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:incoming>flow_17</bpmn:incoming>
+      <bpmn:incoming>flow_20</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:scriptTask id="frw_3_headroom" name="Reserve context headroom (&#8805;40K free)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_3c4d5e6f"/>
+        <aef:position x="400.0" y="235.0"/>
+        <aef:meta tier="2"/>
+        <aef:endpoint>fw budget gate --reserve 40000</aef:endpoint>
+        <aef:contextReads paths=".context/working/.budget-status"/>
+        <aef:io>
+          <aef:input name="deliverables" type="list" required="true"/>
+          <aef:output name="headroom_ok" type="bool"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:exclusiveGateway id="agt_4_mode" name="Independent?">
+      <bpmn:extensionElements>
+        <aef:uid value="n_4d5e6f70"/>
+        <aef:position x="560.0" y="458.0"/>
+        <aef:meta decisionOwner="agent"/>
+        <aef:decisionInput>${deliverables.independent}</aef:decisionInput>
+        <aef:io>
+          <aef:input name="deliverables" type="list" required="true"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:parallelGateway id="agt_5_fan" name="Fan out (&#8804;5)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_5e6f7081"/>
+        <aef:position x="690.0" y="458.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+      <bpmn:outgoing>flow_7</bpmn:outgoing>
+      <bpmn:outgoing>flow_8</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <bpmn:serviceTask id="agt_6_worker1" name="Sub-agent: explore">
+      <bpmn:extensionElements>
+        <aef:uid value="n_6f708192"/>
+        <aef:position x="820.0" y="372.0"/>
+        <aef:meta tier="2" agentType="explore"/>
+        <aef:endpoint>fw dispatch sub --skill explore --deliverable ${deliverables[0]}</aef:endpoint>
+        <aef:artifactsWrites paths=".context/bus/dispatch-${run_id}/, fw bus post --agent explore"/>
+        <aef:io>
+          <aef:input name="deliverable" type="ref" required="true"/>
+          <aef:output name="result_ref" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_9</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_7_worker2" name="Sub-agent: analyze">
+      <bpmn:extensionElements>
+        <aef:uid value="n_70819203"/>
+        <aef:position x="820.0" y="450.0"/>
+        <aef:meta tier="2" agentType="analyze"/>
+        <aef:endpoint>fw dispatch sub --skill analyze --deliverable ${deliverables[1]}</aef:endpoint>
+        <aef:artifactsWrites paths=".context/bus/dispatch-${run_id}/, fw bus post --agent analyze"/>
+        <aef:io>
+          <aef:input name="deliverable" type="ref" required="true"/>
+          <aef:output name="result_ref" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_7</bpmn:incoming>
+      <bpmn:outgoing>flow_10</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_8_worker3" name="Sub-agent: review">
+      <bpmn:extensionElements>
+        <aef:uid value="n_81920314"/>
+        <aef:position x="820.0" y="528.0"/>
+        <aef:meta tier="2" agentType="review"/>
+        <aef:endpoint>fw dispatch sub --skill review --deliverable ${deliverables[2]}</aef:endpoint>
+        <aef:artifactsWrites paths=".context/bus/dispatch-${run_id}/, fw bus post --agent review"/>
+        <aef:io>
+          <aef:input name="deliverable" type="ref" required="true"/>
+          <aef:output name="result_ref" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_8</bpmn:incoming>
+      <bpmn:outgoing>flow_11</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_9_seq" name="Sub-agent (sequential, review between)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_92031425"/>
+        <aef:position x="820.0" y="620.0"/>
+        <aef:meta tier="2" agentType="primary"/>
+        <aef:endpoint>fw dispatch sub --sequential --review-between</aef:endpoint>
+        <aef:artifactsWrites paths=".context/bus/dispatch-${run_id}/, fw bus post --agent seq"/>
+        <aef:io>
+          <aef:input name="deliverables" type="list" required="true"/>
+          <aef:output name="result_ref" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+      <bpmn:outgoing>flow_13</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:parallelGateway id="agt_10_join" name="Join">
+      <bpmn:extensionElements>
+        <aef:uid value="n_03142536"/>
+        <aef:position x="950.0" y="458.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_9</bpmn:incoming>
+      <bpmn:incoming>flow_10</bpmn:incoming>
+      <bpmn:incoming>flow_11</bpmn:incoming>
+      <bpmn:outgoing>flow_12</bpmn:outgoing>
+    </bpmn:parallelGateway>
+
+    <bpmn:serviceTask id="agt_11_collect" name="Collect from result ledger (fw bus manifest)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_14253647"/>
+        <aef:position x="1080.0" y="450.0"/>
+        <aef:meta tier="2" agentType="primary"/>
+        <aef:endpoint>fw bus manifest ${task_id}</aef:endpoint>
+        <aef:contextReads paths=".context/bus/dispatch-${run_id}/, .context/bus/blobs/"/>
+        <aef:io>
+          <aef:input name="result_ref" type="ref" required="true"/>
+          <aef:output name="manifest" type="ref"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_12</bpmn:incoming>
+      <bpmn:incoming>flow_13</bpmn:incoming>
+      <bpmn:outgoing>flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_12_synth" name="Synthesize results">
+      <bpmn:extensionElements>
+        <aef:uid value="n_25364758"/>
+        <aef:position x="1230.0" y="450.0"/>
+        <aef:meta tier="2" agentType="primary"/>
+        <aef:endpoint>agents/dispatch/skills/synthesize.md</aef:endpoint>
+        <aef:contextReads paths=".context/working/dispatch-${run_id}/"/>
+        <aef:artifactsWrites paths=".context/working/dispatch-${run_id}/synthesis.yaml"/>
+        <aef:io>
+          <aef:input name="manifest" type="ref" required="true"/>
+          <aef:output name="synthesis" type="ref"/>
+          <aef:output name="remaining" type="int"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_14</bpmn:incoming>
+      <bpmn:outgoing>flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="agt_13_complete" name="All deliverables done?">
+      <bpmn:extensionElements>
+        <aef:uid value="n_36475869"/>
+        <aef:position x="1390.0" y="458.0"/>
+        <aef:meta decisionOwner="agent"/>
+        <aef:decisionInput>${remaining}</aef:decisionInput>
+        <aef:io>
+          <aef:input name="remaining" type="int" required="true"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_15</bpmn:incoming>
+      <bpmn:outgoing>flow_16</bpmn:outgoing>
+      <bpmn:outgoing>flow_17</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:scriptTask id="frw_14_checkpoint" name="Commit checkpoint (P-009 cadence)">
+      <bpmn:extensionElements>
+        <aef:uid value="n_47586970"/>
+        <aef:position x="1530.0" y="235.0"/>
+        <aef:meta tier="2"/>
+        <aef:endpoint>fw git commit -m "${task_id}: dispatch batch complete"</aef:endpoint>
+        <aef:artifactsWrites paths=".git/, docs/reports/dispatch-${run_id}.md"/>
+        <aef:io>
+          <aef:input name="synthesis" type="ref" required="true"/>
+          <aef:output name="commit_sha" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_16</bpmn:incoming>
+      <bpmn:outgoing>flow_18</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:userTask id="hum_15_checkin" name="Review &amp; continue?">
+      <bpmn:extensionElements>
+        <aef:uid value="n_58697081"/>
+        <aef:position x="1530.0" y="95.0"/>
+        <aef:meta tier="1"/>
+        <aef:endpoint>watchtower:/dispatch/runs/${run_id}</aef:endpoint>
+        <aef:decisionOutputs>continue, stop</aef:decisionOutputs>
+        <aef:io>
+          <aef:input name="commit_sha" type="string" required="true"/>
+          <aef:output name="decision" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_18</bpmn:incoming>
+      <bpmn:outgoing>flow_19</bpmn:outgoing>
+      <bpmn:outgoing>flow_20</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="hum_16_done" name="Session continues elsewhere">
+      <bpmn:extensionElements>
+        <aef:uid value="n_69708192"/>
+        <aef:position x="1690.0" y="109.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_19</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_start" targetRef="agt_2_scope">
+      <bpmn:extensionElements>
+        <aef:uid value="e_a1b2c3d4"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_scope" targetRef="frw_3_headroom">
+      <bpmn:extensionElements>
+        <aef:uid value="e_b2c3d4e5"/>
+        <aef:anchors sourcePort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" sourceRef="frw_3_headroom" targetRef="agt_4_mode">
+      <bpmn:extensionElements>
+        <aef:uid value="e_c3d4e5f6"/>
+        <aef:anchors targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" name="independent &#183; parallel" sourceRef="agt_4_mode" targetRef="agt_5_fan">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${deliverables.independent == true}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_d4e5f607"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" name="dependent &#183; sequential" sourceRef="agt_4_mode" targetRef="agt_9_seq">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${deliverables.independent == false}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_e5f60718"/>
+        <aef:anchors sourcePort="S" targetPort="W"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_5_fan" targetRef="agt_6_worker1">
+      <bpmn:extensionElements>
+        <aef:uid value="e_f6071829"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_5_fan" targetRef="agt_7_worker2">
+      <bpmn:extensionElements>
+        <aef:uid value="e_0718293a"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_8" sourceRef="agt_5_fan" targetRef="agt_8_worker3">
+      <bpmn:extensionElements>
+        <aef:uid value="e_18293a4b"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_9" sourceRef="agt_6_worker1" targetRef="agt_10_join">
+      <bpmn:extensionElements>
+        <aef:uid value="e_293a4b5c"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_10" sourceRef="agt_7_worker2" targetRef="agt_10_join">
+      <bpmn:extensionElements>
+        <aef:uid value="e_3a4b5c6d"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_8_worker3" targetRef="agt_10_join">
+      <bpmn:extensionElements>
+        <aef:uid value="e_4b5c6d7e"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_12" sourceRef="agt_10_join" targetRef="agt_11_collect">
+      <bpmn:extensionElements>
+        <aef:uid value="e_5c6d7e8f"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_13" sourceRef="agt_9_seq" targetRef="agt_11_collect">
+      <bpmn:extensionElements>
+        <aef:uid value="e_6d7e8f90"/>
+        <aef:anchors sourcePort="E" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_14" sourceRef="agt_11_collect" targetRef="agt_12_synth">
+      <bpmn:extensionElements>
+        <aef:uid value="e_7e8f9001"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_15" sourceRef="agt_12_synth" targetRef="agt_13_complete">
+      <bpmn:extensionElements>
+        <aef:uid value="e_8f900112"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_16" name="done" sourceRef="agt_13_complete" targetRef="frw_14_checkpoint">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${remaining == 0}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_90011223"/>
+        <aef:anchors sourcePort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_17" name="more &#183; re-dispatch" sourceRef="agt_13_complete" targetRef="agt_2_scope">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${remaining &gt; 0}</bpmn:conditionExpression>
+      <bpmn:extensionElements>
+        <aef:uid value="e_01122334"/>
+        <aef:anchors sourcePort="S" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_18" sourceRef="frw_14_checkpoint" targetRef="hum_15_checkin">
+      <bpmn:extensionElements>
+        <aef:uid value="e_11223345"/>
+        <aef:anchors sourcePort="N" targetPort="S"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_19" name="stop" sourceRef="hum_15_checkin" targetRef="hum_16_done">
+      <bpmn:extensionElements>
+        <aef:uid value="e_22334456"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_20" name="continue" sourceRef="hum_15_checkin" targetRef="agt_2_scope">
+      <bpmn:extensionElements>
+        <aef:uid value="e_33445567"/>
+        <aef:anchors sourcePort="W" targetPort="N"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <!-- BPMN DI (visual layout) omitted in this authored fixture; AEF generates it from node coordinates -->
+</bpmn:definitions>

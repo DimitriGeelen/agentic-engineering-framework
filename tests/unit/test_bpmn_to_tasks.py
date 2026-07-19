@@ -623,3 +623,75 @@ def test_recognized_authority_lanes_emit_no_t2567_warn():
     for fixture in (FIXTURE_832_TYPED, FIXTURE_832_BOUNDARY):
         _, warnings = bpmn_to_tasks.parse_bpmn(fixture)
         assert not [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
+
+
+# ------------------------------- 832 pair-draft #2: dispatch-loop (T-2568)
+# 832's Sub-Agent Dispatch Protocol, delivered rail offsets 99+101 (chunked after
+# two clipped single-shot attempts — the sha pin is what caught the silent 9445-byte
+# prefix at offset 98). First diagram through the compiler with parallelGateway
+# fork/join, multi-back-edge convergence, and an exclusive branch opening a
+# parallel region.
+
+FIXTURE_832_DISPATCH = os.path.join(
+    REPO_ROOT, "tests", "fixtures", "aef-bpmn", "dispatch-loop.bpmn"
+)
+SHA_832_DISPATCH = "95bc24cdb0d27952a4f85da55368b74fc8c1e9586960d0dd839453595543594b"
+
+
+def test_832_dispatch_fixture_byte_exact():
+    import hashlib
+
+    with open(FIXTURE_832_DISPATCH, "rb") as fh:
+        assert hashlib.sha256(fh.read()).hexdigest() == SHA_832_DISPATCH
+
+
+def test_832_dispatch_parallel_fork_join_structure():
+    """Probe 1: the fork's 3 workers emit as structural siblings (identical
+    related_tasks, no cross-ordering) and the join fans ALL branches back into
+    collect's related_tasks — parallel structure round-trips via the task graph."""
+    skeletons, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
+    assert len(skeletons) == 10
+    by_uid = {s["uid"]: s for s in skeletons}
+    workers = ("n_6f708192", "n_70819203", "n_81920314")  # explore/analyze/review
+    for uid in workers:
+        assert by_uid[uid]["related_tasks"] == ["n_3c4d5e6f"]  # headroom, via mode→fan
+    # seq worker (dependent branch) shares the same nearest-task predecessor
+    assert by_uid["n_92031425"]["related_tasks"] == ["n_3c4d5e6f"]
+    # join honored: collect fans in all 4 workers (3 parallel + 1 sequential merge)
+    assert set(by_uid["n_14253647"]["related_tasks"]) == set(workers) | {"n_92031425"}
+
+
+def test_832_dispatch_multi_backedge_convergence():
+    """Probe 2: agt_2_scope has 3 incoming (start + re-dispatch loop + human-continue
+    loop) — each back-edge resolves to a DISTINCT nearest-task predecessor, no
+    self-reference, and the start path keeps horizon now."""
+    skeletons, _ = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
+    by_uid = {s["uid"]: s for s in skeletons}
+    scope = by_uid["n_2b3c4d5e"]
+    assert set(scope["related_tasks"]) == {"n_25364758", "n_58697081"}  # synth, check-in
+    assert scope["uid"] not in scope["related_tasks"]
+    assert scope["horizon"] == "now"
+    # sovereignty userTask → human (owner derivation unchanged under new shapes)
+    assert by_uid["n_58697081"]["owner"] == "human"
+
+
+def test_832_dispatch_warn_set_pin():
+    """Probes 3+4 + T-2567 live: 5 WARNs — 2 exclusive (labeled branches), 2 parallel
+    (<unlabeled> fork edges), 1 aggregated authority-lane fold. NOTE: the parallel
+    gateways currently reuse the exclusive decision-semantics wording — that text
+    assertion MOVES when T-2569 lands (kind-split wording)."""
+    _, warnings = bpmn_to_tasks.parse_bpmn(FIXTURE_832_DISPATCH)
+    gw = [w for w in warnings if "Gateway" in w]
+    assert len(gw) == 4, warnings
+    mode = next(w for w in gw if "agt_4_mode" in w)
+    assert "independent · parallel → agt_5_fan" in mode
+    assert "dependent · sequential → agt_9_seq" in mode
+    complete = next(w for w in gw if "agt_13_complete" in w)
+    assert "more · re-dispatch → agt_2_scope" in complete
+    fan = next(w for w in gw if "node 'agt_5_fan'" in w)
+    assert "parallelGateway" in fan
+    assert fan.count("<unlabeled>") == 3
+    assert any("node 'agt_10_join'" in w for w in gw)
+    auth = [w for w in warnings if "unrecognized aef:laneMeta authority" in w]
+    assert len(auth) == 1
+    assert "n_3c4d5e6f→agent" in auth[0] and "n_47586970→agent" in auth[0]

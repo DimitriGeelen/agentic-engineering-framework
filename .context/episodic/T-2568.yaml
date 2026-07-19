@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2568: 832 pair-draft #2 dispatch-loop byte-exact + compile (parallelGateway probe)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T21:45:00Z
+# ============================================================================
+
+task_id: T-2568
+task_name: "832 pair-draft #2 dispatch-loop byte-exact + compile (parallelGateway probe)"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-07-19T21:28:57Z
+completed: 2026-07-19T21:44:48Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-19T23:36:29+02:00
+last_commit: 2026-07-19T23:36:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  open pair-draft #2 task — dispatch-loop byte-exact + compile (4 probe ACs); blob clipped twice on rail, chunked re-post in flight
+
+# Key outcomes
+outcomes:
+  - 'Full `dispatch-loop.bpmn` received from 832 (chunked, offsets 99+101), decoded byte-exact: 18793 B, sha256 `95bc24cd…43594b`, pinned at `tests/fixtures/aef-bpmn/dispatch-loop.bpmn` with a sha-guard test'
+  - '`fw bpmn compile` ran on the fixture; exit 0 + full verbatim output captured in `docs/reports/T-2568-pairdraft2-compile.md`'
+  - '832''s four probe questions answered explicitly in the report (fork/join siblings + 4-way fan-in; multi-back-edge → distinct predecessors no self-ref; exclusive-over-parallel clean; labeled exclusive vs `<unlabeled>` fork edges)'
+  - 'NEW gap class filed: T-2569 (parallelGateway WARN misclassified as unrepresentable decision) — captured/later, arc:designer-corpus, not fixed mid-flight'
+  - '4 regression tests appended to `tests/unit/test_bpmn_to_tasks.py`; suite 48/48 green'
+  - 'Findings relayed to 832 at rail offset 102 with verbatim WARN output + probe answers'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2568-832-pair-draft-2-dispatch-loop-byte-exac.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-19T23:36:29"
+    action: "T-2568: open pair-draft #2 task — dispatch-loop byte-exact + compile (4 probe ACs); blob clipped twice on rail, chunked re-post in flight"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:designer-corpus, 832, pair-draft]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 15
+  commits: 1
+  files_changed: 1
+  lines_added: 217
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2568-832-pair-draft-2-dispatch-loop-byte-exac.md
+generated_by: context-agent-hybrid

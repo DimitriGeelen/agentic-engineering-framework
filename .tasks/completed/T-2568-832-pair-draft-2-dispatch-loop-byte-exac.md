@@ -4,10 +4,10 @@ name: "832 pair-draft #2 dispatch-loop byte-exact + compile (parallelGateway pro
 description: >
   832 pair-draft #2 dispatch-loop byte-exact + compile (parallelGateway probe)
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:designer-corpus, 832, pair-draft]
 components: []
 related_tasks: []
@@ -22,8 +22,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T21:28:57Z
-last_update: 2026-07-19T21:34:32Z
-date_finished:
+last_update: 2026-07-19T21:44:48Z
+date_finished: 2026-07-19T21:44:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -73,12 +73,12 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Full `dispatch-loop.bpmn` received from 832, decoded byte-exact: 18793 B, sha256 `95bc24cd…43594b`, pinned at `tests/fixtures/aef-bpmn/dispatch-loop.bpmn` with a sha-guard test
-- [ ] `fw bpmn compile` runs on the fixture; exit code and full verbatim output captured in `docs/reports/T-2568-pairdraft2-compile.md`
-- [ ] 832's four probe questions answered explicitly in the report (parallel fork/join surfacing, multi-back-edge related_tasks resolution, exclusive-branch-opens-parallel-region behavior, labeled-vs-unlabeled edge handling)
-- [ ] Any NEW gap class filed as its own accumulator task (captured/later, arc:designer-corpus) — not fixed mid-flight (grill answer 3)
-- [ ] Regression test(s) appended to `tests/unit/test_bpmn_to_tasks.py` pinning the fixture behavior; full suite green
-- [ ] Findings relayed to 832 on the rail with verbatim compile output
+- [x] Full `dispatch-loop.bpmn` received from 832 (chunked, offsets 99+101), decoded byte-exact: 18793 B, sha256 `95bc24cd…43594b`, pinned at `tests/fixtures/aef-bpmn/dispatch-loop.bpmn` with a sha-guard test
+- [x] `fw bpmn compile` ran on the fixture; exit 0 + full verbatim output captured in `docs/reports/T-2568-pairdraft2-compile.md`
+- [x] 832's four probe questions answered explicitly in the report (fork/join siblings + 4-way fan-in; multi-back-edge → distinct predecessors no self-ref; exclusive-over-parallel clean; labeled exclusive vs `<unlabeled>` fork edges)
+- [x] NEW gap class filed: T-2569 (parallelGateway WARN misclassified as unrepresentable decision) — captured/later, arc:designer-corpus, not fixed mid-flight
+- [x] 4 regression tests appended to `tests/unit/test_bpmn_to_tasks.py`; suite 48/48 green
+- [x] Findings relayed to 832 at rail offset 102 with verbatim WARN output + probe answers
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -188,7 +188,15 @@ test -s docs/reports/T-2568-pairdraft2-compile.md
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-## Decisions
+### 2026-07-19 — rail payload cap is a real transport constraint; sha pin caught a silent prefix
+- **What changed:** two single-shot deliveries clipped in transit (~12.8KB payload cap observed; offset 92's 15.2KB previously survived, so the cap is variable or ~13-15KB). Critically, offset 98's clip landed on a 4-char base64 boundary and decoded CLEANLY to a 9445-byte prefix — without the sha pin this could have parsed and compiled as a plausible smaller diagram. The byte-exact contract caught a silent-partial failure mode nobody designed it for.
+- **Plan impact:** future fixture deliveries >12KB base64 go chunked by default (832 adopted 2-part numbered chunks unprompted).
+- **Triggered:** none filed — transport is termlink's domain (gap-homing T-1333: the fix lives in termlink's repo if anywhere); the mitigation (chunk + sha-check) is already protocol.
+
+### 2026-07-19 — T-2569: T-2557's WARN vocabulary doesn't survive its second gateway kind
+- **What changed:** first parallelGateway through the compiler showed Pass-4's single WARN template over-claims for forks/joins ("decision semantics … not applied" — a fork has no decision, and the sibling/fan-in structure WAS applied). Detector fires correctly; the prose lies.
+- **Plan impact:** WARN wording needs a kind-split (exclusive keeps current text); the T-2568 WARN-set pin test explicitly marks its parallel-wording assertion as movable.
+- **Triggered:** T-2569 (captured/later, arc:designer-corpus).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -215,3 +223,20 @@ test -s docs/reports/T-2568-pairdraft2-compile.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2568-832-pair-draft-2-dispatch-loop-byte-exac.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d32eec19
+- **Timestamp:** 2026-07-19T21:44:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 33
+     - evidence: `python3 -m pytest tests/unit/test_bpmn_to_tasks.py -q 2>&1 | tail -1 | grep -q "passed"`
+
+### 2026-07-19T21:44:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
