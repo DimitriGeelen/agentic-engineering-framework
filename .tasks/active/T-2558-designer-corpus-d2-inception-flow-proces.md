@@ -4,12 +4,12 @@ name: "designer-corpus D2: inception-flow process diagram (explore → go/no-go 
 description: >
   designer-corpus D2: inception-flow process diagram (explore → go/no-go → build children)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tools/bpmn_to_tasks.py]
 related_tasks: []
 arc_id: designer-corpus
 # arc_id (template note):         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -23,8 +23,8 @@ arc_id: designer-corpus
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T20:17:08Z
-last_update: 2026-07-19T20:17:08Z
-date_finished: null
+last_update: 2026-07-19T20:20:53Z
+date_finished: 2026-07-19T20:20:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,10 +53,10 @@ operator corrects in the designer UI.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Diagram drafted covering the real inception flow: T-2204 recommendation gate at filing, C-001 artifact-first exploration, collapsed inception subProcess in the sovereignty lane, GO vs NO-GO/DEFER outcome branches, build-children fan-out on GO; aef:uid on every node
-- [ ] Saved via live POST /api/save; /api/list shows aef-inception-flow; /designer serves 200
-- [ ] `fw bpmn compile` run captured verbatim in a D2 report; T-2557 gateway WARNs counted and checked against the draft; inception subProcess materializes owner:human workflow_type:inception per T-2549
-- [ ] Any NEW gap (not already covered by T-2556/T-2557) filed as an arc-014 constituent — or the report states explicitly that none surfaced
+- [x] Diagram drafted covering the real inception flow: T-2204 recommendation gate at filing, C-001 artifact-first exploration, collapsed inception subProcess in the sovereignty lane, GO vs NO-GO/DEFER outcome branches, build-children fan-out on GO; aef:uid on every node
+- [x] Saved via live POST /api/save; /api/list shows aef-inception-flow; /designer serves 200
+- [x] `fw bpmn compile` run captured verbatim in a D2 report; T-2557 gateway WARNs counted and checked against the draft; inception subProcess materializes owner:human workflow_type:inception per T-2549
+- [x] Any NEW gap (not already covered by T-2556/T-2557) filed as an arc-014 constituent — or the report states explicitly that none surfaced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +98,10 @@ operator corrects in the designer UI.
   **If not:** Edit in the UI and save, or tell the agent what is wrong
 
 ## Verification
+
+curl -sf "$(bin/fw watchtower url)/api/list" > /tmp/.t2558-list && grep -q aef-inception-flow /tmp/.t2558-list
+out=$(bin/fw bpmn compile .context/designer/projects/aef-inception-flow/v1.bpmn 2>&1 >/dev/null); [ $(echo "$out" | grep -c "T-2557") -eq 1 ]
+test -f docs/reports/T-2558-d2-compile-log.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -170,6 +174,19 @@ operator corrects in the designer UI.
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+- The minimal inception fixture (inception-gonogo-canonical) models decide-inside-the-subProcess; documenting the REAL flow forced the outcome gateway OUTSIDE the boundary (GO fan-out vs DEFER archive are post-decision agent work) — the G-3 "implied at boundary" form absorbed this without vocabulary strain, which was not obvious at filing.
+- T-2204/C-001/T-1451 gate references fit naturally as aef:meta notes — process-governance annotations may be a future vocabulary theme, but nothing forced a new gap filing on D2.
+
+## Recommendation
+
+**Recommendation:** GO — approve D2 after your UI review pass
+
+**Rationale:** All Agent ACs verified live: canonical G-3 inception dialect round-trips (sovereignty-laned collapsed subProcess → owner:human workflow_type:inception skeleton), gallery save via the real API, compile exit 0, and the T-2557 gateway WARN fires exactly once with correct branch labels — its first validation on a post-fix corpus diagram. No new gap class; T-2556 (diagram-kind marker) remains the open vocabulary item, already with 832.
+
+**Evidence:**
+- Save: `{"ok":true,"v":1}`; compile log verbatim in `docs/reports/T-2558-d2-compile-log.md`
+- 5 skeletons incl. if_inception human/inception; 1 gateway WARN (agt_gw_outcome, GO / NO-GO+DEFER branches)
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -197,3 +214,15 @@ operator corrects in the designer UI.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2558-designer-corpus-d2-inception-flow-proces.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aeeaeba4
+- **Timestamp:** 2026-07-19T20:20:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-07-19T20:20:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
