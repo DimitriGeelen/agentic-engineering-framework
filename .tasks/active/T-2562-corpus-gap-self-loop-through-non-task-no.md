@@ -1,13 +1,13 @@
 ---
-id: T-2561
-name: "designer-corpus D3: session-lifecycle process diagram (init → work → handover → push)"
+id: T-2562
+name: "corpus gap: self-loop through non-task nodes yields self-referential related_tasks entry"
 description: >
-  designer-corpus D3: session-lifecycle process diagram (init → work → handover → push)
+  arc-014 D3 finding (T-2561): aef-session-lifecycle's commit-cadence loop (sl_work → gw_budget → sl_work) makes the flow-walk record sl_work as its own related_task (related_tasks: [sl_init, sl_work]). Not silent loss — but a promoted task pointing at itself is meaningless. Fix: skip self-references when accumulating nearest-task predecessors in Pass 2.
 
-status: work-completed
+status: captured
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: later
 tags: [arc:designer-corpus]
 components: []
 related_tasks: []
@@ -21,9 +21,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-07-19T20:45:40Z
-last_update: 2026-07-19T20:52:59Z
-date_finished: 2026-07-19T20:52:59Z
+created: 2026-07-19T20:51:43Z
+last_update: 2026-07-19T20:51:53Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -36,29 +36,20 @@ date_finished: 2026-07-19T20:52:59Z
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-2561: designer-corpus D3: session-lifecycle process diagram (init → work → handover → push)
+# T-2562: corpus gap: self-loop through non-task nodes yields self-referential related_tasks entry
 
 ## Context
 
-arc-014 corpus diagram D3 of 5 (T-2553 GO, telemetry pick #3: handover ran 1387×). The AEF session lifecycle as actually operated: Session Start Protocol (context init → read LATEST.md → focus) → work loop (task gate, commit cadence P-009, budget escalation ladder) → Session End Protocol (session capture → `fw handover --commit` → push verify T-1277). Timer flavor: the budget thresholds and the auto-restart wrapper give this process its typed-event (timer) character — encoded via `aef:eventDef kind=timer` where honest. Same D1/D2 pattern: draft in 832's canonical dialect, save via live POST /api/save, compile, capture verbatim log, file gaps to arc-014.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Diagram `aef-session-lifecycle` drafted in 832's canonical dialect (aef:workflowMeta schemaVersion=2, laneMeta authority=, uid attribute form, aef:position) covering init → work loop → budget escalation → handover → push-verify, with the honest typed timer event (T-179 wrapper cancel window, `kind=timer binding=PT3S`) and the commit-cadence loop edge
-- [x] Saved through the LIVE designer gallery API (`POST /api/save`, id=aef-session-lifecycle → `{"ok":true,"v":1}`) — meta.json + v1.bpmn exist under `.context/designer/projects/aef-session-lifecycle/`
-- [x] `fw bpmn compile` on the saved v1.bpmn exits 0; every expected WARN class accounted for (1× typed-event T-2551, 2× gateway T-2557 with branch labels) in the verbatim compile log at `docs/reports/T-2561-d3-compile-log.md`; the one NEW gap class (self-referential related_tasks on the commit-cadence self-loop) filed as T-2562, not fixed mid-flight
-- [x] Owner derivation correct: sovereignty-lane userTask sl_review → owner human; all initiative-lane serviceTasks → owner agent
+- [ ] Pass-2 flow-walk skips self-references when accumulating nearest-task predecessors — a task node never lists itself in `related_tasks`
+- [ ] Regression test on `.context/designer/projects/aef-session-lifecycle/v1.bpmn`-equivalent fixture (self-loop through a gateway) asserts `sl_work` predecessors exclude `sl_work`; D1 loop semantics (distinct-node back-edge tl_heal → tl_work) unregressed; full suite green
 
 ### Human
-- [ ] [REVIEW] D3 session-lifecycle diagram reads as a faithful picture of how sessions actually run
-  **Steps:**
-  1. Open http://192.168.10.107:3001/designer and load project `aef-session-lifecycle`
-  2. Check the flow: operator launch → init → work loop with "budget critical?" gateway looping back (commit cadence) → capture → handover → push-verify → "restart requested?" → timer (3s cancel window) → restart, or clean end via your review-queue step
-  3. Correct anything directly in the designer UI (pair-draft: your edits become v2)
-  **Expected:** The two decision points (budget wrap-up, auto-restart) and the sovereignty placement of the review-queue step match your mental model of a session
-  **If not:** Edit in the designer (creates v2) or note the correction — the diff drives the next corpus iteration
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -90,12 +81,6 @@ arc-014 corpus diagram D3 of 5 (T-2553 GO, telemetry pick #3: handover ran 1387�
 -->
 
 ## Verification
-
-test -f .context/designer/projects/aef-session-lifecycle/v1.bpmn
-test -f .context/designer/projects/aef-session-lifecycle/meta.json
-out=$(bin/fw bpmn compile .context/designer/projects/aef-session-lifecycle/v1.bpmn 2>&1); test "$(echo "$out" | grep -c "typed-event annotation")" = "1" && test "$(echo "$out" | grep -c "T-2557")" = "2"
-out=$(bin/fw bpmn compile .context/designer/projects/aef-session-lifecycle/v1.bpmn 2>&1); echo "$out" | grep -q "id: sl_review" && echo "$out" | grep -A2 "id: sl_review" | grep -q "owner: human"
-test -f docs/reports/T-2561-d3-compile-log.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -146,11 +131,6 @@ test -f docs/reports/T-2561-d3-compile-log.md
 
 ## Evolution
 
-### 2026-07-19 — self-loops are a distinct fidelity class from distinct-node loops
-- **What changed:** D1 proved the flow-walk survives loops, but its back-edge came from a distinct node (tl_heal → tl_work). D3's commit-cadence loop routes through a gateway straight back to the SAME task — and the nearest-task-predecessor walk faithfully records the task as its own predecessor (`related_tasks: [sl_init, sl_work]`). The corpus exercise is doing exactly what the grill scoped it for: each real process shape stresses a compiler path the fixtures didn't.
-- **Plan impact:** none for D4/D5 drafting; promote of D3's skeletons should wait for the T-2562 fix or hand-strip the self-ref.
-- **Triggered:** T-2562 (skip self-references in Pass-2 accumulation; captured/later, arc-014).
-
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
      filing, what in the original plan no longer fits, what triggered pivots
@@ -172,15 +152,6 @@ test -f docs/reports/T-2561-d3-compile-log.md
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-## Recommendation
-
-**Recommendation:** GO — accept D3 into the corpus
-**Rationale:** Third corpus diagram through the full pipeline; both detector classes (T-2551 typed-event, T-2557 gateway) fired exactly as designed, owner/horizon derivation correct, and the exercise surfaced one genuinely new minor gap (self-referential related_tasks, T-2562) — the accumulator arc working as intended.
-**Evidence:**
-- `.context/designer/projects/aef-session-lifecycle/v1.bpmn` saved via live API (`{"ok":true,"v":1}`)
-- Compile exit 0: 6 skeletons, sl_review owner:human, 1 timer WARN + 2 gateway WARNs (verbatim in docs/reports/T-2561-d3-compile-log.md)
-- T-2562 filed with real ACs (captured/later, arc:designer-corpus)
 
 ## Decisions
 
@@ -205,22 +176,10 @@ test -f docs/reports/T-2561-d3-compile-log.md
 
 ## Updates
 
-### 2026-07-19T20:45:40Z — task-created [task-create-agent]
+### 2026-07-19T20:51:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2561-designer-corpus-d3-session-lifecycle-pro.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2562-corpus-gap-self-loop-through-non-task-no.md
 - **Context:** Initial task creation
 
-### 2026-07-19T20:46:51Z — status-update [task-update-agent]
+### 2026-07-19T20:51:53Z — status-update [task-update-agent]
 - **Change:** tags: +arc:designer-corpus
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-d29a92bc
-- **Timestamp:** 2026-07-19T20:53:01Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-07-19T20:52:59Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
