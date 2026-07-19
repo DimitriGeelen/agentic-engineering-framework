@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2547: make doctor_designer_pin_drift.bats hermetic (non-hermetic test corrupts live
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-07-19T18:25:02Z
+# ============================================================================
+
+task_id: T-2547
+task_name: "make doctor_designer_pin_drift.bats hermetic (non-hermetic test corrupts live"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-07-19T12:41:36Z
+completed: 2026-07-19T18:24:50Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-07-19T14:49:43+02:00
+last_commit: 2026-07-19T17:57:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  make designer pin-drift test hermetic (FW_DESIGNER_PIN_FILE override). tick ACs — hermetic pin-drift verified (bats 5/5, interrupt-safety proven live via SIGKILL'd run leaving pin clean)
+
+# Key outcomes
+outcomes:
+  - '`bin/fw` doctor designer-pin check honors `FW_DESIGNER_PIN_FILE` (falls back to `$PROJECT_ROOT/policy/designer-pin.yaml`); `vendored_path` still resolves against `PROJECT_ROOT` — verified `bin/fw:1467`'
+  - '`doctor_designer_pin_drift.bats` rewritten hermetic: mutations target a temp pin via `FW_DESIGNER_PIN_FILE`; the live `policy/designer-pin.yaml` is never written — verified (test lines 26-27 cp→temp + export)'
+  - 'all 4 cases still pass (t1 OK / t2 WARN / t3 SKIP-absent / t4 SKIP-missing-fields) — bats 5/5 rc=0 (t5 = hermetic guard)'
+  - 'interrupt-safety proven: `git diff --quiet policy/designer-pin.yaml` holds during and after a run (live file untouched even mid-run) — PROVEN LIVE: a SIGKILL''d run (exit 137) left the tracked pin clean, plus in-test t5 guard'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not]']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.context/working/focus.yaml'
+  - '.tasks/active/T-2547-make-doctordesignerpindriftbats-hermetic.md'
+  - 'tests/unit/doctor_designer_pin_drift.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: "2026-07-19T14:49:43"
+    action: "T-2547: make designer pin-drift test hermetic (FW_DESIGNER_PIN_FILE override)"
+  - time: "2026-07-19T17:57:38"
+    action: "T-2547: tick ACs — hermetic pin-drift verified (bats 5/5, interrupt-safety proven live via SIGKILL'd run leaving pin clean)"
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 343 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  wall_clock_minutes: 343
+  commits: 2
+  files_changed: 6
+  lines_added: 312
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2547-make-doctordesignerpindriftbats-hermetic.md
+generated_by: context-agent-hybrid

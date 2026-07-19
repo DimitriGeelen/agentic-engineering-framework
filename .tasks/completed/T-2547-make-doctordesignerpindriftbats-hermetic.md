@@ -6,12 +6,12 @@ description: >
   make doctor_designer_pin_drift.bats hermetic (non-hermetic test corrupts live pin
   on interrupt)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tests/unit/doctor_designer_pin_drift.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -24,8 +24,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-19T12:41:36Z
-last_update: '2026-07-19T12:45:09Z'
-date_finished:
+last_update: 2026-07-19T18:24:50Z
+date_finished: 2026-07-19T18:24:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -239,3 +239,20 @@ fixture. No guard asserted the live file stayed clean across a run.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2547-make-doctordesignerpindriftbats-hermetic.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b68c091b
+- **Timestamp:** 2026-07-19T18:24:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `bin/fw` doctor designer-pin check honors `FW_DESIGNER_PIN_FILE` (falls back to `$PROJECT_ROOT/policy/designer-pin.yaml`); `vendored_path` still resolves against `PROJECT_ROOT` — verified `bin/fw:1467
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=PROJECT_ROOT/policy/designer-pin.yaml in: `bin/fw` doctor designer-pin check honors `FW_DESIGNER_PIN_FILE` (falls back to `$PROJECT_ROOT/policy/designer-pin.yaml`); `vendored_path` still resol`
+
+### 2026-07-19T18:24:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
