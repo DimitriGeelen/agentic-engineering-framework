@@ -1,0 +1,37 @@
+id: arc-014
+slug: designer-corpus
+name: "Designer corpus: real AEF processes documented in the workflow designer"
+description: "Corpus exercise (1c both docs+dogfood, 2d pair-draft + operator UI review). Accumulator\
+  \ arc: vocabulary gaps, issues, errors, enhancements and failings discovered while\
+  \ documenting are filed as constituent tasks and driven to quality closure. AEF\
+  \ extends aef:* vocabulary; 832 owns the designer development process; rail ratification\
+  \ loop is the continuity spine."
+status: draft
+anchor_task: T-2553
+headline_mechanic: "Operator opens the /designer gallery and sees the 5 most-used AEF processes rendered\
+  \ as live BPMN diagrams, each compiling through fw bpmn with zero silent drops,\
+  \ with every vocabulary gap discovered en route tracked to closure in the arc"
+demo_evidence: null
+created: 2026-07-19T19:38:20Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers:  # uncapped persistence (D7-reframe). Estimator may write here freely.
+  - name: vocabulary-coverage
+    rationale: "Distinguishes from D4 (portability): D4 says don't lock in; this scores whether the frozen aef:* vocabulary can EXPRESS real AEF process semantics — each diagram that needs a missing construct lowers it, each ratified additive extension raises it. The arc's core empirical question (IW-8), not covered by any global."
+    weight_suggestion: 5
+    source: agent
+    ts: 2026-07-19T19:45:00Z
+  - name: corpus-fidelity
+    rationale: "Distinguishes from D2 (reliability): D2 is no-silent-failures in execution; this scores documentation TRUTH — does the diagram match the live process it claims to document (operator-verified in UI review). A rendered diagram that lies with authority is worse than none; no global measures that."
+    weight_suggestion: 4
+    source: agent
+    ts: 2026-07-19T19:45:00Z
+  - name: seam-fluidity
+    rationale: "Distinguishes from D3 (usability): D3 is human/agent UX of the framework; this scores the TWO-AGENT contract-evolution loop — propose→832-ratify→fixture→joint-bats round-trip staying additive-only and low-latency at corpus rate. Operator named continuity/fluidity the core of the exercise (grill Q4)."
+    weight_suggestion: 3
+    source: agent
+    ts: 2026-07-19T19:45:00Z
