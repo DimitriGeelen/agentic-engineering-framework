@@ -12,7 +12,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-07-19T18:30:00Z
-last_update: 2026-07-19T18:31:15Z
+last_update: '2026-07-19T18:45:06Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -38,6 +38,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-07-19T18:45:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (no-signal); tier=4 (no-signal); effort=7 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -78,29 +88,38 @@ to build against.
 
 - **IW-1: Does AEF's execution/orchestration model have any consumer for a per-task trigger
   annotation today, or would it be write-only metadata?**
-  confidence: 2
-  disposition: deferred
-  rationale: Spike-1 done (docs/reports/T-2551-*.md) — only **timer→horizon** has a live consumer
-  (resolver.py:1176 eligibility + `_rank`), and it overlaps T-2532's existing horizon derivation;
-  **error** (healing reads live status, not compile-time) and **message** (dispatch keyed on
-  runtime events) have NO compile-time consumer. Trends NO-GO; deferred pending Spike-3 matrix +
-  832 fixture before ratifying.
+  confidence: 3
+  disposition: answered
+  rationale: **Spike-1 complete (verified).** The resolver dispatch envelope reads exactly 6
+  frontmatter fields — `id/name/workflow_type/owner/horizon/status` (`lib/resolver.py:1056-1061`);
+  no dispatch/bus/pause/pending/spawn path reads any trigger/event/`on_error`/`eventDef` field
+  (grep-verified empty). Only **timer→horizon** could feed a live consumer (resolver eligibility
+  line 1176 + `_rank`), and horizon is ALREADY derived from flow-order (T-2532) → refinement, not a
+  net-new consumer. **error** and **message** have NO consumer → consumption = write-only
+  frontmatter (D2/D3 violation). Independent of the 832 fixture (that gates only the WARN's
+  byte-exactness, shipped in T-2552).
 - **IW-2: What is the honest per-kind mapping (error→?, timer→?, message→?), and does any map
   cleanly onto an existing AEF concept without inventing new subsystem surface?**
-  confidence: 1
-  disposition: deferred
-  rationale: pending Spike-3 candidate-mapping matrix
+  confidence: 3
+  disposition: answered
+  rationale: error→(none: healing reads live `status: issues`, not a compile-time field);
+  message→(none: dispatch keyed on runtime `inbox.queued`, no per-task field); timer→`horizon` is
+  the only existing target and it OVERLAPS T-2532's flow-order derivation. No kind maps to a
+  net-new value without new subsystem surface.
 - **IW-3: Is the right first step "surface the drop (compile WARN)" only — deferring semantics
   indefinitely — or is there a bounded consumption worth building now?**
-  confidence: 1
-  disposition: deferred
-  rationale: the WARN is already committed as separate work (rail offset 80); this asks whether to
-  go further
+  confidence: 3
+  disposition: answered
+  rationale: WARN-only is correct — shipped in T-2552 (landed master). It closes the reliability gap
+  (no silent loss) without inventing a consumer. No bounded consumption is worth building now given
+  IW-1/IW-2.
 - **IW-4: Does consumption belong in the compile path (`bpmn_to_tasks.py` → skeleton frontmatter),
   the promote path (`bpmn_promote.py` → materialization), or neither?**
-  confidence: 1
-  disposition: deferred
-  rationale: pending IW-1/IW-2 resolution
+  confidence: 3
+  disposition: dissolved
+  rationale: moot under the NO-GO recommendation — with no consumer, there is no consumption to
+  place. Revisit only if AEF grows a trigger-consuming execution engine (then compile-path
+  frontmatter is the natural first home).
 
 ## Exploration Plan
 
@@ -183,27 +202,40 @@ kind; the go/no-go on building consumption.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** NO-GO (on building typed-event *consumption*) — with a revisit condition.
 
 **Rationale:**
 
-Genuine evidence gap at filing: no candidate-mapping analysis done yet, and it depends on 832's forthcoming typed-event fixture (encoding cross-validation) plus a human go/no-go on whether AEF should consume typed-event annotations at all. Not a confidence hedge — the exploration (does AEF's execution model use triggers? what does each event kind map to?) has not been conducted. DEFER pending the research artifact + fixture.
+Spike-1 completed and answered the load-bearing question (IW-1, confidence 3): **AEF has no
+consumer for a per-task trigger annotation.** The resolver dispatch envelope reads exactly six
+frontmatter fields (`id/name/workflow_type/owner/horizon/status`, `lib/resolver.py:1056-1061`), and
+no dispatch/bus/pause/pending/spawn path reads any trigger/event field. So consuming error/message
+annotations would write frontmatter that nothing reads — the D2/D3 anti-pattern the framework
+exists to prevent. The only kind with a live target (timer→`horizon`) overlaps the existing
+T-2532 flow-order derivation, so even it adds no net-new value. Meanwhile the actual *reliability*
+need — never silently drop the annotation — is already met by the shipped WARN (T-2552). There is
+no bounded consumption worth building. This is a confident NO-GO on evidence, **not** a DEFER: the
+decision does not depend on 832's fixture (that gates only the WARN's byte-exactness), and the
+sovereignty question ("should the task model carry producer-trigger vocab?") is answerable now —
+the answer is "not until something reads it."
+
+**Revisit condition:** flip to GO only if AEF grows a trigger-consuming execution engine (a live
+consumer for compile-time triggers). At that point timer→horizon-refinement is the first candidate,
+and consumption belongs in the compile path (`bpmn_to_tasks.py` → skeleton frontmatter).
 
 **Evidence:**
 
-- Spike-1 (read-only, `docs/reports/T-2551-typed-event-consumption-semantics.md`): only
-  **timer→horizon** maps to a live AEF consumer (`lib/resolver.py:1176` eligibility + `_rank`
-  ranking), and it overlaps T-2532's existing sequenceFlow→horizon derivation. **error** and
-  **message** have no compile-time consumer (healing reads live `status: issues`; dispatch is keyed
-  on runtime `inbox.queued`, not a per-task field). Trends NO-GO (consumption of error/message =
-  write-only frontmatter noise).
-- Current compile behavior grounded in `tools/bpmn_to_tasks.py:51,279`: typed-event diagram
-  compiles clean (no crash) but `<aef:eventDef>` is silently dropped — the visible-drop compile
-  WARN (committed separately, rail offset 80) preserves the no-silent-loss guarantee without
-  inventing a consumer.
-- **DEFER (not NO-GO yet)** because two genuine external gaps remain: (1) 832's typed-event fixture
-  for byte-exact encoding cross-validation, (2) human go/no-go on whether the AEF task model should
-  carry producer-trigger vocabulary at all (sovereignty call).
+- **IW-1 (verified):** `lib/resolver.py:1056-1061` — dispatch reads only 6 fields; grep of
+  resolver/outcome/pause/pending/spawn for any trigger/event/`on_error`/`eventDef` consumer returns
+  empty. Only `horizon` (of those 6) is trigger-adjacent, and it's already flow-derived (T-2532).
+- **error → no target:** healing triggers on *live* `status: issues`, not a compile-time field
+  (setting `status: issues` at birth is semantically wrong). **message → no target:** dispatch is
+  keyed on runtime `inbox.queued`, not a per-task annotation.
+- **Reliability already covered:** the silent-drop→WARN (T-2552, landed master) preserves the
+  no-silent-loss guarantee without inventing a consumer. Research artifact:
+  `docs/reports/T-2551-typed-event-consumption-semantics.md`.
+- **Independent of the fixture:** 832's inbound fixture gates only the WARN's byte-exact
+  cross-validation (a separate confirm on already-shipped code), not this consumption go/no-go.
 
 ## Decisions
 

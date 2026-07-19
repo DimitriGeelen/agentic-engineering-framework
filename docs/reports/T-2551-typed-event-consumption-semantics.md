@@ -3,8 +3,9 @@
 **Inception.** Should the AEF compile/promote path *consume* 832's typed BPMN event
 annotations (error/timer/message), and if so, what does each kind map to in an AEF task?
 
-Status: **DEFER** (filing) — genuine external evidence gap (832 fixture pending + human
-go/no-go). Spike-1 done; trends NO-GO with a narrow timer caveat, not yet ratified.
+Status: **NO-GO** (on building consumption) with a revisit condition. Spike-1 **complete** —
+AEF has no consumer for a per-task trigger annotation (verified). The decision is independent
+of 832's inbound fixture (that gates only the already-shipped WARN's byte-exactness).
 
 ---
 
@@ -62,9 +63,12 @@ consumer, and that path largely overlaps T-2532's existing `horizon` derivation.
 triggers — which is the NO-GO criterion (consumption = noise, D2/D3). The already-committed
 visible-drop WARN preserves the "no silent loss" guarantee without inventing a consumer.
 
-**Not yet confirmed:** I traced resolver + healing + a glance at bus/inbox, not the full dispatch
-substrate (peer-consult, orchestrator v2 stubs). Spike-3 (candidate matrix) + the fixture
-cross-validation would confirm before flipping the recommendation.
+**Confirmed (Spike-1 complete):** the resolver dispatch envelope reads exactly six frontmatter
+fields — `id/name/workflow_type/owner/horizon/status` (`lib/resolver.py:1056-1061`). A grep of
+resolver/outcome/pause/pending/spawn for any trigger/event/`on_error`/`eventDef` consumer returns
+empty. So IW-1 is answered (confidence 3): **no consumer exists** for a compile-time trigger
+annotation. Recommendation upgraded DEFER → **NO-GO** — the consumption decision does not depend on
+the fixture (which gates only the WARN's byte-exactness, already shipped in T-2552).
 
 ## Candidate directions (to be sharpened in Spike 3)
 
